@@ -159,8 +159,9 @@ public class AccessControlList implements Externalizable
    public List<AccessControlEntry> getPermissionEntries()
    {
       List<AccessControlEntry> list = new ArrayList<AccessControlEntry>();
-      for (AccessControlEntry entry : accessList)
+      for (int i = 0, length = accessList.size(); i < length; i++)
       {
+         AccessControlEntry entry = accessList.get(i);
          list.add(new AccessControlEntry(entry.getIdentity(), entry.getPermission()));
       }
       return list;
@@ -169,8 +170,9 @@ public class AccessControlList implements Externalizable
    public List<String> getPermissions(String identity)
    {
       List<String> permissions = new ArrayList<String>();
-      for (AccessControlEntry entry : accessList)
+      for (int i = 0, length = accessList.size(); i < length; i++)
       {
+         AccessControlEntry entry = accessList.get(i);
          if (entry.getIdentity().equals(identity))
             permissions.add(entry.getPermission());
       }
@@ -184,19 +186,56 @@ public class AccessControlList implements Externalizable
       if (obj instanceof AccessControlList)
       {
          AccessControlList another = (AccessControlList)obj;
-         return dump().equals(another.dump());
+
+         // check owners, it may be null
+         if (!((owner == null && another.owner == null) || (owner != null && owner.equals(another.owner))))
+         {
+            return false;
+         }
+
+         // check accessList
+         List<AccessControlEntry> anotherAccessList = another.accessList;
+         if (accessList == null && anotherAccessList == null)
+         {
+            return true;
+         }
+         else if (accessList != null && anotherAccessList != null && accessList.size() == anotherAccessList.size())
+         {
+            // check content of both accessLists
+            for (int i = 0; i < accessList.size(); i++)
+            {
+               if (!accessList.get(i).getAsString().equals(anotherAccessList.get(i).getAsString()))
+               {
+                  return false;
+               }
+            }
+            return true;
+         }
+         else
+         {
+            return false;
+         }
+
+         //return dump().equals(another.dump());
       }
       return false;
    }
 
    public String dump()
    {
-      String res = "OWNER: " + owner + "\n";
-      for (AccessControlEntry a : accessList)
+      StringBuilder res = new StringBuilder("OWNER: ").append(owner != null ? owner : "null").append("\n");
+      if (accessList != null)
       {
-         res += a.getAsString() + "\n";
+         for (AccessControlEntry a : accessList)
+         {
+            res.append(a.getAsString()).append("\n");
+         }
       }
-      return res;
+      else
+      {
+         res.append("null");
+      }
+      return res.toString();
    }
 
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException

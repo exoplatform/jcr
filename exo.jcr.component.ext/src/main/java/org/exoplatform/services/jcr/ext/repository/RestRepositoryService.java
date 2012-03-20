@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.ext.repository;
 
-import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -48,8 +47,8 @@ import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
 
 /**
  * Created by The eXo Platform SAS.
@@ -370,7 +369,7 @@ public class RestRepositoryService implements ResourceContainer
     * @return Response
     *           return the Response
     */
-   @POST
+   @GET
    @RolesAllowed("administrators")
    @Path("/remove-repository/{repositoryName}/{forseSessionClose}")
    public Response removeRepository(@Context UriInfo uriInfo, @PathParam("repositoryName") String repositoryName,
@@ -393,11 +392,11 @@ public class RestRepositoryService implements ResourceContainer
          if (repositoryService.canRemoveRepository(repositoryName))
          {
             repositoryService.removeRepository(repositoryName);
-            repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
-            return Response.noContent().build();
+            repositoryService.getConfig().retain(); // save configuration to persistence (file or persister) 
+            return Response.ok().build();
          }
-         return Response.status(HTTPStatus.CONFLICT).entity("Can't remove repository " + repositoryName).cacheControl(
-            NO_CACHE).build();
+         return Response.status(Status.CONFLICT).entity("Can't remove repository " + repositoryName)
+            .cacheControl(NO_CACHE).build();
       }
       catch (RepositoryException e)
       {
@@ -456,7 +455,7 @@ public class RestRepositoryService implements ResourceContainer
          {
             repository.removeWorkspace(workspaceName);
             repositoryService.getConfig().retain(); // save configuration to persistence (file or persister)
-            return Response.noContent().build();
+            return Response.ok().build();
          }
          return Response.status(Status.CONFLICT).entity(
             "Can't remove workspace " + workspaceName + " in repository " + repositoryName).cacheControl(NO_CACHE)

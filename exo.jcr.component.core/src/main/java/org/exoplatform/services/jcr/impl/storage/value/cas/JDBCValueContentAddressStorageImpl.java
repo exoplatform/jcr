@@ -18,17 +18,21 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.cas;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -96,18 +100,17 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
     * %s must be replaced with original table name before compile Pattern.
     */
    private static final String DB2_PK_CONSTRAINT_DETECT_PATTERN =
-      "(.*DB2 SQL error+.*SQLCODE: -803+.*SQLSTATE: 23505+.*%s.*)+?";
-   
+      "(.*DB2 SQL [Ee]rror+.*SQLCODE[:=].?-803+.*SQLSTATE[:=].?23505+.*%s.*)+?";
+
    /**
     * MYSQL_PK_CONSTRAINT_DETECT_PATTERN.
     */
-   private static final String H2_PK_CONSTRAINT_DETECT_PATTERN = 
-      "(.*JdbcSQLException.*violation.*PRIMARY_KEY_.*)";
-   
+   private static final String H2_PK_CONSTRAINT_DETECT_PATTERN = "(.*JdbcSQLException.*violation.*PRIMARY_KEY_.*)";
+
    /**
     * H2_PK_CONSTRAINT_DETECT.
     */
-   private static final Pattern H2_PK_CONSTRAINT_DETECT = 
+   private static final Pattern H2_PK_CONSTRAINT_DETECT =
       Pattern.compile(H2_PK_CONSTRAINT_DETECT_PATTERN, Pattern.CASE_INSENSITIVE);
 
    /**
@@ -153,10 +156,19 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       try
       {
          dataSource = (DataSource)new InitialContext().lookup(sn);
+
          Connection conn = null;
+         Statement st = null;
          try
          {
-            conn = dataSource.getConnection();
+            conn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+            {
+               public Connection run() throws Exception
+               {
+                  return dataSource.getConnection();
+               }
+            });
+
             DatabaseMetaData dbMetaData = conn.getMetaData();
 
             String dialect = props.getProperty(JDBC_DIALECT_PARAM);
@@ -211,20 +223,18 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                "SELECT DISTINCT C.PROPERTY_ID AS PROPERTY_ID FROM " + tableName + " C, " + tableName + " P "
                   + "WHERE C.CAS_ID=P.CAS_ID AND C.PROPERTY_ID<>P.PROPERTY_ID AND P.PROPERTY_ID=?";
 
-            // init database objects
-            ResultSet trs = dbMetaData.getTables(null, null, tableName, null);
             // check if table already exists
-            if (!trs.next())
+            if (!JDBCUtils.tableExists(tableName, conn))
             {
+               st = conn.createStatement();
+
                // create table
-               conn.createStatement().executeUpdate(
-                  "CREATE TABLE " + tableName
-                     + " (PROPERTY_ID VARCHAR(96) NOT NULL, ORDER_NUM INTEGER NOT NULL, CAS_ID VARCHAR(512) NOT NULL, "
-                     + "CONSTRAINT " + sqlConstraintPK + " PRIMARY KEY(PROPERTY_ID, ORDER_NUM))");
+               st.executeUpdate("CREATE TABLE " + tableName
+                  + " (PROPERTY_ID VARCHAR(96) NOT NULL, ORDER_NUM INTEGER NOT NULL, CAS_ID VARCHAR(512) NOT NULL, "
+                  + "CONSTRAINT " + sqlConstraintPK + " PRIMARY KEY(PROPERTY_ID, ORDER_NUM))");
 
                // create index on hash (CAS_ID)
-               conn.createStatement().executeUpdate(
-                  "CREATE INDEX " + sqlVCASIDX + " ON " + tableName + "(CAS_ID, PROPERTY_ID, ORDER_NUM)");
+               st.executeUpdate("CREATE INDEX " + sqlVCASIDX + " ON " + tableName + "(CAS_ID, PROPERTY_ID, ORDER_NUM)");
 
                if (LOG.isDebugEnabled())
                {
@@ -242,6 +252,18 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          }
          finally
          {
+            if (st != null)
+            {
+               try
+               {
+                  st.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the Statement: " + e.getMessage());
+               }
+            }
+
             if (conn != null)
             {
                try
@@ -324,7 +346,9 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       //
       String err = e.toString();
       if (DBConstants.DB_DIALECT_MYSQL.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect))
+         || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_MYSQL_MYISAM.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8.equalsIgnoreCase(dialect))
       {
          // for MySQL will search
          return MYSQL_PK_CONSTRAINT_DETECT.matcher(err).find();
@@ -338,7 +362,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       {
          return DB2_PK_CONSTRAINT_DETECT.matcher(err).find();
       }
-      else if (DBConstants.DB_DIALECT_H2.equalsIgnoreCase(dialect)) 
+      else if (DBConstants.DB_DIALECT_H2.equalsIgnoreCase(dialect))
       {
          return H2_PK_CONSTRAINT_DETECT.matcher(err).find();
       }
@@ -422,12 +446,14 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       try
       {
          Connection con = dataSource.getConnection();
+         ResultSet rs = null;
+         PreparedStatement ps = null;
          try
          {
-            PreparedStatement ps = con.prepareStatement(sqlSelectRecord);
+            ps = con.prepareStatement(sqlSelectRecord);
             ps.setString(1, propertyId);
             ps.setInt(2, orderNum);
-            ResultSet rs = ps.executeQuery();
+            rs = ps.executeQuery();
 
             if (rs.next())
             {
@@ -441,6 +467,30 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          }
          finally
          {
+            if (rs != null)
+            {
+               try
+               {
+                  rs.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the ResultSet: " + e.getMessage());
+               }
+            }
+
+            if (ps != null)
+            {
+               try
+               {
+                  ps.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the Statement: " + e.getMessage());
+               }
+            }
+
             con.close();
          }
       }
@@ -458,16 +508,17 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       try
       {
          Connection con = dataSource.getConnection();
+         PreparedStatement ps = null;
+         ResultSet rs = null;
          try
          {
             List<String> ids = new ArrayList<String>();
-            PreparedStatement ps;
 
             if (ownOnly)
             {
                ps = con.prepareStatement(sqlSelectOwnRecords);
                ps.setString(1, propertyId);
-               ResultSet rs = ps.executeQuery();
+               rs = ps.executeQuery();
                if (rs.next())
                {
                   do
@@ -486,10 +537,9 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             }
             else
             {
-               // TODO unused externaly feature (except tests)
                ps = con.prepareStatement(sqlSelectRecords);
                ps.setString(1, propertyId);
-               ResultSet rs = ps.executeQuery();
+               rs = ps.executeQuery();
                if (rs.next())
                {
                   do
@@ -507,6 +557,30 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          }
          finally
          {
+            if (rs != null)
+            {
+               try
+               {
+                  rs.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the ResultSet: " + e.getMessage());
+               }
+            }
+
+            if (ps != null)
+            {
+               try
+               {
+                  ps.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the Statement: " + e.getMessage());
+               }
+            }
+
             con.close();
          }
       }
@@ -524,14 +598,27 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       try
       {
          Connection con = dataSource.getConnection();
+         PreparedStatement ps = null;
          try
          {
-            PreparedStatement ps = con.prepareStatement(sqlSelectSharingProps);
+            ps = con.prepareStatement(sqlSelectSharingProps);
             ps.setString(1, propertyId);
             return ps.executeQuery().next();
          }
          finally
          {
+            if (ps != null)
+            {
+               try
+               {
+                  ps.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the Statement: " + e.getMessage());
+               }
+            }
+
             con.close();
          }
       }
@@ -540,5 +627,4 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          throw new VCASException("VCAS HAS SHARED IDs database error: " + e, e);
       }
    }
-
 }

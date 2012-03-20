@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 
 import java.io.IOException;
@@ -31,6 +32,11 @@ import java.io.IOException;
 
 public class SimpleFileValueStorage extends FileValueStorage
 {
+
+   public SimpleFileValueStorage(FileCleaner cleaner)
+   {
+      super(cleaner);
+   }
 
    /**
     * @see org.exoplatform.services.jcr.storage.value.ValueStoragePlugin#openIOChannel()

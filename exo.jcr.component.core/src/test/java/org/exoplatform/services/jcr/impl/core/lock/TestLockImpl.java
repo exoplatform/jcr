@@ -21,7 +21,10 @@ package org.exoplatform.services.jcr.impl.core.lock;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
@@ -107,6 +110,62 @@ public class TestLockImpl extends JcrImplBaseTest
       {
          fail(e.getLocalizedMessage());
       }
+   }
+
+   public void testRemoveLockProperties() throws Exception
+   {
+      Node node = session.getRootNode().addNode("testLock");
+      node.addMixin("mix:lockable");
+      session.save();
+
+      node.lock(false, false);
+
+      assertTrue(node.isLocked());
+
+      // remove lock properties from JCR tables
+      JDBCWorkspaceDataContainer container =
+         (JDBCWorkspaceDataContainer)repository.getWorkspaceContainer("ws").getComponent(
+            JDBCWorkspaceDataContainer.class);
+
+      System.setProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE, "true");
+      try
+      {
+         container.start();
+      }
+      finally
+      {
+         System.setProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE, "false");
+      }
+
+      // node still locked, because there is lock data in lock tables
+      assertTrue(node.isLocked());
+
+      try
+      {
+         node.unlock();
+         fail("Exception should be thrown");
+      }
+      catch (Exception e)
+      {
+      }
+
+      // remove locks from lock table
+      AbstractCacheableLockManager lockManager =
+         (AbstractCacheableLockManager)repository.getWorkspaceContainer("ws").getComponent(
+            AbstractCacheableLockManager.class);
+
+      System.setProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE, "true");
+      try
+      {
+         lockManager.start();
+      }
+      finally
+      {
+         System.setProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE, "false");
+      }
+
+      // node should not be locked after removing lock data from lock tables
+      assertFalse(node.isLocked());
    }
 
 }

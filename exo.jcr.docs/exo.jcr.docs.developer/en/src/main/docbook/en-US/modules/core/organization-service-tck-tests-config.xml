@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <?dbhtml filename="organization-service-tests-config.html"?>
+
+  <title>Organization Service TCK tests configuration</title>
+
+    <para>The process of launching the Organization Service TCK tests against
+    your Organization Service is quite easy. For instance you may add TCK
+    tests to your maven project and launch them during unit testing phase. To
+    do that you need to complete the next two steps:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Configure your maven pom.xml file</para>
+      </listitem>
+
+      <listitem>
+        <para>Configure standalone container and Organization Service</para>
+
+        <note>
+          <para>If you need more profound information you can find Organization
+          Service TCK test sources at <ulink
+          url="https://anonsvn.jboss.org/repos/exo-jcr/core/trunk/exo.core.component.organization.tests/">svn</ulink></para>
+        </note>
+      </listitem>
+    </itemizedlist>
+
+  <section>
+    <title>Maven pom.xml file configuration</title>
+
+    <para>Organization Service TCK tests are available as a separate maven
+    artifact, so the first thing you need to do is to add this artifact as a
+    dependency to your pom.xml file</para>
+
+    <programlisting language="xml">      &lt;dependency&gt;
+        &lt;groupId&gt;org.exoplatform.core&lt;/groupId&gt;
+        &lt;artifactId&gt;exo.core.component.organization.tests&lt;/artifactId&gt;
+        &lt;version&gt;2.4.3-GA&lt;/version&gt;
+        &lt;classifier&gt;sources&lt;/classifier&gt;
+        &lt;scope&gt;test&lt;/scope&gt;
+      &lt;/dependency&gt;</programlisting>
+
+    <para>You will also need to unpack tests as they are archieved within jar
+    file. For this purpose you may use <ulink
+    url="http://maven.apache.org/plugins/maven-dependency-plugin/">maven-dependency-plugin</ulink></para>
+
+    <programlisting language="xml">     &lt;plugin&gt;
+         &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+         &lt;artifactId&gt;maven-dependency-plugin&lt;/artifactId&gt;
+         &lt;executions&gt;
+            &lt;execution&gt;
+               &lt;id&gt;unpack&lt;/id&gt;
+               &lt;phase&gt;generate-test-sources&lt;/phase&gt;
+               &lt;goals&gt;
+                  &lt;goal&gt;unpack&lt;/goal&gt;
+               &lt;/goals&gt;
+               &lt;configuration&gt;
+                  &lt;artifactItems&gt;
+                     &lt;artifactItem&gt;
+                        &lt;groupId&gt;org.exoplatform.core&lt;/groupId&gt;
+                        &lt;artifactId&gt;exo.core.component.organization.tests&lt;/artifactId&gt;
+                        &lt;classifier&gt;sources&lt;/classifier&gt;
+                        &lt;type&gt;jar&lt;/type&gt;
+                        &lt;overWrite&gt;false&lt;/overWrite&gt;
+                     &lt;/artifactItem&gt;
+                  &lt;/artifactItems&gt;
+                  &lt;outputDirectory&gt;${project.build.directory}/org-service-tck-tests&lt;/outputDirectory&gt;
+               &lt;/configuration&gt;
+            &lt;/execution&gt;
+         &lt;/executions&gt;
+      &lt;/plugin&gt;</programlisting>
+
+    <para><note>
+        <para>Remember the value of <emphasis
+        role="bold">outputDirectory</emphasis> parameter as you will need it
+        later.</para>
+      </note>After you have unpacked the tests you need to add the tests
+    sources and resources, use <ulink
+    url="http://mojo.codehaus.org/build-helper-maven-plugin/">build-helper-maven-plugin</ulink></para>
+
+    <programlisting language="xml">      &lt;plugin&gt;
+         &lt;groupId&gt;org.codehaus.mojo&lt;/groupId&gt;
+         &lt;artifactId&gt;build-helper-maven-plugin&lt;/artifactId&gt;
+         &lt;version&gt;1.3&lt;/version&gt;
+         &lt;executions&gt;
+            &lt;execution&gt;
+               &lt;id&gt;add-test-resource&lt;/id&gt;
+               &lt;phase&gt;generate-test-sources&lt;/phase&gt;
+               &lt;goals&gt;
+                  &lt;goal&gt;add-test-resource&lt;/goal&gt;
+               &lt;/goals&gt;
+               &lt;configuration&gt;
+                  &lt;resources&gt;
+                     &lt;resource&gt;
+                        &lt;directory&gt;${project.build.directory}/org-service-tck-tests&lt;/directory&gt;
+                     &lt;/resource&gt;
+                  &lt;/resources&gt;
+               &lt;/configuration&gt;
+            &lt;/execution&gt; 
+            &lt;execution&gt;
+               &lt;id&gt;add-test-source&lt;/id&gt;
+               &lt;phase&gt;generate-test-sources&lt;/phase&gt;
+               &lt;goals&gt;
+                  &lt;goal&gt;add-test-source&lt;/goal&gt;
+               &lt;/goals&gt;
+               &lt;configuration&gt;
+                  &lt;sources&gt;
+                     &lt;source&gt;${project.build.directory}/org-service-tck-tests&lt;/source&gt;
+                  &lt;/sources&gt;
+               &lt;/configuration&gt;
+            &lt;/execution&gt;
+         &lt;/executions&gt;
+      &lt;/plugin&gt; </programlisting>
+
+    <para><note>
+        <para><emphasis role="bold">directory</emphasis> and <emphasis
+        role="bold">source</emphasis> parameter should point to the location
+        you've specified in <emphasis role="bold">outputDirectory</emphasis>
+        parameter just above.</para>
+      </note>You also need to include all TCK tests using <ulink
+    url="http://maven.apache.org/plugins/maven-surefire-plugin/">maven-surefire-plugin</ulink></para>
+
+    <programlisting language="xml">      &lt;plugin&gt;
+        &lt;groupId&gt;org.apache.maven.plugins&lt;/groupId&gt;
+        &lt;artifactId&gt;maven-surefire-plugin&lt;/artifactId&gt;
+        &lt;configuration&gt;
+          ...
+          &lt;includes&gt;
+              &lt;include&gt;org/exoplatform/services/tck/organization/Test*.java&lt;/include&gt;
+          &lt;/includes&gt;                   
+          ...
+        &lt;/configuration&gt;
+      &lt;/plugin&gt;</programlisting>
+
+    <para>As a result you should have TCK being launched during your next
+    <emphasis>maven clean install</emphasis>. Example of configured pom.xml
+    file you can find at <ulink
+    url="http://svn.exoplatform.org/projects/jcr-services/trunk/pom.xml">svn
+    server</ulink></para>
+  </section>
+
+  <section>
+    <title>Standalone container and Organization Service configuration</title>
+
+    <para>TCK tests use standalone container, so to launch TCK tests propertly
+    you will also need to add Organization Service as a standalone component.
+    For that purpose use configuration file, which is to be located in
+    'src/test/java/conf/standalone/test-configuration.xml' by default, but its
+    location can be changed by system property called
+    <emphasis>orgservice.test.configuration.file</emphasis>. Add your
+    Organization Service configuration with all needed components
+    there.</para>
+
+    <para>In addition you need to populate your Organization Service with
+    organization data (TCK tests are designed to use this data):</para>
+
+    <programlisting language="xml">      &lt;external-component-plugins&gt;
+        &lt;target-component&gt;org.exoplatform.services.organization.OrganizationService&lt;/target-component&gt;
+        &lt;component-plugin&gt;
+          &lt;name&gt;init.service.listener&lt;/name&gt;
+          &lt;set-method&gt;addListenerPlugin&lt;/set-method&gt;
+          &lt;type&gt;org.exoplatform.services.organization.OrganizationDatabaseInitializer&lt;/type&gt;
+          &lt;description&gt;this listener populate organization data for the first launch&lt;/description&gt;
+          &lt;init-params&gt;      
+            &lt;value-param&gt;
+              &lt;name&gt;checkDatabaseAlgorithm&lt;/name&gt;
+              &lt;description&gt;check database&lt;/description&gt;
+              &lt;value&gt;entry&lt;/value&gt;
+            &lt;/value-param&gt;      
+            &lt;value-param&gt;
+              &lt;name&gt;printInformation&lt;/name&gt;
+              &lt;description&gt;Print information init database&lt;/description&gt;
+              &lt;value&gt;false&lt;/value&gt;
+            &lt;/value-param&gt; 
+            &lt;object-param&gt;
+              &lt;name&gt;configuration&lt;/name&gt;
+              &lt;description&gt;description&lt;/description&gt;
+              &lt;object type="org.exoplatform.services.organization.OrganizationConfig"&gt;
+                &lt;field  name="membershipType"&gt;
+                  &lt;collection type="java.util.ArrayList"&gt;
+                  	&lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$MembershipType"&gt;
+                        &lt;field  name="type"&gt;&lt;string&gt;manager&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;manager membership type&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$MembershipType"&gt;
+                        &lt;field  name="type"&gt;&lt;string&gt;member&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;member membership type&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;                
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$MembershipType"&gt;
+                        &lt;field  name="type"&gt;&lt;string&gt;validator&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;validator membership type&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                  &lt;/collection&gt;
+                &lt;/field&gt;
+
+                &lt;field  name="group"&gt;
+                  &lt;collection type="java.util.ArrayList"&gt;             
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;platform&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /platform group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Platform&lt;/string&gt;&lt;/field&gt;                    
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;administrators&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/platform&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /platform/administrators group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Administrators&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;users&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/platform&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /platform/users group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Users&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;guests&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/platform&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /platform/guests group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Guests&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;organization&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the organization group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Organization&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;management&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/organization&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /organization/management group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Management&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;executive-board&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/organization/management&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /organization/management/executive-board group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Executive Board&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;human-resources&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/organization/management&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /organization/management/human-resource group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Human Resources&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;communication&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/organization&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /organization/communication group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Communication&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;marketing&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/organization/communication&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /organization/communication/marketing group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Marketing&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;press-and-media&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/organization/communication&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /organization/communication/press-and-media group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Press and Media&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;operations&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/organization&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /organization/operations and media group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Operations&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;sales&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/organization/operations&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /organization/operations/sales group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Sales&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;finances&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;/organization/operations&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /organization/operations/finances group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Finances&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;customers&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /customers group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Customers&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;                
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$Group"&gt;
+                        &lt;field  name="name"&gt;&lt;string&gt;partners&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="parentId"&gt;&lt;string&gt;&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="description"&gt;&lt;string&gt;the /partners group&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="label"&gt;&lt;string&gt;Partners&lt;/string&gt;&lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;                
+                  &lt;/collection&gt;
+                &lt;/field&gt;
+
+                &lt;field  name="user"&gt;
+                  &lt;collection type="java.util.ArrayList"&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$User"&gt;
+                        &lt;field  name="userName"&gt;&lt;string&gt;root&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="password"&gt;&lt;string&gt;exo&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="firstName"&gt;&lt;string&gt;Root&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="lastName"&gt;&lt;string&gt;Root&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="email"&gt;&lt;string&gt;root@localhost&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="groups"&gt;
+                          &lt;string&gt;
+                          	manager:/platform/administrators,member:/platform/users,
+                          	member:/organization/management/executive-board
+                          &lt;/string&gt;
+                        &lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$User"&gt;
+                        &lt;field  name="userName"&gt;&lt;string&gt;john&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="password"&gt;&lt;string&gt;exo&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="firstName"&gt;&lt;string&gt;John&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="lastName"&gt;&lt;string&gt;Anthony&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="email"&gt;&lt;string&gt;john@localhost&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="groups"&gt;
+                          &lt;string&gt;
+                          	member:/platform/administrators,member:/platform/users,
+                          	manager:/organization/management/executive-board
+                          &lt;/string&gt;
+                        &lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;                                                        
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$User"&gt;
+                        &lt;field  name="userName"&gt;&lt;string&gt;marry&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="password"&gt;&lt;string&gt;exo&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="firstName"&gt;&lt;string&gt;Marry&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="lastName"&gt;&lt;string&gt;Kelly&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="email"&gt;&lt;string&gt;marry@localhost&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="groups"&gt;
+                          &lt;string&gt;member:/platform/users&lt;/string&gt;
+                        &lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;
+                    &lt;value&gt;
+                      &lt;object type="org.exoplatform.services.organization.OrganizationConfig$User"&gt;
+                        &lt;field  name="userName"&gt;&lt;string&gt;demo&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="password"&gt;&lt;string&gt;exo&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="firstName"&gt;&lt;string&gt;Demo&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="lastName"&gt;&lt;string&gt;exo&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="email"&gt;&lt;string&gt;demo@localhost&lt;/string&gt;&lt;/field&gt;
+                        &lt;field  name="groups"&gt;
+                          &lt;string&gt;member:/platform/guests,member:/platform/users&lt;/string&gt;
+                        &lt;/field&gt;
+                      &lt;/object&gt;
+                    &lt;/value&gt;                       
+                  &lt;/collection&gt;
+                &lt;/field&gt;
+              &lt;/object&gt;
+            &lt;/object-param&gt;
+          &lt;/init-params&gt;
+        &lt;/component-plugin&gt;
+      &lt;/external-component-plugins&gt;
+
+      &lt;external-component-plugins&gt;
+        &lt;target-component&gt;org.exoplatform.services.organization.OrganizationService&lt;/target-component&gt;
+         &lt;component-plugin&gt;
+            &lt;name&gt;tester.membership.type.listener&lt;/name&gt;
+            &lt;set-method&gt;addListenerPlugin&lt;/set-method&gt;
+            &lt;type&gt;org.exoplatform.services.organization.MembershipTypeEventListener&lt;/type&gt;
+            &lt;description&gt;Membership type listerner for testing purpose&lt;/description&gt;
+         &lt;/component-plugin&gt;
+      &lt;/external-component-plugins&gt;
+</programlisting>
+
+    <para>Ultimately you will have a configuration file which determines
+    standalone container and consists of Organization Service configuration
+    and initialization data. You can find prepared test-configuration.xml file
+    at <ulink
+    url="http://svn.exoplatform.org/projects/jcr-services/trunk/src/test/java/conf/standalone/test-configuration.xml">svn</ulink></para>
+  </section>
+</chapter>

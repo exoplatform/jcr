@@ -18,16 +18,19 @@
  */
 package org.exoplatform.services.jcr.ext.common;
 
-import org.exoplatform.services.jcr.access.SystemIdentity;
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.access.DynamicIdentity;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.SessionLifecycleListener;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.security.MembershipEntry;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import javax.jcr.LoginException;
@@ -67,6 +70,8 @@ public class SessionProvider implements SessionLifecycleListener
    private String currentWorkspace;
 
    private boolean closed;
+   
+   private ConversationState conversationState;
 
    /**
     * Creates SessionProvider for certain identity.
@@ -78,6 +83,18 @@ public class SessionProvider implements SessionLifecycleListener
       this(false);
       if (userState.getAttribute(SESSION_PROVIDER) == null)
          userState.setAttribute(SESSION_PROVIDER, this);
+   }
+
+   /**
+    * Creates SessionProvider for a dynamic identity.
+    * 
+    * @param membershipEntries the expected memberships
+    */
+   private SessionProvider(HashSet<MembershipEntry> membershipEntries)
+   {
+      this(false);
+      Identity id = new Identity(DynamicIdentity.DYNAMIC, membershipEntries);
+      this.conversationState = new ConversationState(id);
    }
 
    /**
@@ -109,8 +126,27 @@ public class SessionProvider implements SessionLifecycleListener
     */
    public static SessionProvider createAnonimProvider()
    {
-      Identity id = new Identity(SystemIdentity.ANONIM, new HashSet<MembershipEntry>());
+      Identity id = new Identity(IdentityConstants.ANONIM, new HashSet<MembershipEntry>());
       return new SessionProvider(new ConversationState(id));
+   }
+
+   public static SessionProvider createProvider(List<AccessControlEntry> accessList)
+   {
+      if (accessList == null || accessList.isEmpty())
+      {
+         return createAnonimProvider();
+      }
+      else
+      {
+         HashSet<MembershipEntry> membershipEntries = new HashSet<MembershipEntry>();
+
+         for (AccessControlEntry ace : accessList)
+         {
+            membershipEntries.add(ace.getMembershipEntry());
+         }
+         return new SessionProvider(membershipEntries);
+      }
+
    }
 
    /**
@@ -134,7 +170,7 @@ public class SessionProvider implements SessionLifecycleListener
 
       if (workspaceName == null)
       {
-         throw new NullPointerException("Workspace Name is null");
+         throw new IllegalArgumentException("Workspace Name is null");
       }
 
       ExtendedSession session = cache.get(key(repository, workspaceName));
@@ -142,11 +178,20 @@ public class SessionProvider implements SessionLifecycleListener
 
       if (session == null)
       {
-
-         if (!isSystem)
+         if (conversationState != null)
+         {
+            session =
+                     (ExtendedSession) repository.getDynamicSession(workspaceName, conversationState.getIdentity()
+                              .getMemberships());
+         }
+         else if (!isSystem)
+         {
             session = (ExtendedSession)repository.login(workspaceName);
+         }
          else
+         {
             session = (ExtendedSession)repository.getSystemSession(workspaceName);
+         }
 
          session.registerLifecycleListener(this);
 

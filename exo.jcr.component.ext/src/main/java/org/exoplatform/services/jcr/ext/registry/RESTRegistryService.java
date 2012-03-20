@@ -18,12 +18,27 @@
  */
 package org.exoplatform.services.jcr.ext.registry;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.ext.registry.Registry.RegistryNode;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.ext.util.XlinkHref;
+import org.exoplatform.services.rest.resource.ResourceContainer;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.security.PrivilegedExceptionAction;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -39,30 +54,21 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
-
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
-import org.exoplatform.services.jcr.ext.common.SessionProvider;
-import org.exoplatform.services.jcr.ext.registry.Registry.RegistryNode;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-import org.exoplatform.services.rest.ext.util.XlinkHref;
-import org.exoplatform.services.rest.resource.ResourceContainer;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
 
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: $
  */
-@Path("/registry/{repository}/")
+@Path("/registry/")
 public class RESTRegistryService implements ResourceContainer
 {
 
    /**
     * Logger.
     */
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.RESTRegistryService");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.RESTRegistryService");
 
    /**
     * 
@@ -91,18 +97,24 @@ public class RESTRegistryService implements ResourceContainer
 
    @GET
    @Produces(MediaType.APPLICATION_XML)
-   public Response getRegistry(@PathParam("repository") String repository, @Context UriInfo uriInfo)
+   public Response getRegistry(@Context UriInfo uriInfo)
    {
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);
       try
       {
-         regService.getRepositoryService().setCurrentRepositoryName(repository);
          RegistryNode registryEntry = regService.getRegistry(sessionProvider);
          if (registryEntry != null)
          {
             Node registryNode = registryEntry.getNode();
             NodeIterator registryIterator = registryNode.getNodes();
-            Document entry = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+            Document entry = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Document>()
+            {
+               public Document run() throws Exception
+               {
+                  return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+               }
+            });
+
             String fullURI = uriInfo.getRequestUri().toString();
             XlinkHref xlinkHref = new XlinkHref(fullURI);
             Element root = entry.createElement(REGISTRY);
@@ -125,21 +137,20 @@ public class RESTRegistryService implements ResourceContainer
       }
       catch (Exception e)
       {
-         log.error("Get registry failed", e);
+         LOG.error("Get registry failed", e);
          throw new WebApplicationException(e);
       }
    }
 
    @GET
-   @Path("/{entryPath:.+}/")
+   @Path("/{entryPath:.+}")
    @Produces(MediaType.APPLICATION_XML)
-   public Response getEntry(@PathParam("repository") String repository, @PathParam("entryPath") String entryPath)
+   public Response getEntry(@PathParam("entryPath") String entryPath)
    {
 
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);
       try
       {
-         regService.getRepositoryService().setCurrentRepositoryName(repository);
          RegistryEntry entry;
          entry = regService.getEntry(sessionProvider, normalizePath(entryPath));
          return Response.ok(new DOMSource(entry.getDocument())).build();
@@ -148,71 +159,111 @@ public class RESTRegistryService implements ResourceContainer
       {
          return Response.status(Response.Status.NOT_FOUND).build();
       }
-      catch (Exception e)
+      catch (RepositoryException e)
       {
-         log.error("Get registry entry failed", e);
+         LOG.error("Get registry entry failed", e);
          throw new WebApplicationException(e);
       }
    }
 
    @POST
-   @Path("/{groupName:.+}/")
+   @Path("/{groupName:.+}")
    @Consumes(MediaType.APPLICATION_XML)
-   public Response createEntry(InputStream entryStream, @PathParam("repository") String repository,
-      @PathParam("groupName") String groupName, @Context UriInfo uriInfo)
+   public Response createEntry(InputStream entryStream, @PathParam("groupName") String groupName, @Context UriInfo uriInfo)
    {
 
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);
       try
       {
          RegistryEntry entry = RegistryEntry.parse(entryStream);
-         regService.getRepositoryService().setCurrentRepositoryName(repository);
          regService.createEntry(sessionProvider, normalizePath(groupName), entry);
          URI location = uriInfo.getRequestUriBuilder().path(entry.getName()).build();
          return Response.created(location).build();
       }
-      catch (Exception e)
+      catch (IllegalArgumentException e)
       {
-         log.error("Create registry entry failed", e);
+         LOG.error("Create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (IOException e)
+      {
+         LOG.error("Create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (SAXException e)
+      {
+         LOG.error("Create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (ParserConfigurationException e)
+      {
+         LOG.error("Create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (RepositoryException e)
+      {
+         LOG.error("Create registry entry failed", e);
          throw new WebApplicationException(e);
       }
    }
 
    @PUT
-   @Path("/{groupName:.+}/")
+   @Path("/{groupName:.+}")
    @Consumes(MediaType.APPLICATION_XML)
-   public Response recreateEntry(InputStream entryStream, @PathParam("repository") String repository,
-      @PathParam("groupName") String groupName, @Context UriInfo uriInfo, @QueryParam("createIfNotExist") boolean createIfNotExist)
+   public Response recreateEntry(InputStream entryStream, @PathParam("groupName") String groupName,
+            @Context UriInfo uriInfo, @QueryParam("createIfNotExist") boolean createIfNotExist)
    {
 
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);
       try
       {
-         regService.getRepositoryService().setCurrentRepositoryName(repository);
          RegistryEntry entry = RegistryEntry.parse(entryStream);
          if (createIfNotExist)
+         {
             regService.updateEntry(sessionProvider, normalizePath(groupName), entry);
+         }
          else
+         {
             regService.recreateEntry(sessionProvider, normalizePath(groupName), entry);
+         }
          URI location = uriInfo.getRequestUriBuilder().path(entry.getName()).build();
          return Response.created(location).build();
       }
-      catch (Exception e)
+      catch (IllegalArgumentException e)
       {
-         log.error("Re-create registry entry failed", e);
+         LOG.error("Re-create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (IOException e)
+      {
+         LOG.error("Re-create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (SAXException e)
+      {
+         LOG.error("Re-create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (ParserConfigurationException e)
+      {
+         LOG.error("Re-create registry entry failed", e);
+         throw new WebApplicationException(e);
+      }
+      catch (RepositoryException e)
+      {
+         LOG.error("Re-create registry entry failed", e);
          throw new WebApplicationException(e);
       }
    }
 
    @DELETE
-   @Path("/{entryPath:.+}/")
-   public Response removeEntry(@PathParam("repository") String repository, @PathParam("entryPath") String entryPath)
+   @Path("/{entryPath:.+}")
+   public Response removeEntry(@PathParam("entryPath") String entryPath)
    {
 
       SessionProvider sessionProvider = sessionProviderService.getSessionProvider(null);
       try
       {
-         regService.getRepositoryService().setCurrentRepositoryName(repository);
          regService.removeEntry(sessionProvider, normalizePath(entryPath));
          return null; // minds status 204 'No content'
       }
@@ -222,7 +273,7 @@ public class RESTRegistryService implements ResourceContainer
       }
       catch (Exception e)
       {
-         log.error("Remove registry entry failed", e);
+         LOG.error("Remove registry entry failed", e);
          throw new WebApplicationException(e);
       }
    }

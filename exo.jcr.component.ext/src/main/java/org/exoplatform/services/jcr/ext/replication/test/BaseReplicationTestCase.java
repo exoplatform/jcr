@@ -154,7 +154,6 @@ public abstract class BaseReplicationTestCase
    protected String getNormalizePath(String repoPath)
    {
       // return repoPath;
-      // TODO remove it ?
       return repoPath.replaceAll("[:][:]", "/");
    }
 

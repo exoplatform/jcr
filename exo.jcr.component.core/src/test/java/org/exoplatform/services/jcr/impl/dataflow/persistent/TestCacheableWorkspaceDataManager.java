@@ -16,19 +16,22 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import junit.framework.TestCase;
-
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
+import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.NullNodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
@@ -51,7 +54,7 @@ import javax.jcr.RepositoryException;
  *          nicolas.filotto@exoplatform.com
  * 29 mars 2010  
  */
-public class TestCacheableWorkspaceDataManager extends TestCase
+public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
 {
 
    private static final int READER = 100;
@@ -64,25 +67,17 @@ public class TestCacheableWorkspaceDataManager extends TestCase
 
    private MyWorkspaceStorageConnection con;
 
-   private CacheableWorkspaceDataManager cwdmEmpty;
-
-   private WorkspaceDataContainer wdcEmpty;
-
-   private MyWorkspaceStorageConnection conEmpty;
-
    @Override
-   protected void setUp() throws Exception
+   public void setUp() throws Exception
    {
       super.setUp();
       this.con = new MyWorkspaceStorageConnection();
       this.wdc = new MyWorkspaceDataContainer(con);
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
       this.cwdm =
-         new CacheableWorkspaceDataManager(wdc, new MyWorkspaceStorageCache(), new SystemDataContainerHolder(wdc));
-      this.conEmpty = new MyWorkspaceStorageConnection(true);
-      this.wdcEmpty = new MyWorkspaceDataContainer(conEmpty);
-      this.cwdmEmpty =
-         new CacheableWorkspaceDataManager(wdcEmpty, new MyWorkspaceStorageCache(), new SystemDataContainerHolder(
-            wdcEmpty));
+         new CacheableWorkspaceDataManager(wconf, wdc, new MyWorkspaceStorageCache(),
+            new SystemDataContainerHolder(wdc));
    }
 
    @Override
@@ -103,6 +98,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       {
          Thread thread = new Thread()
          {
+            @Override
             public void run()
             {
                try
@@ -150,17 +146,6 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       };
       multiThreadingTest(task);
       assertEquals(1, con.getItemDataByIdCalls.get());
-      assertEquals(0, conEmpty.getItemDataByIdCalls.get());
-      task = new MyTask()
-      {
-         public void execute() throws Exception
-         {
-            ItemData item = cwdmEmpty.getItemData("getItemData");
-            assertNull(item);
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(1, conEmpty.getItemDataByIdCalls.get());
    }
 
    public void testGetItemDataByNodeDataNQPathEntry() throws Exception
@@ -172,23 +157,12 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       {
          public void execute() throws Exception
          {
-            ItemData item = cwdm.getItemData(nodeData, new QPathEntry("http://www.foo.com", "foo", 0));
+            ItemData item = cwdm.getItemData(nodeData, new QPathEntry("http://www.foo.com", "foo", 0), ItemType.NODE);
             assertNotNull(item);
          }
       };
       multiThreadingTest(task);
       assertEquals(1, con.getItemDataByNodeDataNQPathEntryCalls.get());
-      assertEquals(0, conEmpty.getItemDataByNodeDataNQPathEntryCalls.get());
-      task = new MyTask()
-      {
-         public void execute() throws Exception
-         {
-            ItemData item = cwdmEmpty.getItemData(nodeData, new QPathEntry("http://www.foo.com", "foo", 0));
-            assertNull(item);
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(1, conEmpty.getItemDataByNodeDataNQPathEntryCalls.get());
    }
 
    public void testGetChildPropertiesData() throws Exception
@@ -217,29 +191,6 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       };
       multiThreadingTest(task);
       assertEquals(1 + READER * TIMES, con.getChildPropertiesDataCalls.get());
-      assertEquals(0, conEmpty.getChildPropertiesDataCalls.get());
-      task = new MyTask()
-      {
-         public void execute() throws Exception
-         {
-            List<PropertyData> properties = cwdmEmpty.getChildPropertiesData(nodeData);
-            assertNotNull(properties);
-            assertTrue(properties.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(1, conEmpty.getChildPropertiesDataCalls.get());
-      task = new MyTask()
-      {
-         public void execute() throws Exception
-         {
-            List<PropertyData> properties = cwdmEmpty.getChildPropertiesData(nodeData, true);
-            assertNotNull(properties);
-            assertTrue(properties.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(1 + READER * TIMES, conEmpty.getChildPropertiesDataCalls.get());
    }
 
    public void testListChildPropertiesData() throws Exception
@@ -268,29 +219,6 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       };
       multiThreadingTest(task);
       assertEquals(1 + READER * TIMES, con.listChildPropertiesDataCalls.get());
-      assertEquals(0, conEmpty.listChildPropertiesDataCalls.get());
-      task = new MyTask()
-      {
-         public void execute() throws Exception
-         {
-            List<PropertyData> properties = cwdmEmpty.listChildPropertiesData(nodeData);
-            assertNotNull(properties);
-            assertTrue(properties.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(1, conEmpty.listChildPropertiesDataCalls.get());
-      task = new MyTask()
-      {
-         public void execute() throws Exception
-         {
-            List<PropertyData> properties = cwdmEmpty.listChildPropertiesData(nodeData, true);
-            assertNotNull(properties);
-            assertTrue(properties.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(1 + READER * TIMES, conEmpty.listChildPropertiesDataCalls.get());
    }
 
    public void testGetChildNodes() throws Exception
@@ -319,29 +247,6 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       };
       multiThreadingTest(task);
       assertEquals(1 + READER * TIMES, con.getChildNodesDataCalls.get());
-      assertEquals(0, conEmpty.getChildNodesDataCalls.get());
-      task = new MyTask()
-      {
-         public void execute() throws Exception
-         {
-            List<NodeData> nodes = cwdmEmpty.getChildNodesData(nodeData);
-            assertNotNull(nodes);
-            assertTrue(nodes.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(1, conEmpty.getChildNodesDataCalls.get());
-      task = new MyTask()
-      {
-         public void execute() throws Exception
-         {
-            List<NodeData> nodes = cwdmEmpty.getChildNodesData(nodeData, true);
-            assertNotNull(nodes);
-            assertTrue(nodes.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(1 + READER * TIMES, conEmpty.getChildNodesDataCalls.get());
    }
 
    public void testGetChildNodesCount() throws Exception
@@ -370,29 +275,6 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       };
       multiThreadingTest(task);
       assertEquals(READER * TIMES, con.getChildNodesCountCalls.get());
-      assertEquals(0, conEmpty.getChildNodesCountCalls.get());
-      task = new MyTask()
-      {
-         public void execute() throws Exception
-         {
-            int result = cwdmEmpty.getChildNodesCount(nodeData);
-            assertEquals(0, result);
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(READER * TIMES, conEmpty.getChildNodesCountCalls.get());
-      // Add data to the cache
-      cwdmEmpty.getChildNodesData(nodeData);
-      task = new MyTask()
-      {
-         public void execute() throws Exception
-         {
-            int result = cwdmEmpty.getChildNodesCount(nodeData);
-            assertEquals(0, result);
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(READER * TIMES, conEmpty.getChildNodesCountCalls.get());
    }
 
    private static interface MyTask
@@ -434,9 +316,22 @@ public class TestCacheableWorkspaceDataManager extends TestCase
 
       private volatile ItemData itemData;
 
+      /**
+       * {@inheritDoc}
+       */
       public ItemData get(String parentIdentifier, QPathEntry name)
       {
-         return itemData;
+         return get(parentIdentifier, name, ItemType.UNKNOWN);
+      }
+
+      public ItemData get(String parentIdentifier, QPathEntry name, ItemType itemType)
+      {
+         if (itemData != null && itemType.isSuitableFor(itemData))
+         {
+            return itemData;
+         }
+
+         return null;
       }
 
       public ItemData get(String identifier)
@@ -462,6 +357,22 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       public boolean isEnabled()
       {
          return true;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public boolean isPatternSupported()
+      {
+         return false;
+      }
+      
+      /**
+       * {@inheritDoc}
+       */
+      public boolean isChildNodesByPageSupported()
+      {
+         return false;
       }
 
       public List<PropertyData> listChildProperties(NodeData parentData)
@@ -492,22 +403,65 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       {
       }
 
+      public int getChildNodesCount(NodeData parent)
+      {
+         return childNodes != null ? childNodes.size() : -1;
+      }
+
+      public List<PropertyData> getReferencedProperties(String identifier)
+      {
+         return null;
+      }
+
+      public void addReferencedProperties(String identifier, List<PropertyData> refProperties)
+      {
+      }
+
+      public void addChildProperties(NodeData parent, QPathEntryFilter pattern, List<PropertyData> childProperties)
+      {
+      }
+
+      public List<PropertyData> getChildProperties(NodeData parent, QPathEntryFilter pattern)
+      {
+         return null;
+      }
+
+      public void addChildNodes(NodeData parent, QPathEntryFilter pattern, List<NodeData> childNodes)
+      {
+      }
+
+      public List<NodeData> getChildNodes(NodeData parent, QPathEntryFilter pattern)
+      {
+         return null;
+      }
+
+      public List<NodeData> getChildNodesByPage(NodeData parent, int fromOrderNum)
+      {
+         return null;
+      }
+
+      public void addChildNodesByPage(NodeData parent, List<NodeData> childs, int fromOrderNum)
+      {
+      }
+
+      /**
+       * @see org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache#addListener(org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener)
+       */
+      public void addListener(WorkspaceStorageCacheListener listener) throws UnsupportedOperationException
+      {
+      }
+
+      /**
+       * @see org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache#removeListener(org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener)
+       */
+      public void removeListener(WorkspaceStorageCacheListener listener) throws UnsupportedOperationException
+      {
+      }
+
    }
 
-   public static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection
+   private static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection
    {
-
-      public final boolean emptyResult;
-
-      public MyWorkspaceStorageConnection()
-      {
-         this(false);
-      }
-
-      public MyWorkspaceStorageConnection(boolean emptyResult)
-      {
-         this.emptyResult = emptyResult;
-      }
 
       public void add(NodeData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
@@ -527,6 +481,10 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       {
       }
 
+      public void prepare() throws IllegalStateException, RepositoryException
+      {
+      }
+
       public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
       {
@@ -542,7 +500,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       public int getChildNodesCount(NodeData parent) throws RepositoryException
       {
          getChildNodesCountCalls.incrementAndGet();
-         return emptyResult ? 0 : 1;
+         return 1;
       }
 
       public AtomicInteger getChildNodesDataCalls = new AtomicInteger();
@@ -550,8 +508,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException
       {
          getChildNodesDataCalls.incrementAndGet();
-         return emptyResult ? new ArrayList<NodeData>() : Arrays.asList((NodeData)new PersistedNodeData(
-            "getChildNodesData", null, null, 0, 1, null, null, null));
+         return Arrays.asList((NodeData)new PersistedNodeData("getChildNodesData", null, null, 0, 1, null, null, null));
       }
 
       public AtomicInteger getChildPropertiesDataCalls = new AtomicInteger();
@@ -560,18 +517,43 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          IllegalStateException
       {
          getChildPropertiesDataCalls.incrementAndGet();
-         return emptyResult ? new ArrayList<PropertyData>() : Arrays.asList((PropertyData)new PersistedPropertyData(
-            "getChildPropertiesData", null, null, 0, PropertyType.STRING, false, Arrays
-               .asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
+         return Arrays
+            .asList((PropertyData)new PersistedPropertyData("getChildPropertiesData", null, null, 0,
+               PropertyType.STRING, false,
+               Arrays.asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
+      }
+
+      public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern)
+         throws RepositoryException, IllegalStateException
+      {
+         getChildPropertiesDataCalls.incrementAndGet();
+         return Arrays
+            .asList((PropertyData)new PersistedPropertyData("getChildPropertiesDataByPattern", null, null, 0,
+               PropertyType.STRING, false, Arrays
+                  .asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
       }
 
       public AtomicInteger getItemDataByNodeDataNQPathEntryCalls = new AtomicInteger();
 
+      /**
+       * {@inheritDoc}
+       */
       public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,
          IllegalStateException
       {
+         return getItemData(parentData, name, ItemType.UNKNOWN);
+      }
+
+      public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+         IllegalStateException
+      {
          getItemDataByNodeDataNQPathEntryCalls.incrementAndGet();
-         return emptyResult ? null : new PersistedNodeData("getItemData", null, null, 0, 1, null, null, null);
+         if (itemType != ItemType.PROPERTY)
+         {
+            return new PersistedNodeData("getItemData", null, null, 0, 1, null, null, null);
+         }
+
+         return null;
       }
 
       public AtomicInteger getItemDataByIdCalls = new AtomicInteger();
@@ -579,8 +561,7 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       public ItemData getItemData(String identifier) throws RepositoryException, IllegalStateException
       {
          getItemDataByIdCalls.incrementAndGet();
-         return emptyResult && identifier.equals("getItemData") ? null : new PersistedNodeData("getItemData", null,
-            null, 0, 1, null, null, null);
+         return new PersistedNodeData("getItemData", null, null, 0, 1, null, null, null);
       }
 
       public AtomicInteger getReferencesDataCalls = new AtomicInteger();
@@ -605,9 +586,10 @@ public class TestCacheableWorkspaceDataManager extends TestCase
          IllegalStateException
       {
          listChildPropertiesDataCalls.incrementAndGet();
-         return emptyResult ? new ArrayList<PropertyData>() : Arrays.asList((PropertyData)new PersistedPropertyData(
-            "listChildPropertiesData", null, null, 0, PropertyType.STRING, false, Arrays
-               .asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
+         return Arrays
+            .asList((PropertyData)new PersistedPropertyData("listChildPropertiesData", null, null, 0,
+               PropertyType.STRING, false,
+               Arrays.asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
       }
 
       public void rename(NodeData data) throws RepositoryException, UnsupportedOperationException,
@@ -627,6 +609,32 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
       {
+      }
+
+      public int getLastOrderNumber(NodeData parent) throws RepositoryException
+      {
+         return -1;
+      }
+
+      public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+         IllegalStateException
+      {
+         return null;
+      }
+
+      public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
+         throws RepositoryException
+      {
+         return false;
+      }
+      
+      /**
+       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getACLHolders()
+       */
+      public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+         UnsupportedOperationException
+      {
+         return null;
       }
 
    };
@@ -679,6 +687,11 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       public String getStorageVersion()
       {
          return "0";
+      }
+
+      public String getUniqueName()
+      {
+         return "MyWorkspaceDataContainer";
       }
 
    };

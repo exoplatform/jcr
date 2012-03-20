@@ -18,15 +18,18 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl.fs;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.impl.AbstractIncrementalBackupJob;
+import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
 import org.exoplatform.services.jcr.ext.backup.impl.PendingChangesLog;
 import org.exoplatform.services.jcr.ext.replication.FixupStream;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -48,7 +51,7 @@ import java.util.List;
 public class IncrementalBackupJob extends AbstractIncrementalBackupJob
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.IncrementalBackupJob");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.IncrementalBackupJob");
 
    private ObjectOutputStream oosFileData;
 
@@ -56,7 +59,6 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
 
    public IncrementalBackupJob()
    {
-      fileCleaner = new FileCleaner(10000);
    }
 
    public void init(ManageableRepository repository, String workspaceName, BackupConfig config, Calendar timeStamp)
@@ -65,6 +67,9 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
       this.workspaceName = workspaceName;
       this.config = config;
       this.timeStamp = timeStamp;
+      this.fileCleaner =
+         ((FileCleanerHolder)repository.getWorkspaceContainer(workspaceName).getComponent(FileCleanerHolder.class))
+            .getFileCleaner();
 
       try
       {
@@ -72,12 +77,12 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
       }
       catch (FileNotFoundException e)
       {
-         log.error("Incremental backup initialization failed ", e);
+         LOG.error("Incremental backup initialization failed ", e);
          notifyError("Incremental backup initialization failed ", e);
       }
       catch (IOException e)
       {
-         log.error("Incremental backup initialization failed ", e);
+         LOG.error("Incremental backup initialization failed ", e);
          notifyError("Incremental backup initialization failed ", e);
       }
    }
@@ -85,7 +90,7 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
    public void stop()
    {
       state = FINISHED;
-      log.info("Stop requested " + getStorageURL().getPath());
+      LOG.info("Stop requested " + getStorageURL().getPath());
 
       notifyListeners();
    }
@@ -94,12 +99,13 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
    protected URL createStorage() throws FileNotFoundException, IOException
    {
       FileNameProducer fnp =
-         new FileNameProducer(config.getRepository(), config.getWorkspace(), config.getBackupDir().getAbsolutePath(),
-            super.timeStamp, false);
+         new FileNameProducer(config.getRepository(), config.getWorkspace(),
+            PrivilegedFileHelper.getAbsolutePath(config.getBackupDir()), super.timeStamp, false);
 
       File backupFileData = fnp.getNextFile();
 
-      oosFileData = new ObjectOutputStream(new FileOutputStream(backupFileData));
+      oosFileData = new ObjectOutputStream(PrivilegedFileHelper.fileOutputStream(backupFileData));
+
       return new URL("file:" + backupFileData.getAbsoluteFile());
    }
 
@@ -117,8 +123,8 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
 
          long total = System.currentTimeMillis() - start;
 
-         if (log.isDebugEnabled())
-            log.debug("Time : " + total + " ms" + "    Itemstates count : " + changesLog.getAllStates().size());
+         if (LOG.isDebugEnabled())
+            LOG.debug("Time : " + total + " ms" + "    Itemstates count : " + changesLog.getAllStates().size());
       }
    }
 
@@ -128,60 +134,60 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
 
       PendingChangesLog pendingChangesLog = new PendingChangesLog(changesLog, fileCleaner);
 
-      if (pendingChangesLog.getConteinerType() == PendingChangesLog.Type.CHANGESLOG_WITH_STREAM)
+      synchronized (out)
       {
-
-         out.writeInt(PendingChangesLog.Type.CHANGESLOG_WITH_STREAM);
-         out.writeObject(changesLog);
-
-         // Write FixupStream
-         List<FixupStream> listfs = pendingChangesLog.getFixupStreams();
-         out.writeInt(listfs.size());
-
-         for (int i = 0; i < listfs.size(); i++)
+         if (pendingChangesLog.getConteinerType() == PendingChangesLog.Type.CHANGESLOG_WITH_STREAM)
          {
-            listfs.get(i).writeExternal(out);
+
+            out.writeInt(PendingChangesLog.Type.CHANGESLOG_WITH_STREAM);
+            out.writeObject(changesLog);
+
+            // Write FixupStream
+            List<FixupStream> listfs = pendingChangesLog.getFixupStreams();
+            out.writeInt(listfs.size());
+
+            for (int i = 0; i < listfs.size(); i++)
+            {
+               listfs.get(i).writeExternal(out);
+            }
+
+            // write stream data
+            List<InputStream> listInputList = pendingChangesLog.getInputStreams();
+
+            // write file count
+            out.writeInt(listInputList.size());
+
+            for (int i = 0; i < listInputList.size(); i++)
+            {
+               File tempFile = getAsFile(listInputList.get(i));
+               FileInputStream fis = PrivilegedFileHelper.fileInputStream(tempFile);
+
+               // write file size
+               out.writeLong(PrivilegedFileHelper.length(tempFile));
+
+               // write file content
+               writeContent(fis, out);
+
+               fis.close();
+               fileCleaner.addFile(tempFile);
+            }
+         }
+         else
+         {
+            out.writeInt(PendingChangesLog.Type.CHANGESLOG_WITHOUT_STREAM);
+            out.writeObject(changesLog);
          }
 
-         // write stream data
-         List<InputStream> listInputList = pendingChangesLog.getInputStreams();
-
-         // write file count
-         out.writeInt(listInputList.size());
-
-         for (int i = 0; i < listInputList.size(); i++)
-         {
-            File tempFile = getAsFile(listInputList.get(i));
-            FileInputStream fis = new FileInputStream(tempFile);
-
-            // write file size
-            out.writeLong(tempFile.length());
-
-            // write file content
-            writeContent(fis, out);
-
-            fis.close();
-            fileCleaner.addFile(tempFile);
-         }
-
-         // restore changes log worlds
-
+         out.flush();
       }
-      else
-      {
-         out.writeInt(PendingChangesLog.Type.CHANGESLOG_WITHOUT_STREAM);
-         out.writeObject(changesLog);
-      }
-
-      out.flush();
    }
 
    private File getAsFile(InputStream is) throws IOException
    {
       byte[] buf = new byte[1024 * 20];
 
-      File tempFile = File.createTempFile("" + System.currentTimeMillis(), "" + System.nanoTime());
-      FileOutputStream fos = new FileOutputStream(tempFile);
+      File tempFile = PrivilegedFileHelper.createTempFile("" + System.currentTimeMillis(), "" + System.nanoTime());
+      FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
       int len;
 
       while ((len = is.read(buf)) > 0)
@@ -229,7 +235,7 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
     */
    public boolean isTXAware()
    {
-      return true;
+      return false;
    }
 
 }

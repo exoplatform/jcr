@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.log.ExoLogger;
@@ -55,11 +56,11 @@ public class NodeDefinitionImpl extends ItemDefinitionImpl implements ExtendedNo
     * @param valueFactory
     */
    public NodeDefinitionImpl(NodeDefinitionData nodeDefinitionData, NodeTypeDataManager nodeTypeDataManager,
-      ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory)
+      ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory,
+      ItemDataConsumer dataManager)
    {
-      super(nodeDefinitionData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+      super(nodeDefinitionData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory, dataManager);
       this.nodeDefinitionData = nodeDefinitionData;
-
    }
 
    /**
@@ -85,7 +86,7 @@ public class NodeDefinitionImpl extends ItemDefinitionImpl implements ExtendedNo
       if (nodeDefinitionData.getDefaultPrimaryType() == null)
          return null;
       return new NodeTypeImpl(nodeTypeDataManager.getNodeType(nodeDefinitionData.getDefaultPrimaryType()),
-         nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+         nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory, dataManager);
    }
 
    /**
@@ -162,7 +163,9 @@ public class NodeDefinitionImpl extends ItemDefinitionImpl implements ExtendedNo
             LOG.error("NODE TYPE NOT FOUND " + requiredPrimaryTypes[i].getAsString());
          }
          else
-            result[i] = new NodeTypeImpl(ntData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+            result[i] =
+               new NodeTypeImpl(ntData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory,
+                  dataManager);
       }
       return result;
    }

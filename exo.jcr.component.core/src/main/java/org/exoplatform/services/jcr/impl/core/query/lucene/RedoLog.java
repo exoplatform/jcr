@@ -123,9 +123,9 @@ class RedoLog
     *         redo log.
     * @throws IOException if an error occurs while reading from the redo log.
     */
-   List getActions() throws IOException
+   List<MultiIndex.Action> getActions() throws IOException
    {
-      final List actions = new ArrayList();
+      final List<MultiIndex.Action> actions = new ArrayList<MultiIndex.Action>();
       read(new ActionCollector()
       {
          public void collect(MultiIndex.Action a)
@@ -143,7 +143,7 @@ class RedoLog
     * @throws IOException if the node cannot be written to the redo
     * log.
     */
-   void append(MultiIndex.Action action) throws IOException
+   void append(final MultiIndex.Action action) throws IOException
    {
       initOut();
       out.write(action.toString() + "\n");
@@ -166,14 +166,22 @@ class RedoLog
     * Clears the redo log.
     * @throws IOException if the redo log cannot be cleared.
     */
-   void clear() throws IOException
+   synchronized void clear() throws IOException
    {
       if (out != null)
       {
          out.close();
          out = null;
       }
-      dir.deleteFile(REDO_LOG);
+      try
+      {
+         dir.deleteFile(REDO_LOG);
+      }
+      catch (IOException e)
+      {
+         log.error(e.getLocalizedMessage(), e);
+         throw e;
+      }
       entryCount = 0;
    }
 
@@ -182,7 +190,7 @@ class RedoLog
     * @throws IOException if an error occurs while creating the
     * output stream.
     */
-   private void initOut() throws IOException
+   private synchronized void initOut() throws IOException
    {
       if (out == null)
       {
@@ -198,7 +206,7 @@ class RedoLog
     * @throws IOException if an error occurs while reading from the
     * log file.
     */
-   private void read(ActionCollector collector) throws IOException
+   private void read(final ActionCollector collector) throws IOException
    {
       if (!dir.fileExists(REDO_LOG))
       {

@@ -41,6 +41,6 @@
     </web>
   </module>
   <module>
-    <connector>localadapter.rar</connector>
+    <connector>exo.jcr.connectors.jca.rar</connector>
   </module>
 </application>

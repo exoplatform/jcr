@@ -20,8 +20,10 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -50,86 +52,26 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 {
 
    protected static final String FIND_NODES_BY_PARENTID_CQ_QUERY =
-      "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA"
-         + " from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
+      "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
          + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and"
-         + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+         + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+         + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+         + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+         + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+         + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
          + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
 
    protected static final String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
       "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED, V.ORDER_NUM,"
          + " V.DATA, V.STORAGE_DESC from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)"
          + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? order by I.NAME";
+   
+   protected static final String FIND_ITEM_QPATH_BY_ID_CQ_QUERY =
+      "select I.ID, I.PARENT_ID, I.NAME, I.I_INDEX"
+         + " from JCR_SITEM I, (SELECT ID, PARENT_ID from JCR_SITEM where ID=?) J"
+         + " where I.ID = J.ID or I.ID = J.PARENT_ID";
 
-   protected PreparedStatement findItemById;
-
-   protected PreparedStatement findItemByPath;
-
-   protected PreparedStatement findItemByName;
-
-   protected PreparedStatement findChildPropertyByPath;
-
-   protected PreparedStatement findPropertyByName;
-
-   protected PreparedStatement findDescendantNodes;
-
-   protected PreparedStatement findDescendantProperties;
-
-   protected PreparedStatement findReferences;
-
-   protected PreparedStatement findValuesByPropertyId;
-
-   protected PreparedStatement findValuesStorageDescriptorsByPropertyId;
-
-   protected PreparedStatement findValuesDataByPropertyId;
-
-   protected PreparedStatement findValueByPropertyIdOrderNumber;
-
-   protected PreparedStatement findNodesByParentId;
-
-   protected PreparedStatement findNodesByParentIdCQ;
-
-   protected PreparedStatement findNodesCountByParentId;
-
-   protected PreparedStatement findPropertiesByParentId;
-
-   protected PreparedStatement findPropertiesByParentIdCQ;
-
-   protected PreparedStatement findNodeMainPropertiesByParentIdentifierCQ;
-
-   protected PreparedStatement findItemQPathByIdentifierCQ;
-
-   protected PreparedStatement insertItem;
-
-   protected PreparedStatement insertNode;
-
-   protected PreparedStatement insertProperty;
-
-   protected PreparedStatement insertReference;
-
-   protected PreparedStatement insertValue;
-
-   protected PreparedStatement updateItem;
-
-   protected PreparedStatement updateItemPath;
-
-   protected PreparedStatement updateNode;
-
-   protected PreparedStatement updateProperty;
-
-   protected PreparedStatement updateValue;
-
-   protected PreparedStatement deleteItem;
-
-   protected PreparedStatement deleteNode;
-
-   protected PreparedStatement deleteProperty;
-
-   protected PreparedStatement deleteReference;
-
-   protected PreparedStatement deleteValue;
-
-   protected PreparedStatement renameNode;
+   protected static final String PATTERN_ESCAPE_STRING = "\\"; //valid for HSQL, Sybase, DB2, MSSQL, ORACLE
 
    /**
     * Singledatabase JDBC Connection constructor.
@@ -155,6 +97,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getInternalId(final String identifier)
    {
       return containerName + identifier;
@@ -163,6 +106,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getIdentifier(final String internalId)
    {
 
@@ -197,9 +141,9 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
             + " where CONTAINER_NAME=? and PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";
 
       FIND_PROPERTY_BY_NAME =
-         "select V.DATA"
-            + " from JCR_SITEM I, JCR_SVALUE V"
-            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
+         "select V.DATA from JCR_SITEM I, JCR_SVALUE V"
+            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? and I.NAME=? and"
+            + " I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
 
       FIND_REFERENCES =
          "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME" + " from JCR_SREF R, JCR_SITEM P"
@@ -210,23 +154,23 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID = "select distinct STORAGE_DESC from JCR_SVALUE where PROPERTY_ID=?";
 
-      FIND_VALUE_BY_PROPERTYID_OREDERNUMB =
-         "select DATA, STORAGE_DESC from JCR_SVALUE where PROPERTY_ID=? and ORDER_NUM=?";
-
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?" + " order by N_ORDER_NUM";
 
       FIND_NODES_BY_PARENTID_CQ = FIND_NODES_BY_PARENTID_CQ_QUERY;
 
       FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
-         "select I.NAME, V.DATA, V.ORDER_NUM"
-            + " from JCR_SITEM I, JCR_SVALUE V"
-            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? and (I.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or I.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and I.ID=V.PROPERTY_ID";
+         "select I.NAME, V.DATA, V.ORDER_NUM from JCR_SITEM I, JCR_SVALUE V"
+            + " where I.I_CLASS=2 and I.CONTAINER_NAME=? and I.PARENT_ID=? and"
+            + " (I.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " I.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions') and I.ID=V.PROPERTY_ID";
 
-      FIND_ITEM_QPATH_BY_ID_CQ =
-         "select I.ID, I.PARENT_ID, I.NAME, I.I_INDEX"
-            + " from JCR_SITEM I, (SELECT ID, PARENT_ID from JCR_SITEM where ID=?) J"
-            + " where I.ID = J.ID or I.ID = J.PARENT_ID";
+      FIND_ITEM_QPATH_BY_ID_CQ = FIND_ITEM_QPATH_BY_ID_CQ_QUERY;
+
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
+         "select count(*), max(N_ORDER_NUM) from JCR_SITEM where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
 
       FIND_NODES_COUNT_BY_PARENTID =
          "select count(ID) from JCR_SITEM" + " where I_CLASS=1 and CONTAINER_NAME=? and PARENT_ID=?";
@@ -235,13 +179,23 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
          "select * from JCR_SITEM" + " where I_CLASS=2 and CONTAINER_NAME=? and PARENT_ID=?" + " order by NAME";
 
       FIND_PROPERTIES_BY_PARENTID_CQ = FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
+      FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
+         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE,"
+            + " I.P_MULTIVALUED, V.ORDER_NUM, V.DATA, V.STORAGE_DESC"
+            + " from JCR_SITEM I LEFT OUTER JOIN JCR_SVALUE V ON (V.PROPERTY_ID=I.ID)";
+
+      FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V";
+
+      FIND_MAX_PROPERTY_VERSIONS =
+         "select max(VERSION) FROM JCR_SITEM WHERE PARENT_ID=? and CONTAINER_NAME=? and NAME=? and I_INDEX=? and I_CLASS=2";
 
       INSERT_NODE =
          "insert into JCR_SITEM(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,?,"
             + I_CLASS_NODE + ",?,?)";
       INSERT_PROPERTY =
-         "insert into JCR_SITEM(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,?,"
-            + I_CLASS_PROPERTY + ",?,?,?)";
+         "insert into JCR_SITEM(ID, PARENT_ID, NAME, CONTAINER_NAME, VERSION, I_CLASS, I_INDEX, P_TYPE, P_MULTIVALUED)"
+            + " VALUES(?,?,?,?,?," + I_CLASS_PROPERTY + ",?,?,?)";
 
       INSERT_VALUE = "insert into JCR_SVALUE(DATA, ORDER_NUM, PROPERTY_ID, STORAGE_DESC) VALUES(?,?,?,?)";
       INSERT_REF = "insert into JCR_SREF(NODE_ID, PROPERTY_ID, ORDER_NUM) VALUES(?,?,?)";
@@ -250,11 +204,37 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       UPDATE_NODE = "update JCR_SITEM set VERSION=?, I_INDEX=?, N_ORDER_NUM=? where ID=?";
       UPDATE_PROPERTY = "update JCR_SITEM set VERSION=?, P_TYPE=? where ID=?";
-      //UPDATE_VALUE = "update JCR_SVALUE set DATA=?, STORAGE_DESC=? where PROPERTY_ID=?, ORDER_NUM=?";
 
       DELETE_ITEM = "delete from JCR_SITEM where ID=?";
       DELETE_VALUE = "delete from JCR_SVALUE where PROPERTY_ID=?";
       DELETE_REF = "delete from JCR_SREF where PROPERTY_ID=?";
+
+      FIND_NODES_AND_PROPERTIES =
+         "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"
+            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I"
+            + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
+            + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
+
+      FIND_PROPERTY_BY_ID =
+         "select I.P_TYPE, V.STORAGE_DESC from JCR_SITEM I, JCR_SVALUE V where I.ID = ? and V.PROPERTY_ID = I.ID";
+      DELETE_VALUE_BY_ORDER_NUM = "delete from JCR_SVALUE where PROPERTY_ID=? and ORDER_NUM >= ?";
+      UPDATE_VALUE = "update JCR_SVALUE set DATA=?, STORAGE_DESC=? where PROPERTY_ID=? and ORDER_NUM=?";
+
+      FIND_NODES_BY_PARENTID_LAZILY_CQ =
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
+            + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and I.N_ORDER_NUM >= ? and "
+            + " I.N_ORDER_NUM <= ? and P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      
+      FIND_ACL_HOLDERS = "select I.PARENT_ID, I.P_TYPE"
+            + " from JCR_SITEM I where I.I_CLASS=2 and I.CONTAINER_NAME=?"
+            + " and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
+            + " or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')";
    }
 
    /**
@@ -373,6 +353,22 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       findNodesByParentId.setString(1, containerName);
       findNodesByParentId.setString(2, parentCid);
       return findNodesByParentId.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
+   {
+      if (findLastOrderNumberByParentId == null)
+         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
+      else
+         findLastOrderNumberByParentId.clearParameters();
+
+      findLastOrderNumberByParentId.setString(1, containerName);
+      findLastOrderNumberByParentId.setString(2, parentIdentifier);
+      return findLastOrderNumberByParentId.executeQuery();
    }
 
    /**
@@ -508,15 +504,35 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       return updateProperty.executeUpdate();
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
+      throws SQLException
+   {
+      if (findNodesByParentIdLazilyCQ == null)
+         findNodesByParentIdLazilyCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_LAZILY_CQ);
+      else
+         findNodesByParentIdLazilyCQ.clearParameters();
+
+      findNodesByParentIdLazilyCQ.setString(1, containerName);
+      findNodesByParentIdLazilyCQ.setString(2, parentCid);
+      findNodesByParentIdLazilyCQ.setInt(3, fromOrderNum);
+      findNodesByParentIdLazilyCQ.setInt(4, toOrderNum);
+      findNodesByParentIdLazilyCQ.setString(5, containerName);
+
+      return findNodesByParentIdLazilyCQ.executeQuery();
+   }
+
    // -------- values processing ------------
 
    /**
     * {@inheritDoc}
     */
+   @Override
    protected int addValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc)
       throws SQLException
    {
-
       if (insertValue == null)
          insertValue = dbConnection.prepareStatement(INSERT_VALUE);
       else
@@ -542,6 +558,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected int deleteValueData(String cid) throws SQLException
    {
       if (deleteValue == null)
@@ -556,6 +573,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected ResultSet findValuesByPropertyId(String cid) throws SQLException
    {
       if (findValuesByPropertyId == null)
@@ -581,25 +599,6 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       findValuesStorageDescriptorsByPropertyId.setString(1, cid);
       return findValuesStorageDescriptorsByPropertyId.executeQuery();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException
-   {
-      if (findValueByPropertyIdOrderNumber == null)
-      {
-         findValueByPropertyIdOrderNumber = dbConnection.prepareStatement(FIND_VALUE_BY_PROPERTYID_OREDERNUMB);
-      }
-      else
-      {
-         findValueByPropertyIdOrderNumber.clearParameters();
-      }
-
-      findValueByPropertyIdOrderNumber.setString(1, cid);
-      findValueByPropertyIdOrderNumber.setInt(2, orderNumb);
-      return findValueByPropertyIdOrderNumber.executeQuery();
    }
 
    /**
@@ -644,6 +643,48 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
+   protected ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier, List<QPathEntryFilter> pattern)
+      throws SQLException
+   {
+      if (pattern.isEmpty())
+      {
+         throw new SQLException("Pattern list is empty.");
+      }
+      else
+      {
+         if (findNodesByParentIdAndComplexPatternCQ == null)
+         {
+            findNodesByParentIdAndComplexPatternCQ = dbConnection.createStatement();
+         }
+         //create query from list
+         StringBuilder query = new StringBuilder(FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE);
+         query.append(" where I.I_CLASS=1 and I.CONTAINER_NAME='");
+         query.append(containerName);
+         query.append("' and I.PARENT_ID='");
+         query.append(parentIdentifier);
+         query.append("' and ( ");
+         appendPattern(query, pattern.get(0).getQPathEntry(), true);
+         for (int i = 1; i < pattern.size(); i++)
+         {
+            query.append(" or ");
+            appendPattern(query, pattern.get(i).getQPathEntry(), true);
+         }
+         query.append(" ) and P.I_CLASS=2 and P.CONTAINER_NAME='");
+         query.append(containerName);
+         query.append("' and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType'");
+         query.append(" or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes'");
+         query.append(" or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'");
+         query.append(" or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')");
+         query.append(" and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID");
+
+         return findNodesByParentIdAndComplexPatternCQ.executeQuery(query.toString());
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException
    {
       if (findPropertiesByParentIdCQ == null)
@@ -655,6 +696,42 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       findPropertiesByParentIdCQ.setString(2, parentIdentifier);
       return findPropertiesByParentIdCQ.executeQuery();
 
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentCid, List<QPathEntryFilter> pattern)
+      throws SQLException
+   {
+      if (pattern.isEmpty())
+      {
+         throw new SQLException("Pattern list is empty.");
+      }
+      else
+      {
+         if (findPropertiesByParentIdAndComplexPatternCQ == null)
+         {
+            findPropertiesByParentIdAndComplexPatternCQ = dbConnection.createStatement();
+         }
+         //create query from list
+         StringBuilder query = new StringBuilder(FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE);
+         query.append(" where I.I_CLASS=2 and I.CONTAINER_NAME='");
+         query.append(containerName);
+         query.append("' and I.PARENT_ID='");
+         query.append(parentCid);
+         query.append("' and ( ");
+         appendPattern(query, pattern.get(0).getQPathEntry(), false);
+         for (int i = 1; i < pattern.size(); i++)
+         {
+            query.append(" or ");
+            appendPattern(query, pattern.get(i).getQPathEntry(), false);
+         }
+         query.append(" ) order by I.NAME");
+
+         return findPropertiesByParentIdAndComplexPatternCQ.executeQuery(query.toString());
+      }
    }
 
    /**
@@ -687,5 +764,245 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       findItemQPathByIdentifierCQ.setString(1, identifier);
       return findItemQPathByIdentifierCQ.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
+   {
+      if (findNodesAndProperties == null)
+      {
+         findNodesAndProperties = dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES);
+      }
+      else
+      {
+         findNodesAndProperties.clearParameters();
+      }
+
+      findNodesAndProperties.setString(1, containerName);
+      findNodesAndProperties.setString(2, getInternalId(lastNodeId));
+      findNodesAndProperties.setInt(3, limit);
+      findNodesAndProperties.setInt(4, offset);
+      findNodesAndProperties.setString(5, containerName);
+
+      return findNodesAndProperties.executeQuery();
+   }
+    
+   @Override
+   protected int deleteValueDataByOrderNum(String id, int orderNum) throws SQLException
+   {
+      if (deleteValueDataByOrderNum == null)
+         deleteValueDataByOrderNum = dbConnection.prepareStatement(DELETE_VALUE_BY_ORDER_NUM);
+      else
+         deleteValueDataByOrderNum.clearParameters();
+
+      deleteValueDataByOrderNum.setString(1, id);
+      deleteValueDataByOrderNum.setInt(2, orderNum);
+      return deleteValueDataByOrderNum.executeUpdate();
+   }
+   
+   @Override
+   protected ResultSet findPropertyById(String id) throws SQLException
+   {
+      if (findPropertyById == null)
+         findPropertyById = dbConnection.prepareStatement(FIND_PROPERTY_BY_ID);
+      else
+         findPropertyById.clearParameters();
+
+      findPropertyById.setString(1, id);
+      return findPropertyById.executeQuery();
+   }
+   
+   @Override
+   protected int updateValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc)
+      throws SQLException
+   {
+
+      if (updateValue == null)
+         updateValue = dbConnection.prepareStatement(UPDATE_VALUE);
+      else
+         updateValue.clearParameters();
+
+      if (stream == null)
+      {
+         // [PN] store vd reference to external storage etc.
+         updateValue.setNull(1, Types.BINARY);
+         updateValue.setString(2, storageDesc);
+      }
+      else
+      {
+         updateValue.setBinaryStream(1, stream, streamLength);
+         updateValue.setNull(2, Types.VARCHAR);
+      }
+
+      updateValue.setString(3, cid);
+      updateValue.setInt(4, orderNumber);
+      return updateValue.executeUpdate();
+   }  
+
+   /**
+    * Replace underscore in pattern with escaped symbol. Replace jcr-wildcard '*' with sql-wildcard '%'.
+    * 
+    * @param pattern
+    * @return pattern with escaped underscore and fixed wildcard symbols
+    */
+   protected String fixEscapeSymbols(String pattern)
+   {
+      char[] chars = pattern.toCharArray();
+      StringBuilder sb = new StringBuilder();
+      for (int i = 0; i < chars.length; i++)
+      {
+         switch (chars[i])
+         {
+            case '*' :
+               sb.append('%');
+               break;
+            case '_' :
+            case '%' :
+               sb.append(getWildcardEscapeSymbold());
+            default :
+               sb.append(chars[i]);
+         }
+      }
+      return sb.toString();
+   }
+
+   /**
+    * Append pattern expression.
+    * Appends String "I.NAME LIKE 'escaped pattern' ESCAPE 'escapeString'" or "I.NAME='pattern'"
+    * to String builder sb.
+    * 
+    * @param sb StringBuilder
+    * @param indexConstraint 
+    * @param pattern
+    */
+   protected void appendPattern(StringBuilder sb, QPathEntry entry, boolean indexConstraint)
+   {
+      String pattern = entry.getAsString(false);
+      sb.append("(I.NAME");
+      if (pattern.contains("*"))
+      {
+         sb.append(" LIKE '");
+         sb.append(fixEscapeSymbols(pattern));
+         sb.append("' ESCAPE '");
+         sb.append(getLikeExpressionEscape());
+         sb.append("'");
+      }
+      else
+      {
+         sb.append("='");
+         sb.append(pattern);
+         sb.append("'");
+      }
+
+      if (indexConstraint && entry.getIndex() != -1)
+      {
+         sb.append(" and I.I_INDEX=");
+         sb.append(entry.getIndex());
+      }
+      sb.append(")");
+   }
+
+   protected String getWildcardEscapeSymbold()
+   {
+      return PATTERN_ESCAPE_STRING;
+   }
+
+   protected String getLikeExpressionEscape()
+   {
+      return PATTERN_ESCAPE_STRING;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findACLHolders() throws SQLException
+   {
+      if (findACLHolders == null)
+      {
+         findACLHolders = dbConnection.prepareStatement(FIND_ACL_HOLDERS);
+      }
+      else
+      {
+         findACLHolders.clearParameters();
+      }
+
+      findACLHolders.setString(1, containerName);
+
+      return findACLHolders.executeQuery();
+   }   
+
+   /**
+    * {@inheritDoc}
+    */
+   protected void deleteLockProperties() throws SQLException
+   {
+      PreparedStatement removeValuesStatement = null;
+      PreparedStatement removeItemsStatement = null;
+
+      try
+      {
+         removeValuesStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM"
+               + " WHERE CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
+         removeValuesStatement.setString(1, containerName);
+
+         removeItemsStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND"
+               + " (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
+         removeItemsStatement.setString(1, containerName);
+
+         removeValuesStatement.executeUpdate();
+         removeItemsStatement.executeUpdate();
+      }
+      finally
+      {
+         if (removeValuesStatement != null)
+         {
+            try
+            {
+               removeValuesStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+
+         if (removeItemsStatement != null)
+         {
+            try
+            {
+               removeItemsStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findMaxPropertyVersion(String parentId, String name, int index) throws SQLException
+   {
+      if (findMaxPropertyVersions == null)
+      {
+         findMaxPropertyVersions = dbConnection.prepareStatement(FIND_MAX_PROPERTY_VERSIONS);
+      }
+
+      findMaxPropertyVersions.setString(1, getInternalId(parentId));
+      findMaxPropertyVersions.setString(2, containerName);
+      findMaxPropertyVersions.setString(3, name);
+      findMaxPropertyVersions.setInt(4, index);
+
+      return findMaxPropertyVersions.executeQuery();
    }
 }

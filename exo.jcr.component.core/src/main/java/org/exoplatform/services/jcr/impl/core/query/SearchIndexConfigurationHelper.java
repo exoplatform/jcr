@@ -66,7 +66,6 @@ public class SearchIndexConfigurationHelper
     */
    private void setParam(String name, String value)
    {
-
       if (QueryHandlerParams.PARAM_AUTO_REPAIR.equals(name))
       {
          searchIndex.setAutoRepair(Boolean.parseBoolean(value));
@@ -178,6 +177,42 @@ public class SearchIndexConfigurationHelper
       else if (QueryHandlerParams.PARAM_ANALYZER_CLASS.equals(name))
       {
          searchIndex.setAnalyzer(value);
+      }
+      else if (QueryHandlerParams.PARAM_SPELLCHECKER_MORE_POPULAR.equals(name))
+      {
+         searchIndex.setSpellCheckerMorePopuar(Boolean.parseBoolean(value));
+      }
+      else if (QueryHandlerParams.PARAM_SPELLCHECKER_DISTANCE.equals(name))
+      {
+         searchIndex.setSpellCheckerMinDistance(StringNumberParser.parseNumber(value).floatValue());
+      }
+      else if (QueryHandlerParams.PARAM_REINDEXING_PAGE_SIZE.equals(name))
+      {
+         searchIndex.setReindexingPageSize(StringNumberParser.parseNumber(value).intValue());
+      }
+      else if (QueryHandlerParams.PARAM_RDBMS_REINDEXING.equals(name))
+      {
+         searchIndex.setRDBMSReindexing(Boolean.parseBoolean(value));
+      }
+      else if (QueryHandlerParams.PARAM_INDEX_RECOVERY_MODE.equals(name))
+      {
+         searchIndex.setIndexRecoveryMode(value);
+      }
+      else if (QueryHandlerParams.PARAM_ASYNC_REINDEXING.equals(name))
+      {
+         searchIndex.setAsyncReindexing(Boolean.parseBoolean(value));
+      }
+      else if (QueryHandlerParams.PARAM_INDEX_RECOVERY_FILTER.equals(name))
+      {
+         searchIndex.addRecoveryFilterClass(value);
+      }
+      else if (QueryHandlerParams.PARAM_INDEXING_THREAD_POOL_SIZE.equals(name))
+      {
+         searchIndex.setIndexingThreadPoolSize(Integer.parseInt(value));
+      }
+      else
+      {
+         searchIndex.addOptionalParameter(name, value);
       }
    }
 }

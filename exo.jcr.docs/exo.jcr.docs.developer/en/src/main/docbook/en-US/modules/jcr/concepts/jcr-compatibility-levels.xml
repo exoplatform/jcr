@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.CompatibilityLevels">
+  <?dbhtml filename="ch-jcr-compatibility-levels.html"?>
+
+  <title>Compatibility Levels</title>
+
+    <para>The Java Content Repository specification JSR-170 has been split
+    into two compliance levels as well as a set of optional features.</para>
+    <para>Level 1 defines a read-only repository.</para>
+    <para>Level 2 defines methods for writing
+    content and bidirectional interaction with the repository.</para>
+
+    <para>eXo JCR supports JSR-170 level 1 and level 2 and all optional
+    features. The recent JSR-283 is not yet supported.</para>
+
+  <section>
+    <title>Level 1</title>
+
+    <para>Level 1 includes read-only functionality for very simple
+    repositories. It is useful to port an existing data repository and convert
+    it to a more advanced form step by step. JCR uses a well-known Session
+    abstraction to access the repository data (similar to the sessions we have
+    in OS, web, etc).</para>
+
+    <para>The features of level 1:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Initiating a session calling login method with the name of
+        desired workspace and client credentials. It involves some security
+        mechanisms (JAAS) to authenticate the client and in case the client is
+        authorized to use the data from a particular workspace, he can
+        retrieve the session with a workspace tied to it.</para>
+      </listitem>
+
+      <listitem>
+        <para>Using the obtained session, the client can retrieve data (items)
+        by traversing the tree, directly accessing a particular item
+        (requesting path or UUID) or traversing the query result. So an
+        application developer can choose the "best" form depending on the
+        content structure and desired operation.</para>
+      </listitem>
+
+      <listitem>
+        <para>Reading property values. All content of a repository is
+        ultimately accessed through properties and stored in property values
+        of predefined types (Boolean, Binary Data, Double, Long, String) and
+        special types Name, Reference, and Path. It is possible to read
+        property value without knowing its real name as a primary item.</para>
+      </listitem>
+
+      <listitem>
+        <para>Export to XML. Repository supports two XML/JCR data model
+        mappings: system and doc view. The system view provides complete XML
+        serialization without loss of information and is somewhat difficult
+        for a human to read. In contrast, the document view is well readable
+        but does not completely reflect the state of repository, it is used
+        for Xpath queries.</para>
+      </listitem>
+
+      <listitem>
+        <para>Query facility with Xpath syntax. Xpath, originally developed
+        for XML, suits the JCR data model as well because the JCR data model
+        is very close to XML's one. It is applied to JCR as it would be
+        applied to the document view of the serialized repository content,
+        returning a table of property names and content matching the
+        query.</para>
+      </listitem>
+
+      <listitem>
+        <para>Discovery of available node types. Every node should have only
+        one primary node type that defines names, types and other
+        characteristics of child nodes and properties. It also can have one or
+        more mixin data types that defines additional characteristics. Level 1
+        provides methods for discovering available in repository node types
+        and node types of a concrete node.</para>
+      </listitem>
+
+      <listitem>
+        <para>Transient namespace remapping. Item name can have prefix,
+        delimited by a single ':' (colon) character that indicates the
+        namespace of this name. It is patterned after XML namespaces, prefix
+        is mapped to URI to minimize names collisions. In Level 1, a prefix
+        can be temporary overridden by another prefix in the scope of a
+        session.</para>
+      </listitem>
+    </itemizedlist>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/concepts/level_1.gif" />
+      </imageobject>
+    </mediaobject>
+  </section>
+
+  <section>
+    <title>Level 2</title>
+
+    <para>JCR level 2 includes reading/ writing content functionality,
+    importing other sources and managing content definition and structuring
+    using extensible node types.</para>
+
+    <para>In addition to the features of the Level 1, it also supports the
+    following major features:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Adding, moving, copying and removing items inside workspace and
+        moving, copying and cloning items between workspaces. The client can
+        also compare the persisted state of an item with its unsaved states
+        and either save the new state or discard it.</para>
+      </listitem>
+
+      <listitem>
+        <para>Modifying and writing value of properties. Property types are
+        checked and can be converted to the defined format.</para>
+      </listitem>
+
+      <listitem>
+        <para>Importing XML document into the repository as a tree of nodes
+        and properties. If the XML document is an export of JCR system view,
+        the content of repository can be completely restored. If this is not
+        the case, the document is interpreted as a document view and the
+        import procedure builds a tree of JCR nodes and properties that
+        matches the tree structure of the XML document.</para>
+      </listitem>
+
+      <listitem>
+        <para>Assigning node types to nodes. The primary node type is assigned
+        when adding a node. This can be done automatically based on the parent
+        node type definition and mixin node types.</para>
+      </listitem>
+
+      <listitem>
+        <para>Persistent namespaces changes. Adding, changing and removing
+        namespaces stored in the namespace registry, excluding built-in
+        namespaces required by JCR.</para>
+      </listitem>
+    </itemizedlist>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/concepts/level_2.gif" />
+      </imageobject>
+    </mediaobject>
+  </section>
+
+  <section>
+    <title>Optional features</title>
+
+    <para>On the top of Level 1 or Level 2, a number of optional features are
+    defined for a more advanced repository functionality. This includes
+    functions such as Versioning, (JTA) Transactions, Query using SQL,
+    Explicit Locking and Content Observation. eXo JCR supports all optional
+    features.</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/concepts/optional.gif" />
+      </imageobject>
+    </mediaobject>
+  </section>
+</chapter>

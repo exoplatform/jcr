@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.dataflow;
 
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListenerFilter;
+import org.exoplatform.services.jcr.impl.ReadOnlySupport;
 
 /**
  * Created by The eXo Platform SAS.
@@ -29,7 +30,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a> 
  * @version $Id: PersistentDataManager.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public interface PersistentDataManager extends DataManager
+public interface PersistentDataManager extends DataManager, ReadOnlySupport
 {
 
    void addItemPersistenceListener(ItemsPersistenceListener listener);
@@ -39,30 +40,5 @@ public interface PersistentDataManager extends DataManager
    void addItemPersistenceListenerFilter(ItemsPersistenceListenerFilter filter);
 
    void removeItemPersistenceListenerFilter(ItemsPersistenceListenerFilter filter);
-
-   /**
-    * Status of write-operations restrictions.
-    * 
-    * Read-only status is descriptive within the container, i.e. will not prevent any write
-    * operation.
-    * 
-    * Used in DataManager implementations.
-    * 
-    * @return true - if write-operations allowed, false - otherwise.
-    */
-   boolean isReadOnly();
-
-   /**
-    * Set status of write-operations restrictions.
-    * 
-    * Read-only status is descriptive within the container, i.e. will not prevent any write
-    * operation.
-    * 
-    * Used in DataManager implementations.
-    * 
-    * @param status
-    *          , true - if write-operations allowed, false - otherwise.
-    */
-   void setReadOnly(boolean status);
 
 }

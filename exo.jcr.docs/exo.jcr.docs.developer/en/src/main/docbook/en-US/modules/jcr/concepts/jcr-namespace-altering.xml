@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<chapter id="JCR.Namespacealtering">
+<?dbhtml filename="ch-jcr-namespace-altering.html"?>  <title>Namespace altering</title>
+  <para>Since version 1.11, eXo JCR implementation supports namespaces altering.</para>
+  <section>
+    <title>Adding new namespace</title>
+    <programlisting language="java">ExtendedNamespaceRegistry namespaceRegistry = (ExtendedNamespaceRegistry) workspace.getNamespaceRegistry();
+namespaceRegistry.registerNamespace(&quot;newMapping&quot;, &quot;http://dumb.uri/jcr&quot;);</programlisting>
+  </section>
+  <section>
+    <title>Changing existing namespace</title>
+    <programlisting language="java">ExtendedNamespaceRegistry namespaceRegistry = (ExtendedNamespaceRegistry) workspace.getNamespaceRegistry();
+namespaceRegistry.registerNamespace(&quot;newMapping&quot;, &quot;http://dumb.uri/jcr&quot;);
+namespaceRegistry.registerNamespace(&quot;newMapping2&quot;, &quot;http://dumb.uri/jcr&quot;);</programlisting>
+  </section>
+  <section>
+    <title>Removing existing namespace</title>
+    <programlisting language="java">ExtendedNamespaceRegistry namespaceRegistry = (ExtendedNamespaceRegistry) workspace.getNamespaceRegistry();
+namespaceRegistry.registerNamespace(&quot;newMapping&quot;, &quot;http://dumb.uri/jcr&quot;);
+namespaceRegistry.unregisterNamespace(&quot;newMapping&quot;);</programlisting>
+  </section>
+</chapter>

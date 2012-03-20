@@ -34,9 +34,10 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -53,6 +54,7 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.ValueFactory;
 import javax.jcr.Workspace;
 
@@ -65,7 +67,7 @@ import javax.jcr.Workspace;
 public abstract class BaseStandaloneTest extends TestCase
 {
 
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.BaseStandaloneTest");
+   protected static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.BaseStandaloneTest");
 
    public static final String WS_NAME = "ws";
 
@@ -82,6 +84,8 @@ public abstract class BaseStandaloneTest extends TestCase
    protected Node root;
 
    protected PersistentDataManager dataManager;
+
+   protected CacheableWorkspaceDataManager cacheableDataManager;
 
    protected ValueFactory valueFactory;
 
@@ -107,6 +111,7 @@ public abstract class BaseStandaloneTest extends TestCase
       }
    }
 
+   @Override
    public void setUp() throws Exception
    {
       String containerConf = BaseStandaloneTest.class.getResource("/conf/standalone/test-configuration.xml").toString();
@@ -139,25 +144,27 @@ public abstract class BaseStandaloneTest extends TestCase
          wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
 
-      WorkspaceFileCleanerHolder wfcleaner =
-         (WorkspaceFileCleanerHolder)wsc.getComponent(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder wfcleaner =
+         (FileCleanerHolder)wsc.getComponent(FileCleanerHolder.class);
       fileCleaner = wfcleaner.getFileCleaner();
       holder = new ReaderSpoolFileHolder();
 
       wsc = repository.getWorkspaceContainer("ws4");
       dataManager = (PersistentDataManager)wsc.getComponent(PersistentDataManager.class);
+      cacheableDataManager = (CacheableWorkspaceDataManager)wsc.getComponent(PersistentDataManager.class);
    }
 
+   @Override
    protected void tearDown() throws Exception
    {
 
       log.info("tearDown() BEGIN " + getClass().getName() + "." + getName());
       if (session != null)
       {
+         Session sysSession = repository.getSystemSession(session.getWorkspace().getName());
          try
          {
-            session.refresh(false);
-            Node rootNode = session.getRootNode();
+            Node rootNode = sysSession.getRootNode();
             if (rootNode.hasNodes())
             {
                // clean test root
@@ -171,7 +178,7 @@ public abstract class BaseStandaloneTest extends TestCase
                      node.remove();
                   }
                }
-               session.save();
+               sysSession.save();
             }
          }
          catch (Exception e)
@@ -181,6 +188,7 @@ public abstract class BaseStandaloneTest extends TestCase
          }
          finally
          {
+            sysSession.logout();
             session.logout();
          }
       }

@@ -33,12 +33,12 @@
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="../temp/swap/production" />
+                     <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/production" />
                   </properties>
                   <value-storages>
-                     <value-storage id="system" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                     <value-storage id="production" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="../temp/values/production" />
+                           <property name="path" value="${exo.jcr.parent.dir:..}/temp/values/production" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -59,14 +59,14 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="../temp/jcrlucenedb/production" />
+                     <property name="index-dir" value="${exo.jcr.parent.dir:..}/temp/jcrlucenedb/production" />
                   </properties>
                </query-handler>
                <lock-manager>
                   <time-out>15m</time-out>
                   <persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister">
                      <properties>
-                        <property name="path" value="../temp/lock/system" />
+                        <property name="path" value="${exo.jcr.parent.dir:..}/temp/lock/production" />
                      </properties>
                   </persister>
                </lock-manager>
@@ -79,12 +79,12 @@
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="../temp/swap/backup" />
+                     <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/backup" />
                   </properties>
                   <value-storages>
-                     <value-storage id="draft" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                     <value-storage id="backup" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="../temp/values/backup" />
+                           <property name="path" value="${exo.jcr.parent.dir:..}/temp/values/backup" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -105,9 +105,17 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="../temp/jcrlucenedb/backup" />
+                     <property name="index-dir" value="${exo.jcr.parent.dir:..}/temp/jcrlucenedb/backup" />
                   </properties>
                </query-handler>
+               <lock-manager>
+                  <time-out>15m</time-out>
+                  <persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister">
+                     <properties>
+                        <property name="path" value="${exo.jcr.parent.dir:..}/temp/lock/backup" />
+                     </properties>
+                  </persister>
+               </lock-manager>               
             </workspace>
 
             <workspace name="digital-assets">
@@ -117,12 +125,12 @@
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="false" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="../temp/swap/digital-assets" />
+                     <property name="swap-directory" value="${exo.jcr.parent.dir:..}/temp/swap/digital-assets" />
                   </properties>
                   <value-storages>
                      <value-storage id="digital-assets" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="../temp/values/digital-assets" />
+                           <property name="path" value="${exo.jcr.parent.dir:..}/temp/values/digital-assets" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -143,9 +151,17 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="../temp/jcrlucenedb/digital-assets" />
+                     <property name="index-dir" value="${exo.jcr.parent.dir:..}/temp/jcrlucenedb/digital-assets" />
                   </properties>
                </query-handler>
+               <lock-manager>
+                  <time-out>15m</time-out>
+                  <persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister">
+                     <properties>
+                        <property name="path" value="${exo.jcr.parent.dir:..}/temp/lock/digital-assets" />
+                     </properties>
+                  </persister>
+               </lock-manager>               
             </workspace>
          </workspaces>
       </repository>

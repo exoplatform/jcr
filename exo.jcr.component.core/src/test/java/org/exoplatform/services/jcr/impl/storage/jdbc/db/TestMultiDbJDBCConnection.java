@@ -81,6 +81,7 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
          st.executeUpdate("drop table JCR_MREF");
          st.executeUpdate("drop table JCR_MVALUE");
          st.executeUpdate("drop table JCR_MITEM");
+         st.executeUpdate("drop table JCR_MCONTAINER");
          st.close();
 
       }

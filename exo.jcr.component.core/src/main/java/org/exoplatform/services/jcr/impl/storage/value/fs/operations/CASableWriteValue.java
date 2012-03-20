@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.impl.storage.value.cas.VCASException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
 import org.exoplatform.services.jcr.impl.storage.value.fs.CASableIOSupport;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileDigestOutputStream;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
@@ -148,55 +149,65 @@ public class CASableWriteValue extends WriteValue
     * {@inheritDoc}
     */
    @Override
-   public void commit() throws IOException
+   public void prepare() throws IOException
    {
       if (fileLock != null)
+      {
+         // write VCAS record first
          try
          {
-            // write VCAS record first
+            vcas.addValue(propertyId, orderNumb, vcasHash);
+         }
+         catch (RecordAlreadyExistsException e)
+         {
+            if (tempFile != null && tempFile.exists() && !tempFile.delete())
+            {
+                 LOG.warn("Can't delete CAS temp file. Added to file cleaner. " + tempFile.getAbsolutePath());
+                 cleaner.addFile(tempFile);
+            }
+            throw new RecordAlreadyExistsException("Write error: " + e, e);
+         }
+
+         if (!vcasFile.exists())
+         {
+            // it's new CAS Value, we have to move temp to vcas location
+            // use RENAME only, don't copy - as copy will means that destination already exists etc.
+
+            // make sure parent dir exists
+            vcasFile.getParentFile().mkdirs();
+            // rename propetynamed file to hashnamed one
             try
             {
-               vcas.addValue(propertyId, orderNumb, vcasHash);
+               DirectoryHelper.renameFile(tempFile, vcasFile);
             }
-            catch (RecordAlreadyExistsException e)
+            catch (IOException e)
             {
-               if (tempFile != null && tempFile.exists() && !tempFile.delete())
-               {
-                  LOG.warn("Can't delete CAS temp file. Added to file cleaner. " + tempFile.getAbsolutePath());
-                  cleaner.addFile(tempFile);
-               }
-               throw new RecordAlreadyExistsException("Write error: " + e, e);
+               throw new VCASException("File " + tempFile.getAbsolutePath() + " can't be renamed to VCAS-named "
+                  + vcasFile.getAbsolutePath(), e);
             }
+         } // else - CASed Value already exists
 
-            if (!vcasFile.exists())
-            {
-               // it's new CAS Value, we have to move temp to vcas location
-               // use RENAME only, don't copy - as copy will means that destination already exists etc.
-
-               // make sure parent dir exists
-               vcasFile.getParentFile().mkdirs();
-               // rename propetynamed file to hashnamed one
-               if (!tempFile.renameTo(vcasFile))
-               {
-                  throw new VCASException("File " + tempFile.getAbsolutePath() + " can't be renamed to VCAS-named "
-                     + vcasFile.getAbsolutePath());
-               }
-            } // else - CASed Value already exists
-
-            if (!value.isByteArray() && value instanceof StreamPersistedValueData)
-            {
-               // set persisted file
-               ((StreamPersistedValueData)value).setPersistedFile(vcasFile);
-            }
-
-         }
-         finally
+         if (!value.isByteArray() && value instanceof StreamPersistedValueData)
          {
-            // remove temp file
-            tempFile.delete(); // should be ok without file cleaner
-
-            fileLock.unlock();
+            // set persisted file
+            ((StreamPersistedValueData)value).setPersistedFile(vcasFile);
          }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void twoPhaseCommit() throws IOException
+   {
+      if (fileLock != null)
+      {
+         // remove temp file
+         tempFile.delete(); // should be ok without file cleaner
+
+         fileLock.unlock();
+      }
    }
 
    /**

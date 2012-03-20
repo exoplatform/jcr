@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.core.nodetype;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
@@ -51,6 +52,8 @@ public class ItemDefinitionImpl implements ExtendedItemDefinition
    protected final ExtendedNodeTypeManager nodeTypeManager;
 
    protected final ValueFactory valueFactory;
+   
+   protected final ItemDataConsumer dataManager;
 
    private final ItemDefinitionData itemDefinitionData;
 
@@ -63,14 +66,15 @@ public class ItemDefinitionImpl implements ExtendedItemDefinition
     * @param protectedItem
     */
    public ItemDefinitionImpl(ItemDefinitionData itemDefinitionData, NodeTypeDataManager nodeTypeDataManager,
-      ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory)
+            ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory,
+            ItemDataConsumer dataManager)
    {
-
       this.itemDefinitionData = itemDefinitionData;
       this.nodeTypeDataManager = nodeTypeDataManager;
       this.nodeTypeManager = nodeTypeManager;
       this.locationFactory = locationFactory;
       this.valueFactory = valueFactory;
+      this.dataManager = dataManager;
    }
 
    /**
@@ -78,9 +82,8 @@ public class ItemDefinitionImpl implements ExtendedItemDefinition
     */
    public NodeType getDeclaringNodeType()
    {
-
       return new NodeTypeImpl(nodeTypeDataManager.getNodeType(itemDefinitionData.getDeclaringNodeType()),
-         nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+         nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory, dataManager);
    }
 
    /**

@@ -18,7 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.access.AuthenticationPolicy;
+import org.exoplatform.services.jcr.access.DynamicIdentity;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -27,11 +29,15 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
+import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.RepositoryContainer;
 import org.exoplatform.services.jcr.impl.WorkspaceContainer;
+import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableDataManager;
 import org.exoplatform.services.jcr.impl.xml.ExportImportFactory;
 import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
@@ -39,11 +45,18 @@ import org.exoplatform.services.jcr.impl.xml.importing.StreamImporter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
+import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.MembershipEntry;
 import org.picocontainer.ComponentAdapter;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -60,7 +73,7 @@ import javax.jcr.Session;
 /**
  * Created by The eXo Platform SAS.<br/>
  * Implementation of javax.jcr.Repository
- * 
+ *
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov </a>
  * @version $Id: RepositoryImpl.java 14487 2008-05-20 07:08:40Z gazarenkov $
  */
@@ -75,9 +88,9 @@ public class RepositoryImpl implements ManageableRepository
    /**
     * SYSTEM credentials.
     */
-   private static final CredentialsImpl SYSTEM_CREDENTIALS =
-      new CredentialsImpl(SystemIdentity.SYSTEM, "".toCharArray());
-
+   private static final CredentialsImpl SYSTEM_CREDENTIALS = new CredentialsImpl(SystemIdentity.SYSTEM,
+      "".toCharArray());
+   
    /**
     * Logger.
     */
@@ -130,11 +143,11 @@ public class RepositoryImpl implements ManageableRepository
    /**
     * Repository state. OFFLINE by default.
     */
-   private int state = OFFLINE;
+   private boolean isOffline = true;
 
    /**
     * RepositoryImpl constructor.
-    * 
+    *
     * @param container Repository container
     * @throws RepositoryException error of initialization
     * @throws RepositoryConfigurationException error of configuration
@@ -156,6 +169,13 @@ public class RepositoryImpl implements ManageableRepository
     */
    public void addItemPersistenceListener(String workspaceName, ItemsPersistenceListener listener)
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       PersistentDataManager pmanager =
          (PersistentDataManager)repositoryContainer.getWorkspaceContainer(workspaceName).getComponentInstanceOfType(
             PersistentDataManager.class);
@@ -178,14 +198,21 @@ public class RepositoryImpl implements ManageableRepository
          (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
 
       return sessionRegistry != null && !sessionRegistry.isInUse(workspaceName);
-
    }
 
    /**
     * {@inheritDoc}
     */
-   public void configWorkspace(WorkspaceEntry wsConfig) throws RepositoryConfigurationException, RepositoryException
+   public void configWorkspace(final WorkspaceEntry wsConfig) throws RepositoryConfigurationException,
+      RepositoryException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       if (isWorkspaceInitialized(wsConfig.getName()))
       {
          throw new RepositoryConfigurationException("Workspace '" + wsConfig.getName()
@@ -198,16 +225,30 @@ public class RepositoryImpl implements ManageableRepository
       }
       catch (RepositoryConfigurationException e)
       {
-         WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(wsConfig.getName());
-         repositoryContainer.unregisterComponentByInstance(workspaceContainer);
-         repositoryContainer.unregisterComponent(wsConfig.getName());
+         final WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(wsConfig.getName());
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               repositoryContainer.unregisterComponentByInstance(workspaceContainer);
+               repositoryContainer.unregisterComponent(wsConfig.getName());
+               return null;
+            }
+         });
          throw new RepositoryConfigurationException(e);
       }
       catch (RepositoryException e)
       {
-         WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(wsConfig.getName());
-         repositoryContainer.unregisterComponentByInstance(workspaceContainer);
-         repositoryContainer.unregisterComponent(wsConfig.getName());
+         final WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(wsConfig.getName());
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               repositoryContainer.unregisterComponentByInstance(workspaceContainer);
+               repositoryContainer.unregisterComponent(wsConfig.getName());
+               return null;
+            }
+         });
          throw new RepositoryException(e);
       }
    }
@@ -215,21 +256,27 @@ public class RepositoryImpl implements ManageableRepository
    /**
     * Creation contains three steps. First
     * <code>configWorkspace(WorkspaceEntry wsConfig)</code> - registration a new
-    * configuration in RepositoryContainer and create WorkspaceContainer. Second,
-    * the main step, is
+    * configuration in RepositoryContainer and create WorkspaceContainer.
+    * Second, the main step, is
     * <code>initWorkspace(String workspaceName, String rootNodeType)</code> -
     * initializing workspace by name and root nodetype. Third, final step,
     * starting all components of workspace. Before creation workspace <b>must be
     * configured</b>
-    * 
+    *
     * @see org.exoplatform.services.jcr.core.RepositoryImpl#configWorkspace(org.exoplatform.services.jcr.config.WorkspaceEntry
     *      )
     * @see org.exoplatform.services.jcr.core.RepositoryImpl#initWorkspace(java.lang.String,java.lang.String)
     * @param workspaceName - Creates a new Workspace with the specified name
     * @throws RepositoryException
     */
-   public void createWorkspace(String workspaceName) throws RepositoryException
+   public synchronized void createWorkspace(String workspaceName) throws RepositoryException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
 
       if (isWorkspaceInitialized(workspaceName))
       {
@@ -237,16 +284,21 @@ public class RepositoryImpl implements ManageableRepository
          return;
       }
 
-      WorkspaceContainer wsContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
+      final WorkspaceContainer wsContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
 
       if (wsContainer == null)
          throw new RepositoryException("Workspace " + workspaceName
             + " is not configured. Use RepositoryImpl.configWorkspace() method");
 
       repositoryContainer.getWorkspaceContainer(workspaceName).getWorkspaceInitializer().initWorkspace();
-
-      wsContainer.start();
-
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            wsContainer.start();
+            return null;
+         }
+      });
       LOG.info("Workspace " + workspaceName + "@" + this.name + " is initialized");
    }
 
@@ -255,6 +307,13 @@ public class RepositoryImpl implements ManageableRepository
     */
    public RepositoryEntry getConfiguration()
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       return config;
    }
 
@@ -327,6 +386,7 @@ public class RepositoryImpl implements ManageableRepository
     */
    public SessionImpl getSystemSession(String workspaceName) throws RepositoryException
    {
+
       if (getState() == OFFLINE)
          LOG.warn("Repository " + getName() + " is OFFLINE.");
 
@@ -339,6 +399,28 @@ public class RepositoryImpl implements ManageableRepository
       SessionFactory sessionFactory = workspaceContainer.getSessionFactory();
 
       return sessionFactory.createSession(authenticationPolicy.authenticate(SYSTEM_CREDENTIALS));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public SessionImpl getDynamicSession(String workspaceName, Collection<MembershipEntry> membershipEntries)
+            throws RepositoryException
+   {
+      if (getState() == OFFLINE)
+         LOG.warn("Repository " + getName() + " is OFFLINE.");
+
+      WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
+      if (workspaceContainer == null || !workspaceContainer.getWorkspaceInitializer().isWorkspaceInitialized())
+      {
+         throw new RepositoryException("Workspace " + workspaceName + " not found or workspace is not initialized");
+      }
+
+      SessionFactory sessionFactory = workspaceContainer.getSessionFactory();
+
+      Identity id = new Identity(DynamicIdentity.DYNAMIC, membershipEntries);
+
+      return sessionFactory.createSession(new ConversationState(id));
    }
 
    /**
@@ -387,19 +469,19 @@ public class RepositoryImpl implements ManageableRepository
 
       try
       {
-
          Map<String, Object> context = new HashMap<String, Object>();
          context.put(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS, true);
 
          NodeData rootData = ((NodeData)((NodeImpl)sysSession.getRootNode()).getData());
          TransactionableDataManager dataManager = sysSession.getTransientNodesManager().getTransactManager();
-         ExportImportFactory eiFactory = new ExportImportFactory();
+         
+         cleanWorkspace(dataManager);
 
          StreamImporter importer =
-            eiFactory.getWorkspaceImporter(rootData, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW, dataManager,
-               dataManager, sysSession.getWorkspace().getNodeTypesHolder(), sysSession.getLocationFactory(), sysSession
-                  .getValueFactory(), getNamespaceRegistry(), sysSession.getAccessManager(), sysSession.getUserState(),
-               context, this, wsName);
+            new ExportImportFactory().getWorkspaceImporter(rootData, ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW,
+               dataManager, dataManager, sysSession.getWorkspace().getNodeTypesHolder(),
+               sysSession.getLocationFactory(), sysSession.getValueFactory(), getNamespaceRegistry(),
+               sysSession.getAccessManager(), sysSession.getUserState(), context, this, wsName);
          importer.importStream(xmlStream);
       }
       finally
@@ -408,30 +490,60 @@ public class RepositoryImpl implements ManageableRepository
       }
    }
 
+   private void cleanWorkspace(TransactionableDataManager dataManager)
+      throws RepositoryException
+   {
+      NodeData rootData = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
+
+      ItemDataRemoveVisitor removeVisitor = new ItemDataRemoveVisitor(dataManager, null);
+      rootData.accept(removeVisitor);
+
+      PlainChangesLogImpl changesLog = new PlainChangesLogImpl();
+      changesLog.addAll(removeVisitor.getRemovedStates());
+
+      dataManager.save(changesLog);
+   }
+
    /**
     * Internal Remove Workspace.
-    * 
+    *
     * @param workspaceName workspace name
     * @throws RepositoryException error of remove
     */
-   public void internalRemoveWorkspace(String workspaceName) throws RepositoryException
+   public void internalRemoveWorkspace(final String workspaceName) throws RepositoryException
    {
-      WorkspaceContainer workspaceContainer = null;
-      if (isWorkspaceInitialized(workspaceName))
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
       {
-         workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
-         try
-         {
-            workspaceContainer.stopContainer();
-            workspaceContainer.stop();
-         }
-         catch (Exception e)
-         {
-            throw new RepositoryException(e);
-         }
-         repositoryContainer.unregisterComponentByInstance(workspaceContainer);
-         repositoryContainer.unregisterComponent(workspaceName);
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
+
+      final WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
+      try
+      {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               workspaceContainer.stop();
+               return null;
+            }
+         });
+      }
+      catch (Exception e)
+      {
+         throw new RepositoryException(e);
+      }
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            repositoryContainer.unregisterComponentByInstance(workspaceContainer);
+            repositoryContainer.unregisterComponent(workspaceName);
+            return null;
+         }
+      });
    }
 
    /**
@@ -479,8 +591,8 @@ public class RepositoryImpl implements ManageableRepository
    /**
     * {@inheritDoc}
     */
-   public Session login(Credentials credentials, String workspaceName) throws LoginException, NoSuchWorkspaceException,
-      RepositoryException
+   public Session login(final Credentials credentials, String workspaceName) throws LoginException,
+      NoSuchWorkspaceException, RepositoryException
    {
 
       if (getState() == OFFLINE)
@@ -488,18 +600,43 @@ public class RepositoryImpl implements ManageableRepository
 
       ConversationState state;
 
-      if (credentials != null)
-         state = authenticationPolicy.authenticate(credentials);
-      else
-         state = authenticationPolicy.authenticate();
+      PrivilegedExceptionAction<ConversationState> action = new PrivilegedExceptionAction<ConversationState>()
+      {
+         public ConversationState run() throws Exception
+         {
+            if (credentials != null)
+               return authenticationPolicy.authenticate(credentials);
+            else
+               return authenticationPolicy.authenticate();
+         }
+      };
+      try
+      {
+         state = SecurityHelper.doPrivilegedExceptionAction(action);
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof LoginException)
+         {
+            throw (LoginException)cause;
+         }
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
 
       return internalLogin(state, workspaceName);
-
    }
 
    /**
     * Internal login.
-    * 
+    *
     * @param state ConversationState
     * @param workspaceName workspace name
     * @return SessionImpl
@@ -553,46 +690,84 @@ public class RepositoryImpl implements ManageableRepository
     */
    public int getState()
    {
-      return state;
+      if (isOffline)
+      {
+         return OFFLINE;
+      }
+      
+      Integer state = null;
+      for (String workspaceName : getWorkspaceNames())
+      {
+         int workspaceState = getWorkspaceContainer(workspaceName).getState();
+         if (state == null)
+         {
+            state = workspaceState;
+         }
+         else if (state != workspaceState)
+         {
+            return UNDEFINED;
+         }
+      }
+      
+      return state == null ? ONLINE : state;
    }
 
    /**
     * {@inheritDoc}
     */
-   public void setState(int state)
+   public void setState(int state) throws RepositoryException
    {
-      switch (state)
+      if (getState() != ONLINE && !(state == ONLINE || state == OFFLINE))
       {
-         case ONLINE :
-            // set ONLINE all workspaces
-            setAllWorkspacesReadOnly(false);
-            break;
-         case OFFLINE :
-            // TODO do nothing
-            break;
-         case READONLY :
-            // set READONLY all workspaces
-            setAllWorkspacesReadOnly(true);
-            break;
+         throw new RepositoryException("First switch repository to ONLINE and then to needed state.\n" + toString());
       }
 
-      this.state = state;
+      String[] workspaces = getWorkspaceNames();
+      if (workspaces.length > 0)
+      {
+         // set state for all workspaces
+         for (String workspaceName : workspaces)
+         {
+            if (!workspaceName.equals(systemWorkspaceName))
+            {
+               getWorkspaceContainer(workspaceName).setState(state);
+            }
+         }
+         getWorkspaceContainer(systemWorkspaceName).setState(state);
+      }
+
+      isOffline = state == OFFLINE;
    }
 
    /**
-    * Set all repository workspaces ReadOnly status.
-    * 
-    * @param wsStatus ReadOnly workspace status
+    * {@inheritDoc}
     */
-   private void setAllWorkspacesReadOnly(boolean wsStatus)
+   public String getStateTitle()
    {
-      WorkspaceContainerFacade wsFacade;
-      for (String workspaceName : getWorkspaceNames())
+      switch (getState())
       {
-         wsFacade = getWorkspaceContainer(workspaceName);
-         PersistentDataManager dataManager = (PersistentDataManager)wsFacade.getComponent(PersistentDataManager.class);
-         dataManager.setReadOnly(wsStatus);
+         case ONLINE :
+            return "online";
+         case OFFLINE :
+            return "offline";
+         case READONLY :
+            return "readonly";
+         case SUSPENDED :
+            return "suspended";
+         default :
+            return "undefined";
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public String toString()
+   {
+      String defaultWorkspaceName = config.getDefaultWorkspaceName();
+      return String.format(
+         "Repository {\n name: %s;\n system workspace: %s;\n default workspace: %s;\n workspaces: %s;\n state: %s \n}",
+         name, systemWorkspaceName, defaultWorkspaceName, Arrays.toString(getWorkspaceNames()), getStateTitle());
+   }
 }

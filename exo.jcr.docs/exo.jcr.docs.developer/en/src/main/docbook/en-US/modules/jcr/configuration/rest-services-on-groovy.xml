@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.RESTServicesOnGroovy">
+  <?dbhtml filename="ch-rest-services-on-groovy.html"?>
+
+  <title>REST Services on Groovy</title>
+
+    <para>Starting from version 1.9, JCR Service supports REST services
+    creation on <ulink url="http://groovy.codehaus.org">Groovy
+    script</ulink>.</para>
+
+    <para>The feature bases on <link linkend="WS.RestFramework">RESTful
+    framework</link> and uses ResourceContainer concept.</para>
+
+  <section>
+    <title>Usage</title>
+
+    <para>Scripts should extend ResourceContainer and should be stored in JCR
+    as a node of type exo:groovyResourceContainer.</para>
+
+    <para>Detailed REST services step-by-step implementation check there <link
+    linkend="WS.RestServiceTutorial">Create REST service step by
+    step</link>.</para>
+
+    <para>Component configuration enables Groovy services loader:</para>
+
+    <programlisting language="xml">&lt;component&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;object-param&gt;
+      &lt;name&gt;observation.config&lt;/name&gt;
+      &lt;object type="org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader$ObservationListenerConfiguration"&gt;
+        &lt;field name="repository"&gt;
+          &lt;string&gt;repository&lt;/string&gt;
+        &lt;/field&gt;
+        &lt;field name="workspaces"&gt;
+          &lt;collection type="java.util.ArrayList"&gt;
+            &lt;value&gt;
+              &lt;string&gt;collaboration&lt;/string&gt;
+            &lt;/value&gt;
+          &lt;/collection&gt;
+        &lt;/field&gt;
+      &lt;/object&gt;
+    &lt;/object-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+  </section>
+</chapter>

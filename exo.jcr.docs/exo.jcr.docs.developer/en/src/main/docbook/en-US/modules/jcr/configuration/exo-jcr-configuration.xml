@@ -1,0 +1,536 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.eXoJCRconfiguration">
+  <?dbhtml filename="ch-exo-jcr-configuration.html"?>
+
+  <title>eXo JCR configuration</title>
+
+  <para>This chapter provides you the knowledge about eXo JCR configuration in details, including the basic and advanced configuration.</para>
+
+  <section>
+    <title>Related documents</title>
+
+    <itemizedlist>
+      <listitem>
+        <para><link linkend="JCR.ConfigurationPersister">Configuration
+        persister</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.SearchConfiguration">Search
+        Configuration</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.JDBCDataContainerConfig">JDBC Data Container
+        config</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.ExternalValueStorages">External Value
+        Storages</link></para>
+      </listitem>
+
+      <listitem>
+        <para><link linkend="JCR.WorkspacePersistenceStorage">Workspace
+        Persistence Storage</link></para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="JCR.eXoJCRconfiguration.PortalAndStandaloneConfiguration">
+    <title>Portal and Standalone configuration</title>
+
+    <para>Like other eXo services, eXo JCR can be configured and used in the
+    portal or embedded mode (as a service embedded in eXo Portal) and in
+    standalone mode.</para>
+
+    <para>In Embedded mode, JCR services are registered in the Portal
+    container and the second option is to use a Standalone container. The main
+    difference between these container types is that the first one is intended
+    to be used in a Portal (Web) environment, while the second one can be used
+    standalone (see the comprehensive page <link
+    linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
+    for Beginners</link> for more details).</para>
+
+    <para>The following setup procedure is used to obtain a Standalone
+    configuration (see more in <link
+    linkend="Kernel.ContainerConfiguration">Container
+    configuration</link>):<itemizedlist>
+        <listitem>
+          <para>Configuration that is set explicitly using
+          StandaloneContainer.addConfigurationURL(String url) or
+          StandaloneContainer.addConfigurationPath(String path) before
+          getInstance()</para>
+        </listitem>
+
+        <listitem>
+          <para>Configuration from $base:directory/exo-configuration.xml or
+          $base:directory/conf/exo-configuration.xml file. Where
+          $base:directory is either AS's home directory in case of J2EE AS
+          environment or just the current directory in case of a standalone
+          application.</para>
+        </listitem>
+
+        <listitem>
+          <para>/conf/exo-configuration.xml in the current classloader (e.g.
+          war, ear archive)</para>
+        </listitem>
+
+        <listitem>
+          <para>Configuration from
+          $service_jar_file/conf/portal/configuration.xml. WARNING: Don't rely
+          on some concrete jar's configuration if you have more than one jar
+          containing conf/portal/configuration.xml file. In this case choosing
+          a configuration is unpredictable.</para>
+        </listitem>
+      </itemizedlist></para>
+
+    <para>JCR service configuration looks like:</para>
+
+    <programlisting language="xml">&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.jcr.RepositoryService&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.impl.RepositoryServiceImpl&lt;/type&gt;
+&lt;/component&gt;
+&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.jcr.config.RepositoryServiceConfiguration&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;conf-path&lt;/name&gt;
+      &lt;description&gt;JCR repositories configuration file&lt;/description&gt;
+      &lt;value&gt;jar:/conf/standalone/exo-jcr-config.xml&lt;/value&gt;
+    &lt;/value-param&gt;
+    &lt;properties-param&gt;
+      &lt;name&gt;working-conf&lt;/name&gt;
+      &lt;description&gt;working-conf&lt;/description&gt;
+      &lt;property name="source-name" value="jdbcjcr" /&gt;
+      &lt;property name="dialect" value="hsqldb" /&gt;
+      &lt;property name="persister-class-name" value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister" /&gt;
+    &lt;/properties-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+    <para><emphasis role="bold">conf-path</emphasis> : a path to a
+    RepositoryService JCR Configuration.</para>
+
+    <para><emphasis role="bold">working-conf</emphasis> : optional; <link
+    linkend="JCR.ConfigurationPersister">JCR configuration persister</link>
+    configuration. If there isn't a working-conf, the persister will be
+    disabled.</para>
+  </section>
+
+  <section>
+    <title>JCR Configuration</title>
+
+    <para>The Configuration is defined in an XML file (see DTD below).</para>
+
+    <para>JCR Service can use multiple <emphasis
+    role="bold">Repositories</emphasis> and each repository can have multiple
+    <emphasis role="bold">Workspaces</emphasis>.</para>
+
+    <para>From v.1.9 JCR, repositories configuration parameters support
+    human-readable formats of values. They are all case-insensitive:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Numbers formats: K,KB - kilobytes, M,MB - megabytes, G,GB -
+        gigabytes, T,TB - terabytes. Examples: 100.5 - digit 100.5, 200k - 200
+        Kbytes, 4m - 4 Mbytes, 1.4G - 1.4 Gbytes, 10T - 10 Tbytes</para>
+      </listitem>
+    </itemizedlist>
+
+    <itemizedlist>
+      <listitem>
+        <para>Time format endings: ms - milliseconds, m - minutes, h - hours,
+        d - days, w - weeks, if no ending - seconds. Examples: 500ms - 500
+        milliseconds, 20 - 20 seconds, 30m - 30 minutes, 12h - 12 hours, 5d -
+        5 days, 4w - 4 weeks.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="JCR.eXoJCRconfiguration.RepositoryConfiguration">
+    <title>Repository service configuration (JCR repositories
+    configuration)</title>
+
+    <para>Service configuration may be placed in
+    jar:/conf/standalone/exo-jcr-config.xml for standalone mode. For portal
+    mode, it is located in the portal web application
+    portal/WEB-INF/conf/jcr/repository-configuration.xml.</para>
+
+    <para><emphasis role="bold">default-repository</emphasis>: The name of a
+    default repository (one returned by
+    RepositoryService.getRepository()).</para>
+
+    <para><emphasis role="bold">repositories</emphasis>: The list of
+    repositories.</para>
+  </section>
+
+  <section>
+    <title>Repository configuration:</title>
+
+    <para><emphasis role="bold">name</emphasis>: The name of a
+    repository.</para>
+
+    <para><emphasis role="bold">default-workspace</emphasis>: The name of a
+    workspace obtained using Session's login() or login(Credentials) methods
+    (ones without an explicit workspace name).</para>
+
+    <para><emphasis role="bold">system-workspace</emphasis>: The name of
+    workspace where <emphasis role="bold">/jcr:system</emphasis> node is
+    placed.</para>
+
+    <para><emphasis role="bold">security-domain</emphasis>: The name of a
+    security domain for JAAS authentication.</para>
+
+    <para><emphasis role="bold">access-control</emphasis>: The name of an
+    access control policy. There can be 3 types: optional - ACL is created
+    on-demand(default), disable - no access control, mandatory - an ACL is
+    created for each added node(not supported yet).</para>
+
+    <para><emphasis role="bold">authentication-policy</emphasis>: The name of
+    an authentication policy class.</para>
+
+    <para><emphasis role="bold">workspaces</emphasis>: The list of
+    workspaces.</para>
+
+    <para><emphasis role="bold">session-max-age</emphasis>: The time after
+    which an idle session will be removed (called logout). If session-max-age
+    is not set up, idle session will never be removed.</para>
+
+    <para id="JCR.eXoJCRconfiguration.LockRemoverMaxThreads"><emphasis
+    role="bold">lock-remover-max-threads</emphasis>: Number of threads that
+    can serve LockRemover tasks. Default value is 1. Repository may have many
+    workspaces, each workspace have own LockManager. JCR supports Locks with
+    defined lifetime. Such a lock must be removed is it become expired. That
+    is what LockRemovers does. But LockRemovers is not an independent
+    timer-threads, its a task that executed each 30 seconds. Such a task is
+    served by ThreadPoolExecutor which may use different number of
+    threads.</para>
+  </section>
+
+  <section>
+    <title>Workspace configuration:</title>
+
+    <para><emphasis role="bold">name</emphasis>: The name of a
+    workspace</para>
+
+    <para><emphasis role="bold">auto-init-root-nodetype</emphasis>: DEPRECATED
+    in JCR 1.9 (use initializer). The node type for root node
+    initialization.</para>
+
+    <para><emphasis role="bold">container</emphasis>: Workspace data container
+    (physical storage) configuration.</para>
+
+    <para><emphasis role="bold">initializer</emphasis>: Workspace initializer
+    configuration.</para>
+
+    <para><emphasis role="bold">cache</emphasis>: Workspace storage cache
+    configuration.</para>
+
+    <para><emphasis role="bold">query-handler</emphasis>: Query handler
+    configuration.</para>
+
+    <para><emphasis role="bold">auto-init-permissions</emphasis>: DEPRECATED
+    in JCR 1.9 (use initializer). Default permissions of the root node. It is
+    defined as a set of semicolon-delimited permissions containing a group of
+    space-delimited identities (user, group, etc, see Organization service
+    documentation for details) and the type of permission. For example, any
+    read; <emphasis role="bold">:/admin read;</emphasis>:/admin add_node;
+    <emphasis role="bold">:/admin set_property;</emphasis>:/admin remove means
+    that users from group <emphasis role="bold">admin</emphasis> have all
+    permissions and other users have only a 'read' permission.</para>
+  </section>
+
+  <section>
+    <title>Workspace data container configuration:</title>
+
+    <para><emphasis role="bold">class:</emphasis> A workspace data container
+    class name.</para>
+
+    <para><emphasis role="bold">properties</emphasis>: The list of properties
+    (name-value pairs) for the concrete Workspace data container.</para>
+
+    <table>
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry>trigger_events_for_descendents_on_rename</entry>
+
+            <entry>indicates if need to trigger events for descendents on
+            rename or not. It allows to increase performance on rename
+            operation but in same time Observation'll not notified, has
+            default value true</entry>
+          </row>
+
+          <row>
+            <entry>lazy-node-iterator-page-size</entry>
+
+            <entry>the page size for lazy iterator. Indicates how many nodes
+            can be retrieved from storage per request. The default value is
+            100</entry>
+          </row>
+
+          <row>
+            <entry>acl-bloomfilter-false-positive-probability</entry>
+
+            <entry>ACL Bloom-filter desired false positive probability. Range
+            [0..1]. Default value 0.1d. (See the note below)</entry>
+          </row>
+
+          <row>
+            <entry>acl-bloomfilter-elements-number</entry>
+
+            <entry>Expected number of ACL-elements in the Bloom-filter.
+            Default value 1000000. (See the note below)</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <note>
+      <para>Bloom filters are not supported by all the cache implementations
+      so far only the inplementation for infinispan supports it.</para>
+    </note>
+
+    <para><emphasis role="bold">value-storages</emphasis>: The list of value
+    storage plugins.</para>
+  </section>
+
+  <section id="JCR.ConfigurationPersister.ValueStoragePlugin">
+    <title>Value Storage plugin configuration (for data container):</title>
+
+    <note>
+      <para>The value-storage element is optional. If you don't include it,
+      the values will be stored as BLOBs inside the database.</para>
+    </note>
+
+    <para><emphasis role="bold">value-storage</emphasis>: Optional value
+    Storage plugin definition.</para>
+
+    <para><emphasis role="bold">class</emphasis>: A value storage plugin class
+    name (attribute).</para>
+
+    <para><emphasis role="bold">properties</emphasis>: The list of properties
+    (name-value pairs) for a concrete Value Storage plugin.</para>
+
+    <para><emphasis role="bold">filters</emphasis>: The list of filters
+    defining conditions when this plugin is applicable.</para>
+  </section>
+
+  <section>
+    <title>Initializer configuration (optional):</title>
+
+    <para><emphasis role="bold">class</emphasis>: Initializer implementation
+    class.</para>
+
+    <para><emphasis role="bold">properties</emphasis>: The list of properties
+    (name-value pairs). Properties are supported.</para>
+
+    <para><emphasis role="bold">root-nodetype</emphasis>: The node type for
+    root node initialization.</para>
+
+    <para><emphasis role="bold">root-permissions</emphasis>: Default
+    permissions of the root node. It is defined as a set of
+    semicolon-delimited permissions containing a group of space-delimited
+    identities (user, group etc, see Organization service documentation for
+    details) and the type of permission. For example any read; <emphasis
+    role="bold">:/admin read;</emphasis>:/admin add_node; <emphasis
+    role="bold">:/admin set_property;</emphasis>:/admin remove means that
+    users from group <emphasis role="bold">admin</emphasis> have all
+    permissions and other users have only a 'read' permission.</para>
+
+    <para>Configurable initializer adds a capability to override workspace
+    initial startup procedure (used for Clustering). Also it replaces
+    workspace element parameters auto-init-root-nodetype and
+    auto-init-permissions with root-nodetype and root-permissions.</para>
+  </section>
+
+  <section>
+    <title>Cache configuration:</title>
+
+    <para><emphasis role="bold">enabled</emphasis>: If workspace cache is
+    enabled or not.</para>
+
+    <para><emphasis role="bold">class</emphasis>: Cache implementation class,
+    optional from 1.9. Default value is.
+    org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl.</para>
+
+    <para>Cache can be configured to use concrete implementation of
+    WorkspaceStorageCache interface. JCR core has two implementation to
+    use:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>LinkedWorkspaceStorageCacheImpl - default, with configurable
+        read behavior and statistic.</para>
+      </listitem>
+
+      <listitem>
+        <para>WorkspaceStorageCacheImpl - pre 1.9, still can be used.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para><emphasis role="bold">properties</emphasis>: The list of properties
+    (name-value pairs) for Workspace cache.</para>
+
+    <para><emphasis role="bold">max-size</emphasis>: Cache maximum size
+    (maxSize prior to v.1.9).</para>
+
+    <para><emphasis role="bold">live-time</emphasis>: Cached item live time
+    (liveTime prior to v.1.9).</para>
+
+    <para>From 1.9 LinkedWorkspaceStorageCacheImpl supports additional
+    optional parameters.</para>
+
+    <para><emphasis role="bold">statistic-period</emphasis>: Period (time
+    format) of cache statistic thread execution, 5 minutes by default.</para>
+
+    <para><emphasis role="bold">statistic-log</emphasis>: If true cache
+    statistic will be printed to default logger (log.info), false by default
+    or not.</para>
+
+    <para><emphasis role="bold">statistic-clean</emphasis>: If true cache
+    statistic will be cleaned after was gathered, false by default or
+    not.</para>
+
+    <para><emphasis role="bold">cleaner-period</emphasis>: Period of the
+    eldest items remover execution, 20 minutes by default.</para>
+
+    <para><emphasis role="bold">blocking-users-count</emphasis>: Number of
+    concurrent users allowed to read cache storage, 0 - unlimited by
+    default.</para>
+  </section>
+
+  <section>
+    <title>Query Handler configuration:</title>
+
+    <para><emphasis role="bold">class</emphasis>: A Query Handler class
+    name.</para>
+
+    <para><emphasis role="bold">properties</emphasis>: The list of properties
+    (name-value pairs) for a Query Handler (indexDir).</para>
+
+    <para>Properties and advanced features described in <link
+    linkend="JCR.SearchConfiguration">Search Configuration</link>.</para>
+  </section>
+
+  <section>
+    <title>Lock Manager configuration:</title>
+
+    <para><emphasis role="bold">time-out</emphasis>: Time after which the
+    unused global lock will be removed.</para>
+
+    <para><emphasis role="bold">persister</emphasis>: A class for storing lock
+    information for future use. For example, remove lock after jcr
+    restart.</para>
+
+    <para><emphasis role="bold">path</emphasis>: A lock folder. Each workspace
+    has its own one.</para>
+
+    <note>
+      <para>Also see <link
+      linkend="JCR.eXoJCRconfiguration.LockRemoverMaxThreads"><emphasis
+      role="bold">lock-remover-max-threads</emphasis></link> repository
+      configuration parameter.</para>
+    </note>
+
+    <programlisting language="xml">&lt;!ELEMENT repository-service (repositories)&gt;
+&lt;!ATTLIST repository-service default-repository NMTOKEN #REQUIRED&gt;
+&lt;!ELEMENT repositories (repository)&gt;
+&lt;!ELEMENT repository (security-domain,access-control,session-max-age,authentication-policy,workspaces)&gt;
+&lt;!ATTLIST repository
+  default-workspace NMTOKEN #REQUIRED
+  name NMTOKEN #REQUIRED
+  system-workspace NMTOKEN #REQUIRED
+&gt;
+&lt;!ELEMENT security-domain (#PCDATA)&gt;
+&lt;!ELEMENT access-control (#PCDATA)&gt;
+&lt;!ELEMENT session-max-age (#PCDATA)&gt;
+&lt;!ELEMENT authentication-policy (#PCDATA)&gt;
+&lt;!ELEMENT workspaces (workspace+)&gt;
+&lt;!ELEMENT workspace (container,initializer,cache,query-handler)&gt;
+&lt;!ATTLIST workspace name NMTOKEN #REQUIRED&gt;
+&lt;!ELEMENT container (properties,value-storages)&gt;
+&lt;!ATTLIST container class NMTOKEN #REQUIRED&gt;
+&lt;!ELEMENT value-storages (value-storage+)&gt;
+&lt;!ELEMENT value-storage (properties,filters)&gt;
+&lt;!ATTLIST value-storage class NMTOKEN #REQUIRED&gt;
+&lt;!ELEMENT filters (filter+)&gt;
+&lt;!ELEMENT filter EMPTY&gt;
+&lt;!ATTLIST filter property-type NMTOKEN #REQUIRED&gt;
+&lt;!ELEMENT initializer (properties)&gt;
+&lt;!ATTLIST initializer class NMTOKEN #REQUIRED&gt;
+&lt;!ELEMENT cache (properties)&gt;
+&lt;!ATTLIST cache 
+  enabled NMTOKEN #REQUIRED
+  class NMTOKEN #REQUIRED
+&gt;
+&lt;!ELEMENT query-handler (properties)&gt;
+&lt;!ATTLIST query-handler class NMTOKEN #REQUIRED&gt;
+&lt;!ELEMENT access-manager (properties)&gt;
+&lt;!ATTLIST access-manager class NMTOKEN #REQUIRED&gt;
+&lt;!ELEMENT lock-manager (time-out,persister)&gt;
+&lt;!ELEMENT time-out (#PCDATA)&gt;
+&lt;!ELEMENT persister (properties)&gt;
+&lt;!ELEMENT properties (property+)&gt;
+&lt;!ELEMENT property EMPTY&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>Help application to prohibit the use of closed sessions</title>
+
+    <para>Products that use eXo JCR, sometimes missuse it since they continue
+    to use a session that has been closed through a method call on a node, a
+    property or even the session itself. To prevent bad practices we propose
+    three modes which are the folllowing:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>If the system property
+        <emphasis>exo.jcr.prohibit.closed.session.usage</emphasis> has been
+        set to <emphasis>true</emphasis>, then a RepositoryException will be
+        thrown any time an application will try to access to a closed session.
+        In the stack trace, you will be able to know the call stack that
+        closes the session.</para>
+      </listitem>
+
+      <listitem>
+        <para>If the system property
+        <emphasis>exo.jcr.prohibit.closed.session.usage</emphasis> has not
+        been set and the system property
+        <emphasis>exo.product.developing</emphasis> has been set to
+        <emphasis>true</emphasis>, then a warning will be logged in the log
+        file with the full stack trace in order to help identifying the root
+        cause of the issue. In the stack trace, you will be able to know the
+        call stack that closes the session.</para>
+      </listitem>
+
+      <listitem>
+        <para>If none of the previous system properties have been set, then we
+        will ignore that the issue and let the application use the closed
+        session as it was possible before without doing anything in order to
+        allow applications to migrate step by step.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section>
+    <title>Getting the effective configuration at Runtime of all the
+    repositories</title>
+
+    <para>The effective configuration of all the repositories and their
+    workspaces can be known thanks to the method
+    <emphasis>getConfigurationXML</emphasis>() that is exposed through JMX at
+    the <emphasis>RepositoryServiceConfiguration</emphasis> level in case of a
+    <emphasis>PortalContainer</emphasis> the name of the related MBean will be
+    of type
+    <emphasis>exo:portal=${portal-container-name},service=RepositoryServiceConfiguration</emphasis>.
+    This method will give you the effective configuration in XML format that
+    has been really interpreted by the the JCR core. This could be helpful to
+    understand how your repositories/workspaces are configured especially if
+    you would like to overwrite the configuration for some reasons.</para>
+  </section>
+</chapter>

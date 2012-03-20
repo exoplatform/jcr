@@ -184,9 +184,9 @@ public class ValueFileIOHelper
                   // not succeeded - copy bytes, temp file will be deleted by transient ValueData
                   if (LOG.isDebugEnabled())
                   {
-                     LOG
-                        .debug("Value spool file move (rename) to Values Storage is not succeeded. Trying bytes copy. Spool file: "
-                           + tempFile.getAbsolutePath() + ". Destination: " + file.getAbsolutePath());
+                     LOG.debug("Value spool file move (rename) to Values Storage is not succeeded. "
+                        + "Trying bytes copy. Spool file: " + tempFile.getAbsolutePath() + ". Destination: "
+                        + file.getAbsolutePath());
                   }
 
                   copyClose(new FileInputStream(tempFile), new FileOutputStream(file));
@@ -301,8 +301,6 @@ public class ValueFileIOHelper
          ReadableByteChannel inch = inFile ? ((FileInputStream)in).getChannel() : Channels.newChannel(in);
          WritableByteChannel outch = outFile ? ((FileOutputStream)out).getChannel() : Channels.newChannel(out);
 
-         // TODO buffers show same perfomance as bytes copy via Input/Output streams
-         // NIO buffers article http://www.odi.ch/weblog/posting.php?posting=371
          long size = 0;
          int r = 0;
          ByteBuffer buff = ByteBuffer.allocate(IOBUFFER_SIZE);

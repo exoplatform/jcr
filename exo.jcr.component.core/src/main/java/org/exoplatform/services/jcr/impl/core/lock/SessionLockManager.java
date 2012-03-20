@@ -106,15 +106,30 @@ public interface SessionLockManager extends SessionLifecycleListener
     * Returns <code>true</code> if the specified session holds a lock on the given node; otherwise
     * returns <code>false</code>. <p/> Note that <code>isLockHolder(session, node)==true</code>
     * implies <code>holdsLock(node)==true</code>.
-    * 
+    *
     * @param session
     *          session
     * @param node
-    *          node
+    *          node data
+    * @return if the specified session holds a lock on the given node; otherwise returns
+    *         <code>false</code>
+    * @deprecated
+    */
+   boolean isLockHolder(NodeData node) throws RepositoryException;
+
+   /**
+    * Returns <code>true</code> if the specified session holds a lock on the given node; otherwise
+    * returns <code>false</code>. <p/> Note that <code>isLockHolder(session, node)==true</code>
+    * implies <code>holdsLock(node)==true</code>.
+    * 
+    * @param session
+    *          session
+    * @param nodeImpl
+    *          node implementation
     * @return if the specified session holds a lock on the given node; otherwise returns
     *         <code>false</code>
     */
-   boolean isLockHolder(NodeData node) throws RepositoryException;
+   boolean isLockHolder(NodeImpl nodeImpl) throws RepositoryException;
 
    /**
     * Invoked by a session to inform that a lock token has been removed.

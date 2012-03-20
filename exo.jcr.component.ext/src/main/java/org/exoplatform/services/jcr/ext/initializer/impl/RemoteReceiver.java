@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.initializer.impl;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.ext.initializer.RemoteWorkspaceInitializationException;
 import org.exoplatform.services.jcr.ext.replication.storage.IncomeDataContext;
 import org.exoplatform.services.jcr.ext.replication.storage.Member;
@@ -117,10 +118,12 @@ public class RemoteReceiver implements PacketListener, StateListener
                   RandomChangesFile changesFile;
                   try
                   {
-                     File subDir = new File(tempDir.getCanonicalPath() + File.separator + System.currentTimeMillis());
-                     subDir.mkdirs();
+                     File subDir =
+                        new File(PrivilegedFileHelper.getCanonicalPath(tempDir) + File.separator
+                           + System.currentTimeMillis());
+                     PrivilegedFileHelper.mkdirs(subDir);
 
-                     File wdFile = File.createTempFile("wdFile", ".0", subDir);
+                     File wdFile = PrivilegedFileHelper.createTempFile("wdFile", ".0", subDir);
 
                      changesFile = new RandomChangesFile(wdFile, wdPacket.getCRC(), 1, new ResourcesHolder());
                   }

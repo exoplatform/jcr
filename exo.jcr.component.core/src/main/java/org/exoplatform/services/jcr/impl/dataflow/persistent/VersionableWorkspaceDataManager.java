@@ -26,11 +26,14 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NullItemData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -47,15 +50,15 @@ import javax.jcr.RepositoryException;
  * mix:versionable
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
- * @version $Id$ * @version $Id: VersionableWorkspaceDataManager.java 1518 2010-01-20 23:33:30Z
+ * @version $Id$ 
  */
 
-public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWorkspaceDataManager
+public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspaceDataManager
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.VersionableWorkspaceDataManager");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.VersionableWorkspaceDataManager");
 
-   private ACLInheritanceSupportedWorkspaceDataManager versionDataManager;
+   private ShareableSupportedWorkspaceDataManager versionDataManager;
 
    public VersionableWorkspaceDataManager(CacheableWorkspaceDataManager persistentManager)
    {
@@ -68,7 +71,7 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
    public void setSystemDataManager(DataManager systemDataManager)
    {
 
-      this.versionDataManager = (ACLInheritanceSupportedWorkspaceDataManager)systemDataManager;
+      this.versionDataManager = (ShareableSupportedWorkspaceDataManager)systemDataManager;
    }
 
    /**
@@ -82,6 +85,34 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
          return versionDataManager.getChildNodesData(nodeData);
       }
       return super.getChildNodesData(nodeData);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean getChildNodesDataByPage(NodeData nodeData, int fromOrderNum, int toOrderNum, List<NodeData> childs)
+      throws RepositoryException
+   {
+      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      {
+         return versionDataManager.getChildNodesDataByPage(nodeData, fromOrderNum, toOrderNum, childs);
+      }
+      return super.getChildNodesDataByPage(nodeData, fromOrderNum, toOrderNum, childs);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public List<NodeData> getChildNodesData(final NodeData nodeData, final List<QPathEntryFilter> patternFilters)
+      throws RepositoryException
+   {
+      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      {
+         return versionDataManager.getChildNodesData(nodeData, patternFilters);
+      }
+      return super.getChildNodesData(nodeData, patternFilters);
    }
 
    /**
@@ -114,6 +145,20 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
     * {@inheritDoc}
     */
    @Override
+   public List<PropertyData> getChildPropertiesData(final NodeData nodeData,
+      final List<QPathEntryFilter> itemDataFilters) throws RepositoryException
+   {
+      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      {
+         return versionDataManager.getChildPropertiesData(nodeData, itemDataFilters);
+      }
+      return super.getChildPropertiesData(nodeData, itemDataFilters);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public List<PropertyData> listChildPropertiesData(final NodeData nodeData) throws RepositoryException
    {
       if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
@@ -129,15 +174,33 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
    @Override
    public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
    {
+      return getItemData(parentData, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
+   {
+      return getItemData(parentData, name, itemType, true);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType, boolean createNullItemData)
+      throws RepositoryException
+   {
       if (parentData != null)
       {
          final QPath ipath = QPath.makeChildPath(parentData.getQPath(), name);
          if (isSystemDescendant(ipath) && !this.equals(versionDataManager))
          {
-            return versionDataManager.getItemData(parentData, name);
+            return versionDataManager.getItemData(parentData, name, itemType, createNullItemData);
          }
       }
-      return super.getItemData(parentData, name);
+      return super.getItemData(parentData, name, itemType, createNullItemData);
    }
 
    /**
@@ -148,30 +211,43 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
    {
       // from cache at first
       ItemData cdata = persistentManager.getCachedItemData(identifier);
-      if (cdata != null)
+      if (cdata != null && !(cdata instanceof NullItemData))
+      {
          return super.getItemData(identifier);
+      }
 
       if (!this.equals(versionDataManager) && !identifier.equals(Constants.ROOT_UUID))
       {
          // search in System cache for /jcr:system nodes only
          cdata = versionDataManager.persistentManager.getCachedItemData(identifier);
-         if (cdata != null)
+         if (cdata != null && !(cdata instanceof NullItemData))
+         {
             if (isSystemDescendant(cdata.getQPath()))
+            {
                return versionDataManager.getItemData(identifier);
+            }
             else
+            {
                return null;
+            }
+         }
       }
 
       // then from persistence
       ItemData data = super.getItemData(identifier);
       if (data != null)
+      {
          return data;
+      }
+
       else if (!this.equals(versionDataManager))
       {
          // try from version storage if not the same
          data = versionDataManager.getItemData(identifier);
          if (data != null && isSystemDescendant(data.getQPath()))
+         {
             return data;
+         }
       }
       return null;
    }
@@ -209,19 +285,18 @@ public class VersionableWorkspaceDataManager extends ACLInheritanceSupportedWork
                // we have pair of logs for system and non-system (this) workspaces
                final String pairId = IdGenerator.generate();
 
-               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType(),
-                  pairId));
-               nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType(),
-                  pairId));
+               versionLogs.addLog(PlainChangesLogImpl.createCopy(vstates, pairId, changes));
+               nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, pairId, changes));
             }
             else
             {
-               versionLogs.addLog(new PlainChangesLogImpl(vstates, changes.getSessionId(), changes.getEventType()));
+               versionLogs.addLog(PlainChangesLogImpl.createCopy(vstates, changes));
+               nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, changes));
             }
          }
          else if (nvstates.size() > 0)
          {
-            nonVersionLogs.addLog(new PlainChangesLogImpl(nvstates, changes.getSessionId(), changes.getEventType()));
+            nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, changes));
          }
       }
 

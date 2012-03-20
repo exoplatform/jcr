@@ -18,7 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock;
 
-import org.exoplatform.services.jcr.access.SystemIdentity;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.LockPersisterEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -26,6 +27,7 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -37,9 +39,11 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 
 import javax.jcr.RepositoryException;
@@ -117,16 +121,23 @@ public class FileSystemLockPersister implements LockPersister
    public void add(LockData lock) throws LockException
    {
       log.debug("add event fire");
-      File lockFile = new File(rootDir, lock.getNodeIdentifier());
+      final File lockFile = new File(rootDir, lock.getNodeIdentifier());
 
-      if (lockFile.exists())
+      if (PrivilegedFileHelper.exists(lockFile))
       {
          throw new LockException("Persistent lock information already exists");
       }
 
       try
       {
-         lockFile.createNewFile();
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws Exception
+            {
+               lockFile.createNewFile();
+               return null;
+            }
+         });
       }
       catch (IOException e)
       {
@@ -144,14 +155,16 @@ public class FileSystemLockPersister implements LockPersister
    {
       log.debug("remove event fire");
       File lockFile = new File(rootDir, lock.getNodeIdentifier());
-      if (!lockFile.exists())
+      if (!PrivilegedFileHelper.exists(lockFile))
       {
          // throw new LockException("Persistent lock information not exists");
          log.warn("Persistent lock information  for node " + lock.getNodeIdentifier() + " doesn't exists");
          return;
       }
-      if (!lockFile.delete())
+      if (!PrivilegedFileHelper.delete(lockFile))
+      {
          throw new LockException("Fail to remove lock information");
+      }
 
    }
 
@@ -168,21 +181,22 @@ public class FileSystemLockPersister implements LockPersister
 
       TransactionChangesLog transactionChangesLog = new TransactionChangesLog();
 
-      String[] list = rootDir.list();
+      String[] list = PrivilegedFileHelper.list(rootDir);
 
       try
       {
          for (int i = 0; i < list.length; i++)
          {
             PlainChangesLog plainChangesLog =
-               new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
+               new PlainChangesLogImpl(new ArrayList<ItemState>(), IdentityConstants.SYSTEM, ExtendedEvent.UNLOCK);
 
             NodeData lockedNodeData = (NodeData)dataManager.getItemData(list[i]);
             // No item no problem
             if (lockedNodeData != null)
             {
                PropertyData dataLockIsDeep =
-                  (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKISDEEP, 0));
+                  (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKISDEEP, 0),
+                     ItemType.PROPERTY);
 
                if (dataLockIsDeep != null)
                {
@@ -192,11 +206,14 @@ public class FileSystemLockPersister implements LockPersister
                }
 
                PropertyData dataLockOwner =
-                  (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKOWNER, 0));
+                  (PropertyData)dataManager.getItemData(lockedNodeData, new QPathEntry(Constants.JCR_LOCKOWNER, 0),
+                     ItemType.PROPERTY);
                if (dataLockOwner != null)
+               {
                   plainChangesLog.add(ItemState.createDeletedState(new TransientPropertyData(QPath.makeChildPath(
                      lockedNodeData.getQPath(), Constants.JCR_LOCKOWNER), dataLockOwner.getIdentifier(), 0,
                      dataLockOwner.getType(), dataLockOwner.getParentIdentifier(), dataLockOwner.isMultiValued())));
+               }
 
                if (plainChangesLog.getSize() > 0)
                {
@@ -214,12 +231,14 @@ public class FileSystemLockPersister implements LockPersister
          for (int i = 0; i < list.length; i++)
          {
             File lockFile = new File(rootDir, list[i]);
-            if (!lockFile.exists())
+            if (!PrivilegedFileHelper.exists(lockFile))
             {
                log.warn("Persistent lock information for node id " + list[i] + " doesn't exists");
             }
-            if (!lockFile.delete())
+            if (!PrivilegedFileHelper.delete(lockFile))
+            {
                throw new LockException("Fail to remove lock information");
+            }
          }
       }
       catch (RepositoryException e)
@@ -260,14 +279,6 @@ public class FileSystemLockPersister implements LockPersister
       {
          log.debug("Stoping FileSystemLockPersister");
       }
-      try
-      {
-         removeAll();
-      }
-      catch (LockException e)
-      {
-         log.error(e.getLocalizedMessage(), e);
-      }
       if (log.isDebugEnabled())
       {
          log.debug("FileSystemLockPersister stoped");
@@ -285,20 +296,24 @@ public class FileSystemLockPersister implements LockPersister
       String root = config.getParameterValue(PARAM_ROOT_DIR);
 
       if (root == null)
+      {
          throw new RepositoryConfigurationException("Repository service configuration." + " Source name ("
             + PARAM_ROOT_DIR + ") is expected");
+      }
       rootDir = new File(root);
-      if (rootDir.exists())
+      if (PrivilegedFileHelper.exists(rootDir))
       {
-         if (!rootDir.isDirectory())
+         if (!PrivilegedFileHelper.isDirectory(rootDir))
          {
             throw new RepositoryConfigurationException("'" + root + "' is not a directory");
          }
       }
       else
       {
-         if (!rootDir.mkdirs())
+         if (!PrivilegedFileHelper.mkdirs(rootDir))
+         {
             throw new RepositoryException("Can't create dir" + root);
+         }
       }
    }
 }

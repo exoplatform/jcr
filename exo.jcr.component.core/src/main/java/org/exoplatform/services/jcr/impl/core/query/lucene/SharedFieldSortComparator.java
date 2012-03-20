@@ -16,13 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
-
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.ScoreDoc;
@@ -33,6 +26,7 @@ import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -41,6 +35,15 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
 
 /**
  * Implements a <code>SortComparator</code> which knows how to sort on a lucene
@@ -48,6 +51,11 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
  */
 public class SharedFieldSortComparator extends SortComparator
 {
+
+   /**
+    * The logger 
+    */
+   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SharedFieldSortComparator");
 
    /**
     * The name of the shared field in the lucene index.
@@ -96,6 +104,7 @@ public class SharedFieldSortComparator extends SortComparator
     * @return a <code>ScoreDocComparator</code> for the
     * @throws IOException if an error occurs while reading from the index.
     */
+   @Override
    public ScoreDocComparator newComparator(IndexReader reader, String relPath) throws IOException
    {
 
@@ -126,6 +135,7 @@ public class SharedFieldSortComparator extends SortComparator
    /**
     * @throws UnsupportedOperationException always.
     */
+   @Override
    protected Comparable getComparable(String termtext)
    {
       throw new UnsupportedOperationException();
@@ -317,7 +327,7 @@ public class SharedFieldSortComparator extends SortComparator
             ItemData parent = ism.getItemData(uuid);
             if (!parent.isNode())
                throw new InvalidItemStateException();
-            ItemData property = getItemData((NodeData)parent, relPath);
+            ItemData property = getItemData((NodeData)parent, relPath, ItemType.PROPERTY);
             if (property != null)
             {
                if (property.isNode())
@@ -333,13 +343,13 @@ public class SharedFieldSortComparator extends SortComparator
          }
          catch (Exception e)
          {
-            e.printStackTrace();
+            LOG.error(e.getLocalizedMessage(), e);
             return null;
          }
       }
    }
 
-   private ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException
+   private ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException
    {
       if (name.getName().equals(JCRPath.PARENT_RELPATH) && name.getNamespace().equals(Constants.NS_DEFAULT_URI))
       {
@@ -349,19 +359,26 @@ public class SharedFieldSortComparator extends SortComparator
             return ism.getItemData(parent.getParentIdentifier());
       }
 
-      return ism.getItemData(parent, name);
+      return ism.getItemData(parent, name, itemType);
 
    }
 
-   private ItemData getItemData(NodeData parent, QPath relPath) throws RepositoryException
+   private ItemData getItemData(NodeData parent, QPath relPath, ItemType itemType) throws RepositoryException
    {
 
-      QPathEntry[] relPathEntries =relPath.getEntries(); //relPath.getRelPath(relPath.getDepth());
+      QPathEntry[] relPathEntries = relPath.getEntries(); //relPath.getRelPath(relPath.getDepth());
 
       ItemData item = parent;
       for (int i = 0; i < relPathEntries.length; i++)
       {
-         item = getItemData(parent, relPathEntries[i]);
+         if (i == relPathEntries.length - 1)
+         {
+            item = getItemData(parent, relPathEntries[i], itemType);
+         }
+         else
+         {
+            item = getItemData(parent, relPathEntries[i], ItemType.UNKNOWN);
+         }
 
          if (item == null)
             break;

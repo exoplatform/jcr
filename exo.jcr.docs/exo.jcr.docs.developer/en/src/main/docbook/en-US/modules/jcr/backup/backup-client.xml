@@ -1,0 +1,1904 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.BackupClient">
+  <?dbhtml filename="ch-backup-client.html"?>
+
+  <title>HTTPBackupAgent and backup client</title>
+
+  <warning>
+    <para>For this service, you should configure the <emphasis
+    role="bold">org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister</emphasis>
+    in order to save the changes of the repository configuration. See the
+    <link
+    linkend="JCR.eXoJCRconfiguration.PortalAndStandaloneConfiguration">eXo JCR
+    Configuration article at chapter '2 Portal and Standalone
+    configuration'</link> .</para>
+  </warning>
+
+  <highlights>
+    <para>GateIn uses context /portal/rest, therefore you need to use
+    http://host:port/portal/rest/ instread of http://host:port/rest/</para>
+
+    <para>GateIn uses form authentication, so first you need to login (url to
+    form authentication is http://host:port/portal/login) and then perform
+    requests.</para>
+  </highlights>
+
+    <para>The service
+    org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgent is
+    REST-based front-end to service
+    org.exoplatform.services.jcr.ext.backup.BackupManager. HTTPBackupAgent is
+    representation BackupManager to creation backup, restore, getting status
+    of current or completed backup/restore, etc.</para>
+
+    <para>The backup client is http client for HTTPBackupAgent.</para>
+
+  <section>
+    <title>HTTPBackupAgent</title>
+
+    <para>The HTTPBackupAgent is based on REST (see details about the <link
+    linkend="WS.RestFramework">REST Framework</link>).</para>
+
+    <para>HTTPBackupAgent is using POST and GET methods for request.</para>
+
+    <para>The HTTPBackupAgent allows :<itemizedlist>
+        <listitem>
+          <para>Start backup</para>
+        </listitem>
+
+        <listitem>
+          <para>Stop backup</para>
+        </listitem>
+
+        <listitem>
+          <para>Restore from backup</para>
+        </listitem>
+
+        <listitem>
+          <para>Delete the workspace</para>
+        </listitem>
+
+        <listitem>
+          <para>Get information about backup service (BackupManager)</para>
+        </listitem>
+
+        <listitem>
+          <para>Get information about current backup / restores / completed
+          backups</para>
+        </listitem>
+      </itemizedlist></para>
+
+    <section>
+      <title>HTTPBackupAgent methods</title>
+
+      <section>
+        <title>Starting Backup Service</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/start/{repo}/{ws}</emphasis></para>
+
+        <para>Start backup on specific workspace</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/start/{repo}/{ws}</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> json.</para>
+
+        <para><emphasis role="bold">Method</emphasis>: POST</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis><itemizedlist>
+            <listitem>
+              <para>{repo} - the repository name;</para>
+            </listitem>
+
+            <listitem>
+              <para>{ws} - the workspace name;</para>
+            </listitem>
+
+            <listitem>
+              <para>BackupConfigBean - the JSON to BackupConfigBean.</para>
+            </listitem>
+          </itemizedlist></para>
+
+        <para>The BackupConfigBean:</para>
+
+        <programlisting>header :
+"Content-Type" = "application/json; charset=UTF-8"
+
+body:
+&lt;JSON to BackupConfigBean&gt;</programlisting>
+
+        <para>The JSON bean of
+        org.exoplatform.services.jcr.ext.backup.server.bean.BackupConfigBean
+        :</para>
+
+        <programlisting language="javascript">{"incrementalRepetitionNumber":&lt;Integer&gt;,"incrementalBackupJobConfig":&lt;JSON to BackupJobConfig&gt;,
+"backupType":&lt;Integer&gt;,"fullBackupJobConfig":&lt;JSON to BackupJobConfig&gt;,
+"incrementalJobPeriod":&lt;Long&gt;,"backupDir":"&lt;String&gt;"}</programlisting>
+
+        <para>Where :</para>
+
+        <programlisting>backupType                  - the type of backup:
+                                  0 - full backup only;
+                                  1 - full and incremental backup.
+backupDir                   - the path to backup folder;
+incrementalJobPeriod        - the incremental job period;
+incrementalRepetitionNumber - the incremental repetition number;
+fullBackupJobConfig         - the configuration to full backup, JSON to BackupJobConfig;
+incrementalJobPeriod        - the configuration to incremental backup, JSON to BackupJobConfig.</programlisting>
+
+        <para>The JSON bean of
+        org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupJobConfig
+        :</para>
+
+        <programlisting>{"parameters":[&lt;JSON to Pair&gt;, ..., &lt;JSON to pair&gt; ],"backupJob":"&lt;String&gt;"}</programlisting>
+
+        <para>Where:</para>
+
+        <programlisting>backupJob  - the FQN (fully qualified name) to BackupJob class;
+parameters - the list of JSON of Pair.</programlisting>
+
+        <para>The JSON bean of
+        org.exoplatform.services.jcr.ext.backup.server.bean.response.Pair
+        :</para>
+
+        <programlisting language="java">{"name":"&lt;String&gt;","value":"&lt;String&gt;"}</programlisting>
+
+        <para>Where:</para>
+
+        <programlisting>name  - the name of parameter;
+value - the value of parameter.</programlisting>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful<programlisting>status code = 200</programlisting></para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure<programlisting>status code = 404            - the not found repositry '{repo}' or workspace '{ws}'
+status code = 500            - the other unknown errors
+failure message in response  - the description of failure</programlisting></para>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Stopping Backup Service</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/stop/{id}</emphasis></para>
+
+        <para>Stop backup with identifier {id}.</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/stop/{id}</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> plain text</para>
+
+        <para><emphasis role="bold">Method</emphasis>: GET</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis><itemizedlist>
+            <listitem>
+              <para>{id} - the identifier of backup</para>
+            </listitem>
+          </itemizedlist></para>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful<programlisting>status code = 200</programlisting></para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure<programlisting>status code = 404            - the no active backup with identifier {id}
+status code = 500            - the other unknown errors
+failure message in response  - the description of failure</programlisting></para>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Backup Info Service</title>
+
+        <para><emphasis role="bold">/rest/jcr-backup/info</emphasis></para>
+
+        <para>Information about the backup service.</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/info</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> json</para>
+
+        <para><emphasis role="bold">Method</emphasis>: GET</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis> no</para>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful</para>
+
+              <para>Return the JSON bean of
+              org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupServiceInfoBean
+              :<programlisting>{"backupLogDir":"&lt;String&gt;","defaultIncrementalJobPeriod":&lt;Long&gt;,"fullBackupType":"&lt;String&gt;","incrementalBackupType":"&lt;String&gt;"}</programlisting>Where:<programlisting>fullBackupType              - the FQN (fully qualified name) of BackupJob class for full backup type;
+incrementalBackupType       - the FQN (fully qualified name) of BackupJob class for incremental backup type;
+backupLogDir                - path to backup folder;
+defaultIncrementalJobPeriod - the default incremental job period.</programlisting></para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure<programlisting>status code = 500            - the unknown error
+failure message in response  - the description of failure</programlisting></para>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Dropping Workspace Service</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/drop-workspace/{repo}/{ws}/{force-session-close}</emphasis></para>
+
+        <para>Delete the workspace from repository /{repo}/{ws}. With this
+        service, you can delete any workspaces regardless of whether the
+        workspace is a backup or has been copied to a backup.</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/drop-workspace/{repo}/{ws}/{force-session-close}</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> plain text</para>
+
+        <para><emphasis role="bold">Method</emphasis>: GET</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis><itemizedlist>
+            <listitem>
+              <para>{repo} - the repository name;</para>
+            </listitem>
+
+            <listitem>
+              <para>{ws} - the workspace name;</para>
+            </listitem>
+
+            <listitem>
+              <para>{force-session-close} - the boolean value : <emphasis
+              role="bold">true</emphasis> - the open sessions on workspace
+              will be closed; <emphasis role="bold">false</emphasis> - will
+              not close open sessions.</para>
+            </listitem>
+          </itemizedlist></para>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful.<programlisting>status code = 200</programlisting></para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure<programlisting>status code = 500            - the other unknown errors;
+                             - not found repositry '{repo}' or workspace '{ws}'
+failure message in response  - the description of failure</programlisting></para>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Backup Info</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/info/backup</emphasis></para>
+
+        <para>Information about the current and completed backups</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/info/backup</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> json</para>
+
+        <para><emphasis role="bold">Method</emphasis>: GET</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis> no</para>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful</para>
+
+              <para>The JSON bean of
+              org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList
+              :<programlisting>{"backups":[&lt;JSON to ShortInfo&gt;,&lt;JSON to ShortInfo&gt;,...,&lt;JSON to ShortInfo&gt;]}</programlisting>The
+              JSON bean of
+              org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfo
+              :<programlisting>{"startedTime":"&lt;String&gt;","backupId":"&lt;String&gt;","type":&lt;Integer&gt;,"state":&lt;Integer&gt;,"backupType":&lt;Integer&gt;,
+"workspaceName":"&lt;String&gt;","finishedTime":"&lt;String&gt;","repositoryName":"&lt;String&gt;"}</programlisting></para>
+
+              <para>Where:<programlisting>type           - the type of ShortInfo :
+                   0 - the ShorInfo to completed backup;
+                  -1 - the ShorInfo to current (active) backup.
+                   1 - the ShorInfo to current restore.
+backupType     - the type of backup:
+                   0 - full backup only;
+                   1 - full and incremental backup.
+backupId       - the identifier of backup;
+workspaceName  - the name of workspace;
+repositoryName - the name of repository.
+startedTime    - the date of started backup. The date in format RFC 1123 (for examle "Thu, 16 Apr 2009 14:56:49 EEST").
+
+The ShorInfo to current (active) backup :
+  finishedTime - no applicable, always an empty string ("");
+  state        - the state of full backup :
+                   0 - starting;
+                   1 - waiting;
+                   2 - working;
+                   4 - finished.
+
+The ShorInfo to completed backup :
+  finishedTime - the date of finished backup. The date in format RFC 1123;
+  state        - no applicable, always zero (0).    
+
+The ShorInfo to current restore :
+  finishedTime - the date of finished backup. The date in format RFC 1123;
+  state        - the state of restore :
+                   1 - started;
+                   2 - successful;
+                   3 - failure;
+                   4 - initialized.</programlisting></para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure<programlisting>status code = 500            - the unknown error
+failure message in response  - the description of failure</programlisting></para>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Current Backups Information</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/info/backup/current</emphasis>
+        Information about the current backups</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/info/backup/current</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> json</para>
+
+        <para><emphasis role="bold">Method</emphasis>: GET</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis> no</para>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful</para>
+
+              <para>The JSON bean of
+              org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList
+              (see item <emphasis
+              role="bold">/rest/jcr-backup/info/backup</emphasis>)</para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure</para>
+
+              <programlisting>status code = 500            - the unknown error
+failure message in response  - the description of failure</programlisting>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Completed Backups Information</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/info/backup/completed</emphasis>
+        Information about the completed backups.</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/info/backup/completed</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> json</para>
+
+        <para><emphasis role="bold">Method</emphasis>: GET</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis> no</para>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful</para>
+
+              <para>The JSON bean of
+              org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList
+              (see item <emphasis
+              role="bold">/rest/jcr-backup/info/backup</emphasis>)</para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure</para>
+
+              <programlisting>status code = 500            - the unknown error
+failure message in response  - the description of failure</programlisting>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Workspace-specific Backup Information</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/info/backup/{repo}/{ws}</emphasis>
+        Information about the current and completed backups for specific
+        workspace.</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/info/backup/{repo}/{ws}</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> json</para>
+
+        <para><emphasis role="bold">Method</emphasis>: GET</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis><itemizedlist>
+            <listitem>
+              <para>{repo} - the repository name</para>
+            </listitem>
+
+            <listitem>
+              <para>{ws} - the workspace name</para>
+            </listitem>
+          </itemizedlist></para>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful</para>
+
+              <para>The JSON bean of
+              org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList
+              (see item <emphasis
+              role="bold">/rest/jcr-backup/info/backup</emphasis>)</para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure</para>
+
+              <programlisting>status code = 500            - the unknown error
+failure message in response  - the description of failure</programlisting>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Single Backup Information</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/info/backup/{id}</emphasis> Detailed
+        information about a current or completed backup with identifier
+        '{id}'.</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/info/backup/{id}</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> json</para>
+
+        <para><emphasis role="bold">Method</emphasis>: GET</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis><itemizedlist>
+            <listitem>
+              <para>{id} - the identifier of backup</para>
+            </listitem>
+          </itemizedlist></para>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful</para>
+
+              <para>The JSON bean of
+              org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfo
+              :<programlisting>{"backupConfig":&lt;JSON to BackupConfigBean&gt;,"startedTime":"&lt;String&gt;","backupId":"&lt;String&gt;","type":&lt;Integer&gt;,
+"state":&lt;Integer&gt;,"backupType":&lt;Integer&gt;,"workspaceName":"&lt;String&gt;","finishedTime":"&lt;String&gt;",
+"repositoryName":"&lt;String&gt;"}</programlisting></para>
+
+              <para>Where:<programlisting>type           - the type of DetailedInfo :
+                   0 - the DetailedInfo to completed backup;
+                  -1 - the DetailedInfo to current (active) backup;
+                   1 - the DetailedInfo to restore.
+backupType     - the type of backup:
+                   0 - full backup only;
+                   1 - full and incremental backup.
+backupId       - the identifier of backup;
+workspaceName  - the name of workspace;
+repositoryName - the name of repository;
+backupConfig   - the JSON to BackupConfigBean.
+
+The DetailedInfo to current (active) backup :
+  startedTime  - the date of started backup. The date in format RFC 1123 (for examle "Thu, 16 Apr 2009 14:56:49 EEST");
+  finishedTime - no applicable, always an empty string ("");
+  state        - the state of full backup :
+                   0 - starting;
+                   1 - waiting;
+                   2 - working;
+                   4 - finished.
+The DetailedInfo to completed backup :
+  startedTime  - the date of started backup. The date in format RFC 1123 (for examle "Thu, 16 Apr 2009 14:56:49 EEST");
+  finishedTime - the date of finished backup. The date in format RFC 1123;
+  state        - no applicable, always zero (0).
+
+The DetailedInfo to restore :
+  startedTime  - the date of started restore. The date in format RFC 1123 (for examle "Thu, 16 Apr 2009 14:56:49 EEST");
+  finishedTime - the date of finished restore;
+  state        - the state of restore :
+                   1 - started;
+                   2 - successful;
+                   3 - failure;
+                   4 - initialized.</programlisting></para>
+
+              <para>The JSON bean of
+              org.exoplatform.services.jcr.ext.backup.server.bean.BackupConfigBean
+              (see item <emphasis
+              role="bold">/rest/jcr-backup/start/{repo}/{ws}</emphasis>).</para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure</para>
+
+              <programlisting>status code = 404            - not found the backup with {id}
+status code = 500            - the unknown error
+failure message in response  - the description of failure</programlisting>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Restores on a Workspace Information</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/info/restore/{repo}/{ws}</emphasis> The
+        information about the last restore on a specific workspace
+        /{repo}/{ws}.</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/info/restore/{repo}/{ws}</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> json</para>
+
+        <para><emphasis role="bold">Method</emphasis>: GET</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis><itemizedlist>
+            <listitem>
+              <para>{repo} - the repository name</para>
+            </listitem>
+
+            <listitem>
+              <para>{ws} - the workspace name</para>
+            </listitem>
+          </itemizedlist></para>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful</para>
+
+              <para>The JSON bean of
+              org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfo
+              (see item <emphasis
+              role="bold">/rest/jcr-backup/info/backup/{id}</emphasis>)</para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure</para>
+
+              <programlisting>status code = 404            - the not found the restore for workspace /{repo}/{ws}
+status code = 500            - the unknown error
+failure message in response  - the description of failure</programlisting>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Restores Information</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/info/restores</emphasis></para>
+
+        <para>The information about the last restores.</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/info/restores</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> json</para>
+
+        <para><emphasis role="bold">Method</emphasis>: GET</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis> no</para>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful</para>
+
+              <para>The JSON bean of
+              org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList
+              (see item <emphasis
+              role="bold">/rest/jcr-backup/info/backup</emphasis>)</para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure</para>
+
+              <programlisting>status code = 500            - the unknown error
+failure message in response  - the description of failure</programlisting>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Restoring Service</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/restore/{repo}/{id}</emphasis></para>
+
+        <para>Restore the workspace from specific backup.</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/restore/{repo}/{id}</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> json.</para>
+
+        <para><emphasis role="bold">Method</emphasis>: POST</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis><itemizedlist>
+            <listitem>
+              <para>{repo} - the repository name;</para>
+            </listitem>
+
+            <listitem>
+              <para>{id} - the identifier to backup; * WorkspaceEntry - the
+              JSON to WorkspaceEntry.</para>
+            </listitem>
+          </itemizedlist></para>
+
+        <para>The RestoreBean:</para>
+
+        <programlisting>header :
+"Content-Type" = "application/json; charset=UTF-8"
+
+body:
+&lt;JSON to WorkspaceEntry&gt;</programlisting>
+
+        <para>The example of JSON bean to
+        org.exoplatform.services.jcr.config.WorkspaceEntry :</para>
+
+        <programlisting>{ "accessManager" : null,
+  "autoInitPermissions" : null,
+  "autoInitializedRootNt" : null,
+  "cache" : { "parameters" : [ { "name" : "max-size",
+            "value" : "10k"
+          },
+          { "name" : "live-time",
+            "value" : "1h"
+          }
+        ],
+      "type" : "org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl"
+    },
+  "container" : { "parameters" : [ { "name" : "source-name",
+            "value" : "jdbcjcr"
+          },
+          { "name" : "dialect",
+            "value" : "hsqldb"
+          },
+          { "name" : "multi-db",
+            "value" : "false"
+          },
+          { "name" : "update-storage",
+            "value" : "false"
+          },
+          { "name" : "max-buffer-size",
+            "value" : "200k"
+          },
+          { "name" : "swap-directory",
+            "value" : "../temp/swap/production"
+          }
+        ],
+      "type" : "org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
+      "valueStorages" : [ { "filters" : [ { "ancestorPath" : null,
+                  "minValueSize" : 0,
+                  "propertyName" : null,
+                  "propertyType" : "Binary"
+                } ],
+            "id" : "system",
+            "parameters" : [ { "name" : "path",
+                  "value" : "../temp/values/production"
+                } ],
+            "type" : "org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"
+          } ]
+    },
+  "initializer" : { "parameters" : [ { "name" : "root-nodetype",
+            "value" : "nt:unstructured"
+          } ],
+      "type" : "org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer"
+    },
+  "lockManager" : { "persister" : { "parameters" : [ { "name" : "path",
+                "value" : "../temp/lock/system"
+              } ],
+          "type" : "org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister"
+        },
+      "timeout" : 15728640
+    },
+  "name" : "production",
+  "queryHandler" : { "analyzer" : {  },
+      "autoRepair" : true,
+      "bufferSize" : 10,
+      "cacheSize" : 1000,
+      "documentOrder" : true,
+      "errorLogSize" : 50,
+      "excerptProviderClass" : "org.exoplatform.services.jcr.impl.core.query.lucene.DefaultHTMLExcerpt",
+      "excludedNodeIdentifers" : null,
+      "extractorBackLogSize" : 100,
+      "extractorPoolSize" : 0,
+      "extractorTimeout" : 100,
+      "indexDir" : "../temp/jcrlucenedb/production",
+      "indexingConfigurationClass" : "org.exoplatform.services.jcr.impl.core.query.lucene.IndexingConfigurationImpl",
+      "indexingConfigurationPath" : null,
+      "maxFieldLength" : 10000,
+      "maxMergeDocs" : 2147483647,
+      "mergeFactor" : 10,
+      "minMergeDocs" : 100,
+      "parameters" : [ { "name" : "index-dir",
+            "value" : "../temp/jcrlucenedb/production"
+          } ],
+      "queryClass" : "org.exoplatform.services.jcr.impl.core.query.QueryImpl",
+      "queryHandler" : null,
+      "resultFetchSize" : 2147483647,
+      "rootNodeIdentifer" : "00exo0jcr0root0uuid0000000000000",
+      "spellCheckerClass" : null,
+      "supportHighlighting" : false,
+      "synonymProviderClass" : null,
+      "synonymProviderConfigPath" : null,
+      "type" : "org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex",
+      "useCompoundFile" : false,
+      "volatileIdleTime" : 3
+    },
+  "uniqueName" : "repository_production"
+}</programlisting>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful</para>
+
+              <programlisting>status code = 200</programlisting>
+
+              <para>Return the JSON bean
+              org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfo
+              of just started restore. For JSON description see item <emphasis
+              role="bold">/rest/jcr-backup/info/backup</emphasis></para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure</para>
+
+              <programlisting>status code = 403            - the already was restore to workspace /{repo}/{ws}
+status code = 404            - the not found repositry '{repo}' or unsupported encoding to workspaceConfig
+status code = 500            - the other unknown errors
+failure message in response  - the description of failure</programlisting>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+
+      <section>
+        <title>Default Workspace Information</title>
+
+        <para><emphasis
+        role="bold">/rest/jcr-backup/info/default-ws-config</emphasis> Will be
+        returned the JSON bean to WorkspaceEntry for default workspace.</para>
+
+        <para><emphasis role="bold">URL:</emphasis>
+        <uri>http://host:port/rest/jcr-backup/info/default-ws-config</uri></para>
+
+        <para><emphasis role="bold">Formats:</emphasis> json</para>
+
+        <para><emphasis role="bold">Method</emphasis>: GET</para>
+
+        <para><emphasis role="bold">Parameters:</emphasis> no</para>
+
+        <para><emphasis role="bold">Returns:</emphasis><itemizedlist>
+            <listitem>
+              <para>Return when being successful</para>
+
+              <para>The JSON bean to
+              org.exoplatform.services.jcr.config.WorkspaceEntry
+              :<programlisting>{ "accessManager" : null,
+  "autoInitPermissions" : null,
+  "autoInitializedRootNt" : null,
+  "cache" : { "parameters" : [ { "name" : "max-size",
+            "value" : "10k"
+          },
+          { "name" : "live-time",
+            "value" : "1h"
+          }
+        ],
+      "type" : "org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl"
+    },
+  "container" : { "parameters" : [ { "name" : "source-name",
+            "value" : "jdbcjcr"
+          },
+          { "name" : "dialect",
+            "value" : "hsqldb"
+          },
+          { "name" : "multi-db",
+            "value" : "false"
+          },
+          { "name" : "update-storage",
+            "value" : "false"
+          },
+          { "name" : "max-buffer-size",
+            "value" : "200k"
+          },
+          { "name" : "swap-directory",
+            "value" : "../temp/swap/production"
+          }
+        ],
+      "type" : "org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
+      "valueStorages" : [ { "filters" : [ { "ancestorPath" : null,
+                  "minValueSize" : 0,
+                  "propertyName" : null,
+                  "propertyType" : "Binary"
+                } ],
+            "id" : "system",
+            "parameters" : [ { "name" : "path",
+                  "value" : "../temp/values/production"
+                } ],
+            "type" : "org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"
+          } ]
+    },
+  "initializer" : { "parameters" : [ { "name" : "root-nodetype",
+            "value" : "nt:unstructured"
+          } ],
+      "type" : "org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer"
+    },
+  "lockManager" : { "persister" : { "parameters" : [ { "name" : "path",
+                "value" : "../temp/lock/system"
+              } ],
+          "type" : "org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister"
+        },
+      "timeout" : 15728640
+    },
+  "name" : "production",
+  "queryHandler" : { "analyzer" : {  },
+      "autoRepair" : true,
+      "bufferSize" : 10,
+      "cacheSize" : 1000,
+      "documentOrder" : true,
+      "errorLogSize" : 50,
+      "excerptProviderClass" : "org.exoplatform.services.jcr.impl.core.query.lucene.DefaultHTMLExcerpt",
+      "excludedNodeIdentifers" : null,
+      "extractorBackLogSize" : 100,
+      "extractorPoolSize" : 0,
+      "extractorTimeout" : 100,
+      "indexDir" : "../temp/jcrlucenedb/production",
+      "indexingConfigurationClass" : "org.exoplatform.services.jcr.impl.core.query.lucene.IndexingConfigurationImpl",
+      "indexingConfigurationPath" : null,
+      "maxFieldLength" : 10000,
+      "maxMergeDocs" : 2147483647,
+      "mergeFactor" : 10,
+      "minMergeDocs" : 100,
+      "parameters" : [ { "name" : "index-dir",
+            "value" : "../temp/jcrlucenedb/production"
+          } ],
+      "queryClass" : "org.exoplatform.services.jcr.impl.core.query.QueryImpl",
+      "queryHandler" : null,
+      "resultFetchSize" : 2147483647,
+      "rootNodeIdentifer" : "00exo0jcr0root0uuid0000000000000",
+      "spellCheckerClass" : null,
+      "supportHighlighting" : false,
+      "synonymProviderClass" : null,
+      "synonymProviderConfigPath" : null,
+      "type" : "org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex",
+      "useCompoundFile" : false,
+      "volatileIdleTime" : 3
+    },
+  "uniqueName" : "repository_production"
+}</programlisting></para>
+            </listitem>
+
+            <listitem>
+              <para>Return when being failure</para>
+
+              <programlisting>status code = 500            - the unknown error
+failure message in response  - the description of failure</programlisting>
+            </listitem>
+          </itemizedlist></para>
+      </section>
+    </section>
+
+    <section>
+      <title>HTTPBackupAgent Configuration</title>
+
+      <para>Add the components
+      org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgent and
+      org.exoplatform.services.jcr.ext.backup.BackupManager to services
+      configuration :</para>
+
+      <programlisting language="xml">&lt;component&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgent&lt;/type&gt;
+&lt;/component&gt;
+
+&lt;component&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.ext.repository.RestRepositoryService&lt;/type&gt;
+&lt;/component&gt;
+
+&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.jcr.ext.backup.BackupManager&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;properties-param&gt;
+      &lt;name&gt;backup-properties&lt;/name&gt;
+      &lt;property name="backup-dir" value="../temp/backup" /&gt;
+    &lt;/properties-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+      <para>In case, if you will restore backup in same workspace (so you will
+      drop previous workspace), you need configure
+      RepositoryServiceConfiguration in order to save the changes of the
+      repository configuration. For example</para>
+
+      <programlisting language="xml">&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.jcr.config.RepositoryServiceConfiguration&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;conf-path&lt;/name&gt;
+      &lt;description&gt;JCR repositories configuration file&lt;/description&gt;
+      &lt;value&gt;jar:/conf/portal/exo-jcr-config.xml&lt;/value&gt;
+    &lt;/value-param&gt;
+    &lt;properties-param&gt;
+      &lt;name&gt;working-conf&lt;/name&gt;
+      &lt;description&gt;working-conf&lt;/description&gt;
+      &lt;property name="source-name" value="jdbcjcr" /&gt;
+      &lt;property name="dialect" value="hsqldb" /&gt;
+      &lt;property name="persister-class-name" value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister" /&gt;
+    &lt;/properties-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+      <para>See the <link
+      linkend="JCR.eXoJCRconfiguration.PortalAndStandaloneConfiguration">eXo
+      JCR Configuration article at chapter '2 Portal and Standalone
+      configuration'</link> for details.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Backup Client</title>
+
+    <highlights>
+      <para>For GateIn should use context "/portal/rest". GateIn uses form
+      authentication, so first you need to login (url to form authentication
+      is http://host:port/portal/login) and then perform requests.</para>
+
+      <para></para>
+
+      <para>Backup client is support form authentication. For example call
+      command "info" with form authentication to GateIn :</para>
+
+      <para>./jcrbackup.sh http://127.0.0.1:8080/portal/rest form POST
+      "/portal/login?initialURI=/portal/private&amp;username=root&amp;password=gtn"
+      info</para>
+    </highlights>
+
+    <para>Backup client is console application.</para>
+
+    <para>The backup client is http client for HTTPBackupAgent.</para>
+
+    <para>Command signature:</para>
+
+    <programlisting>Help info:
+ &lt;url_basic_authentication&gt;|&lt;url form authentication&gt;  &lt;cmd&gt; 
+ &lt;url_basic_authentication&gt;  :   http(s)//login:password@host:port/&lt;context&gt; 
+
+ &lt;url form authentication&gt;   :   http(s)//host:port/&lt;context&gt; "&lt;form auth parm&gt;" 
+     &lt;form auth parm&gt;        :   form &lt;method&gt; &lt;form path&gt;
+     &lt;method&gt;                :   POST or GET
+     &lt;form path&gt;             :   /path/path?&lt;paramName1&gt;=&lt;paramValue1&gt;&amp;&lt;paramName2&gt;=&lt;paramValue2&gt;...
+     Example to &lt;url form authentication&gt; : http://127.0.0.1:8080/portal/rest form POST "/portal/login?initialURI=/portal/private&amp;username=root&amp;password=gtn"
+
+ &lt;cmd&gt;  :   start &lt;repo[/ws]&gt; &lt;backup_dir&gt; [&lt;incr&gt;] 
+            stop &lt;backup_id&gt; 
+            status &lt;backup_id&gt; 
+            restores &lt;repo[/ws]&gt; 
+            restore [remove-exists] {{&lt;backup_id&gt;|&lt;backup_set_path&gt;} | {&lt;repo[/ws]&gt; {&lt;backup_id&gt;|&lt;backup_set_path&gt;} [&lt;pathToConfigFile&gt;]}} 
+            list [completed] 
+            info 
+            drop [force-close-session] &lt;repo[/ws]&gt;  
+            help  
+
+ start          - start backup of repository or workspace 
+ stop           - stop backup 
+ status         - information about the current or completed backup by 'backup_id' 
+ restores       - information about the last restore on specific repository or workspace 
+ restore        - restore the repository or workspace from specific backup 
+ list           - information about the current backups (in progress) 
+ list completed - information about the completed (ready to restore) backups 
+ info           - information about the service backup 
+ drop           - delete the repository or workspace 
+ help           - print help information about backup console 
+
+ &lt;repo[/ws]&gt;         - /&lt;reponsitory-name&gt;[/&lt;workspace-name&gt;]  the repository or workspace 
+ &lt;backup_dir&gt;        - path to folder for backup on remote server 
+ &lt;backup_id&gt;         - the identifier for backup 
+ &lt;backup_set_dir&gt;    - path to folder with backup set on remote server
+ &lt;incr&gt;              - incemental job period 
+ &lt;pathToConfigFile&gt;  - path (local) to  repository or workspace configuration 
+ remove-exists       - remove fully (db, value storage, index) exists repository/workspace 
+ force-close-session - close opened sessions on repository or workspace. 
+
+ All valid combination of parameters for command restore: 
+  1. restore remove-exists &lt;repo/ws&gt; &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+  2. restore remove-exists &lt;repo&gt;    &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+  3. restore remove-exists &lt;repo/ws&gt; &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+  4. restore remove-exists &lt;repo&gt;    &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+  5. restore remove-exists &lt;backup_id&gt; 
+  6. restore remove-exists &lt;backup_set_path&gt; 
+  7. restore &lt;repo/ws&gt; &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+  8. restore &lt;repo&gt;    &lt;backup_id&gt;       &lt;pathToConfigFile&gt; 
+  9. restore &lt;repo/ws&gt; &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+ 10. restore &lt;repo&gt;    &lt;backup_set_path&gt; &lt;pathToConfigFile&gt; 
+ 11. restore &lt;backup_id&gt; 
+ 12. restore &lt;backup_set_path&gt; 
+</programlisting>
+  </section>
+
+  <section>
+    <title>Backup Client Usage</title>
+
+    <section>
+      <title>Building application</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Go to folder of "backup client" <emphasis
+          role="bold">${JCR-SRC-HOME}/applications/exo.jcr.applications.backupconsole</emphasis>
+          . - build the application :<programlisting>mvn clean install -P deploy</programlisting></para>
+        </listitem>
+
+        <listitem>
+          <para>Go to <emphasis
+          role="bold">${JCR-SRC-HOME}/applications/exo.jcr.applications.backupconsole/target/backupconsole-binary</emphasis>
+          and use it.</para>
+        </listitem>
+      </itemizedlist>
+
+      <note>
+        <para><emphasis role="bold">${JCR-SRC-HOME}</emphasis> the path where
+        eXo JCR sources located</para>
+      </note>
+    </section>
+
+    <section>
+      <title>Running application</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Run jar<programlisting>java -jar exo.jcr.applications.backupconsole-binary.jar &lt;command&gt;</programlisting>or
+          use jcrbackup.cmd (or .sh);</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Getting information about backup service</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 info</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>The backup service information : 
+  full backup type               : org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob
+  incremetal backup type         : org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob
+  backup log folder              : /home/rainf0x/java/exo-working/JCR-839/new_JCR/exo-tomcat/bin/../temp/backup
+  default incremental job period : 3600</programlisting>
+    </section>
+
+    <section>
+      <title>Starting full backup</title>
+
+      <para>Start full backup only on workspace "backup", the parameter
+      &lt;bakcup_dir&gt; (../temp/backup) should be exists:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 start /repository/backup ../temp/backup</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Starting full and incremental backup on a single
+      workspace</title>
+
+      <para>Start full and incremental backup on workspace
+      "production":</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 start /repository/production ../temp/backup 10000</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>Successful : 
+ tatus code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Getting information about the current backups (in
+      progress)</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 list</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>The current backups information : 
+  1) Backup with id b46370107f000101014b03ea5fbe8d54 :
+    repository name           : repository
+    workspace name            : production
+    backup type               : full + incremetal
+    full backup state         : finished
+    incremental backup state  : working
+    started time              : Fri, 17 Apr 2009 17:03:16 EEST
+  2) Backup with id b462e4427f00010101cf243b4c6015bb :
+    repository name           : repository
+    workspace name            : backup
+    backup type               : full only
+    full backup state         : finished
+    started time              : Fri, 17 Apr 2009 17:02:41 EEST</programlisting>
+    </section>
+
+    <section>
+      <title>Getting information about the current backup by
+      'backup_id'</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 status b46370107f000101014b03ea5fbe8d54</programlisting>
+
+      <para>return:</para>
+
+      <programlisting>The current backup information : 
+    backup id                : b46370107f000101014b03ea5fbe8d54
+    backup folder            : /home/rainf0x/java/exo-working/JCR-839/new_JCR/exo-tomcat/bin/../temp/backup
+    repository name          : repository
+    workspace name           : production
+    backup type              : full + incremetal
+    full backup state        : finished
+    incremental backup state : working
+    started time             : Fri, 17 Apr 2009 17:03:16 EEST</programlisting>
+    </section>
+
+    <section>
+      <title>Stopping backup by "backup_id"</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 stop 6c302adc7f00010100df88d29535c6ee</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Getting information about the completed (ready to restore)
+      backups</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 list completed</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>The completed (ready to restore) backups information : 
+  1) Backup with id adf6fadc7f00010100053b2cba43513c :
+    repository name           : repository
+    workspace name            : backup
+    backup type               : full only
+    started time              : Thu, 16 Apr 2009 11:07:05 EEST
+
+  2) Backup with id b46370107f000101014b03ea5fbe8d54 :
+    repository name           : repository
+    workspace name            : production
+    backup type               : full + incremetal
+    started time              : Fri, 17 Apr 2009 17:03:16 EEST
+
+  3) Backup with id aec419cc7f000101004aca277b2b4e9f :
+    repository name           : repository
+    workspace name            : backup8
+    backup type               : full only
+    started time              : Thu, 16 Apr 2009 14:51:08 EEST</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring to workspace</title>
+
+      <para>Restore to workspace "backup3", for restore need the
+      &lt;backup_id&gt; of completed backup and path to file with workspace
+      configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /repository/backup3 6c302adc7f00010100df88d29535c6ee /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup3.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Getting information about the current restore</title>
+
+      <para>Get information about the current restore for workspace
+      /repository/backup3:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restores</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>The current restores information : 
+1) Restore with id 6c302adc7f00010100df88d29535c6ee:
+    full backup date        : 2009-04-03T16:34:37.394+03:00
+    backup log file         : /home/rainf0x/java/exo-working/JCR-839/exo-tomcat/bin/../temp/backup/backup-6c302adc7f00010100df88d29535c6ee.xml
+    repository name         : repository
+    workspace name          : backup3
+    backup type             : full only
+    path to backup folder   : /home/rainf0x/java/exo-working/JCR-839/exo-tomcat/bin/../temp/backup
+    restore state           : successful</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace and remove exists workspace</title>
+
+      <para>Restore to workspace "backup" and remove fully (will be removed
+      content from db, value storage, index) exists workspace, for restore
+      need the &lt;backup_id&gt; of completed backup and path to file with
+      workspace configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /repository/backup 6c302adc7f00010100df88d29535c6ee /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace from backup set</title>
+
+      <para>Restore to workspace "backup", for restore need the
+      &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is path to backup set
+      folder on server side) of completed backup and path to file with
+      workspace configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /repository/backup /tmp/123/repository_backup-20101220_114156 /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace from backup set and remove exists
+      workspace</title>
+
+      <para>Restore to workspace "backup" and remove fully (will be removed
+      content from db, value storage, index) exists workspace, for restore
+      need the &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is path to
+      backup set folder on server side) of completed backup and path to file
+      with workspace configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /repository/backup /repository/backup /tmp/123/repository_backup-20101220_114156 /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace with original configuation</title>
+
+      <para>Restore to workspace "backup" with original configuration of
+      workspace (the original configuration was stored in backup set), for
+      restore need the &lt;backup_id&gt; of completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore  6c302adc7f00010100df88d29535c6ee</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace with original configuation and remove exists
+      workspace</title>
+
+      <para>Restore to workspace "backup" with original configuration of
+      workspace (the original configuration was stored in backup set) and
+      remove fully (will be removed content from db, value storage, index)
+      exists workspace, for restore need the &lt;backup_id&gt; of completed
+      backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists 6c302adc7f00010100df88d29535c6ee</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace from backup set with original
+      configuation</title>
+
+      <para>Restore to workspace "backup" with original configuration of
+      workspace (the original configuration was stored in backup set), for
+      restore need the &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is
+      path to backup set folder on server side) of completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /tmp/123/repository_backup-20101220_114156</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring workspace from backup set with original configuation
+      and remove exists workspace</title>
+
+      <para>Restore to workspace "backup" and remove fully (will be removed
+      content from db, value storage, index) exists workspace with original
+      configuration of workspace (the original configuration was stored in
+      backup set), for restore need the &lt;backup_set_path&gt;
+      (&lt;backup_set_path&gt; is path to backup set folder on server side) of
+      completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /tmp/123/repository_backup-20101220_114156</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository</title>
+
+      <para>Restore to repository "repository" , for restore need the
+      &lt;backup_id&gt; of completed backup and path to file with repository
+      configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /repository 6c302adc7f00010100df88d29535c6ee /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository and remove exists repository</title>
+
+      <para>Restore to repositoy "repository" and remove fully (will be
+      removed content from db, value storage, index) exists repository, for
+      restore need the &lt;backup_id&gt; of completed backup and path to file
+      with repository configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /repository 6c302adc7f00010100df88d29535c6ee /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository from backup set</title>
+
+      <para>Restore to repository "repository", for restore need the
+      &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is path to backup set
+      folder on server side) of completed backup and path to file with
+      repository configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /repository /tmp/123/repository_repository_backup_1292833493681 /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository from backup set and remove exists
+      repository</title>
+
+      <para>Restore to repository "repository" and remove fully (will be
+      removed content from db, value storage, index) exists repository, for
+      restore need the &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is
+      path to backup set folder on server side) of completed backup and path
+      to file with repository configuration:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /repository /repository/backup /tmp/123/repository_repository_backup_1292833493681 /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config.xml</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository with original configuation</title>
+
+      <para>Restore to repository "repository" with original configuration of
+      repository (the original configuration was stored in backup set), for
+      restore need the &lt;backup_id&gt; of completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore  6c302adc7f00010100df88d29535c6ee</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository with original configuation and remove exists
+      repository</title>
+
+      <para>Restore to repository "repository" with original configuration of
+      repository (the original configuration was stored in backup set) and
+      remove fully (will be removed content from db, value storage, index)
+      exists repository, for restore need the &lt;backup_id&gt; of completed
+      backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists 6c302adc7f00010100df88d29535c6ee</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository from backup set with original
+      configuation</title>
+
+      <para>Restore to repository "repository" with original configuration of
+      repository (the original configuration was stored in backup set), for
+      restore need the &lt;backup_set_path&gt; (&lt;backup_set_path&gt; is
+      path to backup set folder on server side) of completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /tmp/123/repository_repository_backup_1292833493681</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring repository from backup set with original configuation
+      and remove exists repository</title>
+
+      <para>Restore to repository "repository" and remove fully (will be
+      removed content from db, value storage, index) exists repository with
+      original configuration of repository (the original configuration was
+      stored in backup set), for restore need the &lt;backup_set_path&gt;
+      (&lt;backup_set_path&gt; is path to backup set folder on server side) of
+      completed backup:</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore remove-exists /tmp/123/repository_repository_backup_1292833493681</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+  </section>
+
+  <section>
+    <title>Full example about creating backup and restoring it for workspace
+    'backup'</title>
+
+    <section>
+      <title>Creating backup</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 start /repository/backup ../temp/backup 10000</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Getting information about current backups</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 list</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>The current backups information : 
+  1) Backup with id b469ba957f0001010178febaedf20eb7 :
+    repository name           : repository
+    workspace name            : backup
+    backup type               : full + incremetal
+    full backup state         : finished
+    incremental backup state  : working
+    started time              : Fri, 17 Apr 2009 17:10:09 EEST</programlisting>
+    </section>
+
+    <section>
+      <title>Stopping backup by id</title>
+
+      <para>Stop backup with id b469ba957f0001010178febaedf20eb7 :</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 stop b469ba957f0001010178febaedf20eb7</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Deleting the workspace "backup" and close opened sessions on this
+      workspace</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 drop force-close-session /repository/backup</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring the workspace "backup"</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Delete/clean the database for workspace <emphasis
+          role="bold">"backup"</emphasis> : When we use "single-db", then we
+          will run the SQL queries for clean database :<programlisting>delete from JCR_SREF where NODE_ID in (select ID from JCR_SITEM where CONTAINER_NAME = 'backup')
+delete from JCR_SVALUE where PROPERTY_ID in (select ID from JCR_SITEM where CONTAINER_NAME = 'backup')
+delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
+        </listitem>
+
+        <listitem>
+          <para>Delete the value storage for workspace <emphasis
+          role="bold">"backup"</emphasis>; - delete the index data for
+          workspace <emphasis role="bold">"backup"</emphasis>; - restore
+          :<programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /repository/backup b469ba957f0001010178febaedf20eb7 /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml
+</programlisting>Return :<programlisting>Successful : 
+  status code = 200</programlisting>The
+          /home/rainf0x/java/exo-working/JCR-839/exo-jcr-config_backup.xml
+          content the configuration for restored workspace <emphasis
+          role="bold">"backup"</emphasis>:</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="xml">&lt;repository-service default-repository="repository"&gt;
+  &lt;repositories&gt;
+    &lt;repository name="repository" system-workspace="production" default-workspace="production"&gt;
+      &lt;security-domain&gt;exo-domain&lt;/security-domain&gt;
+      &lt;access-control&gt;optional&lt;/access-control&gt;
+      &lt;authentication-policy&gt;org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator&lt;/authentication-policy&gt;
+      &lt;workspaces&gt;
+        
+        &lt;workspace name="backup"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+            &lt;properties&gt;
+              &lt;property name="source-name" value="jdbcjcr" /&gt;
+              &lt;property name="dialect" value="pgsql" /&gt;
+              &lt;property name="multi-db" value="false" /&gt;
+              &lt;property name="update-storage" value="false" /&gt;
+              &lt;property name="max-buffer-size" value="200k" /&gt;
+              &lt;property name="swap-directory" value="../temp/swap/backup" /&gt;
+            &lt;/properties&gt;
+            &lt;value-storages&gt;
+              &lt;value-storage id="draft" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"&gt;
+                &lt;properties&gt;
+                  &lt;property name="path" value="../temp/values/backup" /&gt;
+                &lt;/properties&gt;
+                &lt;filters&gt;
+                  &lt;filter property-type="Binary"/&gt;
+                &lt;/filters&gt;
+              &lt;/value-storage&gt;
+            &lt;/value-storages&gt;
+          &lt;/container&gt;
+          &lt;initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer"&gt;
+            &lt;properties&gt;
+              &lt;property name="root-nodetype" value="nt:unstructured" /&gt;
+            &lt;/properties&gt;
+          &lt;/initializer&gt;
+          &lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl"&gt;
+            &lt;properties&gt;
+              &lt;property name="max-size" value="10k" /&gt;
+              &lt;property name="live-time" value="1h" /&gt;
+            &lt;/properties&gt;
+          &lt;/cache&gt;
+          &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+            &lt;properties&gt;
+              &lt;property name="index-dir" value="../temp/jcrlucenedb/backup" /&gt;
+            &lt;/properties&gt;
+          &lt;/query-handler&gt;
+        &lt;/workspace&gt;
+      &lt;/workspaces&gt;
+    &lt;/repository&gt;
+  &lt;/repositories&gt;
+&lt;/repository-service&gt;
+</programlisting>
+    </section>
+
+    <section>
+      <title>Getting information about restore for workspace
+      /repository/backup</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restores /repository/backup</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>The current restores information : 
+  Restore with id b469ba957f0001010178febaedf20eb7:
+    backup folder           : /home/rainf0x/java/exo-working/JCR-839/new_JCR/exo-tomcat/bin/../temp/backup
+    repository name         : repository
+    workspace name          : backup
+    backup type             : full + incremetal
+    restore state           : successful
+    started time            : Fri, 17 Apr 2009 16:38:00 EEST
+    finished time           : Fri, 17 Apr 2009 16:38:00 EEST</programlisting>
+    </section>
+  </section>
+
+  <section>
+    <title>Full example about creating backup and restoring it for repository
+    'repository'</title>
+
+    <note>
+      <para>If delete default repository that should be restored repository
+      with name as default repository.</para>
+    </note>
+
+    <para>This usecase needs RestRepositoryService enabled. (Deleting the
+    repository needs it)</para>
+
+    <programlisting language="xml">&lt;component&gt;
+   &lt;type&gt;org.exoplatform.services.jcr.ext.repository.RestRepositoryService&lt;/type&gt;
+&lt;/component&gt;</programlisting>
+
+    <section>
+      <title>Creating backup</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 start /repository ../temp/backup 10000</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Getting information about current backups</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 list</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>The current backups information : 
+  1) Repository backup with id 9a4d40fb7f0000012ec8f0a4ec70b3da :
+    repository name            : repository
+    backup type                : full + incremetal
+    full backups state         : finished
+    incremental backups state  : working
+    started time               : Mon, 11 Oct 2010 10:59:35 EEST</programlisting>
+    </section>
+
+    <section>
+      <title>Stopping backup by id</title>
+
+      <para>Stop backup with id 9a4d40fb7f0000012ec8f0a4ec70b3da :</para>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 stop 9a4d40fb7f0000012ec8f0a4ec70b3da</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Deleting the repository "repository" and close all opened
+      sessions</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 drop force-close-session /repository</programlisting>
+
+      <para>Return :</para>
+
+      <programlisting>Successful : 
+  status code = 200</programlisting>
+    </section>
+
+    <section>
+      <title>Restoring the repository "repository"</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>Delete/clean the database for workspace <emphasis
+          role="bold">"repository"</emphasis>: When we use "single-db", then
+          we will run the SQL queries for clean database :<programlisting>       drop table JCR_SREF;
+       drop table JCR_SVALUE;
+       drop table JCR_SITEM;</programlisting></para>
+        </listitem>
+
+        <listitem>
+          <para>Delete the value storage for repository <emphasis
+          role="bold">"repository"</emphasis>;</para>
+        </listitem>
+
+        <listitem>
+          <para>Delete the index data for repository <emphasis
+          role="bold">"repository"</emphasis>;</para>
+        </listitem>
+
+        <listitem>
+          <para>Restore:<programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restore /repository 9a6dba327f000001325dfb228a181b07 /home/rainf0x/exo-jcr-config_backup.xml</programlisting>Return
+          :<programlisting>Successful : 
+  status code = 200</programlisting>The
+          /home/rainf0x/exo-jcr-config_backup.xml content the configuration
+          for restored repository <emphasis
+          role="bold">"repository"</emphasis>:</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="xml">&lt;repository-service default-repository="repository"&gt;
+   &lt;repositories&gt;
+      &lt;repository name="repository" system-workspace="production" default-workspace="production"&gt;
+         &lt;security-domain&gt;exo-domain&lt;/security-domain&gt;
+         &lt;access-control&gt;optional&lt;/access-control&gt;
+         &lt;authentication-policy&gt;org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator&lt;/authentication-policy&gt;
+         &lt;workspaces&gt;
+            &lt;workspace name="production"&gt;
+               &lt;!-- for system storage --&gt;
+               &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="source-name" value="jdbcjcr" /&gt;
+                     &lt;property name="multi-db" value="false" /&gt;
+                     &lt;property name="update-storage" value="false" /&gt;
+                     &lt;property name="max-buffer-size" value="200k" /&gt;
+                     &lt;property name="swap-directory" value="../temp/swap/production" /&gt;
+                  &lt;/properties&gt;
+                  &lt;value-storages&gt;
+                     &lt;value-storage id="system" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"&gt;
+                        &lt;properties&gt;
+                           &lt;property name="path" value="../temp/values/production" /&gt;
+                        &lt;/properties&gt;
+                        &lt;filters&gt;
+                           &lt;filter property-type="Binary" /&gt;
+                        &lt;/filters&gt;
+                     &lt;/value-storage&gt;
+                  &lt;/value-storages&gt;
+               &lt;/container&gt;
+               &lt;initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="root-nodetype" value="nt:unstructured" /&gt;
+                  &lt;/properties&gt;
+               &lt;/initializer&gt;
+               &lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="max-size" value="10k" /&gt;
+                     &lt;property name="live-time" value="1h" /&gt;
+                  &lt;/properties&gt;
+               &lt;/cache&gt;
+               &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="index-dir" value="../temp/jcrlucenedb/production" /&gt;
+                  &lt;/properties&gt;
+               &lt;/query-handler&gt;
+               &lt;lock-manager&gt;
+                  &lt;time-out&gt;15m&lt;/time-out&gt;
+                  &lt;persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister"&gt;
+                     &lt;properties&gt;
+                        &lt;property name="path" value="../temp/lock/system" /&gt;
+                     &lt;/properties&gt;
+                  &lt;/persister&gt;
+               &lt;/lock-manager&gt;
+            &lt;/workspace&gt;
+
+            &lt;workspace name="backup"&gt;
+               &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="source-name" value="jdbcjcr" /&gt;
+                     &lt;property name="multi-db" value="false" /&gt;
+                     &lt;property name="update-storage" value="false" /&gt;
+                     &lt;property name="max-buffer-size" value="200k" /&gt;
+                     &lt;property name="swap-directory" value="../temp/swap/backup" /&gt;
+                  &lt;/properties&gt;
+                  &lt;value-storages&gt;
+                     &lt;value-storage id="draft" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"&gt;
+                        &lt;properties&gt;
+                           &lt;property name="path" value="../temp/values/backup" /&gt;
+                        &lt;/properties&gt;
+                        &lt;filters&gt;
+                           &lt;filter property-type="Binary" /&gt;
+                        &lt;/filters&gt;
+                     &lt;/value-storage&gt;
+                  &lt;/value-storages&gt;
+               &lt;/container&gt;
+               &lt;initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="root-nodetype" value="nt:unstructured" /&gt;
+                  &lt;/properties&gt;
+               &lt;/initializer&gt;
+               &lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="max-size" value="10k" /&gt;
+                     &lt;property name="live-time" value="1h" /&gt;
+                  &lt;/properties&gt;
+               &lt;/cache&gt;
+               &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="index-dir" value="../temp/jcrlucenedb/backup" /&gt;
+                  &lt;/properties&gt;
+               &lt;/query-handler&gt;
+            &lt;/workspace&gt;
+
+            &lt;workspace name="digital-assets"&gt;
+               &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="source-name" value="jdbcjcr" /&gt;
+                     &lt;property name="multi-db" value="false" /&gt;
+                     &lt;property name="update-storage" value="false" /&gt;
+                     &lt;property name="max-buffer-size" value="200k" /&gt;
+                     &lt;property name="swap-directory" value="../temp/swap/digital-assets" /&gt;
+                  &lt;/properties&gt;
+                  &lt;value-storages&gt;
+                     &lt;value-storage id="digital-assets" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage"&gt;
+                        &lt;properties&gt;
+                           &lt;property name="path" value="../temp/values/digital-assets" /&gt;
+                        &lt;/properties&gt;
+                        &lt;filters&gt;
+                           &lt;filter property-type="Binary" /&gt;
+                        &lt;/filters&gt;
+                     &lt;/value-storage&gt;
+                  &lt;/value-storages&gt;
+               &lt;/container&gt;
+               &lt;initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="root-nodetype" value="nt:folder" /&gt;
+                  &lt;/properties&gt;
+               &lt;/initializer&gt;
+               &lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="max-size" value="5k" /&gt;
+                     &lt;property name="live-time" value="15m" /&gt;
+                  &lt;/properties&gt;
+               &lt;/cache&gt;
+               &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+                  &lt;properties&gt;
+                     &lt;property name="index-dir" value="../temp/jcrlucenedb/digital-assets" /&gt;
+                  &lt;/properties&gt;
+               &lt;/query-handler&gt;
+            &lt;/workspace&gt;
+         &lt;/workspaces&gt;
+      &lt;/repository&gt;
+   &lt;/repositories&gt;
+&lt;/repository-service&gt;
+</programlisting>
+    </section>
+
+    <section>
+      <title>Getting information about restore for repository
+      'repository'</title>
+
+      <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 restores /repository</programlisting>
+
+      <para>Return:</para>
+
+      <programlisting>  Repository restore with id 9a6dba327f000001325dfb228a181b07:
+    backup folder           : /home/rainf0x/java/exo-working/JCR-1459/exo-tomcat/bin/../temp/backup/repository_repository_backup_1286786103858
+    repository name         : repository
+    backup type             : full + incremetal
+    restore state           : successful
+    started time            : Mon, 11 Oct 2010 11:51:15 EEST
+    finished time           : Mon, 11 Oct 2010 11:51:17 EEST</programlisting>
+    </section>
+  </section>
+</chapter>

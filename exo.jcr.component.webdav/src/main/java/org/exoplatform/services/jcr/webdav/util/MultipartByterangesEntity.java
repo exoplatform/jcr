@@ -32,6 +32,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 
+import javax.jcr.RepositoryException;
 import javax.ws.rs.core.StreamingOutput;
 
 /**
@@ -44,7 +45,7 @@ public class MultipartByterangesEntity implements StreamingOutput
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.MultipartByterangesEntity");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.MultipartByterangesEntity");
 
    /**
     * resource.
@@ -120,9 +121,14 @@ public class MultipartByterangesEntity implements StreamingOutput
          print("--" + WebDavConst.BOUNDARY + "--", ostream);
          println(ostream);
       }
-      catch (Exception exc)
+      catch (IOException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
+         throw new IOException("Can't write to stream, caused " + exc);
+      }
+      catch (RepositoryException exc)
+      {
+         LOG.error(exc.getMessage(), exc);
          throw new IOException("Can't write to stream, caused " + exc);
       }
    }

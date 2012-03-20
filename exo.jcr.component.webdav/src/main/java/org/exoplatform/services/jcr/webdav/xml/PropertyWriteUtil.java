@@ -20,12 +20,11 @@ package org.exoplatform.services.jcr.webdav.xml;
 
 import org.exoplatform.common.util.HierarchicalProperty;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
@@ -39,6 +38,7 @@ import javax.xml.stream.XMLStreamWriter;
 
 public class PropertyWriteUtil
 {
+   private final static Pattern ESCAPE_PATTERN = Pattern.compile("%[0-9a-fA-F]{2}");
 
    /**
     * Writes the statuses of properties into XML.
@@ -133,15 +133,8 @@ public class PropertyWriteUtil
          }
 
          writeAttributes(xmlStreamWriter, prop);
-
-         try
-         {
-            xmlStreamWriter.writeCharacters(URLDecoder.decode(prop.getValue(), "UTF-8"));
-         }
-         catch (UnsupportedEncodingException e)
-         {
-            e.printStackTrace();
-         }
+         xmlStreamWriter.writeCharacters(prop.getValue());
+         
          xmlStreamWriter.writeEndElement();
       }
    }
@@ -165,5 +158,4 @@ public class PropertyWriteUtil
          xmlStreamWriter.writeAttribute(attrName, attrValue);
       }
    }
-
 }

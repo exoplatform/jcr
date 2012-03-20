@@ -65,7 +65,6 @@ public class QueryImpl extends AbstractQueryImpl
     * A string constant representing the JCR-SQL2 query language.
     *
     * @since JCR 2.0
-    * TODO: REMOVE WHEN JSR 283 IS FINAL!!
     */
    public static final String JCR_SQL2 = "JCR-SQL2";
 
@@ -73,7 +72,6 @@ public class QueryImpl extends AbstractQueryImpl
     * A string constant representing the JCR-JQOM query language.
     *
     * @since JCR 2.0
-    * TODO: REMOVE WHEN JSR 283 IS FINAL!!
     */
    public static final String JCR_JQOM = "JCR-JQOM";
 
@@ -182,7 +180,11 @@ public class QueryImpl extends AbstractQueryImpl
    public QueryResult execute() throws RepositoryException
    {
       checkInitialized();
-      long time = System.currentTimeMillis();
+      long time = 0;
+      if (log.isDebugEnabled())
+      {
+         time = System.currentTimeMillis();
+      }
       QueryResult result = query.execute(offset, limit);
       if (log.isDebugEnabled())
       {

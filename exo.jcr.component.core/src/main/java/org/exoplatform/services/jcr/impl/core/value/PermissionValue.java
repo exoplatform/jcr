@@ -112,6 +112,7 @@ public class PermissionValue extends BaseValue
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getInternalString() throws ValueFormatException
    {
       return asString(identity, permission);

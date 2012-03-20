@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitorListener;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -77,18 +78,18 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
    /**
     * @param cache instance of JbossCache that is used to deliver index names
     */
-   public JBossCacheIndexUpdateMonitor(Cache<Serializable, Object> cache, boolean system,
+   public JBossCacheIndexUpdateMonitor(Fqn<String> rootFqn, Cache<Serializable, Object> cache, boolean system,
       IndexerIoModeHandler modeHandler)
    {
       this.cache = cache;
       this.modeHandler = modeHandler;
       this.listeners = new CopyOnWriteArrayList<IndexUpdateMonitorListener>();
       // store parsed FQN to avoid it's parsing each time cache event is generated
-      this.parametersFqn = Fqn.fromString(system ? INDEX_PARAMETERS : SYSINDEX_PARAMETERS);
+      this.parametersFqn = Fqn.fromRelativeElements(rootFqn, system ? INDEX_PARAMETERS : SYSINDEX_PARAMETERS);
       modeHandler.addIndexerIoModeListener(this);
+
       Node<Serializable, Object> cacheRoot = cache.getRoot();
 
-      // prepare cache structures
       if (!cacheRoot.hasChild(parametersFqn))
       {
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
@@ -108,12 +109,13 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
       {
          // Currently READ_ONLY is set, so new lists should be fired to multiIndex.
          cache.addCacheListener(this);
+         Object value = cache.get(parametersFqn, PARAMETER_NAME);
+         localUpdateInProgress = value != null ? (Boolean)value : false;
       }
-
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener#onChangeMode(org.exoplatform.services.jcr.impl.core.query.IndexerIoMode)
+    * {@inheritDoc}
     */
    public void onChangeMode(IndexerIoMode mode)
    {
@@ -136,17 +138,7 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
     */
    public boolean getUpdateInProgress()
    {
-      if (IndexerIoMode.READ_ONLY == modeHandler.getMode())
-      {
-         Object value = cache.get(parametersFqn, PARAMETER_NAME);
-         return value != null ? (Boolean)value : false;
-      }
-      else
-      {
-         // this node is read-write, so must read local value.
-         // Local value is updated every time, but remote cache value is skipped is volatile changes are performed 
-         return localUpdateInProgress;
-      }
+      return localUpdateInProgress;
    }
 
    /**
@@ -164,7 +156,7 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
          localUpdateInProgress = updateInProgress;
          if (persitentUpdate)
          {
-            cache.put(parametersFqn, PARAMETER_NAME, new Boolean(updateInProgress));
+            PrivilegedJBossCacheHelper.put(cache, parametersFqn, PARAMETER_NAME, new Boolean(updateInProgress));
 
          }
          for (IndexUpdateMonitorListener listener : listeners)
@@ -180,11 +172,19 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor#addIndexUpdateMonitorListener(org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitorListener)
+    * {@inheritDoc}
     */
    public void addIndexUpdateMonitorListener(IndexUpdateMonitorListener listener)
    {
       listeners.add(listener);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void removeIndexUpdateMonitorListener(IndexUpdateMonitorListener listener)
+   {
+      listeners.remove(listener);
    }
 
    /**
@@ -212,10 +212,11 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
             log.warn("The data cannot be found, we will try to get it from the cache");
             value = cache.get(parametersFqn, PARAMETER_NAME);
          }
-         boolean updateInProgress = value != null ? (Boolean)value : false;
+         localUpdateInProgress = value != null ? (Boolean)value : false;
+
          for (IndexUpdateMonitorListener listener : listeners)
          {
-            listener.onUpdateInProgressChange(updateInProgress);
+            listener.onUpdateInProgressChange(localUpdateInProgress);
          }
       }
    }

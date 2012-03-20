@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Created by The eXo Platform SAS
@@ -46,14 +47,16 @@ public class OracleDBInitializer extends StorageDBInitializer
    @Override
    protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
    {
+      ResultSet srs = null;
+      Statement st = null;
       try
       {
-         ResultSet srs = conn.createStatement().executeQuery("SELECT " + sequenceName + ".nextval FROM DUAL");
+         st = conn.createStatement();
+         srs = st.executeQuery("SELECT " + sequenceName + ".nextval FROM DUAL");
          if (srs.next())
          {
             return true;
          }
-         srs.close();
          return false;
       }
       catch (SQLException e)
@@ -63,45 +66,31 @@ public class OracleDBInitializer extends StorageDBInitializer
             return false;
          throw e;
       }
-   }
-
-   @Override
-   protected boolean isTriggerExists(Connection conn, String triggerName) throws SQLException
-   {
-      String sql = "SELECT COUNT(trigger_name) FROM all_triggers WHERE trigger_name = '" + triggerName + "'";
-      ResultSet r = conn.createStatement().executeQuery(sql);
-      if (r.next())
-         return r.getInt(1) > 0;
-      else
-         return false;
-   }
-
-   @Override
-   protected boolean isTableExists(Connection conn, String tableName) throws SQLException
-   {
-      try
+      finally
       {
-         conn.createStatement().executeUpdate("SELECT 1 FROM " + tableName);
-         return true;
-      }
-      catch (SQLException e)
-      {
-         // check: ORA-00942: table or view does not exist
-         if (e.getMessage().indexOf("ORA-00942") >= 0)
-            return false;
-         throw e;
-      }
-   }
+         if (srs != null)
+         {
+            try
+            {
+               srs.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
 
-   @Override
-   protected boolean isIndexExists(Connection conn, String tableName, String indexName) throws SQLException
-   {
-      // use of oracle system view
-      String sql = "SELECT COUNT(index_name) FROM all_indexes WHERE index_name='" + indexName + "'";
-      ResultSet r = conn.createStatement().executeQuery(sql);
-      if (r.next())
-         return r.getInt(1) > 0;
-      else
-         return false;
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the Statement: " + e);
+            }
+         }
+      }
    }
 }

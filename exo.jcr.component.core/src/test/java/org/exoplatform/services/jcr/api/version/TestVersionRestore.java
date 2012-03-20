@@ -94,7 +94,9 @@ public class TestVersionRestore extends BaseVersionTest
          Node doc1 =
             checkExisted("doc1", new String[]{"jcr:content/jcr:primaryType", "jcr:content/doc1ContentProperty"});
 
-         checkNotExisted("doc2");
+         Node doc2 =
+            checkExisted("doc2", new String[]{"jcr:content/jcr:primaryType", "jcr:content/doc2ContentProperty"});
+
          checkNotExisted("doc3");
 
          versionableNode.checkout();
@@ -106,8 +108,7 @@ public class TestVersionRestore extends BaseVersionTest
          versionableNode.restore(ver2, true);
 
          doc1 = checkExisted("doc1", new String[]{"jcr:content/jcr:primaryType", "jcr:content/doc1ContentProperty"});
-         Node doc2 =
-            checkExisted("doc2", new String[]{"jcr:content/jcr:primaryType", "jcr:content/doc2ContentProperty"});
+         doc2 = checkExisted("doc2", new String[]{"jcr:content/jcr:primaryType", "jcr:content/doc2ContentProperty"});
 
          checkNotExisted("doc3");
 
@@ -301,6 +302,19 @@ public class TestVersionRestore extends BaseVersionTest
 
       // test it
       session.getWorkspace().restore(vs, true);// restore A v.3, B v.2, C v.2
+
+      // get node B and restore v1
+      nodeB = (Node)session.getItem("/versionableNodeA/Subnode B");
+      assertTrue(nodeB.isNodeType("mix:versionable"));
+      nodeB.restore("1", true);
+      // get node C and restore v1
+      nodeC = (Node)session.getItem("/versionableNodeA/Subnode C");
+      assertTrue(nodeB.isNodeType("mix:versionable"));
+      nodeC.restore("1", true);
+      // get node A and restore v2
+      nodeA = (Node)session.getItem("/versionableNodeA");
+      assertTrue(nodeB.isNodeType("mix:versionable"));
+      nodeA.restore("1", true);
    }
 
    /**
@@ -329,6 +343,7 @@ public class TestVersionRestore extends BaseVersionTest
 
       String content2 = content + " #2";
       file.getNode("jcr:content").setProperty("jcr:data", content2, PropertyType.BINARY);
+      file.save();
       file.checkin(); // v2
       file.checkout();
 

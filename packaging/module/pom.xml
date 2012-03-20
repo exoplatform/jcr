@@ -4,7 +4,8 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>1.14.0-Beta01-SNAPSHOT</version>
+    <version>1.14.8-GA-SNAPSHOT</version>
+    <relativePath>../../pom.xml</relativePath>
   </parent>
   <artifactId>jcr.packaging.module</artifactId>
   <packaging>pom</packaging>

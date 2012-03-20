@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -71,7 +72,7 @@ public abstract class AbstractItemDefinitionAccessProvider
    protected List<ValueData> loadPropertyValues(NodeData parentNode, InternalQName propertyName)
       throws RepositoryException
    {
-      ItemData property = dataManager.getItemData(parentNode, new QPathEntry(propertyName, 1));
+      ItemData property = dataManager.getItemData(parentNode, new QPathEntry(propertyName, 1), ItemType.PROPERTY);
       if (property != null)
       {
          if (property.isNode())
@@ -344,8 +345,8 @@ public abstract class AbstractItemDefinitionAccessProvider
 
       writeBoolean(changesLog, itemDefinition, Constants.JCR_MANDATORY, nodeDefinitionData.isMandatory());
 
-      writeString(changesLog, itemDefinition, Constants.JCR_ONPARENTVERSION, OnParentVersionAction
-         .nameFromValue(nodeDefinitionData.getOnParentVersion()));
+      writeString(changesLog, itemDefinition, Constants.JCR_ONPARENTVERSION,
+         OnParentVersionAction.nameFromValue(nodeDefinitionData.getOnParentVersion()));
    }
 
    protected void writeName(PlainChangesLog changesLog, NodeData parentNode, InternalQName propertyName,

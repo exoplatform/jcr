@@ -25,9 +25,10 @@ import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.TermQuery;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 
-import java.io.File;
 import java.io.FileInputStream;
+import java.net.URL;
 import java.util.Calendar;
 
 import javax.jcr.query.Query;
@@ -48,10 +49,10 @@ public class TestArabicSearch extends BaseQueryTest
    public void testSearchWithEncodingParameter() throws Exception
    {
 
-      File file = new File("src/test/resources/ArabicUTF8.txt");
-      assertTrue("/test/resources/ArabicUTF8.txt not found", file.exists());
+      URL url = TestArabicSearch.class.getResource("/ArabicUTF8.txt");
+      assertNotNull("ArabicUTF8.txt not found", url);
 
-      FileInputStream fis = new FileInputStream(file);
+      FileInputStream fis = new FileInputStream(url.getFile());
 
       NodeImpl node = (NodeImpl)root.addNode(fileName, "nt:file");
       NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
@@ -80,6 +81,9 @@ public class TestArabicSearch extends BaseQueryTest
       Query q = qman.createQuery("SELECT * FROM nt:resource " + " WHERE  CONTAINS(., '" + word + "')", Query.SQL);
       QueryResult res = q.execute();
       assertEquals(1, res.getNodes().getSize());
+      
+      is.close();
+      Util.closeOrRelease(reader);
    }
 
    /**

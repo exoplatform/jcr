@@ -16,16 +16,11 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.BackupChain;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.BackupConfigurationException;
@@ -38,6 +33,14 @@ import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Created by The eXo Platform SAS.
@@ -53,7 +56,7 @@ public class RepositoryBackupChainImpl
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RepositoryBackupChainImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.RepositoryBackupChainImpl");
    
    private final RepositoryBackupConfig config;
 
@@ -67,8 +70,10 @@ public class RepositoryBackupChainImpl
 
    private int state;
 
-   public RepositoryBackupChainImpl(RepositoryBackupConfig config,  File logDirectory, ManageableRepository repository,
-            String fullBackupType, String incrementalBackupType, String repositoryBackupId) throws BackupOperationException,
+   public RepositoryBackupChainImpl(RepositoryBackupConfig config, File logDirectory,
+            RepositoryService repositoryService,
+            String fullBackupType, String incrementalBackupType, String repositoryBackupId)
+            throws BackupOperationException,
             BackupConfigurationException
    {
       this.config = config;
@@ -78,19 +83,35 @@ public class RepositoryBackupChainImpl
 
       List<String> wsLogFilePathList = new ArrayList<String>();
       
-      for (WorkspaceEntry workspaceEntry : repository.getConfiguration().getWorkspaceEntries()) 
+      RepositoryEntry repository;
+      try
+      {
+         repository = repositoryService.getConfig().getRepositoryConfiguration(config.getRepository());
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupOperationException("Can not get repository \"" + config.getRepository() + "\"", e);
+      }
+      
+      for (WorkspaceEntry workspaceEntry : repository.getWorkspaceEntries())
       {
          BackupConfig wsBackupConfig = new BackupConfig();
          wsBackupConfig.setRepository(config.getRepository());
          wsBackupConfig.setWorkspace(workspaceEntry.getName());
-         wsBackupConfig.setBackupDir(config.getBackupDir());
          wsBackupConfig.setBackupType(config.getBackupType());
          wsBackupConfig.setIncrementalJobNumber(config.getIncrementalJobNumber());
          wsBackupConfig.setIncrementalJobPeriod(config.getIncrementalJobPeriod());
 
+         Calendar startTime = Calendar.getInstance();
+         File dir =
+                  FileNameProducer.generateBackupSetDir(wsBackupConfig.getRepository(), wsBackupConfig.getWorkspace(),
+                           config.getBackupDir().getPath(), startTime);
+         PrivilegedFileHelper.mkdirs(dir);
+         wsBackupConfig.setBackupDir(dir);
+
          BackupChain bchain =
-            new BackupChainImpl(wsBackupConfig, config.getBackupDir(), repository,
-                     fullBackupType, incrementalBackupType, IdGenerator.generate());
+                  new BackupChainImpl(wsBackupConfig, wsBackupConfig.getBackupDir(), repositoryService, fullBackupType,
+                           incrementalBackupType, IdGenerator.generate(), logDirectory, startTime);
          
          wsLogFilePathList.add(bchain.getLogFilePath());
          workspaceBackups.add(bchain);
@@ -100,10 +121,12 @@ public class RepositoryBackupChainImpl
                                                              this.config,
                                                              fullBackupType,
                                                              incrementalBackupType,
-                                                             repository.getConfiguration().getSystemWorkspaceName(), 
+                                                             repository.getSystemWorkspaceName(),
                                                              wsLogFilePathList, 
                                                              this.repositoryBackupId, 
-                                                             startTime);
+                                                             startTime,
+                                                             repository,
+                                                             repositoryService.getConfig());
       
       state = INITIALIZED;
    }
@@ -123,10 +146,11 @@ public class RepositoryBackupChainImpl
    {
       if (state != FINISHED)
       {
-         if (log.isDebugEnabled()) {
+         if (LOG.isDebugEnabled())
+         {
             for (BackupChain bc : workspaceBackups)
             {
-               log.debug(repositoryBackupId + " : " + getState(bc.getFullBackupState()));
+               LOG.debug(repositoryBackupId + " : " + getState(bc.getFullBackupState()));
             }
          }
          

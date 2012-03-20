@@ -18,10 +18,14 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.security.PrivilegedAction;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -32,6 +36,8 @@ import java.io.FileNotFoundException;
  */
 public class SerializationSpoolFile extends SpoolFile
 {
+
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SerializationSpoolFile");
 
    /**
     * SpoolFileHolder.
@@ -80,7 +86,15 @@ public class SerializationSpoolFile extends SpoolFile
       {
          if (!inUse())
          {
-            boolean result = super.delete();
+            PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
+            {
+               public Boolean run()
+               {
+                  return SerializationSpoolFile.super.delete();
+               }
+            };
+            boolean result = SecurityHelper.doPrivilegedAction(action);
+
             if (result)
             {
                holder.remove(id);
@@ -90,7 +104,10 @@ public class SerializationSpoolFile extends SpoolFile
       }
       catch (FileNotFoundException e)
       {
-         // haven't file - haven't problem
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return false;
    }

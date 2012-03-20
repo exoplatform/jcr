@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="WS.OverwriteDefaultProviders">
+  <?dbhtml filename="overwrite-default-providers.html"?>
+
+  <title>Overwrite default providers</title>
+  <para>This chapter will show you how to overwrite the default providers in eXo JAX-RS implementation.</para>
+
+  <section id="WS.OverwriteDefaultProviders.Motivation">
+    <title>Motivation</title>
+
+    <para>There is set of providers embedded in eXo JAX-RS
+    implementation.</para>
+
+    <para>Implementations of MessageBodyReader and MessageBodyWriters are
+    taking care about serialization/deserialization of message body (HTTP
+    request/response's body).</para>
+
+    <para>The next set of media and Java types processed automatically, thanks
+    to embedded Readers (Writers).</para>
+
+    <table>
+      <title>Embedded Reader and Writers of message body</title>
+
+      <tgroup cols="2">
+        <colspec align="center" />
+
+        <thead>
+          <row>
+            <entry align="center">Media Type</entry>
+
+            <entry align="center">Java Type</entry>
+          </row>
+        </thead>
+
+        <tbody>
+          <row>
+            <entry>*/*</entry>
+
+            <entry>byte[]</entry>
+          </row>
+
+          <row>
+            <entry>*/*</entry>
+
+            <entry>javax.activation.DataSource</entry>
+          </row>
+
+          <row>
+            <entry>*/*</entry>
+
+            <entry>java.io.File</entry>
+          </row>
+
+          <row>
+            <entry>*/*</entry>
+
+            <entry>java.io.InputStream</entry>
+          </row>
+
+          <row>
+            <entry>*/*</entry>
+
+            <entry>java.io.Reader</entry>
+          </row>
+
+          <row>
+            <entry>*/*</entry>
+
+            <entry>java.lang.String</entry>
+          </row>
+
+          <row>
+            <entry>*/*</entry>
+
+            <entry>javax.ws.rs.core.StreamingOutput (Writer ONLY)</entry>
+          </row>
+
+          <row>
+            <entry>application/json</entry>
+
+            <entry>1. Object with simple constructor + get/set methods; 2.
+            Java Collection (java.uitl.List&lt;T&gt;, java.uitl.Set&lt;T&gt;,
+            java.util.Map&lt;String, T&gt;, etc) where T as described in
+            1.</entry>
+          </row>
+
+          <row>
+            <entry>application/x-www-form-urlencoded</entry>
+
+            <entry>javax.ws.rs.core.MultivaluedMap&lt;String,
+            String&gt;</entry>
+          </row>
+
+          <row>
+            <entry>multipart/*</entry>
+
+            <entry>java.util.Iterator&lt;org.apache.commons.fileupload.FileItem&gt;</entry>
+          </row>
+
+          <row>
+            <entry>application/xml, application/xhtml+xml, text/xml</entry>
+
+            <entry>javax.xml.bind.JAXBElement</entry>
+          </row>
+
+          <row>
+            <entry>application/xml, application/xhtml+xml, text/xml</entry>
+
+            <entry>Object with JAXB annotations</entry>
+          </row>
+
+          <row>
+            <entry>application/xml, application/xhtml+xml, text/xml</entry>
+
+            <entry>javax.xml.transform.stream.StreamSource</entry>
+          </row>
+
+          <row>
+            <entry>application/xml, application/xhtml+xml, text/xml</entry>
+
+            <entry>javax.xml.transform.sax.SAXSource</entry>
+          </row>
+
+          <row>
+            <entry>application/xml, application/xhtml+xml, text/xml</entry>
+
+            <entry>javax.xml.transform.dom.DOMSource</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+
+    <para>In some case it may be required to use alternative provider for the
+    same media and java type but such changes must not impact to any other
+    services.</para>
+  </section>
+
+  <section id="WS.OverwriteDefaultProviders.Usage">
+    <title>Usage</title>
+
+    <para>To be able overwrite default JAX-RS provider(s) developer
+    need:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>Deploy own RESTful service(s) by using subclass of
+        javax.ws.rs.core.Application (hereinafter Application).</para>
+      </listitem>
+
+      <listitem>
+        <para>Service(s) NOT NEED to implement marker interface
+        ResourceContainer and MUST NOT be configured as component(s) of eXo
+        Container. Instead of it Application must be configured as component
+        of eXo Container.</para>
+      </listitem>
+
+      <listitem>
+        <para>If RESTful services or providers require some dependencies from
+        eXo Container then Application should inject it by own constructor and
+        then delegate to services or providers. As alternative method
+        getClasses() may be used for deliver services/providers classes
+        instead of instances. In this case services/providers will work in
+        per-request mode and RESTful framework will take care about resolving
+        dependencies.</para>
+      </listitem>
+    </orderedlist>
+  </section>
+
+  <section id="WS.OverwriteDefaultProviders.Example">
+    <title>Example</title>
+
+    <para>In example below see how to use Jackson JSON provider instead of
+    embedded in eXo RESTful framework.</para>
+
+    <para>Create subclass of javax.ws.rs.core.Application with code as bellow
+    and add it to the eXo Container configuration.</para>
+
+    <programlisting language="java">package org.exoplatform.test.jackson;
+
+import org.codehaus.jackson.jaxrs.JacksonJaxbJsonProvider;
+
+import java.util.HashSet;
+import java.util.Set;
+
+import javax.ws.rs.core.Application;
+
+public class Application1 extends Application
+{
+   @Override
+   public Set&lt;Class&lt;?&gt;&gt; getClasses()
+   {
+      Set&lt;Class&lt;?&gt;&gt; cls = new HashSet&lt;Class&lt;?&gt;&gt;(1);
+      cls.add(Resource1.class);
+      return cls;
+   }
+
+   @Override
+   public Set&lt;Object&gt; getSingletons()
+   {
+      Set&lt;Object&gt; objs = new HashSet&lt;Object&gt;(1);
+      objs.add(new JacksonJaxbJsonProvider());
+      return objs;
+   }
+}</programlisting>
+
+    <para>In this example we assumes Resource1 is Java class which carries
+    JAX-RS annotations and it uses JSON. In this case RESTful framework will
+    use JacksonJaxbJsonProvider for serializing/deserializing of all messages
+    to/from Resource1. But it will not impact to other services in any kind.
+    </para>
+  </section>
+</chapter>

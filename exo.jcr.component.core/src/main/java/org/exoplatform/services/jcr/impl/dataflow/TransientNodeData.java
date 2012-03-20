@@ -239,6 +239,48 @@ public class TransientNodeData extends TransientItemData implements Comparable, 
       return nodeData;
    }
 
+   /**
+    * Factory method
+    * 
+    * @param parent NodeData
+    * @param name  InternalQName
+    * @param primaryTypeName InternalQName
+    * @param identifier String
+    * @param acl AccessControlList
+    * @return
+    */
+   public static TransientNodeData createNodeData(NodeData parent, InternalQName name, InternalQName primaryTypeName,
+      String identifier, AccessControlList acl)
+   {
+      TransientNodeData nodeData = null;
+      QPath path = QPath.makeChildPath(parent.getQPath(), name);
+      nodeData =
+         new TransientNodeData(path, identifier, -1, primaryTypeName, new InternalQName[0], 0, parent.getIdentifier(),
+            acl);
+      return nodeData;
+   }
+
+   /**
+    * Factory method
+    * 
+    * @param parent NodeData
+    * @param name  InternalQName
+    * @param primaryTypeName InternalQName
+    * @param mixinTypesName InternalQName[]
+    * @param identifier String
+    * @param acl AccessControlList
+    * @return
+    */
+   public static TransientNodeData createNodeData(NodeData parent, InternalQName name, InternalQName primaryTypeName,
+      InternalQName[] mixinTypesName, String identifier, AccessControlList acl)
+   {
+      TransientNodeData nodeData = null;
+      QPath path = QPath.makeChildPath(parent.getQPath(), name);
+      nodeData =
+         new TransientNodeData(path, identifier, -1, primaryTypeName, mixinTypesName, 0, parent.getIdentifier(), acl);
+      return nodeData;
+   }
+
    // ------------- Comparable /////
 
    public int compareTo(Object obj)
@@ -254,6 +296,7 @@ public class TransientNodeData extends TransientItemData implements Comparable, 
       this.acl = new AccessControlList();
    }
 
+   @Override
    public void writeExternal(ObjectOutput out) throws IOException
    {
       super.writeExternal(out);
@@ -277,6 +320,7 @@ public class TransientNodeData extends TransientItemData implements Comparable, 
       acl.writeExternal(out);
    }
 
+   @Override
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       super.readExternal(in);

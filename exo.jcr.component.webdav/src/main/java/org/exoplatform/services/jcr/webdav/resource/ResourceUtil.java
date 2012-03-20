@@ -44,7 +44,7 @@ public class ResourceUtil
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.ResourceUtil");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.ResourceUtil");
 
    /**
     * If the node is file.
@@ -64,7 +64,7 @@ public class ResourceUtil
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return false;
       }
    }
@@ -85,7 +85,7 @@ public class ResourceUtil
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return false;
       }
    }
@@ -106,7 +106,7 @@ public class ResourceUtil
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return false;
       }
    }

@@ -20,7 +20,7 @@
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
- * @version $Id: $
+ * @version $Id$
  */
 package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 
@@ -37,6 +37,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
@@ -59,12 +60,12 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
- * @version $Id: $
+ * @version $Id$
  */
 public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
 {
 
-   protected final Log log = ExoLogger.getLogger("exo.jcr.component.core.JCRNodeTypeDataPersister");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JCRNodeTypeDataPersister");
 
    private final DataManager dataManager;
 
@@ -119,7 +120,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
    {
       if (!started)
       {
-         log.warn("Unable save nodetype " + nodeType.getName().getAsString()
+         LOG.warn("Unable save nodetype " + nodeType.getName().getAsString()
             + " in to the storage. Storage not initialized");
          return;
       }
@@ -139,7 +140,8 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
          return false;
       }
 
-      NodeData nodeTypeData = (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeName, 1));
+      NodeData nodeTypeData =
+         (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeName, 1), ItemType.NODE);
 
       return nodeTypeData != null;
    }
@@ -149,16 +151,21 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
       PlainChangesLog changesLog = new PlainChangesLogImpl();
       TransientNodeData jcrNodetypes;
 
-      long start = System.currentTimeMillis();
-
+      long start = 0;
+      if (LOG.isDebugEnabled())
+      {
+         start = System.currentTimeMillis();
+      }
+      
       if (addACL)
       {
-         AccessControlList acl = new AccessControlList();
          InternalQName[] mixins = new InternalQName[]{Constants.EXO_OWNEABLE, Constants.EXO_PRIVILEGEABLE};
 
          jcrNodetypes =
             TransientNodeData.createNodeData(nsSystem, Constants.JCR_NODETYPES, Constants.NT_UNSTRUCTURED, mixins,
                Constants.NODETYPESROOT_UUID);
+
+         AccessControlList acl = jcrNodetypes.getACL();
 
          TransientPropertyData primaryType =
             TransientPropertyData.createPropertyData(jcrNodetypes, Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
@@ -207,9 +214,11 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
          changesLog.add(ItemState.createAddedState(jcrNodetypes)).add(ItemState.createAddedState(primaryType));
       }
 
-      if (log.isDebugEnabled())
-         log.debug("/jcr:system/jcr:nodetypes is created, creation time: " + (System.currentTimeMillis() - start)
+      if (LOG.isDebugEnabled())
+      {
+         LOG.debug("/jcr:system/jcr:nodetypes is created, creation time: " + (System.currentTimeMillis() - start)
             + " ms");
+      }
 
       dataManager.save(new TransactionChangesLog(changesLog));
 
@@ -224,7 +233,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
    {
       if (nodeTypeStorageRoot == null)
       {
-         log.warn(" Storage not initialized");
+         LOG.warn(" Storage not initialized");
          return false;
       }
       try
@@ -234,7 +243,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
       }
       catch (RepositoryException e)
       {
-         log.error(e.getLocalizedMessage(), e);
+         LOG.error(e.getLocalizedMessage(), e);
 
       }
       return false;
@@ -272,7 +281,7 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
 
       validatate();
       NodeData nodeTypeData =
-         (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeType.getName(), 1));
+         (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeType.getName(), 1), ItemType.NODE);
       ItemDataRemoveVisitor removeVisitor = new ItemDataRemoveVisitor(dataManager, nodeTypeStorageRoot.getQPath());
       nodeTypeData.accept(removeVisitor);
 
@@ -291,11 +300,16 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
             if (jcrSystem != null)
             {
                NodeData jcrNodetypes =
-                  (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.JCR_NODETYPES, 1));
+                  (NodeData)dataManager.getItemData(jcrSystem, new QPathEntry(Constants.JCR_NODETYPES, 1),
+                     ItemType.NODE);
                if (jcrNodetypes == null)
+               {
                   this.nodeTypeStorageRoot = initNodetypesRoot(jcrSystem, addACL);
+               }
                else
+               {
                   this.nodeTypeStorageRoot = jcrNodetypes;
+               }
             }
             else
             {
@@ -315,17 +329,17 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeDataPersister#unmarshall(org.exoplatform.services.jcr.datamodel.InternalQName, java.util.Set)
+    * {@inheritDoc}
     */
    public NodeTypeData getNodeType(InternalQName nodeTypeName) throws RepositoryException, NoSuchNodeTypeException
    {
       if (nodeTypeStorageRoot == null)
       {
-         log.warn(" Storage not initialized");
+         LOG.warn(" Storage not initialized");
          return null;
       }
       //Searching nodeType root
-      ItemData nodeType = dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeName, 1));
+      ItemData nodeType = dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeName, 1), ItemType.NODE);
       if (nodeType == null)
          throw new NoSuchNodeTypeException("Node type definition " + nodeTypeName.getAsString() + "not found");
       if (!nodeType.isNode())
@@ -357,7 +371,9 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
       for (NodeData nodeData : nodeTypes)
       {
          if (Constants.NT_NODETYPE.equals(nodeData.getPrimaryTypeName()))
+         {
             result.add(definitionAccessProvider.read(nodeData));
+         }
       }
       return result;
    }
@@ -376,9 +392,10 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
          if (observer != null)
          {
             if (observer.shouldSkip(nodeTypeData, changesLog))
+            {
                continue;
+            }
             observer.beforeUpdate(nodeTypeData, changesLog);
-
          }
          if (!validatate())
          {
@@ -386,7 +403,8 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
          }
          // remove first
          NodeData removeNodeTypeData =
-            (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeData.getName(), 1));
+            (NodeData)dataManager.getItemData(nodeTypeStorageRoot, new QPathEntry(nodeTypeData.getName(), 1),
+               ItemType.NODE);
          if (removeNodeTypeData != null)
          {
             ItemDataRemoveVisitor removeVisitor =
@@ -398,20 +416,23 @@ public class JCRNodeTypeDataPersister implements NodeTypeDataPersister
          // add
          definitionAccessProvider.write(changesLog, nodeTypeStorageRoot, nodeTypeData);
          if (observer != null)
+         {
             observer.afterUpdate(nodeTypeData, changesLog);
+         }
       }
       //made changes if needed
       if (changesLog.getSize() > 0)
+      {
          dataManager.save(new TransactionChangesLog(changesLog));
-
+      }
    }
 
    private boolean validatate()
    {
       if (this.nodeTypeStorageRoot == null)
       {
-         if (log.isDebugEnabled())
-            log.debug(" Storage not initialized");
+         if (LOG.isDebugEnabled())
+            LOG.debug(" Storage not initialized");
          return false;
       }
       return true;

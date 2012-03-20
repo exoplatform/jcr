@@ -18,8 +18,12 @@
  */
 package org.exoplatform.services.jcr.ext.hierarchy.impl;
 
+import org.exoplatform.services.jcr.access.PermissionType;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS Author : Dang Van Minh minh.dang@exoplatform.com Nov 15, 2007
@@ -101,6 +105,30 @@ public class HierarchyConfig
          return this.permissions;
       }
 
+      public Map<String, String[]> getPermissions(String identityToAdd)
+      {
+         Map<String, String[]> permissionsMap = new HashMap<String, String[]>();
+         if (identityToAdd != null && !identityToAdd.isEmpty())
+         {
+            permissionsMap.put(identityToAdd, PermissionType.ALL);            
+         }
+         for (Permission permission : permissions)
+         {
+            List<String> lPermissions = new ArrayList<String>(4);
+            if ("true".equalsIgnoreCase(permission.getRead()))
+               lPermissions.add(PermissionType.READ);
+            if ("true".equalsIgnoreCase(permission.getAddNode()))
+               lPermissions.add(PermissionType.ADD_NODE);
+            if ("true".equalsIgnoreCase(permission.getSetProperty()))
+               lPermissions.add(PermissionType.SET_PROPERTY);
+            if ("true".equalsIgnoreCase(permission.getRemove()))
+               lPermissions.add(PermissionType.REMOVE);
+            permissionsMap.put(permission.getIdentity(),
+               (String[])lPermissions.toArray(new String[lPermissions.size()]));
+         }
+         return permissionsMap;
+      }
+      
       public void setPermissions(List<Permission> list)
       {
          this.permissions = list;

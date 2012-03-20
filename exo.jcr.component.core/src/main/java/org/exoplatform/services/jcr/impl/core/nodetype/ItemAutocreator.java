@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
@@ -60,7 +61,7 @@ import javax.jcr.ValueFactory;
 public class ItemAutocreator
 {
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemAutocreator");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ItemAutocreator");
 
    private final NodeTypeDataManager nodeTypeDataManager;
 
@@ -117,13 +118,13 @@ public class ItemAutocreator
          {
             final ItemData pdata =
                avoidCheckExistedChildItems ? null : targetDataManager.getItemData(parent, new QPathEntry(
-                  ndef.getName(), 0));
+                  ndef.getName(), 0), ItemType.NODE, false);
             if (pdata == null && !addedNodes.contains(ndef.getName()) || pdata != null && !pdata.isNode())
             {
 
                final TransientNodeData childNodeData =
-                  TransientNodeData.createNodeData(parent, ndef.getName(), ndef.getDefaultPrimaryType(), IdGenerator
-                     .generate());
+                  TransientNodeData.createNodeData(parent, ndef.getName(), ndef.getDefaultPrimaryType(),
+                     IdGenerator.generate());
                changes.add(ItemState.createAddedState(childNodeData, false));
                changes.addAll(makeAutoCreatedItems(childNodeData, childNodeData.getPrimaryTypeName(),
                   targetDataManager, owner).getAllStates());
@@ -131,9 +132,9 @@ public class ItemAutocreator
             }
             else
             {
-               if (this.log.isDebugEnabled())
+               if (this.LOG.isDebugEnabled())
                {
-                  this.log.debug("Skipping existed node " + ndef.getName() + " in " + parent.getQPath().getAsString()
+                  this.LOG.debug("Skipping existed node " + ndef.getName() + " in " + parent.getQPath().getAsString()
                      + "   during the automatic creation of items for " + typeName.getAsString()
                      + " nodetype or mixin type");
                }
@@ -162,7 +163,7 @@ public class ItemAutocreator
 
             final ItemData pdata =
                avoidCheckExistedChildItems ? null : targetDataManager.getItemData(parent, new QPathEntry(
-                  pdef.getName(), 0));
+                  pdef.getName(), 0), ItemType.PROPERTY, false);
             if (pdata == null && !addedProperties.contains(pdef.getName()) || pdata != null && pdata.isNode())
             {
 
@@ -171,19 +172,17 @@ public class ItemAutocreator
                if (listAutoCreateValue != null)
                {
                   final TransientPropertyData propertyData =
-                     TransientPropertyData.createPropertyData(parent, pdef.getName(), pdef.getRequiredType(), pdef
-                        .isMultiple(), listAutoCreateValue);
+                     TransientPropertyData.createPropertyData(parent, pdef.getName(), pdef.getRequiredType(),
+                        pdef.isMultiple(), listAutoCreateValue);
                   changes.add(ItemState.createAddedState(propertyData));
                   addedProperties.add(pdef.getName());
                }
             }
             else
             {
-               // TODO if autocreated property exists it's has wrong data (e.g. ACL)
-               // - throw an exception
-               if (this.log.isDebugEnabled())
+               if (this.LOG.isDebugEnabled())
                {
-                  this.log.debug("Skipping existed property " + pdef.getName() + " in "
+                  this.LOG.debug("Skipping existed property " + pdef.getName() + " in "
                      + parent.getQPath().getAsString() + "   during the automatic creation of items for "
                      + typeName.getAsString() + " nodetype or mixin type");
                }

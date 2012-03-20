@@ -52,7 +52,7 @@ public class WorkspaceContentImporter extends SystemViewImporter
    /**
     * Class logger.
     */
-   protected final Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceContentImporter");
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceContentImporter");
 
    /**
     * The flag indicates whether a verified that the first element is the root.
@@ -115,19 +115,22 @@ public class WorkspaceContentImporter extends SystemViewImporter
          if (!isFirstElementChecked)
          {
             if (!ROOT_NODE_NAME.equals(svName))
+            {
                throw new RepositoryException("The first element must be root. But found '" + svName + "'");
+            }
+
             isFirstElementChecked = true;
          }
 
          if (ROOT_NODE_NAME.equals(svName))
          {
-            currentNodeName = Constants.ROOT_PATH.getName();
+            // remove the wrong root from the stack
+            tree.pop();
 
-            newNodeData = processRootNode(parentData.getQPath());
+            newNodeData = addChangesForRootNodeInitialization(parentData);
          }
          else
          {
-
             currentNodeName = locationFactory.parseJCRName(svName).getInternalName();
             nodeIndex = getNodeIndex(parentData, currentNodeName, null);
             newNodeData = new ImportNodeData(parentData, currentNodeName, nodeIndex);
@@ -136,6 +139,8 @@ public class WorkspaceContentImporter extends SystemViewImporter
             changesLog.add(new ItemState(newNodeData, ItemState.ADDED, true, parentData.getQPath()));
          }
          tree.push(newNodeData);
+
+         mapNodePropertiesInfo.put(newNodeData.getIdentifier(), new NodePropertiesInfo(newNodeData));
       }
       else
       {
@@ -152,19 +157,17 @@ public class WorkspaceContentImporter extends SystemViewImporter
       }
    }
 
-   protected ImportNodeData processRootNode(QPath parentPath)
+   /**
+    * @param rootData 
+    *          the root node data of workspace
+    */
+   protected ImportNodeData addChangesForRootNodeInitialization(NodeData rootData) throws RepositoryException
    {
-      // remove the wrong root from the stack
-      tree.pop();
-
-      ImportNodeData newNodeData =
+      ImportNodeData newRootData =
          new ImportNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, -1, Constants.NT_UNSTRUCTURED,
-            new InternalQName[0], 0, null, new AccessControlList());
+            new InternalQName[0], -1, null, new AccessControlList());
+      changesLog.add(new ItemState(rootData, ItemState.ADDED, true, null));
 
-      // Not persistent state. Root created during the creation workspace.
-      changesLog.add(new ItemState(newNodeData, ItemState.ADDED, true, parentPath, false, false));
-
-      return newNodeData;
+      return newRootData;
    }
-
 }

@@ -18,9 +18,12 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.search.Query;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor;
 import org.exoplatform.services.jcr.impl.core.query.lucene.MultiIndex;
@@ -77,6 +80,23 @@ public interface QueryHandler
     * @throws IOException if an error occurs while updating the index.
     */
    void updateNodes(Iterator<String> remove, Iterator<NodeData> add) throws RepositoryException, IOException;
+
+   /**
+    * Extracts all the changes and returns them as a {@link ChangesHolder} instance
+    * @param remove Iterator of <code>NodeIds</code> of nodes to delete
+    * @param add    Iterator of <code>NodeState</code> instance to add to the
+    *               index.
+    * @return a {@link ChangesHolder} instance that contains all the changes
+    */
+   ChangesHolder getChanges(Iterator<String> remove, Iterator<NodeData> add);
+
+   /**
+    * Applies the given changes to the indes in an atomic operation
+    * @param changes the changes to apply
+    * @throws RepositoryException if an error occurs while indexing a node.
+    * @throws IOException if an error occurs while updating the index.
+    */
+   void apply(ChangesHolder changes) throws RepositoryException, IOException;
 
    /**
     * Closes this <code>QueryHandler</code> and frees resources attached
@@ -137,6 +157,8 @@ public interface QueryHandler
 
    void setIndexerIoModeHandler(IndexerIoModeHandler handler) throws IOException;
 
+   IndexerIoModeHandler getIndexerIoModeHandler();
+
    /**
     * @return the name of the query class to use.
     */
@@ -161,7 +183,7 @@ public interface QueryHandler
     * @param indexInfos
     */
    void setIndexInfos(IndexInfos indexInfos);
-   
+
    /**
     * Returns {@link IndexInfos} instance that was set into QueryHandler.
     * @return
@@ -178,4 +200,41 @@ public interface QueryHandler
     */
    void setIndexUpdateMonitor(IndexUpdateMonitor indexUpdateMonitor);
 
+   /**
+    * Switches index into corresponding ONLINE or OFFLINE mode. Offline mode means that new indexing data is
+    * collected but index is guaranteed to be unmodified during offline state. Passing the allowQuery flag, can
+    * allow or deny performing queries on index during offline mode. AllowQuery is not used when setting index
+    * back online. When dropStaleIndexes is set, indexes present on the moment of switching index offline will be
+    * marked as stale and removed on switching it back online.
+    * 
+    * @param isOnline
+    * @param allowQuery
+    *          doesn't matter, when switching index to online
+    * @param dropStaleIndexes
+    *          doesn't matter, when switching index to online
+    * @throws IOException
+    */
+   void setOnline(boolean isOnline, boolean allowQuery, boolean dropStaleIndexes) throws IOException;
+
+   /**
+    * Offline mode means that new indexing data is collected but index is guaranteed to be unmodified during
+    * offline state.
+    * 
+    * @return the state of index.
+    */
+   boolean isOnline();
+
+   /**
+    * Check index consistency. Iterator goes through index documents and check, does each document have
+    * according jcr-node. If <b>autoRepair</b> is true - all broken index-documents will be reindexed,
+    * and documents that do not have corresponding jcr-node will be removed.
+    * 
+    * @param itemStateManager
+    * @param isSystem
+    * @param report
+    * @throws RepositoryException
+    * @throws IOException
+    */
+   void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, InspectionReport report)
+      throws RepositoryException, IOException;
 }

@@ -39,6 +39,8 @@ import java.sql.SQLException;
 public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
 
+   protected String PATTERN_ESCAPE_STRING = "\\\\";
+
    /**
     * MySQL Multidatabase JDBC Connection constructor.
     * 
@@ -72,6 +74,24 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
+   protected void prepareQueries() throws SQLException
+   {
+      super.prepareQueries();
+
+      FIND_NODES_AND_PROPERTIES =
+         "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
+            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I force index(PRIMARY)"
+            + " where I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
+            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
+
+      FIND_ITEM_BY_NAME = "select * from JCR_MITEM where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS";
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    protected int addNodeRecord(NodeData data) throws SQLException
    {
       // check if parent exists
@@ -85,7 +105,14 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
          }
          finally
          {
-            item.close();
+            try
+            {
+               item.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
          }
       }
       return super.addNodeRecord(data);
@@ -108,10 +135,23 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
          }
          finally
          {
-            item.close();
+            try
+            {
+               item.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
          }
       }
       return super.addPropertyRecord(data);
    }
 
+   @Override
+   protected String getLikeExpressionEscape()
+   {
+      // must be .. LIKE 'prop\\_name' ESCAPE '\\\\'
+      return this.PATTERN_ESCAPE_STRING;
+   }
 }

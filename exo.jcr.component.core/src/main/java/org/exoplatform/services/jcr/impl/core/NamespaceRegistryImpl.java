@@ -27,7 +27,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -171,7 +170,6 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
     * @param nodeType
     * @return
     * @throws RepositoryException
-    * @throws IOException
     */
    @Deprecated
    public Set<String> getNodes(String uri) throws RepositoryException
@@ -332,21 +330,23 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
          final Set<String> nodes = indexSearcherHolder.getNodesByUri(uri);
          if (nodes.size() > 0)
          {
-            StringBuffer buffer = new StringBuffer();
-            buffer.append("Fail to unregister namespace");
-            buffer.append(prefix);
-            buffer.append(" because of following nodes:  ");
+            StringBuilder builder = new StringBuilder();
+            builder.append("Fail to unregister namespace '");
+            builder.append(prefix);
+            builder.append("' because of following nodes:  ");
 
             for (String uuid : nodes)
             {
                ItemData item = dataManager.getItemData(uuid);
                if (item != null && item.isNode())
                {
-                  buffer.append(item.getQPath().getAsString());
+                  builder.append(" - ");
+                  builder.append(item.getQPath().getAsString());
+                  builder.append("\r\n");
                }
             }
-            buffer.append(" contains whese prefix  ");
-            throw new NamespaceException(buffer.toString());
+            builder.append(" uses this prefix.");
+            throw new NamespaceException(builder.toString());
          }
       }
       prefixes.remove(uri);
@@ -418,7 +418,9 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
                   registerNamespace(prefix, uri);
                }
                if (log.isDebugEnabled())
+               {
                   log.debug("Namespace is registered " + prefix + " = " + uri);
+               }
             }
          }
          catch (Exception e)

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Kernel.ExoContainer">
+  <?dbhtml filename="ch-exo-container.html"?>
+
+  <title>ExoContainer info</title>
+
+  <para>ExoContainer is the main IoC kernel object. The container is
+  responsible for loading services/components.</para>
+
+  <section>
+    <title>Container hierarchy</title>
+
+    <itemizedlist>
+      <listitem>
+        <para>Behavior is like class loaders</para>
+      </listitem>
+
+      <listitem>
+        <para>A child container sees parent container components</para>
+      </listitem>
+
+      <listitem>
+        <para>Extensively used in eXo Platform</para>
+      </listitem>
+    </itemizedlist>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/hierarchy.png" />
+      </imageobject>
+    </mediaobject>
+  </section>
+</chapter>

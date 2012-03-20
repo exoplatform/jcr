@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.replication;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -104,7 +105,7 @@ public class PendingBinaryFile
    public ChangesFile addChangesFile(String ownerName, String fileName, String systemId, long totalPacketCount)
       throws IOException
    {
-      File f = File.createTempFile(fileName, "");
+      File f = PrivilegedFileHelper.createTempFile(fileName, "");
       ChangesFile fileDescriptor = new ChangesFile(f, systemId, totalPacketCount);
 
       HashMap<String, ChangesFile> fileMap;
@@ -168,7 +169,7 @@ public class PendingBinaryFile
       {
          log.debug("\n\nList has been sorted :\n");
          for (ChangesFile fd : fileDescriptorhList)
-            log.debug(fd.getFile().getAbsolutePath());
+            log.debug(PrivilegedFileHelper.getAbsolutePath(fd.getFile()));
       }
 
       return fileDescriptorhList;

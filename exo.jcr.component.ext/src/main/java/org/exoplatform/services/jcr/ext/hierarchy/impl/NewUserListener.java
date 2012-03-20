@@ -20,23 +20,22 @@ package org.exoplatform.services.jcr.ext.hierarchy.impl;
 
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.ext.distribution.DataDistributionManager;
+import org.exoplatform.services.jcr.ext.distribution.DataDistributionMode;
+import org.exoplatform.services.jcr.ext.distribution.DataDistributionType;
 import org.exoplatform.services.jcr.ext.hierarchy.NodeHierarchyCreator;
 import org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig.JcrPath;
-import org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig.Permission;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.User;
 import org.exoplatform.services.organization.UserEventListener;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS Author : Dang Van Minh minh.dang@exoplatform.com Nov 15, 2007
@@ -44,137 +43,82 @@ import javax.jcr.Session;
  */
 public class NewUserListener extends UserEventListener
 {
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.NewUserListener");
 
-   private HierarchyConfig config_;
+   private final HierarchyConfig config_;
 
-   private RepositoryService jcrService_;
+   private final RepositoryService jcrService_;
 
-   private NodeHierarchyCreator nodeHierarchyCreatorService_;
-
-   private String userPath_;
-
-   final static private String USERS_PATH = "usersPath";
-
-   final static private String NT_UNSTRUCTURED = "nt:unstructured".intern();
+   private final NodeHierarchyCreator nodeHierarchyCreatorService_;
+   
+   private final DataDistributionType dataDistributionType_;
 
    public NewUserListener(RepositoryService jcrService, NodeHierarchyCreator nodeHierarchyCreatorService,
-      InitParams params) throws Exception
+      DataDistributionManager dataDistributionManager, InitParams params) throws Exception
    {
       jcrService_ = jcrService;
-      nodeHierarchyCreatorService_ = nodeHierarchyCreatorService;
+      dataDistributionType_ = dataDistributionManager.getDataDistributionType(DataDistributionMode.NONE);
       config_ = (HierarchyConfig)params.getObjectParamValues(HierarchyConfig.class).get(0);
-      nodeHierarchyCreatorService_.addPlugin(new AddPathPlugin(params));
-      userPath_ = nodeHierarchyCreatorService.getJcrPath(USERS_PATH);
+      nodeHierarchyCreatorService.addPlugin(new AddPathPlugin(params));
+      nodeHierarchyCreatorService_ = nodeHierarchyCreatorService;
    }
 
    public void preSave(User user, boolean isNew) throws Exception
    {
-      String userName = user.getUserName();
-      List<RepositoryEntry> repositories = jcrService_.getConfig().getRepositoryConfigurations();
-      // TODO [PN, 12.02.08] only default repository should contains user structure
       if (isNew)
       {
-         for (RepositoryEntry repo : repositories)
-         {
-            processUserStructure(repo.getName(), userName);
-         }
+         processUserStructure(jcrService_.getCurrentRepository(), user.getUserName());
       }
    }
 
-   @SuppressWarnings("unchecked")
-   private void processUserStructure(String repository, String userName) throws Exception
+   private void processUserStructure(ManageableRepository manageableRepository, String userName) throws Exception
    {
-      ManageableRepository manageableRepository = jcrService_.getRepository(repository);
-      String systemWorkspace = manageableRepository.getConfiguration().getDefaultWorkspaceName();
-      Session session = manageableRepository.getSystemSession(systemWorkspace);
-      Node usersHome = (Node)session.getItem(userPath_);
-      List<JcrPath> jcrPaths = config_.getJcrPaths();
-      Node userNode = null;
-      try
+      SessionProvider sessionProvider = SessionProvider.createSystemProvider();
+      try 
       {
-         userNode = usersHome.getNode(userName);
+         Node userNode = nodeHierarchyCreatorService_.getUserNode(sessionProvider, userName);
+         List<JcrPath> jcrPaths = config_.getJcrPaths();
+         for (JcrPath jcrPath : jcrPaths)
+         {
+            createNode(userNode, jcrPath.getPath(), jcrPath.getNodeType(), jcrPath.getMixinTypes(),
+               jcrPath.getPermissions(userName));
+         }         
       }
-      catch (PathNotFoundException e)
+      catch (Exception e)
       {
-         userNode = usersHome.addNode(userName);
+         LOG.error("An error occurs while initializing the user directory of '" + userName + "'", e);
       }
-      for (JcrPath jcrPath : jcrPaths)
+      finally
       {
-         createNode(userNode, jcrPath.getPath(), jcrPath.getNodeType(), jcrPath.getMixinTypes(), getPermissions(jcrPath
-            .getPermissions(), userName));
+         sessionProvider.close();
+         sessionProvider = null;
       }
-      session.save();
-      session.logout();
    }
 
    public void preDelete(User user)
    {
       // use a anonymous connection for the configuration as the user is not
       // authentified at that time
-      List<RepositoryEntry> repositories = jcrService_.getConfig().getRepositoryConfigurations();
-      for (RepositoryEntry repo : repositories)
-      {
-         try
-         {
-            ManageableRepository manaRepo = jcrService_.getRepository(repo.getName());
-            Session session = manaRepo.getSystemSession(manaRepo.getConfiguration().getDefaultWorkspaceName());
-            Node usersHome = (Node)session.getItem(nodeHierarchyCreatorService_.getJcrPath(USERS_PATH));
-            usersHome.getNode(user.getUserName()).remove();
-            session.save();
-            session.logout();
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-         }
-      }
-   }
-
-   @SuppressWarnings("unchecked")
-   private void createNode(Node userNode, String path, String nodeType, List<String> mixinTypes, Map permissions)
-      throws Exception
-   {
-      if (nodeType == null || nodeType.length() == 0)
-         nodeType = NT_UNSTRUCTURED;
+      SessionProvider sessionProvider = SessionProvider.createSystemProvider();
       try
       {
-         userNode = userNode.getNode(path);
+         nodeHierarchyCreatorService_.removeUserNode(sessionProvider, user.getUserName());
       }
-      catch (PathNotFoundException e)
+      catch (Exception e)
       {
-         userNode = userNode.addNode(path, nodeType);
+         LOG.error("An error occurs while removing the user directory of '" + user.getUserName() + "'", e);
       }
-      if (userNode.canAddMixin("exo:privilegeable"))
-         userNode.addMixin("exo:privilegeable");
-      if (permissions != null && !permissions.isEmpty())
-         ((ExtendedNode)userNode).setPermissions(permissions);
-      if (mixinTypes.size() > 0)
+      finally
       {
-         for (String mixin : mixinTypes)
-         {
-            if (userNode.canAddMixin(mixin))
-               userNode.addMixin(mixin);
-         }
+         sessionProvider.close();
+         sessionProvider = null;
       }
    }
 
-   private Map getPermissions(List<Permission> permissions, String userId)
+   private void createNode(Node userNode, String path, String nodeType, List<String> mixinTypes,
+            Map<String, String[]> permissions)
+      throws Exception
    {
-      Map<String, String[]> permissionsMap = new HashMap<String, String[]>();
-      permissionsMap.put(userId, PermissionType.ALL);
-      for (Permission permission : permissions)
-      {
-         StringBuilder strPer = new StringBuilder();
-         if ("true".equals(permission.getRead()))
-            strPer.append(PermissionType.READ);
-         if ("true".equals(permission.getAddNode()))
-            strPer.append(",").append(PermissionType.ADD_NODE);
-         if ("true".equals(permission.getSetProperty()))
-            strPer.append(",").append(PermissionType.SET_PROPERTY);
-         if ("true".equals(permission.getRemove()))
-            strPer.append(",").append(PermissionType.REMOVE);
-         permissionsMap.put(permission.getIdentity(), strPer.toString().split(","));
-      }
-      return permissionsMap;
+      dataDistributionType_.getOrCreateDataNode(userNode, path, nodeType, mixinTypes, permissions);
    }
 }

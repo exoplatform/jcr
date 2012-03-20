@@ -39,7 +39,7 @@ public class DefaultChangesFilter extends IndexerChangesFilter
    /**
     * Logger instance for this class
     */
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.DefaultChangesFilter");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DefaultChangesFilter");
 
    /**
     * @param searchManager
@@ -89,19 +89,12 @@ public class DefaultChangesFilter extends IndexerChangesFilter
       }
       catch (RepositoryException e)
       {
-         log.error("Error indexing changes " + e, e);
+         LOG.error("Error indexing changes " + e, e);
       }
       catch (IOException e)
       {
-         log.error("Error indexing changes " + e, e);
-         try
-         {
-            handler.logErrorChanges(removedNodes, addedNodes);
-         }
-         catch (IOException ioe)
-         {
-            log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
-         }
+         LOG.error("Error indexing changes " + e, e);
+         logErrorChanges(handler, removedNodes, addedNodes);
       }
 
       try
@@ -110,21 +103,17 @@ public class DefaultChangesFilter extends IndexerChangesFilter
       }
       catch (RepositoryException e)
       {
-         log.error("Error indexing changes " + e, e);
+         LOG.error("Error indexing changes " + e, e);
       }
       catch (IOException e)
       {
-         log.error("Error indexing changes " + e, e);
-         try
-         {
-            parentHandler.logErrorChanges(removedNodes, addedNodes);
-         }
-         catch (IOException ioe)
-         {
-            log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
-         }
+         LOG.error("Error indexing changes " + e, e);
+         logErrorChanges(parentHandler, parentRemovedNodes, parentAddedNodes);
       }
-
    }
-
+   
+   protected Log getLogger()
+   {
+      return LOG;
+   }
 }

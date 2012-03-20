@@ -32,10 +32,7 @@
                      <property name="sourceName" value="jdbcjcr" />
                      <property name="dialect" value="generic" />
                      <!-- example of direct jdbc connection usage (without JNDI), see docs for details -->
-                     <!-- property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-                     <property name="url" value="jdbc:hsqldb:file:target/temp/data/portal" />
-                     <property name="username" value="sa" />
-                     <property name="password" value="" / -->
+
                      <property name="multi-db" value="false" />
                      <property name="update-storage" value="true" />
                      <property name="max-buffer-size" value="204800" />
@@ -50,14 +47,47 @@
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="indexDir" value="target/temp/index" />
+                     <property name="indexDir" value="target/temp/index/ws" />
                   </properties>
                </query-handler>
                <lock-manager>
                   <time-out>900000</time-out><!-- 15min -->
                   <persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister">
                      <properties>
-                        <property name="path" value="target/temp/lock" />
+                        <property name="path" value="target/temp/lock/ws" />
+                     </properties>
+                  </persister>
+               </lock-manager>
+            </workspace>
+            <workspace name="ws2" auto-init-root-nodetype="nt:unstructured">
+               <!-- for system storage -->
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
+                  <properties>
+                     <property name="sourceName" value="jdbcjcr" />
+                     <property name="dialect" value="generic" />
+                     <!-- example of direct jdbc connection usage (without JNDI), see docs for details -->
+                     <property name="multi-db" value="false" />
+                     <property name="update-storage" value="true" />
+                     <property name="max-buffer-size" value="204800" />
+                     <property name="swap-directory" value="target/temp/swap/ws2" />
+                  </properties>
+               </container>
+               <cache enabled="true">
+                  <properties>
+                     <property name="maxSize" value="3000" />
+                     <property name="liveTime" value="300" /><!-- 30 sec -->
+                  </properties>
+               </cache>
+               <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
+                  <properties>
+                     <property name="indexDir" value="target/temp/index/ws2" />
+                  </properties>
+               </query-handler>
+               <lock-manager>
+                  <time-out>900000</time-out><!-- 15min -->
+                  <persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister">
+                     <properties>
+                        <property name="path" value="target/temp/lock/ws2" />
                      </properties>
                   </persister>
                </lock-manager>

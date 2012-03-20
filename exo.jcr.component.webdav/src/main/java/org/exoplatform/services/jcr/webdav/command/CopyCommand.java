@@ -27,8 +27,10 @@ import javax.jcr.ItemExistsException;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.Workspace;
 import javax.jcr.lock.LockException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * Created by The eXo Platform SAS Author : <a
@@ -46,6 +48,43 @@ public class CopyCommand
    private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.CopyCommand");
 
    /**
+    * Provides URI information needed for 'location' header in 'CREATED'
+    * response
+    */
+   private final UriBuilder uriBuilder;
+
+   /**
+    * To trace if an item on destination path existed. 
+    */
+   private final boolean itemExisted;
+
+   /**
+    * Empty constructor
+    */
+   public CopyCommand()
+   {
+      this.uriBuilder = null;
+      this.itemExisted = false;
+   }
+
+   /**
+    * Here we pass URI builder and info about pre-existence of item on the move
+    * destination path If an item existed, we must respond with NO_CONTENT (204)
+    * HTTP status.
+    * If an item did not exist, we must respond with CREATED (201) HTTP status
+    * More info can be found <a
+    * href=http://www.webdav.org/specs/rfc2518.html#METHOD_MOVE>here</a>.
+    * 
+    * @param uriBuilder - provide data used in 'location' header
+    * @param itemExisted - indicates if an item existed on copy destination
+    */
+   public CopyCommand(UriBuilder uriBuilder, boolean itemExisted)
+   {
+      this.uriBuilder = uriBuilder;
+      this.itemExisted = itemExisted;
+   }
+
+   /**
     * Webdav COPY method implementation for the same workspace.
     * 
     * @param destSession destination session
@@ -57,8 +96,28 @@ public class CopyCommand
    {
       try
       {
-         destSession.getWorkspace().copy(sourcePath, destPath);
-         return Response.status(HTTPStatus.CREATED).build();
+         Workspace workspace = destSession.getWorkspace();
+         workspace.copy(sourcePath, destPath);
+
+         // If the source resource was successfully moved
+         // to a pre-existing destination resource.
+         if (itemExisted)
+         {
+            return Response.noContent().build();
+         }
+         // If the source resource was successfully moved,
+         // and a new resource was created at the destination.
+         else
+         {
+            if (uriBuilder != null)
+            {
+               return Response.created(uriBuilder.path(workspace.getName()).path(destPath).build()).build();
+            }
+
+            // to save compatibility if uribuilder is not provided
+            return Response.status(HTTPStatus.CREATED).build();
+         }
+
       }
       catch (ItemExistsException e)
       {
@@ -96,8 +155,28 @@ public class CopyCommand
    {
       try
       {
-         destSession.getWorkspace().copy(sourceWorkspace, sourcePath, destPath);
-         return Response.status(HTTPStatus.CREATED).build();
+         Workspace destWorkspace = destSession.getWorkspace();
+         destWorkspace.copy(sourceWorkspace, sourcePath, destPath);
+
+         // If the source resource was successfully moved
+         // to a pre-existing destination resource.
+         if (itemExisted)
+         {
+            return Response.noContent().build();
+         }
+         // If the source resource was successfully moved,
+         // and a new resource was created at the destination.
+         else
+         {
+            if (uriBuilder != null)
+            {
+               return Response.created(uriBuilder.path(destWorkspace.getName()).path(destPath).build()).build();
+            }
+
+            // to save compatibility if uriBuilder is not provided
+            return Response.status(HTTPStatus.CREATED).build();
+         }
+
       }
       catch (ItemExistsException e)
       {

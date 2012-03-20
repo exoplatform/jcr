@@ -13,9 +13,8 @@ public class Test2 {
   
   @GET
   @Path("/groovy2/{param}/")
-  public String method(@PathParam("param") String name) {
-    def String resp = "Hello from groovy to >>>>> " + name
-    return resp
+  def method(@PathParam("param") String name) {
+    return "Hello from groovy to >>>>> " + name
   }
   
 }

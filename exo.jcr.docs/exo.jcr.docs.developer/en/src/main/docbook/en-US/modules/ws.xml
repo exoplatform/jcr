@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<part>
+  <?dbhtml filename="part-ws.html"?>
+
+  <title>eXoWS</title>
+
+  <para>The Web Services module allows eXo technology to integrate with
+  external products and services.</para>
+  
+  <para>It is implementation of API for RESTful Web Services with extensions,
+  Servlet and cross-domain AJAX web-frameworks and JavaBean-JSON
+  transformer.</para>
+
+  <xi:include href="ws/introduction-to-rest.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="ws/overwrite-default-providers.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+              
+  <xi:include href="ws/restservicelist-service.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="ws/groovy-scripts-as-rest-services.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+  <xi:include href="ws/framework-for-cross-domain-ajax.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+</part>

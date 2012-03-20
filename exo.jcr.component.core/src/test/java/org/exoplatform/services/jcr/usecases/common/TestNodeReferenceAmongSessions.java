@@ -50,7 +50,9 @@ public class TestNodeReferenceAmongSessions extends BaseUsecasesTest
 
       String[] wss = repository.getWorkspaceNames();
       if (wss.length < 2)
+      {
          fail("2 or more workspaces required");
+      }
       assertFalse(wss[0].equals(wss[1]));
 
       Session session = repository.login(new SimpleCredentials("admin", "admin".toCharArray()), wss[0]);
@@ -101,9 +103,16 @@ public class TestNodeReferenceAmongSessions extends BaseUsecasesTest
       // clean
 
       node3.remove();
+      node4.remove();
       systemRefNode.remove();
       session3.save();
       session4.save();
       session.save();
+
+      session.logout();
+      session3.logout();
+      session4.logout();
+      refSession1.logout();
+      refSession2.logout();
    }
 }

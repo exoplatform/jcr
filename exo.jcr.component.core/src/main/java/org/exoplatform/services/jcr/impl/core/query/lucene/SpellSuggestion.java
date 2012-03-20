@@ -47,8 +47,8 @@ class SpellSuggestion {
      *            the abstract query tree.
      */
     SpellSuggestion(SpellChecker spellChecker, QueryRootNode root) {
-	this.spellChecker = spellChecker;
-	this.root = root;
+      this.spellChecker = spellChecker;
+      this.root = root;
     }
 
     /**
@@ -62,10 +62,13 @@ class SpellSuggestion {
      * @throws RepositoryException
      */
     public String getSuggestion() throws IOException, RepositoryException {
-	if (spellChecker != null) {
-	    return spellChecker.check(root);
-	} else {
-	    return null;
-	}
-    }
+      if (spellChecker != null)
+      {
+         return spellChecker.check(root);
+      }
+      else
+      {
+         return null;
+      }
+   }
 }

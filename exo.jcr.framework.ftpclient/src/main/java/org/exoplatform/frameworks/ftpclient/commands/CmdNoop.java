@@ -32,7 +32,7 @@ import org.exoplatform.services.log.Log;
 public class CmdNoop extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdNoop");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.CmdNoop");
 
    public int execute()
    {
@@ -43,7 +43,7 @@ public class CmdNoop extends FtpCommandImpl
       }
       catch (Exception exc)
       {
-         log.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
+         LOG.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
       }
       return -1;
    }

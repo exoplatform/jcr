@@ -19,9 +19,11 @@
 package org.exoplatform.services.jcr.dataflow;
 
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 
 import java.util.List;
 
@@ -44,12 +46,47 @@ public interface ItemDataConsumer
    /**
     * Find Item by parent (id) and name (with path index).
     * 
-    * @param parent NodeData
-    * @param name QPathEntry
+    * @param parent 
+    *          NodeData
+    * @param name 
+    *          item name
     * @return ItemData, data by parent and name
     * @throws RepositoryException
     */
+   @Deprecated
    ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException;
+
+   /**
+    * Find Item by parent (id) and name (with path index) of define type.
+    * 
+    * @param parent 
+    *          NodeData
+    * @param name 
+    *          item name
+    * @param itemType 
+    *          itemType
+    * @return ItemData, data by parent and name
+    * @throws RepositoryException
+    */
+   ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException;
+
+   /**
+     * Find Item by parent (id) and name (with path index) of defined type and create 
+     * or not (defined by createNullItemData) null item data.
+     * 
+     * @param parent 
+     *          NodeData
+     * @param name 
+     *          item name
+     * @param itemType 
+     *          itemType
+     * @param createNullItemData 
+     *          defines if NullItemData should be created          
+     * @return ItemData, data by parent and name
+     * @throws RepositoryException
+     */
+   ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
+      throws RepositoryException;
 
    /**
     * Find Item by identifier.
@@ -68,6 +105,34 @@ public interface ItemDataConsumer
    List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException;
 
    /**
+    * Get child Nodes of the parent node.
+    * 
+    * @param parent 
+    *          the parent data
+    * @param fromOrderNum
+    *          the returned list of child nodes should not contain the node with order number 
+    *          less than <code>fromOrderNum</code>
+    * @param toOrderNum   
+    *          the returned list of child nodes should not contain the node with order number 
+    *          more than <code>toOrderNum</code>            
+    * @param childs
+    *          will contain the resulted child nodes
+    * @return true if there are data to retrieve for next request and false in other case 
+    */
+   boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
+      throws RepositoryException;
+
+   /**
+    * Get child Nodes of the parent node.ItemDataFilter used to reduce count of returned items. 
+    * But not guarantee that only items matching filter will be returned.
+    * 
+    * @param parent NodeData
+    * @param patternFilters
+    * @return List of children Nodes
+    */
+   List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters) throws RepositoryException;
+
+   /**
     * Get children nodes count of the parent node. 
     * @param parent NodeData
     * @return int, child nodes count
@@ -75,12 +140,32 @@ public interface ItemDataConsumer
    int getChildNodesCount(NodeData parent) throws RepositoryException;
    
    /**
+    * Get order number of parent's last child node.
+    * 
+    * @param parent node
+    * @return int Returns last child nodes order number or -1 if there is no subnodes.
+    * @throws RepositoryException
+    */
+   int getLastOrderNumber(NodeData parent) throws RepositoryException;
+
+   /**
     * Get child Properties of the parent node.
     * 
     * @param parent NodeData
     * @return List of children Properties
     */
    List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException;
+
+   /**
+    * Get child Properties of the parent node. ItemDataFilter used to reduce count of returned items. 
+    * But not guarantee that only items matching filter will be returned.
+    * 
+    * @param parent NodeData
+    * @param itemDataFilters String
+    * 
+    * @return List of children Properties
+    */
+   List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters) throws RepositoryException;
 
    /**
     * List child Properties, returned list will contains Properties without actual Values.

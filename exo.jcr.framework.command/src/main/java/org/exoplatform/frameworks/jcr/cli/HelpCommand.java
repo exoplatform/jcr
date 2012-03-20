@@ -18,6 +18,9 @@
  */
 package org.exoplatform.frameworks.jcr.cli;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeMap;
@@ -31,6 +34,8 @@ import java.util.TreeMap;
 
 public class HelpCommand extends AbstractCliCommand
 {
+
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.HelpCommand");
 
    private TreeMap<String, String> map = new TreeMap<String, String>();
 
@@ -62,16 +67,14 @@ public class HelpCommand extends AbstractCliCommand
       map.put("copy", "<srcAbsPath>, <destAbsPath> copy the node at srcAbsPath to the new location at destAbsPath");
       map.put("movenode", "<srcAbsPath>, <destAbsPath> move the node at srcAbsPath to the new location at destAbsPath");
       map.put("move", "<srcAbsPath>, <destAbsPath> move the node at srcAbsPath to the new location at destAbsPath");
-      map
-         .put(
-            "|",
-            "<console size> limit the count of lines to output, e.g. |20 will displayed only 20 lines, works in standalone mode only");
+      map.put("|", "<console size> limit the count of lines to output, e.g. |20 will displayed only 20 lines, "
+         + "works in standalone mode only");
    }
 
    @Override
    public boolean perform(CliAppContext ctx)
    {
-      String output = "";
+      StringBuilder output = new StringBuilder();
       try
       {
          String findHelpCommand = null;
@@ -79,9 +82,12 @@ public class HelpCommand extends AbstractCliCommand
          {
             findHelpCommand = ctx.getParameter(0);
          }
-         catch (Exception e)
+         catch (ParameterNotFoundException e)
          {
-            // no parameters found
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
          if (findHelpCommand != null)
          {
@@ -94,24 +100,25 @@ public class HelpCommand extends AbstractCliCommand
                if (findHelpCommand.equals(currentHelpCommand))
                {
                   // begin format output string (adding spaces)
-                  String findHelpCommandFormatted = currentHelpCommand;
+                  StringBuilder findHelpCommandFormatted = new StringBuilder(currentHelpCommand);
+                  
                   int commandLength = currentHelpCommand.length();
                   if (commandLength < WORD_LENGTH)
                   {
                      for (int i = currentHelpCommand.length(); i < WORD_LENGTH; i++)
                      {
-                        findHelpCommandFormatted += " ";
+                        findHelpCommandFormatted.append(" ");
                      }
                   }
                   // end format
-                  output += findHelpCommandFormatted + " - " + map.get(findHelpCommand) + "\n";
+                  output.append(findHelpCommandFormatted).append(" - ").append(map.get(findHelpCommand)).append("\n");
                   found = true;
                   break;
                }
             }
             if (found == false)
             {
-               output += "Can't find help for the: " + findHelpCommand + " command\n";
+               output.append("Can't find help for the: ").append(findHelpCommand).append(" command\n");
             }
          }
          else
@@ -122,25 +129,26 @@ public class HelpCommand extends AbstractCliCommand
             {
                String currentHelpCommand = (String)(iterator.next());
                // begin format output string (adding spaces)
-               String currentHelpCommandFormatted = currentHelpCommand;
+               StringBuilder currentHelpCommandFormatted = new StringBuilder(currentHelpCommand);
                int commandLength = currentHelpCommand.length();
                if (commandLength < WORD_LENGTH)
                {
                   for (int i = currentHelpCommand.length(); i < WORD_LENGTH; i++)
                   {
-                     currentHelpCommandFormatted += " ";
+                     currentHelpCommandFormatted.append(" ");
                   }
                }
                // end format
-               output += currentHelpCommandFormatted + " - " + map.get(currentHelpCommand) + "\n";
+               output.append(currentHelpCommandFormatted).append(" - ").append(map.get(currentHelpCommand))
+                  .append("\n");
             }
          }
       }
       catch (Exception e)
       {
-         output = "Can't execute command - " + e.getMessage() + "\n";
+         output = new StringBuilder("Can't execute command - ").append(e.getMessage()).append("\n");
       }
-      ctx.setOutput(output);
+      ctx.setOutput(output.toString());
       return false;
    }
 }

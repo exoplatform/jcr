@@ -18,6 +18,12 @@
  */
 package org.exoplatform.services.jcr.api.exporting;
 
+import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+import org.exoplatform.services.jcr.util.IdGenerator;
 import org.xml.sax.SAXException;
 
 import java.io.File;
@@ -52,56 +58,6 @@ public class TestExportImport extends ExportBase
    public TestExportImport() throws ParserConfigurationException
    {
       super();
-   }
-
-   // TODO Fix. Move to non system workspace.
-   public void _testWorkspaceExportImportValuesSysView() throws Exception
-   {
-      Node testNode = root.addNode("testExportImport");
-      for (int i = 0; i < valList.size(); i++)
-      {
-         testNode.setProperty("prop" + i + "_string", valList.get(i), PropertyType.STRING);
-         testNode.setProperty("prop" + i + "_binary", valList.get(i), PropertyType.BINARY);
-      }
-      session.save();
-      File destFile = File.createTempFile("testWorkspaceExportImportValuesSysView", ".xml");
-      destFile.deleteOnExit();
-      OutputStream outStream = new FileOutputStream(destFile);
-      session.exportWorkspaceSystemView(outStream, false, false);
-      outStream.close();
-
-      testNode.remove();
-      session.save();
-
-      session.importXML(root.getPath(), new FileInputStream(destFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
-
-      session.save();
-
-      Node newNode = root.getNode("testExportImport");
-
-      for (int i = 0; i < valList.size(); i++)
-      {
-         if (valList.get(i).length > 1)
-         {
-            Value[] stringValues = newNode.getProperty("prop" + i + "_string").getValues();
-            for (int j = 0; j < stringValues.length; j++)
-            {
-               assertEquals(stringValues[j].getString(), valList.get(i)[j]);
-            }
-            Value[] binaryValues = newNode.getProperty("prop" + i + "_binary").getValues();
-            for (int j = 0; j < stringValues.length; j++)
-            {
-               assertEquals(binaryValues[j].getString(), valList.get(i)[j]);
-            }
-         }
-         else
-         {
-            assertEquals(valList.get(i)[0], newNode.getProperty("prop" + i + "_string").getValue().getString());
-            assertEquals(valList.get(i)[0], newNode.getProperty("prop" + i + "_binary").getValue().getString());
-
-         }
-      }
-      destFile.delete();
    }
 
    public void testExportImportCustomNodeType() throws Exception
@@ -442,6 +398,89 @@ public class TestExportImport extends ExportBase
       assertTrue(testNode.isNodeType("mix:referenceable"));
       assertTrue(testNode.hasProperty("jcr:uuid"));
       assertTrue(testNode.isCheckedOut());
+   }
 
+   public void testShouldThrowExceptionWhenExistingNodeAddedAfterImporting() throws Exception
+   {
+      Node testNode = root.addNode("testNode");
+      testNode.addMixin("mix:referenceable");
+      TransientNodeData node = (TransientNodeData)((NodeImpl)testNode.addNode("test2")).getData();
+      session.save();
+
+      File contentFile = new File("target/input-sysview.xml");
+      OutputStream outStream = new FileOutputStream(contentFile);
+      try
+      {
+         session.exportSystemView(testNode.getPath(), outStream, false, false);
+      }
+      finally
+      {
+         outStream.close();
+      }
+
+      testNode.remove();
+      session.save();
+
+      session.importXML(root.getPath(), new FileInputStream(contentFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+      session.save();
+
+      TransientNodeData newNodeData =
+         new TransientNodeData(node.getQPath(), IdGenerator.generate(), node.getPersistedVersion(),
+            node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), root.getNode("testNode")
+               .getUUID(), node.getACL());
+
+      ItemState state = ItemState.createAddedState(newNodeData);
+      session.getTransientNodesManager().updateItemState(state);
+
+      try
+      {
+         session.save();
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
+   }
+
+   public void testShouldThrowExceptionWhenExistingPropertyAddedAfterImporting() throws Exception
+   {
+      Node testNode = root.addNode("testNode");
+      testNode.addMixin("mix:referenceable");
+      TransientPropertyData prop =
+         (TransientPropertyData)((PropertyImpl)testNode.setProperty("testProperty", "testValue")).getData();
+      session.save();
+
+      File contentFile = new File("target/input-sysview.xml");
+      OutputStream outStream = new FileOutputStream(contentFile);
+      try
+      {
+         session.exportSystemView(testNode.getPath(), outStream, false, false);
+      }
+      finally
+      {
+         outStream.close();
+      }
+
+      testNode.remove();
+      session.save();
+
+      session.importXML(root.getPath(), new FileInputStream(contentFile), ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW);
+      session.save();
+
+      TransientPropertyData newPropertyData =
+         new TransientPropertyData(prop.getQPath(), IdGenerator.generate(), prop.getPersistedVersion(), prop.getType(),
+            root.getNode("testNode").getUUID(), prop.isMultiValued(), prop.getValues());
+
+      ItemState state = ItemState.createAddedState(newPropertyData);
+      session.getTransientNodesManager().updateItemState(state);
+
+      try
+      {
+         session.save();
+         fail();
+      }
+      catch (Exception e)
+      {
+      }
    }
 }

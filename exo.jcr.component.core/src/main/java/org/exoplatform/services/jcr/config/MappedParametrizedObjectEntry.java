@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.config;
 
 import org.exoplatform.services.jcr.util.StringNumberParser;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +34,9 @@ import java.util.List;
 
 public abstract class MappedParametrizedObjectEntry
 {
+
+   private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry");
 
    protected String type;
 
@@ -129,7 +134,10 @@ public abstract class MappedParametrizedObjectEntry
             }
             catch (NumberFormatException e)
             {
-               //LOG.warn(name + ": unparseable Integer. " + e);
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
       }
@@ -199,7 +207,10 @@ public abstract class MappedParametrizedObjectEntry
             }
             catch (NumberFormatException e)
             {
-               //LOG.warn(name + ": unparseable Long. " + e);
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
       }
@@ -219,6 +230,58 @@ public abstract class MappedParametrizedObjectEntry
       try
       {
          return StringNumberParser.parseLong(getParameterValue(name));
+      }
+      catch (NumberFormatException e)
+      {
+         throw new RepositoryConfigurationException(name + ": unparseable Long. " + e, e);
+      }
+   }
+
+   /**
+    * Parse named parameter as Double.
+    * 
+    * @param name
+    *          parameter name
+    * @param defaultValue
+    *          default Double value
+    * @return Double value
+    */
+   public Double getParameterDouble(String name, Double defaultValue)
+   {
+      for (int i = 0; i < parameters.size(); i++)
+      {
+         SimpleParameterEntry p = parameters.get(i);
+         if (p.getName().equals(name))
+         {
+            try
+            {
+               return StringNumberParser.parseDouble(p.getValue());
+            }
+            catch (NumberFormatException e)
+            {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
+            }
+         }
+      }
+      return defaultValue;
+   }
+
+   /**
+    * Parse named parameter as Double.
+    * 
+    * @param name
+    *          parameter name
+    * @return Double value
+    * @throws RepositoryConfigurationException
+    */
+   public Double getParameterDouble(String name) throws RepositoryConfigurationException
+   {
+      try
+      {
+         return StringNumberParser.parseDouble(getParameterValue(name));
       }
       catch (NumberFormatException e)
       {
@@ -249,7 +312,10 @@ public abstract class MappedParametrizedObjectEntry
             }
             catch (NumberFormatException e)
             {
-               //LOG.warn(name + ": unparseable time (as Long). " + e);
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
       }

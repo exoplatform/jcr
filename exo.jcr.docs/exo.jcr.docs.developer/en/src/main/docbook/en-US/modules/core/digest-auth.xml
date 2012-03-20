@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter>
+  <title>Digest Authentication</title>
+
+    <para>Digest access authentication is one of the agreed methods a web
+    server can use to negotiate credentials with a web user's browser. It uses
+    encryption to send the password over the network which is safer than the
+    Basic access authentication that sends plaintext.</para>
+
+    <para>Technically digest authentication is an application of MD5
+    cryptographic hashing with usage of nonce values to discourage
+    cryptanalysis. It uses the HTTP protocol.</para>
+
+  <section>
+    <title>Server configuration</title>
+
+    <para>To configure you server to use DIGEST authentication we need to edit
+    serverside JAAS module implementation configuration file.</para>
+
+    <section>
+      <title>Tomcat Server configuration</title>
+
+      <para>You need to fulfill a couple of steps. Firstly change login
+      configuration:</para>
+
+      <para>Edit config file located here:
+      exo-tomcat/webapps/rest.war/WEB-INF/web.xml</para>
+
+      <para>Replace</para>
+
+      <para><programlisting>&lt;login-config&gt;                                                                                                                                          
+  &lt;auth-method&gt;BASIC&lt;/auth-method&gt;                                                                                                                     
+  &lt;realm-name&gt;eXo REST services&lt;/realm-name&gt;                                                                                                           
+&lt;/login-config&gt;</programlisting>for</para>
+
+      <para><programlisting>&lt;login-config&gt;                                                                                                                                          
+  &lt;auth-method&gt;DIGEST&lt;/auth-method&gt;                                                                                                                     
+  &lt;realm-name&gt;eXo REST services&lt;/realm-name&gt;                                                                                                           
+&lt;/login-config&gt;</programlisting>More information about tomcat
+      configuration can be found at <ulink
+      url="http://tomcat.apache.org/tomcat-6.0-doc/config/realm.html">Apache
+      Tomcat Configuration Reference</ulink>.</para>
+
+      <para>Secondly you also need to specify new login module for
+      JAAS:</para>
+
+      <para>Edit config file located here: exo-tomcat/conf/jaas.conf</para>
+
+      <para>Replace</para>
+
+      <para><programlisting>exo-domain {
+  org.exoplatform.services.security.j2ee.TomcatLoginModule required;
+};</programlisting>for</para>
+
+      <para><programlisting>exo-domain {
+  org.exoplatform.services.security.j2ee.DigestAuthenticationTomcatLoginModule required;
+};</programlisting></para>
+    </section>
+
+    <section>
+      <title>Jetty server configuration</title>
+
+      <para>You need to fulfill a couple of steps. Firstly change login
+      configuration:</para>
+
+      <para>Edit config file located here:
+      exo-jetty/webapps/rest.war/WEB-INF/web.xml</para>
+
+      <para>Replace</para>
+
+      <para><programlisting>&lt;login-config&gt;                                                                                                                                          
+  &lt;auth-method&gt;BASIC&lt;/auth-method&gt;                                                                                                                     
+  &lt;realm-name&gt;eXo REST services&lt;/realm-name&gt;                                                                                                           
+&lt;/login-config&gt;</programlisting>for</para>
+
+      <para><programlisting>&lt;login-config&gt;                                                                                                                                          
+  &lt;auth-method&gt;DIGEST&lt;/auth-method&gt;                                                                                                                     
+  &lt;realm-name&gt;eXo REST services&lt;/realm-name&gt;                                                                                                           
+&lt;/login-config&gt;</programlisting>Secondly you also need to specify new
+      login module for JAAS:</para>
+
+      <para>Edit config file located here: exo-jetty/jaas.conf</para>
+
+      <para>Replace</para>
+
+      <para><programlisting>exo-domain {
+  org.exoplatform.services.security.j2ee.JettyLoginModule required;
+};</programlisting>for</para>
+
+      <para><programlisting>exo-domain {
+  org.exoplatform.services.security.j2ee.DigestAuthenticationJettyLoginModule required;
+};</programlisting></para>
+    </section>
+
+    <section>
+      <title>JBoss server configuration</title>
+
+      <para>Edit config file located here:
+      exo-jboss/server/default/deploy/exo.jcr.ear.ear/rest.war/WEB-INF/web.xml</para>
+
+      <para>Replace</para>
+
+      <para><programlisting>&lt;login-config&gt;                                                                                                                                          
+  &lt;auth-method&gt;BASIC&lt;/auth-method&gt;                                                                                                                     
+  &lt;realm-name&gt;eXo REST services&lt;/realm-name&gt;                                                                                                           
+&lt;/login-config&gt;</programlisting>for</para>
+
+      <para><programlisting>&lt;login-config&gt;                                                                                                                                          
+  &lt;auth-method&gt;DIGEST&lt;/auth-method&gt;                                                                                                                     
+  &lt;realm-name&gt;eXo REST services&lt;/realm-name&gt;                                                                                                           
+&lt;/login-confi</programlisting></para>
+
+      <para>You also need to edit login configuration file located here:
+      exo-jboss/server/default/conf/login-config.xml</para>
+
+      <para><programlisting>&lt;application-policy name="exo-domain"&gt;
+    &lt;authentication&gt;
+        &lt;login-module code="org.exoplatform.services.security.j2ee.DigestAuthenticationJbossLoginModule"
+                      flag="required"&gt;
+            &lt;module-option name="usersProperties"&gt;props/jmx-console-users.properties&lt;/module-option&gt;
+            &lt;module-option name="rolesProperties"&gt;props/jmx-console-roles.properties&lt;/module-option&gt;
+            &lt;module-option name="hashAlgorithm"&gt;MD5&lt;/module-option&gt;
+            &lt;module-option name="hashEncoding"&gt;rfc2617&lt;/module-option&gt;
+            &lt;module-option name="hashUserPassword"&gt;false&lt;/module-option&gt;
+            &lt;module-option name="hashStorePassword"&gt;true&lt;/module-option&gt;
+            &lt;module-option name="passwordIsA1Hash"&gt;true&lt;/module-option&gt;
+            &lt;module-option name="storeDigestCallback"&gt;
+                org.jboss.security.auth.spi.RFC2617Digest
+            &lt;/module-option&gt;
+        &lt;/login-module&gt;
+    &lt;/authentication&gt;
+&lt;/application-policy&gt;</programlisting>You probably should define
+      users.properties and role.properties according to your own needs.</para>
+
+      <para>More information about jboss server Digest authentication
+      configuration can be found at <ulink
+      url="http://docs.jboss.org/jbossas/guides/webguide/r2/en/html/ch05.html">JBoss
+      quide chapter</ulink>.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>OrganizationService implementation requirements</title>
+
+    <para>To make your own
+    <literal>org.exoplatform.services.organization.OrganizationService</literal>
+    implementation able to use DIGEST authentication you need to make your
+    UserHandler implementation also implement
+    <literal>org.exoplatform.services.organization.DigestAuthenticator</literal>
+    interface which provide more flexible authenticate method. As it is called
+    from
+    <literal>org.exoplatform.services.organization.auth.OrganizationAuthenticatorImpl</literal>
+    it receive a
+    <literal>org.exoplatform.services.security.Credential</literal> instances,
+    you can get more information from
+    <literal>org.exoplatform.services.security.PasswordCredential.getPasswordContext()</literal>.
+    It can be used to calculate md5 digest of original password to compare it
+    with recieved from clientside.</para>
+  </section>
+</chapter>

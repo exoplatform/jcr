@@ -18,12 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
@@ -88,12 +88,14 @@ public class PersistedValueDataReader
    public AbstractPersistedValueData read(ObjectReader in) throws UnknownClassIdException, IOException
    {
       File tempDirectory = new File(SerializationConstants.TEMP_DIR);
-      tempDirectory.mkdirs();
+      PrivilegedFileHelper.mkdirs(tempDirectory);
 
       // read id
       int key;
       if ((key = in.readInt()) != SerializationConstants.PERSISTED_VALUE_DATA)
+      {
          throw new UnknownClassIdException("There is unexpected class [" + key + "]");
+      }
 
       int orderNumber = in.readInt();
 
@@ -115,22 +117,28 @@ public class PersistedValueDataReader
          SerializationSpoolFile sf = holder.get(id);
          if (sf == null)
          {
+            // Deleted ItemState usecase 
+            if (length == SerializationConstants.NULL_FILE)
+            {
+               return new StreamPersistedValueData(orderNumber, (SerializationSpoolFile)null);
+            }
             sf = new SerializationSpoolFile(tempDirectory, id, holder);
-            // TODO optimize writeToFile - use channels or streams
             writeToFile(in, sf, length);
             holder.put(id, sf);
             return new StreamPersistedValueData(orderNumber, sf);
          }
          else
          {
-            sf.acquire(this); // TODO workaround for AsyncReplication test
+            sf.acquire(this); // workaround for AsyncReplication test
             try
             {
                AbstractPersistedValueData vd = new StreamPersistedValueData(orderNumber, sf);
 
                // skip data in input stream
                if (in.skip(length) != length)
+               {
                   throw new IOException("Content isn't skipped correctly.");
+               }
 
                return vd;
             }
@@ -145,7 +153,7 @@ public class PersistedValueDataReader
    private void writeToFile(ObjectReader src, SpoolFile dest, long length) throws IOException
    {
       // write data to file
-      FileOutputStream sfout = new FileOutputStream(dest);
+      FileOutputStream sfout = PrivilegedFileHelper.fileOutputStream(dest);
       int bSize = SerializationConstants.INTERNAL_BUFFER_SIZE;
       try
       {

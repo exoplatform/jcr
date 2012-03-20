@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -124,13 +123,18 @@ public interface NodeTypeRepository extends ComponentPersister
    void removeNodeType(NodeTypeData nodeType);
 
    /**
+    * @param nodeTypeName
+    * @param nodeType
+    * @exception RepositoryException
+    */
+   void unregisterNodeType(NodeTypeData nodeType) throws RepositoryException;
+
+   /**
     * Write node types to stream
     * 
     * @param os output stream
     * @param nodeTypes
     * @throws RepositoryException 
-    * @throws IOException
-    * @throws RepositoryException
     */
    void registerNodeType(final List<NodeTypeData> nodeTypes, final NodeTypeDataManager nodeTypeDataManager,
       final String accessControlPolicy, final int alreadyExistsBehaviour) throws RepositoryException;

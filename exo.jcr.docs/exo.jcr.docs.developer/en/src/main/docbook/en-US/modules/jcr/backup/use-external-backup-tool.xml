@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.SearchIndexBackup">
+  <?dbhtml filename="ch-search-index-backup.html"?>
+
+  <section id="JCR.SearchIndexBackup.Repository_suspending">
+    <title>Repository suspending</title>
+
+    <para>To have the repository content consistent with the search index and
+    value storage, the repository should be suspended. It means all working
+    threads are suspended until resume operation performed. Index will be
+    flushed.</para>
+
+    <para>JCR provides ability to suspend repository via JMX.</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/repository-suspend-controller.png" />
+      </imageobject>
+    </mediaobject>
+
+    <para>To suspend repository just need to invoke suspend() operation. The
+    returned result will be "suspended" if everything passed
+    successfully.</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/repository-suspend-controller-suspended.png" />
+      </imageobject>
+    </mediaobject>
+
+    <para>The result "undefined" means not all components successfully
+    suspended, check console to see stacktraces.</para>
+  </section>
+
+  <section id="JCR.SearchIndexBackup.Backup">
+    <title>Backup</title>
+
+    <para>Now we can backup content manually or using third part software. We
+    need to backup:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Database</para>
+      </listitem>
+
+      <listitem>
+        <para>Lucene index</para>
+      </listitem>
+
+      <listitem>
+        <para>Value storage (if configured)</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section id="JCR.SearchIndexBackup.Repository_resuming">
+    <title>Repository resuming</title>
+
+    <para>Once backup is done need to invoke resume() operation to switch
+    repository back to online. The returned result will be "online".</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/repository-suspend-controller-online.png" />
+      </imageobject>
+    </mediaobject>
+  </section>
+</chapter>

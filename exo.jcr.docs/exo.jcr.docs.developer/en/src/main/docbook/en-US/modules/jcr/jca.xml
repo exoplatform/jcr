@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.JCA">
+  <?dbhtml filename="ch-jca.html"?>
+
+  <title>The <emphasis>JCA</emphasis> Resource Adapter</title>
+
+    <para>eXo JCR supports <emphasis>J2EE Connector Architecture</emphasis>
+    1.5, thus If you would like to delegate the JCR Session lifecycle to your
+    application server, you can use the JCA Resource Adapter for eXo JCR if
+    your application server supports JCA 1.5. This adapter only supports XA
+    Transaction, in other words you cannot use it for local transactions.
+    Since the JCR Sessions have not been designed to be shareable, the session
+    pooling is simply not covered by the adapter.</para>
+
+  <section>
+    <title>The <emphasis>SessionFactory</emphasis></title>
+
+    <para>The equivalent of the
+    <emphasis>javax.resource.cci.ConnectionFactory</emphasis> in JCA
+    terminology is
+    <emphasis>org.exoplatform.connectors.jcr.adapter.SessionFactory</emphasis>
+    in the context of eXo JCR, the resource that you will get thanks to a JNDI
+    lookup is of type <emphasis>SessionFactory</emphasis> and provides the
+    following methods:</para>
+
+    <programlisting>   /**
+    * Get a JCR session corresponding to the repository
+    * defined in the configuration and the default workspace.
+    * @return a JCR session corresponding to the criteria
+    * @throws RepositoryException if the session could not be created
+    */
+   Session getSession() throws RepositoryException;
+
+   /**
+    * Get a JCR session corresponding to the repository
+    * defined in the configuration and the default workspace, using
+    * the given user name and password.
+    * @param userName the user name to use for the authentication
+    * @param password the password to use for the authentication
+    * @return a JCR session corresponding to the criteria
+    * @throws RepositoryException if the session could not be created
+    */
+   Session getSession(String userName, String password) throws RepositoryException;
+
+   /**
+    * Get a JCR session corresponding to the repository
+    * defined in the configuration and the given workspace.
+    * @param workspace the name of the expected workspace
+    * @return a JCR session corresponding to the criteria
+    * @throws RepositoryException if the session could not be created
+    */
+   Session getSession(String workspace) throws RepositoryException;
+
+   /**
+    * Get a JCR session corresponding to the repository
+    * defined in the configuration and the given workspace, using
+    * the given user name and password.
+    * @param workspace the name of the expected workspace
+    * @param userName the user name to use for the authentication
+    * @param password the password to use for the authentication
+    * @return a JCR session corresponding to the criteria
+    * @throws RepositoryException if the session could not be created
+    */
+   Session getSession(String workspace, String userName, String password) throws RepositoryException;</programlisting>
+  </section>
+
+  <section>
+    <title>Configuration</title>
+
+    <table>
+      <title>Configuration Properties</title>
+
+      <tgroup cols="2">
+        <tbody>
+          <row>
+            <entry><emphasis>PortalContainer</emphasis></entry>
+
+            <entry>In case of the portal mode, if no portal container can be
+            found in the context of the request, the adapter will use the
+            value of this parameter to get the name of the expected portal
+            container to create the JCR sessions. In case of a standalone
+            mode, this parameter is not used. This parameter is optional, by
+            default the default portal container will be used.</entry>
+          </row>
+
+          <row>
+            <entry><emphasis>Repository</emphasis></entry>
+
+            <entry>The repository name used to create JCR sessions. This
+            parameter is optional, by default the current repository will be
+            used.</entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </table>
+  </section>
+
+  <section>
+    <title>Deployment</title>
+
+    <para>In case of the standalone mode where the JCR and its dependencies
+    are not provided, you will need to deploy the whole ear file corresponding
+    to the artifactId <emphasis>exo.jcr.ear</emphasis> and groupId
+    <emphasis>org.exoplatform.jcr</emphasis>, the rar file is embedded into
+    the ear file. In case the JCR and its dependencies are provided like when
+    you use it with gateIn for example, you will need to deploy only the rar
+    file corresponding to the artifactId
+    <emphasis>exo.jcr.connectors.jca</emphasis> and groupId
+    <emphasis>org.exoplatform.jcr</emphasis>.</para>
+
+    <para>Then you will need to configure the connector itself, for example
+    for JBoss AS, you need to create in your deploy directory a file of type
+    <emphasis>*-ds.xml</emphasis> (jcr-ds.xml for example) with the following
+    content:</para>
+
+    <programlisting>&lt;connection-factories&gt;
+  &lt;tx-connection-factory&gt;
+    &lt;jndi-name&gt;jcr/repository&lt;/jndi-name&gt;
+    &lt;xa-transaction/&gt;
+    &lt;!-- The rar name will be exo.jcr.connectors.jca.X.Y.Z.rar in case you deploy only the rar file --&gt;
+    &lt;rar-name&gt;exo.jcr.ear.ear#exo-jcr.rar&lt;/rar-name&gt;
+    &lt;adapter-display-name&gt;eXo JCR Adapter&lt;/adapter-display-name&gt;
+    &lt;connection-definition&gt;org.exoplatform.connectors.jcr.adapter.SessionFactory&lt;/connection-definition&gt;
+    &lt;!--
+    &lt;config-property name="PortalContainer" type="java.lang.String"&gt;portal&lt;/config-property&gt;
+    --&gt;
+    &lt;config-property name="Repository" type="java.lang.String"&gt;repository&lt;/config-property&gt;
+  &lt;/tx-connection-factory&gt;
+&lt;/connection-factories&gt;</programlisting>
+  </section>
+</chapter>

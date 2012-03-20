@@ -19,8 +19,8 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd http://www.exoplaform.org/xml/ns/kernel_1_0.xsd"
-   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_0.xsd">
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
 
    <component>
       <key>org.exoplatform.services.log.LogConfigurationInitializer</key>
@@ -40,7 +40,7 @@
             <property name="log4j.rootLogger" value="INFO, stdout, file" />
 
             <property name="log4j.appender.stdout" value="org.apache.log4j.ConsoleAppender" />
-            <property name="log4j.appender.stdout.threshold" value="INFO" />
+            <property name="log4j.appender.stdout.threshold" value="DEBUG" />
 
             <property name="log4j.appender.stdout.layout" value="org.apache.log4j.PatternLayout" />
             <property name="log4j.appender.stdout.layout.ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* [%t] %c{1}: %m (%F, line %L) %n" />
@@ -54,6 +54,8 @@
             <!-- property name="log4j.category.ext.BackupScheduler" value="DEBUG"/>
             <property name="log4j.category.ext.BackupManagerImpl" value="DEBUG"/ -->
             <property name="log4j.category.jcr.ext.RestRepositoryService" value="DEBUG"/>
+
+            <!-- property name="log4j.category.org.exoplatform.services.jcr.ext.script.groovy.JcrGroovyResourceLoader" value="DEBUG" / -->
 
          </properties-param>
       </init-params>
@@ -102,7 +104,6 @@
                   <name>autoCreatedInNewRepository</name>
                   <description>Node types configuration file</description>
                   <value>jar:/conf/ext-nodetypes-config.xml</value>
-                  <value>jar:/conf/organization-nodetypes.xml</value>
                   <value>jar:/conf/test/nodetypes-ext-test.xml</value>
                </values-param>
             </init-params>
@@ -119,6 +120,13 @@
             <description>JCR configuration file</description>
             <value>jar:/conf/standalone/test-jcr-ext-config.xml</value>
          </value-param>
+         <properties-param>
+            <name>working-conf</name>
+            <description>working-conf</description>
+            <property name="persister-class-name"
+               value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister" />
+            <property name="source-name" value="jdbcjcr" />
+         </properties-param>
       </init-params>
    </component>
    
@@ -133,7 +141,7 @@
       <init-params>
          <properties-param>
             <name>backup-properties</name>
-            <property name="default-incremental-job-period" value="3600" /><!-- set default incremental periond = 60 minutes  -->
+            <property name="default-incremental-job-period" value="3600" />
             <property name="full-backup-type" value="org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob" />
             <property name="incremental-backup-type" value="org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob" />
             <property name="backup-dir" value="target/backup" />
@@ -173,27 +181,17 @@
          </component-plugin>
       </component-plugins>
       <init-params>
+         <values-param>
+            <name>mixin-names</name>
+            <value>exo:testFirstHideable</value>
+            <value>exo:testSecondHideable</value>
+         </values-param>
          <properties-param>
             <name>locations</name>
             <property name="db1" value="ws2" />
          </properties-param>
       </init-params>
    </component>
-
-   <!-- component>
-      <key>org.exoplatform.services.jcr.ext.audit.AuditService</key>
-      <type>org.exoplatform.services.jcr.ext.audit.AuditServiceImpl</type>
-      <init-params>
-         <value-param>
-            <name>adminIdentity</name>
-            <value>root;john</value>
-         </value-param>
-      </init-params>
-   </component -->
-
-   <!--component>
-      <type>org.exoplatform.services.organization.impl.mock.DummyOrganizationService</type>
-   </component-->
 
    <component>
       <key>org.exoplatform.services.security.Authenticator</key>
@@ -345,500 +343,62 @@
       <type>org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog</type>
    </component>
    
-   <!-- component>
-      <key>org.exoplatform.services.database.HibernateService</key>
-      <jmx-name>database:type=HibernateService</jmx-name>
-      <type>org.exoplatform.services.database.impl.HibernateServiceImpl</type>
+   <component>
+      <key>org.exoplatform.services.database.creator.DBCreator</key>
+      <type>org.exoplatform.services.database.creator.DBCreator</type>
       <init-params>
          <properties-param>
-            <name>hibernate.properties</name>
-            <description>Default Hibernate Service</description>
-            <property name="hibernate.show_sql" value="false" />
-            <property name="hibernate.cglib.use_reflection_optimizer" value="true" />
-            <property name="hibernate.connection.url" value="jdbc:hsqldb:file:../temp/data/exodb" />
-            <property name="hibernate.connection.driver_class" value="org.hsqldb.jdbcDriver" />
-            <property name="hibernate.connection.autocommit" value="true" />
-            <property name="hibernate.connection.username" value="sa" />
-            <property name="hibernate.connection.password" value="" />
-            <property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect" />
-            <property name="hibernate.c3p0.min_size" value="5" />
-            <property name="hibernate.c3p0.max_size" value="20" />
-            <property name="hibernate.c3p0.timeout" value="1800" />
-            <property name="hibernate.c3p0.max_statements" value="50" />
+            <name>db-connection</name>
+            <description>database connection properties</description>
+            <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+            <property name="url" value="jdbc:hsqldb:file:target/temp/data/" />
+            <property name="username" value="sa" />
+            <property name="password" value="" />
+         </properties-param>
+         <properties-param>
+            <name>db-creation</name>
+            <description>database creation properties</description>
+            <property name="scriptPath" value="src/test/resources/test.sql" />
+            <property name="username" value="sa" />
+            <property name="password" value="" />
          </properties-param>
       </init-params>
-   </component -->
-
-   <!-- component>
-      <key>org.exoplatform.services.organization.OrganizationService</key>
-      <type>org.exoplatform.services.organization.hibernate.OrganizationServiceImpl</type>
    </component>
 
-   <external-component-plugins>
-      <target-component>org.exoplatform.services.database.HibernateService</target-component>
-      <component-plugin>
-         <name>add.hibernate.mapping</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.database.impl.AddHibernateMappingPlugin</type>
-         <init-params>
-            <values-param>
-               <name>hibernate.mapping</name>
-               <value>org/exoplatform/services/organization/impl/UserImpl.hbm.xml</value>
-               <value>org/exoplatform/services/organization/impl/MembershipImpl.hbm.xml</value>
-               <value>org/exoplatform/services/organization/impl/GroupImpl.hbm.xml</value>
-               <value>org/exoplatform/services/organization/impl/MembershipTypeImpl.hbm.xml</value>
-               <value>org/exoplatform/services/organization/impl/UserProfileData.hbm.xml</value>
-            </values-param>
-         </init-params>
-      </component-plugin>
-   </external-component-plugins -->
+  <!--component>
+    <key>org.exoplatform.services.rpc.RPCService</key>
+    <type>org.exoplatform.services.rpc.impl.RPCServiceImpl</type>
+    <init-params>
+      <value-param>
+        <name>jgroups-configuration</name>
+        <value>jar:/conf/standalone/udp-mux.xml</value>
+      </value-param>
+      <value-param>
+        <name>jgroups-cluster-name</name>
+        <value>RPCService-Cluster</value>
+      </value-param>
+      <value-param>
+        <name>jgroups-default-timeout</name>
+        <value>0</value>
+      </value-param>
+    </init-params>
+  </component-->  
 
-   <!-- org service initializer, copied from ECM portal.war -->
-   <!-- external-component-plugins>
-      <target-component>org.exoplatform.services.organization.OrganizationService</target-component>
-      <component-plugin>
-         <name>init.service.listener</name>
-         <set-method>addListenerPlugin</set-method>
-         <type>org.exoplatform.services.organization.OrganizationDatabaseInitializer</type>
-         <description>this listener populate organization data for the first launch</description>
-         <init-params>
-            <value-param>
-               <name>checkDatabaseAlgorithm</name>
-               <description>check database</description>
-               <value>entry</value>
-            </value-param>
-            <value-param>
-               <name>printInformation</name>
-               <description>Print information init database</description>
-               <value>false</value>
-            </value-param>
-            <object-param>
-               <name>configuration</name>
-               <description>description</description>
-               <object type="org.exoplatform.services.organization.OrganizationConfig">
-                  <field name="membershipType">
-                     <collection type="java.util.ArrayList">
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$MembershipType">
-                              <field name="type">
-                                 <string>manager</string>
-                              </field>
-                              <field name="description">
-                                 <string>manager membership type</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$MembershipType">
-                              <field name="type">
-                                 <string>member</string>
-                              </field>
-                              <field name="description">
-                                 <string>member membership type</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$MembershipType">
-                              <field name="type">
-                                 <string>validator</string>
-                              </field>
-                              <field name="description">
-                                 <string>validator membership type</string>
-                              </field>
-                           </object>
-                        </value>
-                     </collection>
-                  </field>
+   <component>
+      <key>org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationService</key>
+      <type>org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationServiceImpl</type>
+      <!--init-params>
+         <value-param>
+            <name>factory-class-name</name>
+            <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+         </value-param>
+      </init-params-->
+   </component>
 
-                  <field name="group">
-                     <collection type="java.util.ArrayList">
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>platform</string>
-                              </field>
-                              <field name="parentId">
-                                 <string></string>
-                              </field>
-                              <field name="description">
-                                 <string>the /platform group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Platform</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>administrators</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/platform</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /platform/administrators group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Administrators</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>users</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/platform</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /platform/users group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Users</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>guests</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/platform</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /platform/guests group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Guests</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>organization</string>
-                              </field>
-                              <field name="parentId">
-                                 <string></string>
-                              </field>
-                              <field name="description">
-                                 <string>the organization group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Organization</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>management</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/organization</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /organization/management group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Management</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>executive-board</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/organization/management</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /organization/management/executive-board group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Executive Board</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>human-resources</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/organization/management</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /organization/management/human-resource group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Human Resources</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>communication</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/organization</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /organization/communication group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Communication</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>marketing</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/organization/communication</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /organization/communication/marketing group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Marketing</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>press-and-media</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/organization/communication</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /organization/communication/press-and-media group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Press and Media</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>operations</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/organization</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /organization/operations and media group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Operations</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>sales</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/organization/operations</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /organization/operations/sales group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Sales</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>finances</string>
-                              </field>
-                              <field name="parentId">
-                                 <string>/organization/operations</string>
-                              </field>
-                              <field name="description">
-                                 <string>the /organization/operations/finances group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Finances</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>customers</string>
-                              </field>
-                              <field name="parentId">
-                                 <string></string>
-                              </field>
-                              <field name="description">
-                                 <string>the /customers group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Customers</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$Group">
-                              <field name="name">
-                                 <string>partners</string>
-                              </field>
-                              <field name="parentId">
-                                 <string></string>
-                              </field>
-                              <field name="description">
-                                 <string>the /partners group</string>
-                              </field>
-                              <field name="label">
-                                 <string>Partners</string>
-                              </field>
-                           </object>
-                        </value>
-                     </collection>
-                  </field>
-
-                  <field name="user">
-                     <collection type="java.util.ArrayList">
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$User">
-                              <field name="userName">
-                                 <string>root</string>
-                              </field>
-                              <field name="password">
-                                 <string>exo</string>
-                              </field>
-                              <field name="firstName">
-                                 <string>Root</string>
-                              </field>
-                              <field name="lastName">
-                                 <string>Root</string>
-                              </field>
-                              <field name="email">
-                                 <string>root@localhost</string>
-                              </field>
-                              <field name="groups">
-                                 <string>
-                                    *:/platform/administrators,*:/platform/users,
-                                    member:/organization/management/executive-board
-                      </string>
-                              </field>
-                           </object>
-                        </value>
-
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$User">
-                              <field name="userName">
-                                 <string>john</string>
-                              </field>
-                              <field name="password">
-                                 <string>exo</string>
-                              </field>
-                              <field name="firstName">
-                                 <string>John</string>
-                              </field>
-                              <field name="lastName">
-                                 <string>Anthony</string>
-                              </field>
-                              <field name="email">
-                                 <string>john@localhost</string>
-                              </field>
-                              <field name="groups">
-                                 <string>
-                                    validator:/platform/administrators,manager:/platform/users,
-                                    *:/organization/management/executive-board,
-                                    manager:/organization/management/executive-board, validator:/organization/management/executive-board
-                      </string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$User">
-                              <field name="userName">
-                                 <string>marry</string>
-                              </field>
-                              <field name="password">
-                                 <string>exo</string>
-                              </field>
-                              <field name="firstName">
-                                 <string>Marry</string>
-                              </field>
-                              <field name="lastName">
-                                 <string>Kelly</string>
-                              </field>
-                              <field name="email">
-                                 <string>marry@localhost</string>
-                              </field>
-                              <field name="groups">
-                                 <string>member:/platform/users</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$User">
-                              <field name="userName">
-                                 <string>demo</string>
-                              </field>
-                              <field name="password">
-                                 <string>exo</string>
-                              </field>
-                              <field name="firstName">
-                                 <string>Demo</string>
-                              </field>
-                              <field name="lastName">
-                                 <string>exo</string>
-                              </field>
-                              <field name="email">
-                                 <string>demo@localhost</string>
-                              </field>
-                              <field name="groups">
-                                 <string>member:/platform/users</string>
-                              </field>
-                           </object>
-                        </value>
-                        <value>
-                           <object type="org.exoplatform.services.organization.OrganizationConfig$User">
-                              <field name="userName">
-                                 <string>james</string>
-                              </field>
-                              <field name="password">
-                                 <string>exo</string>
-                              </field>
-                              <field name="firstName">
-                                 <string>James</string>
-                              </field>
-                              <field name="lastName">
-                                 <string>Anderson</string>
-                              </field>
-                              <field name="email">
-                                 <string>james@localhost</string>
-                              </field>
-                              <field name="groups">
-                                 <string>*:/organization/management/human-resources,member:/platform/users</string>
-                              </field>
-                           </object>
-                        </value>
-                     </collection>
-                  </field>
-               </object>
-            </object-param>
-         </init-params>
-      </component-plugin>
-   </external-component-plugins -->
+   <component>
+      <key>org.exoplatform.services.jcr.ext.distribution.DataDistributionManager</key>
+      <type>org.exoplatform.services.jcr.ext.distribution.impl.DataDistributionManagerImpl</type>     
+   </component>
 
    <component>
       <type>org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog</type>
@@ -854,30 +414,6 @@
                   <object type="org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin$ActionsConfig">
                      <field name="actions">
                         <collection type="java.util.ArrayList">
-                           <!-- an example
-                           <value>
-                              <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
-                                 <field name="eventTypes">
-                                    <string>addNode</string>
-                                 </field>
-                                 <field name="path">
-                                    <string>/test</string>
-                                 </field>
-                                 <field name="isDeep">
-                                    <boolean>true</boolean>
-                                 </field>
-                                 <field name="nodeTypes">
-                                    <string>nt:unstructured</string>
-                                 </field>
-                                 <field name="workspace">
-                                    <string>production</string>
-                                 </field>
-                                 <field name="actionClassName">
-                                    <string>org.exoplatform.services.jcr.ext.DummyAction</string>
-                                 </field>
-                              </object>
-                           </value>
-                           -->
                            <value>
                               <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
                                  <field name="eventTypes">
@@ -937,6 +473,170 @@
          </component-plugin>
       </component-plugins>
    </component>
+
+   <component>
+      <key>org.exoplatform.services.jcr.ext.hierarchy.NodeHierarchyCreator</key>
+      <type>org.exoplatform.services.jcr.ext.hierarchy.impl.NodeHierarchyCreatorImpl</type>
+      <init-params>
+         <value-param>
+            <name>auto-migrate</name>
+            <value>false</value>
+         </value-param>
+      </init-params>
+   </component>
+
+	<component>
+		<type>org.exoplatform.services.jcr.ext.hierarchy.impl.NewUserListener</type>
+		<init-params>
+			<object-param>
+				<name>configuration</name>
+				<description>description</description>
+				<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig">
+					<field name="repository">
+						<string>db1</string>
+					</field>
+					<field name="workspaces">
+						<collection type="java.util.ArrayList">
+							<value>
+								<string>ws1</string>
+							</value>
+						</collection>
+					</field>
+					<field name="jcrPaths">
+						<collection type="java.util.ArrayList">
+							<value>
+								<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig$JcrPath">
+									<field name="alias">
+										<string>userApplicationData</string>
+									</field>
+									<field name="path">
+										<string>ApplicationData</string>
+									</field>
+									<field name="nodeType">
+										<string>nt:folder</string>
+									</field>
+									<field name="mixinTypes">
+										<collection type="java.util.ArrayList">
+											<value>
+												<string>mix:referenceable</string>
+											</value>
+										</collection>
+									</field>									
+									<field name="permissions">
+										<collection type="java.util.ArrayList">
+											<value>
+												<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig$Permission">
+													<field name="identity">
+														<string>*:/platform/administrators</string>
+													</field>
+													<field name="read">
+														<string>true</string>
+													</field>
+													<field name="addNode">
+														<string>true</string>
+													</field>
+													<field name="setProperty">
+														<string>true</string>
+													</field>
+													<field name="remove">
+														<string>true</string>
+													</field>
+												</object>
+											</value>
+										</collection>
+									</field>
+								</object>
+							</value>
+						</collection>
+					</field>
+				</object>
+			</object-param>
+		</init-params>
+	</component>
+	<component>
+		<type>org.exoplatform.services.jcr.ext.hierarchy.impl.NewGroupListener</type>
+		<init-params>
+			<object-param>
+				<name>configuration></name>
+				<description>description</description>
+				<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig">
+					<field name="repository">
+						<string>db1</string>
+					</field>
+					<field name="workspaces">
+						<collection type="java.util.ArrayList">
+							<value>
+								<string>ws1</string>
+							</value>
+						</collection>
+					</field>
+					<field name="jcrPaths">
+						<collection type="java.util.ArrayList">
+							<value>
+								<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig$JcrPath">
+									<field name="alias">
+										<string>groupApplicationData</string>
+									</field>
+									<field name="path">
+										<string>ApplicationData</string>
+									</field>
+									<field name="nodeType">
+										<string>nt:folder</string>
+									</field>
+									<field name="mixinTypes">
+										<collection type="java.util.ArrayList">
+											<value>
+												<string>mix:referenceable</string>
+											</value>
+										</collection>
+									</field>									
+									<field name="permissions">
+										<collection type="java.util.ArrayList">
+											<value>
+												<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig$Permission">
+													<field name="identity">
+														<string>*:/platform/administrators</string>
+													</field>
+													<field name="read">
+														<string>true</string>
+													</field>
+													<field name="addNode">
+														<string>true</string>
+													</field>
+													<field name="setProperty">
+														<string>true</string>
+													</field>
+													<field name="remove">
+														<string>true</string>
+													</field>
+												</object>
+											</value>
+										</collection>
+									</field>
+								</object>
+							</value>
+						</collection>
+					</field>
+				</object>
+			</object-param>
+		</init-params>
+	</component>       
+   <external-component-plugins>
+      <target-component>org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader</target-component>
+      <component-plugin>
+         <name>add groovy repo</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.services.jcr.ext.script.groovy.GroovyScriptAddRepoPlugin</type>
+         <init-params>
+            <properties-param>
+               <name>repo1</name>
+               <property name="repository" value="db1"/>
+               <property name="workspace" value="ws"/>
+               <property name="path" value="/repo"/>
+            </properties-param>
+         </init-params>
+      </component-plugin>
+   </external-component-plugins>
 
    <external-component-plugins>
       <target-component>org.exoplatform.services.naming.InitialContextInitializer</target-component>
@@ -1028,195 +728,6 @@
          <init-params>
             <value-param>
                <name>bind-name</name>
-               <value>jdbcjcr_backup_only_use_1</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_backup_only_use_1" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_backup_only_use_2</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_backup_only_use_2" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_backup_only_use_3</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_backup_only_use_3" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_backup_only_use_5</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_backup_only_use_4" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_backup_only_use_6</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_backup_only_use_6" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_backup_only_use_7</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_backup_only_use_7" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_backup_only_use_8</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_backup_only_use_8" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
                <value>jdbcjcr3</value>
             </value-param>
             <value-param>
@@ -1291,6 +802,7 @@
             </properties-param>
          </init-params>
       </component-plugin>
+
       <component-plugin>
          <name>bind.datasource</name>
          <set-method>addPlugin</set-method>
@@ -1372,276 +884,7 @@
             </properties-param>
          </init-params>
       </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr9</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr9" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr10</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr10" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr11</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr11" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr12</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr12" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr13</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr13" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr14</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr14" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr15</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr15" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr16</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr16" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr17</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr17" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr18</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr18" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
+ 
       <component-plugin>
          <name>bind.datasource</name>
          <set-method>addPlugin</set-method>
@@ -1676,60 +919,6 @@
          <init-params>
             <value-param>
                <name>bind-name</name>
-               <value>jdbcjcr77</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr77" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr20</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr20" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
                <value>jdbcjcr21</value>
             </value-param>
             <value-param>
@@ -1745,33 +934,6 @@
                <description>ref-addresses</description>
                <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
                <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr21" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr22</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr22" />
                <property name="username" value="sa" />
                <property name="password" value="" />
             </properties-param>
@@ -1838,6 +1000,87 @@
          <init-params>
             <value-param>
                <name>bind-name</name>
+               <value>jdbcjcr25</value>
+            </value-param>
+            <value-param>
+               <name>class-name</name>
+               <value>javax.sql.DataSource</value>
+            </value-param>
+            <value-param>
+               <name>factory</name>
+               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+            </value-param>
+            <properties-param>
+               <name>ref-addresses</name>
+               <description>ref-addresses</description>
+               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr25" />
+               <property name="username" value="sa" />
+               <property name="password" value="" />
+            </properties-param>
+         </init-params>
+      </component-plugin>
+      <component-plugin>
+         <name>bind.datasource</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+         <init-params>
+            <value-param>
+               <name>bind-name</name>
+               <value>jdbcjcr26</value>
+            </value-param>
+            <value-param>
+               <name>class-name</name>
+               <value>javax.sql.DataSource</value>
+            </value-param>
+            <value-param>
+               <name>factory</name>
+               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+            </value-param>
+            <properties-param>
+               <name>ref-addresses</name>
+               <description>ref-addresses</description>
+               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr26" />
+               <property name="username" value="sa" />
+               <property name="password" value="" />
+            </properties-param>
+         </init-params>
+      </component-plugin>
+      <component-plugin>
+         <name>bind.datasource</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+         <init-params>
+            <value-param>
+               <name>bind-name</name>
+               <value>jdbcjcr27</value>
+            </value-param>
+            <value-param>
+               <name>class-name</name>
+               <value>javax.sql.DataSource</value>
+            </value-param>
+            <value-param>
+               <name>factory</name>
+               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+            </value-param>
+            <properties-param>
+               <name>ref-addresses</name>
+               <description>ref-addresses</description>
+               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
+               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr27" />
+               <property name="username" value="sa" />
+               <property name="password" value="" />
+            </properties-param>
+         </init-params>
+      </component-plugin>
+      <component-plugin>
+         <name>bind.datasource</name>
+         <set-method>addPlugin</set-method>
+         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+         <init-params>
+            <value-param>
+               <name>bind-name</name>
                <value>jdbcjcr_to_rest_repo_1</value>
             </value-param>
             <value-param>
@@ -1892,7 +1135,7 @@
          <init-params>
             <value-param>
                <name>bind-name</name>
-               <value>jdbcjcr_to_repository_restore_1</value>
+               <value>jdbcjcr_to_repository_restore_singel_db</value>
             </value-param>
             <value-param>
                <name>class-name</name>
@@ -1906,120 +1149,147 @@
                <name>ref-addresses</name>
                <description>ref-addresses</description>
                <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_to_repository_restore_1" />
+               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_to_repository_restore_singel_db" />
                <property name="username" value="sa" />
                <property name="password" value="" />
             </properties-param>
          </init-params>
       </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_to_repository_restore_2</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_to_repository_restore_2" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_to_repository_restore_3</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_to_repository_restore_3" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_to_repository_restore_4</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_to_repository_restore_4" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_to_repository_restore_5</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_to_repository_restore_5" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-   </external-component-plugins>
-
+    </external-component-plugins>
+	<external-component-plugins>
+		<target-component>org.exoplatform.services.jcr.ext.hierarchy.NodeHierarchyCreator</target-component>
+		<component-plugin>
+			<name>addPaths</name>
+			<set-method>addPlugin</set-method>
+			<type>org.exoplatform.services.jcr.ext.hierarchy.impl.AddPathPlugin</type>
+			<init-params>
+				<object-param>
+					<name>cms.configuration</name>
+					<description>configuration for the cms path</description>
+					<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig">
+						<field name="repository">
+							<string>db1</string>
+						</field>
+						<field name="workspaces">
+							<collection type="java.util.ArrayList">
+								<value>
+									<string>ws1</string>
+								</value>
+							</collection>
+						</field>
+						<field name="jcrPaths">
+							<collection type="java.util.ArrayList">
+								<value>
+									<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig$JcrPath">
+										<field name="alias">
+											<string>eXoApplications</string>
+										</field>
+										<field name="path">
+											<string>/exo:applications</string>
+										</field>
+										<field name="mixinTypes">
+											<collection type="java.util.ArrayList">
+												<value>
+													<string>mix:referenceable</string>
+												</value>
+											</collection>
+										</field>
+									</object>
+								</value>
+								<value>
+									<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig$JcrPath">
+										<field name="alias">
+											<string>eXoServices</string>
+										</field>
+										<field name="path">
+											<string>/exo:services</string>
+										</field>
+										<field name="nodeType">
+											<string>nt:folder</string>
+										</field>
+									</object>
+								</value>
+								<value>
+									<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig$JcrPath">
+										<field name="alias">
+											<string>usersPath</string>
+										</field>
+										<field name="path">
+											<string>/Users</string>
+										</field>
+										<field name="permissions">
+											<collection type="java.util.ArrayList">
+												<value>
+													<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig$Permission">
+														<field name="identity">
+															<string>*:/platform/administrators</string>
+														</field>
+														<field name="read">
+															<string>true</string>
+														</field>
+														<field name="addNode">
+															<string>true</string>
+														</field>
+														<field name="setProperty">
+															<string>true</string>
+														</field>
+														<field name="remove">
+															<string>true</string>
+														</field>
+													</object>
+												</value>
+											</collection>
+										</field>										
+									</object>
+								</value>
+								<value>
+									<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig$JcrPath">
+										<field name="alias">
+											<string>groupsPath</string>
+										</field>
+										<field name="path">
+											<string>/Groups/Path/Home</string>
+										</field>
+										<field name="nodeType">
+											<string>nt:unstructured</string>
+										</field>
+										<field name="mixinTypes">
+											<collection type="java.util.ArrayList">
+												<value>
+													<string>mix:referenceable</string>
+												</value>
+											</collection>
+										</field>
+										<field name="permissions">
+											<collection type="java.util.ArrayList">
+												<value>
+													<object type="org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig$Permission">
+														<field name="identity">
+															<string>*:/platform/administrators</string>
+														</field>
+														<field name="read">
+															<string>true</string>
+														</field>
+														<field name="addNode">
+															<string>true</string>
+														</field>
+														<field name="setProperty">
+															<string>true</string>
+														</field>
+														<field name="remove">
+															<string>true</string>
+														</field>
+													</object>
+												</value>
+											</collection>
+										</field>
+									</object>
+								</value>
+							</collection>
+						</field>
+					</object>
+				</object-param>
+			</init-params>
+		</component-plugin>
+	</external-component-plugins> 
 </configuration>

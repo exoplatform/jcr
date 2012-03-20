@@ -18,8 +18,11 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -39,7 +42,7 @@ public class ItemState implements Externalizable
 
    private static final long serialVersionUID = 7967457831325761318L;
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemState");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ItemState");
 
    public static final int ADDED = 1;
 
@@ -52,6 +55,8 @@ public class ItemState implements Externalizable
    public static final int MIXIN_CHANGED = 16;
 
    public static final int RENAMED = 32;
+
+   public static final int PATH_CHANGED = 64;
 
    /**
     * underlying item data
@@ -76,6 +81,11 @@ public class ItemState implements Externalizable
     * path to the data on which save should be called for this state (for Session.move() for ex)
     */
    private transient QPath ancestorToSave;
+
+   /** 
+    * Storing old node path during Session.move() operation 
+    */
+   private QPath oldPath;
 
    /**
     * The constructor
@@ -102,16 +112,46 @@ public class ItemState implements Externalizable
     * @param ancestorToSave
     *          - path of item which should be called in save (usually for session.move())
     * @param isInternalCreated
-    *          - indicates that item is created internaly by system
+    *          - indicates that item is created internally by system
     */
    public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave, boolean isInternalCreated)
    {
       this(data, state, eventFire, ancestorToSave, isInternalCreated, true);
    }
 
+   /**
+    * @param data
+    *          underlying data
+    * @param state
+    * @param eventFire
+    *          - if the state cause some event firing
+    * @param ancestorToSave
+    *          - path of item which should be called in save (usually for session.move())
+    * @param isInternalCreated
+    *          - indicates that item is created internally by system
+    * @param oldPath
+    *          - store to old node path during Session.move() operation           
+    */
+   public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave, boolean isInternalCreated,
+      boolean isPersisted, QPath oldPath)
+   {
+      this(data, state, eventFire, ancestorToSave, isInternalCreated, isPersisted);
+      this.oldPath = oldPath;
+   }
+
    public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave, boolean isInternalCreated,
       boolean isPersisted)
    {
+      if (isInternalCreated)
+      {
+         // Need privileges
+         SecurityManager security = System.getSecurityManager();
+         if (security != null)
+         {
+            security.checkPermission(JCRRuntimePermissions.INVOKE_INTERNAL_API_PERMISSION);
+         }
+      }
+
       this.data = data;
       this.state = state;
       this.eventFire = eventFire;
@@ -122,8 +162,8 @@ public class ItemState implements Externalizable
       this.internallyCreated = isInternalCreated;
       this.isPersisted = isPersisted;
 
-      if (log.isDebugEnabled())
-         log.debug(nameFromValue(state) + " " + data.getQPath().getAsString() + ",  " + data.getIdentifier());
+      if (LOG.isDebugEnabled())
+         LOG.debug(nameFromValue(state) + " " + data.getQPath().getAsString() + ",  " + data.getIdentifier());
 
    }
 
@@ -183,6 +223,11 @@ public class ItemState implements Externalizable
       return (state == RENAMED);
    }
 
+   public boolean isPathChanged()
+   {
+      return (state == PATH_CHANGED);
+   }
+
    public boolean isEventFire()
    {
       return eventFire;
@@ -208,6 +253,12 @@ public class ItemState implements Externalizable
       return ancestorToSave;
    }
 
+   public QPath getOldPath()
+   {
+      return oldPath;
+   }
+
+   @Override
    public boolean equals(Object obj)
    {
       if (this == obj)
@@ -348,6 +399,8 @@ public class ItemState implements Externalizable
             return "MIXIN_CHANGED";
          case RENAMED :
             return "RENAMED";
+         case PATH_CHANGED :
+            return "PATH_CHANGED";
          default :
             return "UNDEFINED STATE";
       }
@@ -368,6 +421,18 @@ public class ItemState implements Externalizable
       out.writeInt(state);
       out.writeBoolean(isPersisted);
       out.writeBoolean(eventFire);
+
+      if (oldPath == null)
+      {
+         out.writeInt(-1);
+      }
+      else
+      {
+         byte[] buf = oldPath.getAsString().getBytes(Constants.DEFAULT_ENCODING);
+         out.writeInt(buf.length);
+         out.write(buf);
+      }
+
       out.writeObject(data);
    }
 
@@ -376,6 +441,27 @@ public class ItemState implements Externalizable
       state = in.readInt();
       isPersisted = in.readBoolean();
       eventFire = in.readBoolean();
+      
+      int len = in.readInt();
+      if (len == -1)
+      {
+         oldPath = null;
+      }
+      else
+      {
+         byte[] buf = new byte[len];
+         in.readFully(buf);
+
+         try
+         {
+            oldPath = QPath.parse(new String(buf, Constants.DEFAULT_ENCODING));
+         }
+         catch (IllegalPathException e)
+         {
+            throw new IOException("Data currupted.", e);
+         }
+      }
+      
       data = (ItemData)in.readObject();
    }
 

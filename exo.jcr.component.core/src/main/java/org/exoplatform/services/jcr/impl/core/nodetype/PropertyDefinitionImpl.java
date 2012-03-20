@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.core.nodetype;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -53,12 +54,13 @@ public class PropertyDefinitionImpl extends ItemDefinitionImpl implements Proper
     * @param nodeTypeManager
     * @param locationFactory
     * @param valueFactory
+    * @param dataManager
     */
    public PropertyDefinitionImpl(PropertyDefinitionData propertyDefinitionData,
       NodeTypeDataManager nodeTypeDataManager, ExtendedNodeTypeManager nodeTypeManager,
-      LocationFactory locationFactory, ValueFactory valueFactory)
+      LocationFactory locationFactory, ValueFactory valueFactory, ItemDataConsumer dataManager)
    {
-      super(propertyDefinitionData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory);
+      super(propertyDefinitionData, nodeTypeDataManager, nodeTypeManager, locationFactory, valueFactory, dataManager);
       this.propertyDefinitionData = propertyDefinitionData;
    }
 

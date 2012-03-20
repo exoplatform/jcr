@@ -18,12 +18,12 @@
  */
 package org.exoplatform.frameworks.ftpclient.commands;
 
-import org.exoplatform.frameworks.ftpclient.FtpConst;
 import org.exoplatform.frameworks.ftpclient.FtpUtils;
 import org.exoplatform.frameworks.ftpclient.client.FtpClientSession;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.IOException;
 import java.io.OutputStream;
 
 /**
@@ -36,7 +36,7 @@ import java.io.OutputStream;
 public abstract class FtpCommandImpl implements FtpCommand
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.FtpCommandImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.FtpCommandImpl");
 
    protected FtpClientSession clientSession;
 
@@ -49,24 +49,17 @@ public abstract class FtpCommandImpl implements FtpCommand
    public int run(FtpClientSession clientSession)
    {
       this.clientSession = clientSession;
-      try
-      {
-         // outPrintStream = new PrintStream(clientSession.getClientSocket().getOutputStream());
-         int status = execute();
-         return status;
-      }
-      catch (Exception exc)
-      {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
-      }
-      return -1;
+
+      // outPrintStream = new PrintStream(clientSession.getClientSocket().getOutputStream());
+      int status = execute();
+      return status;
    }
 
    public abstract int execute();
 
    public void sendCommand(String command)
    {
-      log.info(">>> " + command);
+      LOG.info(">>> " + command);
 
       try
       {
@@ -75,9 +68,9 @@ public abstract class FtpCommandImpl implements FtpCommand
          outStream.write(data);
          outStream.write("\r\n".getBytes());
       }
-      catch (Exception exc)
+      catch (IOException exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
    }
 
@@ -99,8 +92,8 @@ public abstract class FtpCommandImpl implements FtpCommand
 
    public int getReply() throws Exception
    {
-      log.info("try get reply..........");
-      String reply = "";
+      LOG.info("try get reply..........");
+      StringBuilder reply = new StringBuilder(); 
       String curReply = "";
 
       while (true)
@@ -109,27 +102,27 @@ public abstract class FtpCommandImpl implements FtpCommand
 
          if ("".equals(curReply))
          {
-            reply += "\r\n";
+            reply.append("\r\n");
          }
          else
          {
-            reply += curReply;
+            reply.append(curReply);
             if (isReplyString(curReply))
             {
                break;
             }
             else
             {
-               reply += "\r\n";
+               reply.append("\r\n");
             }
          }
 
       }
 
-      descript = reply;
+      descript = reply.toString();
 
       replyCode = FtpUtils.getReplyCode(curReply);
-      log.info("<<< " + descript);
+      LOG.info("<<< " + descript);
       return replyCode;
    }
 
@@ -163,12 +156,12 @@ public abstract class FtpCommandImpl implements FtpCommand
 
          if (prevByte == '\r' && received == '\n')
          {
-            String resultLine = "";
+            StringBuilder resultLine = new StringBuilder();
             for (int i = 0; i < bufPos - 2; i++)
             {
-               resultLine += (char)buffer[i];
+               resultLine.append((char)buffer[i]);
             }
-            return resultLine;
+            return resultLine.toString();
          }
 
          prevByte = (byte)received;

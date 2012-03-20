@@ -1,0 +1,964 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.BackupService">
+  <?dbhtml filename="ch-exojcr-backup-service.html"?>
+
+  <title>eXo JCR Backup Service</title>
+
+  <note>
+    <para>Restore of system workspace is not supported only as part of
+    restoring of whole repository.</para>
+  </note>
+
+  <section>
+    <title>Concept</title>
+
+    <para>The main purpose of that feature is to restore data in case of
+    system faults and repository crashes. Also, the backup results may be used
+    as a content history.</para>
+
+    <para>The concept is based on the export of a workspace unit in the Full,
+    or Full + Incrementals model. A repository workspace can be backup and
+    restored using a combination of these modes. In all cases, at least one
+    Full (initial) backup must be executed to mark a starting point of the
+    backup history. An Incremental backup is not a complete image of the
+    workspace. It contains only changes for some period. So it is not possible
+    to perform an Incremental backup without an initial Full backup.</para>
+
+    <para>The Backup service may operate as a hot-backup process at runtime on
+    an in-use workspace. It's a case when the Full + Incrementals model should
+    be used to have a guaranty of data consistency during restoration. An
+    Incremental will be run starting from the start point of the Full backup
+    and will contain changes that have occured during the Full backup,
+    too.</para>
+
+    <para>A <emphasis role="bold">restore</emphasis> operation is a mirror of
+    a backup one. At least one Full backup should be restored to obtain a
+    workspace corresponding to some points in time. On the other hand,
+    Incrementals may be restored in the order of creation to reach a required
+    state of a content. If the Incremental contains the same data as the Full
+    backup (hot-backup), the changes will be applied again as if they were
+    made in a normal way via API calls.</para>
+
+    <para>According to the model there are several modes for backup
+    logic:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">Full backup only</emphasis> : Single
+        operation, runs once</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Full + Incrementals</emphasis> : Start
+        with an initial Full backup and then keep incrementals changes in one
+        file. Run until it is stopped.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">Full + Incrementals(periodic)</emphasis> :
+        Start with an initial Full backup and then keep incrementals with
+        periodic result file rotation. Run until it is stopped.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>How it works</title>
+
+    <section>
+      <title>Implementation details</title>
+
+      <para>Full backup/restore is implemented using the JCR SysView
+      Export/Import. Workspace data will be exported into Sysview XML data
+      from root node.</para>
+
+      <para>Restoring is implemented, using the special eXo JCR API feature: a
+      dynamic workspace creation. Restoring of the workspace Full backup will
+      create one new workspace in the repository. Then, the SysView XML data
+      will be imported as the root node.</para>
+
+      <para>Incremental backup is implemented using the eXo JCR ChangesLog
+      API. This API allows to record each JCR API call as atomic entries in a
+      changelog. Hence, the Incremental backup uses a listener that collects
+      these logs and stores them in a file.</para>
+
+      <para>Restoring an incremental backup consists in applying the collected
+      set of ChangesLogs to a workspace in the correct order.</para>
+
+      <note>
+        <para>Incremental backup is an experimental feture and not supported,
+        so it must be used with a lot of caution.</para>
+      </note>
+    </section>
+
+    <section>
+      <title>Work basics</title>
+
+      <para>The work of Backup is based on the BackupConfig configuration and
+      the BackupChain logical unit.</para>
+
+      <para>BackupConfig describes the backup operation chain that will be
+      performed by the service. When you intend to work with it, the
+      configuration should be prepared before the backup is started.</para>
+
+      <para>The configuration contains such values as:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">Types of full and incremental
+          backup</emphasis> (fullBackupType, incrementalBackupType): Strings
+          with full names of classes which will cover the type
+          functional.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Incremental period</emphasis>: A period
+          after that a current backup will be stopped and a new one will be
+          started in seconds (long).</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Target repository and workspace
+          names</emphasis>: Strings with described names</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">Destination directory</emphasis> for
+          result files: String with a path to a folder where operation result
+          files will be stored.</para>
+        </listitem>
+      </itemizedlist>
+
+      <para>BackupChain is a unit performing the backup process and it covers
+      the principle of initial Full backup execution and manages Incrementals
+      operations. BackupChain is used as a key object for accessing current
+      backups during runtime via BackupManager. Each BackupJob performs a
+      single atomic operation - a Full or Incremental process. The result of
+      that operation is data for a Restore. BackupChain can contain one or
+      more BackupJobs. But at least the initial Full job is always there. Each
+      BackupJobs has its own unique number which means its Job order in the
+      chain, the initial Full job always has the number 0.</para>
+
+      <para><emphasis role="bold">Backup process, result data and file
+      location</emphasis></para>
+
+      <para>To start the backup process, it's necessary to create the
+      BackupConfig and call the BackupManager.startBackup(BackupConfig)
+      method. This method will return BackupChain created according to the
+      configuration. At the same time, the chain creates a BackupChainLog
+      which persists BackupConfig content and BackupChain operation states to
+      the file in the service working directory (see Configuration).</para>
+
+      <para>When the chain starts the work and the initial BackupJob starts,
+      the job will create a result data file using the destination directory
+      path from BackupConfig. The destination directory will contain a
+      directory with an automatically created name using the pattern
+      repository_workspace-timestamp where timestamp is current time in the
+      format of yyyyMMdd_hhmmss (E.g. db1_ws1-20080306_055404). The directory
+      will contain the results of all Jobs configured for execution. Each Job
+      stores the backup result in its own file with the name
+      repository_workspace-timestamp.jobNumber. BackupChain saves each state
+      (STARTING, WAITING, WORKING, FINISHED) of its Jobs in the
+      BackupChainLog, which has a current result full file path.</para>
+
+      <para>BackupChain log file and job result files are a whole and
+      consistent unit, that is a source for a Restore.</para>
+
+      <note>
+        <para>BackupChain log contains absolute paths to job result files.
+        Don't move these files to another location.</para>
+      </note>
+
+      <para><emphasis role="bold">Restore requirements</emphasis></para>
+
+      <para>As mentioned before a Restore operation is a mirror of a Backup.
+      The process is a Full restore of a root node with restoring an
+      additional Incremental backup to reach a desired workspace state.
+      Restoring of the workspace Full backup will create a new workspace in
+      the repository using given RepositoyEntry of existing repository and
+      given (preconfigured) WorkspaceEntry for a new target workspace. A
+      Restore process will restore a root node from the SysView XML
+      data.</para>
+
+      <note>
+        <para>The target workspace should not be in the repository. Otherwise,
+        a BackupConfigurationException exception will be thrown.</para>
+      </note>
+
+      <para>Finally, we may say that Restore is a process of a new Workspace
+      creation and filling it with a Backup content. In case you already have
+      a target Workspace (with the same name) in a Repository, you have to
+      configure a new name for it. If no target workspace exists in the
+      Repositor, you may use the same name as the Backup one.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Configuration</title>
+
+    <para>As an optional extension, the Backup service is not enabled by
+    default. <emphasis role="bold">You need to enable it via
+    configuration</emphasis>.</para>
+
+    <para>The following is an example configuration :</para>
+
+    <programlisting language="xml">&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.jcr.ext.backup.BackupManager&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;properties-param&gt;
+      &lt;name&gt;backup-properties&lt;/name&gt;
+      &lt;property name="backup-dir" value="target/backup" /&gt;
+    &lt;/properties-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+    <para>Where mandatory paramet is:<itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">backup-dir</emphasis> : The path to a
+          working directory where the service will store internal files and
+          chain logs.</para>
+        </listitem>
+      </itemizedlist></para>
+
+    <para>Also, there are optional parameters:<itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">incremental-backup-type</emphasis> : The
+          FQN of incremental job class. Must implement
+          org.exoplatform.services.jcr.ext.backup.BackupJob. By default :
+          org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob
+          used.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis
+          role="bold">default-incremental-job-period</emphasis> : The period
+          between incremetal flushes (in seconds). Default is 3600
+          seconds.</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis role="bold">full-backup-type</emphasis> : The FQN of
+          the full backup job class; Must implement
+          org.exoplatform.services.jcr.ext.backup.BackupJob. By default :
+          org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob
+          used. Please, notice that file-system based implementation
+          org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob is
+          deprecated and not recommended for use.</para>
+        </listitem>
+      </itemizedlist></para>
+  </section>
+
+  <section>
+    <title>RDBMS backup</title>
+
+    <para>RDBMS backup It is the lastest, currently supportedm used by default
+    and recommended implementation of full backup job for BackupManager
+    service. It is useful in case when database is used to store data.</para>
+
+    <para>Brings such advantages:</para>
+
+    <para><itemizedlist>
+        <listitem>
+          <para>fast: backup takes only several minutes to perform full backup
+          of repository with 1 million rows in tables;</para>
+        </listitem>
+
+        <listitem>
+          <para>atomic restore: restore process into existing
+          workspace/repository with same configuration is atomic, it means you
+          don’t loose the data when restore failed, the original data
+          remains;</para>
+        </listitem>
+
+        <listitem>
+          <para>cluster aware: it is possible to make backup/restore in
+          cluster environment into existing workspace/repository with same
+          configuration;</para>
+        </listitem>
+
+        <listitem>
+          <para>consistence backup: all threads make waiting until backup is
+          finished and then continue to work, so, there are no data
+          modification during backup process;</para>
+        </listitem>
+      </itemizedlist></para>
+  </section>
+
+  <section>
+    <title>Usage</title>
+
+    <section>
+      <title>Performing a Backup</title>
+
+      <para>In the following example, we create a BackupConfig bean for the
+      Full + Incrementals mode, then we ask the BackupManager to start the
+      backup process.</para>
+
+      <programlisting language="java">// Obtaining the backup service from the eXo container.
+BackupManager backup = (BackupManager) container.getComponentInstanceOfType(BackupManager.class);
+
+// And prepare the BackupConfig instance with custom parameters. 
+// full backup &amp; incremental
+File backDir = new File("/backup/ws1"); // the destination path for result files
+backDir.mkdirs();
+
+BackupConfig config = new BackupConfig();
+config.setRepository(repository.getName());
+config.setWorkspace("ws1");
+config.setBackupDir(backDir);
+
+// Before 1.9.3, you also need to indicate the backupjobs class FDNs
+// config.setFullBackupType("org.exoplatform.services.jcr.ext.backup.impl.fs.FullBackupJob");
+// config.setIncrementalBackupType("org.exoplatform.services.jcr.ext.backup.impl.fs.IncrementalBackupJob");
+
+// start backup using the service manager
+BackupChain chain = backup.startBackup(config);</programlisting>
+
+      <para>To stop the backup operation, you have to use the BackupChain
+      instance.</para>
+
+      <programlisting language="java">// stop backup
+backup.stopBackup(chain);</programlisting>
+    </section>
+
+    <section>
+      <title>Performing a Restore</title>
+
+      <para>Restoration involves reloading the backup file into a
+      BackupChainLog and applying appropriate workspace initialization. The
+      following snippet shows the typical sequence for restoring a workspace
+      :</para>
+
+      <programlisting language="java">// find BackupChain using the repository and workspace names (return null if not found)
+BackupChain chain = backup.findBackup("db1", "ws1");
+
+// Get the RepositoryEntry and WorkspaceEntry
+ManageableRepository repo = repositoryService.getRepository(repository);
+RepositoryEntry repoconf = repo.getConfiguration();
+List&lt;WorkspaceEntry&gt; entries = repoconf.getWorkspaceEntries();
+WorkspaceEntry = getNewEntry(entries, workspace); // create a copy entry from an existing one
+
+// restore backup log using ready RepositoryEntry and WorkspaceEntry
+File backLog = new File(chain.getLogFilePath());
+BackupChainLog bchLog = new BackupChainLog(backLog);
+
+// initialize the workspace
+repository.configWorkspace(workspaceEntry);
+
+// run restoration
+backup.restore(bchLog, repositoryEntry, workspaceEntry);</programlisting>
+
+      <section>
+        <title>Restoring into an existing workspace</title>
+
+        <note>
+          <para>These instructions only applies to regular workspace. Special
+          instructions are provided for System workspace below.</para>
+        </note>
+
+        <para>To restore a backup over an existing workspace, you are required
+        to clear its data. Your backup process should follow these
+        steps:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Remove workspace</para>
+          </listitem>
+        </itemizedlist>
+
+        <programlisting language="java">ManageableRepository repo = repositoryService.getRepository(repository);
+repo.removeWorkspace(workspace);</programlisting>
+
+        <itemizedlist>
+          <listitem>
+            <para>Clean database, value storage, index</para>
+          </listitem>
+
+          <listitem>
+            <para>Restore (see snippet above)</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+
+      <section>
+        <title>System workspace</title>
+
+        <note>
+          <para>The BackupWorkspaceInitializer is available in JCR 1.9 and
+          later.</para>
+        </note>
+
+        <para>Restoring the JCR System workspace requires to shutdown the
+        system and use of a special initializer.</para>
+
+        <para>Follow these steps (this will also work for normal
+        workspaces):</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Stop repository (or portal)</para>
+          </listitem>
+
+          <listitem>
+            <para>Clean database, value storage, index;</para>
+          </listitem>
+
+          <listitem>
+            <para>In configuration, the workspace set
+            BackupWorkspaceInitializer to refer to your backup.</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>For example:</para>
+
+        <programlisting language="xml">&lt;workspaces&gt;
+  &lt;workspace name="production" ... &gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+      ...
+    &lt;/container&gt;
+    &lt;initializer class="org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer"&gt;
+      &lt;properties&gt;
+         &lt;property name="restore-path" value="D:\java\exo-working\backup\repository_production-20090527_030434"/&gt;
+      &lt;/properties&gt;
+   &lt;/initializer&gt;
+    ...
+&lt;/workspace&gt;
+</programlisting>
+
+        <itemizedlist>
+          <listitem>
+            <para>Start repository (or portal).</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+    </section>
+
+    <section>
+      <title>Repository and Workspace initialization from backup</title>
+
+      <para>Repository and Workspace initialization from backup can use the
+      BackupWorkspaceInitializer.</para>
+
+      <para>Will be configured BackupWorkspaceInitializer in configuration of
+      workspace to restore the Workspace from backup over initializer.</para>
+
+      <para>Will be configured BackupWorkspaceInitializer in all
+      configurations workspaces of the Repository to restore the Repository
+      from backup over initializer.</para>
+
+      <para></para>
+
+      <para>Restoring the repository or workspace requires to shutdown the
+      repository.</para>
+
+      <para>Follow these steps: <itemizedlist>
+          <listitem>
+            <para>Stop repository (will be skipped this step if repository or
+            workace is not exists)</para>
+          </listitem>
+
+          <listitem>
+            <para>Clean database, value storage, index; (will be skipped this
+            step if repository or worksace is new)</para>
+          </listitem>
+
+          <listitem>
+            <para>In configuration, the workspace/-s set
+            BackupWorkspaceInitializer to refer to your backup.</para>
+          </listitem>
+
+          <listitem>
+            <para>Start repository</para>
+          </listitem>
+        </itemizedlist></para>
+
+      <para></para>
+
+      <para>Example of configuration initializer to restore workspace "backup"
+      over BackupWorkspaceInitializer:</para>
+
+      <programlisting language="xml">&lt;workspaces&gt;
+  &lt;workspace name="backup" ... &gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+      ...
+    &lt;/container&gt;
+    &lt;initializer class="org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer"&gt;
+      &lt;properties&gt;
+         &lt;property name="restore-path" value="D:\java\exo-working\backup\repository_backup-20110120_044734"/&gt;
+      &lt;/properties&gt;
+   &lt;/initializer&gt;
+    ...
+&lt;/workspace&gt;</programlisting>
+
+      <section>
+        <title>Restore the Workspace over BackupWorksaceInitializer</title>
+
+        <para>Example of configuration initializer to resore the workspace
+        "backup" over BackupWorkspaceInitializer:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Stop repository (will be skipped this step if workspace is
+            not exists)</para>
+          </listitem>
+
+          <listitem>
+            <para>Clean database, value storage, index; (will be skipped this
+            step if workspace is new)</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>In configuration, the workspace/-s set
+        BackupWorkspaceInitializer to refer to your backup.</para>
+
+        <programlisting language="xml">&lt;workspaces&gt;
+  &lt;workspace name="backup" ... &gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+      ...
+    &lt;/container&gt;
+    &lt;initializer class="org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer"&gt;
+      &lt;properties&gt;
+         &lt;property name="restore-path" value="D:\java\exo-working\backup\repository_backup-20110120_044734"/&gt;
+      &lt;/properties&gt;
+   &lt;/initializer&gt;
+    ...
+&lt;/workspace&gt;</programlisting>
+
+        <itemizedlist>
+          <listitem>
+            <para>Start repository</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+
+      <section>
+        <title>Restore the Repository over BackupWorksaceInitializer</title>
+
+        <para>Example of configuration initializers to restore the repository
+        "repository" over BackupWorkspaceInitializer:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>Stop repository (will be skipped this step if repository is
+            not exists)</para>
+          </listitem>
+
+          <listitem>
+            <para>Clean database, value storage, index; (will be skipped this
+            step if repository is new)</para>
+          </listitem>
+        </itemizedlist>
+
+        <para>In configuration of repository will be configured initializers
+        of workspace to refer to your backup.</para>
+
+        <para>For example:</para>
+
+        <programlisting language="xml">...
+&lt;workspaces&gt;
+ &lt;workspace name="system" ... &gt;
+  &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+  ...
+  &lt;/container&gt;
+  &lt;initializer class="org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer"&gt;
+   &lt;properties&gt;
+    &lt;property name="restore-path" value="D:\java\exo-working\backup\repository_system-20110120_052334"/&gt;
+   &lt;/properties&gt;
+  &lt;/initializer&gt;
+  ...
+ &lt;/workspace&gt;
+
+ &lt;workspace name="collaboration" ... &gt;
+   &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+   ...
+  &lt;/container&gt;
+  &lt;initializer class="org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer"&gt;
+   &lt;properties&gt;
+    &lt;property name="restore-path" value="D:\java\exo-working\backup\repository_collaboration-20110120_052341"/&gt;
+   &lt;/properties&gt;
+  &lt;/initializer&gt;
+  ...
+ &lt;/workspace&gt;
+
+ &lt;workspace name="backup" ... &gt;
+  &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+  ...
+  &lt;/container&gt;
+
+  &lt;initializer class="org.exoplatform.services.jcr.impl.core.BackupWorkspaceInitializer"&gt;
+   &lt;properties&gt;
+    &lt;property name="restore-path" value="D:\java\exo-working\backup\repository_backup-20110120_052417"/&gt;
+   &lt;/properties&gt;
+  &lt;/initializer&gt;
+  ...
+  &lt;/workspace&gt;
+&lt;/workspaces&gt;
+</programlisting>
+
+        <itemizedlist>
+          <listitem>
+            <para>Start repository.</para>
+          </listitem>
+        </itemizedlist>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>Scheduling (experimental)</title>
+
+    <para>The Backup service has an additional feature that can be useful for
+    a production level backup implementation. When you need to organize a
+    backup of a repository, it's necessary to have a tool which will be able
+    to create and manage a cycle of Full and Incremental backups in periodic
+    manner.</para>
+
+    <para>The service has internal BackupScheduler which can run a
+    configurable cycle of BackupChains as if they have been executed by a user
+    during some period of time. I.e. BackupScheduler is a user-like daemon
+    which asks the BackupManager to start or stop backup operations.</para>
+
+    <para>For that purpose, BackupScheduler has the method.</para>
+
+    <para>BackupScheduler.schedule(backupConfig, startDate, stopDate,
+    chainPeriod, incrementalPeriod)</para>
+
+    <para>where</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>backupConfig: A ready configuration which will be given to the
+        BackupManager.startBackup() method</para>
+      </listitem>
+
+      <listitem>
+        <para>startDate: The date and time of the backup start</para>
+      </listitem>
+
+      <listitem>
+        <para>stopDate: The date and time of the backup stop</para>
+      </listitem>
+
+      <listitem>
+        <para>chainPeriod: A period after which a current BackupChain will be
+        stopped and a new one will be started in seconds</para>
+      </listitem>
+
+      <listitem>
+        <para>incrementalPeriod: If it is greater than 0, it will be used to
+        override the same value in backupConfig.</para>
+      </listitem>
+    </itemizedlist>
+
+    <programlisting language="java">// geting the scheduler from the BackupManager
+   BackupScheduler scheduler = backup.getScheduler();
+
+// schedule backup using a ready configuration (Full + Incrementals) to run from startTime
+// to stopTime. Full backuop will be performed every 24 hours (BackupChain lifecycle),
+// incremental will rotate result files every 3 hours.
+   scheduler.schedule(config, startTime, stopTime, 3600  * 24, 3600 * 3);
+
+// it's possible to run the scheduler for an uncertain period of time (i.e. without stop time).
+// schedule backup to run from startTime till it will be stopped manually
+// also there, the incremental will rotate result files as it configured in BackupConfig
+   scheduler.schedule(config, startTime, null, 3600 * 24, 0);
+
+// to unschedule backup simply call the scheduler with the configuration describing the 
+// already planned backup cycle.
+// the scheduler will search in internal tasks list for task with repository and
+// workspace name from the configuration and will stop that task.
+   scheduler.unschedule(config);</programlisting>
+
+    <para>When the BackupScheduler starts the scheduling, it uses the internal
+    Timer with startDate for the first (or just once) execution. If
+    chainPeriod is greater than 0, then the task is repeated with this value
+    used as a period starting from startDate. Otherwise, the task will be
+    executed once at startDate time. If the scheduler has stopDate, it will
+    stop the task ( the chain cycle) after stopDate. And the last parameter
+    incrementalPeriod will be used instead of the same from BackupConfig if
+    its values are greater than 0.</para>
+
+    <para>Starting each task (BackupScheduler.schedule(...)), the scheduler
+    creates a task file in the service working directory (see <emphasis
+    role="bold">Configuration</emphasis>, backup-dir) which describes the task
+    backup configuration and periodic values. These files will be used at the
+    backup service start (JVM start) to reinitialize BackupScheduler for
+    continuous task scheduling. Only tasks that don't have a stopDate or a
+    stopDate not expired will be reinitialized.</para>
+
+    <para>There is one notice about BackupScheduler task reinitialization in
+    the current implementation. It comes from the BackupScheduler nature and
+    its implemented behaviour. As the scheduler is just a virtual user which
+    asks the BackupManager to start or stop backup operations, it isn't able
+    to reinitialize each existing BackupChain before the service (JVM) is
+    stopped. But it's possible to start a new operation with the same
+    configuration via BackupManager (that was configured before and stored in
+    a task file).</para>
+
+    <para>This is a main detail of the BackupScheduler which should be taken
+    into suggestion of a backup operation design now. In case of
+    reinitialization, the task will have new time values for the backup
+    operation cycle as the chainPeriod and incrementalPeriod will be applied
+    again. That behaviour may be changed in the future.</para>
+  </section>
+
+  <section>
+    <title>Restore existing workspace or repository</title>
+
+    <para>The resore of existing workspace or repositry is available.</para>
+
+    <para>For restore will be used spacial methods:</para>
+
+    <programlisting language="java"> /**
+    * Restore existing workspace. Previous data will be deleted.
+    * For getting status of workspace restore can use 
+    * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
+    * 
+    * @param workspaceBackupIdentifier
+    *          backup identifier
+    * @param workspaceEntry
+    *          new workspace configuration
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreExistingWorkspace(String workspaceBackupIdentifier, String repositoryName, WorkspaceEntry workspaceEntry,
+      boolean asynchronous) throws BackupOperationException, BackupConfigurationException;
+
+   /**
+    * Restore existing workspace. Previous data will be deleted.
+    * For getting status of workspace restore use can use 
+    * BackupManager.getLastRestore(String repositoryName, String workspaceName) method 
+    * 
+    * @param log
+    *          workspace backup log
+    * @param workspaceEntry
+    *          new workspace configuration
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreExistingWorkspace(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
+
+   /**
+    * Restore existing repository. Previous data will be deleted.
+    * For getting status of repository restore can use 
+    * BackupManager.getLastRestore(String repositoryName) method 
+    * 
+    * @param repositoryBackupIdentifier
+    *          backup identifier
+    * @param repositoryEntry
+    *          new repository configuration
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreExistingRepository(String  repositoryBackupIdentifier, RepositoryEntry repositoryEntry, boolean asynchronous)  throws BackupOperationException, BackupConfigurationException;
+
+   /**
+    * Restore existing repository. Previous data will be deleted.
+    * For getting status of repository restore can use 
+    * BackupManager.getLastRestore(String repositoryName) method 
+    * 
+    * @param log
+    *          repository backup log
+    * @param repositoryEntry
+    *          new repository configuration
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreExistingRepository(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)
+      throws BackupOperationException, BackupConfigurationException;</programlisting>
+
+    <para>These methods for restore will do:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>remove existed workspace or repository;</para>
+      </listitem>
+
+      <listitem>
+        <para>clean database;</para>
+      </listitem>
+
+      <listitem>
+        <para>clean index data;</para>
+      </listitem>
+
+      <listitem>
+        <para>clean value storage;</para>
+      </listitem>
+
+      <listitem>
+        <para>restore from backup.</para>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Restore a workspace or a repository using original
+    configuration</title>
+
+    <para>The Backup manager allows you to restore a repository or a workspace
+    using the original configuration stored into the backup log:</para>
+
+    <programlisting language="java">/**
+    * Restore existing workspace. Previous data will be deleted.
+    * For getting status of workspace restore can use 
+    * BackupManager.getLastRestore(String repositoryName, String workspaceName) method
+    * WorkspaceEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param workspaceBackupIdentifier
+    *          identifier to workspace backup. 
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread) 
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred 
+    */
+   void restoreExistingWorkspace(String workspaceBackupIdentifier, boolean asynchronous)
+            throws BackupOperationException,
+            BackupConfigurationException;
+
+   /**
+    * Restore existing repository. Previous data will be deleted.
+    * For getting status of repository restore can use 
+    * BackupManager.getLastRestore(String repositoryName) method.
+    * ReprositoryEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param repositoryBackupIdentifier
+    *          identifier to repository backup.   
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreExistingRepository(String repositoryBackupIdentifier, boolean asynchronous)
+            throws BackupOperationException,
+            BackupConfigurationException;
+
+   /**
+    * WorkspaceEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param workspaceBackupIdentifier
+    *          identifier to workspace backup. 
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread) 
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred 
+    */
+   void restoreWorkspace(String workspaceBackupIdentifier, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException;
+
+   /**
+    * ReprositoryEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param repositoryBackupIdentifier
+    *          identifier to repository backup.   
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreRepository(String repositoryBackupIdentifier, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException;
+
+    /**
+    * Restore existing workspace. Previous data will be deleted.
+    * For getting status of workspace restore can use 
+    * BackupManager.getLastRestore(String repositoryName, String workspaceName) method
+    * WorkspaceEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param workspaceBackupSetDir
+    *          the directory with backup set  
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread) 
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred 
+    */
+   void restoreExistingWorkspace(File workspaceBackupSetDir, boolean asynchronous)
+            throws BackupOperationException, BackupConfigurationException;
+
+   /**
+    * Restore existing repository. Previous data will be deleted.
+    * For getting status of repository restore can use 
+    * BackupManager.getLastRestore(String repositoryName) method.
+    * ReprositoryEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param repositoryBackupSetDir
+    *          the directory with backup set     
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreExistingRepository(File repositoryBackupSetDir, boolean asynchronous)
+            throws BackupOperationException, BackupConfigurationException;
+
+   /**
+    * WorkspaceEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param workspaceBackupSetDir
+    *          the directory with backup set 
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread) 
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred 
+    */
+   void restoreWorkspace(File workspaceBackupSetDir, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException;
+
+   /**
+    * ReprositoryEntry for restore should be contains in BackupChainLog. 
+    * 
+    * @param repositoryBackupSetDir
+    *          the directory with backup set   
+    * @param asynchronous
+    *          if 'true' restore will be in asynchronous mode (i.e. in separated thread)
+    * @throws BackupOperationException
+    *           if backup operation exception occurred 
+    * @throws BackupConfigurationException
+    *           if configuration exception occurred
+    */
+   void restoreRepository(File repositoryBackupSetDir, boolean asynchronous) throws BackupOperationException,
+            BackupConfigurationException;</programlisting>
+  </section>
+
+  <section>
+    <title>Backup set portability</title>
+
+    <para>The Backup log is stored during the Backup operation into two
+    different locations: backup-dir directory of BackupService to support
+    interactive operations via Backup API (e.g. console) and backup set files
+    for portability (e.g. on another server).</para>
+  </section>
+</chapter>

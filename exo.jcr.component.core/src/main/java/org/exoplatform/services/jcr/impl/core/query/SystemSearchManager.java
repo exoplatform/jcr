@@ -16,10 +16,16 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.management.jmx.annotations.NameTemplate;
+import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.document.DocumentReaderService;
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -28,7 +34,9 @@ import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rpc.RPCService;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,13 +49,14 @@ import javax.jcr.RepositoryException;
  * @version $Id: SystemSearchManager.java 13891 2008-05-05 16:02:30Z pnedonosko
  *          $
  */
+@NameTemplate(@Property(key = "service", value = "SystemSearchManager"))
 public class SystemSearchManager extends SearchManager
 {
 
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.SystemSearchManager");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SystemSearchManager");
 
    /**
     * Is started flag.
@@ -56,11 +65,22 @@ public class SystemSearchManager extends SearchManager
 
    public static final String INDEX_DIR_SUFFIX = "system";
 
-   public SystemSearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+   public SystemSearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
+      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+      WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
+      RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
+      RepositoryConfigurationException
+   {
+      super(ctx, wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder,
+         rpcService);
+   }
+
+   public SystemSearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
+      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
       RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException, RepositoryConfigurationException
    {
-      super(config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder);
+      this(ctx, wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, service, cfm, indexSearcherHolder, null);
    }
 
    @Override
@@ -80,19 +100,17 @@ public class SystemSearchManager extends SearchManager
                indexingTree = new IndexingTree(indexingRootNodeData, excludedPaths);
             }
             initializeQueryHandler();
-
          }
-
          catch (RepositoryException e)
          {
-            log.error(e.getLocalizedMessage());
+            LOG.error(e.getLocalizedMessage());
             handler = null;
             //freeBuffers();
             throw new RuntimeException(e);
          }
          catch (RepositoryConfigurationException e)
          {
-            log.error(e.getLocalizedMessage());
+            LOG.error(e.getLocalizedMessage());
             handler = null;
             //freeBuffers();
             throw new RuntimeException(e);
@@ -101,13 +119,22 @@ public class SystemSearchManager extends SearchManager
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    @Override
-   protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
-      throws RepositoryConfigurationException
+   protected File getIndexDirectory() throws RepositoryConfigurationException
    {
-      QueryHandlerContext context =
-         new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDir() + "_"
-            + INDEX_DIR_SUFFIX, extractor, true, virtualTableResolver);
-      return context;
+      return new File(getIndexDirParam() + "_" + INDEX_DIR_SUFFIX);
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected String getStorageName()
+   {
+      return super.getStorageName() + "_" + INDEX_DIR_SUFFIX;
+   }
+   
 }

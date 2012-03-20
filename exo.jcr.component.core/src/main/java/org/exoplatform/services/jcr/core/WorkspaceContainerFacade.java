@@ -18,7 +18,21 @@
  */
 package org.exoplatform.services.jcr.core;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
+import org.exoplatform.services.jcr.impl.ReadOnlySupport;
 import org.exoplatform.services.jcr.impl.WorkspaceContainer;
+import org.exoplatform.services.jcr.impl.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
+
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS .<br/> An entry point to the implementation, used for extending
@@ -54,6 +68,18 @@ public final class WorkspaceContainerFacade
    }
 
    /**
+    * Returns list of components of specific type.
+    * 
+    * @param componentType
+    *          component type
+    * @return List<Object>
+    */
+   public List getComponentInstancesOfType(Class componentType)
+   {
+      return container.getComponentInstancesOfType(componentType);
+   }
+
+   /**
     * @param key
     *          - an internal key of internal component
     * @return the component
@@ -77,5 +103,207 @@ public final class WorkspaceContainerFacade
    public void addComponent(Object key, Object component)
    {
       container.registerComponentInstance(key, component);
+   }
+
+   /**
+    * Returns current workspace state.
+    * 
+    * @param state
+    * @throws RepositoryException
+    */
+   public int getState()
+   {
+      boolean hasROComponents = false;
+      boolean hasRWComponents = false;
+      List<ReadOnlySupport> readOnlyComponents = getComponentInstancesOfType(ReadOnlySupport.class);
+      for (ReadOnlySupport component : readOnlyComponents)
+      {
+         if (component.isReadOnly())
+         {
+            hasROComponents = true;
+         }
+         else
+         {
+            hasRWComponents = true;
+         }
+      }
+
+      boolean hasSuspendedComponents = false;
+      boolean hasResumedComponents = false;
+      List<Suspendable> suspendableComponents = getComponentInstancesOfType(Suspendable.class);
+      for (Suspendable component : suspendableComponents)
+      {
+         if (component.isSuspended())
+         {
+            hasSuspendedComponents = true;
+         }
+         else
+         {
+            hasResumedComponents = true;
+         }
+      }
+
+      if (hasSuspendedComponents && !hasResumedComponents && !hasROComponents)
+      {
+         return ManageableRepository.SUSPENDED;
+      }
+      else if (hasROComponents && !hasRWComponents && !hasSuspendedComponents)
+      {
+         return ManageableRepository.READONLY;
+      }
+      else if (!hasSuspendedComponents && !hasROComponents)
+      {
+         return ManageableRepository.ONLINE;
+      }
+      else
+      {
+         return ManageableRepository.UNDEFINED;
+      }
+   }
+
+   /**
+    * Set new workspace state.
+    * 
+    * @param state
+    * @throws RepositoryException
+    */
+   public void setState(final int state) throws RepositoryException
+   {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
+      try
+      {
+         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws RepositoryException
+            {
+               switch (state)
+               {
+                  case ManageableRepository.ONLINE :
+                     setOnline();
+                     break;
+                  case ManageableRepository.OFFLINE :
+                     suspend();
+                     break;
+                  case ManageableRepository.READONLY :
+                     setReadOnly(true);
+                     break;
+                  case ManageableRepository.SUSPENDED :
+                     suspend();
+                     break;
+                  default :
+                     return null;
+               }
+               return null;
+            }
+         });
+      }
+      catch (PrivilegedActionException e)
+      {
+         Throwable cause = e.getCause();
+         if (cause instanceof RepositoryException)
+         {
+            throw new RepositoryException(cause);
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
+   }
+
+   /**
+    * Set all components readonly.
+    */
+   private void setReadOnly(boolean readOnly)
+   {
+      List<ReadOnlySupport> components = getComponentInstancesOfType(ReadOnlySupport.class);
+      for (ReadOnlySupport component : components)
+      {
+         component.setReadOnly(readOnly);
+      }
+   }
+
+   /**
+    * Suspend all components in workspace.
+    * 
+    * @throws RepositoryException
+    */
+   private void suspend() throws RepositoryException
+   {
+      List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
+      Comparator<Suspendable> c = new Comparator<Suspendable>()
+      {
+         public int compare(Suspendable s1, Suspendable s2)
+         {
+            return s2.getPriority() - s1.getPriority();
+         };
+      };
+      Collections.sort(components, c);
+
+      for (Suspendable component : components)
+      {
+         try
+         {
+            if (!component.isSuspended())
+            {
+               component.suspend();
+            }
+         }
+         catch (SuspendException e)
+         {
+            throw new RepositoryException("Can't suspend component", e);
+         }
+      }
+   }
+
+   /**
+    * Suspend all components in workspace.
+    * 
+    * @throws RepositoryException
+    */
+   private void resume() throws RepositoryException
+   {
+      // components should be resumed in reverse order
+      List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
+      Comparator<Suspendable> c = new Comparator<Suspendable>()
+      {
+         public int compare(Suspendable s1, Suspendable s2)
+         {
+            return s1.getPriority() - s2.getPriority();
+         };
+      };
+      Collections.sort(components, c);
+
+      for (Suspendable component : components)
+      {
+         try
+         {
+            if (component.isSuspended())
+            {
+               component.resume();
+            }
+         }
+         catch (ResumeException e)
+         {
+            throw new RepositoryException("Can't resume component", e);
+         }
+      }
+   }
+
+   /**
+    * Set all components online.
+    * 
+    * @throws RepositoryException
+    */
+   private void setOnline() throws RepositoryException
+   {
+      setReadOnly(false);
+      resume();
    }
 }

@@ -19,6 +19,9 @@
 package org.exoplatform.services.jcr.api.writing;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
 
 import java.util.ArrayList;
@@ -808,15 +811,7 @@ public class TestOrderBefore extends JcrAPIBaseTest
       testBase.orderBefore("n1[3]", null);
 
       String[] order = new String[]{"n1", "n1[2]", "n1[3]", "n2", "n1[4]"}; // n1
-      // [
-      // 3
-      // ]
-      // -
-      // >
-      // n1
-      // [
-      // 4
-      // ]
+      // [3]->n1[4]
 
       checkOrder(order);
 
@@ -1038,6 +1033,76 @@ public class TestOrderBefore extends JcrAPIBaseTest
       {
          // ok
       }
+   }
+
+   public void testOrderBeforeAfterMove() throws Exception
+   {
+      SessionImpl session = (SessionImpl)repository.login(credentials, WORKSPACE);
+      Node list = session.getRootNode().addNode("list2", "list");
+      assertEquals("list", list.getPrimaryNodeType().getName());
+      assertTrue(list.getPrimaryNodeType().hasOrderableChildNodes());
+
+      String path = list.addNode("1").getPath();
+      list.addNode("2");
+      session.save();
+      session.logout();
+
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
+      list = session.getRootNode().getNode("list2");
+      session.move(path, list.getPath() + "/3");
+      list.orderBefore("3", "2");
+      session.save();
+      session.logout();
+
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
+      NodeIterator it = session.getRootNode().getNode("list2").getNodes();
+      NodeImpl node1 = (NodeImpl)it.nextNode();
+      NodeImpl node2 = (NodeImpl)it.nextNode();
+      assertEquals("3", node1.getName());
+      assertEquals("2", node2.getName());
+      assertTrue(((NodeData)node1.getData()).getOrderNumber() < ((NodeData)node2.getData()).getOrderNumber());
+
+      session.logout();
+   }
+
+   public void testOrderBeforeAfterMove2() throws Exception
+   {
+      SessionImpl session = (SessionImpl)repository.login(credentials, WORKSPACE);
+      Node list = session.getRootNode().addNode("list2", "list");
+      assertEquals("list", list.getPrimaryNodeType().getName());
+      assertTrue(list.getPrimaryNodeType().hasOrderableChildNodes());
+
+      list.addNode("1");
+      list.addNode("2");
+      list.addNode("3");
+      list.addNode("4");
+      session.save();
+      session.logout();
+
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
+      list = session.getRootNode().getNode("list2");
+      session.move(list.getPath() + "/2", list.getPath() + "/5");
+      list.orderBefore("5", "1");
+      session.save();
+      session.logout();
+
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
+      NodeIterator it = session.getRootNode().getNode("list2").getNodes();
+      NodeImpl node1 = (NodeImpl)it.nextNode();
+      NodeImpl node2 = (NodeImpl)it.nextNode();
+      NodeImpl node3 = (NodeImpl)it.nextNode();
+      NodeImpl node4 = (NodeImpl)it.nextNode();
+
+      assertEquals("5", node1.getName());
+      assertEquals("1", node2.getName());
+      assertEquals("3", node3.getName());
+      assertEquals("4", node4.getName());
+
+      assertTrue(((NodeData)node1.getData()).getOrderNumber() < ((NodeData)node2.getData()).getOrderNumber());
+      assertTrue(((NodeData)node2.getData()).getOrderNumber() < ((NodeData)node3.getData()).getOrderNumber());
+      assertTrue(((NodeData)node3.getData()).getOrderNumber() < ((NodeData)node4.getData()).getOrderNumber());
+      
+      session.logout();
    }
 
    private EntityCollection getEntityCollection(NodeIterator nodes)

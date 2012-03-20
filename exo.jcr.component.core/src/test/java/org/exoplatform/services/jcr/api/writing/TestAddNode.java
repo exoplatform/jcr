@@ -68,6 +68,25 @@ public class TestAddNode extends JcrAPIBaseTest
       super.tearDown();
    }
 
+   /**
+    * Test case-sensitive names
+    */
+   public void testAddNodeCSNames() throws RepositoryException
+   {
+      try
+      {
+         Node localRoot = root.addNode("testCI", "nt:folder");
+         root.save();
+         localRoot.addNode("test", "nt:folder");
+         localRoot.addNode("Test", "nt:folder");
+         root.save();
+      }
+      catch (ItemExistsException e)
+      {
+         fail("Repository must be case-sensitive!");
+      }
+   }
+
    public void testAddNode() throws RepositoryException
    {
       Node root = session.getRootNode();
@@ -201,10 +220,14 @@ public class TestAddNode extends JcrAPIBaseTest
 
       String[] wsNames = repository.getWorkspaceNames();
       if (wsNames.length < 2)
+      {
          fail("Too few number of ws for test should be > 1");
+      }
       log.debug(">>>>>>>> " + wsNames.length);
       for (int i = 0; i < wsNames.length; i++)
+      {
          log.debug(">>>>>>>> " + wsNames[i]);
+      }
 
       // Session s1 = repository.login(credentials, wsNames[0]);
       Session s1 = repository.getSystemSession(wsNames[0]);

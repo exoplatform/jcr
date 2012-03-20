@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -75,6 +76,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
       this.affectedNodes = affectedNodes;
    }
 
+   @Override
    public PlainChangesLog compare(NodeTypeData registeredNodeType, NodeDefinitionData[] ancestorDefinition,
       NodeDefinitionData[] recipientDefinition) throws ConstraintViolationException, RepositoryException
    {
@@ -114,7 +116,8 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
    {
       for (NodeData nodeData : nodesData)
       {
-         ItemData child = dataConsumer.getItemData(nodeData, new QPathEntry(nodeDefinitionData.getName(), 0));
+         ItemData child =
+            dataConsumer.getItemData(nodeData, new QPathEntry(nodeDefinitionData.getName(), 0), ItemType.NODE);
          if (child == null || !child.isNode())
          {
             throw new ConstraintViolationException("Fail to  add mandatory and not auto-created "
@@ -153,8 +156,8 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
                {
                   for (int i = 0; i < requiredPrimaryTypes.length; i++)
                   {
-                     if (!nodeTypeDataManager.isNodeType(requiredPrimaryTypes[i], child.getPrimaryTypeName(), child
-                        .getMixinTypeNames()))
+                     if (!nodeTypeDataManager.isNodeType(requiredPrimaryTypes[i], child.getPrimaryTypeName(),
+                        child.getMixinTypeNames()))
                      {
                         StringBuffer buffer = new StringBuffer();
                         buffer.append("Fail to change ");
@@ -189,8 +192,8 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
                {
                   for (int i = 0; i < requiredPrimaryTypes.length; i++)
                   {
-                     if (!nodeTypeDataManager.isNodeType(requiredPrimaryTypes[i], child.getPrimaryTypeName(), child
-                        .getMixinTypeNames()))
+                     if (!nodeTypeDataManager.isNodeType(requiredPrimaryTypes[i], child.getPrimaryTypeName(),
+                        child.getMixinTypeNames()))
                      {
                         StringBuffer buffer = new StringBuffer();
                         buffer.append("Fail to change ");
@@ -381,14 +384,14 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
          NodeDefinitionData ancestorDefinitionData = changedDefinitions.getAncestorDefinition();
          NodeDefinitionData recipientDefinitionData = changedDefinitions.getRecepientDefinition();
          // change from mandatory=false to mandatory = true
-         // TODO residual
          if (!ancestorDefinitionData.isMandatory() && recipientDefinitionData.isMandatory())
          {
             for (NodeData nodeData : nodesData)
             {
 
                ItemData child =
-                  dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
+                  dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0),
+                     ItemType.NODE);
                if (child == null || !child.isNode())
                {
                   String message =
@@ -405,12 +408,12 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
          // change from Protected=false to Protected = true
          if (!ancestorDefinitionData.isProtected() && recipientDefinitionData.isProtected())
          {
-            // TODO residual
             for (NodeData nodeData : nodesData)
             {
 
                ItemData child =
-                  dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
+                  dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0),
+                     ItemType.NODE);
                if (child == null || !child.isNode())
                {
                   String message =
@@ -423,8 +426,8 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
                }
             }
          }
-         if (!Arrays.deepEquals(ancestorDefinitionData.getRequiredPrimaryTypes(), recipientDefinitionData
-            .getRequiredPrimaryTypes()))
+         if (!Arrays.deepEquals(ancestorDefinitionData.getRequiredPrimaryTypes(),
+            recipientDefinitionData.getRequiredPrimaryTypes()))
          {
             checkRequiredPrimaryType(registeredNodeType, nodesData, ancestorDefinitionData.getRequiredPrimaryTypes(),
                recipientDefinitionData, allRecipientDefinition);
@@ -458,7 +461,6 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
             {
                List<NodeData> childs = dataConsumer.getChildNodesData(nodeData);
                // more then mixin and primary type
-               // TODO it could be possible, check add definitions
                if (childs.size() > 0)
                {
                   for (NodeData nodeData2 : childs)
@@ -483,7 +485,8 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
                for (NodeData nodeData : nodesData)
                {
                   ItemData child =
-                     dataConsumer.getItemData(nodeData, new QPathEntry(removeNodeDefinitionData.getName(), 0));
+                     dataConsumer.getItemData(nodeData, new QPathEntry(removeNodeDefinitionData.getName(), 0),
+                        ItemType.NODE);
                   if (child != null && child.isNode())
                   {
                      throw new ConstraintViolationException("Can't remove node definition "

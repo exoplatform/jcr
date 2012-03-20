@@ -22,6 +22,7 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS
@@ -36,37 +37,37 @@ public class GetNodesCommand extends AbstractCliCommand
    @Override
    public boolean perform(CliAppContext ctx)
    {
-      String output = "";
+      StringBuilder output = new StringBuilder();
       try
       {
          if (ctx.getCurrentItem().isNode())
          {
             Node currentNode = (Node)ctx.getCurrentItem();
             PropertyIterator propertyIterator = currentNode.getProperties();
-            output += "Properties list for " + currentNode.getPath() + ":\n";
+            output.append("Properties list for ").append(currentNode.getPath()).append(":\n");
             while (propertyIterator.hasNext())
             {
                Property property = propertyIterator.nextProperty();
-               output += property.getName() + "\n";
+               output.append(property.getName()).append("\n");
             }
             NodeIterator nodeIterator = currentNode.getNodes();
-            output += "Nodes list for " + currentNode.getPath() + ":\n";
+            output.append("Nodes list for ").append(currentNode.getPath()).append(":\n");
             while (nodeIterator.hasNext())
             {
                Node node = nodeIterator.nextNode();
-               output += node.getPath() + "\n";
+               output.append(node.getPath()).append("\n");
             }
          }
          else
          {
-            output += "Current item is property: " + ((Property)ctx.getCurrentItem()).getName() + "\n";
+            output.append("Current item is property: ").append(((Property)ctx.getCurrentItem()).getName()).append("\n");
          }
       }
-      catch (Exception e)
+      catch (RepositoryException e)
       {
-         output = "Can't execute command - " + e.getMessage() + "\n";
+         output = new StringBuilder("Can't execute command - ").append(e.getMessage()).append("\n");
       }
-      ctx.setOutput(output);
+      ctx.setOutput(output.toString());
       return false;
    }
 }

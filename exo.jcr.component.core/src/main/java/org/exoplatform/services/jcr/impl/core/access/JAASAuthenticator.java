@@ -76,7 +76,6 @@ public class JAASAuthenticator extends BaseAuthenticator
             "Credentials for the authentication should be CredentialsImpl or SimpleCredentials type");
 
       // SYSTEM
-      // TODO do we need to cache system state (identity) in registry?
       if (thisCredentials.getUserID().equals(SystemIdentity.SYSTEM))
       {
          Identity sid = new Identity(SystemIdentity.SYSTEM, new HashSet<MembershipEntry>());

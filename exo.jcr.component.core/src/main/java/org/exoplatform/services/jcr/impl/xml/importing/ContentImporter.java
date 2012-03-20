@@ -35,6 +35,8 @@ public interface ContentImporter
     */
    public String RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS = "respectPropertyDefinitionsConstraints";
 
+   public final String LIST_OF_IMPORTED_VERSION_HISTORIES = "importedSubversions";
+
    /**
     * Receive notification of character data.
     * 

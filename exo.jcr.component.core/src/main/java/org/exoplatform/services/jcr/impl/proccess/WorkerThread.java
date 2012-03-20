@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.proccess;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -27,6 +30,10 @@ package org.exoplatform.services.jcr.impl.proccess;
 
 public abstract class WorkerThread extends Thread
 {
+   /**
+    * Logger.
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkerThread");
 
    protected boolean stopped = false;
 
@@ -54,11 +61,16 @@ public abstract class WorkerThread extends Thread
             callPeriodically();
             sleep(timeout);
          }
+         catch (InterruptedException e)
+         {
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
+         }
          catch (Exception e)
          {
-            if (!(e instanceof InterruptedException))
-               e.printStackTrace();
-
+            LOG.error(e.getLocalizedMessage(), e);
          }
       }
    }

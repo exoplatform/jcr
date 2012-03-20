@@ -93,7 +93,6 @@ public class CASableSimpleFileIOChannel extends SimpleFileIOChannel
          // CASableDeleteValues saves VCAS record on commit, but it's possible the Property just
          // added in this transaction and not commited.
 
-         // TODO 08.04.2009 Skip error now
          files = new File[0];
       }
       CASableDeleteValues o = new CASableDeleteValues(files, resources, cleaner, tempDir, propertyId, vcas);

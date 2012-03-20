@@ -28,22 +28,27 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitialize
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DB2ConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DefaultOracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.GenericCQConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MSSQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.OracleConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.PostgreConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.SybaseConnectionFactory;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jdbc.DataSourceProvider;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.picocontainer.Startable;
 
 import java.io.IOException;
 
 import javax.jcr.RepositoryException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
-import javax.sql.DataSource;
 
 /**
  * Created by The eXo Platform SAS.
@@ -60,19 +65,21 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
     * @param wsConfig
     *          Workspace configuration
     * @param valueStrorageProvider
-    *          External Value Stprages provider
+    *          External Value Storages provider
+    * @param dsProvider
+    *          The data source provider
     * @throws RepositoryConfigurationException
     *           if Repository configuration is wrong
     * @throws NamingException
     *           if JNDI exception (on DataSource lookup)
     */
    public CQJDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
-      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider)
-      throws RepositoryConfigurationException, NamingException, RepositoryException, IOException
+      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
+      FileCleanerHolder fileCleanerHolder, DataSourceProvider dsProvider) throws RepositoryConfigurationException,
+      NamingException, RepositoryException, IOException
    {
-      super(wsConfig, repConfig, contextInit, valueStorageProvider);
+      super(wsConfig, repConfig, contextInit, valueStorageProvider, fileCleanerHolder, dsProvider);
    }
-
    /**
     * Init storage database.
     * 
@@ -83,173 +90,188 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
     * @throws IOException
     *           on I/O error
     */
+   @Override
    protected void initDatabase() throws NamingException, RepositoryException, IOException
    {
 
-      StorageDBInitializer dbInitilizer = null;
-      String sqlPath = null;
+      StorageDBInitializer dbInitializer = null;
+      String sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
       if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
       {
          LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
          // sample of connection factory customization
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new DefaultOracleConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner, useQueryHints);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new DefaultOracleConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner, useQueryHints);
          }
          else
             this.connFactory =
                new OracleConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner, useQueryHints);
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
-
          // a particular db initializer may be configured here too
-         dbInitilizer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_ORACLE)
       {
 
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new DefaultOracleConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner, useQueryHints);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new DefaultOracleConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner, useQueryHints);
          }
          else
             this.connFactory =
                new DefaultOracleConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner, useQueryHints);
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
-         dbInitilizer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
 
       }
       else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
       {
-         this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.pgsql.sql";
-         dbInitilizer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
-      }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL)
-      {
-         // [PN] 28.06.07
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new MySQLConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new PostgreConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider,
+                  maxBufferSize, swapDirectory, swapCleaner);
+         }
+         else
+            this.connFactory =
+               new PostgreConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+
+         dbInitializer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+      }
+      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL || dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8 ||
+               dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+      {
+         if (dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+         {
+            LOG.warn("MyISAM is not supported due to its lack of transaction support and integrity check, so use it only"
+               + " if you don't expect any support and performances in read accesses are more important than the consistency"
+               + " in your use-case. This dialect is only dedicated to the community.");
+         }
+         if (dbSourceName != null)
+         {
+            this.connFactory =
+               new MySQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
             this.connFactory =
                new MySQLConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
-      }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8)
-      {
-         // [PN] 13.07.08
-         if (dbSourceName != null)
-         {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new MySQLConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
-         }
-         else
-            this.connFactory =
-               new MySQLConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql-utf8.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_MSSQL)
       {
-         this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mssql.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         if (dbSourceName != null)
+         {
+            this.connFactory =
+               new MSSQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
+         }
+         else
+         {
+            this.connFactory =
+               new MSSQLConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         }
+
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DERBY)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.derby.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2)
       {
-         this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         if (dbSourceName != null)
+         {
+            this.connFactory =
+               new DB2ConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
+         }
+         else
+         {
+            this.connFactory =
+               new DB2ConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         }
+
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2V8)
       {
-         this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2v8.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         if (dbSourceName != null)
+         {
+            this.connFactory =
+               new DB2ConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
+         }
+         else
+         {
+            this.connFactory =
+               new DB2ConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         }
+
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
       {
-         this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sybase.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         if (dbSourceName != null)
+         {
+            this.connFactory =
+               new SybaseConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
+         }
+         else
+         {
+            this.connFactory =
+               new SybaseConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
+                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         }
+
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ingres.sql";
          // using Postgres initializer
-         dbInitilizer =
+         dbInitializer =
             new IngresSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_HSQLDB)
       {
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new HSQLDBConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new HSQLDBConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
             this.connFactory =
                new HSQLDBConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else
       {
          // generic, DB_HSQLDB
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
 
       // database type
       try
       {
-         dbInitilizer.init();
+         dbInitializer.init();
       }
       catch (DBInitializerException e)
       {
@@ -266,21 +288,17 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
     * @throws RepositoryException
     *           on Storage error
     */
+   @Override
    protected GenericConnectionFactory defaultConnectionFactory() throws NamingException, RepositoryException
    {
       // by default
       if (dbSourceName != null)
       {
-         DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-         if (ds != null)
-            return new GenericCQConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-               swapDirectory, swapCleaner);
-
-         throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+         return new GenericCQConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+            swapDirectory, swapCleaner);
       }
 
       return new GenericCQConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
          valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-   }
-
+   } 
 }

@@ -17,8 +17,6 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -32,6 +30,7 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
+import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
@@ -48,8 +47,6 @@ import javax.jcr.query.RowIterator;
  */
 public class TestQueryUsecases extends BaseQueryTest
 {
-
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestQueryUsecases");
 
    /**
     * Get all nodes from repository.
@@ -720,8 +717,6 @@ public class TestQueryUsecases extends BaseQueryTest
 
       // make SQL query
       QueryManager qman = this.workspace.getQueryManager();
-
-      //TODO can't make working query
       Query q = qman.createQuery("SELECT * FROM mix:title WHERE CONTAINS(*,'break')", Query.SQL);
       QueryResult res = q.execute();
       long sqlsize = res.getNodes().getSize();
@@ -791,8 +786,8 @@ public class TestQueryUsecases extends BaseQueryTest
       Node r1 = root.addNode("root1");
       Node r2 = r1.addNode("root2");
       Node node1 = r2.addNode("node1", "nt:unstructured");
-      Node node1_2 = r2.addNode("node1", "nt:unstructured");
-      Node node2 = r2.addNode("node2", "nt:unstructured");
+      r2.addNode("node1", "nt:unstructured");
+      r2.addNode("node2", "nt:unstructured");
       session.save();
 
       // make SQL query
@@ -819,7 +814,7 @@ public class TestQueryUsecases extends BaseQueryTest
       Node r2 = r1.addNode("root2");
       Node node1 = r2.addNode("node1", "nt:unstructured");
       Node node1_2 = r2.addNode("node1", "nt:unstructured");
-      Node node2 = r2.addNode("node2", "nt:unstructured");
+      r2.addNode("node2", "nt:unstructured");
       session.save();
 
       // make SQL query
@@ -845,7 +840,7 @@ public class TestQueryUsecases extends BaseQueryTest
       Node r1 = root.addNode("root1", "nt:folder");
       Node r2 = r1.addNode("root2", "nt:folder");
       Node subdir1 = r2.addNode("subdir1", "nt:folder");
-      Node node1 = subdir1.addNode("node1", "nt:folder");
+      subdir1.addNode("node1", "nt:folder");
       Node node2 = r2.addNode("node2", "nt:folder");
       session.save();
 
@@ -896,36 +891,26 @@ public class TestQueryUsecases extends BaseQueryTest
    }
 
    /***
-    * TODO seems working incorrect
+    * Descendant or self is unsupported.
     * 
     * @throws Exception
     */
    public void testDescendantOrSelf() throws Exception
    {
-      Node r1 = root.addNode("root1", "nt:folder");
-      Node r2 = r1.addNode("root2", "nt:folder");
-      Node subdir1 = r2.addNode("subdir1", "nt:folder");
-      Node node1 = subdir1.addNode("node1", "nt:folder");
-      Node node2 = r2.addNode("node2", "nt:folder");
-      session.save();
-
       // make SQL query
       QueryManager qman = this.workspace.getQueryManager();
-
-      Query q =
-         qman.createQuery("SELECT * FROM nt:folder WHERE jcr:path = '/root1/root2' OR jcr:path LIKE '/root1/root2/%'",
-            Query.SQL);
-      QueryResult res = q.execute();
-      long sqlsize = res.getNodes().getSize();
-      assertEquals(4, sqlsize);
-      checkResult(res, new Node[]{r2, subdir1, node1, node2});
-
-      //make XPath query
-      Query xq = qman.createQuery("/jcr:root/root1[1]/root2[1]//element(*,nt:folder)", Query.XPATH);
-      QueryResult xres = xq.execute();
-      long xpathsize = xres.getNodes().getSize();
-      assertEquals(3, xpathsize);
-      checkResult(xres, new Node[]{subdir1, node1, node2});
+      try
+      {
+         Query q =
+            qman.createQuery(
+               "SELECT * FROM nt:folder WHERE jcr:path = '/root1/root2' OR jcr:path LIKE '/root1/root2/%'", Query.SQL);
+         q.execute();
+         fail("Secendant or self query is unsupported.");
+      }
+      catch (InvalidQueryException e)
+      {
+         // thats ok descendant or self is unsupported
+      }
    }
 
    public void testGetAllColumns() throws Exception
@@ -1050,11 +1035,12 @@ public class TestQueryUsecases extends BaseQueryTest
 
       QueryManager qman = this.workspace.getQueryManager();
       //make XPath query
-      Query xq = qman.createQuery("//element(*,mix:title) order by jcr:pagecount descending", Query.XPATH);
+      Query xq = qman.createQuery("//element(*,mix:title) order by @jcr:pagecount descending", Query.XPATH);
       QueryResult xres = xq.execute();
       long xpathsize = xres.getNodes().getSize();
       assertEquals(3, xpathsize);
       checkResult(xres, new Node[]{doc1, doc2, doc3});
+      checkOrder(xres, new Node[]{doc2, doc1, doc3});
    }
 
    public void testOrderByProperty() throws Exception
@@ -1093,12 +1079,12 @@ public class TestQueryUsecases extends BaseQueryTest
 
       //make XPath query
 
-      Query xq = qman.createQuery("//element(*,mix:title) order by jcr:pagecount ascending", Query.XPATH);
+      Query xq = qman.createQuery("//element(*,mix:title) order by @jcr:pagecount ascending", Query.XPATH);
       QueryResult xres = xq.execute();
       long xpathsize = xres.getNodes().getSize();
       assertEquals(3, xpathsize);
-      //checkResult(xres, new Node[]{doc1, doc2, doc3});
-      checkOrder(res, new Node[]{doc3, doc1, doc2});
+      checkResult(xres, new Node[]{doc1, doc2, doc3});
+      checkOrder(xres, new Node[]{doc3, doc1, doc2});
    }
 
    public void testSearchByName() throws Exception
@@ -1181,8 +1167,6 @@ public class TestQueryUsecases extends BaseQueryTest
    protected void checkResult(QueryResult result, Node[] nodes) throws RepositoryException
    {
       // collect paths
-
-      String[] columnNames = result.getColumnNames();
       String[][] vals = new String[(int)result.getNodes().getSize()][result.getColumnNames().length];
 
       RowIterator rit = result.getRows();

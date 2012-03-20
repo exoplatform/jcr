@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeValue;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionValue;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
@@ -53,8 +54,7 @@ import javax.jcr.nodetype.NodeTypeIterator;
  * Created by The eXo Platform SAS.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov </a>
- * @version $Id: NodeTypeManagerImpl.java 13986 2008-05-08 10:48:43Z pnedonosko
- *          $
+ * @version $Id: NodeTypeManagerImpl.java 13986 2008-05-08 10:48:43Z pnedonosko$
  */
 public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
 {
@@ -68,14 +68,16 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
    protected final LocationFactory locationFactory;
 
    protected final NodeTypeDataManager typesManager;
+   
+   protected final ItemDataConsumer dataManager;
 
    public NodeTypeManagerImpl(LocationFactory locationFactory, ValueFactoryImpl valueFactory,
-      NodeTypeDataManager typesManager)
+      NodeTypeDataManager typesManager, ItemDataConsumer dataManager)
    {
       this.valueFactory = valueFactory;
       this.locationFactory = locationFactory;
       this.typesManager = typesManager;
-
+      this.dataManager = dataManager;
    }
 
    // JSR-170 stuff ================================
@@ -85,8 +87,9 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
 
       NodeTypeData ntdata = typesManager.getNodeType(nodeTypeName);
       if (ntdata != null)
-         return new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory);
-
+      {
+         return new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory, dataManager);
+      }
       throw new NoSuchNodeTypeException("Nodetype not found " + nodeTypeName.getAsString());
    }
 
@@ -99,8 +102,9 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
       List<NodeTypeData> allNts = typesManager.getAllNodeTypes();
 
       for (NodeTypeData ntdata : allNts)
-         ec.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory));
-
+      {
+         ec.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory, dataManager));
+      }
       return ec;
    }
 
@@ -120,8 +124,9 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
       for (NodeTypeData nodeTypeData : allNodeTypes)
       {
          if (nodeTypeData.isMixin())
-            ec.add(new NodeTypeImpl(nodeTypeData, typesManager, this, locationFactory, valueFactory));
-
+         {
+            ec.add(new NodeTypeImpl(nodeTypeData, typesManager, this, locationFactory, valueFactory, dataManager));
+         }
       }
       return ec;
    }
@@ -133,8 +138,9 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
    {
       NodeTypeData ntdata = typesManager.getNodeType(locationFactory.parseJCRName(nodeTypeName).getInternalName());
       if (ntdata != null)
-         return new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory);
-
+      {
+         return new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory, dataManager);
+      }
       throw new NoSuchNodeTypeException("Nodetype not found " + nodeTypeName);
    }
 
@@ -193,7 +199,6 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
       }
 
       throw new NoSuchNodeTypeException("Nodetype not found " + nodeTypeName);
-
    }
 
    /**
@@ -210,7 +215,9 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
       {
          NodeType type = allTypes.nextNodeType();
          if (!type.isMixin())
+         {
             ec.add(type);
+         }
       }
       return ec;
    }
@@ -245,12 +252,12 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
    public NodeTypeIterator registerNodeTypes(List<NodeTypeValue> values, int alreadyExistsBehaviour)
       throws UnsupportedRepositoryOperationException, RepositoryException
    {
-
       Collection<NodeTypeData> nts = typesManager.registerNodeTypes(values, alreadyExistsBehaviour);
       EntityCollection types = new EntityCollection();
       for (NodeTypeData ntdata : nts)
-         types.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory));
-
+      {
+         types.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory, dataManager));
+      }
       return types;
    }
 
@@ -262,12 +269,12 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
    public NodeTypeIterator registerNodeTypes(InputStream xml, int alreadyExistsBehaviour, String contentType)
       throws RepositoryException
    {
-
       Collection<NodeTypeData> nts = typesManager.registerNodeTypes(xml, alreadyExistsBehaviour, contentType);
       EntityCollection types = new EntityCollection();
       for (NodeTypeData ntdata : nts)
-         types.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory));
-
+      {
+         types.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory, dataManager));
+      }
       return types;
    }
 
@@ -285,8 +292,9 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
          typesManager.registerNodeTypes(xml, alreadyExistsBehaviour, NodeTypeDataManager.TEXT_XML);
       EntityCollection types = new EntityCollection();
       for (NodeTypeData ntdata : nts)
-         types.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory));
-
+      {
+         types.add(new NodeTypeImpl(ntdata, typesManager, this, locationFactory, valueFactory, dataManager));
+      }
       return types;
    }
 
@@ -298,7 +306,9 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
    {
       InternalQName nodeTypeName = locationFactory.parseJCRName(name).getInternalName();
       if (typesManager.getNodeType(nodeTypeName) == null)
+      {
          throw new NoSuchNodeTypeException(name);
+      }
       typesManager.unregisterNodeType(nodeTypeName);
    }
 
@@ -312,7 +322,6 @@ public class NodeTypeManagerImpl implements ExtendedNodeTypeManager
       {
          unregisterNodeType(names[i]);
       }
-
    }
 
    private NodeDefinitionValue convert(NodeDefinitionData data) throws RepositoryException

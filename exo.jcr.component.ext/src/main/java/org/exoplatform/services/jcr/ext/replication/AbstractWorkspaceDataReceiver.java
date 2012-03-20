@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.replication;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.ItemDataKeeper;
@@ -260,7 +261,7 @@ public abstract class AbstractWorkspaceDataReceiver implements PacketListener
                   saveChangesLog(chf, packet.getIdentifier());
 
                   // remove
-                  if (!chf.getFile().delete())
+                  if (!PrivilegedFileHelper.delete(chf.getFile()))
                      fileCleaner.addFile(chf.getFile());
                   mapPendingBinaryFile.remove(packet.getIdentifier());
 
@@ -316,11 +317,12 @@ public abstract class AbstractWorkspaceDataReceiver implements PacketListener
    private void saveChangesLog(ChangesFile fileDescriptor, String identifire) throws Exception
    {
       TransactionChangesLog transactionChangesLog =
-         recoveryManager.getRecoveryReader().getChangesLog(fileDescriptor.getFile().getAbsolutePath());
+         recoveryManager.getRecoveryReader().getChangesLog(
+            PrivilegedFileHelper.getAbsolutePath(fileDescriptor.getFile()));
 
       if (log.isDebugEnabled())
       {
-         log.debug("Save to JCR : " + fileDescriptor.getFile().getAbsolutePath());
+         log.debug("Save to JCR : " + PrivilegedFileHelper.getAbsolutePath(fileDescriptor.getFile()));
          log.debug("SystemID : " + transactionChangesLog.getSystemId());
       }
 
@@ -335,6 +337,6 @@ public abstract class AbstractWorkspaceDataReceiver implements PacketListener
          }
       }
 
-      this.receive((ItemStateChangesLog)transactionChangesLog, identifire);
+      this.receive(transactionChangesLog, identifire);
    }
 }

@@ -43,4 +43,10 @@ public interface IndexUpdateMonitor
     */
    void addIndexUpdateMonitorListener(IndexUpdateMonitorListener listener);
 
+   /**
+    * Removes listener of type {@link IndexUpdateMonitorListener}
+    * @param listener the listener to remove
+    */
+   void removeIndexUpdateMonitorListener(IndexUpdateMonitorListener listener);
+
 }

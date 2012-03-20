@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 
 import java.io.IOException;
@@ -40,6 +41,11 @@ public class CASableSimpleFileValueStorage extends FileValueStorage
 
    private String digestAlgo;
 
+   public CASableSimpleFileValueStorage(FileCleaner cleaner)
+   {
+      super(cleaner);
+   }
+
    @Override
    public void init(Properties props, ValueDataResourceHolder resources) throws IOException,
       RepositoryConfigurationException
@@ -54,7 +60,15 @@ public class CASableSimpleFileValueStorage extends FileValueStorage
       {
          vcas = (ValueContentAddressStorage)Class.forName(vcasType).newInstance();
       }
-      catch (Exception e)
+      catch (ClassNotFoundException e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (InstantiationException e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (IllegalAccessException e)
       {
          throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
       }

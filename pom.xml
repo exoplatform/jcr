@@ -24,32 +24,42 @@
   <parent>
     <groupId>org.exoplatform</groupId>
     <artifactId>foundation-parent</artifactId>
-    <version>7</version>
+    <version>9</version>
   </parent>
+
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.14.0-Beta01-SNAPSHOT</version>
+  <version>1.14.8-GA-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
+
   <scm>
-    <connection>scm:svn:https://anonsvn.jboss.org/repos/exo-jcr/jcr/branches/1.14.x/</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/branches/1.14.x</developerConnection>
-    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/branches/1.14.x</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/trunk</developerConnection>
+    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/trunk</url>
   </scm>
+
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
-    <exo.product.specification>1.12</exo.product.specification>
-    <org.exoplatform.kernel.version>2.2.2-GA-SNAPSHOT</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>2.4.0-Beta01-SNAPSHOT</org.exoplatform.core.version>
-    <org.exoplatform.ws.version>2.2.0-Beta01-SNAPSHOT</org.exoplatform.ws.version>
-    <org.exoplatform.doc-style.version>1</org.exoplatform.doc-style.version>
+    <exo.product.specification>1.14</exo.product.specification>
+    <org.exoplatform.kernel.version>2.3.8-GA-SNAPSHOT</org.exoplatform.kernel.version>
+    <org.exoplatform.core.version>2.4.8-GA-SNAPSHOT</org.exoplatform.core.version>
+    <org.exoplatform.ws.version>2.2.8-GA-SNAPSHOT</org.exoplatform.ws.version>
+    <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
   </properties>
+
   <dependencyManagement>
     <dependencies>
       <dependency>
         <groupId>org.exoplatform.kernel</groupId>
         <artifactId>exo.kernel.commons</artifactId>
         <version>${org.exoplatform.kernel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.kernel</groupId>
+        <artifactId>exo.kernel.commons.test</artifactId>
+        <version>${org.exoplatform.kernel.version}</version>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.kernel</groupId>
@@ -70,6 +80,21 @@
         <groupId>org.exoplatform.kernel</groupId>
         <artifactId>exo.kernel.component.cache</artifactId>
         <version>${org.exoplatform.kernel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.kernel</groupId>
+        <artifactId>exo.kernel.component.ext.rpc.impl.jgroups.v3</artifactId>
+        <version>${org.exoplatform.kernel.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.kernel</groupId>
+        <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
+        <version>${org.exoplatform.kernel.version}</version>
+      </dependency>                 
+      <dependency>
+        <groupId>org.exoplatform.core</groupId>
+        <artifactId>exo.core.component.database</artifactId>
+        <version>${org.exoplatform.core.version}</version>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.core</groupId>
@@ -176,24 +201,24 @@
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
-        <artifactId>exo.jcr.connectors.localadapter</artifactId>
+        <artifactId>exo.jcr.connectors.jca</artifactId>
         <type>rar</type>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
-        <version>2.4</version>
+        <version>2.6</version>
       </dependency>
       <dependency>
         <groupId>commons-chain</groupId>
         <artifactId>commons-chain</artifactId>
-        <version>1.0</version>
+        <version>1.2</version>
       </dependency>
       <dependency>
         <groupId>org.jibx</groupId>
         <artifactId>jibx-run</artifactId>
-        <version>1.2.1</version>
+        <version>${version.jibx.plugin}</version>
       </dependency>
       <dependency>
         <groupId>picocontainer</groupId>
@@ -214,11 +239,7 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
         <version>1.5.8</version>
-      </dependency>      
-      <dependency>
-        <groupId>stax</groupId>
-        <artifactId>stax-api</artifactId>
-        <version>1.0.1</version>
+	<scope>test</scope>
       </dependency>
       <dependency>
         <groupId>javax.jcr</groupId>
@@ -243,7 +264,7 @@
       <dependency>
         <groupId>javax.transaction</groupId>
         <artifactId>jta</artifactId>
-        <version>1.0.1B</version>
+        <version>1.1</version>
       </dependency>
       <dependency>
         <groupId>javax.resource</groupId>
@@ -251,29 +272,29 @@
         <version>1.5</version>
       </dependency>
       <dependency>
-        <groupId>jtidy</groupId>
+        <groupId>net.sf.jtidy</groupId>
         <artifactId>jtidy</artifactId>
-        <version>4aug2000r7-dev</version>
+        <version>r938</version>
       </dependency>
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-core</artifactId>
-        <version>2.4.1</version>
+        <version>2.9.4</version>
       </dependency>
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-spellchecker</artifactId>
-        <version>2.4.1</version>
+        <version>2.9.4</version>
       </dependency>
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-memory</artifactId>
-        <version>2.4.1</version>
+        <version>2.9.4</version>
       </dependency>
       <dependency>
         <groupId>com.sun.xml.stream</groupId>
         <artifactId>sjsxp</artifactId>
-        <version>1.0</version>
+        <version>1.0.1</version>
       </dependency>
       <dependency>
         <groupId>commons-dbcp</groupId>
@@ -289,8 +310,23 @@
       <dependency>
         <groupId>commons-pool</groupId>
         <artifactId>commons-pool</artifactId>
-        <version>1.5.4</version>
+        <version>1.5.5</version>
       </dependency>
+      <dependency>
+        <groupId>commons-beanutils</groupId>
+        <artifactId>commons-beanutils</artifactId>
+        <version>1.8.3</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-logging</groupId>
+        <artifactId>commons-logging</artifactId>
+        <version>1.1.1</version>
+      </dependency>
+      <dependency>
+        <groupId>xpp3</groupId>
+        <artifactId>xpp3</artifactId>
+        <version>1.1.4c</version>
+      </dependency>         
       <dependency>
         <groupId>concurrent</groupId>
         <artifactId>concurrent</artifactId>
@@ -299,28 +335,8 @@
       <dependency>
         <groupId>commons-collections</groupId>
         <artifactId>commons-collections</artifactId>
-        <version>3.2</version>
+        <version>3.2.1</version>
       </dependency>
-      <dependency>
-        <groupId>commons-beanutils</groupId>
-        <artifactId>commons-beanutils</artifactId>
-        <version>1.8.0</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-logging</groupId>
-        <artifactId>commons-logging</artifactId>
-        <version>1.1</version>
-      </dependency>
-      <dependency>
-        <groupId>javax.xml.stream</groupId>
-        <artifactId>stax-api</artifactId>
-        <version>1.0</version>
-      </dependency>
-      <dependency>
-        <groupId>xpp3</groupId>
-        <artifactId>xpp3</artifactId>
-        <version>1.1.3.4.O</version>
-      </dependency>      
       <dependency>
         <groupId>org.apache.ws.commons</groupId>
         <artifactId>ws-commons-util</artifactId>
@@ -329,18 +345,13 @@
       <dependency>
         <groupId>org.apache.jackrabbit</groupId>
         <artifactId>jackrabbit-jcr-tests</artifactId>
-        <version>1.6.0</version>
+        <version>1.6.4</version>
         <classifier>sources</classifier>
       </dependency>
       <dependency>
-        <groupId>hsqldb</groupId>
+        <groupId>org.hsqldb</groupId>
         <artifactId>hsqldb</artifactId>
-        <version>1.8.0.7</version>
-      </dependency>
-      <dependency>
-        <groupId>jgroups</groupId>
-        <artifactId>jgroups</artifactId>
-        <version>2.6.13.GA</version>
+        <version>2.0.0</version>
       </dependency>
       <dependency>
         <groupId>commons-fileupload</groupId>
@@ -358,14 +369,15 @@
         <version>1.5</version>
       </dependency>
       <dependency>
-        <groupId>commons-io</groupId>
-        <artifactId>commons-io</artifactId>
-        <version>1.3</version>
-      </dependency>
-      <dependency>
         <groupId>org.jboss.cache</groupId>
         <artifactId>jbosscache-core</artifactId>
-        <version>3.2.3.CR1</version>
+        <version>3.2.7.GA</version>
+        <exclusions>
+          <exclusion>
+            <groupId>jgroups</groupId>
+            <artifactId>jgroups</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>jboss.jbossts</groupId>
@@ -376,6 +388,26 @@
         <groupId>jboss.jbossts</groupId>
         <artifactId>jbossts-common</artifactId>
         <version>4.6.1.GA</version>
+      </dependency>
+      <dependency>
+        <groupId>org.aspectj</groupId>
+        <artifactId>aspectjrt</artifactId>
+        <version>1.6.10</version>
+      </dependency>      
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-core</artifactId>
+        <version>5.1.2.FINAL</version>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-cachestore-jdbc</artifactId>
+        <version>5.1.2.FINAL</version>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>1.3.2</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -442,15 +474,52 @@
   </build>
   <modules>
     <module>exo.jcr.component.core</module>
+    <module>exo.jcr.component.core.impl.infinispan.v5</module>
+    <module>exo.jcr.component.statistics</module>
     <module>exo.jcr.component.ext</module>
     <module>exo.jcr.component.ftp</module>
     <module>exo.jcr.component.webdav</module>
-    <module>exo.jcr.connectors.localadapter</module>
+    <module>exo.jcr.connectors.jca</module>
     <module>exo.jcr.framework.command</module>
     <module>exo.jcr.framework.web</module>
     <module>exo.jcr.framework.ftpclient</module>
     <module>applications</module>
-    <module>docs</module>
+    <module>exo.jcr.docs</module>
     <module>packaging/module</module>
   </modules>
+  <profiles>
+    <profile>
+     <id>release</id>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <dependencies>
+              <dependency>
+              <groupId>org.apache.apache.resources</groupId>
+              <artifactId>apache-source-release-assembly-descriptor</artifactId>
+              <version>1.0.2</version>
+              </dependency>
+            </dependencies>
+            <executions>
+              <execution>
+              <id>source-release-assembly</id>
+              <phase>package</phase>
+              <goals>
+                <goal>single</goal>
+              </goals>
+              <configuration>
+                <runOnlyAtExecutionRoot>true</runOnlyAtExecutionRoot>
+                <descriptorRefs>
+                  <descriptorRef>source-release</descriptorRef>
+                </descriptorRefs>
+                <tarLongFileFormat>gnu</tarLongFileFormat>
+              </configuration>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 </project>

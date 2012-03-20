@@ -44,6 +44,11 @@ public class TestBackupRestart extends AbstractBackupTestCase
       // empty to be able work after the JVM restart
    }
 
+   protected ExtendedBackupManager getBackupManager()
+   {
+      return (ExtendedBackupManager) container.getComponentInstanceOfType(BackupManager.class);
+   }
+
    /**
     * 4. startTime, endTime + incrementalPeriod - run during a given period (with incremental backup)
     */

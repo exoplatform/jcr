@@ -113,6 +113,18 @@
          <supertype>nt:unstructured</supertype>
       </supertypes>
 
+      <propertyDefinitions>
+         <propertyDefinition name="*" requiredType="undefined" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false"
+
+            multiple="false">
+            <valueConstraints />
+         </propertyDefinition>
+         <propertyDefinition name="webdav:test-property" requiredType="String" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false"
+            multiple="true">
+            <valueConstraints />
+         </propertyDefinition>
+      </propertyDefinitions>
+
    </nodeType>
 
    <nodeType name="exo:testContentResource" isMixin="false" hasOrderableChildNodes="true" primaryItemName="">

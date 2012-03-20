@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+z * Copyright (C) 2009 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -18,39 +18,80 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.database.utils.ExceptionManagementHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
+import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.BackupException;
+import org.exoplatform.services.jcr.impl.backup.Backupable;
+import org.exoplatform.services.jcr.impl.backup.ComplexDataRestore;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
+import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
+import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
+import org.exoplatform.services.jcr.impl.core.query.Reindexable;
+import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
+import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.OracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.indexing.JdbcNodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.update.StorageUpdateManager;
+import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jdbc.DataSourceProvider;
+import org.exoplatform.services.jdbc.impl.ManagedDataSource;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.picocontainer.Startable;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.jcr.RepositoryException;
-import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
@@ -60,7 +101,8 @@ import javax.sql.DataSource;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id:GenericWorkspaceDataContainer.java 13433 2007-03-15 16:07:23Z peterit $
  */
-public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase implements Startable
+public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase implements Startable, Backupable,
+   Reindexable
 {
 
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCWorkspaceDataContainer");
@@ -68,8 +110,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * Indicates if the statistics has to be enabled.
     */
-   public static final boolean STATISTICS_ENABLED =
-      Boolean.valueOf(System.getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
+   public static final boolean STATISTICS_ENABLED = Boolean.valueOf(PrivilegedSystemHelper
+      .getProperty("JDBCWorkspaceDataContainer.statistics.enabled"));
+
    static
    {
       if (STATISTICS_ENABLED)
@@ -103,6 +146,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
    protected final String containerName;
 
+   protected final String uniqueName;
+
    protected final String dbSourceName;
 
    protected final boolean multiDb;
@@ -116,6 +161,10 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    protected final String dbUserName;
 
    protected final String dbPassword;
+   
+   protected final DataSourceProvider dsProvider;
+
+   protected final boolean isManaged;
 
    protected final ValueStoragePluginProvider valueStorageProvider;
 
@@ -136,6 +185,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * For default hints are enabled.
     */
    protected boolean useQueryHints;
+
+   /**
+    * Workspace configuration.
+    */
+   protected final WorkspaceEntry wsConfig;
 
    /**
     * Shared connection factory.
@@ -183,6 +237,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       /**
        * {@inheritDoc}
        */
+      @Override
       public Connection getJdbcConnection() throws RepositoryException
       {
          return connection;
@@ -195,28 +250,32 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * @param wsConfig
     *          Workspace configuration
     * @param valueStrorageProvider
-    *          External Value Stprages provider
+    *          External Value Storages provider
+    * @param dsProvider
+    *          The data source provider
     * @throws RepositoryConfigurationException
     *           if Repository configuration is wrong
     * @throws NamingException
     *           if JNDI exception (on DataSource lookup)
     */
    public JDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
-      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider)
-      throws RepositoryConfigurationException, NamingException, RepositoryException, IOException
+      InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
+      FileCleanerHolder fileCleanerHolder, DataSourceProvider dsProvider) throws RepositoryConfigurationException,
+      NamingException, RepositoryException, IOException
    {
-
       checkIntegrity(wsConfig, repConfig);
-
+      this.wsConfig = wsConfig;
       this.containerName = wsConfig.getName();
+      this.uniqueName = wsConfig.getUniqueName();
       this.multiDb = Boolean.parseBoolean(wsConfig.getContainer().getParameterValue(MULTIDB));
       this.valueStorageProvider = valueStorageProvider;
-
+      this.dsProvider = dsProvider;
+      
       // ------------- Database config ------------------
       String pDbDialect = null;
       try
       {
-         pDbDialect = validateDialect(wsConfig.getContainer().getParameterValue(DB_DIALECT));
+         pDbDialect = DBInitializerHelper.validateDialect(wsConfig.getContainer().getParameterValue(DB_DIALECT));
       }
       catch (RepositoryConfigurationException e)
       {
@@ -255,9 +314,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          this.dbUserName = pDbUserName;
          this.dbPassword = pDbPassword;
          this.dbSourceName = null;
+         // A managed data source is only possible when the source name is not null
+         this.isManaged = false;
          LOG.info("Connect to JCR database as user '" + this.dbUserName + "'");
 
-         if (pDbDialect == DBConstants.DB_DIALECT_GENERIC || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(pDbDialect))
+         if (DBConstants.DB_DIALECT_GENERIC.equalsIgnoreCase(pDbDialect)
+            || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(pDbDialect))
          {
             // try to detect via JDBC metadata
             Connection jdbcConn = null;
@@ -307,45 +369,52 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
          catch (RepositoryConfigurationException e)
          {
-            sn = wsConfig.getContainer().getParameterValue("sourceName"); // TODO for backward comp,
-            // remove in rel.2.0
+            // for backward comp remove in rel.2.0
+            sn = wsConfig.getContainer().getParameterValue("sourceName");
          }
          this.dbSourceName = sn;
+         if (dsProvider == null)
+         {
+            throw new IllegalArgumentException(
+               "Since a data source has been defined, the DataSourceProvider cannot be null, add it in your configuration.");
+         }
+         // the data source cannot be managed if there is no transaction manager
+         this.isManaged = dsProvider.isManaged(dbSourceName);
 
          if (pDbDialect == DBConstants.DB_DIALECT_GENERIC)
          {
             // try to detect via JDBC metadata
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
+            final DataSource ds = getDataSource();
+            Connection jdbcConn = null;
+            try
             {
-               Connection jdbcConn = null;
-               try
+               jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
                {
-                  jdbcConn = ds.getConnection();
-                  this.dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
-               }
-               catch (SQLException e)
-               {
-                  throw new RepositoryException(e);
-               }
-               finally
-               {
-                  if (jdbcConn != null)
+                  public Connection run() throws Exception
                   {
-                     try
-                     {
-                        jdbcConn.close();
-                     }
-                     catch (SQLException e)
-                     {
-                        throw new RepositoryException(e);
-                     }
+                     return ds.getConnection();
+                  }
+               });
+
+               this.dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
+            }
+            catch (SQLException e)
+            {
+               throw new RepositoryException(e);
+            }
+            finally
+            {
+               if (jdbcConn != null)
+               {
+                  try
+                  {
+                     jdbcConn.close();
+                  }
+                  catch (SQLException e)
+                  {
+                     throw new RepositoryException(e);
                   }
                }
-            }
-            else
-            {
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
             }
          }
          else
@@ -364,7 +433,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
       catch (RepositoryConfigurationException e)
       {
-         this.checkSNSNewConnection = true;
+         // don't use new connection by default
+         this.checkSNSNewConnection = false;
       }
 
       // ------------- Values swap config ------------------
@@ -386,26 +456,17 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          this.swapDirectory = new File(DEF_SWAPDIR);
       }
-      if (!swapDirectory.exists())
-         swapDirectory.mkdirs();
+      if (!PrivilegedFileHelper.exists(swapDirectory))
+      {
+         PrivilegedFileHelper.mkdirs(swapDirectory);
+      }
 
-      this.swapCleaner = new FileCleaner(false);
+      this.swapCleaner = fileCleanerHolder.getFileCleaner();
 
       initDatabase();
 
-      String suParam = null;
+      // enableStorageUpdate left unchanged since it is never used in StorageUpdateManager.checkVersion
       boolean enableStorageUpdate = false;
-      try
-      {
-         suParam = wsConfig.getContainer().getParameterValue("update-storage");
-         enableStorageUpdate = Boolean.parseBoolean(suParam);
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         if (LOG.isDebugEnabled())
-            LOG.debug("update-storage parameter is not set " + dbSourceName);
-      }
-
       this.storageVersion =
          StorageUpdateManager.checkVersion(dbSourceName, this.connFactory.getJdbcConnection(), multiDb,
             enableStorageUpdate);
@@ -414,7 +475,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    }
 
    /**
-    * Prepare sefault connection factory.
+    * Prepare default connection factory.
     * 
     * @return GenericConnectionFactory
     * @throws NamingException
@@ -427,12 +488,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       // by default
       if (dbSourceName != null)
       {
-         DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-         if (ds != null)
-            return new GenericConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-               swapDirectory, swapCleaner);
-
-         throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+         return new GenericConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider,
+            maxBufferSize, swapDirectory, swapCleaner);
       }
 
       return new GenericConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
@@ -477,11 +534,13 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          if (wsEntry.getName().equals(wsConfig.getName())
             || !wsEntry.getContainer().getType().equals(wsConfig.getContainer().getType())
             || !wsEntry.getContainer().getType().equals(this.getClass().getName()))
+         {
             continue;
+         }
 
          // MULTIDB
-         if (!wsEntry.getContainer().getParameterValue(MULTIDB).equals(
-            wsConfig.getContainer().getParameterValue(MULTIDB)))
+         if (!wsEntry.getContainer().getParameterValue(MULTIDB)
+            .equals(wsConfig.getContainer().getParameterValue(MULTIDB)))
          {
             throw new RepositoryConfigurationException("All workspaces must be " + MULTIDB + " or " + SINGLEDB
                + ". But " + wsEntry.getName() + "- multi-db=" + wsEntry.getContainer().getParameterValue(MULTIDB)
@@ -573,147 +632,118 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    protected void initDatabase() throws NamingException, RepositoryException, IOException
    {
 
-      StorageDBInitializer dbInitilizer = null;
-      String sqlPath = null;
+      StorageDBInitializer dbInitializer = null;
+      String sqlPath = DBInitializerHelper.scriptPath(dbDialect, multiDb);
       if (dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
       {
          LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
          // sample of connection factory customization
          if (dbSourceName != null)
+         {
             this.connFactory = defaultConnectionFactory();
+         }
          else
+         {
             this.connFactory =
                new OracleConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
-
+         }
          // a particular db initializer may be configured here too
-         dbInitilizer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_ORACLE)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ora.sql";
-         dbInitilizer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer = new OracleDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_PGSQL)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.pgsql.sql";
-         dbInitilizer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
+         dbInitializer = new PgSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL)
+      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL || dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8
+         || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
       {
-         // [PN] 28.06.07
+         if (dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM || dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+         {
+            LOG.warn("MyISAM is not supported due to its lack of transaction support and integrity check, so use it only"
+               + " if you don't expect any support and performances in read accesses are more important than the consistency"
+               + " in your use-case. This dialect is only dedicated to the community.");
+         }
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new MySQLConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new MySQLConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider, maxBufferSize,
+                  swapDirectory, swapCleaner);
          }
          else
+         {
             this.connFactory =
                new MySQLConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
-      }
-      else if (dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8)
-      {
-         // [PN] 13.07.08
-         if (dbSourceName != null)
-         {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new MySQLConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
          }
-         else
-            this.connFactory =
-               new MySQLConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
-                  valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
 
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mysql-utf8.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_MSSQL)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mssql.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DERBY)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.derby.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2V8)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.db2v8.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_SYBASE)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sybase.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_INGRES)
       {
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.ingres.sql";
          // using Postgres initializer
-         dbInitilizer =
+         dbInitializer =
             new IngresSQLDBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_HSQLDB)
       {
          if (dbSourceName != null)
          {
-            DataSource ds = (DataSource)new InitialContext().lookup(dbSourceName);
-            if (ds != null)
-               this.connFactory =
-                  new HSQLDBConnectionFactory(ds, containerName, multiDb, valueStorageProvider, maxBufferSize,
-                     swapDirectory, swapCleaner);
-            else
-               throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.");
+            this.connFactory =
+               new HSQLDBConnectionFactory(getDataSource(), containerName, multiDb, valueStorageProvider,
+                  maxBufferSize, swapDirectory, swapCleaner);
          }
          else
+         {
             this.connFactory =
                new HSQLDBConnectionFactory(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb,
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         }
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
       else
       {
          // generic, DB_HSQLDB
          this.connFactory = defaultConnectionFactory();
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.sql";
-         dbInitilizer = defaultDBInitializer(sqlPath);
+         dbInitializer = defaultDBInitializer(sqlPath);
       }
 
       // database type
       try
       {
-         dbInitilizer.init();
+         dbInitializer.init();
       }
       catch (DBInitializerException e)
       {
@@ -729,19 +759,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    protected GenericConnectionFactory getConnectionFactory()
    {
       return connFactory;
-   }
-
-   protected String validateDialect(String confParam)
-   {
-      for (String dbType : DBConstants.DB_DIALECTS)
-      {
-         if (dbType.equalsIgnoreCase(confParam))
-         {
-            return dbType;
-         }
-      }
-
-      return DBConstants.DB_DIALECT_GENERIC; // by default
    }
 
    /**
@@ -786,12 +803,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             new SharedConnectionFactory(((JDBCStorageConnection)original).getJdbcConnection(), containerName, multiDb,
                valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
 
-         return STATISTICS_ENABLED ? new StatisticsJDBCStorageConnection(cFactory.openConnection()) : cFactory
-            .openConnection();
+         return STATISTICS_ENABLED ? new StatisticsJDBCStorageConnection(cFactory.openConnection(false)) : cFactory
+            .openConnection(false);
       }
       else
       {
-         return openConnection();
+         return openConnection(false);
       }
    }
 
@@ -806,14 +823,22 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
+   public String getUniqueName()
+   {
+      return uniqueName;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public String getInfo()
    {
       String str =
          "JDBC based JCR Workspace Data container \n" + "container name: " + containerName + " \n"
-            + "data source JNDI name: " + dbSourceName + "\n" + "is multi database: " + multiDb + "\n"
-            + "storage version: " + storageVersion + "\n" + "value storage provider: " + valueStorageProvider + "\n"
-            + "max buffer size (bytes): " + maxBufferSize + "\n" + "swap directory path: "
-            + swapDirectory.getAbsolutePath();
+            + (isManaged ? "managed " : "") + "data source JNDI name: " + dbSourceName + "\n" + "is multi database: "
+            + multiDb + "\n" + "storage version: " + storageVersion + "\n" + "value storage provider: "
+            + valueStorageProvider + "\n" + "max buffer size (bytes): " + maxBufferSize + "\n"
+            + "swap directory path: " + PrivilegedFileHelper.getAbsolutePath(swapDirectory);
       return str;
    }
 
@@ -830,7 +855,81 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public void start()
    {
-      this.swapCleaner.start();
+      // if isolation level lesser then TRANSACTION_READ_COMMITTED, print a warning
+      Connection con = null;
+      try
+      {
+         con = getConnectionFactory().getJdbcConnection();
+         if (con.getTransactionIsolation() < Connection.TRANSACTION_READ_COMMITTED)
+         {
+            LOG.warn("Wrong default isolation level, please set the default isolation level "
+               + "to READ_COMMITTED or higher. Other default isolation levels are not supported");
+         }
+      }
+      catch (SQLException e)
+      {
+         LOG.error("Error checking isolation level configuration.", e);
+      }
+      catch (RepositoryException e)
+      {
+         LOG.error("Error checking isolation level configuration.", e);
+      }
+      finally
+      {
+         if (con != null)
+         {
+            try
+            {
+               con.close();
+            }
+            catch (SQLException e)
+            {
+               // ignore me
+            }
+         }
+      }
+      
+      // Remove lock properties from DB. It is an issue of migration locks from 1.12.x to 1.14.x in case when we use
+      // shareable cache. The lock tables will be new but still remaining lock properties in JCR tables.
+      boolean deleteLocks =
+         "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
+            "false"));
+
+      try
+      {
+         if (deleteLocks)
+         {
+            boolean failed = true;
+            WorkspaceStorageConnection wsc = openConnection(false);
+            if (wsc instanceof StatisticsJDBCStorageConnection)
+            {
+               wsc = ((StatisticsJDBCStorageConnection)wsc).getNestedWorkspaceStorageConnection();
+            }
+            JDBCStorageConnection conn = (JDBCStorageConnection)wsc;
+            try
+            {
+               conn.deleteLockProperties();
+               conn.commit();
+               failed = false;
+            }
+            finally
+            {
+               if (failed)
+               {
+                  conn.rollback();
+               }
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         LOG.error(
+            "Can't remove lock properties because of " + ExceptionManagementHelper.getFullSQLExceptionMessage(e), e);
+      }
+      catch (RepositoryException e)
+      {
+         LOG.error("Can't remove lock properties because of " + e.getMessage(), e);
+      }
    }
 
    /**
@@ -838,29 +937,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public void stop()
    {
-      this.swapCleaner.halt();
-      this.swapCleaner.interrupt();
-
-      // TODO HSQLDB Stop (debug)
-      // if (dbDialect.equals(DB_DIALECT_GENERIC) ||
-      // dbDialect.equals(DB_DIALECT_HSQLDB)) {
-      // // shutdown in-process HSQLDB database
-      // System.out.println("Shutdown in-process HSQLDB database...");
-      // try {
-      // JDBCStorageConnection conn = (JDBCStorageConnection) openConnection();
-      // Connection jdbcConn = conn.getJdbcConnection();
-      // String dbUrl = jdbcConn.getMetaData().getURL();
-      // if (dbUrl.startsWith("jdbc:hsqldb:file") ||
-      // dbUrl.startsWith("jdbc:hsqldb:mem")) {
-      // // yeah, there is in-process hsqldb, shutdown it now
-      // jdbcConn.createStatement().execute("SHUTDOWN");
-      // System.out.println("Shutdown in-process HSQLDB database... done.");
-      // }
-      // } catch (Throwable e) {
-      // log.error("JDBC Data container stop error " + e);
-      // e.printStackTrace();
-      // }
-      // }
    }
 
    /**
@@ -869,15 +945,19 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    public boolean isSame(WorkspaceDataContainer another)
    {
       if (another == this)
+      {
          return true;
+      }
 
       if (another instanceof JDBCWorkspaceDataContainer)
       {
          JDBCWorkspaceDataContainer anotherJdbc = (JDBCWorkspaceDataContainer)another;
 
          if (getDbSourceName() != null)
+         {
             // by jndi ds name
             return getDbSourceName().equals(anotherJdbc.getDbSourceName());
+         }
 
          // by db connection params
          return getDbDriver().equals(anotherJdbc.getDbDriver()) && getDbUrl().equals(anotherJdbc.getDbUrl())
@@ -935,4 +1015,411 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       return checkSNSNewConnection;
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void clean() throws BackupException
+   {
+      try
+      {
+         DBCleanService.cleanWorkspaceData(wsConfig);
+
+         if (wsConfig.getContainer().getValueStorages() != null)
+         {
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+            {
+               public Void run() throws IOException, RepositoryConfigurationException
+               {
+                  for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
+                  {
+                     File valueStorageDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+                     if (valueStorageDir.exists())
+                     {
+                        DirectoryHelper.removeDirectory(valueStorageDir);
+                     }
+                  }
+
+                  return null;
+               }
+            });
+         }
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (NamingException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (SQLException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (PrivilegedActionException e)
+      {
+         throw new BackupException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void backup(final File storageDir) throws BackupException
+   {
+      ObjectWriter backupInfo = null;
+
+      try
+      {
+         backupInfo =
+            new ObjectWriterImpl(PrivilegedFileHelper.fileOutputStream(new File(storageDir,
+               "JDBCWorkspaceDataContainer.info")));
+
+         backupInfo.writeString(containerName);
+         backupInfo.writeBoolean(multiDb);
+
+         Map<String, String> scripts = new HashMap<String, String>();
+
+         if (multiDb)
+         {
+            scripts.put("JCR_MITEM", "select * from JCR_MITEM where JCR_MITEM.NAME <> '" + Constants.ROOT_PARENT_NAME
+               + "'");
+            scripts.put("JCR_MVALUE", "select * from JCR_MVALUE");
+            scripts.put("JCR_MREF", "select * from JCR_MREF");
+         }
+         else
+         {
+            scripts.put("JCR_SITEM", "select * from JCR_SITEM where CONTAINER_NAME='" + containerName + "'");
+            scripts.put("JCR_SVALUE",
+               "select V.* from JCR_SVALUE V, JCR_SITEM I where I.ID=V.PROPERTY_ID and I.CONTAINER_NAME='"
+                  + containerName + "'");
+            scripts.put("JCR_SREF",
+               "select R.* from JCR_SREF R, JCR_SITEM I where I.ID=R.PROPERTY_ID and I.CONTAINER_NAME='"
+                  + containerName + "'");
+         }
+
+         // using existing DataSource to get a JDBC Connection.
+         Connection jdbcConn = connFactory.getJdbcConnection();
+
+         DBBackup.backup(storageDir, jdbcConn, scripts);
+
+         // backup value storage
+         if (wsConfig.getContainer().getValueStorages() != null)
+         {
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+            {
+               public Void run() throws IOException, RepositoryConfigurationException
+               {
+                  for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
+                  {
+                     File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+                     if (!srcDir.exists())
+                     {
+                        throw new IOException("Can't backup value storage. Directory " + srcDir.getName()
+                           + " doesn't exists");
+                     }
+                     else
+                     {
+                        File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
+                        DirectoryHelper.compressDirectory(srcDir, zipFile);
+                     }
+                  }
+
+                  return null;
+               }
+            });
+         }
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (RepositoryException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (PrivilegedActionException e)
+      {
+         throw new BackupException(e);
+      }
+      finally
+      {
+         if (backupInfo != null)
+         {
+            try
+            {
+               backupInfo.close();
+            }
+            catch (IOException e)
+            {
+               throw new BackupException(e);
+            }
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public DataRestore getDataRestorer(DataRestoreContext context) throws BackupException
+   {
+
+      List<DataRestore> restorers = new ArrayList<DataRestore>();
+
+      ObjectReader backupInfo = null;
+      try
+      {
+         File storageDir = (File)context.getObject(DataRestoreContext.STORAGE_DIR);
+         Connection jdbcConn = null;
+
+         if (context.getObject(DataRestoreContext.DB_CONNECTION) == null)
+         {
+            try
+            {
+               jdbcConn = connFactory.getJdbcConnection();
+               jdbcConn.setAutoCommit(false);
+            }
+            catch (SQLException e)
+            {
+               throw new BackupException(e);
+            }
+            catch (RepositoryException e)
+            {
+               throw new BackupException(e);
+            }
+
+         }
+         else
+         {
+            jdbcConn = (Connection)context.getObject(DataRestoreContext.DB_CONNECTION);
+         }
+
+         backupInfo =
+            new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(storageDir,
+               "JDBCWorkspaceDataContainer.info")));
+
+         String srcContainerName = backupInfo.readString();
+         boolean srcMultiDb = backupInfo.readBoolean();
+
+         Map<String, RestoreTableRule> tables = new LinkedHashMap<String, RestoreTableRule>();
+
+         // ITEM table
+         String dstTableName = "JCR_" + (multiDb ? "M" : "S") + "ITEM";
+         String srcTableName = "JCR_" + (srcMultiDb ? "M" : "S") + "ITEM";
+
+         RestoreTableRule restoreTableRule = new RestoreTableRule();
+         restoreTableRule.setSrcContainerName(srcContainerName);
+         restoreTableRule.setSrcMultiDb(srcMultiDb);
+         restoreTableRule.setDstContainerName(containerName);
+         restoreTableRule.setDstMultiDb(multiDb);
+         restoreTableRule.setSrcTableName(srcTableName);
+
+         if (multiDb)
+         {
+            if (!srcMultiDb)
+            {
+               // CONTAINER_NAME column index
+               restoreTableRule.setDeleteColumnIndex(4);
+
+               // ID and PARENT_ID column indexes
+               Set<Integer> convertColumnIndex = new HashSet<Integer>();
+               convertColumnIndex.add(0);
+               convertColumnIndex.add(1);
+               restoreTableRule.setConvertColumnIndex(convertColumnIndex);
+            }
+         }
+         else
+         {
+            if (srcMultiDb)
+            {
+               // CONTAINER_NAME column index
+               restoreTableRule.setNewColumnIndex(4);
+               restoreTableRule.setNewColumnName("CONTAINER_NAME");
+               restoreTableRule.setNewColumnType(Types.VARCHAR);
+
+               // ID and PARENT_ID column indexes
+               Set<Integer> convertColumnIndex = new HashSet<Integer>();
+               convertColumnIndex.add(0);
+               convertColumnIndex.add(1);
+               restoreTableRule.setConvertColumnIndex(convertColumnIndex);
+            }
+            else
+            {
+               // ID and PARENT_ID and CONTAINER_NAME column indexes
+               Set<Integer> convertColumnIndex = new HashSet<Integer>();
+               convertColumnIndex.add(0);
+               convertColumnIndex.add(1);
+               convertColumnIndex.add(4);
+               restoreTableRule.setConvertColumnIndex(convertColumnIndex);
+            }
+         }
+         tables.put(dstTableName, restoreTableRule);
+
+         // VALUE table
+         dstTableName = "JCR_" + (multiDb ? "M" : "S") + "VALUE";
+         srcTableName = "JCR_" + (srcMultiDb ? "M" : "S") + "VALUE";
+
+         restoreTableRule = new RestoreTableRule();
+         restoreTableRule.setSrcContainerName(srcContainerName);
+         restoreTableRule.setSrcMultiDb(srcMultiDb);
+         restoreTableRule.setDstContainerName(containerName);
+         restoreTableRule.setDstMultiDb(multiDb);
+         restoreTableRule.setSrcTableName(srcTableName);
+
+         // auto increment ID column
+         restoreTableRule.setSkipColumnIndex(0);
+
+         if (!multiDb || !srcMultiDb)
+         {
+            // PROPERTY_ID column index
+            Set<Integer> convertColumnIndex = new HashSet<Integer>();
+            convertColumnIndex.add(3);
+            restoreTableRule.setConvertColumnIndex(convertColumnIndex);
+         }
+         tables.put(dstTableName, restoreTableRule);
+
+         // REF tables
+         dstTableName = "JCR_" + (multiDb ? "M" : "S") + "REF";
+         srcTableName = "JCR_" + (srcMultiDb ? "M" : "S") + "REF";
+
+         restoreTableRule = new RestoreTableRule();
+         restoreTableRule.setSrcContainerName(srcContainerName);
+         restoreTableRule.setSrcMultiDb(srcMultiDb);
+         restoreTableRule.setDstContainerName(containerName);
+         restoreTableRule.setDstMultiDb(multiDb);
+         restoreTableRule.setSrcTableName(srcTableName);
+
+         if (!multiDb || !srcMultiDb)
+         {
+            // NODE_ID and PROPERTY_ID column indexes
+            Set<Integer> convertColumnIndex = new HashSet<Integer>();
+            convertColumnIndex.add(0);
+            convertColumnIndex.add(1);
+            restoreTableRule.setConvertColumnIndex(convertColumnIndex);
+         }
+         tables.put(dstTableName, restoreTableRule);
+
+         DBCleaner dbCleaner = null;
+         if (context.getObject(DataRestoreContext.DB_CLEANER) != null)
+         {
+            dbCleaner = (DBCleaner)context.getObject(DataRestoreContext.DB_CLEANER);
+         }
+         else
+         {
+            dbCleaner = DBCleanService.getWorkspaceDBCleaner(jdbcConn, wsConfig);
+         }
+
+         restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, swapCleaner, dbCleaner));
+
+         // prepare value storage restorer
+         if (wsConfig.getContainer().getValueStorages() != null)
+         {
+            List<File> dataDirs = new ArrayList<File>();
+            List<File> backupDirs = new ArrayList<File>();
+
+            List<ValueStorageEntry> valueStorages = wsConfig.getContainer().getValueStorages();
+            for (ValueStorageEntry valueStorage : valueStorages)
+            {
+               File dataDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+               dataDirs.add(dataDir);
+
+               File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
+               if (PrivilegedFileHelper.exists(zipFile))
+               {
+                  backupDirs.add(zipFile);
+               }
+               else
+               {
+                  // try to check if we have deal with old backup format
+                  zipFile = new File(storageDir, "values/" + valueStorage.getId());
+                  if (PrivilegedFileHelper.exists(zipFile))
+                  {
+                     backupDirs.add(zipFile);
+                  }
+                  else
+                  {
+                     throw new RepositoryConfigurationException("There is no backup data for value storage with id "
+                        + valueStorage.getId());
+                  }
+               }
+            }
+
+            restorers.add(new DirectoryRestore(dataDirs, backupDirs));
+         }
+
+         return new ComplexDataRestore(restorers);
+      }
+      catch (FileNotFoundException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (NamingException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (SQLException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupException(e);
+      }
+      finally
+      {
+         if (backupInfo != null)
+         {
+            try
+            {
+               backupInfo.close();
+            }
+            catch (IOException e)
+            {
+               LOG.error("Can't close object reader", e);
+            }
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize) throws RepositoryException
+   {
+      if (isReindexingSupport())
+      {
+         return new JdbcNodeDataIndexingIterator(connFactory, pageSize);
+      }
+      throw new UnsupportedOperationException(
+         "The method getNodeDataIndexingIterator is not supported for this type of connection "
+            + "use the complex queries instead");
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isReindexingSupport()
+   {
+      return connFactory.isReindexingSupport();
+   }
+   
+   /**
+    * Get the data source from the InitialContext and wraps it into a {@link ManagedDataSource}
+    * in case it has been configured as managed
+    */
+   protected DataSource getDataSource() throws RepositoryException
+   {
+      try
+      {
+         return dsProvider.getDataSource(dbSourceName);
+      }
+      catch (NamingException e)
+      {
+         throw new RepositoryException("Datasource '" + dbSourceName + "' is not bound in this context.", e);
+      }
+   }
 }

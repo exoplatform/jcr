@@ -47,6 +47,25 @@ public class StringNumberParser
    }
 
    /**
+    * Serialize given long as text. <br/>
+    * 
+    * <br/>E.g. 2048 long will be returned as "2kb".
+    * 
+    * <br/>Next formats are supported (case insensitive): <br/>kilobytes - k,kb <br/>megabytes - m,mb
+    * <br/>gigabytes - g,gb <br/>terabytes - t,tb
+    * 
+    * @param longValue
+    *        - long
+    * @return String
+    *        long representation as text 
+    * @throws NumberFormatException
+    */
+   static public String serializeLong(final long longValue) throws NumberFormatException
+   {
+      return serializeNumber(longValue);
+   }
+
+   /**
     * Parse given text as int. <br/>
     * 
     * <br/>E.g. '2k' will be returned as 2048 number.
@@ -61,6 +80,25 @@ public class StringNumberParser
    static public int parseInt(final String integerText) throws NumberFormatException
    {
       return parseNumber(integerText).intValue();
+   }
+
+   /**
+    * Serialize given int as text. <br/>
+    * 
+    * <br/>E.g. 2048 nubber will be returned as "2kb".
+    * 
+    * <br/>Next formats are supported (case insensitive): <br/>kilobytes - k,kb <br/>megabytes - m,mb
+    * <br/>gigabytes - g,gb <br/>terabytes - t,tb
+    * 
+    * @param integerValue
+    *        - int
+    * @return String
+    *        integer representation as text 
+    * @throws NumberFormatException
+    */
+   static public String serializeInt(final int integerValue) throws NumberFormatException
+   {
+      return serializeNumber(integerValue);
    }
 
    /**
@@ -143,11 +181,48 @@ public class StringNumberParser
    }
 
    /**
+    * Serialize given number to text as number representation. <br/>
+    * 
+    * <br/>E.g. 2048 number will be returned as 2kb.
+    * 
+    * <br/>Next formats are supported: <br/>kilobytes - k,kb <br/>megabytes - m,mb
+    * <br/>gigabytes - g,gb <br/>terabytes - t,tb
+    * 
+    * @param number
+    *         - long
+    * @return String
+    *         - number representation
+    * @throws NumberFormatException
+    */
+   static public String serializeNumber(final long number) throws NumberFormatException
+   {
+      if ((number >= 1099511627776l) && (number % 1099511627776l) == 0)
+      {
+         return String.valueOf(number / 1099511627776l) + "TB";
+      }
+      else if ((number >= 1073741824l) && (number % 1073741824l) == 0)
+      {
+         return String.valueOf(number / 1073741824l) + "GB";
+      }
+      else if ((number >= 1048576l) && (number % 1048576l) == 0)
+      {
+         return String.valueOf(number / 1048576l) + "MB";
+      }
+      
+      else if ((number >= 1024l) && (number % 1024l) == 0)
+      {
+         return String.valueOf(number / 1024l) + "KB";
+      }
+      else
+      {
+         return String.valueOf(number);
+      }
+   }
+
+   /**
     * Parse given text as formated time and return a time in milliseconds. <br/> <br/>Formats
     * supported: <br/>milliseconds - ms <br/>seconds - without sufix <br/>minutes - m <br/>hours - h
     * <br/>days - d <br/>weeks - w
-    * 
-    * <br/>TODO handle strings like 2d+4h, 2h+30m+15s+500 etc.
     * 
     * @param timeText
     *          - String
@@ -185,5 +260,41 @@ public class StringNumberParser
       { // seconds by default
          return Long.valueOf(text) * 1000;
       }
+   }
+
+   /**
+    * Serialize given time in milliseconds and return a time as formated time in ms, s, h,d,w.
+    * Formats : ms - milliseconds, s - seconds, h hours, w - weeks. 
+    * 
+    * @param millisecondTime
+    *          - time in milliseconds
+    * @return String
+    *          - time as formated time in milliseconds
+    * @throws NumberFormatException
+    */
+   static public String serializeTime(final long millisecondTime) throws NumberFormatException
+   {
+      if (millisecondTime >= 604800000 && (millisecondTime % 604800000) == 0)
+      {
+         return String.valueOf(millisecondTime / 604800000) + "w";
+      }
+      else if (millisecondTime >= 86400000 && (millisecondTime % 86400000) == 0)
+      {
+         return String.valueOf(millisecondTime / 86400000) + "d";
+      }
+      else if (millisecondTime >= 3600000 && (millisecondTime % 3600000) == 0)
+      {
+         return String.valueOf(millisecondTime / 3600000) + "h";
+      }
+      else if (millisecondTime >= 60000 && (millisecondTime % 60000) == 0)
+      {
+         return String.valueOf(millisecondTime / 60000) + "m";
+      }
+      else if (millisecondTime >= 1000 && (millisecondTime % 1000) == 0)
+      {
+         return String.valueOf(millisecondTime / 1000) + "s";
+      }
+
+      return String.valueOf(millisecondTime) + "ms";
    }
 }

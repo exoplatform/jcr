@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
+import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
+import org.exoplatform.services.jcr.webdav.util.TextUtil;
+
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
@@ -29,10 +33,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.lock.LockException;
 import javax.ws.rs.core.Response;
-
-import org.exoplatform.common.http.HTTPStatus;
-import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
-import org.exoplatform.services.jcr.webdav.util.TextUtil;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * Created by The eXo Platform SAS Author : <a
@@ -50,6 +51,12 @@ public class PutCommand
    private final NullResourceLocksHolder nullResourceLocks;
 
    /**
+    * Provides URI information needed for 'location' header in 'CREATED'
+    * response
+    */
+   private final UriBuilder uriBuilder;
+
+   /**
     * Constructor.
     * 
     * @param nullResourceLocks resource locks.
@@ -57,6 +64,19 @@ public class PutCommand
    public PutCommand(final NullResourceLocksHolder nullResourceLocks)
    {
       this.nullResourceLocks = nullResourceLocks;
+      this.uriBuilder = null;
+   }
+
+   /**
+    * Constructor.
+    * 
+    * @param nullResourceLocks resource locks.
+    * @param uriBuilder - provide data used in 'location' header
+    */
+   public PutCommand(final NullResourceLocksHolder nullResourceLocks, UriBuilder uriBuilder)
+   {
+      this.nullResourceLocks = nullResourceLocks;
+      this.uriBuilder = uriBuilder;
    }
 
    /**
@@ -86,6 +106,7 @@ public class PutCommand
          {
             node = (Node)session.getItem(path);
          }
+
          catch (PathNotFoundException pexc)
          {
             nullResourceLocks.checkLock(session, path, tokens);
@@ -151,7 +172,12 @@ public class PutCommand
       {
          return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
       }
+      if (uriBuilder != null)
+      {
+         return Response.created(uriBuilder.path(session.getWorkspace().getName()).path(path).build()).build();
+      }
 
+      // to save compatibility if uriBuilder is not provided
       return Response.status(HTTPStatus.CREATED).build();
    }
 
@@ -194,7 +220,7 @@ public class PutCommand
     * Updates jcr:content node.
     * 
     * @param node parent node
-    * @param inputStream inputStream input stream that contains the content of
+    * @param inputStream inputStream input stream that contains the content of 
     *          file
     * @param mimeType content type
     * @param mixins list of mixins

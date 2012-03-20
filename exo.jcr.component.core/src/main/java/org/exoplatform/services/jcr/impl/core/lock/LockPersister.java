@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.core.lock;
 
 import org.picocontainer.Startable;
 
-import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
 
 /**
@@ -35,7 +34,7 @@ public interface LockPersister extends Startable
     * Add lock information to the persistent storage
     * 
     * @param lock
-    * @throws RepositoryException
+    * @throws LockException
     */
    void add(LockData lock) throws LockException;
 
@@ -43,14 +42,14 @@ public interface LockPersister extends Startable
     * Remove lock from persistent storage
     * 
     * @param lock
-    * @throws RepositoryException
+    * @throws LockException
     */
    void remove(LockData lock) throws LockException;
 
    /**
     * Remove all locks from persistent storage
     * 
-    * @throws RepositoryException
+    * @throws LockException
     */
    void removeAll() throws LockException;
 

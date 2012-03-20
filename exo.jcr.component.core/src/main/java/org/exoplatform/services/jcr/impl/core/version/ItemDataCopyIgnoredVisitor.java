@@ -46,17 +46,18 @@ import javax.jcr.version.OnParentVersionAction;
 public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ItemDataCopyIgnoredVisitor");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ItemDataCopyIgnoredVisitor");
 
    protected final SessionChangesLog restoredChanges;
 
    public ItemDataCopyIgnoredVisitor(NodeData context, InternalQName destNodeName, NodeTypeDataManager nodeTypeManager,
       SessionDataManager dataManager, SessionChangesLog changes)
    {
-      super(context, destNodeName, nodeTypeManager, dataManager, true);
+      super(context, destNodeName, nodeTypeManager, dataManager, dataManager, true);
       this.restoredChanges = changes;
    }
 
+   @Override
    protected void entering(PropertyData property, int level) throws RepositoryException
    {
 
@@ -87,8 +88,8 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
             {
                // the node can be stored as IGNOREd in restore set, check an action
 
-               if (log.isDebugEnabled())
-                  log.debug("A property " + property.getQPath().getAsString() + " is IGNOREd");
+               if (LOG.isDebugEnabled())
+                  LOG.debug("A property " + property.getQPath().getAsString() + " is IGNOREd");
 
                // set context current parent to existed in restore set
                parents.push((NodeData)contextState.getData());
@@ -100,14 +101,15 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
       else
       {
          // copy as IGNOREd parent child, i.e. OnParentVersionAction is any
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("A property " + property.getQPath().getAsString() + " is IGNOREd node descendant");
+            LOG.debug("A property " + property.getQPath().getAsString() + " is IGNOREd node descendant");
          }
          super.entering(property, level);
       }
    }
 
+   @Override
    protected void entering(NodeData node, int level) throws RepositoryException
    {
 
@@ -122,8 +124,8 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
          {
             NodeData existedParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
             NodeDefinitionData ndef =
-               ntManager.getChildNodeDefinition(node.getQPath().getName(), existedParent.getPrimaryTypeName(),
-                  existedParent.getMixinTypeNames());
+               ntManager.getChildNodeDefinition(node.getQPath().getName(), node.getPrimaryTypeName(),
+                  existedParent.getPrimaryTypeName(), existedParent.getMixinTypeNames());
 
             // the node can be stored as IGNOREd in restore set, check an action
             if (ndef.getOnParentVersion() == OnParentVersionAction.IGNORE)
@@ -135,8 +137,8 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
                ItemState contextState = restoredChanges.getItemState(node.getParentIdentifier());
                if (contextState != null && !contextState.isDeleted())
                {
-                  if (log.isDebugEnabled())
-                     log.debug("A node " + node.getQPath().getAsString() + " is IGNOREd");
+                  if (LOG.isDebugEnabled())
+                     LOG.debug("A node " + node.getQPath().getAsString() + " is IGNOREd");
 
                   // set context current parent to existed in restore set
                   parents.push((NodeData)contextState.getData());
@@ -151,9 +153,9 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
          else
          {
             // copy as IGNOREd parent child, i.e. OnParentVersionAction is any
-            if (log.isDebugEnabled())
+            if (LOG.isDebugEnabled())
             {
-               log.debug("A node " + node.getQPath().getAsString() + " is IGNOREd node descendant");
+               LOG.debug("A node " + node.getQPath().getAsString() + " is IGNOREd node descendant");
             }
 
             super.entering(node, level);
@@ -164,6 +166,7 @@ public class ItemDataCopyIgnoredVisitor extends DefaultItemDataCopyVisitor
       parents.push(null); // skip this node as we hasn't parent in restore result
    }
 
+   @Override
    protected void leaving(NodeData node, int level) throws RepositoryException
    {
       if (parents.size() > 0)

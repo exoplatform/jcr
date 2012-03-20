@@ -21,8 +21,10 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
+import org.exoplatform.services.jcr.webdav.WebDavServiceImpl;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
+import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.impl.ContainerResponse;
 
 import java.io.ByteArrayInputStream;
@@ -58,10 +60,38 @@ public class TestMkCol extends BaseStandaloneTest
       assertTrue(folderNode.hasNode(TextUtil.relativizePath(file)));
    }
 
-   @Override
-   protected String getRepositoryName()
+   /**
+    * Testing {@link WebDavServiceImpl} MKCOL method for correct response 
+    * building. According to 'RFC-2616' it is expected to contain 'location' header.
+    * More info is introduced <a href=http://tools.ietf.org/html/rfc2616#section-14.30>here</a>.
+    * @throws Exception
+    */
+   public void testLocationHeaderInMkColResponse() throws Exception
    {
-      return null;
+      String folder = TestUtils.getFolderName();
+
+      // execute query
+      ContainerResponse response = service(WebDAVMethods.MKCOL, getPathWS() + folder, "", null, null);
+      // check if operation completed successfully, we expect a new resource to be created
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
+      // here we check if response 'CREATED' contains 'LOCATION' header
+      assertTrue(response.getHttpHeaders().containsKey(ExtHttpHeaders.LOCATION));
+      // here we check if 'CREATED' response 'LOCATION' header contains correct location path
+      assertEquals(getPathWS() + folder, response.getHttpHeaders().getFirst(ExtHttpHeaders.LOCATION).toString());
+
+   }
+
+   /**
+    * Here we're testing the case when we are trying to create a collection B at a path /A/B
+    * and a A collection does not exist. According to the <a href=http://www.webdav.org/specs/rfc4918.html#rfc.section.9.3.1>
+    * RFC 4918</a> section we are to receive 409(conflict) HTTP status. 
+    * @throws Exception
+    */
+   public void testMkColInNonExistingWorkspace() throws Exception
+   {
+      String folder = TestUtils.getFolderName();
+      ContainerResponse response = service(WebDAVMethods.MKCOL, getPathWS() + "_" + folder, "", null, null);
+      assertEquals(HTTPStatus.CONFLICT, response.getStatus());
    }
 
    public void testConflict() throws Exception
@@ -71,4 +101,9 @@ public class TestMkCol extends BaseStandaloneTest
       assertEquals(HTTPStatus.CONFLICT, response.getStatus());
    }
 
+   @Override
+   protected String getRepositoryName()
+   {
+      return null;
+   }
 }

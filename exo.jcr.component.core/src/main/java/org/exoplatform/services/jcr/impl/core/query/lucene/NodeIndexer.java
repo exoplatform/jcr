@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
+import org.exoplatform.services.document.AdvancedDocumentReader;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.DocumentReader;
 import org.exoplatform.services.document.DocumentReaderService;
@@ -27,7 +28,8 @@ import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.core.value.ExtendedValue;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
+import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
@@ -43,6 +45,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -60,7 +63,7 @@ public class NodeIndexer
    /**
     * The logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.NodeIndexer");
+   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.NodeIndexer");
 
    /**
     * The default boost for a lucene field: 1.0f.
@@ -70,7 +73,7 @@ public class NodeIndexer
    /**
     * The <code>NodeState</code> of the node to index
     */
-   protected final NodeData node;
+   protected final NodeDataIndexing node;
 
    /**
     * The persistent item state provider
@@ -125,7 +128,7 @@ public class NodeIndexer
     * @param mappings      internal namespace mappings.
     * @param extractor     content extractor
     */
-   public NodeIndexer(NodeData node, ItemDataConsumer stateProvider, NamespaceMappings mappings,
+   public NodeIndexer(NodeDataIndexing node, ItemDataConsumer stateProvider, NamespaceMappings mappings,
       DocumentReaderService extractor)
    {
       this.node = node;
@@ -186,7 +189,7 @@ public class NodeIndexer
    protected Document createDoc() throws RepositoryException
    {
       doNotUseInExcerpt.clear();
-      Document doc = new Document();
+      final Document doc = new Document();
 
       doc.setBoost(getNodeBoost());
 
@@ -212,9 +215,30 @@ public class NodeIndexer
       {
          // will never happen, because this.mappings will dynamically add
          // unknown uri<->prefix mappings
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
-      for (PropertyData prop : stateProvider.listChildPropertiesData(node))
+      if (indexFormatVersion.getVersion() >= IndexFormatVersion.V4.getVersion())
+      {
+         doc.add(new Field(FieldNames.INDEX, Integer.toString(node.getQPath().getIndex()), Field.Store.YES,
+            Field.Index.NOT_ANALYZED_NO_NORMS));
+
+         StringBuilder path = new StringBuilder(256);
+         path.append(node.getParentIdentifier() == null ? "" : node.getParentIdentifier()).append('/')
+            .append(node.getQPath().getName().getAsString());
+         doc.add(new Field(FieldNames.PATH, path.toString(), Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
+      }
+
+      Collection<PropertyData> props = node.getChildPropertiesData();
+      if (props == null)
+      {
+         props = stateProvider.listChildPropertiesData(node);
+      }
+
+      for (final PropertyData prop : props)
       {
 
          // add each property to the _PROPERTIES_SET for searching
@@ -223,9 +247,7 @@ public class NodeIndexer
          {
             addPropertyName(doc, prop.getQPath().getName());
          }
-
          addValues(doc, prop);
-
       }
 
       // now add fields that are not used in excerpt (must go at the end)
@@ -234,20 +256,6 @@ public class NodeIndexer
          doc.add((Fieldable)it.next());
       }
       return doc;
-   }
-
-   /**
-    * Wraps the exception <code>e</code> into a <code>RepositoryException</code>
-    * and throws the created exception.
-    *
-    * @param e the base exception.
-    */
-   private void throwRepositoryException(Exception e) throws RepositoryException
-   {
-      String msg =
-         "Error while indexing node: " + node.getIdentifier() + " of " + "type: "
-            + node.getPrimaryTypeName().getAsString();
-      throw new RepositoryException(msg, e);
    }
 
    /**
@@ -269,6 +277,10 @@ public class NodeIndexer
       catch (NamespaceException e)
       {
          // will never happen, prefixes are created dynamically
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
    }
 
@@ -291,8 +303,14 @@ public class NodeIndexer
          {
 
             // seems nt:file found, try for nt:resource props
-            PropertyData pmime =
-               (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0));
+            PropertyData pmime = node.getProperty(Constants.JCR_MIMETYPE.getAsString());
+            if (pmime == null && !node.containAllProperties())
+            {
+               pmime =
+                  (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_MIMETYPE, 0),
+                     ItemType.PROPERTY);
+            }
+
             if (pmime != null)
             {
                // ok, have a reader
@@ -300,59 +318,78 @@ public class NodeIndexer
                // otherwise read prop with values from DM
                PropertyData propData =
                   prop.getValues().size() > 0 ? prop : ((PropertyData)stateProvider.getItemData(node, new QPathEntry(
-                     Constants.JCR_DATA, 0)));
+                     Constants.JCR_DATA, 0), ItemType.PROPERTY));
 
                // index if have jcr:mimeType sibling for this binary property only
                try
                {
                   DocumentReader dreader =
-                     extractor.getDocumentReader(new String(pmime.getValues().get(0).getAsByteArray()));
+                     extractor.getDocumentReader(new String(pmime.getValues().get(0).getAsByteArray(),
+                        Constants.DEFAULT_ENCODING));
 
                   data = propData.getValues();
 
                   if (data == null)
-                     log.warn("null value found at property " + prop.getQPath().getAsString());
+                  {
+                     LOG.warn("null value found at property " + prop.getQPath().getAsString());
+                  }
 
                   // check the jcr:encoding property
-                  PropertyData encProp =
-                     (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0));
+                  PropertyData encProp = node.getProperty(Constants.JCR_ENCODING.getAsString());
+                  if (encProp == null && !node.containAllProperties())
+                  {
+                     encProp =
+                        (PropertyData)stateProvider.getItemData(node, new QPathEntry(Constants.JCR_ENCODING, 0),
+                           ItemType.PROPERTY);
+                  }
 
+                  String encoding = null;
                   if (encProp != null)
                   {
                      // encoding parameter used
-                     String encoding = new String(encProp.getValues().get(0).getAsByteArray());
+                     encoding = new String(encProp.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING);
+                  }
+
+                  if (dreader instanceof AdvancedDocumentReader)
+                  {
+                     // its a tika document reader that supports getContentAsReader
                      for (ValueData pvd : data)
                      {
-                        InputStream is = null;
-                        try
-                        {
-                           is = pvd.getAsStream();
-                           Reader reader = new StringReader(dreader.getContentAsText(is, encoding));
-                           doc.add(createFulltextField(reader));
+                        // tikaDocumentReader will close inputStream, so no need to close it at finally 
+                        // statement
 
-                        }
-                        finally
+                        InputStream is = null;
+                        is = pvd.getAsStream();
+                        Reader reader;
+                        if (encoding != null)
                         {
-                           try
-                           {
-                              is.close();
-                           }
-                           catch (Throwable e)
-                           {
-                           }
+                           reader = ((AdvancedDocumentReader)dreader).getContentAsReader(is, encoding);
                         }
+                        else
+                        {
+                           reader = ((AdvancedDocumentReader)dreader).getContentAsReader(is);
+                        }
+                        doc.add(createFulltextField(reader));
                      }
                   }
                   else
                   {
-                     // no encoding parameter
+                     // old-style document reader
                      for (ValueData pvd : data)
                      {
                         InputStream is = null;
                         try
                         {
                            is = pvd.getAsStream();
-                           Reader reader = new StringReader(dreader.getContentAsText(is));
+                           Reader reader;
+                           if (encoding != null)
+                           {
+                              reader = new StringReader(dreader.getContentAsText(is, encoding));
+                           }
+                           else
+                           {
+                              reader = new StringReader(dreader.getContentAsText(is));
+                           }
                            doc.add(createFulltextField(reader));
                         }
                         finally
@@ -363,6 +400,10 @@ public class NodeIndexer
                            }
                            catch (Throwable e)
                            {
+                              if (LOG.isTraceEnabled())
+                              {
+                                 LOG.trace("An exception occurred: " + e.getMessage());
+                              }
                            }
                         }
                      }
@@ -377,30 +418,30 @@ public class NodeIndexer
                }
                catch (DocumentReadException e)
                {
-                  log.error("Can not indexing the document by path " + propData.getQPath().getAsString()
+                  LOG.error("Can not indexing the document by path " + propData.getQPath().getAsString()
                      + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                }
                catch (HandlerNotFoundException e)
                {
                   // no handler - no index
-                  if (log.isDebugEnabled())
+                  if (LOG.isDebugEnabled())
                   {
-                     log.debug("Can not indexing the document by path " + propData.getQPath().getAsString()
+                     LOG.debug("Can not indexing the document by path " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                   }
                }
                catch (IOException e)
                {
                   // no data - no index
-                  if (log.isWarnEnabled())
+                  if (LOG.isWarnEnabled())
                   {
-                     log.warn("Binary value indexer IO error, document by path " + propData.getQPath().getAsString()
+                     LOG.warn("Binary value indexer IO error, document by path " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                   }
                }
                catch (Exception e)
                {
-                  log.error("Binary value indexer error, document by path " + propData.getQPath().getAsString()
+                  LOG.error("Binary value indexer error, document by path " + propData.getQPath().getAsString()
                      + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                }
             }
@@ -420,7 +461,9 @@ public class NodeIndexer
                   .getIdentifier())).getValues();
 
             if (data == null)
-               log.warn("null value found at property " + prop.getQPath().getAsString());
+            {
+               LOG.warn("null value found at property " + prop.getQPath().getAsString());
+            }
 
             ExtendedValue val = null;
             InternalQName name = prop.getQPath().getName();
@@ -504,12 +547,14 @@ public class NodeIndexer
                }
             }
             if (data.size() > 1)
+            {
                // real multi-valued
                addMVPName(doc, prop.getQPath().getName());
+            }
          }
          catch (RepositoryException e)
          {
-            e.printStackTrace();
+            LOG.error("Index of property value error. " + prop.getQPath().getAsString() + ".", e);
             throw new RepositoryException("Index of property value error. " + prop.getQPath().getAsString() + ". " + e,
                e);
          }
@@ -533,6 +578,10 @@ public class NodeIndexer
       catch (NamespaceException e)
       {
          // will never happen
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       doc.add(new Field(FieldNames.PROPERTIES_SET, fieldName, Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
    }
@@ -597,7 +646,7 @@ public class NodeIndexer
       }
       catch (IllegalArgumentException e)
       {
-         log.warn("'{}' is outside of supported date value range.", new Date(value.getTimeInMillis()));
+         LOG.warn("'{}' is outside of supported date value range.", new Date(value.getTimeInMillis()));
       }
    }
 
@@ -673,6 +722,7 @@ public class NodeIndexer
     * @deprecated Use {@link #addStringValue(Document, String, Object, boolean)
     *             addStringValue(Document, String, Object, boolean)} instead.
     */
+   @Deprecated
    protected void addStringValue(Document doc, String fieldName, Object internalValue)
    {
       addStringValue(doc, fieldName, internalValue, true, true, DEFAULT_BOOST);
@@ -711,6 +761,7 @@ public class NodeIndexer
     * @param boost              the boost value for this string field.
     * @deprecated use {@link #addStringValue(Document, String, Object, boolean, boolean, float, boolean)} instead.
     */
+   @Deprecated
    protected void addStringValue(Document doc, String fieldName, Object internalValue, boolean tokenized,
       boolean includeInNodeIndex, float boost)
    {
@@ -794,6 +845,7 @@ public class NodeIndexer
     * @return a lucene field.
     * @deprecated use {@link #createFulltextField(String, boolean, boolean)} instead.
     */
+   @Deprecated
    protected Field createFulltextField(String value)
    {
       return createFulltextField(value, supportHighlighting, supportHighlighting);

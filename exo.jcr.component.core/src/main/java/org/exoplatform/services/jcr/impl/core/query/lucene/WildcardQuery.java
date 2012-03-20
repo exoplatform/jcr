@@ -129,10 +129,12 @@ public class WildcardQuery extends Query implements Transformable
     * @return the rewritten query.
     * @throws IOException if an error occurs while reading from the index.
     */
+   @Override
    public Query rewrite(IndexReader reader) throws IOException
    {
       Query stdWildcardQuery = new MultiTermQuery(new Term(field, pattern))
       {
+         @Override
          protected FilteredTermEnum getEnum(IndexReader reader) throws IOException
          {
             return new WildcardTermEnum(reader, field, propName, pattern, transform);
@@ -157,7 +159,8 @@ public class WildcardQuery extends Query implements Transformable
     * @param searcher the searcher to use for the <code>Weight</code>.
     * @return the <code>Weigth</code> for this query.
     */
-   protected Weight createWeight(Searcher searcher)
+   @Override
+   public Weight createWeight(Searcher searcher)
    {
       return new WildcardQueryWeight(searcher);
    }
@@ -168,6 +171,7 @@ public class WildcardQuery extends Query implements Transformable
     * @param field the field name for which to create a string representation.
     * @return a string representation of this query.
     */
+   @Override
    public String toString(String field)
    {
       return propName + ":" + pattern;
@@ -176,6 +180,7 @@ public class WildcardQuery extends Query implements Transformable
    /**
     * {@inheritDoc}
     */
+   @Override
    public void extractTerms(Set terms)
    {
       if (multiTermQuery != null)
@@ -207,7 +212,8 @@ public class WildcardQuery extends Query implements Transformable
        * @param reader index reader
        * @return a {@link WildcardQueryScorer} instance
        */
-      protected Scorer createScorer(IndexReader reader)
+      @Override
+      protected Scorer createScorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer)
       {
          return new WildcardQueryScorer(searcher.getSimilarity(), reader);
       }
@@ -217,6 +223,7 @@ public class WildcardQuery extends Query implements Transformable
        *
        * @return this <code>WildcardQuery</code>.
        */
+      @Override
       public Query getQuery()
       {
          return WildcardQuery.this;
@@ -225,6 +232,7 @@ public class WildcardQuery extends Query implements Transformable
       /**
        * {@inheritDoc}
        */
+      @Override
       public float getValue()
       {
          return 1.0f;
@@ -233,6 +241,7 @@ public class WildcardQuery extends Query implements Transformable
       /**
        * {@inheritDoc}
        */
+      @Override
       public float sumOfSquaredWeights() throws IOException
       {
          return 1.0f;
@@ -241,6 +250,7 @@ public class WildcardQuery extends Query implements Transformable
       /**
        * {@inheritDoc}
        */
+      @Override
       public void normalize(float norm)
       {
       }
@@ -248,6 +258,7 @@ public class WildcardQuery extends Query implements Transformable
       /**
        * {@inheritDoc}
        */
+      @Override
       public Explanation explain(IndexReader reader, int doc) throws IOException
       {
          return new Explanation();
@@ -326,6 +337,7 @@ public class WildcardQuery extends Query implements Transformable
       /**
        * {@inheritDoc}
        */
+      @Override
       public boolean next() throws IOException
       {
          calculateHits();
@@ -336,6 +348,7 @@ public class WildcardQuery extends Query implements Transformable
       /**
        * {@inheritDoc}
        */
+      @Override
       public int doc()
       {
          return nextDoc;
@@ -344,6 +357,7 @@ public class WildcardQuery extends Query implements Transformable
       /**
        * {@inheritDoc}
        */
+      @Override
       public float score()
       {
          return 1.0f;
@@ -352,6 +366,7 @@ public class WildcardQuery extends Query implements Transformable
       /**
        * {@inheritDoc}
        */
+      @Override
       public boolean skipTo(int target) throws IOException
       {
          calculateHits();
@@ -363,6 +378,7 @@ public class WildcardQuery extends Query implements Transformable
        * Returns an empty Explanation object.
        * @return an empty Explanation object.
        */
+      @Override
       public Explanation explain(int doc)
       {
          return new Explanation();

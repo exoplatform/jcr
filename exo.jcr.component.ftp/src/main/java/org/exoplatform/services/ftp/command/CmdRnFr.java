@@ -37,7 +37,7 @@ import javax.jcr.Session;
 public class CmdRnFr extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdRnFr");
+   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdRnFr");
 
    public CmdRnFr()
    {
@@ -65,17 +65,21 @@ public class CmdRnFr extends FtpCommandImpl
 
          curSession.getItem(repoPath);
 
-         clientSession().setPrevParamsEx(repoPath);
+         clientSession().setPrevParamsEx(resName);
 
          reply(FtpConst.Replyes.REPLY_350);
          return;
       }
       catch (RepositoryException rexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + rexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       reply(String.format(FtpConst.Replyes.REPLY_550, resName));
    }

@@ -30,17 +30,19 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS.<p>
+ * This feature is deprecated and going to be removed in 1.15 version.
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: StorageUpdateManager.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-
+@Deprecated
 public class StorageUpdateManager
 {
 
@@ -199,6 +201,7 @@ public class StorageUpdateManager
             PreparedStatement insertVersion = connection.prepareStatement(SQL_UPDATE_VERSION);
             insertVersion.setString(1, REQUIRED_STORAGE_VERSION);
             insertVersion.executeUpdate();
+            insertVersion.close();
 
             connection.commit();
          }
@@ -256,24 +259,24 @@ public class StorageUpdateManager
 
    /**
     * Check current storage version and update if updateNow==true
+    * <p>
+    * This feature is deprecated and going to be removed in 1.15 version.
     * 
     * @param ds
     * @param updateNow
     * @return
     * @throws RepositoryException
     */
+   @Deprecated
    public static synchronized String checkVersion(String sourceName, Connection connection, boolean multiDB,
       boolean updateNow) throws RepositoryException
    {
-      int transactIsolation = Connection.TRANSACTION_READ_COMMITTED;
       try
       {
          connection.setAutoCommit(false);
-         transactIsolation = connection.getTransactionIsolation();
-         connection.setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 
          StorageUpdateManager manager = new StorageUpdateManager(sourceName, connection, multiDB);
-         String version = manager.applyUpdate(updateNow);
+         String version = manager.currentVersion();
          connection.commit();
          return version;
       }
@@ -287,13 +290,12 @@ public class StorageUpdateManager
          {
             log.warn("Error of connection rollback (close) " + er, er);
          }
-         throw new RepositoryException(e);
+         return Constants.UNKNOWN;
       }
       finally
       {
          try
          {
-            connection.setTransactionIsolation(transactIsolation);
             connection.close();
          }
          catch (SQLException e)
@@ -303,63 +305,7 @@ public class StorageUpdateManager
       }
    }
 
-   /**
-    * (1) return current storage version if no updates required (2) return current storage version
-    * and print warning if updateNow==FALSE and NON CRITICAL updates required (3) throws Exception if
-    * updateNow==FALSE and CRITICAL updates required (4) apply updates, update and return updated
-    * version updateNow==TRUE and updates required
-    * 
-    * NOTE: after the update the JDBC connection will be closed
-    * 
-    * @param updateNow
-    * @return
-    * @throws Exception
-    */
-   private String applyUpdate(boolean updateNow) throws Exception
-   {
 
-      String curVersion = currentVersion();
-
-      Updater updater = null;
-
-      if (curVersion.startsWith(STORAGE_VERSION_1_7_0))
-      {
-         // ok
-      }
-      else
-      {
-         // warn
-         log.warn("UPDATE IS NOT AVAILABLE from " + curVersion + " to " + STORAGE_VERSION_1_7_0
-            + " using auto-update option. Use XML export/import to migrate to the next version of JCR. "
-            + "See for details: http://wiki.exoplatform.org/xwiki/bin/view/JCR/How+to+JCR+import+export. "
-            + "All data which were created prior (with " + curVersion
-            + " and older) and stored in external value storage(s) will be unavailable with storage "
-            + STORAGE_VERSION_1_7_0 + ". " + "No auto-update changes was made to database.");
-      }
-
-      // was before 1.7
-      // if(STORAGE_VERSION_1_0_0.equals(curVersion)) {
-      // updater = new Updater100();
-      // } else if(STORAGE_VERSION_1_0_1.equals(curVersion)) {
-      // updater = new Updater101();
-      // }
-
-      if (updater != null)
-         if (!updateNow)
-         {
-            log.warn("STORAGE VERSION OF " + sourceName + " IS " + curVersion
-               + " IT IS HIGHLY RECOMMENDED TO UPDATE IT TO " + REQUIRED_STORAGE_VERSION
-               + " ENABLE UPDATING in the CONFIGURATION:\n <container class='...'>\n"
-               + "  <properties> \n   <property name='update-storage' value='true'/> \n ...\n");
-         }
-         else
-         {
-            updater.update();
-            curVersion = REQUIRED_STORAGE_VERSION;
-         }
-
-      return curVersion;
-   }
 
    /**
     * @return current storage version
@@ -368,9 +314,11 @@ public class StorageUpdateManager
    private String currentVersion() throws SQLException
    {
       ResultSet version = null;
+      Statement st = null;
       try
       {
-         version = connection.createStatement().executeQuery(SQL_SELECT_VERSION);
+         st = connection.createStatement();
+         version = st.executeQuery(SQL_SELECT_VERSION);
          if (version.next())
             return version.getString("VERSION");
       }
@@ -381,12 +329,34 @@ public class StorageUpdateManager
       finally
       {
          if (version != null)
-            version.close();
+         {
+            try
+            {
+               version.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the ResultSet: " + e);
+            }
+         }
+
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
       }
 
       PreparedStatement insertVersion = connection.prepareStatement(SQL_INSERT_VERSION);
       insertVersion.setString(1, REQUIRED_STORAGE_VERSION);
       insertVersion.executeUpdate();
+      insertVersion.close();
       return REQUIRED_STORAGE_VERSION;
    }
 
@@ -402,9 +372,11 @@ public class StorageUpdateManager
 
       ResultSet refs = null;
       PreparedStatement update = null;
+      Statement st = null;
       try
       {
-         refs = conn.createStatement().executeQuery(SQL_SELECT_JCRUUID);
+         st = conn.createStatement();
+         refs = st.executeQuery(SQL_SELECT_JCRUUID);
          update = conn.prepareStatement(SQL_UPDATE_JCRUUID);
          while (refs.next())
          {
@@ -448,63 +420,45 @@ public class StorageUpdateManager
       }
       catch (SQLException e)
       {
-         e.printStackTrace();
+         log.error(e.getLocalizedMessage(), e);
       }
       finally
       {
          if (refs != null)
-            refs.close();
-         if (update != null)
-            update.close();
-      }
-   }
-
-   private void fixCopyFrozenIdentifierBug(JcrIdentifier jcrIdentifier, Connection conn) throws SQLException
-   {
-      String searchCriteria =
-         "'" + Constants.JCR_VERSION_STORAGE_PATH.getAsString() + ":1[]" + jcrIdentifier.getNodeIdentifier() + "%"
-            + Constants.JCR_FROZENUUID.getAsString() + "%' ";
-
-      ResultSet refs = null;
-      PreparedStatement update = null;
-      try
-      {
-         String sql = SQL_SELECT_FROZENJCRUUID.replaceAll(FROZENJCRUUID, searchCriteria);
-         refs = conn.createStatement().executeQuery(SQL_SELECT_FROZENJCRUUID);
-         while (refs.next())
          {
             try
             {
-               JcrIdentifier frozenIdentifier =
-                  new JcrIdentifier(refs.getString("PATH"), refs.getString("NID"), refs.getString("VID"), refs
-                     .getBinaryStream("DATA"));
-               if (!frozenIdentifier.getNodeIdentifier().equals(frozenIdentifier.getJcrIdentifier()))
-               {
-                  log
-                     .info("VERSION STORAGE UPDATE >>>: Property jcr:frozenUuid have to be updated with actual value. Property: "
-                        + frozenIdentifier.getPath()
-                        + ", actual:"
-                        + jcrIdentifier.getNodeIdentifier()
-                        + ", existed: "
-                        + frozenIdentifier.getJcrIdentifier());
-               }
+               refs.close();
             }
-            catch (IOException e)
+            catch (SQLException e)
             {
-               log.error("Can't read property value data: " + e.getMessage(), e);
+               log.error("Can't close the ResultSet: " + e);
             }
          }
-      }
-      catch (SQLException e)
-      {
-         log.error("Fix of copy uuid bug. Storage update error: " + e.getMessage(), e);
-      }
-      finally
-      {
-         if (refs != null)
-            refs.close();
+
          if (update != null)
-            update.close();
+         {
+            try
+            {
+               update.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
+
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
       }
    }
 
@@ -518,9 +472,11 @@ public class StorageUpdateManager
 
       ResultSet refs = null;
       PreparedStatement update = null;
+      Statement st = null;
       try
       {
-         refs = conn.createStatement().executeQuery(SQL_SELECT_REFERENCES);
+         st = conn.createStatement();
+         refs = st.executeQuery(SQL_SELECT_REFERENCES);
          update = conn.prepareStatement(SQL_INSERT_REFERENCES);
          while (refs.next())
          {
@@ -562,9 +518,40 @@ public class StorageUpdateManager
       finally
       {
          if (refs != null)
-            refs.close();
+         {
+            try
+            {
+               refs.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the ResultSet: " + e);
+            }
+         }
+
          if (update != null)
-            update.close();
+         {
+            try
+            {
+               update.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
+
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               log.error("Can't close the Statement: " + e);
+            }
+         }
       }
    }
 

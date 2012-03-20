@@ -24,10 +24,13 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.JCRName;
@@ -35,6 +38,7 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
 import org.exoplatform.services.jcr.impl.xml.DecodedValue;
@@ -49,6 +53,7 @@ import org.exoplatform.services.security.ConversationState;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -74,6 +79,8 @@ public class SystemViewImporter extends BaseXmlImporter
    private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SystemViewImporter");
 
    protected PropertyInfo propertyInfo = new PropertyInfo();
+
+   protected Map<String, NodePropertiesInfo> mapNodePropertiesInfo = new HashMap<String, NodePropertiesInfo>();
 
    /**
     * Root node name.
@@ -150,7 +157,15 @@ public class SystemViewImporter extends BaseXmlImporter
 
          ImportPropertyData propertyData = endProperty();
          if (propertyData != null)
+         {
             changesLog.add(new ItemState(propertyData, ItemState.ADDED, true, getAncestorToSave()));
+
+            ImportNodeData currentNodeInfo = (ImportNodeData)getParent();
+
+            NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getIdentifier());
+
+            currentNodePropertiesInfo.addProperty(propertyData);
+         }
       }
       else if (Constants.SV_VALUE_NAME.equals(elementName))
       {
@@ -158,6 +173,11 @@ public class SystemViewImporter extends BaseXmlImporter
          //mark current value as completed
          DecodedValue curPropValue = propertyInfo.getValues().get(propertyInfo.getValues().size() - 1);
          curPropValue.setComplete(true);
+      }
+      else if (Constants.SV_VERSION_HISTORY_NAME.equals(elementName))
+      {
+         // remove version storage node from tree
+         tree.pop();
       }
       else
       {
@@ -207,6 +227,8 @@ public class SystemViewImporter extends BaseXmlImporter
 
          changesLog.add(new ItemState(newNodeData, ItemState.ADDED, true, getAncestorToSave()));
 
+         mapNodePropertiesInfo.put(newNodeData.getIdentifier(), new NodePropertiesInfo(newNodeData));
+
          tree.push(newNodeData);
 
       }
@@ -246,6 +268,36 @@ public class SystemViewImporter extends BaseXmlImporter
          propertyInfo.getValues().add(new DecodedValue());
 
       }
+      else if (Constants.SV_VERSION_HISTORY_NAME.equals(elementName))
+      {
+         String svName = getAttribute(atts, Constants.SV_NAME_NAME);
+         if (svName == null)
+         {
+            throw new RepositoryException("Missing mandatory sv:name attribute of element sv:versionhistory");
+         }
+
+         NodeData versionStorage = (NodeData)this.dataConsumer.getItemData(Constants.VERSIONSTORAGE_UUID);
+
+         NodeData versionHistory =
+            (NodeData)dataConsumer.getItemData(versionStorage, new QPathEntry("", svName, 1), ItemType.NODE);
+
+         if (versionHistory != null)
+         {
+            RemoveVisitor rv = new RemoveVisitor();
+            rv.visit(versionHistory);
+            changesLog.addAll(rv.getRemovedStates());
+         }
+         tree.push(versionStorage);
+
+         List<String> list = (List<String>)context.get(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES);
+         if (list == null)
+         {
+            list = new ArrayList<String>();
+         }
+         list.add(svName);
+         context.put(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES, list);
+
+      }
       else
       {
          throw new RepositoryException("Unknown element " + elementName.getAsString());
@@ -278,8 +330,9 @@ public class SystemViewImporter extends BaseXmlImporter
       currentNodeInfo.setMixinTypeNames(mixinNames);
 
       propertyData =
-         new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()), propertyInfo
-            .getIndentifer(), 0, propertyInfo.getType(), currentNodeInfo.getIdentifier(), true);
+         new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()),
+            propertyInfo.getIndentifer(), -1, propertyInfo.getType(), currentNodeInfo.getIdentifier(), true);
+
       propertyData.setValues(parseValues());
       return propertyData;
    }
@@ -293,6 +346,15 @@ public class SystemViewImporter extends BaseXmlImporter
    {
       ImportNodeData currentNodeInfo = (ImportNodeData)tree.pop();
 
+      NodePropertiesInfo currentNodePropertiesInfo = mapNodePropertiesInfo.get(currentNodeInfo.getIdentifier());
+
+      if (currentNodePropertiesInfo != null)
+      {
+         checkProperties(currentNodePropertiesInfo);
+      }
+
+      mapNodePropertiesInfo.remove(currentNodeInfo.getIdentifier());
+
       currentNodeInfo.setMixinTypeNames(currentNodeInfo.getMixinTypeNames());
 
       if (currentNodeInfo.isMixVersionable())
@@ -300,8 +362,84 @@ public class SystemViewImporter extends BaseXmlImporter
          createVersionHistory(currentNodeInfo);
       }
 
-      currentNodeInfo.setACL(initAcl(currentNodeInfo.getACL(), currentNodeInfo.isExoOwneable(), currentNodeInfo
-         .isExoPrivilegeable(), currentNodeInfo.getExoOwner(), currentNodeInfo.getExoPrivileges()));
+      currentNodeInfo.setACL(ACLInitializationHelper.initAcl(currentNodeInfo.getACL(), currentNodeInfo.getExoOwner(),
+         currentNodeInfo.getExoPrivileges()));
+   }
+
+   /**
+    * Checking priopertis if nodetype is nt:frozennode
+    * 
+    * @param currentNodePropertiesInfo
+    * @throws RepositoryException 
+    * @throws IOException 
+    * @throws IllegalNameException 
+    * @throws IllegalStateException 
+    */
+   private void checkProperties(NodePropertiesInfo currentNodePropertiesInfo) throws RepositoryException
+   {
+      if (currentNodePropertiesInfo.getNode().getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH)
+         && currentNodePropertiesInfo.getNode().getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
+      {
+         InternalQName fptName = null;
+         List<InternalQName> fmtNames = new ArrayList<InternalQName>();
+
+         // get frozenPrimaryType and frozenMixinTypes
+         try
+         {
+            for (ImportPropertyData propertyData : currentNodePropertiesInfo.getProperties())
+            {
+               if (propertyData.getQName().equals(Constants.JCR_FROZENPRIMARYTYPE))
+               {
+                  fptName =
+                     InternalQName.parse(new String(propertyData.getValues().get(0).getAsByteArray(),
+                        Constants.DEFAULT_ENCODING));
+               }
+               else if (propertyData.getQName().equals(Constants.JCR_FROZENMIXINTYPES))
+               {
+                  for (ValueData valueData : propertyData.getValues())
+                  {
+                     fmtNames
+                        .add(InternalQName.parse(new String(valueData.getAsByteArray(), Constants.DEFAULT_ENCODING)));
+                  }
+               }
+            }
+         }
+         catch (IllegalStateException e)
+         {
+            throw new RepositoryException(e.getMessage(), e);
+         }
+         catch (IllegalNameException e)
+         {
+            throw new RepositoryException(e.getMessage(), e);
+         }
+         catch (IOException e)
+         {
+            throw new RepositoryException(e.getMessage(), e);
+         }
+
+         InternalQName nodePrimaryTypeName = currentNodePropertiesInfo.getNode().getPrimaryTypeName();
+         InternalQName[] nodeMixinTypeName = currentNodePropertiesInfo.getNode().getMixinTypeNames();
+
+         for (ImportPropertyData propertyData : currentNodePropertiesInfo.getProperties())
+         {
+            PropertyDefinitionDatas defs =
+               nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), nodePrimaryTypeName,
+                  nodeMixinTypeName);
+
+            if (defs == null || (defs != null && defs.getAnyDefinition().isResidualSet()))
+            {
+               PropertyDefinitionDatas vhdefs =
+                  nodeTypeDataManager.getPropertyDefinitions(propertyData.getQName(), fptName,
+                     fmtNames.toArray(new InternalQName[fmtNames.size()]));
+
+               if (vhdefs != null)
+               {
+                  boolean isMultivalue = (vhdefs.getDefinition(true) != null ? true : false);
+                  propertyData.setMultivalue(isMultivalue);
+               }
+            }
+         }
+      }
    }
 
    /**
@@ -324,8 +462,15 @@ public class SystemViewImporter extends BaseXmlImporter
       {
          NodeData parentNodeData = getParent();
          // nodeTypeDataManager.findChildNodeDefinition(primaryTypeName,)
-         if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName, parentNodeData.getPrimaryTypeName(),
-            parentNodeData.getMixinTypeNames()))
+
+         // check is nt:versionedChild subnode of frozenNode
+         if (nodeData.getQPath().getDepth() > 6 && primaryTypeName.equals(Constants.NT_VERSIONEDCHILD)
+            && nodeData.getQPath().getEntries()[5].equals(Constants.JCR_FROZENNODE))
+         {
+            //do nothing
+         }
+         else if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName,
+            parentNodeData.getPrimaryTypeName(), parentNodeData.getMixinTypeNames()))
          {
             throw new ConstraintViolationException("Can't add node " + nodeData.getQName().getAsString() + " to "
                + parentNodeData.getQPath().getAsString() + " node type " + sName
@@ -338,10 +483,13 @@ public class SystemViewImporter extends BaseXmlImporter
       nodeData.setPrimaryTypeName(primaryTypeName);
 
       propertyData =
-         new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), propertyInfo.getName()), propertyInfo
-            .getIndentifer(), 0, propertyInfo.getType(), nodeData.getIdentifier(), false);
+         new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), propertyInfo.getName()),
+            propertyInfo.getIndentifer(), -1, propertyInfo.getType(), nodeData.getIdentifier(), false);
+
       propertyData.setValues(parseValues());
+
       tree.push(nodeData);
+
       return propertyData;
    }
 
@@ -430,10 +578,11 @@ public class SystemViewImporter extends BaseXmlImporter
 
          propertyData =
             new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()),
-               propertyInfo.getIndentifer(), 0, propertyInfo.getType(), currentNodeInfo.getIdentifier(), isMultivalue);
+               propertyInfo.getIndentifer(), -1, propertyInfo.getType(), currentNodeInfo.getIdentifier(), isMultivalue);
          propertyData.setValues(values);
 
       }
+
       return propertyData;
    }
 
@@ -448,22 +597,33 @@ public class SystemViewImporter extends BaseXmlImporter
       ImportPropertyData propertyData;
       ImportNodeData currentNodeInfo = (ImportNodeData)tree.pop();
 
-      currentNodeInfo.setMixReferenceable(nodeTypeDataManager.isNodeType(Constants.MIX_REFERENCEABLE, currentNodeInfo
-         .getPrimaryTypeName(), currentNodeInfo.getMixinTypeNames()));
+      currentNodeInfo.setMixReferenceable(nodeTypeDataManager.isNodeType(Constants.MIX_REFERENCEABLE,
+         currentNodeInfo.getPrimaryTypeName(), currentNodeInfo.getMixinTypeNames()));
 
       if (currentNodeInfo.isMixReferenceable())
       {
-         currentNodeInfo.setMixVersionable(nodeTypeDataManager.isNodeType(Constants.MIX_VERSIONABLE, currentNodeInfo
-            .getPrimaryTypeName(), currentNodeInfo.getMixinTypeNames()));
+         currentNodeInfo.setMixVersionable(nodeTypeDataManager.isNodeType(Constants.MIX_VERSIONABLE,
+            currentNodeInfo.getPrimaryTypeName(), currentNodeInfo.getMixinTypeNames()));
          checkReferenceable(currentNodeInfo, propertyInfo.getValues().get(0).toString());
       }
 
       propertyData =
-         new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()), propertyInfo
-            .getIndentifer(), 0, propertyInfo.getType(), currentNodeInfo.getIdentifier(), false);
-      propertyData.setValue(new TransientValueData(currentNodeInfo.getIdentifier()));
+         new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()),
+            propertyInfo.getIndentifer(), -1, propertyInfo.getType(), currentNodeInfo.getIdentifier(), false);
+
+      if (currentNodeInfo.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+      {
+         propertyData.setValue(new TransientValueData(propertyInfo.getValues().get(0).toString()));
+      }
+      else
+      {
+         propertyData.setValue(new TransientValueData(currentNodeInfo.getIdentifier()));
+      }
 
       tree.push(currentNodeInfo);
+
+      mapNodePropertiesInfo.put(currentNodeInfo.getIdentifier(), new NodePropertiesInfo(currentNodeInfo));
+
       return propertyData;
    }
 
@@ -476,15 +636,23 @@ public class SystemViewImporter extends BaseXmlImporter
    {
       try
       {
-
          if (propertyInfo.getName().equals(Constants.JCR_VERSIONHISTORY))
          {
             String versionHistoryIdentifier = null;
             versionHistoryIdentifier = ValueDataConvertor.readString(values.get(0));
 
             currentNodeInfo.setVersionHistoryIdentifier(versionHistoryIdentifier);
-            currentNodeInfo.setContainsVersionhistory(dataConsumer.getItemData(versionHistoryIdentifier) != null);
 
+            // check if node contains VH
+            if (dataConsumer.getItemData(versionHistoryIdentifier) != null)
+            {
+               ItemState vhLastState = getLastItemState(versionHistoryIdentifier);
+               currentNodeInfo.setContainsVersionhistory(vhLastState == null || !vhLastState.isDeleted());
+            }
+            else
+            {
+               currentNodeInfo.setContainsVersionhistory(false);
+            }
          }
          else if (propertyInfo.getName().equals(Constants.JCR_BASEVERSION))
          {
@@ -517,11 +685,10 @@ public class SystemViewImporter extends BaseXmlImporter
             {
                InputStream vStream = propertyInfo.getValues().get(k).getInputStream();
 
-               // TODO cleanup
                // TransientValueData binaryValue = new TransientValueData(vStream);
                TransientValueData binaryValue =
-                  new TransientValueData(k, null, vStream, null, valueFactory.getFileCleaner(), valueFactory
-                     .getMaxBufferSize(), null, true);
+                  new TransientValueData(k, null, vStream, null, valueFactory.getFileCleaner(),
+                     valueFactory.getMaxBufferSize(), null, true);
                // Call to spool file into tmp
                binaryValue.getAsStream().close();
                vStream.close();
@@ -571,4 +738,25 @@ public class SystemViewImporter extends BaseXmlImporter
       JCRName jname = locationFactory.createJCRName(name);
       return attributes.get(jname.getAsString());
    }
+
+   protected class RemoveVisitor extends ItemDataRemoveVisitor
+   {
+      /**
+       * Default constructor.
+       * 
+       * @throws RepositoryException - exception.
+       */
+      RemoveVisitor() throws RepositoryException
+      {
+         super(dataConsumer, null, nodeTypeDataManager, accessManager, userState);
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      protected void validateReferential(NodeData node) throws RepositoryException
+      {
+         // no REFERENCE validation here
+      }
+   };
 }

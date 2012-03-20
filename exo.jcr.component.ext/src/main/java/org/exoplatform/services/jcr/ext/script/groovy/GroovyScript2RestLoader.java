@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.ext.script.groovy;
 
 import org.apache.commons.fileupload.FileItem;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
@@ -30,10 +32,18 @@ import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
 import org.exoplatform.services.jcr.ext.registry.RegistryService;
+import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexOfflineRepositoryException;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.ext.groovy.GroovyClassLoaderProvider;
+import org.exoplatform.services.rest.ext.groovy.GroovyJaxrsPublisher;
+import org.exoplatform.services.rest.ext.groovy.MalformedScriptException;
+import org.exoplatform.services.rest.ext.groovy.ResourceId;
+import org.exoplatform.services.rest.ext.groovy.SourceFile;
+import org.exoplatform.services.rest.ext.groovy.SourceFolder;
 import org.exoplatform.services.rest.impl.ResourceBinder;
-import org.exoplatform.services.rest.resource.ResourceContainer;
+import org.exoplatform.services.rest.impl.ResourcePublicationException;
 import org.exoplatform.services.script.groovy.GroovyScriptInstantiator;
 import org.picocontainer.Startable;
 import org.w3c.dom.Document;
@@ -42,18 +52,22 @@ import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
+import javax.annotation.security.RolesAllowed;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
@@ -71,6 +85,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -78,14 +93,24 @@ import javax.xml.parsers.ParserConfigurationException;
 
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
- * @version $Id: GroovyScript2RestLoader.java 34445 2009-07-24 07:51:18Z dkatayev $
+ * @version $Id: GroovyScript2RestLoader.java 34445 2009-07-24 07:51:18Z
+ *          dkatayev $
  */
+@SuppressWarnings("deprecation")
 @Path("script/groovy")
-public class GroovyScript2RestLoader implements Startable
+public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements Startable
 {
+   protected static class InnerGroovyJaxrsPublisher extends GroovyJaxrsPublisher
+   {
+      public InnerGroovyJaxrsPublisher(ResourceBinder binder, GroovyScriptInstantiator instantiator,
+         GroovyClassLoaderProvider classLoaderProvider)
+      {
+         super(binder, instantiator, classLoaderProvider);
+      }
+   }
 
    /** Logger. */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestLoader");
+   static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestLoader");
 
    /** Default node types for Groovy scripts. */
    private static final String DEFAULT_NODETYPE = "exo:groovyResourceContainer";
@@ -93,38 +118,37 @@ public class GroovyScript2RestLoader implements Startable
    /** Service name. */
    private static final String SERVICE_NAME = "GroovyScript2RestLoader";
 
+   private static final int DELAYED_AUTOLOAD_TIMEOUT = 20000; // 20 sec
+
    /** See {@link InitParams}. */
-   private InitParams initParams;
-
-   /** See {@link ResourceBinder}. */
-   private ResourceBinder binder;
-
-   /** See {@link GroovyScriptInstantiator}. */
-   private GroovyScriptInstantiator groovyScriptInstantiator;
+   protected InitParams initParams;
 
    /** See {@link RepositoryService}. */
-   private RepositoryService repositoryService;
+   protected RepositoryService repositoryService;
 
    /** See {@link ConfigurationManager}. */
-   private ConfigurationManager configurationManager;
+   protected ConfigurationManager configurationManager;
 
    /** See {@link RegistryService}. */
-   private RegistryService registryService;
+   protected RegistryService registryService;
 
-   /**
-    * See {@link SessionProviderService},
-    * {@link ThreadLocalSessionProviderService}.
-    */
-   private ThreadLocalSessionProviderService sessionProviderService;
+   /** See {@link SessionProviderService} */
+   protected ThreadLocalSessionProviderService sessionProviderService;
 
    /** Keeps configuration for observation listener. */
    private ObservationListenerConfiguration observationListenerConfiguration;
 
+   //protected GroovyJaxrsPublisher groovyPublisher;
+
+   protected List<GroovyScript2RestLoaderPlugin> loadPlugins;
+
+   protected List<GroovyScriptAddRepoPlugin> addRepoPlugins;
+
+   /** See {@link ResourceBinder}. */
+   private ResourceBinder binder;
+
    /** Node type for Groovy scripts. */
    private String nodeType;
-
-   /** Mapping scripts URL (or other key) to classes. */
-   private Map<ScriptKey, Class<?>> scriptsURL2ClassMap = new HashMap<ScriptKey, Class<?>>();
 
    /**
     * @param binder binder for RESTful services
@@ -136,10 +160,12 @@ public class GroovyScript2RestLoader implements Startable
     */
    public GroovyScript2RestLoader(ResourceBinder binder, GroovyScriptInstantiator groovyScriptInstantiator,
       RepositoryService repositoryService, ThreadLocalSessionProviderService sessionProviderService,
-      ConfigurationManager configurationManager, InitParams params)
+      ConfigurationManager configurationManager, org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler,
+      InitParams params)
    {
       this(binder, groovyScriptInstantiator, repositoryService, sessionProviderService, configurationManager, null,
-         params);
+         new InnerGroovyJaxrsPublisher(binder, groovyScriptInstantiator, new JcrGroovyClassLoaderProvider()),
+         jcrUrlHandler, params);
    }
 
    /**
@@ -153,188 +179,50 @@ public class GroovyScript2RestLoader implements Startable
     */
    public GroovyScript2RestLoader(ResourceBinder binder, GroovyScriptInstantiator groovyScriptInstantiator,
       RepositoryService repositoryService, ThreadLocalSessionProviderService sessionProviderService,
-      ConfigurationManager configurationManager, RegistryService registryService, InitParams params)
+      ConfigurationManager configurationManager, RegistryService registryService,
+      org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler, InitParams params)
    {
+      this(binder, groovyScriptInstantiator, repositoryService, sessionProviderService, configurationManager,
+         registryService, new InnerGroovyJaxrsPublisher(binder, groovyScriptInstantiator,
+            new JcrGroovyClassLoaderProvider()), jcrUrlHandler, params);
+   }
 
+   public GroovyScript2RestLoader(ResourceBinder binder, GroovyScriptInstantiator groovyScriptInstantiator,
+      RepositoryService repositoryService, ThreadLocalSessionProviderService sessionProviderService,
+      ConfigurationManager configurationManager, RegistryService registryService, GroovyJaxrsPublisher groovyPublisher,
+      org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler, InitParams params)
+   {
+      super(groovyPublisher);
       this.binder = binder;
-      this.groovyScriptInstantiator = groovyScriptInstantiator;
       this.repositoryService = repositoryService;
       this.configurationManager = configurationManager;
       this.registryService = registryService;
       this.sessionProviderService = sessionProviderService;
+      this.groovyPublisher = groovyPublisher;
       this.initParams = params;
    }
 
    /**
-    * Remove script with specified URL from ResourceBinder.
-    * 
-    * @param url the URL. The <code>url.toString()</code> must be corresponded to
-    *          script class.
-    * @see GroovyScriptRestLoader#loadScript(URL).
-    */
-   public void unloadScript(URL url)
-   {
-      unloadScript(new URLScriptKey(url));
-   }
-
-   /**
-    * Remove script by specified key from ResourceBinder.
-    * 
-    * @param key the key with which script was created.
-    * @see GroovyScript2RestLoader#loadScript(String, InputStream)
-    * @see GroovyScript2RestLoader#loadScript(String, String, InputStream)
-    * @deprecated
-    */
-   public boolean unloadScript(String key)
-   {
-      return unloadScript(new SimpleScriptKey(key));
-   }
-
-   public boolean unloadScript(ScriptKey key)
-   {
-      if (scriptsURL2ClassMap.containsKey(key))
-      {
-         if (binder.unbind(scriptsURL2ClassMap.get(key)))
-         {
-            scriptsURL2ClassMap.remove(key);
-            return true;
-         }
-         else
-         {
-            LOG.warn("Can't remove groovy script, key " + key);
-         }
-      }
-      else
-      {
-         LOG.warn("Specified key '" + key + "' does not corresponds to any class name.");
-      }
-      return false;
-   }
-
-   /**
-    * @param key script's key
-    * @return true if script loaded false otherwise
-    * @deprecated
-    */
-   public boolean isLoaded(String key)
-   {
-      return isLoaded(new SimpleScriptKey(key));
-   }
-
-   /**
-    * @param url script's URL
-    * @return true if script loaded false otherwise
-    */
-   public boolean isLoaded(URL url)
-   {
-      return isLoaded(new URLScriptKey(url));
-   }
-
-   /**
-    * @param key script's key. With this key script was created.
-    * @return true if script loaded false otherwise
-    */
-   public boolean isLoaded(ScriptKey key)
-   {
-      return scriptsURL2ClassMap.containsKey(key);
-   }
-
-   /**
-    * Get node type for store scripts, may throw {@link IllegalStateException} if
-    * <tt>nodeType</tt> not initialized yet.
+    * Get node type for store scripts, may throw {@link IllegalStateException}
+    * if <tt>nodeType</tt> not initialized yet.
     * 
     * @return return node type
     */
    public String getNodeType()
    {
       if (nodeType == null)
+      {
          throw new IllegalStateException("Node type not initialized, yet. ");
+      }
       return nodeType;
    }
 
    /**
-    * @param url the URL for loading script.
-    * @throws IOException it script can't be loaded.
-    */
-   public boolean loadScript(URL url) throws IOException
-   {
-      Object resource = groovyScriptInstantiator.instantiateScript(url);
-      if (binder.bind(resource))
-      {
-         // add mapping script URL to name of class.
-         scriptsURL2ClassMap.put(new URLScriptKey(url), resource.getClass());
-         return true;
-      }
-      else
-      {
-         LOG.warn("Groovy script was not binded, URL: " + url);
-         return false;
-      }
-   }
-
-   /**
-    * Load script from given stream.
-    * 
-    * @param key the key which must be corresponded to object class name.
-    * @param stream the stream which represents groovy script.
-    * @return if script loaded false otherwise
-    * @throws IOException if script can't be loaded or parsed.
-    * @see ResourceBinder#bind(ResourceContainer)
-    * @deprecated
-    */
-   public boolean loadScript(String key, InputStream stream) throws IOException
-   {
-      return loadScript(key, null, stream);
-   }
-
-   /**
-    * Load script from given stream.
-    * 
-    * @param key the key which must be corresponded to object class name.
-    * @param name this name will be passed to compiler to get understandable if
-    *          compilation failed
-    * @param stream the stream which represents groovy script.
-    * @return if script loaded false otherwise
-    * @throws IOException if script can't be loaded or parsed.
-    * @see ResourceBinder#bind(ResourceContainer)
-    * @deprecated
-    */
-   public boolean loadScript(String key, String name, InputStream stream) throws IOException
-   {
-      return loadScript(new SimpleScriptKey(key), name, stream);
-   }
-
-   /**
-    * @param key the key which must be corresponded to object class name
-    * @param name this name will be passed to compiler to get understandable if
-    *          compilation failed. This parameter may be set as null then groovy
-    *          compiler will user automatically generated name for script.
-    *          (script000001.groovy)
-    * @param stream the stream which represents groovy script.
-    * @return if script loaded false otherwise
-    * @throws IOException if script can't be loaded or parsed
-    */
-   public boolean loadScript(ScriptKey key, String name, InputStream stream) throws IOException
-   {
-      Object resource = groovyScriptInstantiator.instantiateScript(stream, name);
-      if (binder.bind(resource))
-      {
-         scriptsURL2ClassMap.put(key, resource.getClass());
-         return true;
-      }
-      else
-      {
-         LOG.warn("Groovy script was not binded, key: " + key);
-         return false;
-      }
-   }
-
-   /**
-    * {@inheritDoc}
+    * @see org.picocontainer.Startable#start()
     */
    public void start()
    {
-      if (registryService != null && !registryService.getForceXMLConfigurationValue(initParams))
+      if (registryService != null && initParams != null && !registryService.getForceXMLConfigurationValue(initParams))
       {
          SessionProvider sessionProvider = SessionProvider.createSystemProvider();
          try
@@ -366,92 +254,200 @@ public class GroovyScript2RestLoader implements Startable
       // Add script from configuration files to JCR.
       addScripts();
 
-      try
+      if (addRepoPlugins != null && addRepoPlugins.size() > 0)
       {
-
-         // Deploy auto-load scripts and start Observation Listeners.
-         String repositoryName = observationListenerConfiguration.getRepository();
-         List<String> workspaceNames = observationListenerConfiguration.getWorkspaces();
-
-         ManageableRepository repository = repositoryService.getRepository(repositoryName);
-
-         for (String workspaceName : workspaceNames)
+         try
          {
-            Session session = repository.getSystemSession(workspaceName);
-
-            String xpath = "//element(*, " + getNodeType() + ")[@exo:autoload='true']";
-            Query query = session.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
-
-            QueryResult result = query.execute();
-            NodeIterator nodeIterator = result.getNodes();
-            while (nodeIterator.hasNext())
+            Set<URL> repos = new HashSet<URL>();
+            for (GroovyScriptAddRepoPlugin pl : addRepoPlugins)
             {
-               Node node = nodeIterator.nextNode();
-
-               if (node.getPath().startsWith("/jcr:system"))
-                  continue;
-
-               loadScript(new NodeScriptKey(repositoryName, workspaceName, node), node.getPath(), node.getProperty(
-                  "jcr:data").getStream());
+               repos.addAll(pl.getRepositories());
             }
-
-            session.getWorkspace().getObservationManager().addEventListener(
-               new GroovyScript2RestUpdateListener(repositoryName, workspaceName, this, session),
-               Event.PROPERTY_ADDED | Event.PROPERTY_CHANGED | Event.PROPERTY_REMOVED, "/", true, null,
-               new String[]{getNodeType()}, false);
+            this.groovyPublisher.getGroovyClassLoader().setResourceLoader(
+               new JcrGroovyResourceLoader(repos.toArray(new URL[repos.size()])));
+         }
+         catch (MalformedURLException e)
+         {
+            LOG.error("Unable add groovy script repository. ", e);
          }
       }
-      catch (Exception e)
+
+      if (observationListenerConfiguration != null)
       {
-         LOG.error("Error occurs ", e);
+         try
+         {
+            // Deploy auto-load scripts and start Observation Listeners.
+            final String repositoryName = getWorkingRepositoryName();
+
+            List<String> workspaceNames = observationListenerConfiguration.getWorkspaces();
+
+            final ManageableRepository repository = repositoryService.getRepository(repositoryName);
+
+            // JCR it offers an asynchronous workspace reindexing (since 1.14.0-CR2). But while it
+            // is performed in background queries can't be executed. In this case autoload scripts could only
+            // be loaded after reindexing finished.
+            final Set<String> delayedWorkspacePublishing = new HashSet<String>();
+
+            for (String workspaceName : workspaceNames)
+            {
+               Session session = repository.getSystemSession(workspaceName);
+               try
+               {
+                  autoLoadScripts(session);
+               }
+               catch (IndexOfflineRepositoryException e)
+               {
+                  delayedWorkspacePublishing.add(workspaceName);
+               }
+
+               session.getWorkspace().getObservationManager().addEventListener(
+                  new GroovyScript2RestUpdateListener(repositoryName, workspaceName, this, session),
+                  Event.PROPERTY_ADDED | Event.PROPERTY_CHANGED | Event.PROPERTY_REMOVED, "/", true, null,
+                  new String[]{getNodeType()}, false);
+            }
+            if (!delayedWorkspacePublishing.isEmpty())
+            {
+               LOG.warn("The following workspaces are being reindexed now: " + delayedWorkspacePublishing
+                  + ". Groove scripts from those workspaces marked as AutoLoad will be loaded later.");
+               // lauch delayed autoLoad
+               new Thread(new Runnable()
+               {
+                  public void run()
+                  {
+                     while (true)
+                     {
+                        if (delayedWorkspacePublishing.isEmpty())
+                        {
+                           // finish thread
+                           return;
+                        }
+                        for (Iterator iterator = delayedWorkspacePublishing.iterator(); iterator.hasNext();)
+                        {
+                           String workspaceName = (String)iterator.next();
+                           try
+                           {
+                              Session session = repository.getSystemSession(workspaceName);
+                              autoLoadScripts(session);
+                              // if no exception, then remove item from set
+                              iterator.remove();
+                           }
+                           catch (IndexOfflineRepositoryException e)
+                           {
+                              //it's okay. Retrying;
+                           }
+                           catch (Exception e)
+                           {
+                              // skip
+                              LOG.error(e);
+                           }
+                        }
+                        try
+                        {
+                           Thread.sleep(DELAYED_AUTOLOAD_TIMEOUT);
+                        }
+                        catch (InterruptedException e)
+                        {
+                           // skip
+                        }
+                     }
+                  }
+               }, "GrooveSrciptDelayedAutoLoader-" + repositoryName).start();
+            }
+         }
+         catch (Exception e)
+         {
+            LOG.error("Error occurs ", e);
+         }
       }
+
       // Finally bind this object as RESTful service.
       // NOTE this service does not implement ResourceContainer, as usually
       // done for this type of services. It can't be binded in common way cause
       // to dependencies problem. And in other side not possible to use third
       // part which can be injected by GroovyScript2RestLoader.
-      binder.bind(this);
+      binder.addResource(this, null);
+   }
+
+   private void autoLoadScripts(Session session) throws RepositoryException
+   {
+      String workspaceName = session.getWorkspace().getName();
+      String repositoryName = getWorkingRepositoryName();
+
+      String xpath = "//element(*, " + getNodeType() + ")[@exo:autoload='true']";
+      Query query = session.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
+
+      QueryResult result = query.execute();
+      NodeIterator nodeIterator = result.getNodes();
+      while (nodeIterator.hasNext())
+      {
+         Node node = nodeIterator.nextNode();
+
+         if (node.getPath().startsWith("/jcr:system"))
+         {
+            continue;
+         }
+
+         try
+         {
+            groovyPublisher.publishPerRequest(node.getProperty("jcr:data").getStream(), new NodeScriptKey(
+               repositoryName, workspaceName, node), null);
+         }
+         catch (CompilationFailedException e)
+         {
+            LOG.error(e.getMessage(), e);
+         }
+         catch (ResourcePublicationException e)
+         {
+            LOG.error(e.getMessage(), e);
+         }
+      }
    }
 
    /**
-    * {@inheritDoc}
+    * @see org.picocontainer.Startable#stop()
     */
    public void stop()
    {
       // nothing to do!
    }
 
-   /**
-    * See {@link GroovyScript2RestLoaderPlugin}.
-    */
-   private List<GroovyScript2RestLoaderPlugin> loadPlugins;
-
-   /**
-    * @param cp See {@link ComponentPlugin}
-    */
    public void addPlugin(ComponentPlugin cp)
    {
       if (cp instanceof GroovyScript2RestLoaderPlugin)
       {
          if (loadPlugins == null)
+         {
             loadPlugins = new ArrayList<GroovyScript2RestLoaderPlugin>();
+         }
          loadPlugins.add((GroovyScript2RestLoaderPlugin)cp);
+      }
+      if (cp instanceof GroovyScriptAddRepoPlugin)
+      {
+         if (addRepoPlugins == null)
+         {
+            addRepoPlugins = new ArrayList<GroovyScriptAddRepoPlugin>();
+         }
+         addRepoPlugins.add((GroovyScriptAddRepoPlugin)cp);
       }
    }
 
    /**
     * Add scripts that specified in configuration.
     */
-   private void addScripts()
+   protected void addScripts()
    {
       if (loadPlugins == null || loadPlugins.size() == 0)
+      {
          return;
+      }
       for (GroovyScript2RestLoaderPlugin loadPlugin : loadPlugins)
       {
          // If no one script configured then skip this item,
          // there is no reason to do anything.
          if (loadPlugin.getXMLConfigs().size() == 0)
+         {
             continue;
+         }
 
          Session session = null;
          try
@@ -473,9 +469,13 @@ public class GroovyScript2RestLoader implements Startable
                {
                   String t = tokens.nextToken();
                   if (node.hasNode(t))
+                  {
                      node = node.getNode(t);
+                  }
                   else
+                  {
                      node = node.addNode(t, "nt:folder");
+                  }
                }
             }
 
@@ -499,7 +499,9 @@ public class GroovyScript2RestLoader implements Startable
          finally
          {
             if (session != null)
+            {
                session.logout();
+            }
          }
       }
    }
@@ -513,7 +515,7 @@ public class GroovyScript2RestLoader implements Startable
     * @return newly created node
     * @throws Exception if any errors occurs
     */
-   private Node createScript(Node parent, String name, boolean autoload, InputStream stream) throws Exception
+   protected Node createScript(Node parent, String name, boolean autoload, InputStream stream) throws Exception
    {
       Node scriptFile = parent.addNode(name, "nt:file");
       Node script = scriptFile.addNode("jcr:content", getNodeType());
@@ -531,12 +533,13 @@ public class GroovyScript2RestLoader implements Startable
     * @throws RepositoryException
     * @throws PathNotFoundException
     */
-   private void readParamsFromRegistryService(SessionProvider sessionProvider) throws PathNotFoundException,
+   protected void readParamsFromRegistryService(SessionProvider sessionProvider) throws PathNotFoundException,
       RepositoryException
    {
-
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("<<< Read init parametrs from registry service.");
+      }
 
       observationListenerConfiguration = new ObservationListenerConfiguration();
 
@@ -568,8 +571,11 @@ public class GroovyScript2RestLoader implements Startable
       observationListenerConfiguration.setWorkspaces(wsList);
 
       LOG.info("NodeType from RegistryService: " + getNodeType());
-      LOG.info("Repository from RegistryService: " + observationListenerConfiguration.getRepository());
-      LOG.info("Workspaces node from RegistryService: " + observationListenerConfiguration.getWorkspaces());
+      LOG.info("Repository name from RegistryService: "
+         + (observationListenerConfiguration.getRepository() != null ? observationListenerConfiguration.getRepository()
+            : "not configured, will be used the current one"));
+
+      LOG.info("List of workspaces from RegistryService: " + observationListenerConfiguration.getWorkspaces());
    }
 
    /**
@@ -581,13 +587,30 @@ public class GroovyScript2RestLoader implements Startable
     * @throws IOException
     * @throws RepositoryException
     */
-   private void writeParamsToRegistryService(SessionProvider sessionProvider) throws IOException, SAXException,
+   protected void writeParamsToRegistryService(SessionProvider sessionProvider) throws IOException, SAXException,
       ParserConfigurationException, RepositoryException
    {
       if (LOG.isDebugEnabled())
+      {
          LOG.debug(">>> Save init parametrs in registry service.");
+      }
 
-      Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+      Document doc;
+      try
+      {
+         doc = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Document>()
+         {
+            public Document run() throws ParserConfigurationException
+            {
+               return DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+            }
+         });
+      }
+      catch (PrivilegedActionException e)
+      {
+         throw (ParserConfigurationException)e.getCause();
+      }
+
       Element root = doc.createElement(SERVICE_NAME);
       doc.appendChild(root);
 
@@ -599,7 +622,9 @@ public class GroovyScript2RestLoader implements Startable
       for (String workspace : observationListenerConfiguration.getWorkspaces())
       {
          if (sb.length() > 0)
+         {
             sb.append(';');
+         }
          sb.append(workspace);
       }
       element = doc.createElement("workspaces");
@@ -621,7 +646,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param attr The attribute name
     * @return Value of attribute if present and null in other case
     */
-   private String getAttributeSmart(Element element, String attr)
+   protected String getAttributeSmart(Element element, String attr)
    {
       return element.hasAttribute(attr) ? element.getAttribute(attr) : null;
    }
@@ -633,7 +658,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param attr The attribute name
     * @param value The value of attribute
     */
-   private void setAttributeSmart(Element element, String attr, String value)
+   protected void setAttributeSmart(Element element, String attr, String value)
    {
       if (value == null)
       {
@@ -648,7 +673,7 @@ public class GroovyScript2RestLoader implements Startable
    /**
     * Read parameters from file.
     */
-   private void readParamsFromFile()
+   protected void readParamsFromFile()
    {
       if (initParams != null)
       {
@@ -659,20 +684,23 @@ public class GroovyScript2RestLoader implements Startable
          ObjectParameter param = initParams.getObjectParam("observation.config");
          observationListenerConfiguration = (ObservationListenerConfiguration)param.getObject();
       }
+      else
+      {
+         nodeType = DEFAULT_NODETYPE;
+      }
 
       LOG.info("NodeType from configuration file: " + getNodeType());
-      LOG.info("Repository from configuration file: " + observationListenerConfiguration.getRepository());
-      LOG.info("Workspaces node from configuration file: " + observationListenerConfiguration.getWorkspaces());
+      if (observationListenerConfiguration != null)
+      {
+         LOG.info("Repository name from configuration file: "
+            + (observationListenerConfiguration.getRepository() != null ? observationListenerConfiguration
+               .getRepository() : "not configured, will be used the current one"));
+
+         LOG.info("List of workspaces from configuration file: " + observationListenerConfiguration.getWorkspaces());
+      }
    }
 
-   // ///////////////////
-
-   // FIXME
-   // For following resource methods use POST instead GET even there is no
-   // entity in request to prevent browsers cache when use ajax. Using no cache
-   // may not have sense currently when use gadgets.io cause apache shindig
-   // implementation ignores all headers except Set-Cookie and Location
-   // (see https://issues.apache.org/jira/browse/SHINDIG-882)
+   ////////////////////////////////////////////////////////////////////////////////////
 
    /**
     * This method is useful for clients that can send script in request body
@@ -706,49 +734,203 @@ public class GroovyScript2RestLoader implements Startable
       }
       catch (PathNotFoundException e)
       {
-         LOG.error("Path " + path + " does not exists", e);
-         return Response.status(Response.Status.NOT_FOUND).build();
+         String msg = "Path " + path + " does not exists";
+         LOG.error(msg);
+         return Response.status(Response.Status.NOT_FOUND).entity(msg).entity(MediaType.TEXT_PLAIN).build();
       }
       catch (Exception e)
       {
-         LOG.error("Unexpected error occurs ", e);
-         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error. " + e.getMessage())
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
             .type(MediaType.TEXT_PLAIN).build();
       }
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
    /**
-    * @param name script name
-    * @param stream script for validation
+    * This method is useful for clients that send scripts as file in
+    * 'multipart/*' request body. <br/>
+    * NOTE even we use iterator item should be only one, rule one address - one
+    * script. This method is created just for comfort loading script from HTML
+    * form. NOT use this script for uploading few files in body of
+    * 'multipart/form-data' or other type of multipart.
+    * 
+    * @param items iterator {@link FileItem}
+    * @param uriInfo see {@link UriInfo}
+    * @param repository repository name
+    * @param workspace workspace name
+    * @param path path to resource to be created
+    * @return Response with status 'created'
+    */
+   @POST
+   @Consumes({"multipart/*"})
+   @Path("add/{repository}/{workspace}/{path:.*}")
+   public Response addScript(Iterator<FileItem> items, @Context UriInfo uriInfo,
+      @PathParam("repository") String repository, @PathParam("workspace") String workspace,
+      @PathParam("path") String path)
+   {
+      Session ses = null;
+      try
+      {
+         ses =
+            sessionProviderService.getSessionProvider(null).getSession(workspace,
+               repositoryService.getRepository(repository));
+         Node node = (Node)ses.getItem(getPath(path));
+         InputStream stream = null;
+         boolean autoload = false;
+         while (items.hasNext())
+         {
+            FileItem fitem = items.next();
+            if (fitem.isFormField() && fitem.getFieldName() != null
+               && fitem.getFieldName().equalsIgnoreCase("autoload"))
+            {
+               autoload = Boolean.valueOf(fitem.getString());
+            }
+            else if (!fitem.isFormField())
+            {
+               stream = fitem.getInputStream();
+            }
+         }
+
+         createScript(node, getName(path), autoload, stream);
+         ses.save();
+         URI location = uriInfo.getBaseUriBuilder().path(getClass(), "getScript").build(repository, workspace, path);
+         return Response.created(location).build();
+      }
+      catch (PathNotFoundException e)
+      {
+         String msg = "Path " + path + " does not exists";
+         LOG.error(msg);
+         return Response.status(Response.Status.NOT_FOUND).entity(msg).entity(MediaType.TEXT_PLAIN).build();
+      }
+      catch (Exception e)
+      {
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
+            .type(MediaType.TEXT_PLAIN).build();
+      }
+      finally
+      {
+         if (ses != null)
+         {
+            ses.logout();
+         }
+      }
+   }
+
+   /**
+    * Check is specified source <code>script</code> contains valid Groovy source
+    * code.
+    * 
+    * @param name script name. This name will be used by GroovyClassLoader to
+    *           identify script, e.g. specified name will be used in error
+    *           message in compilation of Groovy fails. If this parameter is
+    *           <code>null</code> then GroovyClassLoader will use automatically
+    *           generated name
+    * @param script Groovy source stream
+    * @param sources locations (string representation of URL) of source folders
+    *           that should be add in class path when compile Groovy script.
+    *           <b>NOTE</b> To be able load Groovy source files from specified
+    *           folders the following rules must be observed:
+    *           <ul>
+    *           <li>Groovy source files must be located in folder with respect
+    *           to package structure</li>
+    *           <li>Name of Groovy source files must be the same as name of
+    *           class located in file</li>
+    *           <li>Groovy source file must have extension '.groovy'</li>
+    *           </ul>
+    * <br/>
+    *           Example: If source stream that we want validate contains the
+    *           following code:
+    * 
+    *           <pre>
+    *           package c.b.a
+    *           
+    *           import a.b.c.A
+    *           
+    *           class B extends A {
+    *           // Do something.
+    *           }
+    * </pre>
+    * 
+    *           Assume we store dependencies in JCR then URL of folder with
+    *           Groovy sources may be like this:
+    *           <code>jcr://repository/workspace#/groovy-library</code>. Then
+    *           absolute path to JCR node that contains Groovy source must be as
+    *           following: <code>/groovy-library/a/b/c/A.groovy</code>
+    * @param files locations (string representation of URL) of source files that
+    *           should be add in class path when compile Groovy script. Each
+    *           location must point directly to file that contains Groovy
+    *           source. Source file can have any name and extension
+    * @return Response with corresponded status. 200 if source code is valid
     */
    @POST
    @Consumes({"script/groovy"})
    @Path("validate{name:.*}")
-   public Response validateScript(@PathParam("name") String name, InputStream script)
+   public Response validateScript(@PathParam("name") String name, final InputStream script,
+      @QueryParam("sources") List<String> sources, @QueryParam("file") List<String> files)
    {
-
       try
       {
-         if (name != null && name.startsWith("/"))
-            name = name.substring(1);
-         if (name == null || name.length() == 0)
-            groovyScriptInstantiator.instantiateScript(script);
-         else
-            groovyScriptInstantiator.instantiateScript(script, name);
-         return Response.status(Response.Status.OK).build();
+         validateScript(name, script, createSourceFolders(sources), createSourceFiles(files));
+         return Response.ok().build();
       }
-      catch (Exception e)
+      catch (MalformedScriptException e)
       {
-         LOG.error("Unexpected error occurs ", e);
-         return Response.status(Response.Status.BAD_REQUEST).entity("Unexpected error. " + e.getMessage()).type(
-            MediaType.TEXT_PLAIN).build();
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
       }
+      catch (MalformedURLException e)
+      {
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
+      }
+   }
 
+   /**
+    * Check is specified source <code>script</code> contains valid Groovy source
+    * code.
+    * 
+    * @param name script name. This name will be used by GroovyClassLoader to
+    *           identify script, e.g. specified name will be used in error
+    *           message in compilation of Groovy fails. If this parameter is
+    *           <code>null</code> then GroovyClassLoader will use automatically
+    *           generated name
+    * @param script Groovy source stream
+    * @param src set of folders that contains Groovy source files that should be
+    *           add in class-path when validate <code>script</code>, see
+    *           {@link SourceFolder#getPath()}. <b>NOTE</b> To be able load
+    *           Groovy source files from specified folders the following rules
+    *           must be observed:
+    *           <ul>
+    *           <li>Groovy source files must be located in folder with respect
+    *           to package structure</li>
+    *           <li>Name of Groovy source files must be the same as name of
+    *           class located in file</li>
+    *           <li>Groovy source file must have extension '.groovy'</li>
+    *           </ul>
+    * @param files set of groovy source files that should be add in class-path
+    *           when validate <code>script</code>. Each item must point directly
+    *           to file that contains Groovy source, see
+    *           {@link SourceFile#getPath()} . Source file can have any name and
+    *           extension
+    * @throws MalformedScriptException if <code>script</code> contains not valid
+    *            source code
+    */
+   public void validateScript(String name, InputStream script, SourceFolder[] src, SourceFile[] files)
+      throws MalformedScriptException
+   {
+      if (name != null && name.length() > 0 && name.startsWith("/"))
+      {
+         name = name.substring(1);
+      }
+      groovyPublisher.validateResource(script, name, src, files);
    }
 
    /**
@@ -784,91 +966,32 @@ public class GroovyScript2RestLoader implements Startable
       }
       catch (PathNotFoundException e)
       {
-         LOG.error("Path " + path + " does not exists", e);
-         return Response.status(Response.Status.NOT_FOUND).build();
+         String msg = "Path " + path + " does not exists";
+         LOG.error(msg);
+         return Response.status(Response.Status.NOT_FOUND).entity(msg).entity(MediaType.TEXT_PLAIN).build();
       }
       catch (Exception e)
       {
-         LOG.error("Unexpected error occurs ", e);
-         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error. " + e.getMessage())
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
             .type(MediaType.TEXT_PLAIN).build();
       }
       finally
       {
          if (ses != null)
-            ses.logout();
-      }
-   }
-
-   /**
-    * This method is useful for clients that send scripts as file in
-    * 'multipart/*' request body. <br/> NOTE even we use iterator item should be
-    * only one, rule one address - one script. This method is created just for
-    * comfort loading script from HTML form. NOT use this script for uploading
-    * few files in body of 'multipart/form-data' or other type of multipart.
-    * 
-    * @param items iterator {@link FileItem}
-    * @param uriInfo see {@link UriInfo}
-    * @param repository repository name
-    * @param workspace workspace name
-    * @param path path to resource to be created
-    * @return Response with status 'created'
-    */
-   @POST
-   @Consumes({"multipart/*"})
-   @Path("add/{repository}/{workspace}/{path:.*}")
-   public Response addScript(Iterator<FileItem> items, @Context UriInfo uriInfo,
-      @PathParam("repository") String repository, @PathParam("workspace") String workspace,
-      @PathParam("path") String path)
-   {
-      Session ses = null;
-      try
-      {
-         ses =
-            sessionProviderService.getSessionProvider(null).getSession(workspace,
-               repositoryService.getRepository(repository));
-         Node node = (Node)ses.getItem(getPath(path));
-         InputStream stream = null;
-         boolean autoload = false;
-         while (items.hasNext())
          {
-            FileItem fitem = items.next();
-            if (fitem.isFormField() && fitem.getFieldName() != null
-               && fitem.getFieldName().equalsIgnoreCase("autoload"))
-               autoload = Boolean.valueOf(fitem.getString());
-            else if (!fitem.isFormField()) // accept files
-               stream = fitem.getInputStream();
-         }
-
-         createScript(node, getName(path), autoload, stream);
-         ses.save();
-         URI location = uriInfo.getBaseUriBuilder().path(getClass(), "getScript").build(repository, workspace, path);
-         return Response.created(location).build();
-      }
-      catch (PathNotFoundException e)
-      {
-         LOG.error("Path " + path + " does not exists", e);
-         return Response.status(Response.Status.NOT_FOUND).build();
-      }
-      catch (Exception e)
-      {
-         LOG.error("Unexpected error occurs ", e);
-         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error. " + e.getMessage())
-            .type(MediaType.TEXT_PLAIN).build();
-      }
-      finally
-      {
-         if (ses != null)
             ses.logout();
+         }
       }
    }
 
    /**
     * This method is useful for clients that send scripts as file in
-    * 'multipart/*' request body. <br/> NOTE even we use iterator item should be
-    * only one, rule one address - one script. This method is created just for
-    * comfort loading script from HTML form. NOT use this script for uploading
-    * few files in body of 'multipart/form-data' or other type of multipart.
+    * 'multipart/*' request body. <br/>
+    * NOTE even we use iterator item should be only one, rule one address - one
+    * script. This method is created just for comfort loading script from HTML
+    * form. NOT use this script for uploading few files in body of
+    * 'multipart/form-data' or other type of multipart.
     * 
     * @param items iterator {@link FileItem}
     * @param uriInfo see {@link UriInfo}
@@ -880,7 +1003,7 @@ public class GroovyScript2RestLoader implements Startable
    @POST
    @Consumes({"multipart/*"})
    @Path("update/{repository}/{workspace}/{path:.*}")
-   public Response updateScripts(Iterator<FileItem> items, @Context UriInfo uriInfo,
+   public Response updateScript(Iterator<FileItem> items, @Context UriInfo uriInfo,
       @PathParam("repository") String repository, @PathParam("workspace") String workspace,
       @PathParam("path") String path)
    {
@@ -889,8 +1012,10 @@ public class GroovyScript2RestLoader implements Startable
       {
          FileItem fitem = items.next();
          InputStream stream = null;
-         if (!fitem.isFormField()) // if file
+         if (!fitem.isFormField())
+         {
             stream = fitem.getInputStream();
+         }
          ses =
             sessionProviderService.getSessionProvider(null).getSession(workspace,
                repositoryService.getRepository(repository));
@@ -902,78 +1027,129 @@ public class GroovyScript2RestLoader implements Startable
       }
       catch (PathNotFoundException e)
       {
-         LOG.error("Path " + path + " does not exists", e);
-         return Response.status(Response.Status.NOT_FOUND).build();
+         String msg = "Path " + path + " does not exists";
+         LOG.error(msg);
+         return Response.status(Response.Status.NOT_FOUND).entity(msg).entity(MediaType.TEXT_PLAIN).build();
       }
       catch (Exception e)
       {
-         LOG.error("Unexpected error occurs ", e);
-         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error. " + e.getMessage())
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
             .type(MediaType.TEXT_PLAIN).build();
       }
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
    /**
-    * Get source code of groovy script.
+    * Deploy groovy script as REST service. If this property set to 'true' then
+    * script will be deployed as REST service if 'false' the script will be
+    * undeployed. NOTE is script already deployed and <tt>state</tt> is
+    * <tt>true</tt> script will be re-deployed.
     * 
     * @param repository repository name
     * @param workspace workspace name
-    * @param path JCR path to node that contains script
-    * @return groovy script as stream
+    * @param path the path to JCR node that contains groovy script to be
+    *           deployed
+    * @param state <code>true</code> if resource should be loaded and
+    *           <code>false</code> otherwise. If this attribute is not present
+    *           in HTTP request then it will be considered as <code>true</code>
+    * @param sources locations (string representation of URL) of source folders
+    *           that should be add in class path when compile Groovy script.
+    *           <b>NOTE</b> To be able load Groovy source files from specified
+    *           folders the following rules must be observed:
+    *           <ul>
+    *           <li>Groovy source files must be located in folder with respect
+    *           to package structure</li>
+    *           <li>Name of Groovy source files must be the same as name of
+    *           class located in file</li>
+    *           <li>Groovy source file must have extension '.groovy'</li>
+    *           </ul>
+    * <br/>
+    *           Example: If source stream that we want validate contains the
+    *           following code:
+    * 
+    *           <pre>
+    *           package c.b.a
+    *           
+    *           import a.b.c.A
+    *           
+    *           class B extends A {
+    *           // Do something.
+    *           }
+    * </pre>
+    * 
+    *           Assume we store dependencies in JCR then URL of folder with
+    *           Groovy sources may be like this:
+    *           <code>jcr://repository/workspace#/groovy-library</code>. Then
+    *           absolute path to JCR node that contains Groovy source must be as
+    *           following: <code>/groovy-library/a/b/c/A.groovy</code>
+    * @param files locations (string representation of URL) of source files that
+    *           should be add in class path when compile Groovy script. Each
+    *           location must point directly to file that contains Groovy
+    *           source. Source file can have any name and extension
+    * @param properties optional properties to be applied to loaded resource.
+    *           Ignored if <code>state</code> parameter is false
     */
    @POST
-   @Produces({"script/groovy"})
-   @Path("src/{repository}/{workspace}/{path:.*}")
-   public Response getScript(@PathParam("repository") String repository, @PathParam("workspace") String workspace,
-      @PathParam("path") String path)
+   @Path("load/{repository}/{workspace}/{path:.*}")
+   @RolesAllowed({"administrators"})
+   public Response load(@PathParam("repository") String repository, @PathParam("workspace") String workspace,
+      @PathParam("path") String path, @DefaultValue("true") @QueryParam("state") boolean state,
+      @QueryParam("sources") List<String> sources, @QueryParam("file") List<String> files,
+      MultivaluedMap<String, String> properties)
    {
-      Session ses = null;
       try
       {
-         ses =
-            sessionProviderService.getSessionProvider(null).getSession(workspace,
-               repositoryService.getRepository(repository));
-         Node scriptFile = (Node)ses.getItem("/" + path);
-         return Response.status(Response.Status.OK).entity(
-            scriptFile.getNode("jcr:content").getProperty("jcr:data").getStream()).type("script/groovy").build();
-
+         return load(repository, workspace, path, state, properties, createSourceFolders(sources),
+            createSourceFiles(files));
       }
-      catch (PathNotFoundException e)
+      catch (MalformedURLException e)
       {
-         LOG.error("Path " + path + " does not exists", e);
-         return Response.status(Response.Status.NOT_FOUND).build();
-      }
-      catch (Exception e)
-      {
-         LOG.error("Unexpected error occurs ", e);
-         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error. " + e.getMessage())
-            .type(MediaType.TEXT_PLAIN).build();
-      }
-      finally
-      {
-         if (ses != null)
-            ses.logout();
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
       }
    }
 
    /**
-    * Get groovy script's meta-information.
+    * Deploy groovy script as REST service. If this property set to 'true' then
+    * script will be deployed as REST service if 'false' the script will be
+    * undeployed. NOTE is script already deployed and <tt>state</tt> is
+    * <tt>true</tt> script will be re-deployed.
     * 
     * @param repository repository name
     * @param workspace workspace name
-    * @param path JCR path to node that contains script
-    * @return groovy script's meta-information
+    * @param path the path to JCR node that contains groovy script to be
+    *           deployed
+    * @param state <code>true</code> if resource should be loaded and
+    *           <code>false</code> otherwise. If this attribute is not present
+    *           in HTTP request then it will be considered as <code>true</code>
+    * @param properties optional properties to be applied to loaded resource.
+    *           Ignored if <code>state</code> parameter is false
+    * @param src set of folders that contains Groovy source files that should be
+    *           add in class-path when compile file located at <code>path</code>
+    *           . <b>NOTE</b> To be able load Groovy source files from specified
+    *           folders the following rules must be observed:
+    *           <ul>
+    *           <li>Groovy source files must be located in folder with respect
+    *           to package structure</li>
+    *           <li>Name of Groovy source files must be the same as name of
+    *           class located in file</li>
+    *           <li>Groovy source file must have extension '.groovy'</li>
+    *           </ul>
+    * @param files set of groovy source files that should be add in class-path
+    *           when compile file located at <code>path</code>. Each item must
+    *           point directly to file that contains Groovy source, see
+    *           {@link SourceFile#getPath()} . Source file can have any name and
+    *           extension
     */
-   @POST
-   @Produces({MediaType.APPLICATION_JSON})
-   @Path("meta/{repository}/{workspace}/{path:.*}")
-   public Response getScriptMetadata(@PathParam("repository") String repository,
-      @PathParam("workspace") String workspace, @PathParam("path") String path)
+   public Response load(String repository, String workspace, String path, boolean state,
+      MultivaluedMap<String, String> properties, SourceFolder[] src, SourceFile[] files)
    {
       Session ses = null;
       try
@@ -982,28 +1158,49 @@ public class GroovyScript2RestLoader implements Startable
             sessionProviderService.getSessionProvider(null).getSession(workspace,
                repositoryService.getRepository(repository));
          Node script = ((Node)ses.getItem("/" + path)).getNode("jcr:content");
-
-         ScriptMetadata meta =
-            new ScriptMetadata(script.getProperty("exo:autoload").getBoolean(), isLoaded(new NodeScriptKey(repository,
-               workspace, script)), script.getProperty("jcr:mimeType").getString(), script.getProperty(
-               "jcr:lastModified").getDate().getTimeInMillis());
-         return Response.status(Response.Status.OK).entity(meta).type(MediaType.APPLICATION_JSON).build();
+         ResourceId key = new NodeScriptKey(repository, workspace, script);
+         if (state)
+         {
+            groovyPublisher.unpublishResource(key);
+            groovyPublisher.publishPerRequest(script.getProperty("jcr:data").getStream(), key, properties, src, files);
+         }
+         else
+         {
+            if (null == groovyPublisher.unpublishResource(key))
+            {
+               return Response.status(Response.Status.BAD_REQUEST).entity(
+                  "Can't unbind script " + path + ", not bound or has wrong mapping to the resource class ").type(
+                  MediaType.TEXT_PLAIN).build();
+            }
+         }
+         return Response.status(Response.Status.NO_CONTENT).build();
+      }
+      catch (CompilationFailedException e)
+      {
+         return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
+      }
+      catch (ResourcePublicationException e)
+      {
+         return Response.status(Response.Status.BAD_REQUEST).entity(e.getMessage()).type(MediaType.TEXT_PLAIN).build();
       }
       catch (PathNotFoundException e)
       {
-         LOG.error("Path " + path + " does not exists", e);
-         return Response.status(Response.Status.NOT_FOUND).build();
+         String msg = "Path " + path + " does not exists";
+         LOG.error(msg);
+         return Response.status(Response.Status.NOT_FOUND).entity(msg).type(MediaType.TEXT_PLAIN).build();
       }
       catch (Exception e)
       {
-         LOG.error("Unexpected error occurs ", e);
-         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error. " + e.getMessage())
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
             .type(MediaType.TEXT_PLAIN).build();
       }
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
@@ -1031,19 +1228,22 @@ public class GroovyScript2RestLoader implements Startable
       }
       catch (PathNotFoundException e)
       {
-         LOG.error("Path " + path + " does not exists", e);
-         return Response.status(Response.Status.NOT_FOUND).build();
+         String msg = "Path " + path + " does not exists";
+         LOG.error(msg);
+         return Response.status(Response.Status.NOT_FOUND).entity(msg).entity(MediaType.TEXT_PLAIN).build();
       }
       catch (Exception e)
       {
-         LOG.error("Unexpected error occurs ", e);
-         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error. " + e.getMessage())
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
             .type(MediaType.TEXT_PLAIN).build();
       }
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
@@ -1056,9 +1256,9 @@ public class GroovyScript2RestLoader implements Startable
     * @param workspace workspace name
     * @param path JCR path to node that contains script
     * @param state value for property exo:autoload, if it is not specified then
-    *          'true' will be used as default. <br /> Example:
-    *          .../scripts/groovy/test1.groovy/load is the same to
-    *          .../scripts/groovy/test1.groovy/load?state=true
+    *           'true' will be used as default. <br />
+    *           Example: .../scripts/groovy/test1.groovy/load is the same to
+    *           .../scripts/groovy/test1.groovy/load?state=true
     */
    @POST
    @Path("autoload/{repository}/{workspace}/{path:.*}")
@@ -1078,36 +1278,83 @@ public class GroovyScript2RestLoader implements Startable
       }
       catch (PathNotFoundException e)
       {
-         LOG.error("Path " + path + " does not exists", e);
-         return Response.status(Response.Status.NOT_FOUND).build();
+         String msg = "Path " + path + " does not exists";
+         LOG.error(msg);
+         return Response.status(Response.Status.NOT_FOUND).entity(msg).entity(MediaType.TEXT_PLAIN).build();
       }
       catch (Exception e)
       {
-         LOG.error("Unexpected error occurs ", e);
-         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error. " + e.getMessage())
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
             .type(MediaType.TEXT_PLAIN).build();
       }
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
    /**
-    * Deploy groovy script as REST service. If this property set to 'true' then
-    * script will be deployed as REST service if 'false' the script will be
-    * undeployed. NOTE is script already deployed and <tt>state</tt> is
-    * <tt>true</tt> script will be re-deployed.
+    * Get source code of groovy script.
     * 
     * @param repository repository name
     * @param workspace workspace name
-    * @param path the path to JCR node that contains groovy script to be deployed
+    * @param path JCR path to node that contains script
+    * @return groovy script as stream
     */
    @POST
-   @Path("load/{repository}/{workspace}/{path:.*}")
-   public Response load(@PathParam("repository") String repository, @PathParam("workspace") String workspace,
-      @PathParam("path") String path, @DefaultValue("true") @QueryParam("state") boolean state)
+   @Produces({"script/groovy"})
+   @Path("src/{repository}/{workspace}/{path:.*}")
+   public Response getScript(@PathParam("repository") String repository, @PathParam("workspace") String workspace,
+      @PathParam("path") String path)
+   {
+      Session ses = null;
+      try
+      {
+         ses =
+            sessionProviderService.getSessionProvider(null).getSession(workspace,
+               repositoryService.getRepository(repository));
+         Node scriptFile = (Node)ses.getItem("/" + path);
+         return Response.status(Response.Status.OK).entity(
+            scriptFile.getNode("jcr:content").getProperty("jcr:data").getStream()).type("script/groovy").build();
+      }
+      catch (PathNotFoundException e)
+      {
+         String msg = "Path " + path + " does not exists";
+         LOG.error(msg);
+         return Response.status(Response.Status.NOT_FOUND).entity(msg).entity(MediaType.TEXT_PLAIN).build();
+      }
+      catch (Exception e)
+      {
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
+            .type(MediaType.TEXT_PLAIN).build();
+      }
+      finally
+      {
+         if (ses != null)
+         {
+            ses.logout();
+         }
+      }
+   }
+
+   /**
+    * Get groovy script's meta-information.
+    * 
+    * @param repository repository name
+    * @param workspace workspace name
+    * @param path JCR path to node that contains script
+    * @return groovy script's meta-information
+    */
+   @POST
+   @Produces({MediaType.APPLICATION_JSON})
+   @Path("meta/{repository}/{workspace}/{path:.*}")
+   public Response getScriptMetadata(@PathParam("repository") String repository,
+      @PathParam("workspace") String workspace, @PathParam("path") String path)
    {
       Session ses = null;
       try
@@ -1116,58 +1363,44 @@ public class GroovyScript2RestLoader implements Startable
             sessionProviderService.getSessionProvider(null).getSession(workspace,
                repositoryService.getRepository(repository));
          Node script = ((Node)ses.getItem("/" + path)).getNode("jcr:content");
-         ScriptKey key = new NodeScriptKey(repository, workspace, script);
-         if (state)
-         {
-            if (isLoaded(key))
-               unloadScript(key);
-            if (!loadScript(key, path, script.getProperty("jcr:data").getStream()))
-            {
-               String message =
-                  "Can't bind script " + path
-                     + ", it is not root resource or root resource with the same URI pattern already registered";
-               return Response.status(Response.Status.BAD_REQUEST).entity(message).build();
-            }
-         }
-         else
-         {
-            if (!unloadScript(key))
-            {
-               String message =
-                  "Can't unbind script " + path + ", not bound or has wrong mapping to the resource class ";
-               return Response.status(Response.Status.BAD_REQUEST).entity(message).build();
-            }
-         }
+         ResourceId key = new NodeScriptKey(repository, workspace, script);
 
-         return Response.status(Response.Status.NO_CONTENT).build();
+         ScriptMetadata meta = new ScriptMetadata(script.getProperty("exo:autoload").getBoolean(), //
+            groovyPublisher.isPublished(key), //
+            script.getProperty("jcr:mimeType").getString(), //
+            script.getProperty("jcr:lastModified").getDate().getTimeInMillis());
+         return Response.status(Response.Status.OK).entity(meta).type(MediaType.APPLICATION_JSON).build();
       }
       catch (PathNotFoundException e)
       {
-         LOG.error("Path " + path + " does not exists", e);
-         return Response.status(Response.Status.NOT_FOUND).build();
+         String msg = "Path " + path + " does not exists";
+         LOG.error(msg);
+         return Response.status(Response.Status.NOT_FOUND).entity(msg).entity(MediaType.TEXT_PLAIN).build();
       }
       catch (Exception e)
       {
-         LOG.error("Unexpected error occurs ", e);
-         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error. " + e.getMessage())
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
             .type(MediaType.TEXT_PLAIN).build();
       }
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
       }
    }
 
    /**
     * Returns the list of all groovy-scripts found in workspace.
     * 
-    * @param repository Repository name.
-    * @param workspace Workspace name.
-    * @param name Additional search parameter. If not emtpy method returns the
-    *          list of script names matching wildcard else returns all the
-    *          scripts found in workspace.
-    * @return
+    * @param repository repository name
+    * @param workspace workspace name
+    * @param name additional search parameter. If not empty method returns the
+    *           list of script names matching wildcard else returns all the
+    *           scripts found in workspace.
+    * @return list of groovy services
     */
    @POST
    @Produces(MediaType.APPLICATION_JSON)
@@ -1175,11 +1408,9 @@ public class GroovyScript2RestLoader implements Startable
    public Response list(@PathParam("repository") String repository, @PathParam("workspace") String workspace,
       @QueryParam("name") String name)
    {
-
       Session ses = null;
       try
       {
-
          ses =
             sessionProviderService.getSessionProvider(null).getSession(workspace,
                repositoryService.getRepository(repository));
@@ -1192,7 +1423,7 @@ public class GroovyScript2RestLoader implements Startable
 
          ArrayList<String> scriptList = new ArrayList<String>();
 
-         if (name == null || "".equals(name))
+         if (name == null || name.length() == 0)
          {
             while (nodeIterator.hasNext())
             {
@@ -1202,16 +1433,20 @@ public class GroovyScript2RestLoader implements Startable
          }
          else
          {
-            StringBuffer p = new StringBuffer();
+            StringBuilder p = new StringBuilder();
             // add '.*' pattern at the start
             p.append(".*");
             for (int i = 0; i < name.length(); i++)
             {
                char c = name.charAt(i);
                if (c == '*' || c == '?')
+               {
                   p.append('.');
+               }
                if (".()[]^$|".indexOf(c) != -1)
+               {
                   p.append('\\');
+               }
                p.append(c);
             }
             // add '.*' pattern at he end
@@ -1232,18 +1467,87 @@ public class GroovyScript2RestLoader implements Startable
          Collections.sort(scriptList);
          return Response.status(Response.Status.OK).entity(new ScriptList(scriptList)).type(MediaType.APPLICATION_JSON)
             .build();
-
       }
       catch (Exception e)
       {
-         LOG.error("Unexpected error occurs ", e);
-         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity("Unexpected error. " + e.getMessage())
+         LOG.error(e.getMessage(), e);
+         return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(e.getMessage())
             .type(MediaType.TEXT_PLAIN).build();
       }
       finally
       {
          if (ses != null)
+         {
             ses.logout();
+         }
+      }
+   }
+
+   private SourceFolder[] createSourceFolders(List<String> sources) throws MalformedURLException
+   {
+      SourceFolder[] src = null;
+      if (sources != null && sources.size() > 0)
+      {
+         src = new SourceFolder[sources.size()];
+         for (int i = 0; i < sources.size(); i++)
+         {
+            String str = sources.get(i);
+            URL url = null;
+            if (str.startsWith("jcr://"))
+            {
+               url = new URL(null, str, UnifiedNodeReference.getURLStreamHandler());
+            }
+            else
+            {
+               url = new URL(str);
+            }
+            src[i] = new SourceFolder(url);
+         }
+      }
+      return src;
+   }
+
+   private SourceFile[] createSourceFiles(List<String> files) throws MalformedURLException
+   {
+      SourceFile[] srcFiles = null;
+      if (files != null && files.size() > 0)
+      {
+         srcFiles = new SourceFile[files.size()];
+         for (int i = 0; i < files.size(); i++)
+         {
+            String str = files.get(i);
+            URL url = null;
+            if (str.startsWith("jcr://"))
+            {
+               url = new URL(null, str, UnifiedNodeReference.getURLStreamHandler());
+            }
+            else
+            {
+               url = new URL(str);
+            }
+            srcFiles[i] = new SourceFile(url);
+         }
+      }
+      return srcFiles;
+   }
+
+   /**
+    * Get working repository name. Returns the repository name from configuration 
+    * if it previously configured and returns the name of current repository in other case.
+    *  
+    * @return String
+    *           repository name
+    * @throws RepositoryException
+    */
+   private String getWorkingRepositoryName() throws RepositoryException
+   {
+      if (observationListenerConfiguration.getRepository() == null)
+      {
+         return repositoryService.getCurrentRepository().getConfiguration().getName();
+      }
+      else
+      {
+         return observationListenerConfiguration.getRepository();
       }
    }
 
@@ -1253,7 +1557,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param fullPath full path to node
     * @return node's parent path
     */
-   private static String getPath(String fullPath)
+   protected static String getPath(String fullPath)
    {
       int sl = fullPath.lastIndexOf('/');
       return sl > 0 ? "/" + fullPath.substring(0, sl) : "/";
@@ -1265,36 +1569,27 @@ public class GroovyScript2RestLoader implements Startable
     * @param fullPath full path to node
     * @return node's name
     */
-   private static String getName(String fullPath)
+   protected static String getName(String fullPath)
    {
       int sl = fullPath.lastIndexOf('/');
       return sl >= 0 ? fullPath.substring(sl + 1) : fullPath;
    }
 
    /**
-    * Script metadata, used for pass script metada as JSON.
+    * Script meta-data, used for pass script meta-data as JSON.
     */
    public static class ScriptMetadata
    {
-
-      /**
-       * Is script autoload.
-       */
+      /** Is script autoload. */
       private final boolean autoload;
 
-      /**
-       * Is script loaded.
-       */
+      /** Is script loaded. */
       private final boolean load;
 
-      /**
-       * Script media type (script/groovy).
-       */
+      /** Script media type (script/groovy). */
       private final String mediaType;
 
-      /**
-       * Last modified date.
-       */
+      /** Last modified date. */
       private final long lastModified;
 
       public ScriptMetadata(boolean autoload, boolean load, String mediaType, long lastModified)
@@ -1343,15 +1638,10 @@ public class GroovyScript2RestLoader implements Startable
     */
    public static class ScriptList
    {
-
-      /**
-       * The list of scripts.
-       */
+      /** The list of scripts. */
       private List<String> list;
 
       /**
-       * Returns the list of scripts.
-       * 
        * @return the list of scripts.
        */
       public List<String> getList()
@@ -1360,14 +1650,11 @@ public class GroovyScript2RestLoader implements Startable
       }
 
       /**
-       * ScriptList constructor.
-       * 
        * @param the list of scripts
        */
       public ScriptList(List<String> scriptList)
       {
          this.list = scriptList;
       }
-
    }
 }

@@ -23,9 +23,11 @@ import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,7 +46,7 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
    /**
     * Logger instance for this class
     */
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.DefaultChangesFilter");
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexerChangesFilter");
 
    protected final SearchManager searchManager;
 
@@ -78,6 +80,10 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
       this.indexingTree = indexingTree;
       this.handler = handler;
       this.parentHandler = parentHandler;
+      if (log.isDebugEnabled())
+      {
+         log.debug("Will the indexing being enrolled in global transactions : " + isTXAware());
+      }
    }
 
    /**
@@ -105,13 +111,10 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
    }
 
    /**
-    * @see org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener#onSaveItems(org.exoplatform.services.jcr.dataflow.ItemStateChangesLog)
+    * {@inheritDoc}
     */
    public void onSaveItems(ItemStateChangesLog itemStates)
    {
-
-      long time = System.currentTimeMillis();
-
       // nodes that need to be removed from the index.
       final Set<String> removedNodes = new HashSet<String>();
       // nodes that need to be added to the index.
@@ -129,13 +132,16 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
       {
          ItemState itemState = iter.next();
 
-         if (!indexingTree.isExcluded(itemState))
+         if (itemState.isPersisted())
          {
-            acceptChanges(removedNodes, addedNodes, updatedNodes, itemState);
-         }
-         else if (parentIndexingTree != null && !parentIndexingTree.isExcluded(itemState))
-         {
-            acceptChanges(parentRemovedNodes, parentAddedNodes, parentUpdatedNodes, itemState);
+            if (!indexingTree.isExcluded(itemState))
+            {
+               acceptChanges(removedNodes, addedNodes, updatedNodes, itemState);
+            }
+            else if (parentIndexingTree != null && !parentIndexingTree.isExcluded(itemState))
+            {
+               acceptChanges(parentRemovedNodes, parentAddedNodes, parentUpdatedNodes, itemState);
+            }
          }
       }
 
@@ -155,6 +161,13 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
    }
 
    /**
+    * Frees resources associated with changes filter
+    */
+   public void close()
+   {
+   }
+
+   /**
     * @param removedNodes
     * @param addedNodes
     * @param updatedNodes
@@ -163,65 +176,35 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
    private void acceptChanges(final Set<String> removedNodes, final Set<String> addedNodes,
       final Map<String, List<ItemState>> updatedNodes, ItemState itemState)
    {
-      {
-         String uuid =
-            itemState.isNode() ? itemState.getData().getIdentifier() : itemState.getData().getParentIdentifier();
+      String uuid =
+         itemState.isNode() ? itemState.getData().getIdentifier() : itemState.getData().getParentIdentifier();
 
+      if (itemState.isNode())
+      {
          if (itemState.isAdded())
          {
-            if (itemState.isNode())
-            {
-               addedNodes.add(uuid);
-            }
-            else
-            {
-               if (!addedNodes.contains(uuid))
-               {
-                  createNewOrAdd(uuid, itemState, updatedNodes);
-               }
-            }
+            addedNodes.add(uuid);
          }
-         else if (itemState.isRenamed())
-         {
-            if (itemState.isNode())
-            {
-               addedNodes.add(uuid);
-            }
-            else
-            {
-               createNewOrAdd(uuid, itemState, updatedNodes);
-            }
-         }
-         else if (itemState.isUpdated())
-         {
-            createNewOrAdd(uuid, itemState, updatedNodes);
-         }
-         else if (itemState.isMixinChanged())
+         else if (itemState.isRenamed() || itemState.isUpdated() || itemState.isMixinChanged())
          {
             createNewOrAdd(uuid, itemState, updatedNodes);
          }
          else if (itemState.isDeleted())
          {
-            if (itemState.isNode())
+            addedNodes.remove(uuid);
+            removedNodes.add(uuid);
+
+            // remove all changes after node remove
+            updatedNodes.remove(uuid);
+         }
+      }
+      else
+      {
+         if (itemState.isAdded() || itemState.isUpdated() || itemState.isDeleted())
+         {
+            if (!addedNodes.contains(uuid) && !removedNodes.contains(uuid) && !updatedNodes.containsKey(uuid))
             {
-               if (addedNodes.contains(uuid))
-               {
-                  addedNodes.remove(uuid);
-                  removedNodes.remove(uuid);
-               }
-               else
-               {
-                  removedNodes.add(uuid);
-               }
-               // remove all changes after node remove
-               updatedNodes.remove(uuid);
-            }
-            else
-            {
-               if (!removedNodes.contains(uuid) && !addedNodes.contains(uuid))
-               {
-                  createNewOrAdd(uuid, itemState, updatedNodes);
-               }
+               createNewOrAdd(uuid, itemState, updatedNodes);
             }
          }
       }
@@ -232,8 +215,55 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
     * @param removedNodes
     * @param addedNodes
     */
-   protected abstract void doUpdateIndex(Set<String> removedNodes, Set<String> addedNodes,
-      Set<String> parentRemovedNodes, Set<String> parentAddedNodes);
+   protected void doUpdateIndex(Set<String> removedNodes, Set<String> addedNodes, Set<String> parentRemovedNodes,
+      Set<String> parentAddedNodes)
+   {
+      ChangesHolder changes = searchManager.getChanges(removedNodes, addedNodes);
+      ChangesHolder parentChanges = parentSearchManager.getChanges(parentRemovedNodes, parentAddedNodes);
+
+      if (changes == null && parentChanges == null)
+      {
+         return;
+      }
+
+      try
+      {
+         doUpdateIndex(new ChangesFilterListsWrapper(changes, parentChanges));
+      }
+      catch (RuntimeException e)
+      {
+         if (isTXAware())
+         {
+            // The indexing is part of the global tx so the error needs to be thrown to
+            // allow to roll back other resources
+            throw e;
+         }
+         getLogger().error(e.getLocalizedMessage(), e);
+         logErrorChanges(handler, removedNodes, addedNodes);
+         logErrorChanges(parentHandler, parentRemovedNodes, parentAddedNodes);
+      }
+   }
+
+   protected void doUpdateIndex(ChangesFilterListsWrapper changes)
+   {
+   }
+
+   protected Log getLogger()
+   {
+      return log;
+   }
+
+   protected void logErrorChanges(QueryHandler logHandler, Set<String> removedNodes, Set<String> addedNodes)
+   {
+      try
+      {
+         logHandler.logErrorChanges(addedNodes, removedNodes);
+      }
+      catch (IOException ioe)
+      {
+         getLogger().warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
+      }
+   }
 
    private void createNewOrAdd(String key, ItemState state, Map<String, List<ItemState>> updatedNodes)
    {
@@ -252,6 +282,19 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
     */
    public boolean isTXAware()
    {
-      return true;
+      return false;
+   }
+
+   /**
+    * If index is shared across the cluster, which means that all modifications or state changes must be
+    * replicated along cluster. I.e. when hot reindexing is started, the index marked as "shared" will be
+    * set in offline mode within whole cluster. But non-shared index, will only be switched to offline 
+    * locally  
+    * 
+    * @return
+    */
+   public boolean isShared()
+   {
+      return false;
    }
 }

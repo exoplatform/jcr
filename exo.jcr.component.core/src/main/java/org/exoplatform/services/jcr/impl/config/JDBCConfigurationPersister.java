@@ -18,11 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.config;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.config.ConfigurationPersister;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -30,10 +32,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -48,7 +53,7 @@ import javax.sql.DataSource;
 public class JDBCConfigurationPersister implements ConfigurationPersister
 {
 
-   protected static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCConfigurationPersister");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCConfigurationPersister");
 
    public final static String PARAM_SOURCE_NAME = "source-name";
 
@@ -159,7 +164,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       if (DBConstants.DB_DIALECT_GENERIC.equalsIgnoreCase(dialect)
          || DBConstants.DB_DIALECT_HSQLDB.equalsIgnoreCase(dialect))
       {
-         binType = "VARBINARY(102400)"; // 100Kb
+         binType = "VARBINARY(1000000)"; // 1Mb
       }
       else if (DBConstants.DB_DIALECT_PGSQL.equalsIgnoreCase(dialect))
       {
@@ -179,6 +184,13 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
          configTableName = configTableName.toUpperCase().toLowerCase(); // ingres needs it
          binType = "LONG BYTE";
       }
+      else if (DBConstants.DB_DIALECT_MYSQL.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_MYSQL_MYISAM.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8.equalsIgnoreCase(dialect))
+      {
+         binType = "LONGBLOB";
+      }
 
       this.initSQL =
          "CREATE TABLE " + configTableName + " (" + "NAME VARCHAR(64) NOT NULL, " + "CONFIG " + binType + " NOT NULL, "
@@ -196,8 +208,14 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
 
    protected Connection openConnection() throws NamingException, SQLException
    {
-      DataSource ds = (DataSource)new InitialContext().lookup(sourceName);
-      return ds.getConnection();
+      final DataSource ds = (DataSource)new InitialContext().lookup(sourceName);
+      return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
+      {
+         public Connection run() throws Exception
+         {
+            return ds.getConnection();
+         }
+      });
    }
 
    /**
@@ -205,17 +223,16 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
     * 
     * @param con
     */
-   protected boolean isDbInitialized(Connection con)
+   protected boolean isDbInitialized(final Connection con)
    {
-      try
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
       {
-         ResultSet trs = con.getMetaData().getTables(null, null, configTableName, null);
-         return trs.next();
-      }
-      catch (SQLException e)
-      {
-         return false;
-      }
+
+         public Boolean run()
+         {
+            return JDBCUtils.tableExists(configTableName, con);
+         }
+      });
    }
 
    public boolean hasConfig() throws RepositoryConfigurationException
@@ -226,25 +243,52 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       try
       {
          Connection con = openConnection();
-         if (isDbInitialized(con))
+         ResultSet res = null;
+         PreparedStatement ps = null;
+         try
          {
-            // check that data exists
-            PreparedStatement ps = con.prepareStatement("SELECT COUNT(*) FROM " + configTableName + " WHERE NAME=?");
-            try
+            if (isDbInitialized(con))
             {
+               // check that data exists
+               ps = con.prepareStatement("SELECT COUNT(*) FROM " + configTableName + " WHERE NAME=?");
+
                ps.setString(1, CONFIGNAME);
-               ResultSet res = ps.executeQuery();
+               res = ps.executeQuery();
                if (res.next())
                {
                   return res.getInt(1) > 0;
                }
             }
-            finally
-            {
-               con.close();
-            }
+            return false;
          }
-         return false;
+         finally
+         {
+            if (res != null)
+            {
+               try
+               {
+                  res.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the ResultSet: " + e.getMessage());
+               }
+            }
+
+            if (ps != null)
+            {
+               try
+               {
+                  ps.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the Statement: " + e.getMessage());
+               }
+            }
+
+            con.close();
+         }
       }
       catch (final SQLException e)
       {
@@ -264,14 +308,16 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       try
       {
          Connection con = openConnection();
+         ResultSet res = null;
+         PreparedStatement ps = null;
          try
          {
             if (isDbInitialized(con))
             {
 
-               PreparedStatement ps = con.prepareStatement("SELECT * FROM " + configTableName + " WHERE NAME=?");
+               ps = con.prepareStatement("SELECT * FROM " + configTableName + " WHERE NAME=?");
                ps.setString(1, CONFIGNAME);
-               ResultSet res = ps.executeQuery();
+               res = ps.executeQuery();
 
                if (res.next())
                {
@@ -279,17 +325,44 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
                   return config.getStream();
                }
                else
+               {
                   throw new ConfigurationNotFoundException("No configuration data is found in database. Source name "
                      + sourceName);
-
+               }
             }
             else
+            {
                throw new ConfigurationNotInitializedException(
                   "Configuration table not is found in database. Source name " + sourceName);
+            }
 
          }
          finally
          {
+            if (res != null)
+            {
+               try
+               {
+                  res.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the ResultSet: " + e.getMessage());
+               }
+            }
+
+            if (ps != null)
+            {
+               try
+               {
+                  ps.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the Statement: " + e.getMessage());
+               }
+            }
+
             con.close();
          }
       }
@@ -316,29 +389,26 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       try
       {
          Connection con = openConnection();
+         PreparedStatement ps = null;
          try
          {
-
-            con.setAutoCommit(false);
-
             if (!isDbInitialized(con))
             {
                // init db
-               con.createStatement().executeUpdate(sql = initSQL);
+               con.setAutoCommit(true);
+               Statement st = con.createStatement();
+               st.executeUpdate(sql = initSQL);
+               st.close();
 
-               con.commit();
                con.close();
 
                // one new conn
                con = openConnection();
-               con.setAutoCommit(false);
             }
+            con.setAutoCommit(false);
 
             if (isDbInitialized(con))
             {
-
-               PreparedStatement ps = null;
-
                ConfigDataHolder config = new ConfigDataHolder(confData);
 
                if (hasConfig())
@@ -358,20 +428,30 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
 
                if (ps.executeUpdate() <= 0)
                {
-                  LOG
-                     .warn("Repository service configuration doesn't stored ok. No rows was affected in JDBC operation. Datasource "
-                        + sourceName + ". SQL: " + sql);
+                  LOG.warn("Repository service configuration doesn't stored ok. "
+                     + "No rows was affected in JDBC operation. Datasource " + sourceName + ". SQL: " + sql);
                }
             }
             else
+            {
                throw new ConfigurationNotInitializedException(
                   "Configuration table can not be created in database. Source name " + sourceName + ". SQL: " + sql);
-
+            }
             con.commit();
-
          }
          finally
          {
+            if (ps != null)
+            {
+               try
+               {
+                  ps.close();
+               }
+               catch (SQLException e)
+               {
+                  LOG.error("Can't close the Statement: " + e.getMessage());
+               }
+            }
             con.close();
          }
       }

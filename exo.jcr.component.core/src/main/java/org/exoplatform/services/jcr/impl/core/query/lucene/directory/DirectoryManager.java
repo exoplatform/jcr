@@ -16,10 +16,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene.directory;
 
-import java.io.IOException;
-
 import org.apache.lucene.store.Directory;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+
+import java.io.IOException;
 
 /**
  * <code>DirectoryManager</code> defines an interface for managing directory
@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
  */
 public interface DirectoryManager {
 
+   
     /**
      * Initializes the directory manager with a reference to the search index.
      *

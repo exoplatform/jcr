@@ -40,7 +40,7 @@ import javax.jcr.Session;
 public class CmdMkd extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdMkd");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.CmdMkd");
 
    public CmdMkd()
    {
@@ -80,7 +80,9 @@ public class CmdMkd extends FtpCommandImpl
 
             if (replaceForbiddenChars)
             {
-              curPathName = FtpTextUtils.replaceForbiddenChars(curPathName, ftpConfig.getForbiddenChars(), ftpConfig.getReplaceChar());
+               curPathName =
+                        FtpTextUtils.replaceForbiddenChars(curPathName, ftpConfig.getForbiddenChars(), ftpConfig
+                                 .getReplaceChar());
             }
 
             if (parentNode.hasNode(curPathName))
@@ -101,10 +103,14 @@ public class CmdMkd extends FtpCommandImpl
       }
       catch (RepositoryException rexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + rexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       reply(String.format(FtpConst.Replyes.REPLY_550, srcPath));

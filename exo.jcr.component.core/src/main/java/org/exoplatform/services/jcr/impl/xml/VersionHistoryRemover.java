@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -152,12 +153,9 @@ public class VersionHistoryRemover
                vhState = state;
          }
          if (vhState != null && vhState.isDeleted())
-            // [PN] TODO check why we here if VH already isn't exists.
-            // usecase: child version remove when child versionable node is located
-            // as child
-            // of its containing history versionable node.
-            // We may check this case in ChildVersionRemoveVisitor.
+         {
             return;
+         }
 
          throw new RepositoryException("Version history is not found. UUID: " + vhID
             + ". Context item (ancestor to save) " + ancestorToSave.getAsString());
@@ -217,7 +215,8 @@ public class VersionHistoryRemover
          if (ntManager.isNodeType(Constants.NT_VERSIONEDCHILD, vhnode.getPrimaryTypeName(), vhnode.getMixinTypeNames()))
          {
             PropertyData property =
-               (PropertyData)dataManager.getItemData(nodeData, new QPathEntry(Constants.JCR_CHILDVERSIONHISTORY, 1));
+               (PropertyData)dataManager.getItemData(nodeData, new QPathEntry(Constants.JCR_CHILDVERSIONHISTORY, 1),
+                  ItemType.PROPERTY);
 
             if (property == null)
                throw new RepositoryException("Property " + Constants.JCR_CHILDVERSIONHISTORY.getAsString()

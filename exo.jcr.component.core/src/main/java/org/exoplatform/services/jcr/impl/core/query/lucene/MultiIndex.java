@@ -19,21 +19,35 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.store.Directory;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.core.query.IndexRecovery;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
+import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
+import org.exoplatform.services.jcr.impl.core.query.Reindexable;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
+import org.exoplatform.services.rpc.RPCException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -43,9 +57,17 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Queue;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.RepositoryException;
@@ -93,7 +115,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * Names of index directories that can be deleted.
     */
-   private final Set deletable = new HashSet();
+   private final Set<String> deletable = new HashSet<String>();
 
    /**
     * List of open persistent indexes. This list may also contain an open
@@ -101,7 +123,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * registered with indexNames and <b>must not</b> be used in regular index
     * operations (delete node, etc.)!
     */
-   private final List indexes = new ArrayList();
+   private final List<PersistentIndex> indexes = new ArrayList<PersistentIndex>();
+
+   /**
+    * Contains list of open persistent indexes in case when hot async reindexing launched. 
+    */
+   private final List<PersistentIndex> staleIndexes = new ArrayList<PersistentIndex>();
 
    /**
     * The internal namespace mappings of the query manager.
@@ -127,6 +154,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * The volatile index.
     */
    private VolatileIndex volatileIndex;
+
+   private OfflinePersistentIndex offlineIndex;
 
    /**
     * Flag indicating whether an update operation is in progress.
@@ -170,12 +199,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * The <code>IndexMerger</code> for this <code>MultiIndex</code>.
     */
-   private final IndexMerger merger;
+   private IndexMerger merger;
 
    /**
     * Timer to schedule flushes of this index after some idle time.
     */
-   private static final Timer FLUSH_TIMER = new Timer(true);
+   private static final Timer FLUSH_TIMER = new Timer("MultiIndex Flush Timer", true);
 
    /**
     * Task that is periodically called by {@link #FLUSH_TIMER} and checks if
@@ -210,8 +239,15 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
    /**
     * Flag indicating whether re-indexing is running.
+    * Or for any other reason it should be switched
+    * to offline mode.
     */
-   private boolean reindexing = false;
+   private boolean online = true;
+
+   /**
+    * Flag indicating whether the index is stopped.
+    */
+   private volatile boolean stopped;
 
    /**
     * The index format version of this multi index.
@@ -222,6 +258,23 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * The handler of the Indexer io mode
     */
    private final IndexerIoModeHandler modeHandler;
+
+   /**
+    * The shutdown hook
+    */
+   private final Thread hook = new Thread()
+   {
+      @Override
+      public void run()
+      {
+         stopped = true;
+      }
+   };
+
+   /**
+    * The unique id of the workspace corresponding to this multi index
+    */
+   final String workspaceId;
 
    /**
     * Creates a new MultiIndex.
@@ -240,31 +293,29 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       this.modeHandler = modeHandler;
       this.indexUpdateMonitor = indexUpdateMonitor;
       this.directoryManager = handler.getDirectoryManager();
+      // this method is run in privileged mode internally
       this.indexDir = directoryManager.getDirectory(".");
       this.handler = handler;
+      this.workspaceId = handler.getWsId();
       this.cache = new DocNumberCache(handler.getCacheSize());
       this.indexingTree = indexingTree;
       this.nsMappings = handler.getNamespaceMappings();
       this.flushTask = null;
       this.indexNames = indexInfos;
       this.indexNames.setDirectory(indexDir);
+      // this method is run in privileged mode internally
       this.indexNames.read();
+
+      this.lastFileSystemFlushTime = System.currentTimeMillis();
+      this.lastFlushTime = System.currentTimeMillis();
 
       modeHandler.addIndexerIoModeListener(this);
       indexUpdateMonitor.addIndexUpdateMonitorListener(this);
+
+      // this method is run in privileged mode internally
       // as of 1.5 deletable file is not used anymore
       removeDeletable();
 
-      // initialize IndexMerger
-      merger = new IndexMerger(this);
-      merger.setMaxMergeDocs(handler.getMaxMergeDocs());
-      merger.setMergeFactor(handler.getMergeFactor());
-      merger.setMinMergeDocs(handler.getMinMergeDocs());
-
-      IndexingQueueStore store = new IndexingQueueStore(indexDir);
-
-      // initialize indexing queue
-      this.indexingQueue = new IndexingQueue(store);
       // copy current index names
       Set<String> currentNames = new HashSet<String>(indexNames.getNames());
 
@@ -288,8 +339,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          index.setUseCompoundFile(handler.getUseCompoundFile());
          index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
          indexes.add(index);
-         merger.indexAdded(index.getName(), index.getNumDocuments());
       }
+
+      // this method is run in privileged mode internally
+      IndexingQueueStore store = new IndexingQueueStore(indexDir);
+
+      // initialize indexing queue
+      this.indexingQueue = new IndexingQueue(store);
 
       // init volatile index
       resetVolatileIndex();
@@ -308,9 +364,29 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       indexingQueue.initialize(this);
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
+         // will also initialize IndexMerger
          setReadWrite();
       }
       this.indexNames.setMultiIndex(this);
+
+      // Add a hook that will stop the threads if they are still running
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
+      {
+         public Void run()
+         {
+            try
+            {
+               Runtime.getRuntime().addShutdownHook(hook);
+            }
+            catch (IllegalStateException e)
+            {
+               // can't register shutdown hook because
+               // jvm shutdown sequence has already begun,
+               // silently ignore...
+            }
+            return null;
+         }
+      });
    }
 
    /**
@@ -363,40 +439,194 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws IllegalStateException
     *             if this index is not empty.
     */
-   void createInitialIndex(ItemDataConsumer stateMgr) throws IOException
+   void createInitialIndex(ItemDataConsumer stateMgr, boolean doForceReindexing) throws IOException
    {
       // only do an initial index if there are no indexes at all
+      boolean indexCreated = false;
+
+      if (doForceReindexing && !indexes.isEmpty())
+      {
+         log.info("Removing stale indexes (" + handler.getContext().getWorkspacePath(true) + ").");
+
+         List<PersistentIndex> oldIndexes = new ArrayList<PersistentIndex>(indexes);
+         for (PersistentIndex persistentIndex : oldIndexes)
+         {
+            deleteIndex(persistentIndex);
+         }
+         attemptDelete();
+      }
+
       if (indexNames.size() == 0)
       {
-         reindexing = true;
+         setOnline(false, false);
+
          try
          {
-            long count = 0;
-            // traverse and index workspace
-            executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
-            // NodeData rootState = (NodeData) stateMgr.getItemData(rootId);
-            count = createIndex(indexingTree.getIndexingRoot(), stateMgr, count);
-            executeAndLog(new Commit(getTransactionId()));
-            log.info("Created initial index for {} nodes", new Long(count));
-            releaseMultiReader();
-            scheduleFlushTask();
+            // isRecoveryFilterUsed returns true only if LocalIndex strategy used
+            if (handler.getContext().isRecoveryFilterUsed())
+            {
+               // if "from-coordinator" index recovery configured 
+               if (SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR.equals(handler.getIndexRecoveryMode()))
+               {
+                  if (handler.getContext().getIndexRecovery() != null && handler.getContext().getRPCService() != null
+                     && !handler.getContext().getRPCService().isCoordinator())
+                  {
+                     log.info("Retrieving index from coordinator (" + handler.getContext().getWorkspacePath(true)
+                        + ")...");
+                     indexCreated = recoveryIndexFromCoordinator();
+
+                     if (indexCreated)
+                     {
+                        indexNames.read();
+                        refreshIndexList();
+                     }
+                     else
+                     {
+                        log.info("Index can'b be retrieved from coordinator now, because it is offline. "
+                           + "Possibly coordinator node performs reindexing now. Switching to local re-indexing.");
+                     }
+                  }
+                  else
+                  {
+                     if (handler.getContext().getRPCService() == null)
+                     {
+                        // logging an event, when RPCService is not configured in clustered mode
+                        log.error("RPC Service is not configured but required for copying the index "
+                           + "from coordinator node. Index will be created by re-indexing.");
+                     }
+                     else
+                     {
+                        if (handler.getContext().getIndexRecovery() == null)
+                        {
+                           // Should never occurs, but logging an event, when RPCService configured, but IndexRecovery
+                           // instance is missing
+                           log.error("Instance of IndexRecovery class is missing for unknown reason. Index will be"
+                              + " created by re-indexing.");
+                        }
+                        if (handler.getContext().getRPCService().isCoordinator())
+                        {
+                           // logging an event when first node starts
+                           log.info("Copying the index from coordinator configured, but this node is the "
+                              + "only one in a cluster. Index will be created by re-indexing.");
+                        }
+                     }
+                  }
+               }
+            }
+
+            if (!indexCreated)
+            {
+               // traverse and index workspace
+               executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
+
+               long count;
+
+               // check if we have deal with RDBMS reindexing mechanism
+               Reindexable rdbmsReindexableComponent =
+                  (Reindexable)handler.getContext().getContainer().getComponent(Reindexable.class);
+
+               if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
+                  && rdbmsReindexableComponent.isReindexingSupport())
+               {
+                  count =
+                     createIndex(
+                        rdbmsReindexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
+                        indexingTree.getIndexingRoot());
+               }
+               else
+               {
+                  count = createIndex(indexingTree.getIndexingRoot(), stateMgr);
+               }
+
+               executeAndLog(new Commit(getTransactionId()));
+               log.info("Initial index for {} nodes created ({}).", new Long(count), handler.getContext()
+                  .getWorkspacePath(true));
+               releaseMultiReader();
+               scheduleFlushTask();
+            }
          }
-         catch (Exception e)
+         catch (IOException e)
          {
-            String msg = "Error indexing workspace";
+            String msg = "Error indexing workspace.";
+            IOException ex = new IOException(msg);
+            ex.initCause(e);
+            throw ex;
+         }
+         catch (RPCException e)
+         {
+            String msg = "Error indexing workspace.";
+            IOException ex = new IOException(msg);
+            ex.initCause(e);
+            throw ex;
+         }
+         catch (RepositoryException e)
+         {
+            String msg = "Error indexing workspace.";
+            IOException ex = new IOException(msg);
+            ex.initCause(e);
+            throw ex;
+         }
+         catch (SuspendException e)
+         {
+            String msg = "Error indexing workspace.";
             IOException ex = new IOException(msg);
             ex.initCause(e);
             throw ex;
          }
          finally
          {
-            reindexing = false;
+            setOnline(true, false);
          }
       }
       else
       {
-         throw new IllegalStateException("Index already present");
+         throw new IllegalStateException("Index already present.");
       }
+   }
+
+   /**
+    * Recreates index by reindexing in runtime.
+    * 
+    * @param stateMgr
+    * @throws RepositoryException 
+    */
+   public void reindex(ItemDataConsumer stateMgr) throws IOException, RepositoryException
+   {
+      if (stopped)
+      {
+         throw new IllegalStateException("Can't invoke reindexing on closed index.");
+      }
+
+      if (online)
+      {
+         throw new IllegalStateException("Can't invoke reindexing while index still online.");
+      }
+
+      // traverse and index workspace
+      executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
+
+      long count;
+
+      // check if we have deal with RDBMS reindexing mechanism
+      Reindexable rdbmsReindexableComponent =
+         (Reindexable)handler.getContext().getContainer().getComponent(Reindexable.class);
+
+      if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
+         && rdbmsReindexableComponent.isReindexingSupport())
+      {
+         count =
+            createIndex(rdbmsReindexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
+               indexingTree.getIndexingRoot());
+      }
+      else
+      {
+         count = createIndex(indexingTree.getIndexingRoot(), stateMgr);
+      }
+
+      executeAndLog(new Commit(getTransactionId()));
+      log.info("Created initial index for {} nodes", new Long(count));
+      releaseMultiReader();
+
    }
 
    /**
@@ -413,14 +643,172 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws IOException
     *             if an error occurs while updating the index.
     */
-   synchronized void update(Collection remove, Collection add) throws IOException
+   synchronized void update(final Collection<String> remove, final Collection<Document> add) throws IOException
+   {
+      if (!online)
+      {
+         doUpdateOffline(remove, add);
+      }
+      else if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+      {
+         doUpdateRW(remove, add);
+      }
+      else
+      {
+         doUpdateRO(remove, add);
+      }
+   }
+
+   /**
+    * Performs indexing into volatile index in case of Read_Only mode. This ensures that node
+    * was not present in latest persistent index in case of coordinator has just committed the index
+    * 
+    * @param remove
+    * @param add
+    * @throws IOException
+    */
+   private void doUpdateRO(final Collection<String> remove, final Collection<Document> add) throws IOException
+   {
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            // make sure a reader is available during long updates
+            if (add.size() > handler.getBufferSize())
+            {
+               try
+               {
+                  releaseMultiReader();
+               }
+               catch (IOException e)
+               {
+                  // do not fail if an exception is thrown here
+                  log.warn("unable to prepare index reader " + "for queries during update", e);
+               }
+            }
+            ReadOnlyIndexReader lastIndexReader = null;
+            try
+            {
+               for (Iterator<String> it = remove.iterator(); it.hasNext();)
+               {
+                  Term idTerm = new Term(FieldNames.UUID, it.next());
+                  volatileIndex.removeDocument(idTerm);
+               }
+
+               // try to avoid getting index reader for each doc
+               int lastIndexReaderId = indexes.size() - 1;
+               // check, index list can be empty
+               try
+               {
+                  lastIndexReader =
+                     (lastIndexReaderId >= 0) ? (indexes.get(lastIndexReaderId)).getReadOnlyIndexReader() : null;
+               }
+               catch (Throwable e)
+               {
+                  // this is safe index reader retrieval. The last index already closed, possibly merged or 
+                  // any other exception that occurs here
+               }
+
+               for (Iterator<Document> it = add.iterator(); it.hasNext();)
+               {
+                  Document doc = it.next();
+                  if (doc != null)
+                  {
+                     // check if this item should be placed in own volatile index
+                     // usually it must be indexed, but exception if it exists in persisted index
+                     boolean addDoc = true;
+
+                     // make this check safe if something goes wrong
+                     String uuid = doc.get(FieldNames.UUID);
+                     // if remove contains uuid, node should be re-indexed
+                     // if not, than should be checked if node present in the last persisted index
+                     if (!remove.contains(uuid))
+                     {
+                        // if index list changed, get the reader on the latest index
+                        // or if index reader is not current
+                        if (lastIndexReaderId != indexes.size() - 1
+                           || (lastIndexReader != null && !lastIndexReader.isCurrent()))
+                        {
+                           // safe release reader
+                           if (lastIndexReader != null)
+                           {
+                              lastIndexReader.release();
+                           }
+                           lastIndexReaderId = indexes.size() - 1;
+                           try
+                           {
+                              lastIndexReader = (indexes.get(lastIndexReaderId)).getReadOnlyIndexReader();
+                           }
+                           catch (Throwable e)
+                           {
+                              // this is safe index reader retrieval. The last index already closed, 
+                              // possibly merged or any other exception that occurs here
+                              lastIndexReader = null;
+                              lastIndexReaderId = -1;
+                           }
+                        }
+                        // if indexReader exists (it is possible that no persisted indexes exists on start)
+                        if (lastIndexReader != null)
+                        {
+                           try
+                           {
+                              // reader from resisted index should be 
+                              TermDocs termDocs = lastIndexReader.termDocs(new Term(FieldNames.UUID, uuid));
+                              // node should be indexed if not found in persistent index
+                              addDoc = termDocs == null;
+                           }
+                           catch (Exception e)
+                           {
+                              log.debug("Some exception occured, during index check");
+                           }
+                        }
+                     }
+
+                     if (addDoc)
+                     {
+                        volatileIndex.addDocuments(new Document[]{doc});
+                        // reset volatile index if needed
+                        if (volatileIndex.getRamSizeInBytes() >= handler.getMaxVolatileIndexSize())
+                        {
+                           // to avoid out of memory 
+                           resetVolatileIndex();
+                        }
+                     }
+                  }
+               }
+            }
+            finally
+            {
+               // don't forget to release a reader anyway
+               if (lastIndexReader != null)
+               {
+                  lastIndexReader.release();
+               }
+               synchronized (updateMonitor)
+               {
+                  releaseMultiReader();
+               }
+            }
+            return null;
+         }
+      });
+   }
+
+   /**
+    * For investigation purposes only
+    * 
+    * @param remove
+    * @param add
+    * @throws IOException
+    */
+   private void doUpdateRW(final Collection<String> remove, final Collection<Document> add) throws IOException
    {
       // make sure a reader is available during long updates
       if (add.size() > handler.getBufferSize())
       {
          try
          {
-            getIndexReader().release();
+            releaseMultiReader();
          }
          catch (IOException e)
          {
@@ -440,13 +828,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          long transactionId = nextTransactionId++;
          executeAndLog(new Start(transactionId));
 
-         for (Iterator it = remove.iterator(); it.hasNext();)
+         for (Iterator<String> it = remove.iterator(); it.hasNext();)
          {
-            executeAndLog(new DeleteNode(transactionId, (String)it.next()));
+            executeAndLog(new DeleteNode(transactionId, it.next()));
          }
-         for (Iterator it = add.iterator(); it.hasNext();)
+         for (Iterator<Document> it = add.iterator(); it.hasNext();)
          {
-            Document doc = (Document)it.next();
+            Document doc = it.next();
             if (doc != null)
             {
                executeAndLog(new AddNode(transactionId, doc));
@@ -480,6 +868,73 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
    }
 
+   private void invokeOfflineIndex() throws IOException
+   {
+      List<String> processedIDs = offlineIndex.getProcessedIDs();
+      if (!processedIDs.isEmpty())
+      {
+         // remove all nodes placed in offline index
+         update(processedIDs, Collections.<Document> emptyList());
+
+         executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
+
+         // create index
+         CreateIndex create = new CreateIndex(getTransactionId(), null);
+         executeAndLog(create);
+
+         // invoke offline (copy offline into working index)
+         executeAndLog(new OfflineInvoke(getTransactionId(), create.getIndexName()));
+
+         // add new index
+         AddIndex add = new AddIndex(getTransactionId(), create.getIndexName());
+         executeAndLog(add);
+
+         executeAndLog(new Commit(getTransactionId()));
+
+         indexNames.write();
+      }
+      offlineIndex.close();
+      deleteIndex(offlineIndex);
+      offlineIndex = null;
+   }
+
+   /**
+    * Performs indexing while re-indexing is in progress
+    * 
+    * @param remove
+    * @param add
+    * @throws IOException
+    */
+   private void doUpdateOffline(final Collection<String> remove, final Collection<Document> add) throws IOException
+   {
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            for (Iterator<String> it = remove.iterator(); it.hasNext();)
+            {
+               Term idTerm = new Term(FieldNames.UUID, it.next());
+               offlineIndex.removeDocument(idTerm);
+            }
+
+            for (Iterator<Document> it = add.iterator(); it.hasNext();)
+            {
+               Document doc = it.next();
+               if (doc != null)
+               {
+                  offlineIndex.addDocuments(new Document[]{doc});
+                  // reset volatile index if needed
+                  if (offlineIndex.getRamSizeInBytes() >= handler.getMaxVolatileIndexSize())
+                  {
+                     offlineIndex.commit();
+                  }
+               }
+            }
+            return null;
+         }
+      });
+   }
+
    /**
     * Adds a document to the index.
     * 
@@ -490,7 +945,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void addDocument(Document doc) throws IOException
    {
-      update(Collections.EMPTY_LIST, Arrays.asList(new Document[]{doc}));
+      update(Collections.<String> emptyList(), Arrays.asList(new Document[]{doc}));
    }
 
    /**
@@ -503,7 +958,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void removeDocument(String uuid) throws IOException
    {
-      update(Arrays.asList(new String[]{uuid}), Collections.EMPTY_LIST);
+      update(Arrays.asList(new String[]{uuid}), Collections.<Document> emptyList());
    }
 
    /**
@@ -534,7 +989,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          for (int i = 0; i < indexes.size(); i++)
          {
-            PersistentIndex index = (PersistentIndex)indexes.get(i);
+            PersistentIndex index = indexes.get(i);
             // only remove documents from registered indexes
             if (indexNames.contains(index.getName()))
             {
@@ -581,14 +1036,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    synchronized IndexReader[] getIndexReaders(String[] indexNames, IndexListener listener) throws IOException
    {
-      Set names = new HashSet(Arrays.asList(indexNames));
-      Map indexReaders = new HashMap();
+      Set<String> names = new HashSet<String>(Arrays.asList(indexNames));
+      Map<ReadOnlyIndexReader, PersistentIndex> indexReaders = new HashMap<ReadOnlyIndexReader, PersistentIndex>();
 
       try
       {
-         for (Iterator it = indexes.iterator(); it.hasNext();)
+         for (Iterator<PersistentIndex> it = indexes.iterator(); it.hasNext();)
          {
-            PersistentIndex index = (PersistentIndex)it.next();
+            PersistentIndex index = it.next();
             if (names.contains(index.getName()))
             {
                indexReaders.put(index.getReadOnlyIndexReader(listener), index);
@@ -598,24 +1053,32 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       catch (IOException e)
       {
          // release readers obtained so far
-         for (Iterator it = indexReaders.entrySet().iterator(); it.hasNext();)
+         for (Iterator<Entry<ReadOnlyIndexReader, PersistentIndex>> it = indexReaders.entrySet().iterator(); it
+            .hasNext();)
          {
-            Map.Entry entry = (Map.Entry)it.next();
-            ReadOnlyIndexReader reader = (ReadOnlyIndexReader)entry.getKey();
+            Map.Entry<ReadOnlyIndexReader, PersistentIndex> entry = it.next();
+            final ReadOnlyIndexReader reader = entry.getKey();
             try
             {
-               reader.release();
+               SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+               {
+                  public Object run() throws Exception
+                  {
+                     reader.release();
+                     return null;
+                  }
+               });
             }
             catch (IOException ex)
             {
                log.warn("Exception releasing index reader: " + ex);
             }
-            ((PersistentIndex)entry.getValue()).resetListener();
+            (entry.getValue()).resetListener();
          }
          throw e;
       }
 
-      return (IndexReader[])indexReaders.keySet().toArray(new IndexReader[indexReaders.size()]);
+      return indexReaders.keySet().toArray(new IndexReader[indexReaders.size()]);
    }
 
    /**
@@ -632,9 +1095,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    synchronized PersistentIndex getOrCreateIndex(String indexName) throws IOException
    {
       // check existing
-      for (Iterator it = indexes.iterator(); it.hasNext();)
+      for (Iterator<PersistentIndex> it = indexes.iterator(); it.hasNext();)
       {
-         PersistentIndex idx = (PersistentIndex)it.next();
+         PersistentIndex idx = it.next();
          if (idx.getName().equals(indexName))
          {
             return idx;
@@ -694,9 +1157,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    synchronized boolean hasIndex(String indexName) throws IOException
    {
       // check existing
-      for (Iterator it = indexes.iterator(); it.hasNext();)
+      for (Iterator<PersistentIndex> it = indexes.iterator(); it.hasNext();)
       {
-         PersistentIndex idx = (PersistentIndex)it.next();
+         PersistentIndex idx = it.next();
          if (idx.getName().equals(indexName))
          {
             return true;
@@ -722,16 +1185,24 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws IOException
     *             if an exception occurs while replacing the indexes.
     */
-   void replaceIndexes(String[] obsoleteIndexes, PersistentIndex index, Collection deleted) throws IOException
+   void replaceIndexes(String[] obsoleteIndexes, final PersistentIndex index, Collection<Term> deleted)
+      throws IOException
    {
 
       if (handler.isInitializeHierarchyCache())
       {
          // force initializing of caches
-         long time = System.currentTimeMillis();
+         long time = 0;
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();
+         }
          index.getReadOnlyIndexReader(true).release();
-         time = System.currentTimeMillis() - time;
-         log.debug("hierarchy cache initialized in {} ms", new Long(time));
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis() - time;
+            log.debug("hierarchy cache initialized in {} ms", new Long(time));
+         }
       }
 
       synchronized (this)
@@ -744,16 +1215,16 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          try
          {
             // if we are reindexing there is already an active transaction
-            if (!reindexing)
+            if (online)
             {
                executeAndLog(new Start(Action.INTERNAL_TRANS_REPL_INDEXES));
             }
             // delete obsolete indexes
-            Set names = new HashSet(Arrays.asList(obsoleteIndexes));
-            for (Iterator it = names.iterator(); it.hasNext();)
+            Set<String> names = new HashSet<String>(Arrays.asList(obsoleteIndexes));
+            for (Iterator<String> it = names.iterator(); it.hasNext();)
             {
                // do not try to delete indexes that are already gone
-               String indexName = (String)it.next();
+               String indexName = it.next();
                if (indexNames.contains(indexName))
                {
                   executeAndLog(new DeleteIndex(getTransactionId(), indexName));
@@ -768,19 +1239,26 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             executeAndLog(new AddIndex(getTransactionId(), index.getName()));
 
             // delete documents in index
-            for (Iterator it = deleted.iterator(); it.hasNext();)
+            for (Iterator<Term> it = deleted.iterator(); it.hasNext();)
             {
-               Term id = (Term)it.next();
+               Term id = it.next();
                index.removeDocument(id);
             }
             index.commit();
 
-            if (!reindexing)
+            if (online)
             {
                // only commit if we are not reindexing
                // when reindexing the final commit is done at the very end
                executeAndLog(new Commit(getTransactionId()));
             }
+            // force IndexInfos (IndexNames) to be written on FS and both be replicated over cluster
+            // for non-coordinator cluster nodes be notified of new index list ASAP. This may avoid race 
+            // conditions when coordinator invokes flush() which performs indexNames.write()
+            // and deletes obsolete index just after. Making this list be written now, will notify non-
+            // coordinator node about new merged index and obsolete indexes long time before they will
+            // be deleted.
+            indexNames.write();
          }
          finally
          {
@@ -793,7 +1271,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
          }
       }
-      if (reindexing)
+      if (!online)
       {
          // do some cleanup right away when reindexing
          attemptDelete();
@@ -824,60 +1302,70 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws IOException
     *             if an error occurs constructing the <code>IndexReader</code>.
     */
-   public synchronized CachingMultiIndexReader getIndexReader(boolean initCache) throws IOException
+   public synchronized CachingMultiIndexReader getIndexReader(final boolean initCache) throws IOException
    {
-      synchronized (updateMonitor)
+      return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<CachingMultiIndexReader>()
       {
-         if (multiReader != null)
+         public CachingMultiIndexReader run() throws Exception
          {
-            multiReader.acquire();
-            return multiReader;
-         }
-         // no reader available
-         // wait until no update is in progress
-         while (indexUpdateMonitor.getUpdateInProgress())
-         {
-            try
+            synchronized (updateMonitor)
             {
-               updateMonitor.wait();
-            }
-            catch (InterruptedException e)
-            {
-               throw new IOException("Interrupted while waiting to aquire reader");
-            }
-         }
-         // some other read thread might have created the reader in the
-         // meantime -> check again
-         if (multiReader == null)
-         {
-            List readerList = new ArrayList();
-            for (int i = 0; i < indexes.size(); i++)
-            {
-               PersistentIndex pIdx = (PersistentIndex)indexes.get(i);
-
-               if (indexNames.contains(pIdx.getName()))
+               if (multiReader != null)
+               {
+                  multiReader.acquire();
+                  return multiReader;
+               }
+               // no reader available
+               // wait until no update is in progress
+               while (indexUpdateMonitor.getUpdateInProgress())
                {
                   try
                   {
-                     readerList.add(pIdx.getReadOnlyIndexReader(initCache));
+                     updateMonitor.wait();
                   }
-                  catch (FileNotFoundException e)
+                  catch (InterruptedException e)
                   {
-                     if (directoryManager.hasDirectory(pIdx.getName()))
-                     {
-                        throw e;
-                     }
+                     throw new IOException("Interrupted while waiting to aquire reader");
                   }
                }
+               // some other read thread might have created the reader in the
+               // meantime -> check again
+               if (multiReader == null)
+               {
+                  // if index in offline mode, due to hot async reindexing,
+                  // need to return the reader containing only stale indexes (old),
+                  // without newly created.
+                  List<PersistentIndex> persistedIndexesList = online ? indexes : staleIndexes;
+                  List<ReadOnlyIndexReader> readerList = new ArrayList<ReadOnlyIndexReader>();
+                  for (int i = 0; i < persistedIndexesList.size(); i++)
+                  {
+                     PersistentIndex pIdx = persistedIndexesList.get(i);
+
+                     if (indexNames.contains(pIdx.getName()))
+                     {
+                        try
+                        {
+                           readerList.add(pIdx.getReadOnlyIndexReader(initCache));
+                        }
+                        catch (FileNotFoundException e)
+                        {
+                           if (directoryManager.hasDirectory(pIdx.getName()))
+                           {
+                              throw e;
+                           }
+                        }
+                     }
+                  }
+                  readerList.add(volatileIndex.getReadOnlyIndexReader());
+                  ReadOnlyIndexReader[] readers = readerList.toArray(new ReadOnlyIndexReader[readerList.size()]);
+                  multiReader = new CachingMultiIndexReader(readers, cache);
+               }
+               multiReader.acquire();
+               return multiReader;
             }
-            readerList.add(volatileIndex.getReadOnlyIndexReader());
-            ReadOnlyIndexReader[] readers =
-               (ReadOnlyIndexReader[])readerList.toArray(new ReadOnlyIndexReader[readerList.size()]);
-            multiReader = new CachingMultiIndexReader(readers, cache);
          }
-         multiReader.acquire();
-         return multiReader;
-      }
+      });
+
    }
 
    /**
@@ -890,36 +1378,44 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       return volatileIndex;
    }
 
+   OfflinePersistentIndex getOfflinePersistentIndex()
+   {
+      return offlineIndex;
+   }
+
    /**
     * Closes this <code>MultiIndex</code>.
     */
    void close()
    {
-      if (modeHandler.getMode().equals(IndexerIoMode.READ_WRITE))
+      // stop index merger
+      // when calling this method we must not lock this MultiIndex, otherwise
+      // a deadlock might occur
+      if (merger != null)
       {
-
-         // stop index merger
-         // when calling this method we must not lock this MultiIndex, otherwise
-         // a deadlock might occur
          merger.dispose();
+         merger = null;
+      }
 
-         synchronized (this)
+      synchronized (this)
+      {
+         // stop timer
+         if (flushTask != null)
          {
-            // stop timer
-            if (flushTask != null)
-            {
-               flushTask.cancel();
-            }
+            flushTask.cancel();
+         }
 
-            // commit / close indexes
-            try
-            {
-               releaseMultiReader();
-            }
-            catch (IOException e)
-            {
-               log.error("Exception while closing search index.", e);
-            }
+         // commit / close indexes
+         try
+         {
+            releaseMultiReader();
+         }
+         catch (IOException e)
+         {
+            log.error("Exception while closing search index.", e);
+         }
+         if (modeHandler.getMode().equals(IndexerIoMode.READ_WRITE))
+         {
             try
             {
                flush();
@@ -928,25 +1424,46 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             {
                log.error("Exception while closing search index.", e);
             }
-            volatileIndex.close();
-            for (int i = 0; i < indexes.size(); i++)
-            {
-               ((PersistentIndex)indexes.get(i)).close();
-            }
-
-            // close indexing queue
-            indexingQueue.close();
-
-            // finally close directory
-            try
-            {
-               indexDir.close();
-            }
-            catch (IOException e)
-            {
-               log.error("Exception while closing directory.", e);
-            }
          }
+         volatileIndex.close();
+         for (int i = 0; i < indexes.size(); i++)
+         {
+            (indexes.get(i)).close();
+         }
+
+         // close indexing queue
+         indexingQueue.close();
+
+         // finally close directory
+         try
+         {
+            indexDir.close();
+         }
+         catch (IOException e)
+         {
+            log.error("Exception while closing directory.", e);
+         }
+         modeHandler.removeIndexerIoModeListener(this);
+         indexUpdateMonitor.removeIndexUpdateMonitorListener(this);
+         this.stopped = true;
+         // Remove the hook that will stop the threads if they are still running
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
+         {
+            public Void run()
+            {
+               try
+               {
+                  Runtime.getRuntime().removeShutdownHook(hook);
+               }
+               catch (IllegalStateException e)
+               {
+                  // can't register shutdown hook because
+                  // jvm shutdown sequence has already begun,
+                  // silently ignore...
+               }
+               return null;
+            }
+         });
       }
    }
 
@@ -980,6 +1497,20 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *             if an error occurs while reading from the workspace.
     */
    Document createDocument(NodeData node) throws RepositoryException
+   {
+      return createDocument(new NodeDataIndexing(node));
+   }
+
+   /**
+    * Returns a lucene Document for the <code>node</code>.
+    * 
+    * @param node
+    *            the node to index wrapped into NodeDataIndexing
+    * @return the index document.
+    * @throws RepositoryException
+    *             if an error occurs while reading from the workspace.
+    */
+   Document createDocument(NodeDataIndexing node) throws RepositoryException
    {
       return handler.createDocument(node, nsMappings, version);
    }
@@ -1052,44 +1583,51 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    public void flush() throws IOException
    {
-      synchronized (this)
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
       {
-         // commit volatile index
-         executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
-         commitVolatileIndex();
-
-         // commit persistent indexes
-         for (int i = indexes.size() - 1; i >= 0; i--)
+         public Void run() throws Exception
          {
-            PersistentIndex index = (PersistentIndex)indexes.get(i);
-            // only commit indexes we own
-            // index merger also places PersistentIndex instances in
-            // indexes,
-            // but does not make them public by registering the name in
-            // indexNames
-            if (indexNames.contains(index.getName()))
+            synchronized (this)
             {
-               index.commit();
-               // check if index still contains documents
-               if (index.getNumDocuments() == 0)
+               // commit volatile index
+               executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
+               commitVolatileIndex();
+
+               // commit persistent indexes
+               for (int i = indexes.size() - 1; i >= 0; i--)
                {
-                  executeAndLog(new DeleteIndex(getTransactionId(), index.getName()));
+                  PersistentIndex index = indexes.get(i);
+                  // only commit indexes we own
+                  // index merger also places PersistentIndex instances in
+                  // indexes,
+                  // but does not make them public by registering the name in
+                  // indexNames
+                  if (indexNames.contains(index.getName()))
+                  {
+                     index.commit();
+                     // check if index still contains documents
+                     if (index.getNumDocuments() == 0)
+                     {
+                        executeAndLog(new DeleteIndex(getTransactionId(), index.getName()));
+                     }
+                  }
                }
+               executeAndLog(new Commit(getTransactionId()));
+
+               indexNames.write();
+
+               // reset redo log
+               redoLog.clear();
+
+               lastFlushTime = System.currentTimeMillis();
+               lastFileSystemFlushTime = System.currentTimeMillis();
             }
+
+            // delete obsolete indexes
+            attemptDelete();
+            return null;
          }
-         executeAndLog(new Commit(getTransactionId()));
-
-         indexNames.write();
-
-         // reset redo log
-         redoLog.clear();
-
-         lastFlushTime = System.currentTimeMillis();
-         lastFileSystemFlushTime = System.currentTimeMillis();
-      }
-
-      // delete obsolete indexes
-      attemptDelete();
+      });
    }
 
    /**
@@ -1120,8 +1658,28 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
    }
 
-   // -------------------------< internal
-   // >-------------------------------------
+   // -------------------------< internal >-------------------------------------
+
+   /**
+    * Initialize IndexMerger.
+    */
+   private void initMerger() throws IOException
+   {
+      if (merger != null)
+      {
+         log.info("IndexMerger initialization called twice.");
+      }
+      merger = new IndexMerger(this);
+      merger.setMaxMergeDocs(handler.getMaxMergeDocs());
+      merger.setMergeFactor(handler.getMergeFactor());
+      merger.setMinMergeDocs(handler.getMinMergeDocs());
+
+      for (Object index : indexes)
+      {
+         merger.indexAdded(((PersistentIndex)index).getName(), ((PersistentIndex)index).getNumDocuments());
+      }
+      merger.start();
+   }
 
    /**
     * Enqueues unused segments for deletion in {@link #deletable}. This method
@@ -1159,6 +1717,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       // new flush task, cause canceled can't be re-used
       flushTask = new TimerTask()
       {
+         @Override
          public void run()
          {
             // check if there are any indexing jobs finished
@@ -1204,9 +1763,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *             if an error occurs while executing the action or appending
     *             the action to the redo log.
     */
-   private Action executeAndLog(Action a) throws IOException
+   private Action executeAndLog(final Action a) throws IOException
    {
-      a.execute(this);
+      a.execute(MultiIndex.this);
       redoLog.append(a);
       // please note that flushing the redo log is only required on
       // commit, but we also want to keep track of new indexes for sure.
@@ -1235,12 +1794,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          commitVolatileIndex();
          return true;
       }
-      long volatileTime = System.currentTimeMillis() - lastFileSystemFlushTime;
-      if (handler.getMaxVolatileTime() > 0 && volatileTime >= handler.getMaxVolatileTime() * 1000)
-      {
-         commitVolatileIndex();
-         return true;
-      }
       return false;
    }
 
@@ -1259,7 +1812,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       if (volatileIndex.getNumDocuments() > 0)
       {
 
-         long time = System.currentTimeMillis();
+         long time = 0;
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();
+         }
          // create index
          CreateIndex create = new CreateIndex(getTransactionId(), null);
          executeAndLog(create);
@@ -1274,8 +1831,97 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // create new volatile index
          resetVolatileIndex();
 
-         time = System.currentTimeMillis() - time;
-         log.debug("Committed in-memory index in " + time + "ms.");
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis() - time;
+            log.debug("Committed in-memory index in " + time + "ms.");
+         }
+      }
+   }
+
+   private long createIndex(NodeData node, ItemDataConsumer stateMgr) throws IOException, RepositoryException
+   {
+      MultithreadedIndexing indexing = new MultithreadedIndexing(node, stateMgr);
+      return indexing.launch(false);
+   }
+
+   /**
+    * Recursively creates an index starting with the NodeState
+    * <code>node</code>.
+    * 
+    * @param tasks
+    *            the queue of existing indexing tasks 
+    * @param node
+    *            the current NodeState.
+    * @param stateMgr
+    *            the shared item state manager.
+    * @param count
+    *            the number of nodes already indexed.
+    * @throws IOException
+    *             if an error occurs while writing to the index.
+    * @throws ItemStateException
+    *             if an node state cannot be found.
+    * @throws RepositoryException
+    *             if any other error occurs
+    * @throws InterruptedException
+    *             if the task has been interrupted 
+    */
+   private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
+      final AtomicLong count) throws IOException, RepositoryException, InterruptedException
+   {
+      if (stopped)
+      {
+         throw new InterruptedException();
+      }
+
+      if (indexingTree.isExcluded(node))
+      {
+         return;
+      }
+
+      executeAndLog(new AddNode(getTransactionId(), node.getIdentifier(), true));
+      if (count.incrementAndGet() % 1000 == 0)
+      {
+         log.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count.get()));
+      }
+
+      synchronized (this)
+      {
+         if (count.get() % 10 == 0)
+         {
+            checkIndexingQueue(true);
+         }
+         checkVolatileCommit();
+      }
+
+      List<NodeData> children = null;
+      try
+      {
+         children = stateMgr.getChildNodesData(node);
+      }
+      catch (RepositoryException e)
+      {
+         log.error(
+            "Error indexing subtree " + node.getQPath().getAsString() + ". Check JCR consistency. " + e.getMessage(), e);
+         return;
+      }
+
+      for (final NodeData nodeData : children)
+      {
+
+         Callable<Void> task = new Callable<Void>()
+         {
+            public Void call() throws Exception
+            {
+               createIndex(tasks, node, stateMgr, count, nodeData);
+               return null;
+            }
+         };
+         if (!tasks.offer(task))
+         {
+            // All threads have tasks to do so we do it ourself
+            createIndex(tasks, node, stateMgr, count, nodeData);
+         }
       }
    }
 
@@ -1283,60 +1929,166 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * Recursively creates an index starting with the NodeState
     * <code>node</code>.
     * 
+    * @param tasks
+    *            the queue of existing indexing tasks 
     * @param node
     *            the current NodeState.
-    * @param path
-    *            the path of the current node.
     * @param stateMgr
     *            the shared item state manager.
     * @param count
     *            the number of nodes already indexed.
-    * @return the number of nodes indexed so far.
+    * @param nodeData
+    *            the node data to index.
     * @throws IOException
     *             if an error occurs while writing to the index.
     * @throws ItemStateException
     *             if an node state cannot be found.
     * @throws RepositoryException
     *             if any other error occurs
+    * @throws InterruptedException
+    *             if the task has been interrupted 
     */
-   private long createIndex(NodeData node, ItemDataConsumer stateMgr, long count) throws IOException,
+   private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
+      final AtomicLong count, final NodeData nodeData) throws RepositoryException, IOException, InterruptedException
+   {
+      NodeData childState = null;
+      try
+      {
+         childState = (NodeData)stateMgr.getItemData(nodeData.getIdentifier());
+      }
+      catch (RepositoryException e)
+      {
+         log.error(
+            "Error indexing subtree " + node.getQPath().getAsString() + ". Check JCR consistency. " + e.getMessage(), e);
+         return;
+      }
+
+      if (childState == null)
+      {
+         log.error("Error indexing subtree " + node.getQPath().getAsString() + ". Item not found.");
+         return;
+      }
+
+      if (nodeData != null)
+      {
+         createIndex(tasks, nodeData, stateMgr, count);
+      }
+   }
+
+   /**
+    * Create index.
+    * 
+    * @param iterator
+    *             the NodeDataIndexing iterator            
+    * @param rootNode
+    *            the root node of the index 
+    * @return the total amount of indexed nodes           
+    * @throws IOException
+    *             if an error occurs while writing to the index.
+    * @throws RepositoryException
+    *             if any other error occurs
+    */
+   private long createIndex(NodeDataIndexingIterator iterator, NodeData rootNode) throws IOException,
       RepositoryException
    {
-      // NodeId id = node.getNodeId();
+      MultithreadedIndexing indexing = new MultithreadedIndexing(iterator, rootNode);
+      return indexing.launch(false);
+   }
 
-      if (indexingTree.isExcluded(node))
+   /**
+    * Create index.
+    * 
+    * @param iterator
+    *             the NodeDataIndexing iterator
+    * @param rootNode
+    *            the root node of the index                          
+    * @param count
+    *            the number of nodes already indexed.
+    * @throws IOException
+    *             if an error occurs while writing to the index.
+    * @throws RepositoryException
+    *             if any other error occurs
+    * @throws InterruptedException
+    *             if the task has been interrupted 
+    */
+   private void createIndex(final NodeDataIndexingIterator iterator, NodeData rootNode, final AtomicLong count)
+      throws RepositoryException, InterruptedException, IOException
+   {
+      for (NodeDataIndexing node : iterator.next())
       {
-         return count;
-      }
-      executeAndLog(new AddNode(getTransactionId(), node.getIdentifier()));
-      if (++count % 100 == 0)
-      {
-
-         log.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count));
-      }
-      if (count % 10 == 0)
-      {
-         checkIndexingQueue(true);
-      }
-      checkVolatileCommit();
-      List<NodeData> children = stateMgr.getChildNodesData(node);
-      for (NodeData nodeData : children)
-      {
-
-         NodeData childState = (NodeData)stateMgr.getItemData(nodeData.getIdentifier());
-         if (childState == null)
+         if (stopped)
          {
-            handler.getOnWorkspaceInconsistencyHandler().handleMissingChildNode(
-               new ItemNotFoundException("Child not found "), handler, nodeData.getQPath(), node, nodeData);
+            throw new InterruptedException();
          }
 
-         if (nodeData != null)
+         if (indexingTree.isExcluded(node))
          {
-            count = createIndex(nodeData, stateMgr, count);
+            continue;
+         }
+
+         if (!node.getQPath().isDescendantOf(rootNode.getQPath()) && !node.getQPath().equals(rootNode.getQPath()))
+         {
+            continue;
+         }
+
+         executeAndLog(new AddNode(getTransactionId(), node, true));
+         if (count.incrementAndGet() % 1000 == 0)
+         {
+            log.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count.get()));
+         }
+
+         synchronized (this)
+         {
+            if (count.get() % 10 == 0)
+            {
+               checkIndexingQueue(true);
+            }
+            checkVolatileCommit();
          }
       }
+   }
 
-      return count;
+   /**
+    * Creates an index.
+    * 
+    * @param tasks
+    *            the queue of existing indexing tasks 
+    * @param rootNode
+    *            the root node of the index 
+    * @param iterator
+    *             the NodeDataIndexing iterator            
+    * @param count
+    *            the number of nodes already indexed.
+    * @throws IOException
+    *             if an error occurs while writing to the index.
+    * @throws ItemStateException
+    *             if an node state cannot be found.
+    * @throws RepositoryException
+    *             if any other error occurs
+    * @throws InterruptedException 
+    *             if thread was interrupted
+    */
+   private void createIndex(final Queue<Callable<Void>> tasks, final NodeDataIndexingIterator iterator,
+      final NodeData rootNode, final AtomicLong count) throws IOException, RepositoryException, InterruptedException
+   {
+      while (iterator.hasNext())
+      {
+
+         Callable<Void> task = new Callable<Void>()
+         {
+            public Void call() throws Exception
+            {
+               createIndex(iterator, rootNode, count);
+               return null;
+            }
+         };
+
+         if (!tasks.offer(task))
+         {
+            // All threads have tasks to do so we do it ourself
+            createIndex(iterator, rootNode, count);
+         }
+      }
    }
 
    /**
@@ -1346,9 +2098,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       synchronized (deletable)
       {
-         for (Iterator it = deletable.iterator(); it.hasNext();)
+         for (Iterator<String> it = deletable.iterator(); it.hasNext();)
          {
-            String indexName = (String)it.next();
+            String indexName = it.next();
             if (directoryManager.delete(indexName))
             {
                it.remove();
@@ -1389,9 +2141,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private synchronized void checkFlush()
    {
-      long idleTime = System.currentTimeMillis() - lastFlushTime;
+      // avoid frequent flushes during reindexing;
+      long idleTime = online ? System.currentTimeMillis() - lastFlushTime : 0;
+      long volatileTime = System.currentTimeMillis() - lastFileSystemFlushTime;
       // do not flush if volatileIdleTime is zero or negative
-      if (handler.getVolatileIdleTime() > 0 && idleTime > handler.getVolatileIdleTime() * 1000)
+      if ((handler.getVolatileIdleTime() > 0 && idleTime > handler.getVolatileIdleTime() * 1000)
+         || (handler.getMaxVolatileTime() > 0 && volatileTime > handler.getMaxVolatileTime() * 1000))
       {
          try
          {
@@ -1450,49 +2205,50 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private void checkIndexingQueue(boolean transactionPresent)
    {
-      Document[] docs = indexingQueue.getFinishedDocuments();
-      Map finished = new HashMap();
-      for (int i = 0; i < docs.length; i++)
-      {
-         String uuid = docs[i].get(FieldNames.UUID);
-         finished.put(uuid, docs[i]);
-      }
-
-      // now update index with the remaining ones if there are any
-      if (!finished.isEmpty())
-      {
-         log.info("updating index with {} nodes from indexing queue.", new Long(finished.size()));
-
-         // remove documents from the queue
-         for (Iterator it = finished.keySet().iterator(); it.hasNext();)
-         {
-            indexingQueue.removeDocument(it.next().toString());
-         }
-
-         try
-         {
-            if (transactionPresent)
-            {
-               for (Iterator it = finished.keySet().iterator(); it.hasNext();)
-               {
-                  executeAndLog(new DeleteNode(getTransactionId(), (String)it.next()));
-               }
-               for (Iterator it = finished.values().iterator(); it.hasNext();)
-               {
-                  executeAndLog(new AddNode(getTransactionId(), (Document)it.next()));
-               }
-            }
-            else
-            {
-               update(finished.keySet(), finished.values());
-            }
-         }
-         catch (IOException e)
-         {
-            // update failed
-            log.warn("Failed to update index with deferred text extraction", e);
-         }
-      }
+      // EXOJCR-1337, have been commented since it is not used
+      //      Document[] docs = indexingQueue.getFinishedDocuments();
+      //      Map<String, Document> finished = new HashMap<String, Document>();
+      //      for (int i = 0; i < docs.length; i++)
+      //      {
+      //         String uuid = docs[i].get(FieldNames.UUID);
+      //         finished.put(uuid, docs[i]);
+      //      }
+      //
+      //      // now update index with the remaining ones if there are any
+      //      if (!finished.isEmpty())
+      //      {
+      //         log.info("updating index with {} nodes from indexing queue.", new Long(finished.size()));
+      //
+      //         // remove documents from the queue
+      //         for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
+      //         {
+      //            indexingQueue.removeDocument(it.next().toString());
+      //         }
+      //
+      //         try
+      //         {
+      //            if (transactionPresent)
+      //            {
+      //               for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
+      //               {
+      //                  executeAndLog(new DeleteNode(getTransactionId(), it.next()));
+      //               }
+      //               for (Iterator<Document> it = finished.values().iterator(); it.hasNext();)
+      //               {
+      //                  executeAndLog(new AddNode(getTransactionId(), it.next()));
+      //               }
+      //            }
+      //            else
+      //            {
+      //               update(finished.keySet(), finished.values());
+      //            }
+      //         }
+      //         catch (IOException e)
+      //         {
+      //            // update failed
+      //            log.warn("Failed to update index with deferred text extraction", e);
+      //         }
+      //      }
    }
 
    // ------------------------< Actions
@@ -1550,9 +2306,19 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       static final String VOLATILE_COMMIT = "VOL_COM";
 
       /**
+       * Action identifier in redo log for offline index invocation action.
+       */
+      static final String OFFLINE_INVOKE = "OFF_INV";
+
+      /**
        * Action type for volatile index commit action.
        */
       public static final int TYPE_VOLATILE_COMMIT = 4;
+
+      /**
+       * Action type for volatile index commit action.
+       */
+      public static final int TYPE_OFFLINE_INVOKE = 8;
 
       /**
        * Action identifier in redo log for index create action.
@@ -1670,6 +2436,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @return a <code>String</code> representation of this action.
        */
+      @Override
       public abstract String toString();
 
       /**
@@ -1742,6 +2509,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             a = VolatileCommit.fromString(transactionId, arguments);
          }
+         else if (actionLabel.equals(Action.OFFLINE_INVOKE))
+         {
+            a = OfflineInvoke.fromString(transactionId, arguments);
+         }
          else
          {
             throw new IllegalArgumentException(line);
@@ -1797,6 +2568,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          PersistentIndex idx = index.getOrCreateIndex(indexName);
@@ -1805,13 +2577,17 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             index.indexNames.addName(indexName);
             // now that the index is in the active list let the merger know
             // about it
-            index.merger.indexAdded(indexName, idx.getNumDocuments());
+            if (index.merger != null)
+            {
+               index.merger.indexAdded(indexName, idx.getNumDocuments());
+            }
          }
       }
 
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();
@@ -1833,8 +2609,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * The maximum length of a AddNode String.
        */
-      private static final int ENTRY_LENGTH =
-         Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
+      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length()
+         + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to add.
@@ -1848,6 +2624,16 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       private Document doc;
 
       /**
+       * Indicates if need to execute command in synchronize mode.
+       */
+      private boolean synch;
+
+      /**
+       * The node to add.
+       */
+      private NodeDataIndexing node;
+
+      /**
        * Creates a new AddNode action.
        * 
        * @param transactionId
@@ -1857,8 +2643,40 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        */
       AddNode(long transactionId, String uuid)
       {
+         this(transactionId, uuid, false);
+      }
+
+      /**
+       * Creates a new AddNode action.
+       * 
+       * @param transactionId
+       *            the id of the transaction that executes this action
+       * @param uuid
+       *            the uuid of the node to add
+       * @param synch
+       *             indicates if need to execute command in synchronize mode            
+       */
+      AddNode(long transactionId, String uuid, boolean synch)
+      {
          super(transactionId, Action.TYPE_ADD_NODE);
          this.uuid = uuid;
+         this.synch = synch;
+      }
+
+      /**
+       * Creates a new AddNode action.
+       * 
+       * @param transactionId
+       *            the id of the transaction that executes this action.
+       * @param uuid
+       *            the uuid of the node to add.
+       * @param synch
+       *             indicates if need to execute command in synchronize mode            
+       */
+      AddNode(long transactionId, NodeDataIndexing node, boolean synch)
+      {
+         this(transactionId, node.getIdentifier(), synch);
+         this.node = node;
       }
 
       /**
@@ -1901,13 +2719,21 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          if (doc == null)
          {
             try
             {
-               doc = index.createDocument(uuid);
+               if (node != null)
+               {
+                  doc = index.createDocument(node);
+               }
+               else
+               {
+                  doc = index.createDocument(uuid);
+               }
             }
             catch (RepositoryException e)
             {
@@ -1915,15 +2741,27 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                log.debug(e.getMessage());
             }
          }
+
          if (doc != null)
          {
-            index.volatileIndex.addDocuments(new Document[]{doc});
+            if (synch)
+            {
+               synchronized (index)
+               {
+                  index.volatileIndex.addDocuments(new Document[]{doc});
+               }
+            }
+            else
+            {
+               index.volatileIndex.addDocuments(new Document[]{doc});
+            }
          }
       }
 
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer(ENTRY_LENGTH);
@@ -1972,6 +2810,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          index.lastFlushTime = System.currentTimeMillis();
@@ -1980,6 +2819,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          return Long.toString(getTransactionId()) + ' ' + Action.COMMIT;
@@ -2035,6 +2875,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          PersistentIndex idx = index.getOrCreateIndex(indexName);
@@ -2044,6 +2885,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public void undo(MultiIndex index) throws IOException
       {
          if (index.hasIndex(indexName))
@@ -2057,6 +2899,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();
@@ -2127,12 +2970,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          // get index if it exists
-         for (Iterator it = index.indexes.iterator(); it.hasNext();)
+         for (Iterator<PersistentIndex> it = index.indexes.iterator(); it.hasNext();)
          {
-            PersistentIndex idx = (PersistentIndex)it.next();
+            PersistentIndex idx = it.next();
             if (idx.getName().equals(indexName))
             {
                idx.close();
@@ -2145,6 +2989,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();
@@ -2166,8 +3011,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * The maximum length of a DeleteNode String.
        */
-      private static final int ENTRY_LENGTH =
-         Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
+      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length()
+         + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to remove.
@@ -2214,6 +3059,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          String uuidString = uuid.toString();
@@ -2228,12 +3074,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // if the document cannot be deleted from the volatile index
          // delete it from one of the persistent indexes.
          int num = index.volatileIndex.removeDocument(idTerm);
-         if (num == 0)
+         if (num == 0 && index.modeHandler.getMode() == IndexerIoMode.READ_WRITE)
          {
             for (int i = index.indexes.size() - 1; i >= 0; i--)
             {
                // only look in registered indexes
-               PersistentIndex idx = (PersistentIndex)index.indexes.get(i);
+               PersistentIndex idx = index.indexes.get(i);
                if (index.indexNames.contains(idx.getName()))
                {
                   num = idx.removeDocument(idTerm);
@@ -2249,6 +3095,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer(ENTRY_LENGTH);
@@ -2297,6 +3144,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          index.currentTransactionId = getTransactionId();
@@ -2305,6 +3153,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          return Long.toString(getTransactionId()) + ' ' + Action.START;
@@ -2353,6 +3202,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @inheritDoc
        */
+      @Override
       public void execute(MultiIndex index) throws IOException
       {
          VolatileIndex volatileIndex = index.getVolatileIndex();
@@ -2364,6 +3214,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * @inheritDoc
        */
+      @Override
       public String toString()
       {
          StringBuffer logLine = new StringBuffer();
@@ -2376,8 +3227,71 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
    }
 
+   private static class OfflineInvoke extends Action
+   {
+
+      /**
+       * The name of the target index to commit to.
+       */
+      private final String targetIndex;
+
+      /**
+       * Creates a new VolatileCommit action.
+       * 
+       * @param transactionId
+       *            the id of the transaction that executes this action.
+       */
+      OfflineInvoke(long transactionId, String targetIndex)
+      {
+         super(transactionId, Action.TYPE_OFFLINE_INVOKE);
+         this.targetIndex = targetIndex;
+      }
+
+      /**
+       * Creates a new VolatileCommit action.
+       * 
+       * @param transactionId
+       *            the id of the transaction that executes this action.
+       * @param arguments
+       *            ignored by this implementation.
+       * @return the VolatileCommit action.
+       */
+      static OfflineInvoke fromString(long transactionId, String arguments)
+      {
+         return new OfflineInvoke(transactionId, arguments);
+      }
+
+      /**
+       * Commits the volatile index to disk.
+       * 
+       * @inheritDoc
+       */
+      @Override
+      public void execute(MultiIndex index) throws IOException
+      {
+         OfflinePersistentIndex offlineIndex = index.getOfflinePersistentIndex();
+         PersistentIndex persistentIndex = index.getOrCreateIndex(targetIndex);
+         persistentIndex.copyIndex(offlineIndex);
+      }
+
+      /**
+       * @inheritDoc
+       */
+      @Override
+      public String toString()
+      {
+         StringBuffer logLine = new StringBuffer();
+         logLine.append(Long.toString(getTransactionId()));
+         logLine.append(' ');
+         logLine.append(Action.OFFLINE_INVOKE);
+         logLine.append(' ');
+         logLine.append(targetIndex);
+         return logLine.toString();
+      }
+   }
+
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener#onChangeMode(org.exoplatform.services.jcr.impl.core.query.IndexerIoMode)
+    * {@inheritDoc}
     */
    public void onChangeMode(IndexerIoMode mode)
    {
@@ -2405,7 +3319,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    protected void setReadOny()
    {
       // try to stop merger in safe way
-      merger.dispose();
+      if (merger != null)
+      {
+         merger.dispose();
+         merger = null;
+      }
+
       flushTask.cancel();
       FLUSH_TIMER.purge();
       this.redoLog = null;
@@ -2437,7 +3356,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       attemptDelete();
 
       // now that we are ready, start index merger
-      merger.start();
+      initMerger();
+
       if (redoLogApplied)
       {
          // wait for the index merge to finish pending jobs
@@ -2465,7 +3385,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    public void refreshIndexList() throws IOException
    {
-      // TODO: re-study synchronization here.
       synchronized (updateMonitor)
       {
          // release reader if any
@@ -2530,15 +3449,387 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             {
                synchronized (updateMonitor)
                {
+                  // Coordinator set cluster-wide updateInProgress only in case of persistent flush, which
+                  // invokes volatile reset. So if RO cluster node received this notification, it means that 
+                  // coordinator flushed volatile.
+                  resetVolatileIndex();
                   updateMonitor.notifyAll();
                   releaseMultiReader();
                }
             }
             catch (IOException e)
             {
-               log.error("An erro occurs while trying to wake up the sleeping threads", e);
+               log.error("An error occurred while trying to wake up the sleeping threads", e);
             }
          }
       }
+   }
+
+   /**
+    * @return true if index is online. It means that there is no background indexing or index retrieval jobs
+    */
+   public boolean isOnline()
+   {
+      return online;
+   }
+
+   /**
+    * @return true if index is stopped. 
+    */
+   public boolean isStopped()
+   {
+      return stopped;
+   }
+
+   /**
+    * Switches index mode
+    * 
+    * @param isOnline
+    * @throws IOException
+    */
+   public synchronized void setOnline(boolean isOnline, boolean dropStaleIndexes) throws IOException
+   {
+      // if mode really changed
+      if (online != isOnline)
+      {
+         // switching to ONLINE
+         if (isOnline)
+         {
+            log.info("Setting index ONLINE ({})", handler.getContext().getWorkspacePath(true));
+            if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+            {
+               offlineIndex.commit(true);
+               online = true;
+               // cleaning stale indexes
+               for (PersistentIndex staleIndex : staleIndexes)
+               {
+                  deleteIndex(staleIndex);
+               }
+               //invoking offline index
+               invokeOfflineIndex();
+               staleIndexes.clear();
+               initMerger();
+            }
+            else
+            {
+               online = true;
+               staleIndexes.clear();
+            }
+         }
+         // switching to OFFLINE
+         else
+         {
+            log.info("Setting index OFFLINE ({})", handler.getContext().getWorkspacePath(true));
+            if (merger != null)
+            {
+               merger.dispose();
+               merger = null;
+            }
+            offlineIndex =
+               new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+                  directoryManager);
+            if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+            {
+               flush();
+            }
+            releaseMultiReader();
+            if (dropStaleIndexes)
+            {
+               staleIndexes.addAll(indexes);
+            }
+
+            online = false;
+         }
+      }
+      else if (!online)
+      {
+         throw new IOException("Index is already in OFFLINE mode.");
+      }
+   }
+
+   /**
+    * This class is used to index a node and its descendants nodes with several threads 
+    */
+   private class MultithreadedIndexing
+   {
+      /**
+       * This instance of {@link AtomicReference} will contain the exception meet if any exception has occurred
+       */
+      private final AtomicReference<Exception> exception = new AtomicReference<Exception>();
+
+      /**
+       * The total amount of threads used for the indexing
+       */
+      private final int nThreads = handler.getIndexingThreadPoolSize();
+
+      /**
+       * The {@link CountDownLatch} used to notify that the indexing is over
+       */
+      private final CountDownLatch endSignal = new CountDownLatch(nThreads);
+
+      /**
+       * The total amount of threads currently working
+       */
+      private final AtomicInteger runningThreads = new AtomicInteger();
+
+      /**
+       * The total amount of nodes already indexed
+       */
+      private final AtomicLong count = new AtomicLong();
+
+      /**
+       * The list of indexing tasks left to do
+       */
+      private final Queue<Callable<Void>> tasks = new LinkedBlockingQueue<Callable<Void>>(nThreads)
+      {
+         private static final long serialVersionUID = 1L;
+
+         @Override
+         public Callable<Void> poll()
+         {
+            Callable<Void> task;
+            synchronized (runningThreads)
+            {
+               if ((task = super.poll()) != null)
+               {
+                  runningThreads.incrementAndGet();
+               }
+            }
+            return task;
+         }
+
+         @Override
+         public boolean offer(Callable<Void> o)
+         {
+            if (super.offer(o))
+            {
+               synchronized (runningThreads)
+               {
+                  runningThreads.notifyAll();
+               }
+               return true;
+            }
+            return false;
+         }
+      };
+
+      /**
+       * The task that all the indexing threads have to execute
+       */
+      private final Runnable indexingTask = new Runnable()
+      {
+         public void run()
+         {
+            while (exception.get() == null)
+            {
+               Callable<Void> task;
+               while (exception.get() == null && (task = tasks.poll()) != null)
+               {
+                  try
+                  {
+                     task.call();
+                  }
+                  catch (InterruptedException e)
+                  {
+                     Thread.currentThread().interrupt();
+                  }
+                  catch (Exception e)
+                  {
+                     exception.set(e);
+                  }
+                  finally
+                  {
+                     synchronized (runningThreads)
+                     {
+                        runningThreads.decrementAndGet();
+                        runningThreads.notifyAll();
+                     }
+                  }
+               }
+               synchronized (runningThreads)
+               {
+                  if (exception.get() == null && (runningThreads.get() > 0))
+                  {
+                     try
+                     {
+                        runningThreads.wait();
+                     }
+                     catch (InterruptedException e)
+                     {
+                        Thread.currentThread().interrupt();
+                     }
+                  }
+                  else
+                  {
+                     break;
+                  }
+               }
+            }
+            endSignal.countDown();
+         }
+      };
+
+      /**
+       * MultithreadedIndexing constructor.
+       * 
+       * @param node
+       *            the current NodeState.
+       * @param stateMgr
+       *            the shared item state manager.
+       */
+      public MultithreadedIndexing(final NodeData node, final ItemDataConsumer stateMgr)
+      {
+         tasks.offer(new Callable<Void>()
+         {
+            public Void call() throws Exception
+            {
+               createIndex(tasks, node, stateMgr, count);
+               return null;
+            }
+         });
+      }
+
+      /**
+       * MultithreadedIndexing constructor.
+       * 
+       * @param node
+       *            the current NodeState.
+       * @param iterator
+       *            NodeDataIndexingIterator
+       */
+      public MultithreadedIndexing(final NodeDataIndexingIterator iterator, final NodeData rootNode)
+      {
+         tasks.offer(new Callable<Void>()
+         {
+            public Void call() throws Exception
+            {
+               createIndex(tasks, iterator, rootNode, count);
+               return null;
+            }
+         });
+      }
+
+      /**
+       * Launches the indexing
+       * @param asynchronous indicates whether or not the current thread needs to wait until the 
+       * end of the indexing
+      
+      * @return the total amount of nodes that have been indexed. <code>-1</code> in case of an
+       * asynchronous indexing
+       * @throws IOException
+       *             if an error occurs while writing to the index.
+       * @throws ItemStateException
+       *             if an node state cannot be found.
+       * @throws RepositoryException
+       *             if any other error occurs
+       */
+      public long launch(boolean asynchronous) throws IOException, RepositoryException
+      {
+         startThreads();
+         if (!asynchronous)
+         {
+            try
+            {
+               endSignal.await();
+               if (exception.get() != null)
+               {
+                  if (exception.get() instanceof IOException)
+                  {
+                     throw (IOException)exception.get();
+                  }
+                  else if (exception.get() instanceof RepositoryException)
+                  {
+                     throw (RepositoryException)exception.get();
+                  }
+                  else
+                  {
+                     throw new RuntimeException("Error while indexing", exception.get());
+                  }
+               }
+               return count.get();
+            }
+            catch (InterruptedException e)
+            {
+               Thread.currentThread().interrupt();
+            }
+         }
+         return -1L;
+      }
+
+      /**
+       * Starts all the indexing threads
+       */
+      private void startThreads()
+      {
+         for (int i = 0; i < nThreads; i++)
+         {
+            (new Thread(indexingTask, "Indexing Thread #" + (i + 1))).start();
+         }
+      }
+   }
+
+   /** 
+    * Retrieve index from other node. 
+    * 
+    * @throws SuspendException 
+    * @throws IOException. 
+    * @throws RepositoryException. 
+    * @throws FileNotFoundException. 
+    */
+   private boolean recoveryIndexFromCoordinator() throws FileNotFoundException, RepositoryException, IOException,
+      SuspendException
+   {
+      try
+      {
+         IndexRecovery indexRecovery = handler.getContext().getIndexRecovery();
+         // check if index not ready
+         if (!indexRecovery.checkIndexReady())
+         {
+            return false;
+         }
+         indexRecovery.setIndexOffline();
+
+         File indexDirectory = new File(handler.getContext().getIndexDirectory());
+         for (String filePath : indexRecovery.getIndexList())
+         {
+            File indexFile = new File(indexDirectory, filePath);
+            if (!PrivilegedFileHelper.exists(indexFile.getParentFile()))
+            {
+               PrivilegedFileHelper.mkdirs(indexFile.getParentFile());
+            }
+
+            // transfer file 
+            InputStream in = indexRecovery.getIndexFile(filePath);
+            OutputStream out = PrivilegedFileHelper.fileOutputStream(indexFile);
+            try
+            {
+               byte[] buf = new byte[2048];
+               int len;
+
+               while ((len = in.read(buf)) > 0)
+               {
+                  out.write(buf, 0, len);
+               }
+            }
+            finally
+            {
+               if (in != null)
+               {
+                  in.close();
+               }
+
+               if (out != null)
+               {
+                  out.close();
+               }
+            }
+
+            indexRecovery.setIndexOnline();
+         }
+      }
+      finally
+      {
+      }
+      return true;
    }
 }

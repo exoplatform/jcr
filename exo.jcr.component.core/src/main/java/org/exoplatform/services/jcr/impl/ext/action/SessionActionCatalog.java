@@ -77,7 +77,7 @@ public class SessionActionCatalog extends ActionCatalog
             }
             catch (Exception e)
             {
-               e.printStackTrace();
+               log.error(e.getLocalizedMessage(), e);
             }
          }
       }

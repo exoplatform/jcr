@@ -22,10 +22,8 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.ConfigurationHelper;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -47,122 +45,91 @@ import javax.jcr.Session;
  */
 public class TestWorkspaceRestore extends JcrImplBaseTest
 {
-
-   private static boolean isDefaultWsCreated = false;
-
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestWorkspaceRestore");
-
-   private final ConfigurationHelper helper = ConfigurationHelper.getInstence();
+   private final TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
 
    private WorkspaceEntry wsEntry;
 
    private boolean isDefaultWsMultiDb;
-
-   public void _testRestore() throws Exception
-   {
-      Session defSession = repository.login(this.credentials, "defWs");
-      Node defRoot = defSession.getRootNode();
-
-      Node node1 = defRoot.addNode("node1");
-      node1.setProperty("p1", 2);
-      defSession.save();
-
-      File content = File.createTempFile("data", ".xml");
-      content.deleteOnExit();
-      OutputStream os = new BufferedOutputStream(new FileOutputStream(content));
-      defSession.exportSystemView(defRoot.getPath(), os, false, false);
-      os.close();
-      defSession.logout();
-      WorkspaceEntry workspaceEntry = null;
-      workspaceEntry =
-         helper.getNewWs("testRestore", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
-      assertNotNull(workspaceEntry);
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep;
-
-      defRep = (RepositoryImpl)service.getDefaultRepository();
-      defRep.configWorkspace(workspaceEntry);
-
-      defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(new FileInputStream(content)));
-
-      doTestOnWorkspace(workspaceEntry.getName());
-   }
 
    @Override
    public void setUp() throws Exception
    {
       super.setUp();
       wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
-      if ("true".equals(wsEntry.getContainer().getParameterValue("multi-db")))
-      {
-         isDefaultWsMultiDb = true;
-      }
-      if (!isDefaultWsCreated)
-      {
-
-         WorkspaceEntry workspaceEntry = null;
-         workspaceEntry =
-            helper.getNewWs("defWs", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-               JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
-         helper.createWorkspace(workspaceEntry, container);
-         isDefaultWsCreated = true;
-      }
+      
+      isDefaultWsMultiDb = "true".equals(wsEntry.getContainer().getParameterValue("multi-db")); 
    }
 
    public void testRestore() throws RepositoryConfigurationException, Exception
    {
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs("testResotore", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
+      ManageableRepository repository = null;
+      try
+      {
+         String dsName = helper.createDatasource();
+         repository = helper.createRepository(container, isDefaultWsMultiDb, dsName);
 
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep;
+         WorkspaceEntry workspaceEntry =
+            helper.createWorkspaceEntry(isDefaultWsMultiDb, isDefaultWsMultiDb ? helper.createDatasource() : dsName);
+         helper.addWorkspace(repository, workspaceEntry);
 
-      defRep = (RepositoryImpl)service.getDefaultRepository();
-      defRep.configWorkspace(workspaceEntry);
-      InputStream is = TestWorkspaceManagement.class.getResourceAsStream("/import-export/db1_ws1-20071220_0430.xml");
-      repository.importWorkspace("testResotore", is);
+         InputStream is = TestWorkspaceManagement.class.getResourceAsStream("/import-export/db1_ws1-20071220_0430.xml");
+         repository.importWorkspace(workspaceEntry.getName(), is);
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testRestoreBadXml() throws Exception
    {
-      Session defSession = repository.login(this.credentials /* session.getCredentials() */, "defWs");
-      Node defRoot = defSession.getRootNode();
-
-      Node node1 = defRoot.addNode("node1");
-      node1.setProperty("p1", 2);
-      defSession.save();
-
-      File content = File.createTempFile("data", ".xml");
-      content.deleteOnExit();
-      OutputStream os = new BufferedOutputStream(new FileOutputStream(content));
-      defSession.exportSystemView(node1.getPath(), os, false, false);
-      os.close();
-      defSession.logout();
-      WorkspaceEntry workspaceEntry = null;
-      workspaceEntry =
-         helper.getNewWs("testRestoreBadXml", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
-      assertNotNull(workspaceEntry);
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep;
-
-      defRep = (RepositoryImpl)service.getDefaultRepository();
-      defRep.configWorkspace(workspaceEntry);
-
+      ManageableRepository repository = null;
       try
       {
-         defRep.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(new FileInputStream(content)));
-         fail();
-      }
-      catch (RepositoryException e)
-      {
-         // ok
-      }
+         String dsName = helper.createDatasource();
+         repository = helper.createRepository(container, isDefaultWsMultiDb, dsName);
 
+         WorkspaceEntry workspaceEntry =
+            helper.createWorkspaceEntry(isDefaultWsMultiDb, isDefaultWsMultiDb ? helper.createDatasource() : dsName);
+         helper.addWorkspace(repository, workspaceEntry);
+
+         Session defSession = repository.login(this.credentials, workspaceEntry.getName());
+         Node defRoot = defSession.getRootNode();
+
+         Node node1 = defRoot.addNode("node1");
+         node1.setProperty("p1", 2);
+         defSession.save();
+
+         File content = File.createTempFile("data", ".xml");
+         content.deleteOnExit();
+         OutputStream os = new BufferedOutputStream(new FileOutputStream(content));
+         defSession.exportSystemView(node1.getPath(), os, false, false);
+         os.close();
+         defSession.logout();
+
+         try
+         {
+            InputStream is =
+               TestWorkspaceManagement.class.getResourceAsStream("/import-export/db1_ws1-20071220_0430.xml");
+            repository.importWorkspace(workspaceEntry.getName(), new BufferedInputStream(new FileInputStream(content)));
+
+            fail();
+         }
+         catch (RepositoryException e)
+         {
+            // ok
+         }
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    private void doTestOnWorkspace(String wsName) throws RepositoryException, RepositoryConfigurationException

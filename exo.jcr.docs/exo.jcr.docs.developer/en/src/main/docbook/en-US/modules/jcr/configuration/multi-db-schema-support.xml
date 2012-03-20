@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.MultiDBSchemaSupport">
+  <?dbhtml filename="multi-db-schema-support.html"?>
+
+  <title>How to host several JCR instances on the same database
+  instance?</title>
+
+    <para>Frequently, a single database instance must be shared by several
+    other applications. But some of our customers have also asked for a way to
+    host several JCR instances in the same database instance. To fulfill this
+    need, we had to review our queries and scope them to the current schema;
+    it is now possible to have one JCR instance per DB schema instead of per DB
+    instance. To benefit of the work done for this feature you will need to
+    apply the configuration changes described below.</para>
+
+  <section id="JCR.MultiDBSchemaSupport.LockManager_Config">
+    <title>LockManager configuration</title>
+
+    <para>To enable this feature you need to replace
+    org.jboss.cache.loader.JDBCCacheLoader with
+    org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader in
+    JBossCache configuration file.</para>
+
+    <para>Here is an example of this very part of the configuration:</para>
+
+    <programlisting language="xml">&lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
+
+   &lt;locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
+      lockAcquisitionTimeout="20000" /&gt;
+
+   &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
+      &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
+      &lt;sync /&gt;
+   &lt;/clustering&gt;
+
+   &lt;loaders passivation="false" shared="true"&gt;
+      &lt;!-- All the data of the JCR locks needs to be loaded at startup --&gt;
+      &lt;preload&gt;
+         &lt;node fqn="/" /&gt;
+      &lt;/preload&gt;  
+      &lt;!--
+      For another cache-loader class you should use another template with
+      cache-loader specific parameters
+      --&gt;
+      &lt;loader class=<emphasis role="bold">"org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader"</emphasis> async="false" fetchPersistentState="false"
+         ignoreModifications="false" purgeOnStartup="false"&gt;
+         &lt;properties&gt;
+            cache.jdbc.table.name=${jbosscache-cl-cache.jdbc.table.name}
+            cache.jdbc.table.create=${jbosscache-cl-cache.jdbc.table.create}
+            cache.jdbc.table.drop=${jbosscache-cl-cache.jdbc.table.drop}
+            cache.jdbc.table.primarykey=${jbosscache-cl-cache.jdbc.table.primarykey}
+            cache.jdbc.fqn.column=${jbosscache-cl-cache.jdbc.fqn.column}
+            cache.jdbc.fqn.type=${jbosscache-cl-cache.jdbc.fqn.type}
+            cache.jdbc.node.column=${jbosscache-cl-cache.jdbc.node.column}
+            cache.jdbc.node.type=${jbosscache-cl-cache.jdbc.node.type}
+            cache.jdbc.parent.column=${jbosscache-cl-cache.jdbc.parent.column}
+            cache.jdbc.datasource=${jbosscache-cl-cache.jdbc.datasource}
+         &lt;/properties&gt;
+      &lt;/loader&gt;
+   &lt;/loaders&gt;
+&lt;/jbosscache&gt;</programlisting>
+
+    <para>You can also obtain file exmaple from <ulink
+    url="http://svn.jboss.org/repos/exo-jcr/jcr/trunk/exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-lock.xml">svn</ulink>.</para>
+  </section>
+
+  <section id="JCR.MultiDBSchemaSupport.HibernateService_Configuration">
+    <title>HibernateService configuration</title>
+
+    <para>If you use HibernateService for JDBC connections management you will
+    need to specify explicitly the default schema by setting
+    "hibernate.default_schema" property in the configuration of
+    HibernateService.</para>
+
+    <para>Here is an example:</para>
+
+    <programlisting language="xml">&lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
+    &lt;jmx-name&gt;database:type=HibernateService&lt;/jmx-name&gt;
+    &lt;type&gt;org.exoplatform.services.database.impl.HibernateServiceImpl&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;properties-param&gt;
+        &lt;name&gt;hibernate.properties&lt;/name&gt;
+        &lt;description&gt;Default Hibernate Service&lt;/description&gt;
+        ...........
+        <emphasis role="bold">&lt;property name="hibernate.default_schema" value="${gatein.idm.datasource.schema:}"/&gt;</emphasis>
+      &lt;/properties-param&gt;
+    &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+  </section>
+</chapter>

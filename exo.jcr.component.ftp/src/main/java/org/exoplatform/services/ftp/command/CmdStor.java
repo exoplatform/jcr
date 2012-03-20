@@ -49,7 +49,7 @@ import javax.jcr.Session;
 public class CmdStor extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdStor");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.CmdStor");
 
    public CmdStor()
    {
@@ -66,7 +66,6 @@ public class CmdStor extends FtpCommandImpl
 
       try
       {
-         // TODO: Add TimeOut here
          while (!clientSession().getDataTransiver().isConnected())
          {
             Thread.sleep(100);
@@ -75,7 +74,7 @@ public class CmdStor extends FtpCommandImpl
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       if (params.length < 2)
@@ -94,7 +93,9 @@ public class CmdStor extends FtpCommandImpl
          if (ftpConfig.isReplaceForbiddenChars())
          {
             String fName = newPath.get(newPath.size()-1);
-            String newfName = FtpTextUtils.replaceForbiddenChars(fName, ftpConfig.getForbiddenChars(), ftpConfig.getReplaceChar());
+            String newfName =
+                     FtpTextUtils.replaceForbiddenChars(fName, ftpConfig.getForbiddenChars(), ftpConfig
+                              .getReplaceChar());
             
             fileName  = fileName.substring(0, fileName.indexOf(fName)) + newfName;
          }
@@ -216,9 +217,9 @@ public class CmdStor extends FtpCommandImpl
          {
             inputStream.close();
          }
-         catch (Exception exc)
+         catch (IOException exc)
          {
-            log.info("Failurinc closing input stream");
+            LOG.info("Failurinc closing input stream");
          }
 
          if (cacheFileName != null)
@@ -237,11 +238,14 @@ public class CmdStor extends FtpCommandImpl
       }
       catch (RepositoryException rexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + rexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         exc.printStackTrace();
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       clientSession().closeDataTransiver();
@@ -261,10 +265,14 @@ public class CmdStor extends FtpCommandImpl
       }
       catch (RepositoryException rexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + rexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       return null;
    }
@@ -308,10 +316,14 @@ public class CmdStor extends FtpCommandImpl
       }
       catch (PathNotFoundException pexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + pexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       return null;
    }

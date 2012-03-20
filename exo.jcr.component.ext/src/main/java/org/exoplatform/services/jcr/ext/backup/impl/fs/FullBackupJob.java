@@ -18,9 +18,11 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl.fs;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.impl.AbstractFullBackupJob;
+import org.exoplatform.services.jcr.ext.backup.impl.FileNameProducer;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -40,18 +42,19 @@ import javax.jcr.RepositoryException;
 public class FullBackupJob extends AbstractFullBackupJob
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.FullBackupJob");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.FullBackupJob");
 
    private String pathBackupFile;
 
+   @Override
    protected URL createStorage() throws FileNotFoundException, IOException
    {
 
       FileNameProducer fnp =
-         new FileNameProducer(config.getRepository(), config.getWorkspace(), config.getBackupDir().getAbsolutePath(),
-            super.timeStamp, true);
+         new FileNameProducer(config.getRepository(), config.getWorkspace(),
+            PrivilegedFileHelper.getAbsolutePath(config.getBackupDir()), super.timeStamp, true);
 
-      return new URL("file:" + fnp.getNextFile().getAbsolutePath());
+      return new URL("file:" + PrivilegedFileHelper.getAbsolutePath(fnp.getNextFile()));
    }
 
    public void init(ManageableRepository repository, String workspaceName, BackupConfig config, Calendar timeStamp)
@@ -67,12 +70,12 @@ public class FullBackupJob extends AbstractFullBackupJob
       }
       catch (FileNotFoundException e)
       {
-         log.error("Full backup initialization failed ", e);
+         LOG.error("Full backup initialization failed ", e);
          notifyError("Full backup initialization failed ", e);
       }
       catch (IOException e)
       {
-         log.error("Full backup initialization failed ", e);
+         LOG.error("Full backup initialization failed ", e);
          notifyError("Full backup initialization failed ", e);
       }
    }
@@ -89,7 +92,7 @@ public class FullBackupJob extends AbstractFullBackupJob
          try
          {
             notifyListeners();
-            FileOutputStream fos = new FileOutputStream(pathBackupFile);
+            FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(pathBackupFile);
             session.exportWorkspaceSystemView(fos, false, false);
          }
          finally
@@ -99,12 +102,12 @@ public class FullBackupJob extends AbstractFullBackupJob
       }
       catch (RepositoryException e)
       {
-         log.error("Full backup failed " + getStorageURL().getPath(), e);
+         LOG.error("Full backup failed " + getStorageURL().getPath(), e);
          notifyError("Full backup failed", e);
       }
       catch (IOException e)
       {
-         log.error("Full backup failed " + getStorageURL().getPath(), e);
+         LOG.error("Full backup failed " + getStorageURL().getPath(), e);
          notifyError("Full backup failed", e);
       }
 
@@ -115,7 +118,7 @@ public class FullBackupJob extends AbstractFullBackupJob
 
    public void stop()
    {
-      log.info("Stop requested " + getStorageURL().getPath());
+      LOG.info("Stop requested " + getStorageURL().getPath());
    }
 
 }

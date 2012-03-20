@@ -115,4 +115,14 @@ public final class JcrIndexReader
     public void release() throws IOException {
         reader.release();
     }
+    
+    @Override
+    public IndexReader[] getSequentialSubReaders()
+    {
+        // This method returns null, so Lucene internals doesn't explode this reader on it's subreaders.
+        // This is used to retrieve this index reader as HierarchyResolver in ChildAxisQuery. If this method
+        // is not overridden with null-returning one, then ClassCast exception is thrown.
+        // This solution confirmed via Lucene mailing-list on May 27 2010.
+        return null;
+    }
 }

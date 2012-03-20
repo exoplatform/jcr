@@ -1,0 +1,755 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Kernel.ServiceConfigurationinDetail">
+  <?dbhtml filename="ch-service-configuration-in-detail.html"?>
+
+  <title>Service Configuration in Detail</title>
+  
+    <para>This chapter shows you how to set up a sample service with some
+    configurations and how to access the configuration parameters. The
+    later sections describe all details of the configuration file (parameters,
+    object-params, plugins, imports, and more). It also shows how to access the
+    configuration values. You may consider this document as a <emphasis
+    role="bold">reference</emphasis>, but you can also use this document as a
+    <emphasis role="bold">tutorial</emphasis> and read it from the beginning
+    to the end.</para>
+
+  <para><emphasis role="bold">Related documents</emphasis></para>
+
+  <itemizedlist>
+    <listitem>
+      <para><link linkend="Kernel.ServiceConfigurationforBeginners">Service
+      Configuration for Beginners</link></para>
+    </listitem>
+
+    <listitem>
+      <para><link linkend="Kernel.ServicesWiring">Services
+      Wiring</link></para>
+    </listitem>
+
+    <listitem>
+      <para><link
+      linkend="Kernel.ContainerConfiguration.ConfigurationNamespace">Kernel
+      Configuration File</link></para>
+    </listitem>
+  </itemizedlist>
+
+  <section>
+    <title>Requirements</title>
+
+    <para>You should have read and understood <link
+    linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
+    for Beginners</link>. Obviously you should know java and xml. We are
+    working with examples that are created for teaching reasons only and you
+    will see extracts from the eXo Products default installation. When reading
+    this article, you do not forget that the terms service and component are
+    interchangeable in eXo Products.</para>
+  </section>
+
+  <section>
+    <title>Sample Service</title>
+
+    <section id="JavaClass">
+      <title>Java Class</title>
+
+      <para>Imagine that you are working for a publishing company called "La
+      Verdad" that is going to use eXo platform. Your boss asks you be able to
+      calculate the number of sentences of an article.</para>
+
+      <para>You remember in eXo product everything is a <emphasis
+      role="bold">service</emphasis> so you decide to create a simple class.
+      In the future, you want to be able to plug different implementations of
+      your service, so that you should define an <emphasis
+      role="bold">interface</emphasis> that defines your service.</para>
+
+      <programlisting language="java">package com.laverdad.services; 
+public interface ArticleStatsService {
+   public abstract int calcSentences(String article);
+}</programlisting>
+
+      <para>A very simple implementation:</para>
+
+      <programlisting language="java">public class ArticleStatsServiceImpl implements ArticleStatsService {
+   public int calcSentences(String article) {
+      throw new RuntimeException("Not implemented"); 
+   }
+}</programlisting>
+
+      <para>That's it! You see there are no special prerequisites for a
+      service.</para>
+
+      <para>You should already have prepared your working environment, where
+      you have a base folder (let's call it our service base folder). If you
+      wish to try out this example create this class in the
+      com/laverdad/services/ArticleStatsService subfolder.</para>
+    </section>
+
+    <section>
+      <title>First configuration file</title>
+
+      <para>When creating a service, you also should declare its existence to
+      the <emphasis role="bold">Container</emphasis>, therefore you create a
+      first simple configuration file. Copy the following code to a file
+      called "configuration.xml" and place this file in a /conf subdirectory
+      of your service base folder. As you already know the container looks for
+      a "/conf/configuration.xml" file in each jar-file.</para>
+
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF8"?&gt;
+&lt;configuration
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+  &lt;component&gt;
+    &lt;key&gt;com.laverdad.services.ArticleStatsService&lt;/key&gt;
+    &lt;type&gt;com.laverdad.services.ArticleStatsServiceImpl&lt;/type&gt;
+  &lt;/component&gt;
+&lt;/configuration&gt;</programlisting>
+
+      <note>
+        <para>You are correctly using the namespace of the configuration
+        schema ( <uri>http://www.exoplatform.org/xml/ns/kernel_1_2.xsd</uri>).
+        Most of the configuration schema is explained in this article,
+        therefore you do not need to open and understand the schema. For
+        backward compatibility it is not necessary to declare the
+        schema.</para>
+
+        <para>When eXo kernel reads a configuration, it loads the file from
+        the kernel jar using the classloader and does not use an internet
+        connection to resolve the file.</para>
+      </note>
+    </section>
+
+    <section>
+      <title>Init Parameters</title>
+
+      <para>You see your service has a configuration file, but you wonder how
+      the file can gain access to its configuration. Imagine that you
+      are asked to implement two different calculation methods: fast and
+      exact.</para>
+
+      <para>You create one init parameter containing the calculation methods.
+      For the exact method, you wish to configure more details for the
+      service. Let's enhance the word service configuration file:</para>
+
+      <programlisting language="xml">  &lt;component&gt;
+    &lt;key&gt;com.laverdad.services.ArticleStatsService&lt;/key&gt;
+    &lt;type&gt;com.laverdad.services.ArticleStatsServiceImpl&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;calc-method&lt;/name&gt;
+        &lt;description&gt;calculation method: fast, exact&lt;/description&gt;
+        &lt;value&gt;fast&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;properties-param&gt;
+        &lt;name&gt;details-for-exact-method&lt;/name&gt;
+        &lt;description&gt;details for exact phrase counting&lt;/description&gt;
+        &lt;property name="language" value="English" /&gt;
+        &lt;property name="variant" value="us" /&gt;
+      &lt;/properties-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;</programlisting>
+
+      <note>
+        <para>When configuring your service, you are <emphasis
+        role="bold">totally free</emphasis>. You can provide as many <emphasis
+        role="bold">value-param</emphasis>, <emphasis
+        role="bold">property-param</emphasis>, and <emphasis
+        role="bold">properties</emphasis> as you wish, and you can give them any
+        names or values. You only must respect the xml structure.</para>
+      </note>
+
+      <para>Now let's see how our service can read this configuration. The
+      implementation of the calcSentences() method serves just as a simple
+      example. It's up to your imagination to implement the exact
+      method.</para>
+
+      <programlisting language="java">public class ArticleStatsServiceImpl implements ArticleStatsService {
+
+  private String calcMethod = "fast";
+  private String variant = "French";
+  private String language = "France";
+  
+  public ArticleStatsServiceImpl(InitParams initParams) {
+    super();
+    calcMethod = initParams.getValueParam("calc-method").getValue();
+    PropertiesParam detailsForExactMethod = initParams.getPropertiesParam("details-for-exact-method");
+    if ( detailsForExactMethod != null) {
+      language = detailsForExactMethod.getProperty("language");
+      variant = detailsForExactMethod.getProperty("variant");
+    }
+  }
+  
+  public int calcSentences(String article) {
+    if (calcMethod == "fast") {
+      // just count the number of periods "." 
+      int res = 0;
+      int period = article.indexOf('.');
+      while (period != -1) {
+        res++;
+        article = article.substring(period+1);
+        period = article.indexOf('.');
+      }      
+      return  res;
+    } 
+    throw new RuntimeException("Not implemented");
+    }
+}</programlisting>
+
+      <para>You see you just have to declare a parameter of
+      org.exoplatform.container.xml.InitParams in your constructor. The
+      container provides an InitParams object that correspond to the xml tree
+      of init-param.</para>
+    </section>
+
+    <section>
+      <title>Service Access</title>
+
+      <para>As you want to follow the principle of <emphasis
+      role="bold">Inversion of Control,</emphasis> you <emphasis
+      role="bold">must not</emphasis> access the service directly. You need a
+      <emphasis role="bold">Container</emphasis> to access the service.</para>
+
+      <para>With this command you get your current container:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">ExoContainer myContainer =
+          ExoContainerContext.getCurrentContainer();</emphasis></para>
+        </listitem>
+      </itemizedlist>
+
+      <para>This might be a PortalContainer or a StandaloneContainer,
+      dependant on the <link
+      linkend="Kernel.ServiceConfigurationinDetail.ExecutionModes">execution
+      mode</link> in which you are running your application.</para>
+
+      <para>Whenever you need one of the services that you have configured use
+      the method:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis
+          role="bold">myContainer.getComponentInstance(class)</emphasis></para>
+        </listitem>
+      </itemizedlist>
+
+      <para>In our case:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">ArticleStatsService statsService =
+          (ArticleStatsService)
+          myContainer.getComponentInstance(ArticleStatsService.class);</emphasis></para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Recapitulation:</para>
+
+      <programlisting language="java">package com.laverdad.common;
+
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
+import com.laverdad.services.*;
+
+public class Statistics {
+
+  public int makeStatistics(String articleText) {
+    ExoContainer myContainer = ExoContainerContext.getCurrentContainer();
+    ArticleStatsService statsService = (ArticleStatsService)
+        myContainer.getComponentInstance(ArticleStatsService.class);    
+    int numberOfSentences = statsService.calcSentences(articleText);
+    return numberOfSentences;
+  }
+  
+  public static void main( String args[]) {
+   Statistics stats = new Statistics();
+   String newText = "This is a normal text. The method only counts the number of periods. "
+   + "You can implement your own implementation with a more exact counting. "
+   + "Let`s make a last sentence.";
+  System.out.println("Number of sentences: " + stats.makeStatistics(newText));
+  }
+}</programlisting>
+
+      <para>If you test this sample in standalone mode, you need to put all
+      jars of eXo Kernel in your buildpath, furthermore picoContainer is
+      needed.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>Parameters</title>
+
+    <section>
+      <title>Value-Param</title>
+
+      <para>There is an value-param example:</para>
+
+      <programlisting language="xml">  &lt;component&gt;
+    &lt;key&gt;org.exoplatform.portal.config.UserACL&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.portal.config.UserACL&lt;/type&gt;   
+    &lt;init-params&gt;	     
+...
+      &lt;value-param&gt;
+        &lt;name&gt;access.control.workspace&lt;/name&gt;
+        &lt;description&gt;groups with memberships that have the right to access the User Control Workspace&lt;/description&gt;
+        &lt;value&gt;*:/platform/administrators,*:/organization/management/executive-board&lt;/value&gt; 
+      &lt;/value-param&gt; 
+...
+  &lt;/component&gt;</programlisting>
+
+      <para>The UserACL class accesses to the <emphasis
+      role="bold">value-param</emphasis> in its constructor.</para>
+
+      <programlisting language="java">package org.exoplatform.portal.config;
+public class UserACL {
+
+  public UserACL(InitParams params) {
+    UserACLMetaData md = new UserACLMetaData();
+    ValueParam accessControlWorkspaceParam = params.getValueParam("access.control.workspace");
+    if(accessControlWorkspaceParam != null) md.setAccessControlWorkspace(accessControlWorkspaceParam.getValue());
+...</programlisting>
+    </section>
+
+    <section>
+      <title>Properties-Param</title>
+
+      <para>Properties are name-value pairs. Both the name and the value are
+      Java Strings.</para>
+
+      <para>Here you see the hibernate configuration example:</para>
+
+      <programlisting language="xml">  &lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.database.impl.HibernateServiceImpl&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;properties-param&gt;
+        &lt;name&gt;hibernate.properties&lt;/name&gt;
+        &lt;description&gt;Default Hibernate Service&lt;/description&gt;
+        &lt;property name="hibernate.show_sql" value="false"/&gt;
+        &lt;property name="hibernate.cglib.use_reflection_optimizer" value="true"/&gt;
+        &lt;property name="hibernate.connection.url" value="jdbc:hsqldb:file:../temp/data/exodb"/&gt;
+        &lt;property name="hibernate.connection.driver_class" value="org.hsqldb.jdbcDriver"/&gt;
+...
+      &lt;/properties-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;</programlisting>
+
+      <para>In the org.exoplatform.services.database.impl.HibernateServiceImpl
+      you will find that the name "hibernate.properties" of the
+      properties-param is used to access the properties.</para>
+
+      <programlisting language="java">package org.exoplatform.services.database.impl;
+
+public class HibernateServiceImpl implements HibernateService, ComponentRequestLifecycle {
+  public HibernateServiceImpl(InitParams initParams, CacheService cacheService) {
+    PropertiesParam param = initParams.getPropertiesParam("hibernate.properties");
+...
+}</programlisting>
+    </section>
+
+    <section>
+      <title>Object-Param</title>
+
+      <para>Let's have a look at the configuration of the LDAPService. It's
+      not important to know LDAP, we only discuss the parameters.</para>
+
+      <programlisting language="xml">&lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.ldap.LDAPService&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.ldap.impl.LDAPServiceImpl&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;object-param&gt;
+        &lt;name&gt;ldap.config&lt;/name&gt;
+        &lt;description&gt;Default ldap config&lt;/description&gt;
+        &lt;object type="org.exoplatform.services.ldap.impl.LDAPConnectionConfig"&gt;         
+   &lt;field  name="providerURL"&gt;&lt;string&gt;ldaps://10.0.0.3:636&lt;/string&gt;&lt;/field&gt;
+   &lt;field  name="rootdn"&gt;&lt;string&gt;CN=Administrator,CN=Users,DC=exoplatform,DC=org&lt;/string&gt;&lt;/field&gt;
+   &lt;field  name="password"&gt;&lt;string&gt;exo&lt;/string&gt;&lt;/field&gt;
+   &lt;field  name="version"&gt;&lt;string&gt;3&lt;/string&gt;&lt;/field&gt;
+     &lt;field  name="minConnection"&gt;&lt;int&gt;5&lt;/int&gt;&lt;/field&gt;
+       &lt;field  name="maxConnection"&gt;&lt;int&gt;10&lt;/int&gt;&lt;/field&gt;    
+       &lt;field  name="referralMode"&gt;&lt;string&gt;ignore&lt;/string&gt;&lt;/field&gt;
+       &lt;field  name="serverName"&gt;&lt;string&gt;active.directory&lt;/string&gt;&lt;/field&gt;
+       &lt;/object&gt;
+      &lt;/object-param&gt;
+    &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+      <para>You see here an <emphasis role="bold">object-param</emphasis> is
+      being used to pass the parameters inside an object (actually a java
+      bean). It consists of a <emphasis role="bold">name</emphasis>, a
+      <emphasis role="bold">description</emphasis> and exactly one <emphasis
+      role="bold">object</emphasis>. The object defines the <emphasis
+      role="bold">type</emphasis> and a number of <emphasis
+      role="bold">fields</emphasis>.</para>
+
+      <para>Here you see how the service accesses the object:</para>
+
+      <programlisting language="java">package org.exoplatform.services.ldap.impl;
+
+public class LDAPServiceImpl implements LDAPService {
+...
+  public LDAPServiceImpl(InitParams params) {
+    LDAPConnectionConfig config = (LDAPConnectionConfig) params.getObjectParam("ldap.config")
+                                                               .getObject();
+...</programlisting>
+
+      <para>The passed object is LDAPConnectionConfig which is a classic
+      <emphasis role="bold">java bean</emphasis>. It contains all fields and
+      also the appropriate getters and setters (not listed here). You also can
+      provide default values. The container creates a new instance of your
+      bean and calls all setters whose values are configured in the
+      configuration file.</para>
+
+      <programlisting language="java">package org.exoplatform.services.ldap.impl;
+
+public class LDAPConnectionConfig {
+  private String providerURL        = "ldap://127.0.0.1:389";
+  private String rootdn;
+  private String password;                                  
+  private String version;                                   
+  private String authenticationType = "simple";
+  private String serverName         = "default";
+  private int    minConnection;
+  private int    maxConnection;
+  private String referralMode       = "follow";
+...</programlisting>
+
+      <para>You see that the types (String, int) of the fields in the
+      configuration correspond with the bean. A short glance in the
+      kernel_1_0.xsd file let us discover more simple types:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis role="bold">string, int, long, boolean, date,
+          double</emphasis></para>
+        </listitem>
+      </itemizedlist>
+
+      <para>Have a look on this type test xml file: <ulink
+      url="https://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk/exo.kernel.container/src/test/resources/object.xml">object.xml</ulink>.</para>
+    </section>
+
+    <section>
+      <title>Collection</title>
+
+      <para>You also can use java collections to configure your service. In
+      order to see an example, let's open the
+      database-organization-configuration.xml file. This file defines a
+      default user organization (users, groups, memberships/roles) of your
+      portal. They use component-plugins which are explained later. You wil
+      see that object-param is used again.</para>
+
+      <para>There are two collections: The first collection is an <emphasis
+      role="bold">ArrayList</emphasis>. This ArrayList contains only one
+      value, but there could be more. The only value is an object which
+      defines the field of the NewUserConfig$JoinGroup bean.</para>
+
+      <para>The second collection is a <emphasis
+      role="bold">HashSet</emphasis> that is a set of strings.</para>
+
+      <programlisting language="xml">    &lt;component-plugin&gt;
+      &lt;name&gt;new.user.event.listener&lt;/name&gt;
+      &lt;set-method&gt;addListenerPlugin&lt;/set-method&gt;
+      &lt;type&gt;org.exoplatform.services.organization.impl.NewUserEventListener&lt;/type&gt;
+      &lt;description&gt;this listener assign group and membership to a new created user&lt;/description&gt;
+      &lt;init-params&gt;
+        &lt;object-param&gt;
+          &lt;name&gt;configuration&lt;/name&gt;
+          &lt;description&gt;description&lt;/description&gt;
+          &lt;object type="org.exoplatform.services.organization.impl.NewUserConfig"&gt;
+            &lt;field  name="group"&gt;
+              &lt;collection type="java.util.ArrayList"&gt;
+                &lt;value&gt;
+                  &lt;object type="org.exoplatform.services.organization.impl.NewUserConfig$JoinGroup"&gt;
+                    &lt;field  name="groupId"&gt;&lt;string&gt;/platform/users&lt;/string&gt;&lt;/field&gt;
+                    &lt;field  name="membership"&gt;&lt;string&gt;member&lt;/string&gt;&lt;/field&gt;
+                  &lt;/object&gt;
+                &lt;/value&gt;               
+              &lt;/collection&gt;
+            &lt;/field&gt;
+            &lt;field  name="ignoredUser"&gt;
+              &lt;collection type="java.util.HashSet"&gt;
+                &lt;value&gt;&lt;string&gt;root&lt;/string&gt;&lt;/value&gt;
+                &lt;value&gt;&lt;string&gt;john&lt;/string&gt;&lt;/value&gt;
+                &lt;value&gt;&lt;string&gt;marry&lt;/string&gt;&lt;/value&gt;
+                &lt;value&gt;&lt;string&gt;demo&lt;/string&gt;&lt;/value&gt;
+                &lt;value&gt;&lt;string&gt;james&lt;/string&gt;&lt;/value&gt;
+              &lt;/collection&gt;
+            &lt;/field&gt;
+          &lt;/object&gt;
+        &lt;/object-param&gt;
+      &lt;/init-params&gt;
+    &lt;/component-plugin&gt;</programlisting>
+
+      <para>Let's look at the
+      org.exoplatform.services.organization.impl.NewUserConfig bean:</para>
+
+      <programlisting language="java">public class NewUserConfig {
+  private List    role;
+  private List    group;
+  private HashSet ignoredUser;
+
+  ...
+
+  public void setIgnoredUser(String user) {
+    ignoredUser.add(user);
+
+  ...
+
+  static public class JoinGroup {
+    public String  groupId;
+    public String  membership;
+  ...
+}</programlisting>
+
+      <para>You see the values of the HashSet are set one by one by the
+      container, and it's the responsibility of the bean to add these values
+      to its HashSet.</para>
+
+      <para>The JoinGroup object is just an inner class and implements a bean
+      of its own. It can be accessed like any other inner class using
+      NewUserConfig.JoinGroup.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>External Plugin</title>
+
+    <para>The External Plugin allows you to add configuration on the
+    fly.</para>
+
+    <para>As you have carefully read <link
+    linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
+    for Beginners</link> you know that <emphasis
+    role="bold">normally</emphasis> newer configurations always <emphasis
+    role="bold">replaces</emphasis> previous configurations. An external
+    plugin allows you to <emphasis role="bold">add</emphasis> configuration
+    without replacing previous configurations.</para>
+
+    <para>That can be interesting if you adapt a service configuration for
+    your project-specific needs (country, language, branch, project,
+    etc.).</para>
+
+    <para>Let's have a look at the configuration of the TaxonomyPlugin of the
+    CategoriesService:</para>
+
+    <programlisting language="xml"> &lt;external-component-plugins&gt;
+    &lt;target-component&gt;org.exoplatform.services.cms.categories.CategoriesService&lt;/target-component&gt;    
+    &lt;component-plugin&gt;
+     &lt;name&gt;predefinedTaxonomyPlugin&lt;/name&gt;
+      &lt;set-method&gt;addTaxonomyPlugin&lt;/set-method&gt;
+      &lt;type&gt;org.exoplatform.services.cms.categories.impl.TaxonomyPlugin&lt;/type&gt;
+      &lt;init-params&gt;
+       &lt;value-param&gt;
+          &lt;name&gt;autoCreateInNewRepository&lt;/name&gt;
+          &lt;value&gt;true&lt;/value&gt;
+         &lt;/value-param&gt;         
+         &lt;value-param&gt;
+          &lt;name&gt;repository&lt;/name&gt;
+          &lt;value&gt;repository&lt;/value&gt;
+         &lt;/value-param&gt;         
+       &lt;object-param&gt;
+        &lt;name&gt;taxonomy.configuration&lt;/name&gt;
+           &lt;description&gt;configuration predefined taxonomies to inject in jcr&lt;/description&gt;
+           &lt;object type="org.exoplatform.services.cms.categories.impl.TaxonomyConfig"&gt;            
+            &lt;field  name="taxonomies"&gt;
+             &lt;collection type="java.util.ArrayList"&gt;
+               &lt;!-- cms taxonomy --&gt;
+              &lt;value&gt;
+               &lt;object type="org.exoplatform.services.cms.categories.impl.TaxonomyConfig$Taxonomy"&gt;
+                 &lt;field  name="name"&gt;&lt;string&gt;cmsTaxonomy&lt;/string&gt;&lt;/field&gt;                              
+                &lt;field  name="path"&gt;&lt;string&gt;/cms&lt;/string&gt;&lt;/field&gt;                                              
+               &lt;/object&gt;
+              &lt;/value&gt;
+              &lt;value&gt; 
+               &lt;object type="org.exoplatform.services.cms.categories.impl.TaxonomyConfig$Taxonomy"&gt;
+                 &lt;field  name="name"&gt;&lt;string&gt;newsTaxonomy&lt;/string&gt;&lt;/field&gt;                              
+                &lt;field  name="path"&gt;&lt;string&gt;/cms/news&lt;/string&gt;&lt;/field&gt;                                              
+               &lt;/object&gt;
+              &lt;/value&gt;
+            &lt;/field&gt;                     
+           &lt;/object&gt;
+       &lt;/object-param&gt;
+     &lt;/init-params&gt;
+   &lt;/component-plugin&gt;
+&lt;external-component-plugins&gt;</programlisting>
+
+    <para>The <emphasis role="bold">&lt;target-component&gt;</emphasis>
+    defines the service for which the plugin is defined. The configuration is
+    injected by the container using a method that is defined in <emphasis
+    role="bold">&lt;set-method&gt;</emphasis>. The method has exactly one
+    argument of the type
+    org.exoplatform.services.cms.categories.impl.TaxonomyPlugin:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>addTaxonomyPlugin(org.exoplatform.services.cms.categories.impl.TaxonomyPlugin
+        plugin)</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>The content of <emphasis role="bold">&lt;init-params&gt;</emphasis>
+    corresponds to the structure of the TaxonomyPlugin object.</para>
+
+    <note>
+      <para>You can configure the component CategoriesService using the
+      addTaxonomyPlugin as often as you wish, you can also call
+      addTaxonomyPlugin in different configuration files. The method
+      addTaxonomyPlugin is then called several times, everything else depends
+      on the implementation of the method.</para>
+    </note>
+  </section>
+
+  <section>
+    <title>Import</title>
+
+    <para>The import tag allows to import other configuration files using URLs
+    that are configuration manager specific, for more details about what are
+    the supported URLs please refer to the next section about the
+    configuration manager.</para>
+
+    <para>See below an example of a configuration file composed of
+    imports:</para>
+
+    <programlisting language="xml">&lt;import&gt;war:/conf/common/common-configuration.xml&lt;/import&gt;
+&lt;import&gt;war:/conf/common/logs-configuration.xml&lt;/import&gt;
+&lt;import&gt;war:/conf/database/database-configuration.xml&lt;/import&gt;
+&lt;import&gt;war:/conf/jcr/jcr-configuration.xml&lt;/import&gt;
+&lt;import&gt;war:/conf/common/portlet-container-configuration.xml&lt;/import&gt;
+... </programlisting>
+  </section>
+
+  <section>
+    <title>System properties</title>
+
+    <para>Since kernel 2.0.7 and 2.1, it is possible to use system properties
+    in literal values of component configuration meta data. This makes it
+    possible to resolve properties at runtime instead of providing a value at
+    packaging time.</para>
+
+    <para>See below an example of a configuration file based on system
+    properties:</para>
+
+    <programlisting language="xml">  &lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
+    &lt;jmx-name&gt;database:type=HibernateService&lt;/jmx-name&gt;
+    &lt;type&gt;org.exoplatform.services.database.impl.HibernateServiceImpl&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;properties-param&gt;
+        &lt;name&gt;hibernate.properties&lt;/name&gt;
+        &lt;description&gt;Default Hibernate Service&lt;/description&gt;
+...
+        &lt;property name="hibernate.connection.url" value="${connectionUrl}"/&gt;
+        &lt;property name="hibernate.connection.driver_class" value="${driverClass}"/&gt;
+        &lt;property name="hibernate.connection.username" value="${username}"/&gt;
+        &lt;property name="hibernate.connection.password" value="${password}"/&gt;
+        &lt;property name="hibernate.dialect" value="${dialect}"/&gt;
+...
+      &lt;/properties-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;</programlisting>
+
+    <para>As these are system properties you use the -D command: <emphasis
+    role="bold">java -DconnectionUrl=jdbc:hsqldb:file:../temp/data/exodb
+    -DdriverClass=org.hsqldb.jdbcDriver</emphasis> Or better use the
+    parameters of eXo.bat / eXo.sh when you start eXo Portal: <emphasis
+    role="bold">set
+    EXO_OPTS="-DconnectionUrl=jdbc:hsqldb:file:../temp/data/exodb
+    -DdriverClass=org.hsqldb.jdbcDriver"</emphasis></para>
+  </section>
+
+  <section>
+    <title>Understanding the prefixes supported by the configuration
+    manager</title>
+
+    <para>The configuration manager allows you to find files using URL with
+    special prefixes that we describe in details below.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">war</emphasis>: try to find the file using
+        the <emphasis>Servlet Context</emphasis> of your
+        <emphasis>portal.war</emphasis> or any web applications defined as
+        <emphasis>PortalContainerConfigOwner</emphasis>, so for example in
+        case of the portal.war if the URL is
+        <emphasis>war:/conf/common/portlet-container-configuration.xml</emphasis>
+        it will try to get the file from
+        <emphasis>portal.war/WEB-INF/conf/common/portlet-container-configuration.xml.</emphasis></para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">jar</emphasis> or <emphasis
+        role="bold">classpath</emphasis>: you can use this prefix to find a
+        file that is accessible using the <emphasis>ClassLoader</emphasis>.
+        For example <emphasis>jar:/conf/my-file.xml</emphasis> will be
+        understood as try to find <emphasis>conf/my-file.xml</emphasis> from
+        the <emphasis>ClassLoader</emphasis>.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">file</emphasis>: this prefix will indicate
+        the configuration manager that it needs to interprete the URL as an
+        <emphasis>absolute path</emphasis>. For example
+        <emphasis>file:///path/to/my/file.xml</emphasis> will be understood as
+        an obsolute path.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>Without prefixes</emphasis>: it will be understood as
+        a <emphasis>relative path</emphasis> from the parent directory of the
+        last processed configuration file. For example, if the configuration
+        manager is processing the file corresonding to the URL
+        <emphasis>file:///path/to/my/configuration.xml</emphasis> and in this
+        file you import <emphasis>dir/to/foo.xml</emphasis>, the configuration
+        manager will try to get the file from
+        <emphasis>file:///path/to/my/dir/to/foo.xml</emphasis>. Please note
+        that it works also for other perfixes. In case you use the
+        configuration manager in a component to get a file like the example
+        below, it will depend on the mode and will be relative to the
+        following directories:</para>
+
+        <programlisting>&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.resources.LocaleConfigService&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.resources.impl.LocaleConfigServiceImpl&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;locale.config.file&lt;/name&gt;
+      &lt;value&gt;war:/conf/common/locales-config.xml&lt;/value&gt;
+    &lt;/value-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+        <itemizedlist>
+          <listitem>
+            <para>In standalone mode: it will be a relative path to where it
+            can find the file <emphasis>exo-configuration.xml</emphasis>
+            knowing that the file is first checked in the <emphasis>user
+            directory</emphasis>, if it cannot be found there, it will check
+            in the <emphasis>exo configuration directory</emphasis> and if it
+            still cannot be found it will try to find
+            <emphasis>conf/exo-configuration.xml</emphasis> in the
+            <emphasis>ClassLoader</emphasis>.</para>
+          </listitem>
+
+          <listitem>
+            <para>In portal mode: it will be a relative path to the
+            <emphasis>exo configuration directory</emphasis> in case of the
+            RootContainer (assuming that a file configuration.xml exists there
+            otherwise it would be hard to know) and from
+            <emphasis>${exo-configuration-directory}/portal/${portal-container-name}</emphasis>
+            in case of the PortalContainer (assuming that a file
+            configuration.xml exists there otherwise it would be hard to
+            know).</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+
+    <note>
+      <para>For more details about the exo configuration directory please
+      refer to the chapter <emphasis>Configuration
+      Retrieval</emphasis>.</para>
+    </note>
+  </section>
+</chapter>

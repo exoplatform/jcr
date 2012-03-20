@@ -21,41 +21,19 @@
 <assembly>
    <id>binary</id>
    <includeBaseDirectory>false</includeBaseDirectory>
-   <fileSets>
-      <fileSet>
-         <directory>bin</directory>
-         <outputDirectory>/</outputDirectory>
-         <includes>
-            <include>**/*.cmd</include>
-            <include>**/*.sh</include>
-         </includes>
-      </fileSet>
-      <fileSet>
-         <outputDirectory>/</outputDirectory>
-         <includes>
-            <include>bin/**/*</include>
-         </includes>
-         <excludes>
-            <exclude>bin/**/*.cmd</exclude>
-            <exclude>bin/**/*.sh</exclude>
-         </excludes>
-      </fileSet>
-      <fileSet>
-         <includes>
-            <include>logs/**/*</include>
-         </includes>
-      </fileSet>
-      <fileSet>
-         <directory>target</directory>
-         <outputDirectory>/</outputDirectory>
-         <includes>
-            <include>*.jar</include>
-         </includes>
-      </fileSet>
-   </fileSets>
-
+   <files>
+      <file>
+         <source>target/${project.artifactId}-${project.version}.jar</source>
+         <destName>${project.artifactId}-binary.jar</destName>
+      </file>
+      <file>
+         <source>target/${project.artifactId}-${project.version}-sources.jar</source>
+         <destName>${project.artifactId}-binary-sources.jar</destName>
+      </file>
+   </files>
    <dependencySets>
       <dependencySet>
+         <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
          <outputDirectory>lib</outputDirectory>
          <unpack>false</unpack>
          <scope>compile</scope>
@@ -64,10 +42,10 @@
             <exclude>commons-lang:commons-lang</exclude>
             <exclude>xpp3:xpp3</exclude>
             <exclude>org.exoplatform.tool:exo.tool.framework.junit</exclude>
+            <exclude>org.exoplatform.jcr:exo.jcr.applications.backupconsole</exclude>            
             <exclude>javax.portlet:portlet-api</exclude>
             <exclude>javax.faces:jsf-api</exclude>
             <exclude>javax.servlet:servlet-api</exclude>
-            <exclude>picocontainer:picocontainer</exclude>
             <exclude>jmock:jmock</exclude>
             <exclude>xstream:xstream</exclude>
             <exclude>commons-beanutils:commons-beanutils</exclude>
@@ -84,7 +62,25 @@
             <exclude>javax.transaction:jta</exclude>
             <exclude>stax:stax-api</exclude>
          </excludes>
-
+      </dependencySet>
+      <dependencySet>
+         <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
+         <outputDirectory>lib</outputDirectory>
+         <unpack>false</unpack>
+         <scope>test</scope>
+         <includes>
+             <include>org.slf4j:slf4j-log4j12</include>
+         </includes>
       </dependencySet>
    </dependencySets>
+   <fileSets>
+      <fileSet>
+         <directory>${basedir}/bin</directory>
+         <outputDirectory>/</outputDirectory>
+         <includes>
+            <include>*.cmd</include>
+            <include>*.sh</include>
+         </includes>
+      </fileSet>
+   </fileSets>   
 </assembly>

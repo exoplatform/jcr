@@ -19,14 +19,13 @@
 package org.exoplatform.services.jcr.impl.xml;
 
 import org.apache.ws.commons.util.Base64;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -101,7 +100,7 @@ public class BufferedDecoder extends Base64.Decoder
       {
 
          out.close();
-         return new BufferedInputStream(new FileInputStream(fileBuffer));
+         return new BufferedInputStream(PrivilegedFileHelper.fileInputStream(fileBuffer));
       }
       else
       {
@@ -117,11 +116,12 @@ public class BufferedDecoder extends Base64.Decoder
     */
    public void remove() throws IOException
    {
-      if ((fileBuffer != null) && fileBuffer.exists())
+      if ((fileBuffer != null) && PrivilegedFileHelper.exists(fileBuffer))
       {
-         if (!fileBuffer.delete())
+         if (!PrivilegedFileHelper.delete(fileBuffer))
          {
-            throw new IOException("Cannot remove file " + fileBuffer.getAbsolutePath() + " Close all streams.");
+            throw new IOException("Cannot remove file " + PrivilegedFileHelper.getAbsolutePath(fileBuffer)
+               + " Close all streams.");
          }
       }
    }
@@ -129,6 +129,7 @@ public class BufferedDecoder extends Base64.Decoder
    /**
     * @return string representation for buffer
     */
+   @Override
    public String toString()
    {
       if (out instanceof ByteArrayOutputStream)
@@ -140,7 +141,7 @@ public class BufferedDecoder extends Base64.Decoder
          try
          {
             out.close();
-            BufferedInputStream is = new BufferedInputStream(new FileInputStream(fileBuffer));
+            BufferedInputStream is = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(fileBuffer));
 
             StringBuffer fileData = new StringBuffer(DEFAULT_READ_BUFFER_SIZE);
 
@@ -176,9 +177,9 @@ public class BufferedDecoder extends Base64.Decoder
    private void swapBuffers() throws IOException
    {
       byte[] data = ((ByteArrayOutputStream)out).toByteArray();
-      fileBuffer = File.createTempFile("decoderBuffer", ".tmp");
-      fileBuffer.deleteOnExit();
-      out = new BufferedOutputStream(new FileOutputStream(fileBuffer), bufferSize);
+      fileBuffer = PrivilegedFileHelper.createTempFile("decoderBuffer", ".tmp");
+      PrivilegedFileHelper.deleteOnExit(fileBuffer);
+      out = new BufferedOutputStream(PrivilegedFileHelper.fileOutputStream(fileBuffer), bufferSize);
       out.write(data);
    }
 
@@ -195,6 +196,7 @@ public class BufferedDecoder extends Base64.Decoder
     * @exception IOException
     *              if an I/O error occurs.
     */
+   @Override
    protected void writeBuffer(byte[] buffer, int start, int length) throws IOException
    {
       if (out instanceof ByteArrayOutputStream)

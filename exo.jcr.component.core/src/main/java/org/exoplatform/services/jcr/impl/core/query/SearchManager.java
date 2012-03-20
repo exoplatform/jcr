@@ -18,14 +18,25 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
-import org.apache.lucene.search.BooleanClause.Occur;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.management.annotations.Managed;
+import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.management.jmx.annotations.NameTemplate;
+import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.document.DocumentReaderService;
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -38,28 +49,53 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.BackupException;
+import org.exoplatform.services.jcr.impl.backup.Backupable;
+import org.exoplatform.services.jcr.impl.backup.DataRestore;
+import org.exoplatform.services.jcr.impl.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
+import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
+import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexOfflineIOException;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexOfflineRepositoryException;
 import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableResolver;
 import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
 import org.exoplatform.services.jcr.impl.core.query.lucene.ScoreNode;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 import org.exoplatform.services.jcr.impl.core.value.NameValue;
 import org.exoplatform.services.jcr.impl.core.value.PathValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rpc.RPCException;
+import org.exoplatform.services.rpc.RPCService;
+import org.exoplatform.services.rpc.RemoteCommand;
+import org.exoplatform.services.rpc.TopologyChangeEvent;
+import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.jboss.cache.factories.annotations.NonVolatile;
 import org.picocontainer.Startable;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -85,13 +121,21 @@ import javax.jcr.query.Query;
  * @version $Id: SearchManager.java 1008 2009-12-11 15:14:51Z nzamosenchuk $
  */
 @NonVolatile
-public class SearchManager implements Startable, MandatoryItemsPersistenceListener
+@Managed
+@NameTemplate(@Property(key = "service", value = "SearchManager"))
+public class SearchManager implements Startable, MandatoryItemsPersistenceListener, Suspendable, Backupable,
+   TopologyChangeListener
 {
 
    /**
     * Logger instance for this class
     */
    private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.SearchManager");
+
+   /**
+    * Used to display date and time for JMX components 
+    */
+   private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
    protected final QueryHandlerEntry config;
 
@@ -136,8 +180,93 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected IndexerChangesFilter changesFilter;
 
    /**
+    * The Repository name.
+    */
+   protected final String repositoryName;
+
+   /**
+    * The Repository name.
+    */
+   protected final String workspaceName;
+
+   /**
+    * The repository service.
+    */
+   protected final RepositoryService rService;
+
+   /**
+    * The unique name of the related workspace
+    */
+   protected final String wsId;
+
+   /**
+    * The unique name of the workspace container
+    */
+   protected final String wsContainerId;
+
+   /**
+    * Component responsible for executing commands in cluster nodes.
+    */
+   protected final RPCService rpcService;
+
+   /**
+    * Indicates if component suspended or not.
+    */
+   protected boolean isSuspended = false;
+
+   /**
+    * Indicates that node keep responsible for resuming.
+    */
+   protected Boolean isResponsibleForResuming = false;
+
+   /**
+    * Suspend remote command.
+    */
+   private RemoteCommand suspend;
+
+   /**
+    * Resume remote command.
+    */
+   private RemoteCommand resume;
+
+   /**
+    * Index recovery.
+    */
+   private final IndexRecovery indexRecovery;
+
+   /**
+    * Request to all nodes to check if there is someone who responsible for resuming.
+    */
+   private RemoteCommand requestForResponsibleForResuming;
+
+   /**
+    * Switches index between online and offline modes
+    */
+   private RemoteCommand changeIndexState;
+
+   private final ExoContainerContext ctx;
+
+   private String hotReindexingState = "not stated";
+
+   public SearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry,
+      RepositoryService rService, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+      WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
+      DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
+      throws RepositoryException, RepositoryConfigurationException
+   {
+      this(ctx, wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, parentSearchManager, extractor, cfm,
+         indexSearcherHolder, null);
+   }
+
+   /**
     * Creates a new <code>SearchManager</code>.
     * 
+    * @param ctx
+    *            The eXo Container context in which the SearchManager is registered
+    * @param rEntry
+    *            repository configuration
+    * @param rService
+    *            repository service  
     * @param config
     *            the search configuration.
     * @param nsReg
@@ -154,17 +283,26 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * @param excludedNodeId
     *            id of the node that should be excluded from indexing. Any
     *            descendant of that node will also be excluded from indexing.
+    * @param rpcService
+    *             the service for executing commands on all nodes of cluster           
     * @throws RepositoryException
     *             if the search manager cannot be initialized
     * @throws RepositoryConfigurationException
     */
-
-   public SearchManager(QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+   public SearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry,
+      RepositoryService rService, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
-      DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
-      throws RepositoryException, RepositoryConfigurationException
+      DocumentReaderService extractor, ConfigurationManager cfm,
+      final RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
+      RepositoryConfigurationException
    {
-
+      this.ctx = ctx;
+      this.wsContainerId = ctx.getName();
+      this.rpcService = rpcService;
+      this.repositoryName = rEntry.getName();
+      this.workspaceName = wEntry.getName();
+      this.rService = rService;
+      this.wsId = wEntry.getUniqueName();
       this.extractor = extractor;
       indexSearcherHolder.addIndexSearcher(this);
       this.config = config;
@@ -177,6 +315,19 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       if (parentSearchManager != null)
       {
          ((WorkspacePersistentDataManager)this.itemMgr).addItemPersistenceListener(this);
+      }
+
+      if (rpcService == null)
+      {
+         this.indexRecovery = null;
+      }
+      else
+      {
+         doInitRemoteCommands();
+
+         this.indexRecovery = new IndexRecoveryImpl(rpcService, this);
+         rpcService.registerTopologyChangeListener(this);
+         rpcService.registerTopologyChangeListener((TopologyChangeListener)indexRecovery);
       }
    }
 
@@ -245,6 +396,81 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    }
 
    /**
+    * Check index consistency. Iterator goes through index documents and check, does each document have
+    * according jcr-node. If index is suspended then it will be temporary resumed, while check is running
+    * and suspended afterwards.
+    */
+   public void checkIndex(final InspectionReport report, final boolean isSystem) throws RepositoryException,
+      IOException
+   {
+      if (isSuspended)
+      {
+         try
+         {
+            SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Object>()
+            {
+               public Object run() throws RepositoryException, IOException
+               {
+                  // try resuming the workspace
+                  try
+                  {
+                     if (isSystem && parentSearchManager != null && parentSearchManager.isSuspended)
+                     {
+                        parentSearchManager.resume();
+                     }
+                     resume();
+
+                     handler.checkIndex(itemMgr, isSystem, report);
+                     return null;
+                  }
+                  catch (ResumeException e)
+                  {
+                     throw new RepositoryException("Can not resume SearchManager for inspection purposes.", e);
+                  }
+                  finally
+                  {
+                     // safely return the state of the workspace
+                     try
+                     {
+                        suspend();
+                        if (isSystem && parentSearchManager != null && !parentSearchManager.isSuspended)
+                        {
+                           parentSearchManager.suspend();
+                        }
+                     }
+                     catch (SuspendException e)
+                     {
+                        log.error(e.getMessage(), e);
+                     }
+                  }
+               }
+            });
+         }
+         catch (PrivilegedActionException e)
+         {
+            Throwable ex = e.getCause();
+            if (ex instanceof RepositoryException)
+            {
+               throw (RepositoryException)ex;
+            }
+            else if (ex instanceof IOException)
+            {
+               throw (IOException)ex;
+            }
+            else
+            {
+               throw new RepositoryException(ex.getMessage(), ex);
+            }
+         }
+      }
+      else
+      {
+         // simply run checkIndex, if not suspended
+         handler.checkIndex(itemMgr, isSystem, report);
+      }
+   }
+
+   /**
     * {@inheritDoc}
     */
    public Set<String> getFieldNames() throws IndexException
@@ -256,7 +482,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          try
          {
             reader = ((SearchIndex)handler).getIndexReader();
-            final Collection fields = reader.getFieldNames(IndexReader.FieldOption.ALL);
+            final Collection<?> fields = reader.getFieldNames(IndexReader.FieldOption.ALL);
             for (final Object field : fields)
             {
                fildsSet.add((String)field);
@@ -271,7 +497,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             try
             {
                if (reader != null)
-                  reader.close();
+               {
+                  Util.closeOrRelease(reader);
+               }
             }
             catch (IOException e)
             {
@@ -365,15 +593,15 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    }
 
    /**
-    * @see org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener#onSaveItems(org.exoplatform.services.jcr.dataflow.ItemStateChangesLog)
+    * {@inheritDoc}
     */
-   public void onSaveItems(ItemStateChangesLog itemStates)
+   public void onSaveItems(final ItemStateChangesLog itemStates)
    {
       //skip empty
       if (itemStates.getSize() > 0)
       {
          //Check if SearchManager started and filter configured
-         if (changesFilter != null)
+         if (changesFilter != null && parentSearchManager != null)
          {
             changesFilter.onSaveItems(itemStates);
          }
@@ -384,7 +612,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
 
       if (log.isDebugEnabled())
+      {
          log.debug("start");
+      }
       try
       {
          if (indexingTree == null)
@@ -406,7 +636,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                   {
                      ItemData excludeData = itemMgr.getItemData(stringTokenizer.nextToken());
                      if (excludeData != null)
+                     {
                         excludedPath.add(excludeData.getQPath());
+                     }
                   }
                   catch (RepositoryException e)
                   {
@@ -423,7 +655,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                {
                   ItemData indexingRootDataItem = itemMgr.getItemData(rootNodeIdentifer);
                   if (indexingRootDataItem != null && indexingRootDataItem.isNode())
+                  {
                      indexingRootData = (NodeData)indexingRootDataItem;
+                  }
                }
                catch (RepositoryException e)
                {
@@ -437,9 +671,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                try
                {
                   indexingRootData = (NodeData)itemMgr.getItemData(Constants.ROOT_UUID);
-                  //               indexingRootData =
-                  //                  new TransientNodeData(Constants.ROOT_PATH, Constants.ROOT_UUID, 1, Constants.NT_UNSTRUCTURED,
-                  //                     new InternalQName[0], 0, null, new AccessControlList());
                }
                catch (RepositoryException e)
                {
@@ -450,7 +681,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             indexingTree = new IndexingTree(indexingRootData, excludedPath);
          }
          initializeQueryHandler();
-
       }
       catch (RepositoryException e)
       {
@@ -469,6 +699,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public void stop()
    {
       handler.close();
+      // ChangesFiler instance is one for both SearchManagers and close() must be invoked only once,  
+      if (parentSearchManager != null)
+      {
+         changesFilter.close();
+      }
       log.info("Search manager stopped");
    }
 
@@ -477,6 +712,23 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void updateIndex(final Set<String> removedNodes, final Set<String> addedNodes) throws RepositoryException,
       IOException
+   {
+      final ChangesHolder changes = getChanges(removedNodes, addedNodes);
+      apply(changes);
+   }
+
+   public void apply(ChangesHolder changes) throws RepositoryException, IOException
+   {
+      if (handler != null && changes != null && (!changes.getAdd().isEmpty() || !changes.getRemove().isEmpty()))
+      {
+         handler.apply(changes);
+      }
+   }
+
+   /**
+    * Extracts all the changes and returns them as a {@link ChangesHolder} instance
+    */
+   public ChangesHolder getChanges(final Set<String> removedNodes, final Set<String> addedNodes)
    {
       if (handler != null)
       {
@@ -504,14 +756,20 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                         if (item.isNode())
                         {
                            if (!indexingTree.isExcluded(item))
+                           {
                               return (NodeData)item;
+                           }
                         }
                         else
+                        {
                            log.warn("Node not found, but property " + id + ", " + item.getQPath().getAsString()
                               + " found. ");
+                        }
                      }
                      else
+                     {
                         log.warn("Unable to index node with id " + id + ", node does not exist.");
+                     }
 
                   }
                   catch (RepositoryException e)
@@ -558,19 +816,51 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
          if (removedNodes.size() > 0 || addedNodes.size() > 0)
          {
-            handler.updateNodes(removedIds, addedStates);
+            return handler.getChanges(removedIds, addedStates);
          }
       }
-
+      return null;
    }
 
    protected QueryHandlerContext createQueryHandlerContext(QueryHandler parentHandler)
       throws RepositoryConfigurationException
    {
+      WorkspaceContainerFacade container;
+      try
+      {
+         container = rService.getRepository(repositoryName).getWorkspaceContainer(workspaceName);
+      }
+      catch (RepositoryException e)
+      {
+         throw new RepositoryConfigurationException(e);
+      }
+
+      // Recovery Filters are 
+      String changesFilterClassName = config.getParameterValue(QueryHandlerParams.PARAM_CHANGES_FILTER_CLASS, null);
+      boolean recoveryFilterUsed = false;
+
+      if (changesFilterClassName != null)
+      {
+         try
+         {
+            Class<?> changesFilterClass = Class.forName(changesFilterClassName);
+            // Set recoveryFilterUsed, if changes filter implements LocalIndex strategy 
+            if (changesFilterClass != null)
+            {
+               recoveryFilterUsed = LocalIndexMarker.class.isAssignableFrom(changesFilterClass);
+            }
+         }
+         catch (ClassNotFoundException e)
+         {
+            throw new RepositoryConfigurationException(e.getMessage(), e);
+         }
+      }
 
       QueryHandlerContext context =
-         new QueryHandlerContext(itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler, getIndexDir(),
-            extractor, true, virtualTableResolver);
+         new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
+            PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, recoveryFilterUsed,
+            virtualTableResolver, indexRecovery, rpcService, repositoryName, wsId);
+
       return context;
    }
 
@@ -604,7 +894,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
    }
 
-   protected String getIndexDir() throws RepositoryConfigurationException
+   /**^
+    * Returns "index-dir" parameter from configuration. 
+    */
+   protected String getIndexDirParam() throws RepositoryConfigurationException
    {
       String dir = config.getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR, null);
       if (dir == null)
@@ -622,6 +915,14 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected IndexingTree getIndexingTree()
    {
       return indexingTree;
+   }
+
+   /**
+    * @return the ctx
+    */
+   public ExoContainerContext getExoContainerContext()
+   {
+      return ctx;
    }
 
    /**
@@ -702,13 +1003,27 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       // initialize query handler
       String className = config.getType();
       if (className == null)
+      {
          throw new RepositoryConfigurationException("Content hanler       configuration fail");
+      }
 
       try
       {
-         Class qHandlerClass = Class.forName(className, true, this.getClass().getClassLoader());
-         Constructor constuctor = qHandlerClass.getConstructor(QueryHandlerEntry.class, ConfigurationManager.class);
-         handler = (QueryHandler)constuctor.newInstance(config, cfm);
+         Class<?> qHandlerClass = Class.forName(className, true, this.getClass().getClassLoader());
+         try
+         {
+            // We first try a constructor with the workspace id
+            Constructor<?> constuctor =
+               qHandlerClass.getConstructor(String.class, QueryHandlerEntry.class, ConfigurationManager.class);
+            handler = (QueryHandler)constuctor.newInstance(wsContainerId, config, cfm);
+         }
+         catch (NoSuchMethodException e)
+         {
+            // No constructor with the workspace id can be found so we use the default constructor
+            Constructor<?> constuctor =
+               qHandlerClass.getConstructor(QueryHandlerEntry.class, ConfigurationManager.class);
+            handler = (QueryHandler)constuctor.newInstance(config, cfm);
+         }
          QueryHandler parentHandler = (this.parentSearchManager != null) ? parentSearchManager.getHandler() : null;
          QueryHandlerContext context = createQueryHandlerContext(parentHandler);
          handler.setContext(context);
@@ -716,6 +1031,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          if (parentSearchManager != null)
          {
             changesFilter = initializeChangesFilter();
+            parentSearchManager.setChangesFilter(changesFilter);
          }
       }
       catch (SecurityException e)
@@ -749,6 +1065,20 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    }
 
    /**
+    * Inserts the instance of {@link IndexerChangesFilter} into the {@link SearchManager}. 
+    * Used to set instance for {@link SystemSearchManager}.
+    * 
+    * @param changesFilter
+    */
+   protected void setChangesFilter(IndexerChangesFilter changesFilter)
+   {
+      if (this.changesFilter == null)
+      {
+         this.changesFilter = changesFilter;
+      }
+   }
+
+   /**
     * @param query
     * @return
     * @throws RepositoryException
@@ -756,23 +1086,40 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    private Set<String> getNodes(final org.apache.lucene.search.Query query) throws RepositoryException
    {
       Set<String> result = new HashSet<String>();
+      QueryHits hits = null;
       try
       {
-         QueryHits hits = handler.executeQuery(query);
+         hits = handler.executeQuery(query);
 
          ScoreNode sn;
-
          while ((sn = hits.nextScoreNode()) != null)
          {
-            // Node node = session.getNodeById(sn.getNodeId());
             result.add(sn.getNodeId());
          }
+         return result;
+      }
+      catch (IndexOfflineIOException e)
+      {
+         throw new IndexOfflineRepositoryException(e.getMessage(), e);
       }
       catch (IOException e)
       {
          throw new RepositoryException(e.getLocalizedMessage(), e);
       }
-      return result;
+      finally
+      {
+         if (hits != null)
+         {
+            try
+            {
+               hits.close();
+            }
+            catch (IOException e)
+            {
+               log.error("Can not close QueryHits.", e);
+            }
+         }
+      }
    }
 
    private boolean isPrefixMatch(final InternalQName value, final String prefix) throws RepositoryException
@@ -843,4 +1190,555 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       return false;
    }
 
+   public String getWsId()
+   {
+      return wsId;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void suspend() throws SuspendException
+   {
+      if (rpcService != null)
+      {
+         isResponsibleForResuming = true;
+
+         try
+         {
+            rpcService.executeCommandOnAllNodes(suspend, true);
+         }
+         catch (SecurityException e)
+         {
+            throw new SuspendException(e);
+         }
+         catch (RPCException e)
+         {
+            throw new SuspendException(e);
+         }
+      }
+      else
+      {
+         suspendLocally();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isSuspended()
+   {
+      return isSuspended;
+   }
+
+   /**
+    * Switches index into corresponding ONLINE or OFFLINE mode. Offline mode means that new indexing data is
+    * collected but index is guaranteed to be unmodified during offline state. Passing the allowQuery flag, can
+    * allow or deny performing queries on index during offline mode. AllowQuery is not used when setting index
+    * back online. When dropStaleIndexes is set, indexes present on the moment of switching index offline will be
+    * marked as stale and removed on switching it back online.
+    * 
+    * @param isOnline
+    * @param allowQuery
+    *          doesn't matter, when switching index to online
+    * @param dropStaleIndexes
+    *          doesn't matter, when switching index to online
+    * @throws IOException
+    */
+   public void setOnline(boolean isOnline, boolean allowQuery, boolean dropStaleIndexes) throws IOException
+   {
+      handler.setOnline(isOnline, allowQuery, dropStaleIndexes);
+   }
+
+   public boolean isOnline()
+   {
+      return handler.isOnline();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void resume() throws ResumeException
+   {
+      if (rpcService != null)
+      {
+         try
+         {
+            rpcService.executeCommandOnAllNodes(resume, true);
+         }
+         catch (SecurityException e)
+         {
+            throw new ResumeException(e);
+         }
+         catch (RPCException e)
+         {
+            throw new ResumeException(e);
+         }
+
+         isResponsibleForResuming = false;
+      }
+      else
+      {
+         resumeLocally();
+      }
+   }
+
+   /**
+    * Public method, designed to be called via JMX, to perform "HOT" reindexing of the workspace
+    * 
+    * @throws IOException
+    * @throws IllegalStateException
+    */
+   @Managed
+   @ManagedDescription("Starts hot async reindexing")
+   public void reindex(final boolean dropExisting) throws IllegalStateException
+   {
+      // checks
+      if (handler == null || handler.getIndexerIoModeHandler() == null || changesFilter == null)
+      {
+         throw new IllegalStateException("Index might have not been initialized yet.");
+      }
+      if (handler.getIndexerIoModeHandler().getMode() != IndexerIoMode.READ_WRITE)
+      {
+         throw new IllegalStateException(
+            "Index is not in READ_WRITE mode and reindexing can't be launched. Please start reindexing on coordinator node.");
+      }
+      if (isSuspended || !handler.isOnline())
+      {
+         throw new IllegalStateException("Can't start reindexing while index is "
+            + ((isSuspended) ? "SUSPENDED." : "already OFFLINE (it means that reindexing is in progress).") + ".");
+      }
+
+      log.info("Starting hot reindexing on the " + handler.getContext().getRepositoryName() + "/"
+         + handler.getContext().getContainer().getWorkspaceName() + ", with" + (dropExisting ? "" : "out")
+         + " dropping the existing indexes.");
+      // starting new thread, releasing JMX call
+      new Thread(new Runnable()
+      {
+         public void run()
+         {
+            boolean successful = false;
+            hotReindexingState = "Running. Started at " + sdf.format(Calendar.getInstance().getTime());
+            try
+            {
+               isResponsibleForResuming = true;
+               // set offline cluster wide (will make merger disposed and volatile flushed)
+               if (rpcService != null && changesFilter.isShared())
+               {
+                  rpcService.executeCommandOnAllNodes(changeIndexState, true, false, !dropExisting);
+               }
+               else
+               {
+                  handler.setOnline(false, !dropExisting, true);
+               }
+               // launch reindexing thread safely, resume nodes if any exception occurs
+               if (handler instanceof SearchIndex)
+               {
+                  ((SearchIndex)handler).getIndex().reindex(itemMgr);
+                  successful = true;
+               }
+               else
+               {
+                  log.error("This kind of QuerHandler class doesn't support hot reindxing.");
+               }
+            }
+            catch (RepositoryException e)
+            {
+               log.error("Error while reindexing the workspace", e);
+            }
+            catch (SecurityException e)
+            {
+               log.error("Can't change state to offline.", e);
+            }
+            catch (RPCException e)
+            {
+               log.error("Can't change state to offline.", e);
+            }
+            catch (IOException e)
+            {
+               log.error("Erroe while reindexing the workspace", e);
+            }
+            // safely change state back
+            finally
+            {
+               // finish, setting indexes back online
+               if (rpcService != null && changesFilter.isShared())
+               {
+                  try
+                  {
+                     // if dropExisting, then queries are no allowed
+                     rpcService.executeCommandOnAllNodes(changeIndexState, true, true, true);
+                  }
+                  catch (SecurityException e)
+                  {
+                     log.error("Error setting index back online in a cluster", e);
+                  }
+                  catch (RPCException e)
+                  {
+                     log.error("Error setting index back online in a cluster", e);
+                  }
+               }
+               else
+               {
+                  try
+                  {
+                     handler.setOnline(true, true, true);
+                  }
+                  catch (IOException e)
+                  {
+                     log.error("Error setting index back online locally");
+                  }
+               }
+               if (successful)
+               {
+                  hotReindexingState = "Finished at " + sdf.format(Calendar.getInstance().getTime());
+                  log.info("Reindexing finished successfully.");
+               }
+               else
+               {
+                  hotReindexingState = "Stopped with errors at " + sdf.format(Calendar.getInstance().getTime());
+                  log.info("Reindexing halted with errors.");
+               }
+               isResponsibleForResuming = false;
+            }
+         }
+      }, "HotReindexing-" + handler.getContext().getRepositoryName() + "-"
+         + handler.getContext().getContainer().getWorkspaceName()).start();
+   }
+
+   @Managed
+   @ManagedDescription("Hot async reindexing state")
+   public String getHotReindexingState()
+   {
+      return hotReindexingState;
+   }
+
+   @Managed
+   @ManagedDescription("Index IO mode (READ_ONLY/READ_WRITE)")
+   public String getIOMode()
+   {
+      if (handler == null || handler.getIndexerIoModeHandler() == null)
+      {
+         return "not initialized";
+      }
+      return (handler.getIndexerIoModeHandler().getMode() == IndexerIoMode.READ_WRITE) ? "READ_WRITE" : "READ_ONLY";
+   }
+
+   @Managed
+   @ManagedDescription("Index state (Online/Offline(indexing))")
+   public String getState()
+   {
+      if (handler == null)
+      {
+         return "not initialized";
+      }
+      return handler.isOnline() ? "Online" : "Offline (indexing)";
+   }
+
+   @Managed
+   @ManagedDescription("QueryHandler class")
+   public String getQuerHandlerClass()
+   {
+      if (handler != null)
+      {
+         return handler.getClass().getCanonicalName();
+      }
+      else
+      {
+         return "not initialized";
+      }
+   }
+
+   @Managed
+   @ManagedDescription("ChangesFilter class")
+   public String getChangesFilterClass()
+   {
+      if (changesFilter != null)
+      {
+         return changesFilter.getClass().getCanonicalName();
+      }
+      else
+      {
+         return "not initialized";
+      }
+   }
+
+   /**
+    * Register remote commands.
+    */
+   private void doInitRemoteCommands()
+   {
+      // register commands
+      suspend = rpcService.registerCommand(new RemoteCommand()
+      {
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-suspend-" + wsId + "-"
+               + (parentSearchManager == null);
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            suspendLocally();
+            return null;
+         }
+      });
+
+      resume = rpcService.registerCommand(new RemoteCommand()
+      {
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-resume-" + wsId + "-"
+               + (parentSearchManager == null);
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            resumeLocally();
+            return null;
+         }
+      });
+
+      requestForResponsibleForResuming = rpcService.registerCommand(new RemoteCommand()
+      {
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-requestForResponsibilityForResuming-"
+               + wsId + "-" + (parentSearchManager == null);
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            return isResponsibleForResuming;
+         }
+      });
+
+      changeIndexState = rpcService.registerCommand(new RemoteCommand()
+      {
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.SearchManager-changeIndexerState-" + wsId + "-"
+               + (parentSearchManager == null);
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            boolean isOnline = (Boolean)args[0];
+            boolean allowQuery = (args.length == 2) ? (Boolean)args[1] : false;
+            SearchManager.this.setOnline(isOnline, allowQuery, true);
+            return null;
+         }
+      });
+
+   }
+
+   protected void suspendLocally() throws SuspendException
+   {
+      if (!handler.isOnline())
+      {
+         throw new SuspendException("Can't suspend index, while reindexing in progeress.");
+      }
+
+      if (!isSuspended)
+      {
+         if (handler instanceof Suspendable)
+         {
+            ((Suspendable)handler).suspend();
+         }
+
+         isSuspended = true;
+      }
+   }
+
+   protected void resumeLocally() throws ResumeException
+   {
+      if (isSuspended)
+      {
+         if (handler instanceof Suspendable)
+         {
+            ((Suspendable)handler).resume();
+         }
+
+         isSuspended = false;
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void onChange(TopologyChangeEvent event)
+   {
+      if (isSuspended)
+      {
+         new Thread()
+         {
+            @Override
+            public synchronized void run()
+            {
+               try
+               {
+                  List<Object> results = rpcService.executeCommandOnAllNodes(requestForResponsibleForResuming, true);
+
+                  for (Object result : results)
+                  {
+                     if ((Boolean)result)
+                     {
+                        return;
+                     }
+                  }
+
+                  // node which was responsible for resuming leave the cluster, so resume component
+                  try
+                  {
+                     resumeLocally();
+                  }
+                  catch (ResumeException e)
+                  {
+                     log.error("Can not resume component", e);
+                  }
+               }
+               catch (SecurityException e1)
+               {
+                  log.error("You haven't privileges to execute remote command", e1);
+               }
+               catch (RPCException e1)
+               {
+                  log.error("Exception during command execution", e1);
+               }
+            }
+         }.start();
+      }
+   }
+
+   /**
+    * {@inheritDoc}}
+    */
+   public void clean() throws BackupException
+   {
+      try
+      {
+         final File indexDir = getIndexDirectory();
+
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws IOException
+            {
+               DirectoryHelper.removeDirectory(indexDir);
+
+               return null;
+            }
+         });
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}}
+    */
+   public void backup(final File storageDir) throws BackupException
+   {
+      try
+      {
+         final File indexDir = getIndexDirectory();
+
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws IOException
+            {
+               if (!indexDir.exists())
+               {
+                  throw new IOException("Can't backup index. Directory " + indexDir.getCanonicalPath()
+                     + " doesn't exists");
+               }
+               else
+               {
+                  File destZip = new File(storageDir, getStorageName() + ".zip");
+                  DirectoryHelper.compressDirectory(indexDir, destZip);
+               }
+
+               return null;
+            }
+         });
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupException(e);
+      }
+      catch (IOException e)
+      {
+         throw new BackupException(e);
+      }
+   }
+
+   /**
+    * Returns the index directory.
+    * 
+    * @return File
+    * @throws RepositoryConfigurationException
+    */
+   protected File getIndexDirectory() throws RepositoryConfigurationException
+   {
+      return new File(getIndexDirParam());
+   }
+
+   /**
+    * Returns storage name of index.
+    * 
+    * @return String
+    */
+   protected String getStorageName()
+   {
+      return "index";
+   }
+
+   /**
+    * {@inheritDoc}}
+    */
+   public DataRestore getDataRestorer(DataRestoreContext context) throws BackupException
+   {
+      try
+      {
+         File zipFile = new File((File)context.getObject(DataRestoreContext.STORAGE_DIR), getStorageName() + ".zip");
+
+         if (PrivilegedFileHelper.exists(zipFile))
+         {
+            return new DirectoryRestore(getIndexDirectory(), zipFile);
+         }
+         else
+         {
+            // try to check if we have deal with old backup format
+            zipFile = new File((File)context.getObject(DataRestoreContext.STORAGE_DIR), getStorageName());
+            if (PrivilegedFileHelper.exists(zipFile))
+            {
+               return new DirectoryRestore(getIndexDirectory(), zipFile);
+            }
+            else
+            {
+               throw new BackupException("There is no backup data for index");
+            }
+         }
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getPriority()
+   {
+      return PRIORITY_NORMAL;
+   }
 }

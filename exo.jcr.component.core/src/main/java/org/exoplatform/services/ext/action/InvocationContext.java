@@ -45,6 +45,11 @@ public class InvocationContext extends HashMap implements Context
    public static final String CURRENT_ITEM = "currentItem".intern();
 
    /**
+    * Current item.
+    */
+   public static final String PREVIOUS_ITEM = "previousItem".intern();
+
+   /**
     * Context event.
     */
    public static final String EVENT = "event".intern();
@@ -85,6 +90,14 @@ public class InvocationContext extends HashMap implements Context
    public final Item getCurrentItem()
    {
       return (Item)get(CURRENT_ITEM);
+   }
+
+   /**
+    * @return Previous item.
+    */
+   public final Item getPreviousItem()
+   {
+      return (Item)get(PREVIOUS_ITEM);
    }
 
    /**

@@ -17,11 +17,13 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.services.document.DocumentReaderService;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableResolver;
+import org.exoplatform.services.rpc.RPCService;
 
 /**
  * Acts as an argument for the {@link QueryHandler} to keep the interface
@@ -70,7 +72,28 @@ public class QueryHandlerContext
 
    private final boolean createInitialIndex;
 
+   private final boolean recoveryFilterUsed;
+
    private final LuceneVirtualTableResolver virtualTableResolver;
+
+   /**
+    * Workspace container.
+    */
+   private final WorkspaceContainerFacade container;
+
+   /** 
+    * The class responsible for index retrieving from other place. 
+    */
+   private final IndexRecovery indexRecovery;
+
+   /**
+    * Field containing RPCService, if any configured in container  
+    */
+   private final RPCService rpcService;
+
+   private final String repositoryName;
+
+   private final String workspaceName;
 
    /**
     * Creates a new context instance.
@@ -94,12 +117,19 @@ public class QueryHandlerContext
     * @param excludedNodeId
     *            id of the node that should be excluded from indexing. Any
     *            descendant of that node is also excluded from indexing.
+    * @param indexRecovery
+    *            the index retriever from other place     
+    * @param rpcService
+    *            RPCService intance if any
     */
-   public QueryHandlerContext(ItemDataConsumer stateMgr, IndexingTree indexingTree,
+   public QueryHandlerContext(WorkspaceContainerFacade container, ItemDataConsumer stateMgr, IndexingTree indexingTree,
       NodeTypeDataManager nodeTypeDataManager, NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
       String indexDirectory, DocumentReaderService extractor, boolean createInitialIndex,
-      LuceneVirtualTableResolver virtualTableResolver)
+      boolean useIndexRecoveryFilters, LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery,
+      RPCService rpcService, String repositoryName, String workspaceName)
    {
+      this.indexRecovery = indexRecovery;
+      this.container = container;
       this.stateMgr = stateMgr;
       this.indexingTree = indexingTree;
       this.nodeTypeDataManager = nodeTypeDataManager;
@@ -109,8 +139,20 @@ public class QueryHandlerContext
       this.createInitialIndex = createInitialIndex;
       this.virtualTableResolver = virtualTableResolver;
       this.propRegistry = new PropertyTypeRegistry(nodeTypeDataManager);
+      this.rpcService = rpcService;
       this.parentHandler = parentHandler;
+      this.repositoryName = repositoryName;
+      this.workspaceName = workspaceName;
+      this.recoveryFilterUsed = useIndexRecoveryFilters;
       ((NodeTypeDataManagerImpl)this.nodeTypeDataManager).addListener(propRegistry);
+   }
+
+   /**
+    * @return the workspace container
+    */
+   public WorkspaceContainerFacade getContainer()
+   {
+      return container;
    }
 
    /**
@@ -127,6 +169,14 @@ public class QueryHandlerContext
    public boolean isCreateInitialIndex()
    {
       return createInitialIndex;
+   }
+
+   /**
+    * @return the recoveryFilterUsed
+    */
+   public boolean isRecoveryFilterUsed()
+   {
+      return recoveryFilterUsed;
    }
 
    /**
@@ -208,4 +258,46 @@ public class QueryHandlerContext
    {
       return indexDirectory;
    }
+
+   public IndexRecovery getIndexRecovery()
+   {
+      return indexRecovery;
+   }
+
+   /**
+    * @return RPCService if any present in a container.
+    */
+   public RPCService getRPCService()
+   {
+      return rpcService;
+   }
+
+   /**
+    * @return
+    *          The name of current repository
+    */
+   public String getRepositoryName()
+   {
+      return repositoryName;
+   }
+
+   /**
+    * @return
+    *          The name of current workspace
+    */
+   public String getWorkspaceName()
+   {
+      return workspaceName;
+   }
+
+   /**
+    * @return
+    *          The full path of workspace including information if current QueryHandler is a System one.
+    *          I.e. "repository/production[system]"
+    */
+   public String getWorkspacePath(boolean includeSystemMark)
+   {
+      return repositoryName + "/" + workspaceName + ((includeSystemMark && parentHandler == null) ? "[system]" : "");
+   }
+
 }

@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.impl.Constants;
 
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -58,7 +58,7 @@ public class FileObjectReaderImpl implements ObjectReader
     */
    public FileObjectReaderImpl(File file) throws FileNotFoundException
    {
-      this.channel = new FileInputStream(file).getChannel();
+      this.channel = PrivilegedFileHelper.fileInputStream(file).getChannel();
    }
 
    /**
@@ -93,7 +93,7 @@ public class FileObjectReaderImpl implements ObjectReader
    public boolean readBoolean() throws IOException
    {
       int v = readInt();
-      if (v < 0) // TODO ?
+      if (v < 0)
          throw new EOFException();
 
       return v != 0;

@@ -17,6 +17,8 @@
 package org.exoplatform.services.jcr.impl.core.query.jbosscache;
 
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
+import org.exoplatform.services.jcr.impl.core.query.Indexer;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
@@ -27,13 +29,11 @@ import org.exoplatform.services.log.Log;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Modification;
+import org.jboss.cache.config.Configuration.CacheMode;
 
-import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
-import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:nikolazius@gmail.com">Nikolay Zamosenchuk</a>
@@ -42,17 +42,14 @@ import javax.jcr.RepositoryException;
  */
 public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
 {
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.IndexerCacheLoader");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.IndexerCacheLoader");
 
-   private SearchManager searchManager;
+   /**
+    * A map of all the indexers that has been registered
+    */
+   private final Map<Fqn<String>, Indexer> indexers = new HashMap<Fqn<String>, Indexer>();
 
-   private SearchManager parentSearchManager;
-
-   private QueryHandler handler;
-
-   private QueryHandler parentHandler;
-
-   private volatile IndexerIoModeHandler modeHandler;
+   protected volatile IndexerIoModeHandler modeHandler;
 
    /**
     * @see org.jboss.cache.loader.AbstractCacheLoader#commit(java.lang.Object)
@@ -64,7 +61,7 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
    }
 
    /**
-    * Inject dependencies needed for CacheLoader: SearchManagers and QueryHandlers. 
+    * This method will register a new Indexer according to the given parameters. 
     * 
     * @param searchManager
     * @param parentSearchManager
@@ -72,13 +69,15 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
     * @param parentHandler
     * @throws RepositoryConfigurationException
     */
-   public void init(SearchManager searchManager, SearchManager parentSearchManager, QueryHandler handler,
+   public void register(SearchManager searchManager, SearchManager parentSearchManager, QueryHandler handler,
       QueryHandler parentHandler) throws RepositoryConfigurationException
    {
-      this.searchManager = searchManager;
-      this.parentSearchManager = parentSearchManager;
-      this.handler = handler;
-      this.parentHandler = parentHandler;
+      indexers.put(Fqn.fromElements(searchManager.getWsId()), new Indexer(searchManager, parentSearchManager, handler,
+         parentHandler));
+      if (LOG.isDebugEnabled())
+      {
+         LOG.debug("Register " + searchManager.getWsId() + " " + this + " in " + indexers);
+      }
    }
 
    /**
@@ -88,28 +87,47 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
    {
       if (key.equals(JBossCacheIndexChangesFilter.LISTWRAPPER) && value instanceof ChangesFilterListsWrapper)
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.info("Received list wrapper, start indexing...");
+            LOG.info("Received list wrapper, start indexing...");
          }
          // updating index
          ChangesFilterListsWrapper wrapper = (ChangesFilterListsWrapper)value;
          try
          {
-            updateIndex(wrapper.getAddedNodes(), wrapper.getRemovedNodes(), wrapper.getParentAddedNodes(), wrapper
-               .getParentRemovedNodes());
+            Indexer indexer = indexers.get(name.getParent());
+            if (indexer == null)
+            {
+               LOG.warn("No indexer could be found for the fqn " + name.getParent());
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("The current content of the map of indexers is " + indexers);
+               }
+            }
+            else if (wrapper.withChanges())
+            {
+               indexer.updateIndex(wrapper.getChanges(), wrapper.getParentChanges());
+            }
+            else
+            {
+               indexer.updateIndex(wrapper.getAddedNodes(), wrapper.getRemovedNodes(), wrapper.getParentAddedNodes(),
+                  wrapper.getParentRemovedNodes());
+            }
          }
          finally
          {
-            // remove the data from the cache
-            cache.removeNode(name);
+            if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+            {
+               // remove the data from the cache
+               cache.removeNode(name);
+            }
          }
       }
       return null;
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.storage.jbosscache.AbstractWriteOnlyCacheLoader#put(org.jboss.cache.Fqn, java.util.Map)
+    * {@inheritDoc}
     */
    public void put(Fqn arg0, Map<Object, Object> arg1) throws Exception
    {
@@ -140,10 +158,7 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
     */
    void setMode(IndexerIoMode ioMode)
    {
-      if (modeHandler != null)
-      {
-         modeHandler.setMode(ioMode);
-      }
+      getModeHandler().setMode(ioMode);
    }
 
    /**
@@ -163,72 +178,12 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
             if (modeHandler == null)
             {
                this.modeHandler =
-                  new IndexerIoModeHandler(cache.getRPCManager().isCoordinator() ? IndexerIoMode.READ_WRITE
+                  new IndexerIoModeHandler(cache.getRPCManager().isCoordinator()
+                     || cache.getConfiguration().getCacheMode() == CacheMode.LOCAL ? IndexerIoMode.READ_WRITE
                      : IndexerIoMode.READ_ONLY);
             }
          }
       }
       return modeHandler;
-   }
-
-   /**
-    * Flushes lists of added/removed nodes to SearchManagers, starting indexing.
-    * 
-    * @param addedNodes
-    * @param removedNodes
-    * @param parentAddedNodes
-    * @param parentRemovedNodes
-    */
-   protected void updateIndex(Set<String> addedNodes, Set<String> removedNodes, Set<String> parentAddedNodes,
-      Set<String> parentRemovedNodes)
-   {
-      // pass lists to search manager 
-      if (searchManager != null && (addedNodes.size() > 0 || removedNodes.size() > 0))
-      {
-         try
-         {
-            searchManager.updateIndex(removedNodes, addedNodes);
-         }
-         catch (RepositoryException e)
-         {
-            log.error("Error indexing changes " + e, e);
-         }
-         catch (IOException e)
-         {
-            log.error("Error indexing changes " + e, e);
-            try
-            {
-               handler.logErrorChanges(removedNodes, addedNodes);
-            }
-            catch (IOException ioe)
-            {
-               log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
-            }
-         }
-      }
-      // pass lists to parent search manager 
-      if (parentSearchManager != null && (parentAddedNodes.size() > 0 || parentRemovedNodes.size() > 0))
-      {
-         try
-         {
-            parentSearchManager.updateIndex(parentRemovedNodes, parentAddedNodes);
-         }
-         catch (RepositoryException e)
-         {
-            log.error("Error indexing changes " + e, e);
-         }
-         catch (IOException e)
-         {
-            log.error("Error indexing changes " + e, e);
-            try
-            {
-               parentHandler.logErrorChanges(removedNodes, addedNodes);
-            }
-            catch (IOException ioe)
-            {
-               log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
-            }
-         }
-      }
    }
 }

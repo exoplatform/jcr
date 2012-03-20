@@ -18,13 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 import java.io.Externalizable;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -86,7 +86,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
     */
    public InputStream getAsStream() throws IOException
    {
-      return new FileInputStream(file);
+      return PrivilegedFileHelper.fileInputStream(file);
    }
 
    /**
@@ -103,7 +103,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
     */
    public long getLength()
    {
-      return file.length();
+      return PrivilegedFileHelper.length(file);
    }
 
    /**
@@ -113,7 +113,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
    {
       if (channel == null)
       {
-         channel = new FileInputStream(file).getChannel();
+         channel = PrivilegedFileHelper.fileInputStream(file).getChannel();
       }
 
       // validation
@@ -196,8 +196,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
     */
    private byte[] fileToByteArray() throws IOException
    {
-      // TODO do refactor of work with NIO and java6
-      FileChannel fch = new FileInputStream(file).getChannel();
+      FileChannel fch = PrivilegedFileHelper.fileInputStream(file).getChannel();
 
       try
       {
@@ -237,7 +236,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
 
          File f = new File(new String(buf, "UTF-8"));
          // validate if exists
-         if (f.exists())
+         if (PrivilegedFileHelper.exists(f))
          {
             file = f;
          }
@@ -263,8 +262,7 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
       // write canonical file path
       if (file != null)
       {
-         // TODO for tests byte[] buf = file.getPath().getBytes("UTF-8");
-         byte[] buf = file.getCanonicalPath().getBytes("UTF-8");
+         byte[] buf = PrivilegedFileHelper.getCanonicalPath(file).getBytes("UTF-8");
          out.writeInt(buf.length);
          out.write(buf);
       }

@@ -46,7 +46,7 @@ public class ExactQueryNode extends QueryNode {
     public ExactQueryNode(QueryNode parent, InternalQName property, InternalQName value) {
         super(parent);
         if (parent == null) {
-            throw new NullPointerException("parent");
+            throw new IllegalArgumentException("parameter parent cannot be null");
         }
         this.property = property;
         this.value = value;

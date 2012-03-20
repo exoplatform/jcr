@@ -38,7 +38,7 @@ import javax.jcr.Property;
 public class FtpFileInfoImpl implements FtpFileInfo
 {
 
-   protected static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpFileInfoImpl");
+   protected static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpFileInfoImpl");
 
    protected String _name = "";
 

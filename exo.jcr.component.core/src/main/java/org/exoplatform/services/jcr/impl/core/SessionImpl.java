@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
@@ -27,28 +28,33 @@ import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.NamespaceAccessor;
 import org.exoplatform.services.jcr.core.SessionLifecycleListener;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.WorkspaceLockManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeImpl;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerImpl;
 import org.exoplatform.services.jcr.impl.core.observation.ObservationManagerRegistry;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataMoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog;
 import org.exoplatform.services.jcr.impl.ext.action.SessionActionInterceptor;
-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.xml.ExportImportFactory;
 import org.exoplatform.services.jcr.impl.xml.ItemDataKeeperAdapter;
 import org.exoplatform.services.jcr.impl.xml.XmlMapping;
 import org.exoplatform.services.jcr.impl.xml.exporting.BaseXmlExporter;
 import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
 import org.exoplatform.services.jcr.impl.xml.importing.StreamImporter;
-import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.xml.sax.ContentHandler;
@@ -66,6 +72,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicLong;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Credentials;
@@ -87,6 +94,7 @@ import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.observation.ObservationManager;
 import javax.jcr.version.VersionException;
+import javax.transaction.xa.XAResource;
 import javax.xml.stream.XMLStreamException;
 
 /**
@@ -98,6 +106,35 @@ import javax.xml.stream.XMLStreamException;
  */
 public class SessionImpl implements ExtendedSession, NamespaceAccessor
 {
+
+   /**
+    * Logger.
+    */
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionImpl");
+
+   /**
+    * Indicates if it must fail in case we use a closed session.
+    */
+   private static final boolean PROHIBIT_CLOSED_SESSION_USAGE =
+      Boolean.valueOf(PropertyManager.getProperty("exo.jcr.prohibit.closed.session.usage"));
+
+   protected static boolean FORCE_USE_GET_NODES_LAZILY =
+      Boolean.valueOf(PropertyManager.getProperty("org.exoplatform.jcr.forceUserGetNodesLazily"));
+
+   static
+   {
+      if (PROHIBIT_CLOSED_SESSION_USAGE)
+      {
+         log.info("The JCR will throw an exception anytime we will try to use a dead session.");
+      }
+      if (FORCE_USE_GET_NODES_LAZILY)
+      {
+         log.warn("EXPERIMENTAL! The JCR will use ExtendedNode.getNodesLazily() for each Node.getNodes() "
+            + "invocation. This is an experimental feauture and should be used with care.");
+      }
+   }
+
+   private static final AtomicLong SEQUENCE = new AtomicLong();
 
    public static final int DEFAULT_LAZY_READ_THRESHOLD = 100;
 
@@ -127,6 +164,10 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    private boolean live;
 
+   private boolean expired;
+
+   private Exception closedByCallStack;
+
    private final List<SessionLifecycleListener> lifecycleListeners;
 
    private final String id;
@@ -134,6 +175,10 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    private final SessionActionInterceptor actionHandler;
 
    private long lastAccessTime;
+
+   private boolean triggerEventsForDescendentsOnRename;
+
+   private int lazyNodeIteatorPageSize;
 
    private final int lazyReadThreshold;
 
@@ -143,14 +188,26 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    protected final NodeTypeDataManager nodeTypeManager;
 
+   /**
+    * Transaction resources manager.
+    */
+   private final TransactionableResourceManager txResourceManager;
+
+   /**
+    * The local timeout of the session, by default it will use the global timeout defined at repository configuration level
+    */
+   private long timeout;
+
    public SessionImpl(String workspaceName, ConversationState userState, ExoContainer container)
       throws RepositoryException
    {
       this.workspaceName = workspaceName;
       this.container = container;
       this.live = true;
-      this.id = IdGenerator.generate();
+      this.id = System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet();
       this.userState = userState;
+      this.txResourceManager =
+         (TransactionableResourceManager)container.getComponentInstanceOfType(TransactionableResourceManager.class);
 
       this.repository = (RepositoryImpl)container.getComponentInstanceOfType(RepositoryImpl.class);
       this.systemLocationFactory = (LocationFactory)container.getComponentInstanceOfType(LocationFactory.class);
@@ -161,8 +218,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.lazyReadThreshold =
          wsConfig.getLazyReadThreshold() > 0 ? wsConfig.getLazyReadThreshold() : DEFAULT_LAZY_READ_THRESHOLD;
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       this.locationFactory = new LocationFactory(this);
       this.valueFactory = new ValueFactoryImpl(locationFactory, wsConfig, cleanerHolder);
@@ -194,13 +251,20 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       SessionActionCatalog catalog =
          (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
-      actionHandler = new SessionActionInterceptor(catalog, container);
+      actionHandler = new SessionActionInterceptor(catalog, container, workspaceName);
 
       sessionRegistry = (SessionRegistry)container.getComponentInstanceOfType(SessionRegistry.class);
 
       sessionRegistry.registerSession(this);
       this.lastAccessTime = System.currentTimeMillis();
 
+      this.triggerEventsForDescendentsOnRename =
+         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME,
+            WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME_DEFAULT);
+
+      this.lazyNodeIteatorPageSize =
+         wsConfig.getContainer().getParameterInteger(WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE,
+            WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE_DEFAULT);
    }
 
    /**
@@ -216,13 +280,14 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public void checkPermission(String absPath, String actions) throws AccessControlException
    {
-
       try
       {
          JCRPath jcrPath = locationFactory.parseAbsPath(absPath);
          AccessControlList acl = dataManager.getACL(jcrPath.getInternalPath());
          if (!accessManager.hasPermission(acl, actions, getUserState().getIdentity()))
+         {
             throw new AccessControlException("Permission denied " + absPath + " : " + actions);
+         }
       }
       catch (RepositoryException e)
       {
@@ -237,12 +302,14 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       throws InvalidSerializedDataException, PathNotFoundException, SAXException, RepositoryException
    {
 
+      checkLive();
+
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
 
@@ -276,12 +343,14 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       throws InvalidSerializedDataException, IOException, PathNotFoundException, RepositoryException
    {
 
+      checkLive();
+
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
 
@@ -317,12 +386,15 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void exportWorkspaceSystemView(OutputStream out, boolean skipBinary, boolean noRecurse) throws IOException,
       PathNotFoundException, RepositoryException
    {
+
+      checkLive();
+
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
 
@@ -356,12 +428,15 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void exportSystemView(String absPath, ContentHandler contentHandler, boolean skipBinary, boolean noRecurse)
       throws PathNotFoundException, SAXException, RepositoryException
    {
+
+      checkLive();
+
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
       try
@@ -389,22 +464,25 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    /**
     * {@inheritDoc}
     */
-   public void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse)
-      throws IOException, PathNotFoundException, RepositoryException
+   public void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse,
+      boolean exportChildVersionHisotry) throws IOException, PathNotFoundException, RepositoryException
    {
+      checkLive();
+
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      WorkspaceFileCleanerHolder cleanerHolder =
-         (WorkspaceFileCleanerHolder)container.getComponentInstanceOfType(WorkspaceFileCleanerHolder.class);
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
       try
       {
          BaseXmlExporter exporter =
             new ExportImportFactory().getExportVisitor(XmlMapping.SYSVIEW, out, skipBinary, noRecurse,
-               getTransientNodesManager(), repository.getNamespaceRegistry(), valueFactoryImpl);
+               exportChildVersionHisotry, getTransientNodesManager(), repository.getNamespaceRegistry(),
+               valueFactoryImpl);
 
          JCRPath srcNodePath = getLocationFactory().parseAbsPath(absPath);
          ItemData srcItemData = dataManager.getItemData(srcNodePath.getInternalPath());
@@ -424,6 +502,16 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       {
          throw new IOException(e.getLocalizedMessage());
       }
+
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void exportSystemView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse)
+      throws IOException, PathNotFoundException, RepositoryException
+   {
+      exportSystemView(absPath, out, skipBinary, noRecurse, false);
    }
 
    /**
@@ -466,7 +554,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       String[] names = new String[attributes.size()];
       int i = 0;
       for (String name : attributes)
+      {
          names[i++] = name;
+      }
       return names;
    }
 
@@ -477,6 +567,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     * @deprecated use WorkspaceContainerFacade instead of using container
     *             directly
     */
+   @Deprecated
    public ExoContainer getContainer()
    {
       return container;
@@ -497,6 +588,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    PathNotFoundException, ConstraintViolationException, VersionException, RepositoryException
    {
+      checkLive();
       NodeImpl node = (NodeImpl)getItem(parentAbsPath);
       // checked-in check
       if (!node.checkedOut())
@@ -531,12 +623,14 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public ItemImpl getItem(String absPath) throws PathNotFoundException, RepositoryException
    {
-
+      checkLive();
       JCRPath loc = locationFactory.parseAbsPath(absPath);
 
       ItemImpl item = dataManager.getItem(loc.getInternalPath(), true);
       if (item != null)
+      {
          return item;
+      }
 
       throw new PathNotFoundException("Item not found " + absPath + " in workspace " + workspaceName);
    }
@@ -618,7 +712,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       {
          uri = namespaces.get(prefix);
          if (uri != null)
+         {
             return uri;
+         }
       }
 
       return workspace.getNamespaceRegistry().getURI(prefix);
@@ -637,9 +733,12 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public Node getNodeByIdentifier(String identifier) throws ItemNotFoundException, RepositoryException
    {
+      checkLive();
       Item item = dataManager.getItemByIdentifier(identifier, true);
       if (item != null && item.isNode())
+      {
          return (Node)item;
+      }
 
       throw new ItemNotFoundException("Node not found " + identifier + " at " + workspaceName);
    }
@@ -649,6 +748,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public Node getNodeByUUID(String uuid) throws ItemNotFoundException, RepositoryException
    {
+      checkLive();
       Item item = dataManager.getItemByIdentifier(uuid, true);
 
       if (item != null && item.isNode())
@@ -675,6 +775,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public Node getRootNode() throws RepositoryException
    {
+      checkLive();
       Item item = dataManager.getItemByIdentifier(Constants.ROOT_UUID, true);
       if (item != null && item.isNode())
       {
@@ -737,15 +838,17 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
          name = ((SimpleCredentials)credentials).getUserID();
       }
       else
+      {
          throw new LoginException(
             "Credentials for the authentication should be CredentialsImpl or SimpleCredentials type");
+      }
 
       SessionFactory sessionFactory = (SessionFactory)container.getComponentInstanceOfType(SessionFactory.class);
 
       ConversationState newState =
          new ConversationState(new Identity(name, userState.getIdentity().getMemberships(), userState.getIdentity()
             .getRoles()));
-      return (Session)sessionFactory.createSession(newState);
+      return sessionFactory.createSession(newState);
 
    }
 
@@ -785,6 +888,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       throws IOException, PathNotFoundException, ItemExistsException, ConstraintViolationException,
       InvalidSerializedDataException, RepositoryException
    {
+      checkLive();
       NodeImpl node = (NodeImpl)getItem(parentAbsPath);
       if (!node.checkedOut())
       {
@@ -821,6 +925,29 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    }
 
    /**
+    * Checks if session is alive. Currently only logs a warning, but newer JCR versions will throw an exception. 
+    * @throws RepositoryException
+    */
+   public void checkLive() throws RepositoryException
+   {
+      if (!live)
+      {
+         if (PROHIBIT_CLOSED_SESSION_USAGE)
+         {
+            throw new RepositoryException("This kind of operation is forbidden after a session.logout().",
+               closedByCallStack);
+         }
+         // warn in debug mode only
+         else if (PropertyManager.isDevelopping())
+         {
+            log.warn("This kind of operation is forbidden after a session.logout(), "
+               + "please note that an exception will be raised in the next jcr version.", new Exception(
+               closedByCallStack));
+         }
+      }
+   }
+
+   /**
     * {@inheritDoc}
     */
    public boolean itemExists(String absPath)
@@ -828,7 +955,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       try
       {
          if (getItem(absPath) != null)
+         {
             return true;
+         }
       }
       catch (RepositoryException e)
       {
@@ -847,6 +976,20 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       }
       this.sessionRegistry.unregisterSession(getId());
       this.live = false;
+      if (PROHIBIT_CLOSED_SESSION_USAGE || PropertyManager.isDevelopping())
+      {
+         this.closedByCallStack = new Exception("The session has been closed by the following call stack");
+      }
+   }
+
+   /**
+    * Makes the current session expired. This will automatically logout the session and set the expired
+    * flag to true.
+    */
+   public void expire()
+   {
+      this.expired = true;
+      logout();
    }
 
    /**
@@ -855,13 +998,16 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void move(String srcAbsPath, String destAbsPath) throws ItemExistsException, PathNotFoundException,
       VersionException, LockException, RepositoryException
    {
+      checkLive();
       JCRPath srcNodePath = getLocationFactory().parseAbsPath(srcAbsPath);
 
       NodeImpl srcNode = (NodeImpl)dataManager.getItem(srcNodePath.getInternalPath(), false);
       JCRPath destNodePath = getLocationFactory().parseAbsPath(destAbsPath);
       if (destNodePath.isIndexSetExplicitly())
+      {
          throw new RepositoryException("The relPath provided must not have an index on its final element. "
             + destNodePath.getAsString(false));
+      }
 
       NodeImpl destParentNode = (NodeImpl)dataManager.getItem(destNodePath.makeParentPath().getInternalPath(), true);
 
@@ -877,7 +1023,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       // Check for node with destAbsPath name in session
       NodeImpl destNode =
          (NodeImpl)dataManager.getItem((NodeData)destParentNode.getData(), new QPathEntry(destNodePath
-            .getInternalPath().getName(), 0), false);
+            .getInternalPath().getName(), 0), false, ItemType.NODE);
 
       if (destNode != null)
       {
@@ -886,17 +1032,31 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
             throw new ItemExistsException("A node with this name (" + destAbsPath + ") is already exists. ");
          }
       }
-
+      NodeImpl srcParentNode = null;
+      if (destParentNode.getIdentifier().equals(srcNode.getParentIdentifier()))
+      {
+         // move to same parent
+         srcParentNode = destParentNode;
+      }
+      else
+      {
+         srcParentNode = srcNode.parent();
+      }
       // Check if versionable ancestor is not checked-in
-      if (!srcNode.parent().checkedOut())
+      if (!srcParentNode.checkedOut())
+      {
          throw new VersionException("Parent or source Node or its nearest ancestor is checked-in");
+      }
 
       if (!srcNode.checkLocking())
+      {
          throw new LockException("Source parent node " + srcNode.getPath() + " is locked ");
+      }
 
       ItemDataMoveVisitor initializer =
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
-            nodeTypeManager, getTransientNodesManager(), true);
+            (NodeData)srcParentNode.getData(), nodeTypeManager, getTransientNodesManager(), true,
+            triggerEventsForDescendentsOnRename || srcParentNode != destParentNode); // NOSONAR
 
       getTransientNodesManager().rename((NodeData)srcNode.getData(), initializer);
    }
@@ -939,20 +1099,27 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public void setNamespacePrefix(String prefix, String uri) throws NamespaceException, RepositoryException
    {
+      checkLive();
       NamespaceRegistryImpl nrg = (NamespaceRegistryImpl)workspace.getNamespaceRegistry();
       if (!nrg.isUriRegistered(uri))
+      {
          throw new NamespaceException("The specified uri:" + uri + " is not among "
             + "those registered in the NamespaceRegistry");
+      }
       if (nrg.isPrefixMaped(prefix))
+      {
          throw new NamespaceException("A prefix '" + prefix + "' is currently already mapped to " + nrg.getURI(prefix)
             + " URI persistently in the repository NamespaceRegistry "
             + "and cannot be remapped to a new URI using this method, since this would make any "
             + "content stored using the old URI unreadable.");
+      }
       if (namespaces.containsKey(prefix))
+      {
          throw new NamespaceException("A prefix '" + prefix + "' is currently already mapped to "
             + namespaces.get(prefix) + " URI transiently within this Session and cannot be "
             + "remapped to a new URI using this method, since this would make any "
             + "content stored using the old URI unreadable.");
+      }
       nrg.validateNamespace(prefix, uri);
       namespaces.put(prefix, uri);
       prefixes.put(uri, prefix);
@@ -978,4 +1145,63 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       return lazyReadThreshold;
    }
 
+   int getLazyNodeIteratorPageSize()
+   {
+      return lazyNodeIteatorPageSize;
+   }
+
+   @Override
+   public String toString()
+   {
+      return String.format("Session {\n id: %s;\n userId: %s;\n workspace: %s/%s ;\n alive: %b\n}", id, getUserID(),
+         repository.getName(), workspaceName, live);
+   }
+
+   /**
+    * Checks if a global Tx has been started if so the session and its change will be dynamically enrolled
+    * @param statesLog the changes to enlist in case a Global Tx has been started 
+    * @return <code>true</code> if a global Tx has been started and the session could
+    * be enrolled successfully, <code>false</code> otherwise
+    */
+   public boolean canEnrollChangeToGlobalTx(PlainChangesLog statesLog)
+   {
+      return txResourceManager.canEnrollChangeToGlobalTx(this, statesLog);
+   }
+
+   /**
+    * Gives the local timeout of the session
+    * 
+    * @return the timeout the local timeout expressed in milliseconds
+    */
+   public long getTimeout()
+   {
+      return timeout;
+   }
+
+   /**
+    * Sets the local timeout of the session
+    * 
+    * @param timeout the new local timeout any value lower or equals to 0 will disable the timeout,
+    * the expected value is expressed in milliseconds 
+    */
+   public void setTimeout(long timeout)
+   {
+      this.timeout = (timeout <= 0 ? 0 : timeout);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public XAResource getXAResource()
+   {
+      return txResourceManager;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean hasExpired()
+   {
+      return expired;
+   }
 }

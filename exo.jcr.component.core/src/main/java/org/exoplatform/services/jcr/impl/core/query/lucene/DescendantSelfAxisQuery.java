@@ -18,7 +18,6 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.Explanation;
-import org.apache.lucene.search.HitCollector;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Searcher;
@@ -27,6 +26,7 @@ import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.Weight;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AbstractHitCollector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -181,7 +181,8 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
     * @param searcher the <code>Searcher</code> instance to use.
     * @return a <code>DescendantSelfAxisWeight</code>.
     */
-   protected Weight createWeight(Searcher searcher)
+   @Override
+   public Weight createWeight(Searcher searcher)
    {
       return new DescendantSelfAxisWeight(searcher);
    }
@@ -189,6 +190,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
    /**
     * {@inheritDoc}
     */
+   @Override
    public String toString(String field)
    {
       StringBuffer sb = new StringBuffer();
@@ -205,6 +207,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
    /**
     * {@inheritDoc}
     */
+   @Override
    public void extractTerms(Set terms)
    {
       contextQuery.extractTerms(terms);
@@ -214,6 +217,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
    /**
     * {@inheritDoc}
     */
+   @Override
    public Query rewrite(IndexReader reader) throws IOException
    {
       Query cQuery = contextQuery.rewrite(reader);
@@ -227,7 +231,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
                .rewrite(reader);
          }
       }
-      if (cQuery == contextQuery && sQuery == subQuery)
+      if (cQuery == contextQuery && sQuery == subQuery) // NOSONAR
       {
          return this;
       }
@@ -314,6 +318,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
                fetchNextTraversal();
             }
 
+            @Override
             public void close() throws IOException
             {
                if (currentTraversal != null)
@@ -379,7 +384,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
     * The <code>Weight</code> implementation for this
     * <code>DescendantSelfAxisWeight</code>.
     */
-   private class DescendantSelfAxisWeight implements Weight
+   private class DescendantSelfAxisWeight extends Weight
    {
 
       /**
@@ -405,6 +410,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
        *
        * @return this <code>DescendantSelfAxisQuery</code>.
        */
+      @Override
       public Query getQuery()
       {
          return DescendantSelfAxisQuery.this;
@@ -413,6 +419,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public float getValue()
       {
          return 1.0f;
@@ -421,6 +428,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public float sumOfSquaredWeights() throws IOException
       {
          return 1.0f;
@@ -429,6 +437,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public void normalize(float norm)
       {
       }
@@ -440,10 +449,15 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
        * @return a <code>DescendantSelfAxisScorer</code>.
        * @throws IOException if an error occurs while reading from the index.
        */
-      public Scorer scorer(IndexReader reader) throws IOException
+      @Override
+      public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException
       {
-         contextScorer = contextQuery.weight(searcher).scorer(reader);
-         subScorer = subQuery.weight(searcher).scorer(reader);
+         contextScorer = contextQuery.weight(searcher).scorer(reader, scoreDocsInOrder, topScorer);
+         subScorer = subQuery.weight(searcher).scorer(reader, scoreDocsInOrder, topScorer);
+         if (subScorer == null)
+         {
+            return null;
+         }
          HierarchyResolver resolver = (HierarchyResolver)reader;
          return new DescendantSelfAxisScorer(searcher.getSimilarity(), reader, resolver);
       }
@@ -451,6 +465,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public Explanation explain(IndexReader reader, int doc) throws IOException
       {
          return new Explanation();
@@ -513,6 +528,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public boolean next() throws IOException
       {
          collectContextHits();
@@ -538,6 +554,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public int doc()
       {
          return subScorer.doc();
@@ -546,6 +563,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public float score() throws IOException
       {
          return subScorer.score();
@@ -554,6 +572,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       /**
        * {@inheritDoc}
        */
+      @Override
       public boolean skipTo(int target) throws IOException
       {
          boolean match = subScorer.skipTo(target);
@@ -572,18 +591,23 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       {
          if (!contextHitsCalculated)
          {
-            long time = System.currentTimeMillis();
-            contextScorer.score(new HitCollector()
+            long time = 0;
+            if (log.isDebugEnabled())
             {
+               time = System.currentTimeMillis();
+            }
+            contextScorer.score(new AbstractHitCollector()
+            {
+               @Override
                public void collect(int doc, float score)
                {
                   contextHits.set(doc);
                }
             }); // find all
             contextHitsCalculated = true;
-            time = System.currentTimeMillis() - time;
             if (log.isDebugEnabled())
             {
+               time = System.currentTimeMillis() - time;
                log.debug("Collected {} context hits in {} ms for {}", new Object[]{
                   new Integer(contextHits.cardinality()), new Long(time), DescendantSelfAxisQuery.this});
             }
@@ -594,6 +618,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
        * @throws UnsupportedOperationException this implementation always
        *                                       throws an <code>UnsupportedOperationException</code>.
        */
+      @Override
       public Explanation explain(int doc) throws IOException
       {
          throw new UnsupportedOperationException();

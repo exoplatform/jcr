@@ -55,7 +55,7 @@ public class ReportCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.ReportCommand");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.ReportCommand");
 
    /**
     * Webdav Report method implementation.
@@ -104,12 +104,12 @@ public class ReportCommand
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
    }

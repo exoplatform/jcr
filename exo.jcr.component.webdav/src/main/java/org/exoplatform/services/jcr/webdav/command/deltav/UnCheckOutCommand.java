@@ -46,7 +46,7 @@ public class UnCheckOutCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.UnCheckOutCommand");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.UnCheckOutCommand");
 
    /**
     * Webdav Uncheckout method implementation.
@@ -85,7 +85,7 @@ public class UnCheckOutCommand
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
 

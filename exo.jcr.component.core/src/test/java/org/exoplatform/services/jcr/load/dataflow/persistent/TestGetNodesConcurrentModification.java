@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -164,7 +163,9 @@ public class TestGetNodesConcurrentModification extends JcrImplBaseTest
       super.setUp();
 
       fails = new ArrayList<String>();
-      contentFile = new URL("file:///" + new File("src/test/resources/index/test_index.doc").getAbsolutePath());
+      URL url = TestGetNodesConcurrentModification.class.getResource("/index/test_index.doc");
+      assertNotNull("test_index.doc not found", url);
+      contentFile = url;
       initDB();
    }
 

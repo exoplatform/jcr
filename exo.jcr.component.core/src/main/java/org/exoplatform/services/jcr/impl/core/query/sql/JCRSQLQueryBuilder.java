@@ -152,7 +152,6 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
             {
                parser = new JCRSQLParser(new StringReader(statement));
                //parser.setNameResolver(resolver);
-               //TODO FIX ME!!!
                parser.setLocationfactory(resolver);
                parsers.put(resolver, parser);
             }
@@ -177,7 +176,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
       }
       catch (Throwable t)
       {
-         t.printStackTrace();
+         log.error(t.getLocalizedMessage(), t);
          // javacc parser may also throw an error in some cases
          throw new InvalidQueryException(t.getMessage(), t);
       }

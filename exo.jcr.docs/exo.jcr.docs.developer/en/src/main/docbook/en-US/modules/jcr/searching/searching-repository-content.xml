@@ -1,0 +1,369 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.SearchingRepositoryContent">
+  <?dbhtml filename="ch-jcr-searching-repository-conten.html"?>
+
+  <title>Searching Repository Content</title>
+
+    <para>You can find the JCR configuration file at
+    <emphasis>.../portal/WEB-INF/conf/jcr/repository-configuration.xml</emphasis>. Please read also
+    <link linkend="JCR.SearchConfiguration">Search Configuration</link> for
+    more information about index configuration.</para>
+
+  <section>
+    <title>Bi-directional RangeIterator (since 1.9)</title>
+
+    <para>QueryResult.getNodes() will return bi-directional NodeIterator
+    implementation.</para>
+
+    <note>
+      <para>Bi-directional NodeIterator is <emphasis role="bold">not
+      supported</emphasis> in two cases:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>SQL query: select * from nt:base</para>
+        </listitem>
+
+        <listitem>
+          <para>XPath query: //* .</para>
+        </listitem>
+      </itemizedlist>
+    </note>
+
+    <para>TwoWayRangeIterator interface:</para>
+
+    <programlisting language="java">/**
+ * Skip a number of elements in the iterator.
+ * 
+ * @param skipNum the non-negative number of elements to skip
+ * @throws java.util.NoSuchElementException if skipped past the first element
+ *           in the iterator.
+ */
+public void skipBack(long skipNum);</programlisting>
+
+    <para>Usage:</para>
+
+    <programlisting language="java">NodeIterator iter = queryResult.getNodes();
+while (iter.hasNext()) {
+  if (skipForward) {
+    iter.skip(10); // Skip 10 nodes in forward direction
+  } else if (skipBack) {
+    TwoWayRangeIterator backIter = (TwoWayRangeIterator) iter; 
+    backIter.skipBack(10); // Skip 10 nodes back 
+  }
+  .......
+}</programlisting>
+  </section>
+
+  <section>
+    <title>Fuzzy Searches (since 1.0)</title>
+
+    <para>JCR supports such features as Lucene Fuzzy Searches <ulink
+    url="http://lucene.apache.org/java/2_3_2/queryparsersyntax.html">Apache
+    Lucene - Query Parser Syntax</ulink>.</para>
+
+    <para>To use it, you have to form a query like the one described
+    below:</para>
+
+    <programlisting language="java">QueryManager qman = session.getWorkspace().getQueryManager();
+Query q = qman.createQuery("select * from nt:base where contains(field, 'ccccc~')", Query.SQL);
+QueryResult res = q.execute();</programlisting>
+  </section>
+
+  <section id="JCR.SearchingRepositoryContent.SynonimProvider">
+    <title>SynonymSearch (since 1.9)</title>
+
+    <para>Searching with synonyms is integrated in the jcr:contains() function
+    and uses the same syntax as synonym searches in Google. If a search term
+    is prefixed by a tilde symbol ( ~ ), also synonyms of the search term are
+    taken into consideration. For example:</para>
+
+    <programlisting>SQL: select * from nt:resource where contains(., '~parameter')
+
+XPath: //element(*, nt:resource)[jcr:contains(., '~parameter')</programlisting>
+
+    <para>This feature is disabled by default and you need to add a
+    configuration parameter to the query-handler element in your jcr
+    configuration file to enable it.</para>
+
+    <programlisting language="xml">&lt;param  name="synonymprovider-config-path" value="..you path to configuration file....."/&gt;
+&lt;param  name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider"/&gt;</programlisting>
+
+    <programlisting language="xml">/**
+ * &lt;code&gt;SynonymProvider&lt;/code&gt; defines an interface for a component that
+ * returns synonyms for a given term.
+ */
+public interface SynonymProvider {
+
+   /**
+    * Initializes the synonym provider and passes the file system resource to
+    * the synonym provider configuration defined by the configuration value of
+    * the &lt;code&gt;synonymProviderConfigPath&lt;/code&gt; parameter. The resource may be
+    * &lt;code&gt;null&lt;/code&gt; if the configuration parameter is not set.
+    *
+    * @param fsr the file system resource to the synonym provider
+    *            configuration.
+    * @throws IOException if an error occurs while initializing the synonym
+    *                     provider.
+    */
+   public void initialize(InputStream fsr) throws IOException;
+
+   /**
+    * Returns an array of terms that are considered synonyms for the given
+    * &lt;code&gt;term&lt;/code&gt;.
+    *
+    * @param term a search term.
+    * @return an array of synonyms for the given &lt;code&gt;term&lt;/code&gt; or an empty
+    *         array if no synonyms are known.
+    */
+   public String[] getSynonyms(String term);
+}</programlisting>
+  </section>
+
+  <section id="JCR.SearchingRepositoryContent.Highlighting">
+    <title>High-lighting (Since 1.9)</title>
+
+    <para>An ExcerptProvider retrieves text excerpts for a node in the query
+    result and marks up the words in the text that match the query
+    terms.</para>
+
+    <para>By default highlighting words matched the query is disabled because
+    this feature requires that additional information is written to the search
+    index. To enable this feature, you need to add a configuration parameter
+    to the query-handler element in your jcr configuration file to enable
+    it.</para>
+
+    <programlisting language="xml">&lt;param name="support-highlighting" value="true"/&gt;</programlisting>
+
+    <para>Additionally, there is a parameter that controls the format of the
+    excerpt created. In JCR 1.9, the default is set to
+    org.exoplatform.services.jcr.impl.core.query.lucene.DefaultHTMLExcerpt.
+    The configuration parameter for this setting is:</para>
+
+    <programlisting language="xml">&lt;param name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.DefaultXMLExcerpt"/&gt;</programlisting>
+
+    <section>
+      <title>DefaultXMLExcerpt</title>
+
+      <para>This excerpt provider creates an XML fragment of the following
+      form:</para>
+
+      <programlisting language="xml">&lt;excerpt&gt;
+    &lt;fragment&gt;
+        &lt;highlight&gt;exoplatform&lt;/highlight&gt; implements both the mandatory
+        XPath and optional SQL &lt;highlight&gt;query&lt;/highlight&gt; syntax.
+    &lt;/fragment&gt;
+    &lt;fragment&gt;
+        Before parsing the XPath &lt;highlight&gt;query&lt;/highlight&gt; in
+        &lt;highlight&gt;exoplatform&lt;/highlight&gt;, the statement is surrounded
+    &lt;/fragment&gt;
+&lt;/excerpt&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>DefaultHTMLExcerpt</title>
+
+      <para>This excerpt provider creates an HTML fragment of the following
+      form:</para>
+
+      <programlisting language="html">&lt;div&gt;
+    &lt;span&gt;
+        &lt;strong&gt;exoplatform&lt;/strong&gt; implements both the mandatory XPath
+        and optional SQL &lt;strong&gt;query&lt;/strong&gt; syntax.
+    &lt;/span&gt;
+    &lt;span&gt;
+        Before parsing the XPath &lt;strong&gt;query&lt;/strong&gt; in
+        &lt;strong&gt;exoplatform&lt;/strong&gt;, the statement is surrounded
+    &lt;/span&gt;
+&lt;/div&gt;</programlisting>
+    </section>
+
+    <section>
+      <title>How to use it</title>
+
+      <para>If you are using XPath, you must use the rep:excerpt() function in
+      the last location step, just like you would select properties:</para>
+
+      <programlisting language="java">QueryManager qm = session.getWorkspace().getQueryManager();
+Query q = qm.createQuery("//*[jcr:contains(., 'exoplatform')]/(@Title|rep:excerpt(.))", Query.XPATH);
+QueryResult result = q.execute();
+for (RowIterator it = result.getRows(); it.hasNext(); ) {
+   Row r = it.nextRow();
+   Value title = r.getValue("Title");
+   Value excerpt = r.getValue("rep:excerpt(.)");
+}</programlisting>
+
+      <para>The above code searches for nodes that contain the word
+      exoplatform and then gets the value of the Title property and an excerpt
+      for each result node.</para>
+
+      <para>It is also possible to use a relative path in the call
+      Row.getValue() while the query statement still remains the same. Also,
+      you may use a relative path to a string property. The returned value
+      will then be an excerpt based on string value of the property.</para>
+
+      <para>Both available excerpt provider will create fragments of about 150
+      characters and up to 3 fragments.</para>
+
+      <para>In SQL, the function is called excerpt() without the rep prefix,
+      but the column in the RowIterator will nonetheless be labled
+      rep:excerpt(.)!</para>
+
+      <programlisting language="java">QueryManager qm = session.getWorkspace().getQueryManager();
+Query q = qm.createQuery("select excerpt(.) from nt:resource where contains(., 'exoplatform')", Query.SQL);
+QueryResult result = q.execute();
+for (RowIterator it = result.getRows(); it.hasNext(); ) {
+   Row r = it.nextRow();
+   Value excerpt = r.getValue("rep:excerpt(.)");
+}</programlisting>
+    </section>
+  </section>
+
+  <section id="JCR.SearchingRepositoryContent.SpellChecker">
+    <title>SpellChecker</title>
+
+    <para>The lucene based query handler implementation supports a pluggable
+    spell checker mechanism. By default, spell checking is not available and
+    you have to configure it first. See parameter spellCheckerClass on page
+    <link linkend="JCR.SearchConfiguration">Search Configuration.</link> JCR
+    currently provides an implementation class , which uses the <ulink
+    url="http://wiki.apache.org/jakarta-lucene/SpellChecker">lucene-spellchecker</ulink>
+    to contribute . The dictionary is derived from the fulltext indexed
+    content of the workspace and updated periodically. You can configure the
+    refresh interval by picking one of the available inner classes of
+    org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>OneMinuteRefreshInterval</para>
+      </listitem>
+
+      <listitem>
+        <para>FiveMinutesRefreshInterval</para>
+      </listitem>
+
+      <listitem>
+        <para>ThirtyMinutesRefreshInterval</para>
+      </listitem>
+
+      <listitem>
+        <para>OneHourRefreshInterval</para>
+      </listitem>
+
+      <listitem>
+        <para>SixHoursRefreshInterval</para>
+      </listitem>
+
+      <listitem>
+        <para>TwelveHoursRefreshInterval</para>
+      </listitem>
+
+      <listitem>
+        <para>OneDayRefreshInterval</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>For example, if you want a refresh interval of six hours, the class
+    name is:
+    org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$SixHoursRefreshInterval.
+    If you use
+    org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker,
+    the refresh interval will be one hour.</para>
+
+    <para>The spell checker dictionary is stored as a lucene index under
+    <emphasis role="bold">"index-dir"/spellchecker</emphasis>. If it does not
+    exist, a background thread will create it on startup. Similarly, the
+    dictionary refresh is also done in a background thread to not block
+    regular queries.</para>
+
+    <section>
+      <title>How do I use it?</title>
+
+      <para>You can spell check a fulltext statement either with an XPath or a
+      SQL query:</para>
+
+      <programlisting language="java">// rep:spellcheck('explatform') will always evaluate to true
+Query query = qm.createQuery("/jcr:root[rep:spellcheck('explatform')]/(rep:spellcheck())", Query.XPATH);
+RowIterator rows = query.execute().getRows();
+// the above query will always return the root node no matter what string we check
+Row r = rows.nextRow();
+// get the result of the spell checking
+Value v = r.getValue("rep:spellcheck()");
+if (v == null) {
+   // no suggestion returned, the spelling is correct or the spell checker
+   // does not know how to correct it.
+} else {
+   String suggestion = v.getString();
+}</programlisting>
+
+      <para>And the same using SQL:</para>
+
+      <programlisting language="java">// SPELLCHECK('exoplatform') will always evaluate to true
+Query query = qm.createQuery("SELECT rep:spellcheck() FROM nt:base WHERE jcr:path = '/' AND SPELLCHECK('explatform')", Query.SQL);
+RowIterator rows = query.execute().getRows();
+// the above query will always return the root node no matter what string we check
+Row r = rows.nextRow();
+// get the result of the spell checking
+Value v = r.getValue("rep:spellcheck()");
+if (v == null) {
+   // no suggestion returned, the spelling is correct or the spell checker
+   // does not know how to correct it.
+} else {
+   String suggestion = v.getString();
+}</programlisting>
+    </section>
+  </section>
+
+  <section id="JCR.SearchingRepositoryContent.Similarity">
+    <title>Similarity (Since 1.12)</title>
+
+    <para>Starting with version, 1.12 JCR allows you to search for nodes that
+    are similar to an existing node.</para>
+
+    <para>Similarity is determined by looking up terms that are common to
+    nodes. There are some conditions that must be met for a term to be
+    considered. This is required to limit the number possibly relevant
+    terms.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Only terms with at least 4 characters are considered.</para>
+      </listitem>
+
+      <listitem>
+        <para>Only terms that occur at least 2 times in the source node are
+        considered.</para>
+      </listitem>
+
+      <listitem>
+        <para>Only terms that occur in at least 5 nodes are considered.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>Note: The similarity functionality requires that the support
+    Hightlighting is enabled. Please make sure that you have the following
+    parameter set for the query handler in your workspace.xml.</para>
+
+    <programlisting language="xml">&lt;param name="support-highlighting" value="true"/&gt;</programlisting>
+
+    <para>The functions are called rep:similar() (in XPath) and similar() (in
+    SQL) and have two arguments:</para>
+
+    <para>relativePath: a relative path to a descendant node or . for the
+    current node. absoluteStringPath: a string literal that contains the path
+    to the node for which to find similar nodes.</para>
+
+    <warning>
+      <para>Relative path is not supported yet.</para>
+    </warning>
+
+    <para>Examples:</para>
+
+    <programlisting>//element(*, nt:resource)[rep:similar(., '/parentnode/node.txt/jcr:content')]</programlisting>
+
+    <para>Finds nt:resource nodes, which are similar to node by path
+    /parentnode/node.txt/jcr:content.</para>
+  </section>
+</chapter>

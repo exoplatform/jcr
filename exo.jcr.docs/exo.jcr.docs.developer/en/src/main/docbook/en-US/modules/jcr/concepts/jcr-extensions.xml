@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.Extensions">
+  <?dbhtml filename="ch-jcr-extensions.html"?>
+
+    <title>JCR Service Extensions</title>
+
+    <section>
+      <title>Concept</title>
+
+      <para>eXo JCR supports <emphasis role="bold">observation</emphasis>
+      (JSR-170 8.3), which enables applications to register interest in events
+      that describe changes to a workspace, and then monitor and respond to
+      those events. The standard observation feature allows dispatching events
+      when <emphasis role="bold">persistent change</emphasis> to the workspace
+      is made.</para>
+
+      <para>eXo JCR also offers a proprietary <emphasis role="bold">Extension
+      Action</emphasis> which dispatches and fires an event upon each
+      <emphasis role="bold">transient session level change</emphasis>,
+      performed by a client. In other words, the event is triggered when a
+      client's program invokes some updating methods in a session or a
+      workspace (such as: Session.addNode(), Session.setProperty(),
+      Workspace.move() etc.</para>
+
+      <para>One important recommendation should be applied for an extension
+      action implementation. Each action will add its own execution time to
+      standard JCR methods (Session.addNode(), Session.setProperty(),
+      Workspace.move() etc.) execution time. As a consequence, it's necessary
+      to minimize Action.execute(Context) body execution time.</para>
+
+      <para>To make the rule, you can use the dedicated Thread in
+      Action.execute(Context) body for a custom logic. But if your application
+      logic requires the action to add items to a created/updated item and you
+      save these changes immediately after the JCR API method call is
+      returned, the suggestion with Thread is not applicable for you in this
+      case.</para>
+    </section>
+
+    <section>
+      <title>Implementation</title>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/concepts/interceptor.jpg" />
+        </imageobject>
+      </mediaobject>
+
+      <para>Interceptor framework class diagram</para>
+    </section>
+
+    <section>
+      <title>Configuration</title>
+
+      <para>Add a <emphasis role="bold">SessionActionCatalog</emphasis>
+      service and an appropriate <emphasis
+      role="bold">AddActionsPlugin</emphasis> (see the example below)
+      configuration to your eXo Container configuration. As usual, the plugin
+      can be configured as in-component-place, which is the case for a
+      Standalone Container or externally, which is a usual case for
+      Root/Portal Container configuration).</para>
+
+      <para>Each Action entry is exposed as
+      org.exoplatform.services.jcr.impl.ext.action. <emphasis
+      role="bold">ActionConfiguration</emphasis> of actions collection of
+      org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin$ActionsConfig
+      (see an example below). The mandatory field named <emphasis
+      role="bold">actionClassName</emphasis> is the fully qualified name of
+      org.exoplatform.services.command.action.Action implementation - the
+      command will be launched in case the current event matches the <emphasis
+      role="bold">criteria</emphasis>. All other fields are criteria. The
+      criteria are *AND*ed together. In other words, for a particular item to
+      be listened to, it must meet ALL the criteria:</para>
+
+      <para>* <emphasis role="bold">workspace</emphasis>: the comma delimited
+      (ORed) list of workspaces</para>
+
+      <para>* <emphasis role="bold">eventTypes</emphasis>: a comma delimited
+      (ORed) <emphasis role="bold">list of event names</emphasis> (see below)
+      to be listened to. This is the only mandatory field, others are optional
+      and if they are missing they are interpreted as ANY.</para>
+
+      <para>* <emphasis role="bold">path</emphasis> - a comma delimited (ORed)
+      list of <emphasis role="bold">item absolute paths</emphasis> (or within
+      its subtree if <emphasis role="bold">isDeep</emphasis> is <emphasis
+      role="bold">true</emphasis>, which is the default value)</para>
+
+      <para>* <emphasis role="bold">nodeTypes</emphasis> - a comma delimited
+      (ORed) list of the <emphasis role="bold">current NodeType</emphasis>.
+      Since version 1.6.1 JCR supports the functionalities of nodeType and
+      parentNodeType. This parameter has different semantics, depending on the
+      type of the current item and the operation performed. If the <emphasis
+      role="bold">current item</emphasis> is a <emphasis
+      role="bold">property</emphasis> it means the <emphasis
+      role="bold">parent node type</emphasis>. If the <emphasis
+      role="bold">current item</emphasis> is a <emphasis
+      role="bold">node,</emphasis> the semantic depends on the event type: **
+      <emphasis role="bold">add node event</emphasis>: the node type of the
+      newly added node. ** <emphasis role="bold">add mixin event</emphasis>:
+      the newly added mixing node type of the current node. ** <emphasis
+      role="bold">remove mixin event</emphasis> the removed mixin type of the
+      current node. ** <emphasis role="bold">other events</emphasis>: the
+      already assigned NodeType(s) of the current node (can be both primary
+      and mixin).</para>
+
+      <note><para> The list of fields can be extended.</para></note>
+
+      <note><para> No spaces between list elements.</para></note>
+
+      <note><para> <emphasis role="bold">isDeep=false</emphasis> means <emphasis role="bold">node,
+      node properties and child nodes</emphasis>.</para></note>
+
+      <para>The list of supported Event names: <emphasis role="bold">addNode,
+      addProperty, changeProperty, removeProperty, removeNode, addMixin,
+      removeMixin, lock, unlock, checkin, checkout, read.</emphasis></para>
+
+      <programlisting language="xml">&lt;component&gt;
+   &lt;type&gt;org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog&lt;/type&gt;
+   &lt;component-plugins&gt;
+      &lt;component-plugin&gt;
+         &lt;name&gt;addActions&lt;/name&gt;
+         &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+         &lt;type&gt;org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin&lt;/type&gt;
+         &lt;description&gt;add actions plugin&lt;/description&gt;
+         &lt;init-params&gt;
+            &lt;object-param&gt;
+               &lt;name&gt;actions&lt;/name&gt;
+               &lt;object type="org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin$ActionsConfig"&gt;
+               &lt;field  name="actions"&gt;
+                  &lt;collection type="java.util.ArrayList"&gt;
+                     &lt;value&gt;
+                        &lt;object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration"&gt;
+                          &lt;field  name="eventTypes"&gt;&lt;string&gt;addNode,removeNode&lt;/string&gt;&lt;/field&gt;
+                          &lt;field  name="path"&gt;&lt;string&gt;/test,/exo:test&lt;/string&gt;&lt;/field&gt;       
+                          &lt;field  name="isDeep"&gt;&lt;boolean&gt;true&lt;/boolean&gt;&lt;/field&gt;       
+                          &lt;field  name="nodeTypes"&gt;&lt;string&gt;nt:file,nt:folder,mix:lockable&lt;/string&gt;&lt;/field&gt;       
+                          &lt;!-- field  name="workspace"&gt;&lt;string&gt;backup&lt;/string&gt;&lt;/field --&gt;
+                          &lt;field  name="actionClassName"&gt;&lt;string&gt;org.exoplatform.services.jcr.ext.DummyAction&lt;/string&gt;&lt;/field&gt;       
+                        &lt;/object&gt;
+                     &lt;/value&gt;
+                  &lt;/collection&gt;
+               &lt;/field&gt;
+            &lt;/object&gt;
+          &lt;/object-param&gt;
+        &lt;/init-params&gt;
+      &lt;/component-plugin&gt;
+    &lt;/component-plugins&gt;
+&lt;/component&gt;</programlisting>
+    </section>
+
+  <section>
+    <title>Related Pages</title>
+
+    <para><link linkend="JCR.AccessControlExtension">Access Control
+    extension</link></para>
+
+    <para><link linkend="JCR.RegistryService">Registry Service</link></para>
+
+    <para><link linkend="JCR.RESTServicesOnGroovy">REST Groovy
+    services</link></para>
+  </section>
+</chapter>

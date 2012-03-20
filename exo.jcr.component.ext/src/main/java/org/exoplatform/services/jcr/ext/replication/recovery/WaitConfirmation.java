@@ -68,7 +68,7 @@ public class WaitConfirmation extends Thread
     */
    WaitConfirmation(long timeOut, RecoveryManager recoveryManager, String identifier)
    {
-      super();
+      super("WaitConfirmation " + identifier);
       this.timeOut = timeOut;
       this.recoveryManager = recoveryManager;
       this.identifier = identifier;

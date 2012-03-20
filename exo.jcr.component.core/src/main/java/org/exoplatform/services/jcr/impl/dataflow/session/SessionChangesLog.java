@@ -18,11 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.session;
 
+import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -61,18 +63,31 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       new HashMap<String, Map<String, ItemState>>();
 
    /**
-    * Stores persisted child nodes count.  
+    * Stores info for persisted child nodes by parent identifier. 
+    * <br>Index in array points to: 
+    * <br>0 - child nodes count. 
+    * <br>1 - last child order number 
     */
-   protected Map<String, int[]> childNodesCount = new HashMap<String, int[]>();
+   protected Map<String, int[]> childNodesInfo = new HashMap<String, int[]>();
+
+   /** 
+    * Index in <code>childNodesInfo<code> value array to store child nodes count. 
+   */
+   protected final int CHILD_NODES_COUNT_INDEX = 0;
+
+   /** 
+    * Index in <code>childNodesInfo<code> value array to store last child order number. 
+    */
+   protected final int CHILD_NODES_LAST_ORDER_NUMBER_INDEX = 1;
 
    /**
     * Create empty ChangesLog.
     * 
     * @param sessionId
     */
-   public SessionChangesLog(String sessionId)
+   public SessionChangesLog(ExtendedSession session)
    {
-      super(sessionId);
+      super(session);
    }
 
    /**
@@ -81,12 +96,14 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     * @param items
     * @param sessionId
     */
-   public SessionChangesLog(List<ItemState> items, String sessionId)
+   public SessionChangesLog(List<ItemState> items, ExtendedSession session)
    {
-      super(items, sessionId);
-
-      for (ItemState change : items)
+      super(items, session);
+      for (int i = 0, length = items.size(); i < length; i++)
+      {
+         ItemState change = items.get(i);
          addItem(change);
+      }
    }
 
    /**
@@ -108,9 +125,11 @@ public final class SessionChangesLog extends PlainChangesLogImpl
    public PlainChangesLog addAll(List<ItemState> changes)
    {
       super.addAll(changes);
-      for (ItemState change : changes)
+      for (int i = 0, length = changes.size(); i < length; i++)
+      {
+         ItemState change = changes.get(i);
          addItem(change);
-
+      }
       return this;
    }
 
@@ -124,7 +143,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       index.clear();
       lastChildNodeStates.clear();
       lastChildPropertyStates.clear();
-      childNodesCount.clear();
+      childNodesInfo.clear();
    }
 
    /**
@@ -148,21 +167,25 @@ public final class SessionChangesLog extends PlainChangesLogImpl
             index.remove(item.getData().getQPath());
             index.remove(new ParentIDQPathBasedKey(item));
             index.remove(new IDStateBasedKey(item.getData().getIdentifier(), item.getState()));
-            childNodesCount.remove(item.getData().getIdentifier());
+            childNodesInfo.remove(item.getData().getIdentifier());
             lastChildNodeStates.remove(item.getData().getIdentifier());
             lastChildPropertyStates.remove(item.getData().getIdentifier());
 
             if (item.isNode() && item.isPersisted())
             {
-               int childCount[] = childNodesCount.get(item.getData().getParentIdentifier());
-               if (childCount != null)
+               int childInfo[] = childNodesInfo.get(item.getData().getParentIdentifier());
+               if (childInfo != null)
                {
                   if (item.isDeleted())
-                     ++childCount[0];
+                  {
+                     ++childInfo[CHILD_NODES_COUNT_INDEX];
+                  }
                   else if (item.isAdded())
-                     --childCount[0];
+                  {
+                     --childInfo[CHILD_NODES_COUNT_INDEX];
+                  }
 
-                  childNodesCount.put(item.getData().getParentIdentifier(), childCount);
+                  childNodesInfo.put(item.getData().getParentIdentifier(), childInfo);
                }
             }
 
@@ -170,13 +193,17 @@ public final class SessionChangesLog extends PlainChangesLogImpl
             {
                Map<String, ItemState> children = lastChildNodeStates.get(item.getData().getParentIdentifier());
                if (children != null)
+               {
                   children.remove(item.getData().getIdentifier());
+               }
             }
             else
             {
                Map<String, ItemState> children = lastChildPropertyStates.get(item.getData().getParentIdentifier());
                if (children != null)
+               {
                   children.remove(item.getData().getIdentifier());
+               }
             }
          }
       }
@@ -199,15 +226,25 @@ public final class SessionChangesLog extends PlainChangesLogImpl
 
    private void traverseChangesByIdentifier(String identifier, List<ItemState> changesList)
    {
-      for (ItemState item : items)
+      ItemState item = getItemState(identifier);
+      if (item != null)
       {
-         if (item.getData().getIdentifier().equals(identifier))
+         changesList.add(item);
+         Map<String, ItemState> children = lastChildPropertyStates.get(identifier);
+         if (children != null)
          {
-            changesList.add(item);
+            // Add all the properties
+            changesList.addAll(children.values());
          }
-         else if (item.getData().getParentIdentifier().equals(identifier))
+         children = lastChildNodeStates.get(identifier);
+         if (children != null)
          {
-            traverseChangesByIdentifier(item.getData().getIdentifier(), changesList);
+            // Recursively call the method traverseChangesByIdentifier(String identifier, List<ItemState> changesList)
+            // for each sub node
+            for (ItemState child : children.values())
+            {
+               traverseChangesByIdentifier(child.getData().getIdentifier(), changesList);
+            }
          }
       }
    }
@@ -220,16 +257,27 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     */
    public void eraseEventFire(String identifier)
    {
-      for (ItemState item : items)
+      ItemState item = getItemState(identifier);
+      if (item != null)
       {
-         if (item.getData().getIdentifier().equals(identifier))
+         item.eraseEventFire();
+         Map<String, ItemState> children = lastChildPropertyStates.get(identifier);
+         if (children != null)
          {
-            // erase flag
-            item.eraseEventFire();
+            // Call the method ItemState.eraseEventFire() on each properties
+            for (ItemState child : children.values())
+            {
+               child.eraseEventFire();
+            }
          }
-         else if (item.getData().getParentIdentifier().equals(identifier))
+         children = lastChildNodeStates.get(identifier);
+         if (children != null)
          {
-            eraseEventFire(item.getData().getIdentifier());
+            // Recursively call the method eraseEventFire(String identifier) for each sub node
+            for (ItemState child : children.values())
+            {
+               eraseEventFire(child.getData().getIdentifier());
+            }
          }
       }
    }
@@ -241,11 +289,12 @@ public final class SessionChangesLog extends PlainChangesLogImpl
    public List<ItemState> getDescendantsChanges(QPath rootPath)
    {
       List<ItemState> list = new ArrayList<ItemState>();
-      for (int i = 0; i < items.size(); i++)
+      for (int i = 0, length = items.size(); i < length; i++)
       {
-         if (items.get(i).isDescendantOf(rootPath))
+         ItemState item = items.get(i);
+         if (item.isDescendantOf(rootPath))
          {
-            list.add(items.get(i));
+            list.add(item);
          }
       }
       return list;
@@ -260,8 +309,10 @@ public final class SessionChangesLog extends PlainChangesLogImpl
    public List<ItemState> getItemStates(String itemIdentifier)
    {
       List<ItemState> states = new ArrayList<ItemState>();
-      for (ItemState state : getAllStates())
+      List<ItemState> currentStates = getAllStates();
+      for (int i = 0, length = currentStates.size(); i < length; i++)
       {
+         ItemState state = currentStates.get(i);
          if (state.getData().getIdentifier().equals(itemIdentifier))
          {
             states.add(state);
@@ -279,7 +330,8 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     */
    public PlainChangesLog pushLog(QPath rootPath)
    {
-      PlainChangesLog cLog = new PlainChangesLogImpl(sessionId);
+      // session instance is always present in SessionChangesLog
+      PlainChangesLog cLog = new PlainChangesLogImpl(session);
 
       if (rootPath.equals(Constants.ROOT_PATH))
       {
@@ -299,13 +351,29 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     * Get ItemState by parent and item name.
     * 
     * @param parentData
+    *          parent
     * @param name
+    *          item name
+    * @param itemType
+    *          item type
     * @return
     * @throws IllegalPathException
     */
-   public ItemState getItemState(NodeData parentData, QPathEntry name) throws IllegalPathException
+   public ItemState getItemState(NodeData parentData, QPathEntry name, ItemType itemType) throws IllegalPathException
    {
-      return index.get(new ParentIDQPathBasedKey(parentData.getIdentifier(), name));
+      if (itemType != ItemType.UNKNOWN)
+      {
+         return index.get(new ParentIDQPathBasedKey(parentData.getIdentifier(), name, itemType));
+      }
+      else
+      {
+         ItemState state = index.get(new ParentIDQPathBasedKey(parentData.getIdentifier(), name, ItemType.NODE));
+         if (state == null)
+         {
+            state = index.get(new ParentIDQPathBasedKey(parentData.getIdentifier(), name, ItemType.PROPERTY));
+         }
+         return state;
+      }
    }
 
    /**
@@ -361,15 +429,24 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       {
          ItemData item = items.get(i).getData();
          if (item.getParentIdentifier().equals(rootIdentifier) || item.getIdentifier().equals(rootIdentifier))
+         {
             list.add(items.get(i));
+         }
       }
       return list;
    }
 
    public int getChildNodesCount(String rootIdentifier)
    {
-      int[] childCount = childNodesCount.get(rootIdentifier);
-      return childCount == null ? 0 : childCount[0];
+      int[] childInfo = childNodesInfo.get(rootIdentifier);
+      return childInfo == null ? 0 : childInfo[CHILD_NODES_COUNT_INDEX];
+   }
+
+   public int getLastChildOrderNumber(String rootIdentifier)
+   {
+
+      int[] childInfo = childNodesInfo.get(rootIdentifier);
+      return childInfo == null ? -1 : childInfo[CHILD_NODES_LAST_ORDER_NUMBER_INDEX];
    }
 
    /**
@@ -410,11 +487,15 @@ public final class SessionChangesLog extends PlainChangesLogImpl
          {
             // the node
             if (items.get(i).isAdded())
+            {
                // if a new item - no modify changes can be
                return new ArrayList<ItemState>();
+            }
 
             if (!items.get(i).isDeleted())
+            {
                changes.put(item.getIdentifier(), items.get(i));
+            }
          }
          else if (item.getParentIdentifier().equals(rootData.getIdentifier()))
          {
@@ -436,6 +517,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     *         if renaming is not detected.
     * @throws IllegalPathException
     */
+   @Deprecated
    public ItemState[] findRenamed(QPath deletedPath) throws IllegalPathException
    {
       List<ItemState> allStates = getAllStates();
@@ -470,7 +552,9 @@ public final class SessionChangesLog extends PlainChangesLogImpl
                         rename = state;
                         delete = allStates.get(i - 1); // try the fresh delete state
                         if (delete.getData().getIdentifier().equals(rename.getData().getIdentifier()))
+                        {
                            return new ItemState[]{delete, rename}; // 3. ok, got it
+                        }
                      }
                   }
 
@@ -526,7 +610,9 @@ public final class SessionChangesLog extends PlainChangesLogImpl
             }
          }
          else
+         {
             byState = true;
+         }
          if (byState
             && (isPersisted != null ? istate.isPersisted() == isPersisted : true)
             && ((orAncestor != null && orAncestor ? rootPath.isDescendantOf(istate.getData().getQPath()) : true) || rootPath
@@ -573,7 +659,9 @@ public final class SessionChangesLog extends PlainChangesLogImpl
             }
          }
          else
+         {
             byState = true;
+         }
          if (byState && (isPersisted != null ? istate.isPersisted() == isPersisted : true)
             && istate.getData().getIdentifier().equals(id))
          {
@@ -619,16 +707,22 @@ public final class SessionChangesLog extends PlainChangesLogImpl
 
       if (item.isNode() && item.isPersisted())
       {
-         int[] childCount = childNodesCount.get(item.getData().getParentIdentifier());
-         if (childCount == null)
-            childCount = new int[1];
+         int[] childInfo = childNodesInfo.get(item.getData().getParentIdentifier());
+         if (childInfo == null)
+         {
+            childInfo = new int[2];
+         }
 
          if (item.isDeleted())
-            --childCount[0];
+         {
+            --childInfo[CHILD_NODES_COUNT_INDEX];
+         }
          else if (item.isAdded())
-            ++childCount[0];
-
-         childNodesCount.put(item.getData().getParentIdentifier(), childCount);
+         {
+            ++childInfo[CHILD_NODES_COUNT_INDEX];
+            childInfo[CHILD_NODES_LAST_ORDER_NUMBER_INDEX] = ((NodeData)item.getData()).getOrderNumber();
+         }
+         childNodesInfo.put(item.getData().getParentIdentifier(), childInfo);
       }
    }
 
@@ -683,22 +777,34 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       public boolean equals(Object obj)
       {
          if (this == obj)
+         {
             return true;
+         }
          if (obj == null)
+         {
             return false;
+         }
          if (getClass() != obj.getClass())
+         {
             return false;
+         }
          IDStateBasedKey other = (IDStateBasedKey)obj;
 
          if (identifier == null)
          {
             if (other.identifier != null)
+            {
                return false;
+            }
          }
          else if (!identifier.equals(other.identifier))
+         {
             return false;
+         }
          if (state != other.state)
+         {
             return false;
+         }
          return true;
       }
    }
@@ -718,6 +824,8 @@ public final class SessionChangesLog extends PlainChangesLogImpl
        */
       private final String parentIdentifier;
 
+      private final ItemType itemType;
+
       /**
        * KeyParentUUIDQPath  constructor.
        *
@@ -728,6 +836,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       {
          this.name = item.getData().getQPath().getEntries()[item.getData().getQPath().getEntries().length - 1];
          this.parentIdentifier = item.getData().getParentIdentifier();
+         this.itemType = ItemType.getItemType(item.getData());
       }
 
       /**
@@ -738,10 +847,11 @@ public final class SessionChangesLog extends PlainChangesLogImpl
        * @param name
        *          item name
        */
-      ParentIDQPathBasedKey(String parentIdentifier, QPathEntry name)
+      ParentIDQPathBasedKey(String parentIdentifier, QPathEntry name, ItemType itemType)
       {
          this.name = name;
          this.parentIdentifier = parentIdentifier;
+         this.itemType = itemType;
       }
 
       /**
@@ -756,6 +866,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
          result = prime * result + name.getNamespace().hashCode();
          result = prime * result + name.getIndex();
          result = prime * result + (parentIdentifier == null ? 0 : parentIdentifier.hashCode());
+         result = prime * result + itemType.ordinal();
 
          return result;
       }
@@ -767,28 +878,56 @@ public final class SessionChangesLog extends PlainChangesLogImpl
       public boolean equals(Object obj)
       {
          if (this == obj)
+         {
             return true;
+         }
          if (obj == null)
+         {
             return false;
+         }
          if (getClass() != obj.getClass())
+         {
             return false;
+         }
          ParentIDQPathBasedKey other = (ParentIDQPathBasedKey)obj;
 
          if (name == null)
          {
             if (other.name != null)
+            {
                return false;
+            }
          }
          else if (!name.getName().equals(other.name.getName())
             || !name.getNamespace().equals(other.name.getNamespace()) || name.getIndex() != other.name.getIndex())
+         {
             return false;
+         }
+
          if (parentIdentifier == null)
          {
             if (other.parentIdentifier != null)
+            {
                return false;
+            }
          }
          else if (!parentIdentifier.equals(other.parentIdentifier))
+         {
             return false;
+         }
+
+         if (itemType == null)
+         {
+            if (other.itemType != null)
+            {
+               return false;
+            }
+         }
+         else if (!itemType.equals(other.itemType))
+         {
+            return false;
+         }
+
          return true;
       }
    }

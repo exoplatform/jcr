@@ -114,17 +114,29 @@ class ConsistencyCheck
       int notRepairable = 0;
       for (Iterator<ConsistencyCheckError> it = errors.iterator(); it.hasNext();)
       {
-         ConsistencyCheckError error = it.next();
+         final ConsistencyCheckError error = it.next();
          try
          {
             if (error.repairable())
             {
+               // running in privileged mode
                error.repair();
             }
             else
             {
                log.warn("Not repairable: " + error);
                notRepairable++;
+            }
+         }
+         catch (IOException e)
+         {
+            if (ignoreFailure)
+            {
+               log.warn("Exception while reparing: " + e);
+            }
+            else
+            {
+               throw e;
             }
          }
          catch (Exception e)
@@ -135,11 +147,7 @@ class ConsistencyCheck
             }
             else
             {
-               if (!(e instanceof IOException))
-               {
-                  e = new IOException(e.getMessage());
-               }
-               throw (IOException)e;
+               throw new IOException(e.getMessage());
             }
          }
       }
@@ -177,14 +185,15 @@ class ConsistencyCheck
          {
             if (i > 10 && i % (reader.maxDoc() / 5) == 0)
             {
-               long progress = Math.round((100.0 * (float)i) / ((float)reader.maxDoc() * 2f));
+               long progress = Math.round((100.0 * i) / (reader.maxDoc() * 2f));
                log.info("progress: " + progress + "%");
             }
             if (reader.isDeleted(i))
             {
                continue;
             }
-            Document d = reader.document(i, FieldSelectors.UUID);
+            final int currentIndex = i;
+            Document d = reader.document(currentIndex, FieldSelectors.UUID);
             String uuid = d.get(FieldNames.UUID);
             if (stateMgr.getItemData(uuid) != null)
             {
@@ -218,14 +227,15 @@ class ConsistencyCheck
          {
             if (i > 10 && i % (reader.maxDoc() / 5) == 0)
             {
-               long progress = Math.round((100.0 * (float)i) / ((float)reader.maxDoc() * 2f));
+               long progress = Math.round((100.0 * i) / (reader.maxDoc() * 2f));
                log.info("progress: " + (progress + 50) + "%");
             }
             if (reader.isDeleted(i))
             {
                continue;
             }
-            Document d = reader.document(i, FieldSelectors.UUID_AND_PARENT);
+            final int currentIndex = i;
+            Document d = reader.document(currentIndex, FieldSelectors.UUID_AND_PARENT);
             String uuid = d.get(FieldNames.UUID);
             String parentUUIDString = d.get(FieldNames.PARENT);
 
@@ -285,6 +295,7 @@ class ConsistencyCheck
        * Returns <code>true</code>.
        * @return <code>true</code>.
        */
+      @Override
       public boolean repairable()
       {
          return true;
@@ -294,6 +305,7 @@ class ConsistencyCheck
        * Repairs the missing node by indexing the missing ancestors.
        * @throws IOException if an error occurs while repairing.
        */
+      @Override
       public void repair() throws IOException
       {
          String parentId = parentUUID;
@@ -331,6 +343,7 @@ class ConsistencyCheck
        * Not reparable (yet).
        * @return <code>false</code>.
        */
+      @Override
       public boolean repairable()
       {
          return false;
@@ -339,6 +352,7 @@ class ConsistencyCheck
       /**
        * No operation.
        */
+      @Override
       public void repair() throws IOException
       {
          log.warn("Unknown parent for " + uuid + " cannot be repaired");
@@ -360,6 +374,7 @@ class ConsistencyCheck
        * Returns <code>true</code>.
        * @return <code>true</code>.
        */
+      @Override
       public boolean repairable()
       {
          return true;
@@ -370,6 +385,7 @@ class ConsistencyCheck
        * re-index the node.
        * @throws IOException if an error occurs while repairing.
        */
+      @Override
       public void repair() throws IOException
       {
          // first remove all occurrences
@@ -405,6 +421,7 @@ class ConsistencyCheck
        * Returns <code>true</code>.
        * @return <code>true</code>.
        */
+      @Override
       public boolean repairable()
       {
          return true;
@@ -414,6 +431,7 @@ class ConsistencyCheck
        * Deletes the nodes from the index.
        * @throws IOException if an error occurs while repairing.
        */
+      @Override
       public void repair() throws IOException
       {
          log.info("Removing deleted node from index: " + uuid);

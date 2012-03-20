@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
+import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.observation.ExtendedEventType;
 
 import java.util.List;
@@ -38,7 +39,7 @@ public interface PlainChangesLog extends ItemStateChangesLog
     * @return sessionId of a session produced this changes log
     */
    String getSessionId();
-   
+
    /**
     * Return pair Id of system and non-system logs.
     * 
@@ -67,4 +68,10 @@ public interface PlainChangesLog extends ItemStateChangesLog
     * @param states List of ItemState
     */
    PlainChangesLog addAll(List<ItemState> states);
+
+   /**
+    * Returns session instance is present
+    * @return session instance
+    */
+   ExtendedSession getSession();
 }

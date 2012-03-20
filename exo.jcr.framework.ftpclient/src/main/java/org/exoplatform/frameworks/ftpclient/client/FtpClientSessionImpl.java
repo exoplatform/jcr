@@ -25,6 +25,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetSocketAddress;
 import java.net.Socket;
@@ -40,7 +41,7 @@ import java.net.SocketAddress;
 public class FtpClientSessionImpl implements FtpClientSession
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.FtpClientSessionImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.FtpClientSessionImpl");
 
    protected String host;
 
@@ -111,7 +112,7 @@ public class FtpClientSessionImpl implements FtpClientSession
          // log.info(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> sleeping.........");
       }
 
-      log.info("unhandled exception. " + prevExc.getMessage(), prevExc);
+      LOG.info("unhandled exception. " + prevExc.getMessage(), prevExc);
 
       return false;
    }
@@ -134,9 +135,9 @@ public class FtpClientSessionImpl implements FtpClientSession
             clientSocket.close();
          }
       }
-      catch (Exception exc)
+      catch (IOException exc)
       {
-         log.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
+         LOG.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
       }
    }
 

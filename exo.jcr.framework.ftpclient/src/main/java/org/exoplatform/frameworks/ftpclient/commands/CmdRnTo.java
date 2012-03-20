@@ -32,7 +32,7 @@ import org.exoplatform.services.log.Log;
 public class CmdRnTo extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdRnTo");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.CmdRnTo");
 
    protected String path;
 
@@ -57,7 +57,7 @@ public class CmdRnTo extends FtpCommandImpl
       }
       catch (Exception exc)
       {
-         log.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
+         LOG.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
       }
       return -1;
    }

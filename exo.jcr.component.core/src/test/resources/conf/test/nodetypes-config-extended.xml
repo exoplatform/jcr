@@ -810,6 +810,12 @@
 
    <nodeType name="exo:videoFolder" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
    </nodeType>
+   
+      <nodeType name="jcr:extendedUnstructured" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+      <supertypes>
+         <supertype>nt:unstructured</supertype>
+      </supertypes>
+   </nodeType>
 
 </nodeTypes>
 

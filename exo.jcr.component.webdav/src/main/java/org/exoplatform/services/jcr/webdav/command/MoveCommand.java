@@ -28,6 +28,7 @@ import javax.jcr.Session;
 import javax.jcr.lock.LockException;
 import javax.ws.rs.core.CacheControl;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * Created by The eXo Platform SAS Author : <a
@@ -48,10 +49,45 @@ public class MoveCommand
     */
    private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.MoveCommand");
 
+   /**
+    * Provides URI information needed for 'location' header in 'CREATED' response
+    */
+   private final UriBuilder uriBuilder;
+   
+   /**
+    * To trace if an item on destination path existed. 
+    */
+   private final boolean itemExisted;
+
    // Fix problem with moving under Windows Explorer.
    static
    {
       cacheControl.setNoCache(true);
+   }
+
+   /**
+    * Empty constructor
+    */
+   public MoveCommand()
+   {
+      this.uriBuilder = null;
+      this.itemExisted = false;
+   }
+
+   /**
+    * Here we pass URI builder and info about pre-existence of item on the move
+    * destination path If an item existed, we must respond with NO_CONTENT (204)
+    * HTTP status.
+    * If an item did not exist, we must respond with CREATED (201) HTTP status
+    * More info can be found <a
+    * href=http://www.webdav.org/specs/rfc2518.html#METHOD_MOVE>here</a>.
+    * @param uriBuilder - provide data used in 'location' header
+    * @param itemExisted - indicates if an item existed on copy destination
+    */
+   public MoveCommand(UriBuilder uriBuilder, boolean itemExisted)
+   {
+      this.uriBuilder = uriBuilder;
+      this.itemExisted = itemExisted;
    }
 
    /**
@@ -66,22 +102,26 @@ public class MoveCommand
    {
       try
       {
-
-         boolean itemExisted = session.itemExists(destPath);
-         if (itemExisted)
-         {
-            session.getItem(destPath).remove();
-         }
-
          session.move(srcPath, destPath);
          session.save();
 
+         // If the source resource was successfully moved
+         // to a pre-existing destination resource.
          if (itemExisted)
          {
             return Response.status(HTTPStatus.NO_CONTENT).cacheControl(cacheControl).build();
          }
+         // If the source resource was successfully moved,
+         // and a new resource was created at the destination.
          else
          {
+            if (uriBuilder != null)
+            {
+               return Response.created(uriBuilder.path(session.getWorkspace().getName()).path(destPath).build())
+                  .cacheControl(cacheControl).build();
+            }
+
+            // to save compatibility if uriBuilder is not provided
             return Response.status(HTTPStatus.CREATED).cacheControl(cacheControl).build();
          }
 
@@ -122,7 +162,25 @@ public class MoveCommand
          sourceSession.getItem(srcPath).remove();
          sourceSession.save();
 
-         return Response.status(HTTPStatus.NO_CONTENT).cacheControl(cacheControl).build();
+         // If the source resource was successfully moved
+         // to a pre-existing destination resource.
+         if (itemExisted)
+         {
+            return Response.status(HTTPStatus.NO_CONTENT).cacheControl(cacheControl).build();
+         }
+         // If the source resource was successfully moved,
+         // and a new resource was created at the destination.
+         else
+         {
+            if (uriBuilder != null)
+            {
+               return Response.created(uriBuilder.path(destSession.getWorkspace().getName()).path(destPath).build())
+                  .cacheControl(cacheControl).build();
+            }
+
+            // to save compatibility if uriBuilder is not provided
+            return Response.status(HTTPStatus.CREATED).cacheControl(cacheControl).build();
+         }
 
       }
       catch (LockException exc)

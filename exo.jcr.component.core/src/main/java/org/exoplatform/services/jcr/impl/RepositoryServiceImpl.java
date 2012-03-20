@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
@@ -30,8 +31,8 @@ import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
-import org.exoplatform.services.jcr.impl.core.AddNamespacePluginHolder;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.log.ExoLogger;
@@ -39,16 +40,16 @@ import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
 import java.io.InputStream;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.StringTokenizer;
 import java.util.Map.Entry;
+import java.util.StringTokenizer;
+import java.util.concurrent.ConcurrentHashMap;
 
-import javax.jcr.NamespaceException;
-import javax.jcr.NamespaceRegistry;
 import javax.jcr.RepositoryException;
 
 /**
@@ -67,7 +68,8 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
    private final ThreadLocal<String> currentRepositoryName = new ThreadLocal<String>();
 
-   private final HashMap<String, RepositoryContainer> repositoryContainers = new HashMap<String, RepositoryContainer>();
+   private final ConcurrentHashMap<String, RepositoryContainer> repositoryContainers =
+      new ConcurrentHashMap<String, RepositoryContainer>();
 
    private final List<ComponentPlugin> addNodeTypePlugins;
 
@@ -85,6 +87,18 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
    }
 
    public RepositoryServiceImpl(RepositoryServiceConfiguration configuration, ExoContainerContext context)
+   {
+      this(configuration, context, null);
+   }
+
+   /**
+    * @param synchronizer This component is used to synchronize the creation of the repositories between
+    * all the cluster nodes. If this component has been defined in the configuration, it has to
+    * be started before the {@link RepositoryServiceImpl} so we have to enforce the dependency
+    * with this component by adding it to the constructor
+    */
+   public RepositoryServiceImpl(RepositoryServiceConfiguration configuration, ExoContainerContext context,
+            RepositoryCreationSynchronizer synchronizer)
    {
       this.config = configuration;
       addNodeTypePlugins = new ArrayList<ComponentPlugin>();
@@ -106,69 +120,55 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       }
    }
 
-   public boolean canRemoveRepository(String name) throws RepositoryException
-   {
-      if (name.equals(config.getDefaultRepositoryName()))
-         return false;
-
-      RepositoryImpl repo = (RepositoryImpl)getRepository(name);
-      try
-      {
-         RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
-
-         for (WorkspaceEntry wsEntry : repconfig.getWorkspaceEntries())
-         {
-            // Check non system workspaces
-            if (!repo.getSystemWorkspaceName().equals(wsEntry.getName()) && !repo.canRemoveWorkspace(wsEntry.getName()))
-               return false;
-         }
-         // check system workspace
-         RepositoryContainer repositoryContainer = repositoryContainers.get(name);
-         SessionRegistry sessionRegistry =
-            (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
-         if (sessionRegistry == null || sessionRegistry.isInUse(repo.getSystemWorkspaceName()))
-            return false;
-
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         throw new RepositoryException(e);
-      }
-
-      return true;
-   }
-
    /**
     * Create repository. <br>
     * Init worksapces for initial start or them load from persistence. <br>
     * Add namespaces and nodetypes from service plugins.
     * 
     */
-   public void createRepository(RepositoryEntry rEntry) throws RepositoryConfigurationException, RepositoryException
+   public void createRepository(RepositoryEntry rEntry) throws RepositoryConfigurationException,
+      RepositoryException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       if (repositoryContainers.containsKey(rEntry.getName()))
       {
          throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " already started");
       }
 
-      RepositoryContainer repositoryContainer = new RepositoryContainer(parentContainer, rEntry, addNamespacesPlugins);
+      final RepositoryContainer repositoryContainer = new RepositoryContainer(parentContainer, rEntry, addNamespacesPlugins);
 
       // Storing and starting the repository container under
       // key=repository_name
       try
       {
-         repositoryContainers.put(rEntry.getName(), repositoryContainer);
-         managerStartChanges.registerListeners(repositoryContainer);
-
-         repositoryContainer.start();
+         if (repositoryContainers.putIfAbsent(rEntry.getName(), repositoryContainer) == null)
+         {
+            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+            {
+               public Void run()
+               {
+                  managerStartChanges.registerListeners(repositoryContainer);
+                  repositoryContainer.start();
+                  return null;
+               }
+            });
+         }
+         else
+         {
+            throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " already started");
+         }
       }
       catch (Throwable t)
       {
-         //TODO will be implemented unregistration in managerStartChanges
-         //managerStartChanges.removeListeners(repositoryContainer);
          repositoryContainers.remove(rEntry.getName());
 
-         throw new RepositoryConfigurationException("Repository conatainer " + rEntry.getName() + " was not started.",
+         throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " was not started.",
             t);
       }
 
@@ -187,7 +187,22 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
    public RepositoryServiceConfiguration getConfig()
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       return config;
+   }
+
+   /**
+    * @return Name of current repository if exists or null in other case
+    */
+   public String getCurrentRepositoryName()
+   {
+      return currentRepositoryName.get();
    }
 
    public ManageableRepository getCurrentRepository() throws RepositoryException
@@ -223,39 +238,15 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       return (ManageableRepository)repositoryContainer.getComponentInstanceOfType(ManageableRepository.class);
    }
 
-   public void removeRepository(String name) throws RepositoryException
-   {
-      if (!canRemoveRepository(name))
-         throw new RepositoryException("Repository " + name + " in use. If you want to "
-            + " remove repository close all open sessions");
-
-      try
-      {
-         RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
-         RepositoryImpl repo = (RepositoryImpl)getRepository(name);
-         for (WorkspaceEntry wsEntry : repconfig.getWorkspaceEntries())
-         {
-            repo.internalRemoveWorkspace(wsEntry.getName());
-         }
-         repconfig.getWorkspaceEntries().clear();
-         RepositoryContainer repositoryContainer = repositoryContainers.get(name);
-         repositoryContainer.stopContainer();
-         repositoryContainer.stop();
-         repositoryContainers.remove(name);
-         config.getRepositoryConfigurations().remove(repconfig);
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (Exception e)
-      {
-         throw new RepositoryException(e);
-      }
-   }
-
    public void setCurrentRepositoryName(String repositoryName) throws RepositoryConfigurationException
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       if (!repositoryContainers.containsKey(repositoryName))
          throw new RepositoryConfigurationException("Repository is not configured. Name " + repositoryName);
       currentRepositoryName.set(repositoryName);
@@ -263,13 +254,24 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
    public void start()
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       try
       {
          ExoContainer container = null;
          if (containerContext == null)
+         {
             container = PortalContainer.getInstance();
+         }
          else
+         {
             container = containerContext.getContainer();
+         }
 
          init(container);
 
@@ -291,6 +293,13 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
    public void stop()
    {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
       for (Entry<String, RepositoryContainer> entry : repositoryContainers.entrySet())
       {
          entry.getValue().stop();
@@ -313,14 +322,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       }
    }
 
-   private void registerNodeTypes() throws RepositoryException
-   {
-      for (RepositoryEntry repoConfig : config.getRepositoryConfigurations())
-      {
-         registerNodeTypes(repoConfig.getName());
-      }
-   }
-
    private void registerNodeTypes(String repositoryName) throws RepositoryException
    {
       ConfigurationManager configService =
@@ -336,7 +337,6 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          {
             for (String nodeTypeFilesName : autoNodeTypesFiles)
             {
-
                InputStream inXml;
                try
                {
@@ -346,18 +346,23 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
                {
                   throw new RepositoryException(e);
                }
+
                if (log.isDebugEnabled())
+               {
                   log.debug("Trying register node types from xml-file " + nodeTypeFilesName);
+               }
                ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
                if (log.isDebugEnabled())
+               {
                   log.debug("Node types is registered from xml-file " + nodeTypeFilesName);
+               }
             }
+
             List<String> defaultNodeTypesFiles = plugin.getNodeTypesFiles(repositoryName);
             if (defaultNodeTypesFiles != null && defaultNodeTypesFiles.size() > 0)
             {
                for (String nodeTypeFilesName : defaultNodeTypesFiles)
                {
-
                   InputStream inXml;
                   try
                   {
@@ -367,6 +372,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
                   {
                      throw new RepositoryException(e);
                   }
+
                   log.info("Trying register node types (" + repositoryName + ") from xml-file " + nodeTypeFilesName);
                   ntManager.registerNodeTypes(inXml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
                   log.info("Node types is registered (" + repositoryName + ") from xml-file " + nodeTypeFilesName);
@@ -377,17 +383,100 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public void removeRepository(String name) throws RepositoryException
+   {
+      // Need privileges to manage repository.
+      SecurityManager security = System.getSecurityManager();
+      if (security != null)
+      {
+         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      }
+
+      if (!canRemoveRepository(name))
+         throw new RepositoryException("Repository " + name + " in use. If you want to "
+            + " remove repository close all open sessions");
+
+      try
+      {
+         RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
+         RepositoryImpl repo = (RepositoryImpl)getRepository(name);
+         for (WorkspaceEntry wsEntry : repconfig.getWorkspaceEntries())
+         {
+            repo.internalRemoveWorkspace(wsEntry.getName());
+         }
+         repconfig.getWorkspaceEntries().clear();
+         final RepositoryContainer repositoryContainer = repositoryContainers.get(name);
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               repositoryContainer.stop();
+               return null;
+            }
+         });         
+         repositoryContainers.remove(name);
+         config.getRepositoryConfigurations().remove(repconfig);
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               parentContainer.unregisterComponent(repositoryContainer.getName());
+               return null;
+            }
+         });
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (Exception e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean canRemoveRepository(String name) throws RepositoryException
+   {
+      RepositoryImpl repo = (RepositoryImpl)getRepository(name);
+      try
+      {
+         RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
+
+         for (WorkspaceEntry wsEntry : repconfig.getWorkspaceEntries())
+         {
+            // Check non system workspaces
+            if (!repo.getSystemWorkspaceName().equals(wsEntry.getName()) && !repo.canRemoveWorkspace(wsEntry.getName()))
+               return false;
+         }
+         // check system workspace
+         RepositoryContainer repositoryContainer = repositoryContainers.get(name);
+         SessionRegistry sessionRegistry =
+            (SessionRegistry)repositoryContainer.getComponentInstance(SessionRegistry.class);
+         if (sessionRegistry == null || sessionRegistry.isInUse(repo.getSystemWorkspaceName()))
+            return false;
+
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new RepositoryException(e);
+      }
+
+      return true;
+   }
+
+   /**
     * Manager start changes plugins.
     */
    public class ManagerStartChanges
    {
 
-      private HashMap<StorageKey, ItemsPersistenceListener> startChangesListeners;
-
-      ManagerStartChanges()
-      {
-         startChangesListeners = new HashMap<StorageKey, ItemsPersistenceListener>();
-      }
+      private Map<StorageKey, ItemsPersistenceListener> startChangesListeners =
+         new HashMap<StorageKey, ItemsPersistenceListener>();
 
       /**
        * Add new StartChangesPlugin to manager.
@@ -483,6 +572,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          /**
           * {@inheritDoc}
           */
+         @Override
          public boolean equals(Object o)
          {
             StorageKey k = (StorageKey)o;
@@ -494,6 +584,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
          /**
           * {@inheritDoc}
           */
+         @Override
          public int hashCode()
          {
             return repositoryName.hashCode() ^ workspaceName.hashCode() ^ listenerClassName.hashCode();

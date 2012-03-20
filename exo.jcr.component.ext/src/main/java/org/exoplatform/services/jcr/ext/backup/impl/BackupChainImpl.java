@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.backup.BackupChain;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
@@ -40,6 +42,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SARL .<br/>
@@ -73,21 +77,49 @@ public class BackupChainImpl implements BackupChain
 
    private Set<BackupJobListener> listeners = new LinkedHashSet<BackupJobListener>();
 
-   public BackupChainImpl(BackupConfig config, File logDirectory, ManageableRepository repository,
-      String fullBackupType, String incrementalBackupType, String backupId) throws BackupOperationException,
+   public BackupChainImpl(BackupConfig config, File logDirectory,
+            RepositoryService repositoryService,
+            String fullBackupType, String incrementalBackupType, String backupId, File rootDir, Calendar startTime)
+            throws BackupOperationException,
       BackupConfigurationException
    {
       this.config = config;
       this.jobs = new ArrayList<BackupJob>();
-      this.chainLog = new BackupChainLog(logDirectory, config, fullBackupType, incrementalBackupType, backupId);
-      this.timeStamp = Calendar.getInstance();
+      this.timeStamp = startTime;
+
+      this.chainLog =
+               new BackupChainLog(logDirectory, config, fullBackupType, incrementalBackupType, backupId,
+                        repositoryService.getConfig(), rootDir);
+
       this.backupId = backupId;
+      
+      ManageableRepository repository = null;
+      try
+      {
+         repository = repositoryService.getRepository(config.getRepository());
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new BackupOperationException("Can not get repository \"" + config.getRepository() + "\"", e);
+      }
+      catch (RepositoryException e)
+      {
+         throw new BackupOperationException("Can not get repository \"" + config.getRepository() + "\"", e);
+      }
 
       try
       {
          this.fullBackup = (AbstractFullBackupJob)Class.forName(fullBackupType).newInstance();
       }
-      catch (Exception e)
+      catch (ClassNotFoundException e)
+      {
+         throw new BackupConfigurationException("FullBackupType error, " + e, e);
+      }
+      catch (InstantiationException e)
+      {
+         throw new BackupConfigurationException("FullBackupType error, " + e, e);
+      }
+      catch (IllegalAccessException e)
       {
          throw new BackupConfigurationException("FullBackupType error, " + e, e);
       }
@@ -99,7 +131,15 @@ public class BackupChainImpl implements BackupChain
          {
             this.incrementalBackup = (AbstractIncrementalBackupJob)Class.forName(incrementalBackupType).newInstance();
          }
-         catch (Exception e)
+         catch (ClassNotFoundException e)
+         {
+            throw new BackupConfigurationException("IncrementalBackupType error, " + e, e);
+         }
+         catch (InstantiationException e)
+         {
+            throw new BackupConfigurationException("IncrementalBackupType error, " + e, e);
+         }
+         catch (IllegalAccessException e)
          {
             throw new BackupConfigurationException("IncrementalBackupType error, " + e, e);
          }
@@ -251,7 +291,9 @@ public class BackupChainImpl implements BackupChain
    public int getIncrementalBackupState()
    {
       if (incrementalBackup == null)
-         throw new RuntimeException("The incremental bacup was not configured. Only full backup.");
+      {
+         throw new IllegalStateException("The incremental bacup was not configured. Only full backup.");
+      }
          
       return incrementalBackup.getState();
    }
@@ -287,8 +329,9 @@ public class BackupChainImpl implements BackupChain
          }
          else
          {
-            Thread starter = new Thread()
+            Thread starter = new Thread("IncrementalBackup Starter")
             {
+               @Override
                public void run()
                {
                   restartIncrementalBackup();

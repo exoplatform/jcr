@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.store.Directory;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexInputStream;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexOutputStream;
 
@@ -25,6 +26,7 @@ import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -74,7 +76,7 @@ public class IndexInfos
    /**
     * {@link MultiIndex} instance for callbacking when list of indexes changed 
     */
-   private MultiIndex multiIndex;
+   protected MultiIndex multiIndex;
 
    /**
     * Creates a new IndexInfos using <code>"indexes"</code> as a filename.
@@ -112,28 +114,38 @@ public class IndexInfos
     */
    public void read() throws IOException
    {
-      names.clear();
-      indexes.clear();
-      if (dir.fileExists(name))
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
-         // clear current lists
-         InputStream in = new IndexInputStream(dir.openInput(name));
-         try
+         public Object run() throws Exception
          {
-            DataInputStream di = new DataInputStream(in);
-            counter = di.readInt();
-            for (int i = di.readInt(); i > 0; i--)
+            // Known issue for NFS bases on ext3. Need to refresh directory to read actual data.
+            dir.list();
+
+            names.clear();
+            indexes.clear();
+            if (dir.fileExists(name))
             {
-               String indexName = di.readUTF();
-               indexes.add(indexName);
-               names.add(indexName);
+               // clear current lists
+               InputStream in = new IndexInputStream(dir.openInput(name));
+               try
+               {
+                  DataInputStream di = new DataInputStream(in);
+                  counter = di.readInt();
+                  for (int i = di.readInt(); i > 0; i--)
+                  {
+                     String indexName = di.readUTF();
+                     indexes.add(indexName);
+                     names.add(indexName);
+                  }
+               }
+               finally
+               {
+                  in.close();
+               }
             }
+            return null;
          }
-         finally
-         {
-            in.close();
-         }
-      }
+      });
    }
 
    /**
@@ -144,34 +156,41 @@ public class IndexInfos
     */
    public void write() throws IOException
    {
-      // do not write if not dirty
-      if (!dirty)
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
-         return;
-      }
-
-      OutputStream out = new IndexOutputStream(dir.createOutput(name + ".new"));
-      try
-      {
-         DataOutputStream dataOut = new DataOutputStream(out);
-         dataOut.writeInt(counter);
-         dataOut.writeInt(indexes.size());
-         for (int i = 0; i < indexes.size(); i++)
+         public Object run() throws Exception
          {
-            dataOut.writeUTF(getName(i));
+            // do not write if not dirty
+            if (!dirty)
+            {
+               return null;
+            }
+
+            OutputStream out = new IndexOutputStream(dir.createOutput(name + ".new"));
+            try
+            {
+               DataOutputStream dataOut = new DataOutputStream(out);
+               dataOut.writeInt(counter);
+               dataOut.writeInt(indexes.size());
+               for (int i = 0; i < indexes.size(); i++)
+               {
+                  dataOut.writeUTF(getName(i));
+               }
+            }
+            finally
+            {
+               out.close();
+            }
+            // delete old
+            if (dir.fileExists(name))
+            {
+               dir.deleteFile(name);
+            }
+            dir.renameFile(name + ".new", name);
+            dirty = false;
+            return null;
          }
-      }
-      finally
-      {
-         out.close();
-      }
-      // delete old
-      if (dir.fileExists(name))
-      {
-         dir.deleteFile(name);
-      }
-      dir.renameFile(name + ".new", name);
-      dirty = false;
+      });
    }
 
    /**
@@ -181,7 +200,7 @@ public class IndexInfos
     */
    public String getName(int i)
    {
-      return (String)indexes.get(i);
+      return indexes.get(i);
    }
 
    /**

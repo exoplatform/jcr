@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.replication;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.container.xml.ValuesParam;
@@ -43,7 +44,7 @@ import org.exoplatform.services.jcr.impl.WorkspaceContainer;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ReaderSpoolFileHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -372,9 +373,9 @@ public class ReplicationService implements Startable, ManagementAware
                   {
                      // create the recovery for workspace
                      File dir =
-                        new File(recoveryDir.getAbsolutePath() + File.separator + repoNamesList.get(rIndex) + "_"
-                           + workspaces[wIndex]);
-                     dir.mkdirs();
+                        new File(PrivilegedFileHelper.getAbsolutePath(recoveryDir) + File.separator
+                           + repoNamesList.get(rIndex) + "_" + workspaces[wIndex]);
+                     PrivilegedFileHelper.mkdirs(dir);
 
                      String systemId = IdGenerator.generate();
                      String props = channelConfig.replaceAll(IP_ADRESS_TEMPLATE, bindIPAddress);
@@ -398,8 +399,8 @@ public class ReplicationService implements Startable, ManagementAware
                         wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
                            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
 
-                     WorkspaceFileCleanerHolder wfcleaner =
-                        (WorkspaceFileCleanerHolder)wsFacade.getComponent(WorkspaceFileCleanerHolder.class);
+                     FileCleanerHolder wfcleaner =
+                        (FileCleanerHolder)wsFacade.getComponent(FileCleanerHolder.class);
                      FileCleaner fileCleaner = wfcleaner.getFileCleaner();
 
                      // create the RecoveryManager
@@ -531,13 +532,13 @@ public class ReplicationService implements Startable, ManagementAware
       Element root = doc.createElement(SERVICE_NAME);
       doc.appendChild(root);
 
-      String reps = "";
+      StringBuilder reps = new StringBuilder();
       for (String rep : repoNamesList)
       {
-         reps += rep + ";";
+         reps.append(rep).append(";");
       }
       Element element = doc.createElement("repositories");
-      setAttributeSmart(element, "repositories", reps);
+      setAttributeSmart(element, "repositories", reps.toString());
       root.appendChild(element);
 
       element = doc.createElement("replication-properties");
@@ -759,8 +760,10 @@ public class ReplicationService implements Startable, ManagementAware
          throw new RuntimeException("Recovery dir not specified");
 
       recoveryDir = new File(recDir);
-      if (!recoveryDir.exists())
-         recoveryDir.mkdirs();
+      if (!PrivilegedFileHelper.exists(recoveryDir))
+      {
+         PrivilegedFileHelper.mkdirs(recoveryDir);
+      }
 
       if (mode.equals(PERSISTENT_MODE))
       {
@@ -834,8 +837,10 @@ public class ReplicationService implements Startable, ManagementAware
          else if (backupEnabled)
          {
             backupDir = new File(sBackupDir);
-            if (!backupDir.exists())
-               backupDir.mkdirs();
+            if (!PrivilegedFileHelper.exists(backupDir))
+            {
+               PrivilegedFileHelper.mkdirs(backupDir);
+            }
          }
 
          if (sDelayTime == null && backupEnabled)

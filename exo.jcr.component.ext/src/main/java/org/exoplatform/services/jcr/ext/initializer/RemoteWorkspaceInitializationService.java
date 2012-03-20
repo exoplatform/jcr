@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.initializer;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.RepositoryService;
@@ -193,8 +194,10 @@ public class RemoteWorkspaceInitializationService implements ResourceContainer
       String tempD = pps.getProperty("temp-dir");
 
       tempDir = new File(tempD);
-      if (!tempDir.exists())
-         tempDir.mkdirs();
+      if (!PrivilegedFileHelper.exists(tempDir))
+      {
+         PrivilegedFileHelper.mkdirs(tempDir);
+      }
 
       log.info("RemoteWorkspaceInitializerService");
    }
@@ -389,6 +392,7 @@ public class RemoteWorkspaceInitializationService implements ResourceContainer
        */
       public WorkspaceDataPublisher(BackupChain chain, RemoteTransport transport)
       {
+         super("WorkspaceDataPublisher");
          this.backupChain = chain;
          this.transport = transport;
       }
@@ -396,6 +400,7 @@ public class RemoteWorkspaceInitializationService implements ResourceContainer
       /**
        * {@inheritDoc}
        */
+      @Override
       public void run()
       {
          try

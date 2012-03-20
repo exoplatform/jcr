@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.JCRName;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
@@ -53,7 +54,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -152,14 +155,14 @@ public class DocumentViewImporter extends BaseXmlImporter
          }
 
          ImportPropertyData newProperty =
-            new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_PRIMARYTYPE), IdGenerator
-               .generate(), 0, PropertyType.NAME, nodeData.getIdentifier(), false);
+            new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_PRIMARYTYPE),
+               IdGenerator.generate(), -1, PropertyType.NAME, nodeData.getIdentifier(), false);
 
          newProperty.setValue(new TransientValueData(Constants.NT_UNSTRUCTURED));
          changesLog.add(new ItemState(newProperty, ItemState.ADDED, true, getAncestorToSave()));
          newProperty =
-            new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_XMLCHARACTERS), IdGenerator
-               .generate(), 0, PropertyType.STRING, nodeData.getIdentifier(), false);
+            new ImportPropertyData(QPath.makeChildPath(nodeData.getQPath(), Constants.JCR_XMLCHARACTERS),
+               IdGenerator.generate(), -1, PropertyType.STRING, nodeData.getIdentifier(), false);
          newProperty.setValue(new TransientValueData(text.toString()));
 
          changesLog.add(new ItemState(newProperty, ItemState.ADDED, true, getAncestorToSave()));
@@ -200,7 +203,8 @@ public class DocumentViewImporter extends BaseXmlImporter
 
       ImportNodeData nodeData = createNode(nodeTypes, propertiesMap, mixinNodeTypes, jcrName);
 
-      NodeData parentNodeData = getParent();
+      NodeData parentNodeData = getParent(); 
+      
       changesLog.add(new ItemState(nodeData, ItemState.ADDED, true, getAncestorToSave()));
 
       tree.push(nodeData);
@@ -246,7 +250,7 @@ public class DocumentViewImporter extends BaseXmlImporter
          }
          else if (nodeData.isMixReferenceable() && propName.equals(Constants.JCR_UUID))
          {
-            newProperty = endUuid(nodeData, propName);
+            newProperty = endUuid(nodeData, propName, propertiesMap.get(Constants.JCR_UUID));
          }
          else
          {
@@ -282,7 +286,37 @@ public class DocumentViewImporter extends BaseXmlImporter
 
                List<ValueData> values = new ArrayList<ValueData>();
                int pType = pDef.getRequiredType() > 0 ? pDef.getRequiredType() : PropertyType.STRING;
+               
+               if (defs.getAnyDefinition().isResidualSet()) 
+               {
+                  if (nodeData.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+                  {
+                     if (nodeData.getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
+                     {
+                        // get primaryType
+                        InternalQName fptName = locationFactory.parseJCRName(atts.get("jcr:frozenPrimaryType")).getInternalName();
 
+                        // get mixin types
+                        List<JCRName> mtNames = getJCRNames(atts.get("jcr:frozenMixinTypes"));
+
+                        InternalQName fmtName[] = new InternalQName[mtNames.size()];
+
+                        for (int i = 0; i < mtNames.size(); i++)
+                        {
+                           fmtName[i] = new InternalQName(mtNames.get(i).getNamespace(), mtNames.get(i).getName());
+                        }
+
+                        PropertyDefinitionDatas ptVhdefs = nodeTypeDataManager.getPropertyDefinitions(propName, fptName, fmtName);
+
+                        if (ptVhdefs != null)
+                        {
+                           pType = (ptVhdefs.getAnyDefinition().getRequiredType() > 0 ? ptVhdefs.getAnyDefinition()
+                                             .getRequiredType() : PropertyType.STRING);
+                        }
+                     }
+                  }
+               }
+               
                if ("".equals(propertiesMap.get(propName)))
                {
                   // Skip empty non string values
@@ -290,7 +324,7 @@ public class DocumentViewImporter extends BaseXmlImporter
                   {
                      continue;
                   }
-
+                  
                   String denormalizeString = StringConverter.denormalizeString(propertiesMap.get(propName));
                   Value value = valueFactory.createValue(denormalizeString, pType);
                   values.add(((BaseValue)value).getInternalData());
@@ -342,10 +376,42 @@ public class DocumentViewImporter extends BaseXmlImporter
                // determinating is property multivalue;
                if (values.size() == 1)
                {
-                  // there is single-value defeniton
-                  if (defs.getDefinition(false) != null)
+                  
+                  PropertyDefinitionDatas vhdefs = null;
+                  if (defs.getAnyDefinition().isResidualSet()) 
                   {
-                     isMultivalue = false;
+                     if (nodeData.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+                     {
+                        if (nodeData.getPrimaryTypeName().equals(Constants.NT_FROZENNODE))
+                        {
+                           // get primaryType
+                           InternalQName fptName =
+                                    locationFactory.parseJCRName(atts.get("jcr:frozenPrimaryType")).getInternalName();
+   
+                           // get mixin types
+                           List<JCRName> mtNames = getJCRNames(atts.get("jcr:frozenMixinTypes"));
+   
+                           InternalQName fmtName[] = new InternalQName[mtNames.size()];
+   
+                           for (int i = 0; i < mtNames.size(); i++)
+                           {
+                              fmtName[i] = new InternalQName(mtNames.get(i).getNamespace(), mtNames.get(i).getName());
+                           }
+   
+                           vhdefs = nodeTypeDataManager.getPropertyDefinitions(propName, fptName, fmtName);
+   
+                           if (vhdefs != null)
+                           {
+                              isMultivalue = (vhdefs.getDefinition(true) != null ? true : false);
+                           }
+                        }
+                     }
+                  }
+  
+                  // there is single-value defeniton
+                  if (vhdefs == null && defs.getDefinition(false) != null)
+                  {
+                        isMultivalue = false;
                   }
                }
                else
@@ -377,13 +443,35 @@ public class DocumentViewImporter extends BaseXmlImporter
 
       }
 
-      nodeData.setACL(initAcl(parentNodeData.getACL(), nodeData.isExoOwneable(), nodeData.isExoPrivilegeable(),
-         nodeData.getExoOwner(), nodeData.getExoPrivileges()));
+      nodeData.setACL(ACLInitializationHelper.initAcl(parentNodeData.getACL(), nodeData.getExoOwner(),
+         nodeData.getExoPrivileges()));
 
       if (nodeData.isMixVersionable())
       {
          createVersionHistory(nodeData);
       }
+   }
+
+   private List<JCRName> getJCRNames(String string) throws RepositoryException
+   {
+      List<JCRName> mtNames = new ArrayList<JCRName>();
+      
+      StringTokenizer spaceToken = new StringTokenizer(string);
+      
+      List<String> denormalizedStrings = new ArrayList<String>();
+      while (spaceToken.hasMoreTokens())
+      {
+         String elem = spaceToken.nextToken();
+         String denormalizeString = StringConverter.denormalizeString(elem);
+         denormalizedStrings.add(denormalizeString);
+      }
+      
+      for (String mixinName : denormalizedStrings)
+      {
+         mtNames.add(locationFactory.parseJCRName(mixinName));
+      }
+      
+      return mtNames;
    }
 
    private ImportNodeData createNode(List<NodeTypeData> nodeTypes, HashMap<InternalQName, String> propertiesMap,
@@ -421,11 +509,20 @@ public class DocumentViewImporter extends BaseXmlImporter
    {
       try
       {
+         InputStream vStream = new ByteArrayInputStream(Base64.decode(propertiesMap.get(propName)));
+         TransientValueData binaryValue =
+            new TransientValueData(0, vStream, valueFactory.getFileCleaner(), valueFactory.getMaxBufferSize(), null,
+               true);
+         binaryValue.getAsStream().close();
+
          newProperty =
-            TransientPropertyData.createPropertyData(getParent(), propName, PropertyType.BINARY, false,
-               new TransientValueData(0, Base64.decode(propertiesMap.get(propName))));
+            TransientPropertyData.createPropertyData(getParent(), propName, PropertyType.BINARY, false, binaryValue);
       }
       catch (DecodingException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (IOException e)
       {
          throw new RepositoryException(e);
       }
@@ -459,19 +556,24 @@ public class DocumentViewImporter extends BaseXmlImporter
       return newProperty;
    }
 
-   private PropertyData endUuid(ImportNodeData nodeData, InternalQName key) throws ValueFormatException,
+   private PropertyData endUuid(ImportNodeData nodeData, InternalQName key, String properyValueUUID) throws ValueFormatException,
       UnsupportedRepositoryOperationException, RepositoryException, IllegalStateException
    {
       PropertyData newProperty;
-      Value value = valueFactory.createValue(nodeData.getIdentifier(), PropertyType.STRING);
-      if (log.isDebugEnabled())
+      
+      if (nodeData.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
       {
-         log.debug("Property STRING: " + key + "=" + value.getString());
+         newProperty =
+            TransientPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
+                     new TransientValueData(properyValueUUID));
       }
-
-      newProperty =
-         TransientPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
-            new TransientValueData(nodeData.getIdentifier()));
+      else
+      {
+         newProperty =
+                  TransientPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
+                           new TransientValueData(nodeData.getIdentifier()));
+      }
+      
       return newProperty;
    }
 
@@ -491,8 +593,16 @@ public class DocumentViewImporter extends BaseXmlImporter
                throw new RepositoryException(e);
             }
 
-            nodeData
-               .setContainsVersionhistory(dataConsumer.getItemData(nodeData.getVersionHistoryIdentifier()) != null);
+            // check if node contains VH
+            if (dataConsumer.getItemData(nodeData.getVersionHistoryIdentifier()) != null)
+            {
+               ItemState vhLastState = getLastItemState(nodeData.getVersionHistoryIdentifier());
+               nodeData.setContainsVersionhistory(vhLastState == null || !vhLastState.isDeleted());
+            }
+            else
+            {
+               nodeData.setContainsVersionhistory(false);
+            }
          }
          else if (propName.equals(Constants.JCR_BASEVERSION))
          {

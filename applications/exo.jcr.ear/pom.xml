@@ -24,27 +24,79 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-applications-parent</artifactId>
-    <version>1.14.0-Beta01-SNAPSHOT</version>
+    <version>1.14.8-GA-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.ear</artifactId>
   <packaging>ear</packaging>
   <name>eXo JCR :: EAR</name>
   <properties>
     <enforcer.skip>true</enforcer.skip>
+    <exo.deploy.profile>jbc</exo.deploy.profile>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
-      <artifactId>exo.jcr.connectors.localadapter</artifactId>
+      <artifactId>exo.jcr.connectors.jca</artifactId>
       <scope>runtime</scope>
       <type>rar</type>
     </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.component.core</artifactId>
+      <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>com.sun.xml.parsers</groupId>
+          <artifactId>jaxp-ri</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>javax.servlet</groupId>
+          <artifactId>servlet-api</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.component.ext</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.component.ftp</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.framework.command</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.framework.ftpclient</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.framework.web</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.ws</groupId>
+      <artifactId>exo.ws.frameworks.servlet</artifactId>
+      <scope>runtime</scope>
+    </dependency>    
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.rest</artifactId>
       <scope>runtime</scope>
       <type>war</type>
     </dependency>
+    <dependency>
+      <groupId>com.sun.xml.bind</groupId>
+      <artifactId>jaxb-impl</artifactId>
+      <scope>runtime</scope>
+    </dependency>    
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.browser</artifactId>
@@ -62,9 +114,30 @@
       <artifactId>exo.jcr.component.webdav</artifactId>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+      <groupId>commons-io</groupId>
+      <artifactId>commons-io</artifactId>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
+  <profiles>
+    <profile>
+         <id>ispn</id>
+         <dependencies>
+           <dependency>
+             <groupId>org.exoplatform.jcr</groupId>
+             <artifactId>exo.jcr.component.core.impl.infinispan.v5</artifactId>
+             <version>${project.version}</version>
+           </dependency>
+         </dependencies>
+
+         <properties>
+           <exo.deploy.profile>jbc</exo.deploy.profile>
+         </properties>
+      </profile>
+  </profiles>
   <build>
-    <finalName>exo-jcr-ear</finalName>
+    <finalName>exo.jcr.ear</finalName>
     <plugins>
       <plugin>
         <artifactId>maven-ear-plugin</artifactId>
@@ -79,8 +152,7 @@
               <role-name>administrators</role-name>
             </security-role>
           </security>
-          <!-- all deps jars inside the rar, so copy all jars in-self -->
-          <defaultLibBundleDir>../APP-INF/lib</defaultLibBundleDir>
+          <defaultLibBundleDir>APP-INF/lib</defaultLibBundleDir>
           <archive>
             <manifest>
               <addClasspath>true</addClasspath>
@@ -89,7 +161,7 @@
           <modules>
             <rarModule>
               <groupId>org.exoplatform.jcr</groupId>
-              <artifactId>exo.jcr.connectors.localadapter</artifactId>
+              <artifactId>exo.jcr.connectors.jca</artifactId>
               <bundleFileName>exo-jcr.rar</bundleFileName>
             </rarModule>
             <webModule>

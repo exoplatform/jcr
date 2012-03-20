@@ -155,14 +155,16 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    /**
     * {@inheritDoc}
     */
+   @Override
    public WorkspaceStorageConnection openConnection() throws RepositoryException
    {
-      return openConnection(false);
+      return openConnection(true);
    }
 
    /**
     * {@inheritDoc}
     */
+   @Override
    public WorkspaceStorageConnection openConnection(boolean readOnly) throws RepositoryException
    {
       try
@@ -187,19 +189,13 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    /**
     * {@inheritDoc}
     */
+   @Override
    public Connection getJdbcConnection(boolean readOnly) throws RepositoryException
    {
       try
       {
-         final Connection conn =
-            dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager.getConnection(
-               dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
-
-         if (readOnly)
-         { 
-            // set this feature only if it asked
-            conn.setReadOnly(readOnly);
-         }
+         Connection conn = dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager
+            .getConnection(dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
 
          return conn;
       }
@@ -215,9 +211,18 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    /**
     * {@inheritDoc}
     */
+   @Override
    public Connection getJdbcConnection() throws RepositoryException
    {
       return getJdbcConnection(false);
    }
-
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean isReindexingSupport()
+   {
+      return true;
+   }
 }

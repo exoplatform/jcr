@@ -109,12 +109,12 @@ public class DocumentViewContentExporter extends HandlingContentExporter
                for (ValueData valueData : property.getValues())
                {
                   String strVal = getValueAsStringForExport(valueData, property.getType());
-                  if (strVal == "")
+                  if (strVal.equals(""))
                   {
                      continue;
                   }
 
-                  strValue +=
+                  strValue += //NOSONAR
                      MULTI_VALUE_DELIMITER
                         + (property.getType() == PropertyType.BINARY ? strVal : StringConverter.normalizeString(strVal,
                            true));
@@ -124,7 +124,7 @@ public class DocumentViewContentExporter extends HandlingContentExporter
                InternalQName internalPropName = ISO9075.encode(property.getQPath().getName());
 
                currentAttr.addAttribute(internalPropName.getNamespace(), internalPropName.getName(), getExportName(
-                  property, true), "CDATA", strValue != "" ? strValue.substring(1) : strValue);
+                        property, true), "CDATA", !strValue.equals("") ? strValue.substring(1) : strValue);
             }
 
             if (Constants.ROOT_PATH.equals(node.getQPath()))

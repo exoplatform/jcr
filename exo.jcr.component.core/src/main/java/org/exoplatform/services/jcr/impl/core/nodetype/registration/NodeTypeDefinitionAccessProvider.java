@@ -25,14 +25,11 @@ import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
-import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -72,10 +69,7 @@ public class NodeTypeDefinitionAccessProvider extends AbstractItemDefinitionAcce
    /**
     * @param nodeData
     * @return
-    * @throws IOException
-    * @throws IllegalNameException
     * @throws RepositoryException
-    * @throws UnsupportedEncodingException
     */
    public NodeTypeData readNow(NodeData nodeData) throws RepositoryException
 
@@ -88,10 +82,6 @@ public class NodeTypeDefinitionAccessProvider extends AbstractItemDefinitionAcce
       boolean mixin = readMandatoryBoolean(nodeData, Constants.JCR_ISMIXIN);
 
       boolean hasOrderableChildNodes = readMandatoryBoolean(nodeData, Constants.JCR_HASORDERABLECHILDNODES);
-      // TODO fix to mandatory
-      //      boolean isAbstract = readMandatoryBoolean(nodeData, Constants.JCR_ISABSTRACT);
-      //
-      //      boolean isQueryable = readBoolean(nodeData, Constants.JCR_ISQUERYABLE);
 
       InternalQName[] declaredSupertypeNames = readNames(nodeData, Constants.JCR_SUPERTYPES);
 
@@ -122,10 +112,7 @@ public class NodeTypeDefinitionAccessProvider extends AbstractItemDefinitionAcce
     * @return
     * @throws RepositoryException 
     * @throws NodeTypeReadException 
-    * @throws UnsupportedEncodingException
     * @throws RepositoryException
-    * @throws IllegalNameException
-    * @throws IOException
     */
    public NodeDefinitionData[] readNodeDefinitions(NodeData nodeData) throws NodeTypeReadException, RepositoryException
    {
@@ -157,10 +144,7 @@ public class NodeTypeDefinitionAccessProvider extends AbstractItemDefinitionAcce
     * @return
     * @throws RepositoryException 
     * @throws NodeTypeReadException 
-    * @throws UnsupportedEncodingException
     * @throws RepositoryException
-    * @throws IllegalNameException
-    * @throws IOException
     */
    public PropertyDefinitionData[] readPropertyDefinitions(NodeData nodeData) throws NodeTypeReadException,
       RepositoryException

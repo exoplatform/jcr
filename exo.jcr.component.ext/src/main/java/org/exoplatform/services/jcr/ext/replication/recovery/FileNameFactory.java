@@ -117,19 +117,23 @@ public class FileNameFactory
     */
    public String getRandomSubPath()
    {
-      String subPath = new String();
+      StringBuilder subPath = new StringBuilder();
 
       for (int i = 0; i < SUB_PATH_LENGTH; i++)
       {
          int index = (int)(Math.random() * PATTERN_1000) % pathCharSequence.length();
 
          if (i != SUB_PATH_LENGTH - 1)
-            subPath += (pathCharSequence.charAt(index) + File.separator);
+         {
+            subPath.append(pathCharSequence.charAt(index)).append(File.separator);
+         }
          else
-            subPath += pathCharSequence.charAt(index);
+         {
+            subPath.append(pathCharSequence.charAt(index));
+         }
       }
 
-      return subPath;
+      return subPath.toString();
    }
 
    /**

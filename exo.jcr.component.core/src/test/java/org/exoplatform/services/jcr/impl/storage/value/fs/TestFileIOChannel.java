@@ -43,7 +43,7 @@ public class TestFileIOChannel extends TestCase
 
    private File rootDir;
 
-   private FileCleaner cleaner = new FileCleaner(2000);
+   private FileCleaner cleaner;
 
    private ValueDataResourceHolder resources = new ValueDataResourceHolder();
 
@@ -57,6 +57,8 @@ public class TestFileIOChannel extends TestCase
    {
       super.setUp();
 
+      cleaner = new FileCleaner(2000);
+
       rootDir = new File(new File("target"), "vs1");
       rootDir.mkdirs();
 
@@ -65,6 +67,15 @@ public class TestFileIOChannel extends TestCase
       if (!rootDir.exists())
          throw new Exception("Folder does not exist " + rootDir.getAbsolutePath());
 
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void tearDown() throws Exception
+   {
+      cleaner.halt();
    }
 
    public void testRead() throws Exception
@@ -252,10 +263,11 @@ public class TestFileIOChannel extends TestCase
       // channel.delete("testConcurrentReadFromIOChannel");
 
       // should be enough to finish all the threads
-      Thread.sleep(1000);
+      //Thread.sleep(1000);
 
       for (int i = 0; i < 10; i++)
       {
+         p[i].join();
          assertEquals(100 * 100, p[i].getLen());
       }
       channel.delete("testConcurrentReadFromIOChannel");
@@ -282,14 +294,17 @@ public class TestFileIOChannel extends TestCase
       channel.commit();
 
       File f = new File(rootDir, "testDeleteLockedFileFromIOChannel0");
-      new Probe(f).start();
+      Probe p = new Probe(f);
+      p.start();
 
+      p.join();
       f = null;
 
-      Thread.sleep(100);
+      // Thread.sleep(100);
 
       // removed by FileCleaner
-      Thread.sleep(3000);
+      //Thread.sleep(3000);
+
       f = new File(rootDir, "testDeleteLockedFileFromIOChannel0");
       // assertFalse(f.exists());
       System.out.println(">>>>>>>>>>>>>" + f.canRead() + " " + f.exists() + " " + f.canWrite());

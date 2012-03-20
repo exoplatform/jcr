@@ -38,7 +38,7 @@ import java.net.SocketException;
 public class FtpClientCommandThread extends Thread
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpClientCommandThread");
+   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpClientCommandThread");
 
    protected FtpClientSession clientSession;
 
@@ -54,9 +54,9 @@ public class FtpClientCommandThread extends Thread
 
       if (container == null)
       {
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug("No Portal Container found.");
+            LOG.debug("No Portal Container found.");
          }
          container = ExoContainerContext.getTopContainer();
       }
@@ -78,12 +78,9 @@ public class FtpClientCommandThread extends Thread
 
                if (!"".equals(command))
                {
-                  String logStr = "";
                   String[] comms = command.split(" ");
 
                   FtpCommand curCommand = clientSession.getFtpServer().getCommand(comms[0].toUpperCase());
-
-                  logStr = comms[0].toUpperCase();
 
                   if (curCommand != null)
                   {
@@ -93,15 +90,13 @@ public class FtpClientCommandThread extends Thread
                         {
                            if ("".equals(comms[i]))
                            {
-                              comms[1] += " ";
+                              comms[1] += " "; //NOSONAR
                            }
                            else
                            {
-                              comms[1] += " " + comms[i];
+                              comms[1] += " " + comms[i]; //NOSONAR
                            }
                         }
-
-                        logStr += " " + comms[1];
                      }
 
                      FtpContext ftpContext = new FtpContext(clientSession, comms);
@@ -121,7 +116,7 @@ public class FtpClientCommandThread extends Thread
             }
             catch (Exception exc)
             {
-               log.info("Unhandled exception. " + exc.getMessage(), exc);
+               LOG.info("Unhandled exception. " + exc.getMessage(), exc);
                break;
             }
          }
@@ -132,7 +127,7 @@ public class FtpClientCommandThread extends Thread
          }
          catch (Exception exc)
          {
-            log.info("Unhandled exception. " + exc.getMessage(), exc);
+            LOG.info("Unhandled exception. " + exc.getMessage(), exc);
          }
       }
       finally
@@ -176,17 +171,16 @@ public class FtpClientCommandThread extends Thread
                String encoding = clientSession.getFtpServer().getConfiguration().getClientSideEncoding();
                String readyCommand = new String(commandLine, encoding);
 
-               if (log.isDebugEnabled())
+               if (LOG.isDebugEnabled())
                {
-                  log.debug("FTP_CMD:[" + readyCommand + "]");
+                  LOG.debug("FTP_CMD:[" + readyCommand + "]");
                }
 
                return readyCommand;
             }
             catch (Exception exc)
             {
-               log.info("Unahdled exception. " + exc.getMessage());
-               exc.printStackTrace();
+               LOG.info("Unahdled exception. " + exc.getMessage(), exc);
             }
          }
 

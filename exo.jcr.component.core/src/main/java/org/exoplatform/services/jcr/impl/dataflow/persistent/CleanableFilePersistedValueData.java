@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
@@ -72,6 +73,7 @@ public class CleanableFilePersistedValueData extends FilePersistedValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected void finalize() throws Throwable
    {
       try
@@ -79,9 +81,8 @@ public class CleanableFilePersistedValueData extends FilePersistedValueData
          // release file
          ((SwapFile)file).release(this);
 
-         if (!file.delete())
+         if (!PrivilegedFileHelper.delete(file))
          {
-            //TODO FileCleaner maybe null. 
             if (cleaner != null)
             {
                cleaner.addFile(file);
@@ -89,7 +90,7 @@ public class CleanableFilePersistedValueData extends FilePersistedValueData
                if (LOG.isDebugEnabled())
                {
                   LOG.debug("Could not remove temporary file on finalize: inUse=" + (((SwapFile)file).inUse()) + ", "
-                     + file.getAbsolutePath());
+                     + PrivilegedFileHelper.getAbsolutePath(file));
                }
             }
          }

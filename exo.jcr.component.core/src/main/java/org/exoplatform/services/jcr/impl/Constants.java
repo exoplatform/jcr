@@ -21,6 +21,8 @@ package org.exoplatform.services.jcr.impl;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,6 +32,8 @@ import org.exoplatform.services.jcr.datamodel.QPath;
  */
 public class Constants
 {
+
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.Constants");
 
    /**
     * Default namespace prefix (empty uri).
@@ -491,9 +495,19 @@ public class Constants
    public static final String ROOT_URI = "[]:1";
 
    /**
-    * Workspace root node vurtual parent node UUID.
+    * Workspace root node virtual parent node UUID.
     */
    public static final String ROOT_PARENT_UUID = " ".intern(); // empty
+
+   /**
+    * Workspace root node virtual parent node name.
+    */
+   public static final String ROOT_PARENT_NAME = "__root_parent";
+
+   /**
+    * Workspace root node virtual container name.
+    */
+   public static final String ROOT_PARENT_CONAINER_NAME = "__root_parent_container";
 
    /**
     * Workspace root node UUID.
@@ -569,6 +583,11 @@ public class Constants
    public static final String SV_NODE = "node";
 
    /**
+    * SV_VERSION_HISTORY.
+    */
+   public static final String SV_VERSION_HISTORY = "versionhistory";
+
+   /**
     * SV_PROPERTY.
     */
    public static final String SV_PROPERTY = "property";
@@ -602,6 +621,11 @@ public class Constants
     * sv:node internal name.
     */
    public static final InternalQName SV_NODE_NAME = new InternalQName(NS_SV_URI, SV_NODE);
+
+   /**
+    * sv:versionhistory internal name.
+    */
+   public static final InternalQName SV_VERSION_HISTORY_NAME = new InternalQName(NS_SV_URI, SV_VERSION_HISTORY);
 
    /**
     * sv:property internal name.
@@ -667,12 +691,17 @@ public class Constants
     * eXo JCR default Strings encoding.
     */
    public static final String DEFAULT_ENCODING = "UTF-8";
-   
+
    /**
     * System identifier for remote workspace initializer changes.
     */
    public static final String JCR_CORE_RESTORE_WORKSPACE_INITIALIZER_SYSTEM_ID =
       "JCR_CORE_RESOTRE_WORKSPACE_INITIALIZER_SYSTEM_ID";
+
+   /**
+    * "unknown" constant.
+    */
+   public static final String UNKNOWN = "unknown";
 
    static
    {
@@ -683,8 +712,7 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         e.printStackTrace();
-         System.err.println("ERROR: Can't parse JCR_SYSTEM_URI for constant JCR_SYSTEM (" + JCR_SYSTEM_URI + "): " + e);
+         LOG.error("ERROR: Can't parse JCR_SYSTEM_URI for constant JCR_SYSTEM (" + JCR_SYSTEM_URI + "): " + e, e);
       }
 
       try
@@ -693,9 +721,8 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         e.printStackTrace();
-         System.err.println("ERROR: Can't parse JCR_VERSION_STORAGE_URI for constant JCR_VERSION_STORAGE_PATH ("
-            + JCR_VERSION_STORAGE_URI + "): " + e);
+         LOG.error("ERROR: Can't parse JCR_VERSION_STORAGE_URI for constant JCR_VERSION_STORAGE_PATH ("
+                  + JCR_VERSION_STORAGE_URI + "): " + e, e);
       }
 
       try
@@ -704,9 +731,8 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         e.printStackTrace();
-         System.err.println("ERROR: Can't parse JCR_NODETYPES_URI for constant JCR_NODETYPES_PATH ("
-            + JCR_NODETYPES_URI + "): " + e);
+         LOG.error("ERROR: Can't parse JCR_NODETYPES_URI for constant JCR_NODETYPES_PATH ("
+            + JCR_NODETYPES_URI + "): " + e, e);
       }
 
       String nsUri = JCR_SYSTEM_URI + EXO_NAMESPACES.getAsString() + ":1";
@@ -716,8 +742,7 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         e.printStackTrace();
-         System.err.println("ERROR: Can't parse EXO_NAMESPACES_URI for constant EXO_NAMESPACES (" + nsUri + "): " + e);
+         LOG.error("ERROR: Can't parse EXO_NAMESPACES_URI for constant EXO_NAMESPACES (" + nsUri + "): " + e, e);
       }
 
       try
@@ -726,8 +751,7 @@ public class Constants
       }
       catch (IllegalPathException e)
       {
-         e.printStackTrace();
-         System.err.println("ERROR: Can't parse ROOT_URI " + e);
+         LOG.error("ERROR: Can't parse ROOT_URI " + e, e);
       }
 
    }

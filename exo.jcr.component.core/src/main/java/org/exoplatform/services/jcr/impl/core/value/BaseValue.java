@@ -49,7 +49,7 @@ import javax.jcr.ValueFormatException;
 public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.BaseValue");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.BaseValue");
 
    protected final int type;
 
@@ -352,7 +352,7 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
             }
             catch (IOException e)
             {
-               log.error("Read error", e);
+               LOG.error("Read error", e);
                return false;
             }
          }
@@ -421,4 +421,43 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
          return bytes != null;
       }
    }
+
+   @Override
+   public String toString()
+   {
+      String typeName;
+      // contains size or value
+      String info;
+      try
+      {
+         typeName = PropertyType.nameFromValue(type);
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Value has abnormal type
+         typeName = String.valueOf(type);
+      }
+      if (type == PropertyType.BINARY)
+      {
+         info = "size: " + ((internalData == null) ? "undefined" : (internalData.getLength() + " bytes"));
+      }
+      else
+      {
+         try
+         {
+            info = "value: '" + getString() + "'";
+         }
+         catch (IllegalStateException e)
+         {
+            info = "can't retrieve value";
+         }
+         catch (RepositoryException e)
+         {
+            info = "can't retrieve value";
+         }
+      }
+      return String.format("Value {\n type: %s;\n data-class: %s;\n %s\n}", typeName, internalData == null ? null
+         : internalData.getClass().getName(), info);
+   }
+
 }

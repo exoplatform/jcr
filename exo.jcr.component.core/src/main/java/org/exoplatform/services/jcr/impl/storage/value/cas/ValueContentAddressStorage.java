@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.storage.value.cas;
 
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 
@@ -115,7 +114,7 @@ public interface ValueContentAddressStorage
     * Initializes values CAS.
     * 
     * @param props
-    * @throws IOException
+    * @throws VCASException
     */
    void init(Properties props) throws RepositoryConfigurationException, VCASException;
 }

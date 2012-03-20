@@ -613,9 +613,10 @@ public final class MoreLikeThis {
             // go through all the fields and find the largest document frequency
             String topField = fieldNames[0];
             int docFreq = 0;
-            for (int i = 0; i < fieldNames.length; i++) {
+            for (int i = 0; i < fieldNames.length; i++) 
+            {
                 int freq = ir.docFreq(new Term(fieldNames[i], word));
-                topField = (freq > docFreq) ? fieldNames[i] : topField;
+                topField = (freq > docFreq) ? fieldNames[i] : topField; //NOSONAR
                 docFreq = (freq > docFreq) ? freq : docFreq;
             }
 
@@ -811,7 +812,8 @@ public final class MoreLikeThis {
         ArrayList al = new ArrayList(maxQueryTerms);
         PriorityQueue pq = retrieveTerms(docNum);
         Object cur;
-        int lim = maxQueryTerms; // have to be careful, retrieveTerms returns all words but that's probably not useful to our caller...
+        // have to be careful, retrieveTerms returns all words but that's probably not useful to our caller...
+        int lim = maxQueryTerms; 
         // we just want to return the top words
         while (((cur = pq.pop()) != null) && lim-- > 0) {
             Object[] ar = (Object[]) cur;
@@ -834,7 +836,8 @@ public final class MoreLikeThis {
         ArrayList al = new ArrayList(maxQueryTerms);
         PriorityQueue pq = retrieveTerms(r);
         Object cur;
-        int lim = maxQueryTerms; // have to be careful, retrieveTerms returns all words but that's probably not useful to our caller...
+        // have to be careful, retrieveTerms returns all words but that's probably not useful to our caller...
+        int lim = maxQueryTerms; 
         // we just want to return the top words
         while (((cur = pq.pop()) != null) && lim-- > 0) {
             Object[] ar = (Object[]) cur;

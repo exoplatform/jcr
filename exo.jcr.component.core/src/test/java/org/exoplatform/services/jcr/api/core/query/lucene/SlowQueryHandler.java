@@ -17,15 +17,19 @@
 package org.exoplatform.services.jcr.api.core.query.lucene;
 
 import org.apache.lucene.search.Query;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.AbstractQueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.ExecutableQuery;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
+import org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder;
 import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
@@ -91,5 +95,45 @@ public class SlowQueryHandler extends AbstractQueryHandler
    {
       // TODO Auto-generated method stub
       return null;
+   }
+
+   public void apply(ChangesHolder changes) throws RepositoryException, IOException
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   public ChangesHolder getChanges(Iterator<String> remove, Iterator<NodeData> add)
+   {
+      // TODO Auto-generated method stub
+      return null;
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#isOnline()
+    */
+   public boolean isOnline()
+   {
+      return true;
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean, boolean, boolean)
+    */
+   public void setOnline(boolean isOnline, boolean allowQuery, boolean dropStaleIndexes) throws IOException
+   {
+      // TODO Auto-generated method stub
+      
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#checkIndex(org.exoplatform.services.jcr.dataflow.ItemDataConsumer, boolean, InspectionLog)
+    */
+   @Override
+   public void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, InspectionReport inspectionLog)
+      throws RepositoryException,
+      IOException
+   {
+      // do nothing
    }
 }

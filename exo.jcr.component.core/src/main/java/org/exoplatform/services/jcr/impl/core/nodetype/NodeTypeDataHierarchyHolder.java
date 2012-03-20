@@ -25,11 +25,12 @@ import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
 
@@ -46,11 +47,11 @@ public class NodeTypeDataHierarchyHolder
     */
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataHierarchyHolder");
 
-   private final Map<InternalQName, NodeTypeHolder> nodeTypes;
+   private volatile Map<InternalQName, NodeTypeHolder> nodeTypes;
 
    public NodeTypeDataHierarchyHolder()
    {
-      nodeTypes = new ConcurrentHashMap<InternalQName, NodeTypeHolder>();
+      this(new HashMap<InternalQName, NodeTypeHolder>());
    }
 
    /**
@@ -60,7 +61,7 @@ public class NodeTypeDataHierarchyHolder
     */
    public NodeTypeDataHierarchyHolder(Map<InternalQName, NodeTypeHolder> nodeTypes)
    {
-      this.nodeTypes = nodeTypes;
+      this.nodeTypes = Collections.unmodifiableMap(nodeTypes);
    }
 
    /**
@@ -86,7 +87,6 @@ public class NodeTypeDataHierarchyHolder
     */
    public Set<InternalQName> getDeclaredSubtypes(final InternalQName nodeTypeName)
    {
-      // TODO Speed up this method
       Set<InternalQName> resultSet = new HashSet<InternalQName>();
       for (Map.Entry<InternalQName, NodeTypeHolder> entry : nodeTypes.entrySet())
       {
@@ -140,7 +140,6 @@ public class NodeTypeDataHierarchyHolder
     */
    public Set<InternalQName> getSubtypes(final InternalQName nodeTypeName)
    {
-      // TODO Speed up this method
       Set<InternalQName> resultSet = new HashSet<InternalQName>();
       for (InternalQName ntName : nodeTypes.keySet())
       {
@@ -209,12 +208,19 @@ public class NodeTypeDataHierarchyHolder
    {
       final Set<InternalQName> supers = new HashSet<InternalQName>();
       mergeAllSupertypes(supers, nodeType.getDeclaredSupertypeNames(), volatileNodeTypes);
-      nodeTypes.put(nodeType.getName(), new NodeTypeHolder(nodeType, supers));
+      synchronized (this)
+      {
+         Map<InternalQName, NodeTypeHolder> nodeTypesTmp = new HashMap<InternalQName, NodeTypeHolder>(nodeTypes);
+         nodeTypesTmp.put(nodeType.getName(), new NodeTypeHolder(nodeType, supers));
+         this.nodeTypes = Collections.unmodifiableMap(nodeTypesTmp);         
+      }
    }
 
-   void removeNodeType(final InternalQName nodeTypeName)
+   synchronized void removeNodeType(final InternalQName nodeTypeName)
    {
-      nodeTypes.remove(nodeTypeName);
+      Map<InternalQName, NodeTypeHolder> nodeTypesTmp = new HashMap<InternalQName, NodeTypeHolder>(nodeTypes);
+      nodeTypesTmp.remove(nodeTypeName);
+      this.nodeTypes = Collections.unmodifiableMap(nodeTypesTmp);         
    }
 
    protected synchronized void mergeAllSupertypes(Set<InternalQName> list, final InternalQName[] supers,
@@ -256,7 +262,7 @@ public class NodeTypeDataHierarchyHolder
     */
    protected NodeTypeDataHierarchyHolder createCopy()
    {
-      return new NodeTypeDataHierarchyHolder(new ConcurrentHashMap<InternalQName, NodeTypeHolder>(nodeTypes));
+      return new NodeTypeDataHierarchyHolder(new HashMap<InternalQName, NodeTypeHolder>(nodeTypes));
    }
 
    class NodeTypeHolder

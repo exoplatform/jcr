@@ -18,10 +18,21 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
+import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
+
 import java.io.EOFException;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,19 +45,6 @@ import java.nio.channels.WritableByteChannel;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
-import org.exoplatform.services.jcr.impl.storage.value.fs.operations.ValueFileIOHelper;
-import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date: 16.02.2009
@@ -86,19 +84,62 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
 
             List<ValueData> expValDat = expProp.getValues();
             List<ValueData> elemValDat = elemProp.getValues();
-            assertEquals(expValDat.size(), elemValDat.size());
-            for (int j = 0; j < expValDat.size(); j++)
+            // Both value data are null 
+            if (expValDat != null && elemValDat != null)
             {
-               assertTrue(java.util.Arrays
-                  .equals(expValDat.get(j).getAsByteArray(), elemValDat.get(j).getAsByteArray()));
+               assertEquals(expValDat.size(), elemValDat.size());
+               for (int j = 0; j < expValDat.size(); j++)
+               {
 
-               // check is received property values ReplicableValueData
-               // assertTrue(elemValDat.get(j) instanceof ReplicableValueData);
+                  // are of the same class
+                  assertEquals(expValDat.get(j).getClass(), elemValDat.get(j).getClass());
+                  //
+                  if (expValDat.get(j) instanceof FilePersistedValueData)
+                  {
+                     // if files in both instances are null
+                     Boolean nullFiles =
+                        ((FilePersistedValueData)expValDat.get(j)).getFile() == null
+                           && ((FilePersistedValueData)elemValDat.get(j)).getFile() == null;
+                     // if there are instances of StreamPersistedValueData
+                     if (expValDat.get(j) instanceof StreamPersistedValueData)
+                     {
+                        // and they both have null spool files
+                        nullFiles &=
+                           ((StreamPersistedValueData)expValDat.get(j)).getTempFile() == null
+                              && ((StreamPersistedValueData)elemValDat.get(j)).getTempFile() == null;
+                     }
+                     if (nullFiles)
+                     {
+                        // Both value data are equals
+                        continue;
+                     }
+                  }
+
+                  assertTrue(java.util.Arrays.equals(expValDat.get(j).getAsByteArray(), elemValDat.get(j)
+                     .getAsByteArray()));
+
+                  // check is received property values ReplicableValueData
+                  // assertTrue(elemValDat.get(j) instanceof ReplicableValueData);
+               }
             }
          }
       }
       assertFalse(changes.hasNext());
 
+   }
+
+   protected void checkResults(List<TransactionChangesLog> srcLog) throws Exception
+   {
+      File jcrfile = serializeLogs(srcLog);
+
+      List<TransactionChangesLog> destLog = deSerializeLogs(jcrfile);
+
+      assertEquals(srcLog.size(), destLog.size());
+
+      for (int i = 0; i < srcLog.size(); i++)
+      {
+         checkIterator(srcLog.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      }
    }
 
    protected File serializeLogs(List<TransactionChangesLog> logs) throws IOException, UnknownClassIdException
@@ -129,7 +170,7 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
          while (true)
          {
             TransactionChangesLog obj =
-               (TransactionChangesLog)(new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder)).read(jcrin);
+               (new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder)).read(jcrin);
             // TransactionChangesLog obj = new TransactionChangesLog();
             // obj.readObject(jcrin);
             readed.add(obj);
@@ -139,8 +180,7 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
       {
          // ok
       }
-      
-      
+
       //Imitation of save.
       imitationSave(readed);
 
@@ -159,34 +199,40 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
       for (TransactionChangesLog tLog : readed)
       {
          ChangesLogIterator it = tLog.getLogIterator();
-         
-         while (it.hasNextLog()) 
+
+         while (it.hasNextLog())
          {
             PlainChangesLog pLog = it.nextLog();
-            
+
             for (ItemState state : pLog.getAllStates())
             {
                ItemData itemData = state.getData();
-               
+
                if (!itemData.isNode())
                {
                   PropertyData propData = (PropertyData)itemData;
-                  
-                  for(ValueData valueData : propData.getValues())
+                  if (propData.getValues() != null)
                   {
-                     if (valueData instanceof StreamPersistedValueData) {
-                        // imitation of JCR save
-                        if (((StreamPersistedValueData) valueData).getTempFile() != null)
+                     for (ValueData valueData : propData.getValues())
+                     {
+                        if (valueData instanceof StreamPersistedValueData)
                         {
-                         ((StreamPersistedValueData) valueData).setPersistedFile(((StreamPersistedValueData) valueData).getTempFile());
-                        }
-                        else
-                        {
-                           File file = File.createTempFile("tempFile", "tmp");
-                           file.deleteOnExit();
-                           
-                           copy(((StreamPersistedValueData) valueData).getStream(), new FileOutputStream(file));
-                           ((StreamPersistedValueData) valueData).setPersistedFile(file);
+                           // imitation of JCR save
+                           if (((StreamPersistedValueData)valueData).getTempFile() != null)
+                           {
+                              ((StreamPersistedValueData)valueData)
+                                 .setPersistedFile(((StreamPersistedValueData)valueData).getTempFile());
+                           }
+                           else
+                           {
+                              File file = File.createTempFile("tempFile", "tmp");
+                              file.deleteOnExit();
+                              if (((StreamPersistedValueData)valueData).getStream() != null)
+                              {
+                                 copy(((StreamPersistedValueData)valueData).getStream(), new FileOutputStream(file));
+                                 ((StreamPersistedValueData)valueData).setPersistedFile(file);
+                              }
+                           }
                         }
                      }
                   }
@@ -195,7 +241,7 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
          }
       }
    }
-   
+
    protected long copy(InputStream in, OutputStream out) throws IOException
    {
       // compare classes as in Java6 Channels.newChannel(), Java5 has a bug in newChannel().
@@ -243,7 +289,9 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
          }
 
          if (outFile)
+         {
             ((FileChannel)outch).force(true); // force all data to FS
+         }
 
          return size;
       }

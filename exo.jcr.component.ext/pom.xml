@@ -24,11 +24,14 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>1.14.0-Beta01-SNAPSHOT</version>
+    <version>1.14.8-GA-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.component.ext</artifactId>
   <name>eXo JCR :: Component :: Extension Service</name>
   <description>eXo JCR Services extension</description>
+  <properties>
+      <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
+  </properties>
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.kernel</groupId>
@@ -41,6 +44,14 @@
     <dependency>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>exo.kernel.component.command</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>org.exoplatform.kernel</groupId>
+       <artifactId>exo.kernel.commons.test</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.core</groupId>
+      <artifactId>exo.core.component.database</artifactId>
     </dependency>
     <dependency>
       <groupId>org.exoplatform.core</groupId>
@@ -91,7 +102,6 @@
     <dependency>
        <groupId>org.slf4j</groupId>
        <artifactId>slf4j-log4j12</artifactId>
-       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>javax.annotation</groupId>
@@ -102,20 +112,8 @@
       <artifactId>commons-chain</artifactId>
     </dependency>
     <dependency>
-      <groupId>jgroups</groupId>
-      <artifactId>jgroups</artifactId>
-    </dependency>
-    <dependency>
       <groupId>javax.ws.rs</groupId>
       <artifactId>jsr311-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>javax.xml.stream</groupId>
-      <artifactId>stax-api</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>commons-collections</groupId>
-      <artifactId>commons-collections</artifactId>
     </dependency>
     <dependency>
       <groupId>commons-fileupload</groupId>
@@ -130,24 +128,42 @@
       <artifactId>xml-apis</artifactId>
     </dependency>
     <dependency>
-      <groupId>hsqldb</groupId>
+      <groupId>commons-collections</groupId>
+      <artifactId>commons-collections</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.hsqldb</groupId>
       <artifactId>hsqldb</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>postgresql</groupId>
+      <artifactId>postgresql</artifactId>
+      <version>8.3-606.jdbc3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+       <groupId>mysql</groupId>
+       <artifactId>mysql-connector-java</artifactId>
+       <version>5.1.14</version>
+       <scope>test</scope>
+    </dependency>
   </dependencies>
+
   <build>
     <testResources>
       <testResource>
         <directory>src/test/resources</directory>
         <includes>
+          <include>**/*.pdf</include>
           <include>**/*.xml</include>
           <include>**/*.xls</include>
           <include>**/*.groovy</include>
           <include>**/login.conf</include>
+          <include>**/tsm-excludes.properties</include>
         </includes>
       </testResource>
     </testResources>
-    <pluginManagement>
       <plugins>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
@@ -164,29 +180,237 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+            <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+            <systemProperties>
+               <property>
+                  <name>jcr.test.configuration.file</name>
+                  <value>${jcr.test.configuration.file}</value>
+               </property>
+            </systemProperties>
             <includes>
-              <include>**/actions/*Test.java</include>
-              <include>**/metadata/*Test.java</include>
-              <include>**/owner/*Test.java</include>
-              <include>**/registry/*Test.java</include>
-              <include>**/app/*Test.java</include>
-              <include>**/resource/*Test.java</include>
-              <include>**/groovy/*Test.java</include>
-              <include>**/replication/*.java</include>
-              <include>**/replication/external/*.java</include>
-              <include>**/replication/async/**/*.java</include>
+              <include>org/exoplatform/services/jcr/ext/**/Test*.java</include>
+              <include>org/exoplatform/services/jcr/ext/**/*Test.java</include>
             </includes>
             <excludes>
               <exclude>**/BaseStandaloneTest.java</exclude>
-              <exclude>**/replication/*.java</exclude>
-              <exclude>**/replication/external/*.java</exclude>
-              <exclude>**/replication/external/BaseTestCaseChecker.java</exclude>
-              <exclude>**/access/*.java</exclude>
-              <exclude>**/LocalStorageMultithreadTest.java</exclude>
+              <exclude>**/backup/AbstractBackupTestCase.java</exclude>
+              <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>
+              <exclude>**/backup/TestBackupScheduler.java</exclude>
+              <exclude>**/backup/TestBackupRestart.java</exclude>
+              <exclude>**/replication/**</exclude>
+              <exclude>**/repository/creation/cluster/**</exclude>
             </excludes>
           </configuration>
         </plugin>
+         <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>prepare-test-policy</id>
+                  <phase>process-test-resources</phase>
+                  <configuration>
+                     <tasks>
+                        <echo>Creating Access Policy for tests</echo>
+                        <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
+                        <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
+                        <makeurl file="${project.build.testOutputDirectory}" property="testOutputDirectoryURL" />
+                        <copy todir="${project.build.testOutputDirectory}" overwrite="true">
+                           <fileset dir="${project.basedir}/src/test/resources/">
+                              <include name="test.policy" />
+                           </fileset>
+                           <filterset>
+                              <filter token="MAVEN_REPO" value="${localRepositoryURL}" />
+                              <filter token="MAIN_CLASSES" value="${outputDirectoryURL}" />
+                              <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
+                           </filterset>
+                        </copy>
+                     </tasks>                     
+                  </configuration>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <dependencies>
+               <dependency>
+                  <groupId>ant</groupId>
+                  <artifactId>ant-optional</artifactId>
+                  <version>1.5.3-1</version>
+               </dependency>
+            </dependencies>
+         </plugin>
       </plugins>
-    </pluginManagement>
   </build>
+  <profiles>
+     <profile>
+         <id>backup</id>
+           <properties>
+              <jcr.test.configuration.file>/conf/standalone/test-configuration-backup.xml</jcr.test.configuration.file>
+           </properties>
+           <build>
+              <plugins>
+                <plugin>
+                   <groupId>org.apache.maven.plugins</groupId>
+                   <artifactId>maven-jar-plugin</artifactId>
+                   <configuration>
+                     <archive>
+                       <manifest>
+                         <addClasspath>true</addClasspath>
+                       </manifest>
+                     </archive>
+                   </configuration>
+                 </plugin>
+                 <plugin>
+                   <groupId>org.apache.maven.plugins</groupId>
+                   <artifactId>maven-surefire-plugin</artifactId>
+                   <configuration>
+                     <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+                     <systemProperties>
+                        <property>
+                           <name>jcr.test.configuration.file</name>
+                           <value>${jcr.test.configuration.file}</value>
+                        </property>
+                     </systemProperties>
+                     <includes>
+                       <include>org/exoplatform/services/jcr/ext/backup/usecase/TestBackupRestore.java</include>
+                     </includes>
+                   </configuration>
+                 </plugin>
+                  <plugin>
+                     <artifactId>maven-antrun-plugin</artifactId>
+                     <executions>
+                        <execution>
+                           <id>prepare-test-policy</id>
+                           <phase>process-test-resources</phase>
+                           <configuration>
+                              <tasks>
+                                 <echo>Creating Access Policy for tests</echo>
+                                 <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
+                                 <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
+                                 <makeurl file="${project.build.testOutputDirectory}" property="testOutputDirectoryURL" />
+                                 <copy todir="${project.build.testOutputDirectory}" overwrite="true">
+                                    <fileset dir="${project.basedir}/src/test/resources/">
+                                       <include name="test.policy" />
+                                    </fileset>
+                                    <filterset>
+                                       <filter token="MAVEN_REPO" value="${localRepositoryURL}" />
+                                       <filter token="MAIN_CLASSES" value="${outputDirectoryURL}" />
+                                       <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
+                                    </filterset>
+                                 </copy>
+                              </tasks>                     
+                           </configuration>
+                           <goals>
+                              <goal>run</goal>
+                           </goals>
+                        </execution>
+                     </executions>
+                     <dependencies>
+                        <dependency>
+                           <groupId>ant</groupId>
+                           <artifactId>ant-optional</artifactId>
+                           <version>1.5.3-1</version>
+                        </dependency>
+                     </dependencies>
+                  </plugin>
+               </plugins>
+           </build>
+     </profile>
+     <profile>
+         <id>oracle-10G-R2</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-oracle.xml</jcr.test.configuration.file>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>ojdbc</artifactId>
+               <version>10.2.0.4</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>orai18n</artifactId>
+               <version>10.2.0.4</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>mysql-5.1</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-mysql.xml</jcr.test.configuration.file>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>mysql</groupId>
+               <artifactId>mysql-connector-java</artifactId>
+               <version>5.1.14</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>mssql</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-mssql.xml</jcr.test.configuration.file>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.microsoft</groupId>
+               <artifactId>sqljdbc</artifactId>
+               <version>3.0.1301.101</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>db2</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-db2.xml</jcr.test.configuration.file>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.ibm.db2</groupId>
+               <artifactId>db2jcc</artifactId>
+               <version>9.7</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>com.ibm.db2</groupId>
+               <artifactId>db2jcc_license_cu</artifactId>
+               <version>9.7</version>
+               <scope>test</scope>
+            </dependency>            
+         </dependencies>
+      </profile>
+      <profile>
+         <id>sybase</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-sybase.xml</jcr.test.configuration.file>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.sybase.jdbc4.jdbc</groupId>
+               <artifactId>jconn4</artifactId>
+               <version>26502</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>pgsql-8.3</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-pgsql.xml</jcr.test.configuration.file>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>postgresql</groupId>
+               <artifactId>postgresql</artifactId>
+               <version>8.3-606.jdbc3</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+  </profiles>
 </project>

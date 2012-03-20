@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.core.nodetype;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -53,6 +54,8 @@ public class NodeTypeDefinitionImpl
 
    protected final ValueFactory valueFactory;
 
+   protected final ItemDataConsumer dataManager;
+
    /**
     * @param name
     * @param declaredChildNodeDefinitions
@@ -64,7 +67,8 @@ public class NodeTypeDefinitionImpl
     * @param primaryItemName
     */
    public NodeTypeDefinitionImpl(NodeTypeData nodeTypeData, NodeTypeDataManager nodeTypeDataManager,
-      ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory)
+      ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory,
+      ItemDataConsumer dataManager)
    {
       super();
       this.nodeTypeData = nodeTypeData;
@@ -72,7 +76,7 @@ public class NodeTypeDefinitionImpl
       this.nodeTypeManager = nodeTypeManager;
       this.locationFactory = locationFactory;
       this.valueFactory = valueFactory;
-
+      this.dataManager = dataManager;
    }
 
    /**
@@ -118,7 +122,7 @@ public class NodeTypeDefinitionImpl
       {
          result[i] =
             new NodeDefinitionImpl(nodeTypeData.getDeclaredChildNodeDefinitions()[i], nodeTypeDataManager,
-               nodeTypeManager, locationFactory, valueFactory);
+               nodeTypeManager, locationFactory, valueFactory, dataManager);
       }
       return result;
    }
@@ -133,7 +137,7 @@ public class NodeTypeDefinitionImpl
       {
          result[i] =
             new PropertyDefinitionImpl(nodeTypeData.getDeclaredPropertyDefinitions()[i], nodeTypeDataManager,
-               nodeTypeManager, locationFactory, valueFactory);
+               nodeTypeManager, locationFactory, valueFactory, dataManager);
       }
       return result;
    }

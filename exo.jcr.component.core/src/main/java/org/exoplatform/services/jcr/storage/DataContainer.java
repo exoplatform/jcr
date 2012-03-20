@@ -41,6 +41,11 @@ public abstract interface DataContainer
    String getName();
 
    /**
+    * @return unique name of this container
+    */
+   String getUniqueName();
+
+   /**
     * @return current storage version
     */
    String getStorageVersion();

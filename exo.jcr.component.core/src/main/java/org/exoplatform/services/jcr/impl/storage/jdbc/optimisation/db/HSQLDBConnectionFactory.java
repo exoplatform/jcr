@@ -122,4 +122,13 @@ public class HSQLDBConnectionFactory extends GenericCQConnectionFactory
          throw new RepositoryException(e);
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean isReindexingSupport()
+   {
+      return false;
+   }   
 }

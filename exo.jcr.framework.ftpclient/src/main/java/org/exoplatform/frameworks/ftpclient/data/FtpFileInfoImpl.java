@@ -111,10 +111,10 @@ public class FtpFileInfoImpl implements FtpFileInfo
    {
       String fileL = fileLine.substring(0);
 
-      String _date = "";
+      StringBuilder _date = new StringBuilder();
       while (fileL.charAt(0) != ' ')
       {
-         _date += fileL.charAt(0);
+         _date.append(fileL.charAt(0));
          fileL = fileL.substring(1);
       }
 
@@ -123,11 +123,11 @@ public class FtpFileInfoImpl implements FtpFileInfo
          fileL = fileL.substring(1);
       }
 
-      String _time = "";
+      StringBuilder _time = new StringBuilder();
 
       while (fileL.charAt(0) != ' ')
       {
-         _time += fileL.charAt(0);
+         _time.append(fileL.charAt(0));
          fileL = fileL.substring(1);
       }
 
@@ -136,7 +136,7 @@ public class FtpFileInfoImpl implements FtpFileInfo
          fileL = fileL.substring(1);
       }
 
-      String _size = "";
+      StringBuilder _size = new StringBuilder();
 
       if (fileL.indexOf("<DIR>") == 0)
       {
@@ -145,13 +145,13 @@ public class FtpFileInfoImpl implements FtpFileInfo
          {
             fileL = fileL.substring(1);
          }
-         _size = "0";
+         _size = new StringBuilder("0");
       }
       else
       {
          while (fileL.charAt(0) != ' ')
          {
-            _size += fileL.charAt(0);
+            _size.append(fileL.charAt(0));
             fileL = fileL.substring(1);
          }
       }
@@ -164,9 +164,9 @@ public class FtpFileInfoImpl implements FtpFileInfo
       String _name = fileL;
 
       this.name = _name;
-      this.date = _date;
-      this.time = _time;
-      this.size = new Long(_size);
+      this.date = _date.toString();
+      this.time = _time.toString();
+      this.size = new Long(_size.toString());
 
       return false;
    }
@@ -217,10 +217,10 @@ public class FtpFileInfoImpl implements FtpFileInfo
          fileL = fileL.substring(1);
       }
 
-      String _size = "";
+      StringBuilder _size = new StringBuilder();
       while (fileL.charAt(0) != ' ')
       {
-         _size += fileL.charAt(0);
+         _size.append(fileL.charAt(0));
          fileL = fileL.substring(1);
       }
 
@@ -229,10 +229,10 @@ public class FtpFileInfoImpl implements FtpFileInfo
          fileL = fileL.substring(1);
       }
 
-      String _month = "";
+      StringBuilder _month = new StringBuilder();
       while (fileL.charAt(0) != ' ')
       {
-         _month += fileL.charAt(0);
+         _month.append(fileL.charAt(0));
          fileL = fileL.substring(1);
       }
 
@@ -241,10 +241,10 @@ public class FtpFileInfoImpl implements FtpFileInfo
          fileL = fileL.substring(1);
       }
 
-      String _day = "";
+      StringBuilder _day = new StringBuilder();
       while (fileL.charAt(0) != ' ')
       {
-         _day += fileL.charAt(0);
+         _day.append(fileL.charAt(0));
          fileL = fileL.substring(1);
       }
 
@@ -253,10 +253,10 @@ public class FtpFileInfoImpl implements FtpFileInfo
          fileL = fileL.substring(1);
       }
 
-      String _time = "";
+      StringBuilder _time = new StringBuilder();
       while (fileL.charAt(0) != ' ')
       {
-         _time += fileL.charAt(0);
+         _time.append(fileL.charAt(0));
          fileL = fileL.substring(1);
       }
 
@@ -268,9 +268,9 @@ public class FtpFileInfoImpl implements FtpFileInfo
       String _name = fileL;
 
       this.name = _name;
-      this.date = _month + " " + _day;
-      this.time = _time;
-      this.size = new Long(_size);
+      this.date = _month.toString() + " " + _day.toString();
+      this.time = _time.toString();
+      this.size = new Long(_size.toString());
 
       return false;
    }

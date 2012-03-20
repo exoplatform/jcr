@@ -64,6 +64,16 @@ public class FieldNames {
     public static final String LOCAL_NAME = "_:LOCAL_NAME".intern();
 
     /**
+     * Name of the field that contains the index of the item.
+     */
+    public static final String INDEX = "_:INDEX".intern();
+
+    /**
+     * Name of the field that contains the relative path of the item.
+     */
+    public static final String PATH = "_:PATH".intern();
+
+    /**
      * Name of the field that contains the namespace URI of the node name. Terms
      * are not tokenized.
      */

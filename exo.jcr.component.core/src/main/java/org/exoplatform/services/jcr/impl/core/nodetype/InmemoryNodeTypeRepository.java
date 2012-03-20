@@ -39,7 +39,7 @@ import javax.jcr.RepositoryException;
  */
 public class InmemoryNodeTypeRepository extends AbstractNodeTypeRepository
 {
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.InmemoryNodeTypeRepository");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.InmemoryNodeTypeRepository");
 
    private final ItemDefinitionDataHolder defsHolder;
 
@@ -104,7 +104,7 @@ public class InmemoryNodeTypeRepository extends AbstractNodeTypeRepository
          }
          catch (RepositoryException e)
          {
-            log.error(e.getLocalizedMessage(), e);
+            LOG.error(e.getLocalizedMessage(), e);
          }
 
       return hierarchy.getAllNodeTypes();
@@ -220,7 +220,7 @@ public class InmemoryNodeTypeRepository extends AbstractNodeTypeRepository
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeRepository#removeNodeType(org.exoplatform.services.jcr.datamodel.InternalQName, org.exoplatform.services.jcr.core.nodetype.NodeTypeData)
+    * {@inheritDoc}
     */
    public void removeNodeType(NodeTypeData nodeType)
    {

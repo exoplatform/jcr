@@ -111,7 +111,6 @@ public class CreateFolderCommand extends FCKConnectorXMLOutput implements Comman
 
       Document doc = rootElement.getOwnerDocument();
 
-      // TODO
       String retVal = "0";
 
       Element errElement = doc.createElement("Error");

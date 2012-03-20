@@ -21,7 +21,6 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
 
 import java.io.ByteArrayInputStream;
 import java.sql.Connection;
@@ -47,6 +46,7 @@ abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest
 
    private Connection connect = null;
 
+   @Override
    protected void tearDown() throws Exception
    {
 
@@ -95,7 +95,7 @@ abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest
 
       byte data[] = {5};
       ByteArrayInputStream bas = new ByteArrayInputStream(data);
-      jdbcConn.addValueData("C", 2, bas, 2, "J");
+      jdbcConn.addValueData("C", 2, bas, bas.available(), "J");
       ResultSet rs =
          connect.createStatement().executeQuery(
             "select * from " + "JCR_" + tableType + "VALUE" + " where PROPERTY_ID='C'");
@@ -253,17 +253,5 @@ abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest
                + " where PROPERTY_ID='A' order by ORDER_NUM");
       rs.next();
       assertEquals(rsRemote.getString("STORAGE_DESC"), rs.getString("STORAGE_DESC"));
-   }
-
-   public void testFindValueByPropertyIdOrderNumber() throws Exception
-   {
-
-      ResultSet rsRemote = jdbcConn.findValueByPropertyIdOrderNumber("A", 16);
-      rsRemote.next();
-      ResultSet rs =
-         connect.createStatement().executeQuery(
-            "select DATA from " + "JCR_" + tableType + "VALUE" + " where PROPERTY_ID='A' and ORDER_NUM=16");
-      rs.next();
-      assertEquals(rsRemote.getString("DATA"), rs.getString("DATA"));
    }
 }

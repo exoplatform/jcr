@@ -27,10 +27,12 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
@@ -52,8 +54,6 @@ import javax.jcr.RepositoryException;
  * WorkspaceStorageDataManagerProxy can be pluggable in a case of other storage-session transport
  * applied (for ex RMI) this implementation is responsible for making copy of persisted (shared)
  * data objects for session data manager and pass it on top (to TransactionableDM) (and vice versa?)
- * 
- * <p>TODO not used since optimization EXOJCR-272.</p>
  * 
  * @author Gennady Azarenkov
  * @version $Id: LocalWorkspaceStorageDataManagerProxy.java 11907 2008-03-13 15:36:21Z ksm $
@@ -90,10 +90,10 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
          for (ItemState change : changes.getAllStates())
          {
             states.add(new ItemState(copyItemData(change.getData()), change.getState(), change.isEventFire(), change
-               .getAncestorToSave(), change.isInternallyCreated(), change.isPersisted()));
+               .getAncestorToSave(), change.isInternallyCreated(), change.isPersisted(), change.getOldPath()));
          }
 
-         newLog.addLog(new PlainChangesLogImpl(states, changes.getSessionId(), changes.getEventType()));
+         newLog.addLog(PlainChangesLogImpl.createCopy(states, changes));
       }
 
       storageDataManager.save(newLog);
@@ -104,7 +104,24 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
     */
    public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
    {
-      return copyItemData(storageDataManager.getItemData(parentData, name));
+      return getItemData(parentData, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
+   {
+      return copyItemData(storageDataManager.getItemData(parentData, name, itemType));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType, boolean createNullItemData)
+      throws RepositoryException
+   {
+      return copyItemData(storageDataManager.getItemData(parentData, name, itemType, createNullItemData));
    }
 
    /**
@@ -126,6 +143,32 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    /**
     * {@inheritDoc}
     */
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters)
+      throws RepositoryException
+   {
+      return copyNodes(storageDataManager.getChildNodesData(parent, patternFilters));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
+      throws RepositoryException
+   {
+      return storageDataManager.getChildNodesDataByPage(parent, fromOrderNum, toOrderNum, copyNodes(childs));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getLastOrderNumber(final NodeData parent) throws RepositoryException
+   {
+      return storageDataManager.getLastOrderNumber(parent);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public int getChildNodesCount(final NodeData parent) throws RepositoryException
    {
       return storageDataManager.getChildNodesCount(parent);
@@ -137,6 +180,15 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException
    {
       return copyProperties(storageDataManager.getChildPropertiesData(parent));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException
+   {
+      return copyProperties(storageDataManager.getChildPropertiesData(parent, itemDataFilters));
    }
 
    /**
@@ -230,7 +282,7 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    private List<NodeData> copyNodes(final List<NodeData> childNodes) throws RepositoryException
    {
       final List<NodeData> copyOfChildsNodes = new LinkedList<NodeData>();
-      synchronized (childNodes) // TODO EXOJCR-273
+      synchronized (childNodes)
       {
          for (NodeData nodeData : childNodes)
          {
@@ -244,7 +296,7 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
    private List<PropertyData> copyProperties(final List<PropertyData> traverseProperties) throws RepositoryException
    {
       final List<PropertyData> copyOfChildsProperties = new LinkedList<PropertyData>();
-      synchronized (traverseProperties) // TODO EXOJCR-273
+      synchronized (traverseProperties)
       {
          for (PropertyData nodeProperty : traverseProperties)
          {
@@ -259,7 +311,7 @@ public class LocalWorkspaceStorageDataManagerProxy implements WorkspaceStorageDa
       throws RepositoryException
    {
       final List<PropertyData> copyOfChildsProperties = new LinkedList<PropertyData>();
-      synchronized (traverseProperties) // TODO EXOJCR-273
+      synchronized (traverseProperties)
       {
          for (PropertyData nodeProperty : traverseProperties)
          {

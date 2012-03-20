@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Created by The eXo Platform SAS
@@ -47,15 +48,6 @@ public class IngresSQLDBInitializer extends StorageDBInitializer
     * {@inheritDoc}
     */
    @Override
-   protected boolean isIndexExists(Connection conn, String tableName, String indexName) throws SQLException
-   {
-      return super.isIndexExists(conn, tableName.toUpperCase().toLowerCase(), indexName.toUpperCase().toLowerCase());
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
    protected boolean isTableExists(Connection conn, String tableName) throws SQLException
    {
       return super.isTableExists(conn, tableName.toUpperCase().toLowerCase());
@@ -68,14 +60,16 @@ public class IngresSQLDBInitializer extends StorageDBInitializer
    protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
    {
       String seqName = sequenceName.toUpperCase().toLowerCase();
+      ResultSet srs = null;
+      Statement st = null;
       try
       {
-         ResultSet srs = conn.createStatement().executeQuery("SELECT NEXT VALUE FOR " + seqName);
+         st = conn.createStatement();
+         srs = st.executeQuery("SELECT NEXT VALUE FOR " + seqName);
          if (srs.next())
          {
             return true;
          }
-         srs.close();
          return false;
       }
       catch (final SQLException e)
@@ -85,7 +79,6 @@ public class IngresSQLDBInitializer extends StorageDBInitializer
             return false;
          throw new SQLException(e.getMessage())
          {
-
             /**
              * {@inheritDoc}
              */
@@ -95,6 +88,32 @@ public class IngresSQLDBInitializer extends StorageDBInitializer
                return e;
             }
          };
+      }
+      finally
+      {
+         if (srs != null)
+         {
+            try
+            {
+               srs.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the Statement: " + e);
+            }
+         }
       }
    }
 

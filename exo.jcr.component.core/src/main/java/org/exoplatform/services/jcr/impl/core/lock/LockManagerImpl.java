@@ -22,7 +22,6 @@ import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
@@ -37,6 +36,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -51,6 +51,7 @@ import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.IdentityConstants;
 import org.picocontainer.Startable;
 
 import java.io.IOException;
@@ -145,12 +146,14 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
     * @param dataManager
     * @param config
     */
-   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config)
+   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+      LockRemoverHolder lockRemoverHolder)
    {
-      this(dataManager, config, null);
+      this(dataManager, config, null, lockRemoverHolder);
    }
 
-   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config, LockPersister persister)
+   public LockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config, LockPersister persister,
+      LockRemoverHolder lockRemoverHolder)
    {
 
       this.dataManager = dataManager;
@@ -168,6 +171,7 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       tokensMap = new HashMap<String, LockData>();
 
       dataManager.addItemPersistenceListener(this);
+      lockRemover = lockRemoverHolder.getLockRemover(this);
    }
 
    public synchronized void addLockToken(String sessionId, String lt)
@@ -278,17 +282,6 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
                   // if no session currently holds lock except this
                   try
                   {
-                     // TODO it's possible to have next error
-                     // java.lang.NullPointerException
-                     // at
-                     // org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl.onCloseSession(LockManagerImpl.java:312)
-                     // at org.exoplatform.services.jcr.impl.core.SessionImpl.logout(SessionImpl.java:794)
-                     // at
-                     // org.exoplatform.services.jcr.impl.core.XASessionImpl.logout(XASessionImpl.java:254)
-                     // at
-                     // org.exoplatform.services.jcr.impl.core.SessionRegistry$SessionCleaner.callPeriodically(SessionRegistry.java:165)
-                     // at
-                     // org.exoplatform.services.jcr.impl.proccess.WorkerThread.run(WorkerThread.java:46)
                      ((NodeImpl)sessionImpl.getTransientNodesManager().getItemByIdentifier(
                         lockData.getNodeIdentifier(), false)).unlock();
                   }
@@ -467,7 +460,7 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
     */
    public void start()
    {
-      lockRemover = new LockRemover(this);
+      lockRemover.start();
    }
 
    // Quick method. We need to reconstruct
@@ -502,8 +495,8 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
     */
    public void stop()
    {
-      lockRemover.halt();
-      lockRemover.interrupt();
+      lockRemover.stop();
+
       locks.clear();
       pendingLocks.clear();
       tokensMap.clear();
@@ -700,15 +693,17 @@ public class LockManagerImpl implements WorkspaceLockManager, ItemsPersistenceLi
       {
          NodeData nData = (NodeData)dataManager.getItemData(nodeIdentifier);
          PlainChangesLog changesLog =
-            new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
+            new PlainChangesLogImpl(new ArrayList<ItemState>(), IdentityConstants.SYSTEM, ExtendedEvent.UNLOCK);
 
          ItemData lockOwner =
-            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1)));
+            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1),
+               ItemType.PROPERTY));
 
          changesLog.add(ItemState.createDeletedState(lockOwner));
 
          ItemData lockIsDeep =
-            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKISDEEP, 1)));
+            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKISDEEP, 1),
+               ItemType.PROPERTY));
          changesLog.add(ItemState.createDeletedState(lockIsDeep));
 
          // lock probably removed by other thread

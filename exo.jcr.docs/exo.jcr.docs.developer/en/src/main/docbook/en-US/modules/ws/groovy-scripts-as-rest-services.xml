@@ -1,0 +1,381 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="WS.GroovyScripts">
+  <?dbhtml filename="ch-groovy-scripts-as-rest-services.html"?>
+
+  <title>Groovy Scripts as REST Services</title>
+
+    <para>This chapter describes how to use Groovy scripts as REST services.
+    Consider these operations:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Load script and save it in JCR.</para>
+      </listitem>
+
+      <listitem>
+        <para>Instantiate script</para>
+      </listitem>
+
+      <listitem>
+        <para>Deploy a newly created Class as RESTful service.</para>
+      </listitem>
+
+      <listitem>
+        <para>Script Lifecycle Management.</para>
+      </listitem>
+
+      <listitem>
+        <para>Finally, we will discover simple example which can get JCR
+        node UUID</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>In this chapter, we consider RESTful service to be compatible with JSR-311
+    specification. The last feature is currently available in version 1.11-SNAPSHOT.</para>
+
+  <section>
+    <title>Loading script and save it in JCR</title>
+
+    <para>There are two ways to save a script in JCR. The first way is to save
+    it at server startup time by using configuration.xml and the second way is
+    to upload the script via HTTP.</para>
+
+    <para><command>Load script at startup time</command></para>
+
+    <para>This way can be used for load prepared scripts, to use this way. we
+    must configure
+    org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoaderPlugin.
+    This is simple configuration example.</para>
+
+    <programlisting language="xml">&lt;external-component-plugins&gt;
+  &lt;target-component&gt;org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader&lt;/target-component&gt;
+  &lt;component-plugin&gt;
+    &lt;name&gt;test&lt;/name&gt;
+    &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+    &lt;type&gt;org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoaderPlugin&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;repository&lt;/name&gt;
+        &lt;value&gt;repository&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;workspace&lt;/name&gt;
+        &lt;value&gt;production&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;node&lt;/name&gt;
+        &lt;value&gt;/script/groovy&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;properties-param&gt;
+        &lt;name&gt;JcrGroovyTest.groovy&lt;/name&gt;
+        &lt;property name="autoload" value="true" /&gt;
+        &lt;property name="path" value="file:/home/andrew/JcrGroovyTest.groovy" /&gt;
+      &lt;/properties-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+&lt;/external-component-plugins&gt;</programlisting>
+
+    <para>The first is value-param sets JCR repository, the second is
+    value-param sets workspace and the third one is sets JCR node where
+    scripts from plugin will be stored. If specified node does not exist, then
+    it will be created. List of scripts is set by properties-params. Name of
+    each properties-param will be used as node name for stored script,
+    property autoload says to deploy this script at startup time, property
+    path sets the source of script to be loaded. In this example we try to
+    load single script from local file
+    /home/andrew/JcrGroovyTest.groovy.</para>
+
+    <para><command>Load script via HTTP</command></para>
+
+    <para>This is samples of HTTP requests. In this example, we will upload
+    script from file with name test.groovy.</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X POST \
+-H 'Content-type:script/groovy' \
+--data-binary @test.groovy \
+http://localhost:8080/rest/script/groovy/add/repository/production/script/groovy/test.groovy</programlisting>
+
+    <para>This example imitate sending data with HTML form
+    ('multipart/form-data'). Parameter autoload is optional. If parameter
+    autoload=true then script will be instantiate and deploy script
+    immediately.</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X POST \
+-F "file=@test.groovy;name=test" \
+-F "autoload=true" \
+http://localhost:8080/rest/script/groovy/add/repository/production/script/groovy/test1.groovy</programlisting>
+  </section>
+
+  <section>
+    <title>Instantiation</title>
+
+    <para>org.exoplatform.services.script.groovy.GroovyScriptInstantiator is
+    part of project exo.core.component.script.groovy. GroovyScriptInstantiator
+    can load script from specified URL and parse stream that contains Groovy
+    source code. It has possibility inject component from Container in Groovy
+    Class constructor. Configuration example:</para>
+
+    <programlisting language="xml">&lt;component&gt;
+  &lt;type&gt;org.exoplatform.services.script.groovy.GroovyScriptInstantiator&lt;/type&gt;
+&lt;/component&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>Deploying newly created Class as RESTful service</title>
+
+    <para>To deploy script automatically at server statup time, its property
+    exo:autoload must be set as true.
+    org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader
+    check JCR workspaces which were specified in configuration and deploy all
+    auto-loadable scripts.</para>
+
+    <para>Example of configuration.</para>
+
+    <programlisting language="xml">&lt;component&gt;
+    &lt;type&gt;org.exoplatform.services.jcr.ext.script.groovy.GroovyScript2RestLoader&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;object-param&gt;
+        &lt;name&gt;observation.config&lt;/name&gt;
+        &lt;object type="org.exoplatform.services.jcr.ext.script.groovy.ObservationListenerConfiguration"&gt;
+          &lt;field name="repository"&gt;
+            &lt;string&gt;repository&lt;/string&gt;
+          &lt;/field&gt;
+          &lt;field name="workspaces"&gt;
+            &lt;collection type="java.util.ArrayList"&gt;
+              &lt;value&gt;
+                &lt;string&gt;production&lt;/string&gt;
+              &lt;/value&gt;
+            &lt;/collection&gt;
+          &lt;/field&gt;
+        &lt;/object&gt;
+      &lt;/object-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;</programlisting>
+
+    <para>In example above JCR workspace "production" will be checked for
+    autoload scripts. At once, this workspace will be listened for changes
+    script's source code (property jcr:data).</para>
+  </section>
+
+  <section>
+    <title>Script Lifecycle Management</title>
+
+    <para>If GroovyScript2RestLoader configured as was decribed in the
+    previous section, then all "autoload" scripts deployed. In the first
+    section, we added script from file /home/andrew/JcrGroovyTest.groovy to
+    JCR node /script/groovy/JcrGroovyTest.groovy, repository repository,
+    workspace production. In section "Load script via HTTP", it was refered
+    about load scripts via HTTP, there is an opportunity to manage the life
+    cycle of script.</para>
+
+    <para>Undeploy script, which is alredy deployed:</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X GET \
+http://localhost:8080/rest/script/groovy/load/repository/production/script/groovy/JcrGroovyTest.groovy?state=false</programlisting>
+
+    <para>Then deploy it again:</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X GET \
+http://localhost:8080/rest/script/groovy/load/repository/production/script/groovy/JcrGroovyTest.groovy?state=true</programlisting>
+
+    <para>or even more simple:</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X GET \
+http://localhost:8080/rest/script/groovy/load/repository/production/script/groovy/JcrGroovyTest.groovy</programlisting>
+
+    <para>Disable scripts autoloading, NOTE it does not change current
+    state:</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X GET \
+http://localhost:8080/rest/script/groovy/repository/production/script/groovy/JcrGroovyTest.groovy/autoload?state=false</programlisting>
+
+    <para>Enable it again:</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X GET \
+http://localhost:8080/rest/script/groovy/autoload/repository/production/script/groovy/JcrGroovyTest.groovy?state=true</programlisting>
+
+    <para>and again more simpe variant:</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X GET \
+http://localhost:8080/rest/script/groovy/autoload/repository/production/script/groovy/JcrGroovyTest.groovy</programlisting>
+
+    <para>Change script source code:</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X POST \
+-H 'Content-type:script/groovy' \
+--data-binary @JcrGroovyTest.groovy \
+http://localhost:8080/rest/script/groovy/update/repository/production/script/groovy/JcrGroovyTest.groovy</programlisting>
+
+    <para>This example imitates sending data with HTML form
+    ('multipart/form-data').</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X POST \
+-F "file=@JcrGroovyTest.groovy;name=test" \
+http://localhost:8080/rest/script/groovy/update/repository/production/script/groovy/JcrGroovyTest.groovy</programlisting>
+
+    <para>Remove script from JCR:</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X GET \
+http://localhost:8080/rest/script/groovy/delete/repository/production/script/groovy/JcrGroovyTest.groovy</programlisting>
+  </section>
+
+  <section>
+    <title>Getting node UUID example</title>
+
+    <para>Now we are going to try simple example of Groovy RESTfull service.
+    There is one limitation, even if we use groovy, we should use Java style
+    code and decline to use dynamic types, but of course we can use it in
+    private methods and feilds. Create file JcrGroovyTest.groovy, in this
+    example I save it in my home directory /home/andrew/JcrGroovyTest.groovy.
+    Then, configure GroovyScript2RestLoaderPlugin as described in section Load
+    script at startup time.</para>
+
+    <programlisting language="java">import javax.jcr.Node
+import javax.jcr.Session
+import javax.ws.rs.GET
+import javax.ws.rs.Path
+import javax.ws.rs.PathParam
+import org.exoplatform.services.jcr.RepositoryService
+import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService
+
+@Path("groovy/test/{repository}/{workspace}")
+public class JcrGroovyTest {
+  private RepositoryService                 repositoryService
+  private ThreadLocalSessionProviderService sessionProviderService
+  
+  public JcrGroovyTest(RepositoryService repositoryService,
+                       ThreadLocalSessionProviderService sessionProviderService) {
+    this.repositoryService = repositoryService
+    this.sessionProviderService = sessionProviderService
+  }
+  
+
+  @GET
+  @Path("{path:.*}")
+  public String nodeUUID(@PathParam("repository") String repository,
+                         @PathParam("workspace") String workspace,
+                         @PathParam("path") String path) {
+    Session ses = null
+    try {
+      ses = sessionProviderService.getSessionProvider(null).getSession(workspace, repositoryService.getRepository(repository))
+      Node node = (Node) ses.getItem("/" + path)
+      return node.getUUID() + "\n"
+    } finally {
+      if (ses != null)
+        ses.logout()
+    }
+  }</programlisting>
+
+    <para>After configuration is done, start the server. If configuration is
+    correct and script does not have syntax error, you should see next:</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/groovy-console1.png" />
+      </imageobject>
+    </mediaobject>
+
+    <para>In the screenshot, we can see the service deployed.</para>
+
+    <para>First, create a folder via WebDAV in the repository production,
+    folder name 'test'. Now, we can try access this service. Open another
+    console and type command:</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+http://localhost:8080/rest/groovy/test/repository/production/test</programlisting>
+
+    <para>Whe you try to execute this command, you should have exception,
+    because JCR node '/test' is not referenceable and has not UUID. We can try
+    add mixin mix:referenceable. To do this, add one more method in script.
+    Open script from local source code /home/andrew/JcrGroovyTest.groovy, add
+    following code and save file.</para>
+
+    <programlisting language="java">@POST
+@Path("{path:.*}")
+public void addReferenceableMixin(@PathParam("repository") String repository,
+                                  @PathParam("workspace") String workspace,
+                                  @PathParam("path") String path) {
+  Session ses = null
+  try {
+    ses = sessionProviderService.getSessionProvider(null).getSession(workspace, repositoryService.getRepository(repository))
+    Node node = (Node) ses.getItem("/" + path)
+    node.addMixin("mix:referenceable")
+    ses.save()
+  } finally {
+    if (ses != null)
+      ses.logout()
+  }
+}</programlisting>
+
+    <para>Now we can try to change script deployed on the server without
+    server restart. Type in console next command:</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -i -v -u root:exo \
+-X POST \
+--data-binary @JcrGroovyTest.groovy \
+-H 'Content-type:script/groovy' \
+http://localhost:8080/rest/script/groovy/update/repository/production/script/groovy/JcrGroovyTest.groovy</programlisting>
+
+    <para>Node '/script/groovy/JcrGroovyTest.groovy' has property
+    exo:autoload=true so script will be re-deployed automatically when script
+    source code changed.</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/groovy-console2.png" />
+      </imageobject>
+    </mediaobject>
+
+    <para>Script was redeployed, now try to access a newly created
+    method.</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+-X POST \
+http://localhost:8080/rest/groovy/test/repository/production/test</programlisting>
+
+    <para>Method excution should be quiet, without output, traces, etc. Then
+    we can try again get node UUID.</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+http://localhost:8080/rest/groovy/test/repository/production/test
+1b8c88d37f0000020084433d3af4941f</programlisting>
+
+    <para>Node UUID: 1b8c88d37f0000020084433d3af4941f</para>
+
+    <para>We don't need this scripts any more, so remove it from JCR.</para>
+
+    <programlisting>andrew@ossl:~&gt; curl -u root:exo \
+http://localhost:8080/rest/script/groovy/delete/repository/production/script/groovy/JcrGroovyTest.groovy</programlisting>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/groovy-console3.png" />
+      </imageobject>
+    </mediaobject>
+  </section>
+
+  <section>
+    <title>Groovy script restrictions</title>
+
+    <para>You should keep one class per one groovy file. The same actually for
+    interface and it implementation. It's limitation of groovy parser that
+    does not have type Class[] parseClass(InputStream) or Collection
+    parseClass(InputStream) but only Class parseClass(InputStream)
+    instead.</para>
+
+    <para>That is all.</para>
+  </section>
+</chapter>

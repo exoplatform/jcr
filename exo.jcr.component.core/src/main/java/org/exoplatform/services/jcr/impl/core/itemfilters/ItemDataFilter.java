@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.impl.core.itemfilters;
 
 import org.exoplatform.services.jcr.datamodel.ItemData;
 
+import java.util.List;
+
 public interface ItemDataFilter
 {
 
@@ -31,5 +33,8 @@ public interface ItemDataFilter
     *          The item to be tested for inclusion in the returned set.
     * @return a <code>boolean</code>.
     */
-   public boolean accept(ItemData item);
+   boolean accept(ItemData item);
+
+   List<? extends ItemData> accept(List<? extends ItemData> item);
+
 }

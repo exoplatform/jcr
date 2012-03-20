@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
@@ -25,7 +26,6 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueD
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -70,17 +70,19 @@ public class PersistedValueDataWriter
          FilePersistedValueData streamed = (FilePersistedValueData)vd;
 
          InputStream in = null;
-         
+
          if (streamed.getFile() == null && vd instanceof StreamPersistedValueData)
          {
-            in = new FileInputStream(((StreamPersistedValueData)vd).getTempFile());
+            if (((StreamPersistedValueData)vd).getTempFile() != null)
+            {
+               in = PrivilegedFileHelper.fileInputStream(((StreamPersistedValueData)vd).getTempFile());
+            }
          }
          else
          {
-           in = streamed.getAsStream();
+            in = streamed.getAsStream();
          }
 
-         // TODO optimize it, use channels
          if (streamed.getFile() instanceof SerializationSpoolFile)
          {
             SerializationSpoolFile ssf = (SerializationSpoolFile)streamed.getFile();
@@ -93,17 +95,27 @@ public class PersistedValueDataWriter
             String id = IdGenerator.generate();
             out.writeString(id);
 
-            out.writeLong(vd.getLength());
-            try
+            if (in == null)
             {
-               byte[] buf = new byte[SerializationConstants.INTERNAL_BUFFER_SIZE];
-               int l = 0;
-               while ((l = in.read(buf)) >= 0)
-                  out.write(buf, 0, l);
+               // Deleted state usecase
+               out.writeLong(SerializationConstants.NULL_FILE);
             }
-            finally
+            else
             {
-               in.close();
+               out.writeLong(vd.getLength());
+               try
+               {
+                  byte[] buf = new byte[SerializationConstants.INTERNAL_BUFFER_SIZE];
+                  int l = 0;
+                  while ((l = in.read(buf)) >= 0)
+                  {
+                     out.write(buf, 0, l);
+                  }
+               }
+               finally
+               {
+                  in.close();
+               }
             }
          }
       }

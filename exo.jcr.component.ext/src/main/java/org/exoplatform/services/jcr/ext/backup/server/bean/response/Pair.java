@@ -56,7 +56,7 @@ public class Pair
     * @param value
     *          String, value of parameter
     */
-   private Pair(String name, String value)
+   private Pair(String name, String value) //NOSONAR
    {
       this.name = name;
       this.value = value;

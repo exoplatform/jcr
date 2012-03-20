@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.dataflow.serialization;
 
-import java.io.EOFException;
+import java.io.EOFException; //NOSONAR
 import java.io.IOException;
 import java.io.OutputStream;
 

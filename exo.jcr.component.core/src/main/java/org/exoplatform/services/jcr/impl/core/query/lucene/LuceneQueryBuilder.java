@@ -20,9 +20,9 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.queryParser.ParseException;
 import org.apache.lucene.queryParser.QueryParser;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.commons.utils.ISO8601;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -56,8 +57,8 @@ import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.TextsearchQueryNode;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
 import org.exoplatform.services.jcr.impl.xml.XMLChar;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -101,7 +102,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
    /**
     * Logger for this class
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.LuceneQueryBuilder");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.LuceneQueryBuilder");
 
    /**
     * Root node of the abstract query tree
@@ -339,7 +340,10 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       }
       catch (RepositoryException e)
       {
-         // will never happen, prefixes are created when unknown
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return new JcrTermQuery(new Term(FieldNames.PROPERTIES, FieldNames.createNamedValue(field, value)));
    }
@@ -463,7 +467,8 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                // if path references property that's elements.length - 2
                // if path references node that's elements.length - 1
                if (name != null
-                  && ((node.getReferencesProperty() && i == elements.length - 2) || (!node.getReferencesProperty() && i == elements.length - 1)))
+                        && ((node.getReferencesProperty() && i == elements.length - 2) || (!node
+                                 .getReferencesProperty() && i == elements.length - 1)))
                {
                   Query q = new NameQuery(name, indexFormatVersion, nsMappings);
                   BooleanQuery and = new BooleanQuery();
@@ -493,8 +498,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       }
       catch (RepositoryException e)
       {
-         // TODO Auto-generated catch block
-         e.printStackTrace();
+         LOG.error(e.getLocalizedMessage(), e);
       }
       return null;
    }
@@ -760,6 +764,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       final int[] transform = new int[]{TransformConstants.TRANSFORM_NONE};
       node.acceptOperands(new DefaultQueryNodeVisitor()
       {
+         @Override
          public Object visit(PropertyFunctionQueryNode node, Object data)
          {
             if (node.getFunctionName().equals(PropertyFunctionQueryNode.LOWER_CASE))
@@ -1030,7 +1035,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                      ItemData item = parent;
                      for (int i = 0; i < relPathEntries.length; i++)
                      {
-                        item = sharedItemMgr.getItemData(parent, relPathEntries[i]);
+                        item = sharedItemMgr.getItemData(parent, relPathEntries[i], ItemType.UNKNOWN);
 
                         if (item == null)
                            break;
@@ -1171,15 +1176,21 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                {
                   InternalQName n = session.getLocationFactory().parseJCRName(literal).getInternalName();
                   values.add(nsMappings.translateName(n));
-                  log.debug("Coerced " + literal + " into NAME.");
+                  LOG.debug("Coerced " + literal + " into NAME.");
                }
                catch (RepositoryException e)
                {
-                  log.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
+                  if (types.length == 1)
+                  {
+                     LOG.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
+                  }
                }
                catch (IllegalNameException e)
                {
-                  log.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
+                  if (types.length == 1)
+                  {
+                     LOG.warn("Unable to coerce '" + literal + "' into a NAME: " + e.toString());
+                  }
                }
                break;
             case PropertyType.PATH :
@@ -1188,11 +1199,14 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                {
                   QPath p = session.getLocationFactory().parseJCRPath(literal).getInternalPath();
                   values.add(resolver.createJCRPath(p).getAsString(true));
-                  log.debug("Coerced " + literal + " into PATH.");
+                  LOG.debug("Coerced " + literal + " into PATH.");
                }
                catch (RepositoryException e)
                {
-                  log.warn("Unable to coerce '" + literal + "' into a PATH: " + e.toString());
+                  if (types.length == 1)
+                  {
+                     LOG.warn("Unable to coerce '" + literal + "' into a PATH: " + e.toString());
+                  }
                }
                break;
             case PropertyType.DATE :
@@ -1201,11 +1215,14 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                if (c != null)
                {
                   values.add(DateField.timeToString(c.getTimeInMillis()));
-                  log.debug("Coerced " + literal + " into DATE.");
+                  LOG.debug("Coerced " + literal + " into DATE.");
                }
                else
                {
-                  log.warn("Unable to coerce '" + literal + "' into a DATE.");
+                  if (types.length == 1)
+                  {
+                     LOG.warn("Unable to coerce '" + literal + "' into a DATE.");
+                  }
                }
                break;
             case PropertyType.DOUBLE :
@@ -1214,11 +1231,14 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                {
                   double d = Double.parseDouble(literal);
                   values.add(DoubleField.doubleToString(d));
-                  log.debug("Coerced " + literal + " into DOUBLE.");
+                  LOG.debug("Coerced " + literal + " into DOUBLE.");
                }
                catch (NumberFormatException e)
                {
-                  log.warn("Unable to coerce '" + literal + "' into a DOUBLE: " + e.toString());
+                  if (types.length == 1)
+                  {
+                     LOG.warn("Unable to coerce '" + literal + "' into a DOUBLE: " + e.toString());
+                  }
                }
                break;
             case PropertyType.LONG :
@@ -1227,19 +1247,23 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                {
                   long l = Long.parseLong(literal);
                   values.add(LongField.longToString(l));
-                  log.debug("Coerced " + literal + " into LONG.");
+                  LOG.debug("Coerced " + literal + " into LONG.");
                }
                catch (NumberFormatException e)
                {
-                  log.warn("Unable to coerce '" + literal + "' into a LONG: " + e.toString());
+                  if (types.length == 1)
+                  {
+                     LOG.warn("Unable to coerce '" + literal + "' into a LONG: " + e.toString());
+                  }
                }
                break;
             case PropertyType.STRING :
                values.add(literal);
-               log.debug("Using literal " + literal + " as is.");
+               LOG.debug("Using literal " + literal + " as is.");
                break;
          }
       }
+
       if (values.size() == 0)
       {
          // use literal as is then try to guess other types
@@ -1253,11 +1277,14 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             {
                QPath p = session.getLocationFactory().parseJCRPath(literal).getInternalPath();
                values.add(resolver.createJCRPath(p).getAsString(true));
-               log.debug("Coerced " + literal + " into PATH.");
+               LOG.debug("Coerced " + literal + " into PATH.");
             }
             catch (Exception e)
             {
-               // not a path
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
          if (XMLChar.isValidName(literal))
@@ -1267,11 +1294,14 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             {
                InternalQName n = session.getLocationFactory().parseJCRName(literal).getInternalName();
                values.add(nsMappings.translateName(n));
-               log.debug("Coerced " + literal + " into NAME.");
+               LOG.debug("Coerced " + literal + " into NAME.");
             }
             catch (Exception e)
             {
-               // not a name
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
          }
          if (literal.indexOf(':') > -1)
@@ -1281,7 +1311,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             if (c != null)
             {
                values.add(DateField.timeToString(c.getTimeInMillis()));
-               log.debug("Coerced " + literal + " into DATE.");
+               LOG.debug("Coerced " + literal + " into DATE.");
             }
          }
          else
@@ -1290,7 +1320,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             try
             {
                values.add(LongField.longToString(Long.parseLong(literal)));
-               log.debug("Coerced " + literal + " into LONG.");
+               LOG.debug("Coerced " + literal + " into LONG.");
             }
             catch (NumberFormatException e)
             {
@@ -1299,11 +1329,14 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                try
                {
                   values.add(DoubleField.doubleToString(Double.parseDouble(literal)));
-                  log.debug("Coerced " + literal + " into DOUBLE.");
+                  LOG.debug("Coerced " + literal + " into DOUBLE.");
                }
                catch (NumberFormatException e1)
                {
-                  // not a double
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
                }
             }
          }
@@ -1312,8 +1345,8 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       if (values.size() == 0)
       {
          values.add(literal);
-         log.debug("Using literal " + literal + " as is.");
+         LOG.debug("Using literal " + literal + " as is.");
       }
-      return (String[])values.toArray(new String[values.size()]);
+      return values.toArray(new String[values.size()]);
    }
 }

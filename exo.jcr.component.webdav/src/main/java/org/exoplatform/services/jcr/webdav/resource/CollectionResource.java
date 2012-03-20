@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.webdav.resource;
 
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.webdav.command.acl.ACLProperties;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 import org.exoplatform.services.log.ExoLogger;
@@ -29,9 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -86,6 +86,11 @@ public class CollectionResource extends GenericResource
     * XML href constant.
     */
    final String XML_HREF = "xlink:href";
+
+   /**
+    * XML parent href constant.
+    */
+   final static String XML_PARENT_HREF = "xlink:parent-href";
 
    /**
     * XML namespace prefix.
@@ -177,10 +182,33 @@ public class CollectionResource extends GenericResource
             {
                props.add((namesOnly) ? new HierarchicalProperty(name) : getProperty(name));
             }
-            catch (Exception exc)
+            catch (UnsupportedOperationException exc)
             {
                if (LOG.isDebugEnabled())
+               {
                   LOG.error(exc.getMessage(), exc);
+               }
+            }
+            catch (ClassCastException exc)
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.error(exc.getMessage(), exc);
+               }
+            }
+            catch (IllegalArgumentException exc)
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.error(exc.getMessage(), exc);
+               }
+            }
+            catch (PathNotFoundException exc)
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.error(exc.getMessage(), exc);
+               }
             }
          }
       }
@@ -311,6 +339,14 @@ public class CollectionResource extends GenericResource
          throw new PathNotFoundException();
 
       }
+      else if (name.equals(ACLProperties.ACL))
+      {
+         return ACLProperties.getACL((NodeImpl)node);
+      }
+      else if (name.equals(OWNER))
+      {
+         return ACLProperties.getOwner((NodeImpl)node);
+      }
       else
       {
 
@@ -418,10 +454,22 @@ public class CollectionResource extends GenericResource
                writer.writeStartElement(XML_NODE);
                writer.writeAttribute(PREFIX_XMLNS, PREFIX_LINK);
                writer.writeAttribute(XLINK_XMLNS, XLINK_LINK);
-               String itemName = URLDecoder.decode(node.getName(), "UTF-8");
-               writer.writeAttribute(XML_NAME, itemName);
-               String itemPath = node.getPath();
-               writer.writeAttribute(XML_HREF, rootHref + itemPath);
+               writer.writeAttribute(XML_NAME, node.getName());
+               writer.writeAttribute(XML_HREF, rootHref + TextUtil.escape(node.getPath(), '%', true));
+
+
+               if (!node.getPath().equals("/"))
+               {
+                  // this is added to fix EXOJCR-1379
+                  // XSLT string operations with actual node href, (which are used during XSLT transformation
+                  // to receive parent href) produce wrong parent-href if node path containes non-latin symbols, 
+                  // so instead we simply add one more attribute which already contains parent-href
+                  // as result: no XLST processor string manipulation is needed
+                  String nodeParentHref = rootHref + TextUtil.escape(node.getParent().getPath(), '%', true);
+                  writer.writeAttribute(XML_PARENT_HREF, nodeParentHref);
+               }
+
+
                // add properties
                for (PropertyIterator pi = node.getProperties(); pi.hasNext();)
                {
@@ -437,8 +485,8 @@ public class CollectionResource extends GenericResource
                {
                   Node childNode = ni.nextNode();
                   writer.writeStartElement(XML_NODE);
-                  writer.writeAttribute(XML_NAME, URLDecoder.decode(childNode.getName(), "UTF-8"));
-                  String childNodeHref = rootHref + URLDecoder.decode(childNode.getPath(), "UTF-8");
+                  writer.writeAttribute(XML_NAME, childNode.getName());
+                  String childNodeHref = rootHref + TextUtil.escape(childNode.getPath(), '%', true);
                   writer.writeAttribute(XML_HREF, childNodeHref);
                   writer.writeEndElement();
                }
@@ -452,10 +500,6 @@ public class CollectionResource extends GenericResource
             catch (XMLStreamException e)
             {
                LOG.error("Error has occured while xml processing : ", e);
-            }
-            catch (UnsupportedEncodingException e)
-            {
-               LOG.warn(e.getMessage());
             }
             finally
             {

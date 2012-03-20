@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -146,7 +147,9 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
                path = resource.setProperty("jcr:data", vals).getPath();
             }
             else
+            {
                path = resource.setProperty("jcr:data", fBLOB1).getPath();
+            }
             resource.setProperty("jcr:mimeType", "application/x-octet-stream");
             resource.setProperty("jcr:lastModified", Calendar.getInstance());
             testRoot.save();
@@ -190,7 +193,7 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
       {
          try
          {
-            SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession().getId());
+            SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession());
 
             TransientNodeData ntfile =
                TransientNodeData.createNodeData(rootData, InternalQName.parse("[]blob" + i), Constants.NT_FILE);
@@ -217,7 +220,9 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
                data.add(new TransientValueData(fBLOB2));
             }
             else
+            {
                data.add(new TransientValueData(fBLOB1));
+            }
 
             TransientPropertyData resData =
                TransientPropertyData.createPropertyData(res, Constants.JCR_DATA, PropertyType.BINARY, data.size() > 1,
@@ -258,7 +263,7 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
    {
       final DataManager dm =
          ((NodeImpl)testRoot).getSession().getTransientNodesManager().getTransactManager().getStorageDataManager();
-      final SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession().getId());
+      final SessionChangesLog changes = new SessionChangesLog(((NodeImpl)testRoot).getSession());
 
       class Remover
       {
@@ -284,21 +289,34 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
    }
 
    // copied from SessionDataManager
-   protected ItemData getItemData(DataManager manager, NodeData parent, QPathEntry[] relPathEntries)
+   protected ItemData getItemData(DataManager manager, NodeData parent, QPathEntry[] relPathEntries, ItemType itemType)
       throws RepositoryException
    {
       ItemData item = parent;
       for (int i = 0; i < relPathEntries.length; i++)
       {
-         item = manager.getItemData(parent, relPathEntries[i]);
+         if (i == relPathEntries.length - 1)
+         {
+            item = manager.getItemData(parent, relPathEntries[i], itemType);
+         }
+         else
+         {
+            item = manager.getItemData(parent, relPathEntries[i], ItemType.UNKNOWN);
+         }
 
          if (item == null)
+         {
             break;
+         }
 
          if (item.isNode())
+         {
             parent = (NodeData)item;
+         }
          else if (i < relPathEntries.length - 1)
+         {
             throw new IllegalPathException("Path can not contains a property as the intermediate element");
+         }
       }
       return item;
    }
@@ -356,7 +374,7 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
       Set<QPathEntry[]> caseProps = new HashSet<QPathEntry[]>(props);
       for (QPathEntry[] prop : caseProps)
       {
-         PropertyData p = (PropertyData)getItemData(manager, parent, prop);
+         PropertyData p = (PropertyData)getItemData(manager, parent, prop, ItemType.PROPERTY);
          List<ValueData> vals = p.getValues();
          for (int i = 0; i < vals.size(); i++)
          {

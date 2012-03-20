@@ -26,8 +26,10 @@ import javax.jcr.RepositoryException;
  * <code>PropertyFunctionQueryNode</code> allows to place function calls on properties
  * in a query. Supported function names are:
  * <ul>
- * <li><code>upper-case</code> as specified in <a href="http://www.w3.org/TR/xquery-operators/#func-upper-case">fn:upper-case()</a></li>
- * <li><code>lower-case</code> as specified in <a href="http://www.w3.org/TR/xquery-operators/#func-lower-case">fn:lower-case()</a></li>
+ * <li><code>upper-case</code> as specified in 
+ * <a href="http://www.w3.org/TR/xquery-operators/#func-upper-case">fn:upper-case()</a></li>
+ * <li><code>lower-case</code> as specified in 
+ * <a href="http://www.w3.org/TR/xquery-operators/#func-lower-case">fn:lower-case()</a></li>
  * </ul>
  */
 public class PropertyFunctionQueryNode extends QueryNode {

@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -37,7 +36,6 @@ import javax.jcr.RepositoryException;
 
 public class QPath implements Comparable<QPath>
 {
-
    /**
     * Logger.
     */
@@ -174,9 +172,9 @@ public class QPath implements Comparable<QPath>
       if (names.length - ancestorNames.length <= 0)
          return false;
 
-      for (int i = 0; i < ancestorNames.length; i++)
+      for (int i = ancestorNames.length - 1; i >= 0; i--)
       {
-         if (!ancestorNames[i].equals(names[i]))
+         if (!names[i].equals(ancestorNames[i]))
             return false;
       }
       return true;
@@ -192,13 +190,11 @@ public class QPath implements Comparable<QPath>
    {
       final InternalQName[] anotherNames = anotherPath.names;
 
-      // int depthDiff = getDepth() - anotherPath.getDepth();
       int depthDiff = names.length - anotherNames.length;
       if (depthDiff <= 0 || (childOnly && depthDiff != 1))
          return false;
 
-      // InternalQName[] anotherNames = anotherPath.getEntries();
-      for (int i = 0; i < anotherNames.length; i++)
+      for (int i = anotherNames.length - 1; i >= 0; i--)
       {
          if (!anotherNames[i].equals(names[i]))
             return false;
@@ -239,7 +235,7 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * @return last name of this path
+    * @return last QPathEntry of this path
     */
    public InternalQName getName()
    {
@@ -247,7 +243,7 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * @return index
+    * @return index of last QPathEntry of this paths
     */
    public int getIndex()
    {
@@ -273,12 +269,12 @@ public class QPath implements Comparable<QPath>
       if (stringName == null)
       {
 
-         String str = "";
+         StringBuilder str = new StringBuilder();
          for (int i = 0; i < getLength(); i++)
          {
-            str += names[i].getAsString(true);
+            str.append(names[i].getAsString(true));
          }
-         stringName = str;
+         stringName = str.toString();
       }
 
       return stringName;
@@ -353,7 +349,7 @@ public class QPath implements Comparable<QPath>
     * @param qPath
     *          - String to be parsed
     * @return QPath
-    * @throws RepositoryException
+    * @throws IllegalPathException
     *           - if string is invalid
     */
    public static QPath parse(String qPath) throws IllegalPathException
@@ -471,6 +467,34 @@ public class QPath implements Comparable<QPath>
       return path;
    }
 
+   /**
+    * Make child path using QName and Item index. <br/>
+    * 
+    * @param parent
+    *          - parent QPath
+    * @param name
+    *          - Item QName
+    * @param itemIndex
+    *          - Item index
+    * @param id
+    *          - Item id
+    * @return new QPath
+    */
+   public static QPath makeChildPath(final QPath parent, final QName name, final int itemIndex, String id)
+   {
+
+      QPathEntry[] parentEntries = parent.getEntries();
+      QPathEntry[] names = new QPathEntry[parentEntries.length + 1];
+      int index = 0;
+      for (QPathEntry pname : parentEntries)
+      {
+         names[index++] = pname;
+      }
+      names[index] = new QPathEntry(name.getNamespace(), name.getName(), itemIndex, id);
+
+      QPath path = new QPath(names);
+      return path;
+   }
    /**
     * Make child path using array of QPath entries (relative path). <br/>
     * 

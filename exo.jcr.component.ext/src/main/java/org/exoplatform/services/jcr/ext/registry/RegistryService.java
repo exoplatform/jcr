@@ -20,10 +20,12 @@ package org.exoplatform.services.jcr.ext.registry;
 
 import static javax.jcr.ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.container.xml.ValueParam;
+import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -38,9 +40,12 @@ import org.xml.sax.SAXException;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -106,7 +111,8 @@ public class RegistryService extends Registry implements Startable
 
    protected final RepositoryService repositoryService;
 
-   // TODO temporary flag to have start() run once
+   protected final List<String> mixinNames;
+
    protected boolean started = false;
 
    /**
@@ -115,7 +121,6 @@ public class RegistryService extends Registry implements Startable
     * @param repositoryService
     * @throws RepositoryConfigurationException
     * @throws RepositoryException
-    * @throws FileNotFoundException
     */
    public RegistryService(InitParams params, RepositoryService repositoryService)
       throws RepositoryConfigurationException
@@ -124,15 +129,31 @@ public class RegistryService extends Registry implements Startable
       this.repositoryService = repositoryService;
       this.regWorkspaces = new HashMap<String, String>();
       if (params == null)
+      {
          throw new RepositoryConfigurationException("Init parameters expected");
+      }
+
       this.props = params.getPropertiesParam("locations");
       if (props == null)
+      {
          throw new RepositoryConfigurationException("Property parameters 'locations' expected");
+      }
+
+      ValuesParam mixinValues = params.getValuesParam("mixin-names");
+      if (mixinValues != null)
+      {
+         this.mixinNames = params.getValuesParam("mixin-names").getValues();
+      }
+      else
+      {
+         this.mixinNames = new ArrayList<String>();
+      }
    }
 
    /**
     * {@inheritDoc}
     */
+   @Override
    public RegistryEntry getEntry(final SessionProvider sessionProvider, final String entryPath)
       throws PathNotFoundException, RepositoryException
    {
@@ -162,6 +183,7 @@ public class RegistryService extends Registry implements Startable
    /**
     * {@inheritDoc}
     */
+   @Override
    public void createEntry(final SessionProvider sessionProvider, final String groupPath, final RegistryEntry entry)
       throws RepositoryException
    {
@@ -190,6 +212,7 @@ public class RegistryService extends Registry implements Startable
    /**
     * {@inheritDoc}
     */
+   @Override
    public void removeEntry(final SessionProvider sessionProvider, final String entryPath) throws RepositoryException
    {
 
@@ -203,6 +226,7 @@ public class RegistryService extends Registry implements Startable
    /**
     * {@inheritDoc}
     */
+   @Override
    public void recreateEntry(final SessionProvider sessionProvider, final String groupPath, final RegistryEntry entry)
       throws RepositoryException
    {
@@ -287,6 +311,7 @@ public class RegistryService extends Registry implements Startable
    /**
     * {@inheritDoc}
     */
+   @Override
    public RegistryNode getRegistry(final SessionProvider sessionProvider) throws RepositoryException
    {
 
@@ -335,7 +360,14 @@ public class RegistryService extends Registry implements Startable
                   wsName = repConfiguration.getDefaultWorkspaceName();
                }
                addRegistryLocation(repName, wsName);
-               InputStream xml = getClass().getResourceAsStream(NT_FILE);
+               InputStream xml = SecurityHelper.doPrivilegedAction(new PrivilegedAction<InputStream>()
+               {
+                  public InputStream run()
+                  {
+                     return getClass().getResourceAsStream(NT_FILE);
+                  }
+               });
+
                try
                {
                   repositoryService.getRepository(repName).getNodeTypeManager().registerNodeTypes(xml,
@@ -359,13 +391,11 @@ public class RegistryService extends Registry implements Startable
          }
          catch (RepositoryConfigurationException e)
          {
-            log.error(e.getLocalizedMessage());
-            e.printStackTrace();
+            log.error(e.getLocalizedMessage(), e);
          }
          catch (RepositoryException e)
          {
-            log.error(e.getLocalizedMessage());
-            e.printStackTrace();
+            log.error(e.getLocalizedMessage(), e);
          }
       else if (log.isDebugEnabled())
          log.warn("Registry service already started");
@@ -389,53 +419,126 @@ public class RegistryService extends Registry implements Startable
       {
          String repName = repConfiguration.getName();
          ManageableRepository rep = repositoryService.getRepository(repName);
-         Session sysSession = rep.getSystemSession(regWorkspaces.get(repName));
+         final Session sysSession = rep.getSystemSession(regWorkspaces.get(repName));
 
-         if (sysSession.getRootNode().hasNode(EXO_REGISTRY) && replace)
-            sysSession.getRootNode().getNode(EXO_REGISTRY).remove();
-
-         if (!sysSession.getRootNode().hasNode(EXO_REGISTRY))
+         try
          {
-            Node rootNode = sysSession.getRootNode().addNode(EXO_REGISTRY, EXO_REGISTRY_NT);
-            rootNode.addNode(EXO_SERVICES, EXO_REGISTRYGROUP_NT);
-            rootNode.addNode(EXO_APPLICATIONS, EXO_REGISTRYGROUP_NT);
-            rootNode.addNode(EXO_USERS, EXO_REGISTRYGROUP_NT);
-            rootNode.addNode(EXO_GROUPS, EXO_REGISTRYGROUP_NT);
-
-            Set<String> appNames = appConfigurations.keySet();
-            final String fullPath = "/" + EXO_REGISTRY + "/" + entryLocation;
-            for (String appName : appNames)
+            if (sysSession.getRootNode().hasNode(EXO_REGISTRY) && replace)
             {
-               String xml = appConfigurations.get(appName);
-               try
+               sysSession.getRootNode().getNode(EXO_REGISTRY).remove();
+            }
+
+            Node rootNode;
+            Node servicesNode;
+            Node applicationsNode;
+            Node usersNode;
+            Node groupsNode;
+
+            if (!sysSession.getRootNode().hasNode(EXO_REGISTRY))
+            {
+               rootNode = sysSession.getRootNode().addNode(EXO_REGISTRY, EXO_REGISTRY_NT);
+               servicesNode = rootNode.addNode(EXO_SERVICES, EXO_REGISTRYGROUP_NT);
+               applicationsNode = rootNode.addNode(EXO_APPLICATIONS, EXO_REGISTRYGROUP_NT);
+               usersNode = rootNode.addNode(EXO_USERS, EXO_REGISTRYGROUP_NT);
+               groupsNode = rootNode.addNode(EXO_GROUPS, EXO_REGISTRYGROUP_NT);
+
+               Set<String> appNames = appConfigurations.keySet();
+               final String fullPath = "/" + EXO_REGISTRY + "/" + entryLocation;
+               for (String appName : appNames)
                {
-                  DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                  ByteArrayInputStream stream = new ByteArrayInputStream(xml.getBytes());
-                  Document document = builder.parse(stream);
-                  RegistryEntry entry = new RegistryEntry(document);
-                  sysSession.importXML(fullPath, entry.getAsInputStream(), IMPORT_UUID_CREATE_NEW);
+                  final String xml = appConfigurations.get(appName);
+                  try
+                  {
+                     SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+                     {
+                        public Void run() throws Exception
+                        {
+                           DocumentBuilder builder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+                           ByteArrayInputStream stream = new ByteArrayInputStream(xml.getBytes());
+                           Document document = builder.parse(stream);
+                           RegistryEntry entry = new RegistryEntry(document);
+                           sysSession.importXML(fullPath, entry.getAsInputStream(), IMPORT_UUID_CREATE_NEW);
+                           return null;
+                        }
+                     });
+                  }
+                  catch (PrivilegedActionException pae)
+                  {
+                     Throwable cause = pae.getCause();
+                     if (cause instanceof ParserConfigurationException)
+                     {
+                        log.error(cause.getLocalizedMessage(), cause);
+                     }
+                     else if (cause instanceof IOException)
+                     {
+                        log.error(cause.getLocalizedMessage(), cause);
+                     }
+                     else if (cause instanceof SAXException)
+                     {
+                        log.error(cause.getLocalizedMessage(), cause);
+                     }
+                     else if (cause instanceof TransformerException)
+                     {
+                        log.error(cause.getLocalizedMessage(), cause);
+                     }
+                     else if (cause instanceof RuntimeException)
+                     {
+                        throw (RuntimeException)cause;
+                     }
+                     else
+                     {
+                        throw new RuntimeException(cause);
+                     }
+                  }
                }
-               catch (ParserConfigurationException e)
+               sysSession.save();
+            }
+            else
+            {
+               rootNode = sysSession.getRootNode().getNode(EXO_REGISTRY);
+               servicesNode = rootNode.getNode(EXO_SERVICES);
+               applicationsNode = rootNode.getNode(EXO_APPLICATIONS);
+               usersNode = rootNode.getNode(EXO_USERS);
+               groupsNode = rootNode.getNode(EXO_GROUPS);
+            }
+
+            for (String mixin : mixinNames)
+            {
+               if (rootNode.canAddMixin(mixin))
                {
-                  e.printStackTrace();
-               }
-               catch (IOException e)
-               {
-                  e.printStackTrace();
-               }
-               catch (SAXException e)
-               {
-                  e.printStackTrace();
-               }
-               catch (TransformerException e)
-               {
-                  e.printStackTrace();
+                  rootNode.addMixin(mixin);
                }
 
+               if (servicesNode.canAddMixin(mixin))
+               {
+                  servicesNode.addMixin(mixin);
+               }
+
+               if (applicationsNode.canAddMixin(mixin))
+               {
+                  applicationsNode.addMixin(mixin);
+               }
+
+               if (usersNode.canAddMixin(mixin))
+               {
+                  usersNode.addMixin(mixin);
+               }
+
+               if (groupsNode.canAddMixin(mixin))
+               {
+                  groupsNode.addMixin(mixin);
+               }
             }
-            sysSession.save();
+
+            if (sysSession.hasPendingChanges())
+            {
+               sysSession.save();
+            }
          }
-         sysSession.logout();
+         finally
+         {
+            sysSession.logout();
+         }
       }
    }
 
@@ -513,7 +616,7 @@ public class RegistryService extends Registry implements Startable
     */
    private List<RepositoryEntry> repConfigurations()
    {
-      return (List<RepositoryEntry>)repositoryService.getConfig().getRepositoryConfigurations();
+      return repositoryService.getConfig().getRepositoryConfigurations();
    }
 
    /**

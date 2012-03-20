@@ -19,85 +19,26 @@
 package org.exoplatform.services.jcr.core.nodetype;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeReadException;
-
-import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
- * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
+ * @version $Id$
  *
  */
 public interface NodeTypeData
 {
 
-//   /**
-//    * @return the isAbstract
-//    */
-//   public boolean isAbstract();
+   public NodeDefinitionData[] getDeclaredChildNodeDefinitions();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
-   public NodeDefinitionData[] getDeclaredChildNodeDefinitions();;
-
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public PropertyDefinitionData[] getDeclaredPropertyDefinitions();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public InternalQName[] getDeclaredSupertypeNames();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public InternalQName getPrimaryItemName();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public InternalQName getName();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public boolean hasOrderableChildNodes();
 
-   /**
-    * 
-    * @return
-    * @throws RepositoryException
-    * @throws NodeTypeReadException
-    */
    public boolean isMixin();
-
-//   /**
-//    * 
-//    * @return
-//    * @throws RepositoryException
-//    * @throws NodeTypeReadException
-//    */
-//   public boolean isQueryable();
-
 }

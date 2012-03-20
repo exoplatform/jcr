@@ -18,13 +18,10 @@
  */
 package org.exoplatform.services.transaction.jbosscache;
 
-import com.arjuna.ats.jta.xa.XidImple;
-
 import org.exoplatform.container.xml.InitParams;
 import org.jboss.cache.transaction.TransactionManagerLookup;
 
 import javax.transaction.UserTransaction;
-import javax.transaction.xa.Xid;
 
 /**
  * Add the specific part for Arjuna
@@ -35,31 +32,22 @@ import javax.transaction.xa.Xid;
  */
 public class JBossTransactionsService extends GenericTransactionService
 {
-   
+
    public JBossTransactionsService(TransactionManagerLookup tmLookup)
    {
       super(tmLookup);
    }
-      
+
    public JBossTransactionsService(TransactionManagerLookup tmLookup, InitParams params)
    {
-      super(tmLookup, params);      
+      super(tmLookup, params);
    }
 
    /**
     * {@inheritDoc} 
     */
    @Override
-   public Xid createXid()
-   {
-      return new XidImple();
-   }
-
-   /**
-    * {@inheritDoc} 
-    */
-   @Override
-   public UserTransaction getUserTransaction()
+   protected UserTransaction findUserTransaction() throws Exception
    {
       return com.arjuna.ats.jta.UserTransaction.userTransaction();
    }

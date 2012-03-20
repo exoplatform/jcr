@@ -69,7 +69,6 @@ public class CASableTreeFileIOChannel extends TreeFileIOChannel
       // own ids
       File[] files = new File[hids.size()];
       for (int i = 0; i < hids.size(); i++)
-         // TODO super.getFile calls mkdirs(tfile.getParentFile())
          files[i] = super.getFile(hids.get(i), CASableIOSupport.HASHFILE_ORDERNUMBER);
 
       return files;
@@ -99,7 +98,6 @@ public class CASableTreeFileIOChannel extends TreeFileIOChannel
          // CASableDeleteValues saves VCAS record on commit, but it's possible the Property just
          // added in this transaction and not commited.
 
-         // TODO 08.04.2009 Skip error now
          files = new File[0];
       }
       CASableDeleteValues o = new CASableDeleteValues(files, resources, cleaner, tempDir, propertyId, vcas);

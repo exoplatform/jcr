@@ -40,7 +40,7 @@ import java.util.Properties;
 public abstract class FileValueStorage extends ValueStoragePlugin
 {
 
-   private Log log = ExoLogger.getLogger("exo.jcr.component.core.FileValueStorage");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.FileValueStorage");
 
    public final static String PATH = "path";
 
@@ -59,9 +59,9 @@ public abstract class FileValueStorage extends ValueStoragePlugin
     * FileValueStorage constructor.
     * 
     */
-   public FileValueStorage()
+   public FileValueStorage(FileCleaner cleaner)
    {
-      this.cleaner = new FileCleaner(); // TODO use container cleaner
+      this.cleaner = cleaner;
    }
 
    /**
@@ -109,7 +109,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
       {
          if (rootDir.mkdirs())
          {
-            log.info("Directory created: " + rootDir.getAbsolutePath());
+            LOG.info("Directory created: " + rootDir.getAbsolutePath());
 
             // create internal temp dir
             File tempDir = new File(rootDir, TEMP_DIR_NAME);
@@ -120,7 +120,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
                // care about storage temp dir cleanup
                for (File tmpf : tempDir.listFiles())
                   if (!tmpf.delete())
-                     log.warn("Storage temporary directory contains un-deletable file " + tmpf.getAbsolutePath()
+                     LOG.warn("Storage temporary directory contains un-deletable file " + tmpf.getAbsolutePath()
                         + ". It's recommended to leave this directory for JCR External Values Storage private use.");
             }
             else
@@ -129,7 +129,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
          }
          else
          {
-            log.warn("Directory IS NOT created: " + rootDir.getAbsolutePath());
+            LOG.warn("Directory IS NOT created: " + rootDir.getAbsolutePath());
          }
       }
       else

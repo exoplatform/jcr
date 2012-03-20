@@ -29,12 +29,12 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.ItemImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
+import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import javax.jcr.ItemExistsException;
 import javax.jcr.RepositoryException;
 
 /**
@@ -53,8 +53,6 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
     * The list of deleted existing item states
     */
    protected List<ItemState> itemDeletedExistingStates = new ArrayList<ItemState>();
-
-   protected final SessionDataManager dstDataManager;
 
    private boolean removeExisting;
 
@@ -87,9 +85,8 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
       SessionDataManager srcDataManager, SessionDataManager dstDataManager, boolean removeExisting,
       SessionChangesLog changes)
    {
-      super(parent, dstNodeName, nodeTypeManager, srcDataManager, false);
+      super(parent, dstNodeName, nodeTypeManager, srcDataManager, dstDataManager, false);
 
-      this.dstDataManager = dstDataManager;
       this.removeExisting = removeExisting;
       this.changes = changes;
    }
@@ -180,7 +177,8 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
             }
             else
             {
-               throw new ItemExistsException("Item exists id = " + identifier + " name " + relItem.getName());
+               throw new JCRItemExistsException("Item exists id = " + identifier + " name " + relItem.getName(),
+                  identifier);
             }
          }
          keepIdentifiers = true;

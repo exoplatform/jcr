@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.BinaryValuesProcessing">
+  <?dbhtml filename="ch-binary-values-processing.html"?>
+
+  <title>Binary Values Processing</title>
+  <para>Processing binary large object (BLOB) is very important in eXo JCR, so this chapter focuses on explaining how to
+  do it.
+  </para>
+
+  <section id="JCR.BinaryValuesProcessing.Configuration">
+    <title>Configuration</title>
+
+    <para>Binary large object (BLOB) properties can be stored in two ways in
+    the eXo JCR: in the database with items information or in an external
+    storage on host file system. These options can be configured at workspace
+    in the repository configuration file (repository-configuration.xml in
+    portal and exo-jcr-config.xml in standalone mode). The database storage
+    can't be completely disabled.</para>
+
+    <para>The first case is optimal for most of cases which you do not use
+    very large values or/and do not have too many BLOBs. The configuration of
+    the BLOBs size and BLOBs quantity in a repository depend on your database
+    features and hardware.</para>
+
+    <para>The second case is to use an external values storage. The storage
+    can be located on a built-in hard disk or on an attached storage. But in
+    any cases, you should access to the storage as if it was a regular
+    file(s). The external value storage is optional and can be enabled in a
+    database configuration.</para>
+
+    <note>
+      <para>eXo JCR Repository service configuration basics is discussed in
+      <link linkend="JCR.eXoJCRconfiguration">Configuration</link></para>
+
+      <para>Database and workspace persistence storage configuration is
+      discussed in <link linkend="JCR.JDBCDataContainerConfig">JDBC Data
+      Container config</link></para>
+
+      <para>Configuration details for <link
+      linkend="JCR.ExternalValueStorages">External Value
+      Storages</link>.</para>
+    </note>
+  </section>
+
+  <section id="JCR.BinaryValuesProcessing.Usage">
+    <title>Usage</title>
+
+    <para>In both of the cases, a developer can set/update the binary Property
+    via Node.setProperty(String, InputStream), Property.setValue(InputStream)
+    as described in the spec JSR-170. Also, there is the setter with a ready
+    Value object (obtainer from ValueFactory.createValue(InputStream)).</para>
+
+    <para>An example of a specification usage.</para>
+
+    <programlisting language="java">// Set the property value with given stream content. 
+Property binProp = node.setProperty("BinData", myDataStream);
+// Get the property value stream. 
+InputStream binStream = binProp.getStream();
+
+// You may change the binary property value with a new Stream, all data will be replaced
+// with the content from the new stream.
+Property updatedBinProp = node.setProperty("BinData", newDataStream);
+// Or update an obtained property
+updatedBinProp.setValue(newDataStream);
+// Or update using a Value object 
+updatedBinProp.setValue(ValueFactory.createValue(newDataStream));
+// Get the updated property value stream. 
+InputStream newStream = updatedBinProp.getStream();</programlisting>
+
+    <para>But if you need to update the property sequentially and with partial
+    content, you have no choice but to edit the whole data stream outside and
+    get it back to the repository each time. In case of really large-sized
+    data, the application will be stuck and the productivity will decrease a
+    lot. JCR stream setters will also check constraints and perform common
+    validation each time.</para>
+
+    <para>There is a feature of the eXo JCR extension that can be used for
+    binary values partial writing without frequent session level calls. The
+    main idea is to use a value object obtained from the property as the
+    storage of the property content while writing/reading during
+    runtime.</para>
+
+    <para>According to the spec JSR-170, Value interface provides the state of
+    property that can't be changed (edited). The eXo JCR core provides
+    ReadableBinaryValue and EditableBinaryValue interfaces which themselves
+    extend JCR Value. The interfaces allow the user to partially read and
+    change a value content.</para>
+
+    <para>ReadableBinaryValue value can be casted from any value, i.e. String,
+    Binary, Date etc.</para>
+
+    <programlisting language="java">// get the property value of type PropertyType.STRING 
+ReadableBinaryValue extValue = (ReadableBinaryValue) node.getProperty("LargeText").getValue();
+// read 200 bytes to a destStream from the position 1024 in the value content
+OutputStream destStream = new FileOutputStream("MyTextFile.txt");
+extValue.read(destStream, 200, 1024);</programlisting>
+
+    <para>But EditableBinaryValue can be applied only to properties of type
+    PropertyType.BINARY. In other cases, a cast to EditableBinaryValue will
+    fail.</para>
+
+    <para>After the value has been edited, the EditableBinaryValue value can
+    be applied to the property using the standard setters
+    (Property.setValue(Value), Property.setValues(Value),
+    Node.setProperty(String, Value) etc.). Only after the EditableBinaryValue
+    has been set to the property, it can be obtained in this session by
+    getters (Property.getValue(), Node.getProperty(String) etc.).</para>
+
+    <para>The user can obtain an EditableBinaryValue instance and fill it with
+    data in an interaction manner (or any other appropriated to the targets)
+    and return (set) the value to the property after the content will be
+    done.</para>
+
+    <programlisting language="java">// get the property value for PropertyType.BINARY Property
+EditableBinaryValue extValue = (EditableBinaryValue) node.getProperty("BinData").getValue();
+
+// update length bytes from the stream starting from the position 1024 in existing Value data
+extValue.update(dataInputStream, dataLength, 1024);
+
+// apply the edited EditableBinaryValue to the Property
+node.setProperty("BinData", extValue);
+
+// save the Property to persistence
+node.save();</programlisting>
+
+    <para>A practical example of the iterative usage. In this example, the
+    value is updated with data from the sequence of streams and after the
+    update is done, the value will be applied to the property and be visible
+    during the session.</para>
+
+    <programlisting language="java">// update length bytes from the stream starting from the particular 
+// position in the existing Value data
+int dpos = 1024;
+while (source.dataAvailable()) {
+  extValue.update(source.getInputStream(), source.getLength(), dpos);
+  dpos = dpos + source.getLength();
+}
+
+// apply the edited EditableBinaryValue to the Property
+node.setProperty("BinData", extValue);</programlisting>
+  </section>
+
+  <section id="JCR.BinaryValuesProcessing.Value_implementations">
+    <title>Value implementations</title>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/other/binaryvalue.png" />
+      </imageobject>
+    </mediaobject>
+
+    <para>ReadableBinaryValue has one method to read Value.</para>
+
+    <para>Read length bytes is counted from the binary value to the given
+    position into the stream.</para>
+
+    <programlisting language="java">long read(OutputStream stream, long length, long position) throws IOException, RepositoryException ;</programlisting>
+
+    <para>EditableBinaryValue has two methods to edit value.</para>
+
+    <para>Update with length bytes from the specified stream to this value
+    data at a position. If the position is lower than 0, the IOException
+    exception will be thrown. If the position is higher than the current Value
+    length, the Value length will be increased at first to the size of
+    position and length bytes will be added after the position.</para>
+
+    <programlisting language="java">void update(InputStream stream, long length, long position) throws IOException;</programlisting>
+
+    <para>Set the length of the Value in bytes to the specified size. If the
+    size is lower than 0, the IOException exception will be thrown. This
+    operation can be used to extend or truncat the Value size. This method is
+    used internally in the update operation in case of extending the size to
+    the given position.</para>
+
+    <programlisting language="java">void setLength(long size) throws IOException;</programlisting>
+
+    <para>An application can perform JCR binary operations more flexibly and
+    will have less I/O and CPU usage using these methods.</para>
+  </section>
+</chapter>

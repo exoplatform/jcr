@@ -37,7 +37,7 @@ import java.util.ArrayList;
 public class CmdList extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdList");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.CmdList");
 
    protected String path = "";
 
@@ -95,7 +95,7 @@ public class CmdList extends FtpCommandImpl
 
             dataTransiver.close();
 
-            String dd = new String(fileData, "windows-1251");
+            String dd = new String(fileData, "utf-8");
 
             String[] lines = dd.split("\r\n");
 
@@ -115,7 +115,7 @@ public class CmdList extends FtpCommandImpl
                }
                catch (Exception exc)
                {
-                  log.info("CAN'T PARSE FILE LINE: [" + lines[i] + "]");
+                  LOG.info("CAN'T PARSE FILE LINE: [" + lines[i] + "]");
                }
             }
             reply = getReply();
@@ -124,7 +124,7 @@ public class CmdList extends FtpCommandImpl
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       return -1;
    }

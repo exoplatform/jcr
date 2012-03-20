@@ -20,22 +20,22 @@ package org.exoplatform.services.jcr.ext.hierarchy.impl;
 
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.ext.distribution.DataDistributionManager;
+import org.exoplatform.services.jcr.ext.distribution.DataDistributionMode;
+import org.exoplatform.services.jcr.ext.distribution.DataDistributionType;
 import org.exoplatform.services.jcr.ext.hierarchy.NodeHierarchyCreator;
 import org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig.JcrPath;
-import org.exoplatform.services.jcr.ext.hierarchy.impl.HierarchyConfig.Permission;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.organization.Group;
 import org.exoplatform.services.organization.GroupEventListener;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
@@ -44,148 +44,129 @@ import javax.jcr.Session;
  */
 public class NewGroupListener extends GroupEventListener
 {
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.NewGroupListener");
 
-   private HierarchyConfig config_;
+   private static final String GROUPS_PATH = "groupsPath";
 
-   private RepositoryService jcrService_;
+   private final HierarchyConfig config_;
 
-   private String groupsPath_;
-
-   final static private String NT_UNSTRUCTURED = "nt:unstructured".intern();
-
-   final static private String GROUPS_PATH = "groupsPath";
+   private final RepositoryService jcrService_;
+   
+   private final DataDistributionType dataDistributionType_;
+   
+   private final String groupsPath_;
 
    public NewGroupListener(RepositoryService jcrService, NodeHierarchyCreator nodeHierarchyCreatorService,
-      InitParams params) throws Exception
+      DataDistributionManager dataDistributionManager, InitParams params) throws Exception
    {
       jcrService_ = jcrService;
       config_ = (HierarchyConfig)params.getObjectParamValues(HierarchyConfig.class).get(0);
+      dataDistributionType_ = dataDistributionManager.getDataDistributionType(DataDistributionMode.NONE);
       groupsPath_ = nodeHierarchyCreatorService.getJcrPath(GROUPS_PATH);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void preSave(Group group, boolean isNew) throws Exception
    {
       String groupId = null;
-      String parentId = group.getParentId();
-      if (parentId == null || parentId.length() == 0)
-         groupId = "/" + group.getGroupName();
+      if (group.getId() != null)
+      {
+         groupId = group.getId();
+      }
       else
-         groupId = parentId + "/" + group.getGroupName();
-      List<RepositoryEntry> repositories = jcrService_.getConfig().getRepositoryConfigurations();
+      {
+         String parentId = group.getParentId();
+         if (parentId == null || parentId.length() == 0)
+            groupId = "/" + group.getGroupName();
+         else
+            groupId = parentId + "/" + group.getGroupName();
+      }
       if (isNew)
       {
-         for (RepositoryEntry repo : repositories)
-         {
-            buildGroupStructure(repo.getName(), groupId);
-         }
+         buildGroupStructure(jcrService_.getCurrentRepository(), groupId);
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void preDelete(Group group) throws Exception
    {
       String groupId = null;
-      String parentId = group.getParentId();
-      if (parentId == null || parentId.length() == 0)
-         groupId = "/" + group.getGroupName();
+      if (group.getId() != null)
+      {
+         groupId = group.getId();
+      }
       else
-         groupId = parentId + "/" + group.getGroupName();
-      List<RepositoryEntry> repositories = jcrService_.getConfig().getRepositoryConfigurations();
-      for (RepositoryEntry repo : repositories)
       {
-         try
-         {
-            removeGroup(repo.getName(), groupId);
-         }
-         catch (Exception e)
-         {
-            continue;
-         }
+         String parentId = group.getParentId();
+         if (parentId == null || parentId.length() == 0)
+            groupId = "/" + group.getGroupName();
+         else
+            groupId = parentId + "/" + group.getGroupName();
       }
+      removeGroup(jcrService_.getCurrentRepository(), groupId);
    }
 
-   private void removeGroup(String repoName, String groupId) throws Exception
+   private void removeGroup(ManageableRepository manageableRepository, String groupId) throws Exception
    {
-      ManageableRepository manageableRepository = jcrService_.getRepository(repoName);
-      String systemWorkspace = manageableRepository.getConfiguration().getDefaultWorkspaceName();
-      Session session = manageableRepository.getSystemSession(systemWorkspace);
-      Node groupNode = (Node)session.getItem(groupsPath_ + groupId);
-      groupNode.remove();
-      session.save();
-      session.logout();
+      Session session = null;
+      try
+      {
+         String systemWorkspace = manageableRepository.getConfiguration().getDefaultWorkspaceName();
+         session = manageableRepository.getSystemSession(systemWorkspace);
+         Node groupsHome = (Node)session.getItem(groupsPath_);
+         dataDistributionType_.removeDataNode(groupsHome, groupId);
+      }
+      catch (RepositoryException e)
+      {
+         LOG.error("An error occurs while removing the group directory of '" + groupId + "'", e);
+      }
+      finally
+      {
+         if (session != null)
+         {
+            session.logout();            
+         }
+      }
    }
 
    @SuppressWarnings("unchecked")
-   private void buildGroupStructure(String repository, String groupId) throws Exception
+   private void buildGroupStructure(ManageableRepository manageableRepository, String groupId) throws Exception
    {
-      ManageableRepository manageableRepository = jcrService_.getRepository(repository);
-      String systemWorkspace = manageableRepository.getConfiguration().getDefaultWorkspaceName();
-      Session session = manageableRepository.getSystemSession(systemWorkspace);
-      Node groupsHome = (Node)session.getItem(groupsPath_);
-      List jcrPaths = config_.getJcrPaths();
-      Node groupNode = null;
+      Session session = null;
       try
       {
-         groupNode = groupsHome.getNode(groupId.substring(1, groupId.length()));
-      }
-      catch (PathNotFoundException e)
-      {
-         groupNode = groupsHome.addNode(groupId.substring(1, groupId.length()));
-      }
-      for (JcrPath jcrPath : (List<JcrPath>)jcrPaths)
-      {
-         createNode(groupNode, jcrPath.getPath(), jcrPath.getNodeType(), jcrPath.getMixinTypes(), getPermissions(
-            jcrPath.getPermissions(), groupId));
-      }
-      session.save();
-      session.logout();
-   }
-
-   @SuppressWarnings("unchecked")
-   private void createNode(Node groupNode, String path, String nodeType, List<String> mixinTypes, Map permissions)
-      throws Exception
-   {
-      if (nodeType == null || nodeType.length() == 0)
-         nodeType = NT_UNSTRUCTURED;
-      try
-      {
-         groupNode = groupNode.getNode(path);
-      }
-      catch (PathNotFoundException e)
-      {
-         groupNode = groupNode.addNode(path, nodeType);
-      }
-      if (groupNode.canAddMixin("exo:privilegeable"))
-         groupNode.addMixin("exo:privilegeable");
-      if (permissions != null && !permissions.isEmpty())
-         ((ExtendedNode)groupNode).setPermissions(permissions);
-      if (mixinTypes.size() > 0)
-      {
-         for (String mixin : mixinTypes)
+         String systemWorkspace = manageableRepository.getConfiguration().getDefaultWorkspaceName();
+         session = manageableRepository.getSystemSession(systemWorkspace);
+         Node groupsHome = (Node)session.getItem(groupsPath_);
+         Node groupNode = dataDistributionType_.getOrCreateDataNode(groupsHome, groupId);
+         @SuppressWarnings("rawtypes")
+         List jcrPaths = config_.getJcrPaths();
+         for (JcrPath jcrPath : (List<JcrPath>)jcrPaths)
          {
-            if (groupNode.canAddMixin(mixin))
-               groupNode.addMixin(mixin);
+            createNode(groupNode, jcrPath.getPath(), jcrPath.getNodeType(), jcrPath.getMixinTypes(),
+               jcrPath.getPermissions("*:".concat(groupId)));
+         }
+      }
+      catch (Exception e)
+      {
+         LOG.error("An error occurs while initializing the group directory of '" + groupId + "'", e);
+      }
+      finally
+      {
+         if (session != null)
+         {
+            session.logout();            
          }
       }
    }
 
-   private Map getPermissions(List<Permission> permissions, String groupId)
+   private void createNode(Node groupNode, String path, String nodeType, List<String> mixinTypes,
+            Map<String, String[]> permissions) throws Exception
    {
-      Map<String, String[]> permissionsMap = new HashMap<String, String[]>();
-      String groupIdentity = "*:".concat(groupId);
-      permissionsMap.put(groupIdentity, PermissionType.ALL);
-      for (Permission permission : permissions)
-      {
-         StringBuilder strPer = new StringBuilder();
-         if ("true".equals(permission.getRead()))
-            strPer.append(PermissionType.READ);
-         if ("true".equals(permission.getAddNode()))
-            strPer.append(",").append(PermissionType.ADD_NODE);
-         if ("true".equals(permission.getSetProperty()))
-            strPer.append(",").append(PermissionType.SET_PROPERTY);
-         if ("true".equals(permission.getRemove()))
-            strPer.append(",").append(PermissionType.REMOVE);
-         permissionsMap.put(permission.getIdentity(), strPer.toString().split(","));
-      }
-      return permissionsMap;
+      dataDistributionType_.getOrCreateDataNode(groupNode, path, nodeType, mixinTypes, permissions);
    }
 }

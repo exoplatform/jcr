@@ -18,6 +18,9 @@
  */
 package org.exoplatform.frameworks.jcr.cli;
 
+import javax.jcr.LoginException;
+import javax.jcr.NoSuchWorkspaceException;
+import javax.jcr.RepositoryException;
 import javax.jcr.Workspace;
 
 /**
@@ -41,7 +44,19 @@ public class MoveNodeCommand extends AbstractCliCommand
          workspace.move(srcAbsPath, destAbsPath);
          output = "Node [" + srcAbsPath + "] has been moved to [" + destAbsPath + "] successfully \n";
       }
-      catch (Exception e)
+      catch (ParameterNotFoundException e)
+      {
+         output = "Can't execute command - " + e.getMessage() + "\n";
+      }
+      catch (LoginException e)
+      {
+         output = "Can't execute command - " + e.getMessage() + "\n";
+      }
+      catch (NoSuchWorkspaceException e)
+      {
+         output = "Can't execute command - " + e.getMessage() + "\n";
+      }
+      catch (RepositoryException e)
       {
          output = "Can't execute command - " + e.getMessage() + "\n";
       }

@@ -23,9 +23,11 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+import org.exoplatform.services.security.MembershipEntry;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 
 import javax.jcr.NamespaceRegistry;
 import javax.jcr.NoSuchWorkspaceException;
@@ -58,6 +60,16 @@ public interface ManageableRepository extends Repository
     * Repository READONLY status.
     */
    final int READONLY = 2;
+
+   /**
+    * Repository SUSPENDED status.
+    */
+   final int SUSPENDED = 3;
+
+   /**
+    * Repository UNDEFINED status.
+    */
+   final int UNDEFINED = 4;
 
    /**
     * Add the items persistence listener to the named workspace.
@@ -117,6 +129,15 @@ public interface ManageableRepository extends Repository
    Session getSystemSession(String workspaceName) throws RepositoryException;
 
    /**
+    * @param workspaceName - name of workspace
+    * @param membershipEntries - list of memberships
+    * @return the Dynamic session (session with Dynamic identity)
+    * @throws RepositoryException
+    */
+   Session getDynamicSession(String workspaceName, Collection<MembershipEntry> membershipEntries)
+            throws RepositoryException;
+
+   /**
     * @return array of workspace names
     */
    String[] getWorkspaceNames();
@@ -160,7 +181,7 @@ public interface ManageableRepository extends Repository
     * 
     * @param repository state
     */
-   void setState(int state);
+   void setState(int state) throws RepositoryException;
 
    /**
     * Returns repository state.
@@ -168,5 +189,12 @@ public interface ManageableRepository extends Repository
     * @return repository state
     */
    int getState();
+
+   /**
+    * Returns the string representation of current repository state.
+    * 
+    * @return repository state
+    */
+   String getStateTitle();
 
 }

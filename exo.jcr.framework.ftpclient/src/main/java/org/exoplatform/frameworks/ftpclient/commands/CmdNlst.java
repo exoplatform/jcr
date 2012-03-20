@@ -35,7 +35,7 @@ import java.util.ArrayList;
 public class CmdNlst extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.framework.command.CmdNlst");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.CmdNlst");
 
    protected String path = "";
 
@@ -87,13 +87,13 @@ public class CmdNlst extends FtpCommandImpl
             byte[] data = dataTransiver.receive();
             dataTransiver.close();
 
-            String dd = "";
+            StringBuilder dd = new StringBuilder();
             for (int i = 0; i < data.length; i++)
             {
-               dd += (char)data[i];
+               dd.append((char)data[i]);
             }
 
-            String[] lines = dd.split("\r\n");
+            String[] lines = dd.toString().split("\r\n");
             for (int i = 0; i < lines.length; i++)
             {
                names.add(lines[i]);
@@ -106,7 +106,7 @@ public class CmdNlst extends FtpCommandImpl
       }
       catch (Exception exc)
       {
-         log.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
+         LOG.info(FtpConst.EXC_MSG + exc.getMessage(), exc);
       }
 
       return -1;

@@ -49,7 +49,7 @@ public class DocumentViewStreamExporter extends StreamExporter
       NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)
       throws NamespaceException, RepositoryException
    {
-      super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse);
+      super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse, false);
    }
 
    /**
@@ -113,11 +113,11 @@ public class DocumentViewStreamExporter extends StreamExporter
             for (ValueData valueData : property.getValues())
             {
                String strVal = getValueAsStringForExport(valueData, property.getType());
-               if (strVal == "")
+               if (strVal.equals(""))
                {
                   continue;
                }
-               strValue +=
+               strValue += //NOSONAR
                   MULTI_VALUE_DELIMITER
                      + (property.getType() == PropertyType.BINARY ? strVal : StringConverter.normalizeString(strVal,
                         true));

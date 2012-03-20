@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.AccessControlExtension">
+  <?dbhtml filename="ch-acl-ext.html"?>
+
+  <title>Access Control Extension</title>
+
+  <para>An extended Access Control system consists of:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Specifically configured custom <emphasis
+        role="bold">ExtendedAccessManager</emphasis> which is called by eXo
+        JCR internals to check if user's Session (user) has some privilege to
+        perform some operation or not.</para>
+      </listitem>
+
+      <listitem>
+        <para>The <emphasis role="bold">Action</emphasis> sets a thread local
+        <emphasis role="bold">InvocationContext</emphasis> at runtime, the
+        InvocationContext instance is then used by the ExtendedAccessManager
+        in handling permissions of the current Session.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">InvocationContext</emphasis> is a
+        collection of properties which reflect the state of a current Session.
+        At present, it contains: the type of the current operation on Session
+        (event), current Item (javax.jcr.Item) on which this operation is
+        performed and the current eXo Container</para>
+      </listitem>
+    </itemizedlist>
+    
+  <section>
+    <title>Prerequisites</title>
+
+    <para>This is an extension of eXo JCR Access Control features. Please read
+    <link linkend="JCR.AccessControl">Access Control</link> and <link
+    linkend="JCR.Extensions">JCR Extensions</link> topics first.</para>
+  </section>
+
+  <section>
+    <title>Access Context Action</title>
+
+    <para>SetAccessContextAction implements Action and may be called by
+    SessionActionInterceptor as a reaction of some events - usually before
+    writing methods and after reading (getNode(), getProperty() etc). This
+    SetAccessContextAction calls the
+    AccessManager.setContext(InvocationContext context) method which sets the
+    ThreadLocal invocation context for the current call.</para>
+
+    <para>Action's Configuration may look like as the following:</para>
+
+    <programlisting language="xml">&lt;value&gt;
+  &lt;object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration"&gt;
+    &lt;field  name="eventTypes"&gt;&lt;string&gt;addNode,read&lt;/string&gt;&lt;/field&gt;
+    &lt;field  name="workspace"&gt;&lt;string&gt;production&lt;/string&gt;&lt;/field &gt;
+    &lt;field  name="actionClassName"&gt;&lt;string&gt;org.exoplatform.services.jcr.ext.SetAccessContextAction&lt;/string&gt;&lt;/field&gt;       
+  &lt;/object&gt;
+&lt;/value&gt;</programlisting>
+  </section>
+
+  <section>
+    <title>The Invocation Context</title>
+
+    <para>The <emphasis role="bold">InvocationContext</emphasis> contains the
+    current Item, the current ExoContainer and the current EventType is like
+    below:</para>
+
+    <programlisting language="java">public interface InvocationContext extends ContextBase {
+
+  Item getCurrentItem();
+
+  int getEventType();
+  
+  ExoContainer getContainer();
+}</programlisting>
+  </section>
+
+  <section>
+    <title>Custom Extended Access Manager</title>
+
+    <para>By default, all Workspaces share an AccessManager instance, created
+    by RepositoryService at the startup (DefaultAccessManagerImpl) which
+    supports default access control policy as described in the <emphasis
+    role="bold">Access Control</emphasis> chapter. Custom Access Control
+    policy can be applied to certain Workspace configuring <emphasis
+    role="bold">access-manager</emphasis> element inside <emphasis
+    role="bold">workspace</emphasis> as follows:</para>
+
+    <programlisting language="xml">&lt;workspace name="ws"&gt;        
+   ...
+   &lt;!-- after query-handler element --&gt;
+   &lt;access-manager class="org.exoplatform.services.jcr.CustomAccessManagerImpl"&gt;
+      &lt;properties&gt;
+         &lt;property name="someProperty" value="value"/&gt;
+         ...
+      &lt;/properties&gt;
+  &lt;/access-manager&gt;
+  ...
+&lt;/workspace&gt;</programlisting>
+
+    <para>When implementing AccessManager, hasPermission() method has to be
+    overriden so it uses the current invocation context at its discretion. For
+    instance, it may get the current node's metadata and make a decision if
+    the current User has appropriate permissions. Use Invocation Context's
+    runtime properties to make a decision about current Session's privileges
+    (see the Example below)</para>
+
+    <para>Simplified Sequence diagram for the Session.getNode() method (as an
+    Example):</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata fileref="images/other/acl-ext.jpg" />
+      </imageobject>
+    </mediaobject>
+  </section>
+
+  <section>
+    <title>Example of a custom Access Manager</title>
+
+    <para>The sample CustomAccessManagerImpl below extends the default access
+    manager and uses some DecisionMakingService in the overloaded
+    hasPermission method to find out if a current user has permission to use
+    current <emphasis role="bold">item, event type, userID</emphasis> and some
+    parameter of AccessManager. To make this Access manager work, it is
+    necessary to configure it in jcr configuration as mentioned in <emphasis
+    role="bold">Custom Extended Access Manager</emphasis> and
+    SetAccessContextAction should be configured in the way mentioned in
+    <emphasis role="bold">Access Context Action.</emphasis></para>
+
+    <programlisting language="java">public class CustomAccessManagerImpl extends AccessManager {
+
+  private String property;
+  private DecisionMakingService theService;
+
+  public CustomAccessManagerImpl (RepositoryEntry config, WorkspaceEntry wsConfig,
+      OrganizationService orgService, DecisionMakingService someService) throws RepositoryException {
+    super(config, wsConfig, orgService);
+    this.property = wsConfig.getAccessManager().getParameterValue("someParam");
+    this.theService = someService;  
+  }
+
+  @Override
+  public boolean hasPermission(AccessControlList acl, String[] permission, String userId) {
+    // call the default permission check
+    if (super.hasPermission(acl, permission, userId)) {
+      
+      Item curItem = context().getCurrentItem();
+      int eventType = context().getEventType();
+      ExoContainer container = context().getContainer();
+
+// call some service's method
+      return theService.makeDecision(curItem, eventType, userId, property);
+    } else {
+      return false;
+    }
+  }
+}</programlisting>
+  </section>
+</chapter>

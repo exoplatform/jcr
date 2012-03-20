@@ -54,7 +54,7 @@ import javax.security.auth.login.LoginException;
 public class FtpClientSessionImpl implements FtpClientSession
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpClientSessionImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.FtpClientSessionImpl");
 
    private FtpServer ftpServer;
 
@@ -131,7 +131,7 @@ public class FtpClientSessionImpl implements FtpClientSession
       }
       catch (UnsupportedEncodingException eexc)
       {
-         log.info("Unsupported encoding exception. See for CLIENT-SIDE-ENCODING parameter. " + eexc.getMessage(), eexc);
+         LOG.info("Unsupported encoding exception. See for CLIENT-SIDE-ENCODING parameter. " + eexc.getMessage(), eexc);
          byte[] data = replyString.getBytes();
          clientSocket.getOutputStream().write(data);
          // outPrintStream.println(replyString);
@@ -174,9 +174,9 @@ public class FtpClientSessionImpl implements FtpClientSession
       {
          clientSocket.close();
       }
-      catch (Exception exc)
+      catch (IOException exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       getFtpServer().unRegisterClient(this);
@@ -315,20 +315,24 @@ public class FtpClientSessionImpl implements FtpClientSession
 
    public String getRepoPath(ArrayList<String> repoPath)
    {
-      String curPath = "/";
+      StringBuilder curPath = new StringBuilder("/");
       for (int i = 1; i < repoPath.size(); i++)
       {
-         curPath += repoPath.get(i);
+         curPath.append(repoPath.get(i));
          if (i < (repoPath.size() - 1))
          {
-            curPath += "/";
+            curPath.append("/");
          }
       }
-      return curPath;
+      return curPath.toString();
    }
 
    public Session getSession(String workspaceName) throws Exception
    {
+      if (ftpServer.getRepository() == null)
+      {
+         throw new RepositoryException("Repository can not be retrieved.");
+      }
       Session curSession = sessionFactory.getSession(workspaceName, ftpServer.getRepository());
       curSession.refresh(false);
       return curSession;
@@ -366,7 +370,7 @@ public class FtpClientSessionImpl implements FtpClientSession
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       return FtpConst.Replyes.REPLY_550;
@@ -417,6 +421,11 @@ public class FtpClientSessionImpl implements FtpClientSession
       ExoContainer container = ExoContainerContext.getCurrentContainer();
       IdentityRegistry identityRegistry =
          (IdentityRegistry)container.getComponentInstanceOfType(IdentityRegistry.class);
-      identityRegistry.unregister(this.userId);
+
+      // The check need for case when login failed
+      if (this.userId != null)
+      {
+         identityRegistry.unregister(this.userId);
+      }
    }
 }

@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.ValueOperation;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.DeleteValues;
@@ -30,7 +31,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +49,7 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
    /**
     * Logger.
     */
-   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.FileIOChannel");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.FileIOChannel");
 
    /**
     * Temporary directory. Used for I/O transaction operations and locks.
@@ -121,12 +124,37 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
    /**
     * {@inheritDoc}
     */
+   public void prepare() throws IOException
+   {
+      for (ValueOperation vo : changes)
+         vo.prepare();
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
    public void commit() throws IOException
    {
       try
       {
          for (ValueOperation vo : changes)
             vo.commit();
+      }
+      finally
+      {
+         changes.clear();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void twoPhaseCommit() throws IOException
+   {
+      try
+      {
+         for (ValueOperation vo : changes)
+            vo.twoPhaseCommit();
       }
       finally
       {
@@ -163,6 +191,31 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
    public ValueData read(String propertyId, int orderNumber, int maxBufferSize) throws IOException
    {
       return readValue(getFile(propertyId, orderNumber), orderNumber, maxBufferSize);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void checkValueData(String propertyId, int orderNumber) throws ValueDataNotFoundException, IOException
+   {
+      File f = getFile(propertyId, orderNumber);
+      if (!f.exists())
+      {
+         throw new ValueDataNotFoundException("Value data corresponding to property with [id=" + propertyId
+            + ", ordernum=" + orderNumber + "] does not exist.");
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void repairValueData(String propertyId, int orderNumber) throws IOException
+   {
+      File f = getFile(propertyId, orderNumber);
+      if (!f.createNewFile())
+      {
+         throw new IOException("Can not create empty file " + f.getAbsolutePath());
+      }
    }
 
    /**

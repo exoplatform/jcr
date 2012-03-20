@@ -24,6 +24,8 @@ import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.jcr.storage.value.ValuePluginFilter;
@@ -33,6 +35,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -53,14 +56,23 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
 
    private static final long serialVersionUID = 4537116106932443262L;
 
+   /**
+    * Logger.
+    */
    private static Log log = ExoLogger.getLogger("exo.jcr.component.core.StandaloneStoragePluginProvider");
+
+   /**
+    * Value storage enabling parameter. For interal usage only and testing purpose.
+    */
+   private static final String VALUE_STORAGE_ENABLED_PARAM = "enabled";
 
    /**
     * ValueData resorces holder (Files etc). It's singleton feature.
     */
    private final ValueDataResourceHolder resorcesHolder;
 
-   public StandaloneStoragePluginProvider(WorkspaceEntry wsConfig) throws RepositoryConfigurationException, IOException
+   public StandaloneStoragePluginProvider(WorkspaceEntry wsConfig, FileCleanerHolder holder)
+      throws RepositoryConfigurationException, IOException
    {
 
       this.resorcesHolder = new ValueDataResourceHolder();
@@ -70,57 +82,94 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
       if (storages != null)
          for (ValueStorageEntry storageEntry : storages)
          {
-
-            // can be only one storage with given id
-            for (ValueStoragePlugin vsp : this)
+            if (storageEntry.getParameterBoolean(VALUE_STORAGE_ENABLED_PARAM, true))
             {
-               if (vsp.getId().equals(storageEntry.getId()))
-                  throw new RepositoryConfigurationException("Value storage with ID '" + storageEntry.getId()
-                     + "' already exists");
-            }
+               // can be only one storage with given id
+               for (ValueStoragePlugin vsp : this)
+               {
+                  if (vsp.getId().equals(storageEntry.getId()))
+                  {
+                     throw new RepositoryConfigurationException("Value storage with ID '" + storageEntry.getId()
+                        + "' already exists");
+                  }
+               }
 
-            Object o = null;
-            try
-            {
-               o = Class.forName(storageEntry.getType()).newInstance();
-            }
-            catch (Exception e)
-            {
-               log.error("Value Storage Plugin instantiation FAILED. ", e);
-               continue;
-            }
-            if (!(o instanceof ValueStoragePlugin))
-            {
-               log.error("Not a ValueStoragePlugin object IGNORED: " + o);
-               continue;
-            }
+               Object o = null;
+               try
+               {
+                  o =
+                     Class.forName(storageEntry.getType()).getConstructor(FileCleaner.class)
+                        .newInstance(holder.getFileCleaner());
 
-            ValueStoragePlugin plugin = (ValueStoragePlugin)o;
-            // init filters
-            ArrayList<ValuePluginFilter> filters = new ArrayList<ValuePluginFilter>();
-            List<ValueStorageFilterEntry> filterEntries = storageEntry.getFilters();
-            for (ValueStorageFilterEntry filterEntry : filterEntries)
-            {
-               ValuePluginFilter filter =
-                  new ValuePluginFilter(PropertyType.valueFromName(filterEntry.getPropertyType()), null, null,
-                     filterEntry.getMinValueSize());
-               filters.add(filter);
+               }
+               catch (InstantiationException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (IllegalArgumentException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (SecurityException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (IllegalAccessException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (InvocationTargetException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (NoSuchMethodException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (ClassNotFoundException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               if (!(o instanceof ValueStoragePlugin))
+               {
+                  log.error("Not a ValueStoragePlugin object IGNORED: " + o);
+                  continue;
+               }
+
+               ValueStoragePlugin plugin = (ValueStoragePlugin)o;
+               // init filters
+               ArrayList<ValuePluginFilter> filters = new ArrayList<ValuePluginFilter>();
+               List<ValueStorageFilterEntry> filterEntries = storageEntry.getFilters();
+               for (ValueStorageFilterEntry filterEntry : filterEntries)
+               {
+                  ValuePluginFilter filter =
+                     new ValuePluginFilter(PropertyType.valueFromName(filterEntry.getPropertyType()), null, null,
+                        filterEntry.getMinValueSize());
+                  filters.add(filter);
+               }
+
+               // init properties
+               Properties props = new Properties();
+               List<SimpleParameterEntry> paramEntries = storageEntry.getParameters();
+               for (SimpleParameterEntry paramEntry : paramEntries)
+               {
+                  props.setProperty(paramEntry.getName(), paramEntry.getValue());
+               }
+
+               plugin.init(props, resorcesHolder);
+               plugin.setId(storageEntry.getId());
+               plugin.setFilters(filters);
+
+               add(plugin);
+               log.info("Value Storage Plugin initialized " + plugin);
             }
-
-            // init properties
-            Properties props = new Properties();
-            List<SimpleParameterEntry> paramEntries = storageEntry.getParameters();
-            for (SimpleParameterEntry paramEntry : paramEntries)
-            {
-               props.setProperty(paramEntry.getName(), paramEntry.getValue());
-            }
-
-            plugin.init(props, resorcesHolder);
-            plugin.setId(storageEntry.getId());
-            plugin.setFilters(filters);
-
-            add(plugin);
-            log.info("Value Storage Plugin initialized " + plugin);
          }
    }
 

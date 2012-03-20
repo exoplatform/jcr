@@ -87,27 +87,28 @@ public class SessionEventMatcher implements ActionMatcher
 
    public String dump()
    {
-      String str = "SessionEventMatcher: " + eventTypes + "\n";
+      StringBuilder str = new StringBuilder("SessionEventMatcher: ").append(eventTypes).append("\n");
 
       if (paths != null)
       {
-         str += "Paths (isDeep=" + isDeep + "):\n";
+         str.append("Paths (isDeep=").append(isDeep).append("):\n");
+
          for (QPath p : paths)
          {
-            str += p.getAsString() + "\n";
+            str.append(p.getAsString()).append("\n");
          }
       }
 
       if (nodeTypeNames != null)
       {
-         str += "Node Types:\n";
+         str.append("Node Types:\n");
          for (InternalQName n : nodeTypeNames)
          {
-            str += n.getAsString() + "\n";
+            str.append(n.getAsString()).append("\n");
          }
       }
 
-      return str;
+      return str.toString();
    }
 
    public final boolean match(Condition conditions)
@@ -167,8 +168,7 @@ public class SessionEventMatcher implements ActionMatcher
 
       for (QPath p : paths)
       {
-         if (itemPath.equals(p) || itemPath.isDescendantOf(p, !isDeep))// TODO is
-            // Child
+         if (itemPath.equals(p) || itemPath.isDescendantOf(p, !isDeep))
             return true;
       }
 

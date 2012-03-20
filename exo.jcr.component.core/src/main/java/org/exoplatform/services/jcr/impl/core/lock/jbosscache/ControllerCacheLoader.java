@@ -44,7 +44,7 @@ import java.util.Set;
  * Created by The eXo Platform SAS
  * Author : Nicolas Filotto 
  *          nicolas.filotto@exoplatform.com
- * 9 fŽvr. 2010  
+ * 9 fï¿½vr. 2010  
  */
 @SuppressWarnings("unchecked")
 public class ControllerCacheLoader implements CacheLoader
@@ -53,17 +53,17 @@ public class ControllerCacheLoader implements CacheLoader
     * The nested cache loader
     */
    private final CacheLoader cl;
-   
+
    /**
     * The related cache
     */
    private CacheSPI cache;
-   
+
    /**
     * The configuration of the current cache loader
     */
    private IndividualCacheLoaderConfig config;
-   
+
    /**
     * The default constructor
     * @param cl the cache loader that will be managed by the controller
@@ -71,12 +71,12 @@ public class ControllerCacheLoader implements CacheLoader
    public ControllerCacheLoader(CacheLoader cl)
    {
       this.cl = cl;
-   }   
+   }
 
    /**
     * @see org.jboss.cache.loader.CacheLoader#commit(java.lang.Object)
     */
-   public void commit(Object tx) throws Exception
+   public void commit(final Object tx) throws Exception
    {
       cl.commit(tx);
    }
@@ -94,13 +94,13 @@ public class ControllerCacheLoader implements CacheLoader
          if (node != null)
          {
             // The node already exists in the local cache, so we return true
-            return true;            
+            return true;
          }
          else
          {
             // The node doesn't exist in the local cache, so we need to check through the nested
             // cache loader
-            return cl.exists(name);         
+            return cl.exists(name);
          }
       }
       // All the data is loaded at startup, so no need to call the nested cache loader for another
@@ -121,13 +121,13 @@ public class ControllerCacheLoader implements CacheLoader
          if (node != null)
          {
             // The node already exists in the local cache, so we return the corresponding data
-            return node.getDataDirect();            
+            return node.getDataDirect();
          }
          else
          {
             // The node doesn't exist in the local cache, so we need to check through the nested
             // cache loader            
-            return cl.get(name);         
+            return cl.get(name);
          }
       }
       // All the data is loaded at startup, so no need to call the nested cache loader for another
@@ -140,14 +140,7 @@ public class ControllerCacheLoader implements CacheLoader
     */
    public Set<?> getChildrenNames(Fqn fqn) throws Exception
    {
-      if (cache.getCacheStatus() == CacheStatus.STARTING)
-      {
-         // Try to get the list of children name from the nested cache loader
-         return cl.getChildrenNames(fqn);         
-      }
-      // All the data is loaded at startup, so no need to call the nested cache loader for another
-      // cache status other than CacheStatus.STARTING
-     return null;
+      return cl.getChildrenNames(fqn);
    }
 
    /**
@@ -177,7 +170,8 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#prepare(java.lang.Object, java.util.List, boolean)
     */
-   public void prepare(Object tx, List<Modification> modifications, boolean onePhase) throws Exception
+   public void prepare(final Object tx, final List<Modification> modifications, final boolean onePhase)
+      throws Exception
    {
       cl.prepare(tx, modifications, onePhase);
    }
@@ -185,7 +179,7 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#put(java.util.List)
     */
-   public void put(List<Modification> modifications) throws Exception
+   public void put(final List<Modification> modifications) throws Exception
    {
       cl.put(modifications);
    }
@@ -193,7 +187,7 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#put(org.jboss.cache.Fqn, java.util.Map)
     */
-   public void put(Fqn name, Map<Object, Object> attributes) throws Exception
+   public void put(final Fqn name, final Map<Object, Object> attributes) throws Exception
    {
       cl.put(name, attributes);
    }
@@ -201,7 +195,7 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#put(org.jboss.cache.Fqn, java.lang.Object, java.lang.Object)
     */
-   public Object put(Fqn name, Object key, Object value) throws Exception
+   public Object put(final Fqn name, final Object key, final Object value) throws Exception
    {
       return cl.put(name, key, value);
    }
@@ -209,7 +203,7 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#remove(org.jboss.cache.Fqn)
     */
-   public void remove(Fqn fqn) throws Exception
+   public void remove(final Fqn fqn) throws Exception
    {
       cl.remove(fqn);
    }
@@ -217,7 +211,7 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#remove(org.jboss.cache.Fqn, java.lang.Object)
     */
-   public Object remove(Fqn fqn, Object key) throws Exception
+   public Object remove(final Fqn fqn, final Object key) throws Exception
    {
       return cl.remove(fqn, key);
    }
@@ -225,7 +219,7 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#removeData(org.jboss.cache.Fqn)
     */
-   public void removeData(Fqn fqn) throws Exception
+   public void removeData(final Fqn fqn) throws Exception
    {
       cl.removeData(fqn);
    }
@@ -233,7 +227,7 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     * @see org.jboss.cache.loader.CacheLoader#rollback(java.lang.Object)
     */
-   public void rollback(Object tx)
+   public void rollback(final Object tx)
    {
       cl.rollback(tx);
    }

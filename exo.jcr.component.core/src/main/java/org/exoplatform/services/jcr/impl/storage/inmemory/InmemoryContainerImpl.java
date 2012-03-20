@@ -61,9 +61,9 @@ public class InmemoryContainerImpl extends WorkspaceDataContainerBase
     */
    public String getInfo()
    {
-      String str = "Info: Inmemory (for testing only) based container \n";
-      str += "Name: " + name + "\n";
-      return str;
+      StringBuilder str = new StringBuilder("Info: Inmemory (for testing only) based container \n");
+      str.append("Name: ").append(name).append("\n");
+      return str.toString();
    }
 
    /**
@@ -106,5 +106,13 @@ public class InmemoryContainerImpl extends WorkspaceDataContainerBase
    public boolean isCheckSNSNewConnection()
    {
       return true;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String getUniqueName()
+   {
+      return name;
    }
 }

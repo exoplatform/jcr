@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="JCR.Resources">
+  <?dbhtml filename="ch-jcr-resources.html"?>
+  <title>JCR Resources:</title>
+
+  <para>* Java Community Process: <ulink
+  url="http://jcp.org/en/jsr/detail?id=170">JSR 170 </ulink> and <ulink
+  url="http://jcp.org/en/jsr/detail?id=283">JSR 283</ulink></para>
+
+  <para>* Tom Wheeler, <ulink
+  url="http://www.tomwheeler.com/java_content_repository_tomwheeler_20071007.pdf">The
+  Java Content Repository</ulink> (2007)</para>
+
+  <para>* Roy T. Fielding, <ulink
+  url="http://www.day.com/content/dam/day/whitepapers/JSR_170_White_Paper.pdf">JSR
+  170 Overview: Standardizing the Content Repository Interface</ulink> (March
+  13, 2005)</para>
+
+  <para>* David Nuescheler and Janus Boye, <ulink
+  url="http://www.cmswatch.com/Feature/123">JSR-170 What's in it for
+  me?</ulink> (April 20, 2005)</para>
+
+  <para>* Benjamin Mestrallet, Tuan Nguyen, Gennady Azarenkov, Francois Moron
+  and Brice Revenant <ulink
+  url="http://www.theserverside.com/tt/articles/article.tss?l=eXoPlatform2">eXo
+  Platform v2, Portal, JCR, ECM, Groupware and Business Intelligence</ulink>
+  (January 2006)</para>
+</chapter>

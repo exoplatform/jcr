@@ -54,7 +54,7 @@ public class LazyTextExtractorField extends AbstractField
    /**
     * The extract as obtained lazily from {@link #reader}.
     */
-   private String extract;
+   volatile private String extract;
 
    /**
     * Creates a new <code>LazyTextExtractorField</code> with the given
@@ -81,34 +81,39 @@ public class LazyTextExtractorField extends AbstractField
    {
       if (extract == null)
       {
-         StringBuffer textExtract = new StringBuffer();
-         char[] buffer = new char[1024];
-         int len;
-         try
+         synchronized (this)
          {
-            while ((len = reader.read(buffer)) > -1)
+            if (extract == null)
             {
-               textExtract.append(buffer, 0, len);
+               StringBuffer textExtract = new StringBuffer();
+               char[] buffer = new char[1024];
+               int len;
+               try
+               {
+                  while ((len = reader.read(buffer)) > -1)
+                  {
+                     textExtract.append(buffer, 0, len);
+                  }
+               }
+               catch (IOException e)
+               {
+                  log.warn("Exception reading value for field: " + e.getMessage());
+                  log.debug("Dump:", e);
+               }
+               finally
+               {
+                  try
+                  {
+                     reader.close();
+                  }
+                  catch (IOException e)
+                  {
+                     log.error(e.getLocalizedMessage(), e);
+                  }
+               }
+               extract = textExtract.toString();
             }
          }
-         catch (IOException e)
-         {
-            log.warn("Exception reading value for field: " + e.getMessage());
-            log.debug("Dump:", e);
-         }
-         finally
-         {
-            //IOUtils.closeQuietly(reader);
-            try
-            {
-               reader.close();
-            }
-            catch (IOException e)
-            {
-               log.error(e.getLocalizedMessage(), e);
-            }
-         }
-         extract = textExtract.toString();
       }
       return extract;
    }

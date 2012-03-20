@@ -53,7 +53,7 @@ public class OrderPatchCommand
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.OrderPatchCommand");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.OrderPatchCommand");
 
    /**
     * Constructor.
@@ -100,7 +100,7 @@ public class OrderPatchCommand
       }
       catch (Exception exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
 
@@ -214,7 +214,7 @@ public class OrderPatchCommand
          }
          catch (RepositoryException exc)
          {
-            log.error(exc.getMessage(), exc);
+            LOG.error(exc.getMessage(), exc);
             status = HTTPStatus.INTERNAL_ERROR;
 
          }

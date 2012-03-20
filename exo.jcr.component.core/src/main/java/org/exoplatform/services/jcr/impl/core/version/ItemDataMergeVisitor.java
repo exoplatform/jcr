@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -112,6 +113,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
             mergeSession.getAccessManager(), mergeSession.getUserState());
       }
 
+      @Override
       protected void validateReferential(NodeData node) throws RepositoryException
       {
          // no REFERENCE validation here
@@ -172,7 +174,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
       this.bestEffort = bestEffort;
       this.failed = failed;
 
-      this.changes = new SessionChangesLog(mergeSession.getId());
+      this.changes = new SessionChangesLog(mergeSession);
    }
 
    @Override
@@ -265,7 +267,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
 
                ItemDataCopyVisitor copier =
                   new ItemDataCopyVisitor(context.getParent(), corrNode.getQPath().getName(), mergeSession
-                     .getWorkspace().getNodeTypesHolder(), mergeDataManager, true);
+                     .getWorkspace().getNodeTypesHolder(), mergeDataManager, mergeDataManager, true);
                corrNode.accept(copier);
 
                changes.addAll(copier.getItemAddStates());
@@ -299,7 +301,8 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
                SessionDataManager mergeDataManager = mergeSession.getTransientNodesManager();
 
                PropertyData isCheckedOutProperty =
-                  (PropertyData)mergeDataManager.getItemData(mergeNode, new QPathEntry(Constants.JCR_ISCHECKEDOUT, 0));
+                  (PropertyData)mergeDataManager.getItemData(mergeNode, new QPathEntry(Constants.JCR_ISCHECKEDOUT, 0),
+                     ItemType.PROPERTY);
 
                try
                {
@@ -361,9 +364,9 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
       QPath mergePath = mergeNode.getQPath();
 
       TransientNodeData mergedNode =
-         new TransientNodeData(mergePath, mergeNode.getIdentifier(), mergeNode.getPersistedVersion(), corrNode
-            .getPrimaryTypeName(), corrNode.getMixinTypeNames(), mergeNode.getOrderNumber(), mergeNode
-            .getParentIdentifier(), mergeNode.getACL());
+         new TransientNodeData(mergePath, mergeNode.getIdentifier(), mergeNode.getPersistedVersion(),
+            corrNode.getPrimaryTypeName(), corrNode.getMixinTypeNames(), mergeNode.getOrderNumber(),
+            mergeNode.getParentIdentifier(), mergeNode.getACL());
 
       if (!mergeNode.getIdentifier().equals(corrNode.getIdentifier()))
       {
@@ -393,8 +396,8 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
       for (PropertyData cp : mergeChildProps)
       {
          TransientPropertyData existed =
-            new TransientPropertyData(cp.getQPath(), cp.getIdentifier(), cp.getPersistedVersion(), cp.getType(), cp
-               .getParentIdentifier(), cp.isMultiValued(), copyValues(cp));
+            new TransientPropertyData(cp.getQPath(), cp.getIdentifier(), cp.getPersistedVersion(), cp.getType(),
+               cp.getParentIdentifier(), cp.isMultiValued(), copyValues(cp));
          changes.add(new ItemState(existed, ItemState.DELETED, true, mergedNode.getQPath(), true));
 
          existedProps.put(existed.getQPath().getName(), existed);
@@ -405,8 +408,8 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
          PropertyData existed = existedProps.get(cp.getQPath().getName());
          TransientPropertyData mcp =
             new TransientPropertyData(QPath.makeChildPath(mergePath, cp.getQPath().getName()), existed != null
-               ? existed.getIdentifier() : cp.getIdentifier(), existed != null ? existed.getPersistedVersion() : cp
-               .getPersistedVersion(), cp.getType(), mergedNode.getIdentifier(), cp.isMultiValued(), copyValues(cp));
+               ? existed.getIdentifier() : cp.getIdentifier(), existed != null ? existed.getPersistedVersion()
+               : cp.getPersistedVersion(), cp.getType(), mergedNode.getIdentifier(), cp.isMultiValued(), copyValues(cp));
 
          changes.add(new ItemState(mcp, ItemState.ADDED, true, mergedNode.getQPath(), true));
       }
@@ -462,7 +465,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
          SessionDataManager dmanager = session.getTransientNodesManager();
 
          PropertyData bvProperty =
-            (PropertyData)dmanager.getItemData(node, new QPathEntry(Constants.JCR_BASEVERSION, 0));
+            (PropertyData)dmanager.getItemData(node, new QPathEntry(Constants.JCR_BASEVERSION, 0), ItemType.PROPERTY);
 
          try
          {
@@ -486,8 +489,8 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
       SessionDataManager mergeDataManager = mergeSession.getTransientNodesManager();
       NodeTypeDataManager mergeNtManager = mergeSession.getWorkspace().getNodeTypesHolder();
 
-      if (mergeNtManager.isNodeType(Constants.MIX_REFERENCEABLE, mergeNode.getPrimaryTypeName(), mergeNode
-         .getMixinTypeNames()))
+      if (mergeNtManager.isNodeType(Constants.MIX_REFERENCEABLE, mergeNode.getPrimaryTypeName(),
+         mergeNode.getMixinTypeNames()))
       {
          // by UUID
          return (NodeData)corrDataManager.getItemData(mergeNode.getIdentifier());
@@ -499,15 +502,15 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
          final QPath ancesstorPath = mergePath.makeAncestorPath(i);
          NodeData mergeAncestor = (NodeData)mergeDataManager.getItemData(ancesstorPath);
          if (mergeAncestor != null
-            && mergeNtManager.isNodeType(Constants.MIX_REFERENCEABLE, mergeAncestor.getPrimaryTypeName(), mergeAncestor
-               .getMixinTypeNames()))
+            && mergeNtManager.isNodeType(Constants.MIX_REFERENCEABLE, mergeAncestor.getPrimaryTypeName(),
+               mergeAncestor.getMixinTypeNames()))
          {
 
             NodeData corrAncestor = (NodeData)corrDataManager.getItemData(mergeAncestor.getIdentifier());
             if (corrAncestor != null)
             {
                QPathEntry[] relPathEntries = mergePath.getRelPath(mergePath.getDepth() - i);
-               return (NodeData)corrDataManager.getItemData(corrAncestor, relPathEntries);
+               return (NodeData)corrDataManager.getItemData(corrAncestor, relPathEntries, ItemType.NODE);
             }
          }
       }
@@ -523,9 +526,11 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
       SessionDataManager mergeDataManager = mergeSession.getTransientNodesManager();
 
       PropertyData predecessorsProperty =
-         (PropertyData)mergeDataManager.getItemData(mergeVersion, new QPathEntry(Constants.JCR_PREDECESSORS, 0));
+         (PropertyData)mergeDataManager.getItemData(mergeVersion, new QPathEntry(Constants.JCR_PREDECESSORS, 0),
+            ItemType.PROPERTY);
 
       if (predecessorsProperty != null)
+      {
          for (ValueData pv : predecessorsProperty.getValues())
          {
             try
@@ -533,7 +538,9 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
                String pidentifier = new String(pv.getAsByteArray());
 
                if (pidentifier.equals(corrVersion.getIdentifier()))
+               {
                   return true; // got it
+               }
 
                // search in predecessors of the predecessor
                NodeData predecessor = (NodeData)mergeDataManager.getItemData(pidentifier);
@@ -556,6 +563,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
             }
          }
       // else it's a root version
+      }
 
       return false;
    }
@@ -568,9 +576,11 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
       SessionDataManager mergeDataManager = mergeSession.getTransientNodesManager();
 
       PropertyData successorsProperty =
-         (PropertyData)mergeDataManager.getItemData(mergeVersion, new QPathEntry(Constants.JCR_SUCCESSORS, 0));
+         (PropertyData)mergeDataManager.getItemData(mergeVersion, new QPathEntry(Constants.JCR_SUCCESSORS, 0),
+            ItemType.PROPERTY);
 
       if (successorsProperty != null)
+      {
          for (ValueData sv : successorsProperty.getValues())
          {
             try
@@ -578,7 +588,9 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
                String sidentifier = new String(sv.getAsByteArray());
 
                if (sidentifier.equals(corrVersion.getIdentifier()))
+               {
                   return true; // got it
+               }
 
                // search in successors of the successor
                NodeData successor = (NodeData)mergeDataManager.getItemData(sidentifier);
@@ -601,6 +613,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
             }
          }
       // else it's a end of version graph node
+      }
 
       return false;
    }

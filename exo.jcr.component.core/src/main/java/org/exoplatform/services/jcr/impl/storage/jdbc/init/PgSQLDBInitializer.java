@@ -43,12 +43,6 @@ public class PgSQLDBInitializer extends StorageDBInitializer
    }
 
    @Override
-   protected boolean isIndexExists(Connection conn, String tableName, String indexName) throws SQLException
-   {
-      return super.isIndexExists(conn, tableName.toUpperCase().toLowerCase(), indexName.toUpperCase().toLowerCase());
-   }
-
-   @Override
    protected boolean isTableExists(Connection conn, String tableName) throws SQLException
    {
       return super.isTableExists(conn, tableName.toUpperCase().toLowerCase());

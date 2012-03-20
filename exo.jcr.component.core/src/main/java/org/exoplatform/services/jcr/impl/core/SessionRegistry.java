@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
@@ -44,11 +45,16 @@ public final class SessionRegistry implements Startable
    // 1 min
    public final static int DEFAULT_CLEANER_TIMEOUT = 60 * 1000;
 
+   // 10 mins
+   public final static int DEFAULT_SESSION_TIMEOUT = 10 * 60 * 1000;
+
    protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionRegistry");
 
-   private SessionCleaner sessionCleaner;
+   private volatile SessionCleaner sessionCleaner;
 
-   protected long timeOut;
+   private String repositoryId;
+
+   protected volatile long timeOut;
 
    @Managed
    @ManagedDescription("How many sessions are currently active")
@@ -65,26 +71,68 @@ public final class SessionRegistry implements Startable
    }
 
    @Managed
+   @ManagedDescription("Set the session time out in seconds")
+   public void setTimeOut(long timeout)
+   {
+      if (this.timeOut == timeout)
+      {
+         return;
+      }
+
+      // disable the cleaner
+      this.sessionCleaner.halt();
+      this.sessionCleaner = null;
+
+      this.timeOut = timeout <= 0 ? 0 : timeout * 1000;
+      if (timeOut == 0 && sessionCleaner != null)
+      {
+         // We set a time out to 0, no need to create new cleaner
+         if (log.isDebugEnabled())
+         {
+            log.debug("Stop the previous session cleaner");
+         }
+      }
+      else if (timeOut > 0 && sessionCleaner == null)
+      {
+         // We set a time out greater than 0, so we create new cleaner
+         this.sessionCleaner = new SessionCleaner(repositoryId, DEFAULT_CLEANER_TIMEOUT, timeOut);      
+         if (log.isDebugEnabled())
+         {
+            log.debug("Start a new session cleaner");            
+         }
+      }
+   }
+
+   @Managed
    @ManagedDescription("Perform a cleanup of timed out sessions")
    public void runCleanup()
    {
-      try
+      if (sessionCleaner != null)
       {
-         sessionCleaner.callPeriodically();
-      }
-      catch (Exception e)
-      {
-         e.printStackTrace();
+         try
+         {
+            sessionCleaner.callPeriodically();
+         }
+         catch (Exception e)
+         {
+            log.warn("Could not execute the cleanup command", e);
+         }
       }
    }
 
    public SessionRegistry(RepositoryEntry entry)
    {
+      this(null, entry);
+   }
+
+   public SessionRegistry(ExoContainerContext ctx, RepositoryEntry entry)
+   {
       sessionsMap = new ConcurrentHashMap<String, SessionImpl>();
       if (entry != null)
       {
-         this.timeOut = entry.getSessionTimeOut() > 0 ? entry.getSessionTimeOut() : 0;
+         this.timeOut = entry.getSessionTimeOut() > 0 ? entry.getSessionTimeOut() : DEFAULT_SESSION_TIMEOUT;
       }
+      this.repositoryId = ctx != null ? ctx.getName() : (entry == null ? null : entry.getName());
    }
 
    public void registerSession(SessionImpl session)
@@ -128,7 +176,7 @@ public final class SessionRegistry implements Startable
       sessionsMap.clear();
 
       if (timeOut > 0)
-         sessionCleaner = new SessionCleaner(DEFAULT_CLEANER_TIMEOUT, timeOut);
+         sessionCleaner = new SessionCleaner(repositoryId, DEFAULT_CLEANER_TIMEOUT, timeOut);
    }
 
    public void stop()
@@ -167,11 +215,11 @@ public final class SessionRegistry implements Startable
 
       private final long sessionTimeOut;
 
-      public SessionCleaner(long workTime, long sessionTimeOut)
+      public SessionCleaner(String id, long workTime, long sessionTimeOut)
       {
          super(workTime);
          this.sessionTimeOut = sessionTimeOut;
-         setName("SessionCleaner " + getId());
+         setName("Session Cleaner " + (id == null ? getId() : id));
          setPriority(Thread.MIN_PRIORITY);
          setDaemon(true);
          start();
@@ -185,11 +233,21 @@ public final class SessionRegistry implements Startable
       {
          for (SessionImpl session : sessionsMap.values())
          {
-            if (session.getLastAccessTime() + sessionTimeOut < System.currentTimeMillis())
+            if (session.getLastAccessTime() + getTimeout(session) < System.currentTimeMillis())
             {
-               session.logout();
+               session.expire();
             }
          }
+      }
+      
+      /**
+       * Checks if the session has a local timeout if so it will use it otherwise it will use the
+       * global timeout
+       */
+      private long getTimeout(SessionImpl session)
+      {
+         long localSessionTimeout = session.getTimeout();
+         return localSessionTimeout == 0 ? sessionTimeOut : localSessionTimeout;
       }
    }
 }

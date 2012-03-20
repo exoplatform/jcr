@@ -1,0 +1,71 @@
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/other/acl-ext.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/other/acl-ext.xml	(revision 5895)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/other/acl-ext.xml	(working copy)
+@@ -43,10 +43,10 @@
+   <section>
+     <title>Access Context Action</title>
+ 
+-    <para>SetAccessContextAction implements Action and may be called by
++    <para>SetAccessControlContextAction implements Action and may be called by
+     SessionActionInterceptor as a reaction of some events - usually before
+     writing methods and after reading (getNode(), getProperty() etc). This
+-    SetAccessContextAction calls the
++    SetAccessControlContextAction calls the
+     AccessManager.setContext(InvocationContext context) method which sets the
+     ThreadLocal invocation context for the current call.</para>
+ 
+@@ -56,7 +56,7 @@
+   &lt;object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration"&gt;
+     &lt;field  name="eventTypes"&gt;&lt;string&gt;addNode,read&lt;/string&gt;&lt;/field&gt;
+     &lt;field  name="workspace"&gt;&lt;string&gt;production&lt;/string&gt;&lt;/field &gt;
+-    &lt;field  name="actionClassName"&gt;&lt;string&gt;org.exoplatform.services.jcr.ext.SetAccessContextAction&lt;/string&gt;&lt;/field&gt;       
++    &lt;field  name="actionClassName"&gt;&lt;string&gt;org.exoplatform.services.jcr.ext.access.SetAccessControlContextAction&lt;/string&gt;&lt;/field&gt;       
+   &lt;/object&gt;
+ &lt;/value&gt;</programlisting>
+   </section>
+@@ -124,11 +124,11 @@
+     <para>The sample CustomAccessManagerImpl below extends the default access
+     manager and uses some DecisionMakingService in the overloaded
+     hasPermission method to find out if a current user has permission to use
+-    current <emphasis role="bold">item, event type, userID</emphasis> and some
++    current <emphasis role="bold">item, event type, user</emphasis> and some
+     parameter of AccessManager. To make this Access manager work, it is
+     necessary to configure it in jcr configuration as mentioned in <emphasis
+     role="bold">Custom Extended Access Manager</emphasis> and
+-    SetAccessContextAction should be configured in the way mentioned in
++    SetAccessControlContextAction should be configured in the way mentioned in
+     <emphasis role="bold">Access Context Action.</emphasis></para>
+ 
+     <programlisting language="java">public class CustomAccessManagerImpl extends AccessManager {
+@@ -137,23 +137,23 @@
+   private DecisionMakingService theService;
+ 
+   public CustomAccessManagerImpl (RepositoryEntry config, WorkspaceEntry wsConfig,
+-      OrganizationService orgService, DecisionMakingService someService) throws RepositoryException {
+-    super(config, wsConfig, orgService);
++      DecisionMakingService someService) throws RepositoryException, RepositoryConfigurationException {
++    super(config, wsConfig);
+     this.property = wsConfig.getAccessManager().getParameterValue("someParam");
+-    this.theService = someService;  
++    this.theService = someService;
+   }
+ 
+   @Override
+-  public boolean hasPermission(AccessControlList acl, String[] permission, String userId) {
++  public boolean hasPermission(AccessControlList acl, String[] permission, Identity user) {
+     // call the default permission check
+-    if (super.hasPermission(acl, permission, userId)) {
++    if (super.hasPermission(acl, permission, user)) {
+       
+       Item curItem = context().getCurrentItem();
+       int eventType = context().getEventType();
+       ExoContainer container = context().getContainer();
+ 
+-// call some service's method
+-      return theService.makeDecision(curItem, eventType, userId, property);
++      // call some service's method
++      return theService.makeDecision(curItem, eventType, user, property);
+     } else {
+       return false;
+     }

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+ * CopSyright (C) 2009 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,21 +19,17 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
+import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.ConfigurationHelper;
-import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
-import java.io.File;
-import java.util.List;
+import java.util.ArrayList;
 
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
@@ -43,44 +39,58 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
 {
    private boolean isDefaultWsMultiDb = false;
 
-   private final ConfigurationHelper helper;
+   private final TesterConfigurationHelper helper;
 
    private WorkspaceEntry wsEntry;
 
    public TestWorkspaceManagement()
    {
       super();
-      this.helper = ConfigurationHelper.getInstence();
-   }
-
-   @Override
-   public void setUp() throws Exception
-   {
-      super.setUp();
-      wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
-      if ("true".equals(wsEntry.getContainer().getParameterValue("multi-db")))
-      {
-         isDefaultWsMultiDb = true;
-      }
+      this.helper = TesterConfigurationHelper.getInstance();
    }
 
    // single db test only
-   public void testAddSingleDbWsWithNewDs() throws Exception
+   public void testAddWorkspaceWithNewDS() throws Exception
    {
-      if (!isDefaultWsMultiDb)
+      ManageableRepository repository = null;
+      try
       {
-         WorkspaceEntry workspaceEntry =
-            helper.getNewWs("SingleDbWsWithNewDs", true, null, "target/temp/values/" + IdGenerator.generate(), wsEntry
-               .getContainer());
+         repository = helper.createRepository(container, false, null);
 
          try
          {
-            helper.createWorkspace(workspaceEntry, container);
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, "not-existed-ds");
+            helper.addWorkspace(repository, wsEntry);
             fail();
          }
-         catch (RepositoryException e)
+         catch (Exception e)
          {
-            e.printStackTrace();
+            // ok;
+         }
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
+   }
+
+   public void testAddWorkspaceWithExistingName() throws RepositoryConfigurationException, Exception
+   {
+      ManageableRepository repository = null;
+      try
+      {
+         String dsName = helper.createDatasource();
+         repository = helper.createRepository(container, false, dsName);
+
+         try
+         {
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+            wsEntry.setName(repository.getConfiguration().getSystemWorkspaceName());
+
+            helper.addWorkspace(repository, wsEntry);
             fail();
          }
          catch (RepositoryConfigurationException e)
@@ -88,253 +98,193 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
             // ok;
          }
       }
-   }
-
-   public void testAddWorkspaceWithExistName() throws RepositoryConfigurationException, Exception
-   {
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep = null;
-      String[] names = null;
-      try
+      finally
       {
-         defRep = (RepositoryImpl)service.getDefaultRepository();
-         String sysWs = defRep.getSystemWorkspaceName();
-         assertNotNull(sysWs);
-         names = defRep.getWorkspaceNames();
-      }
-      catch (RepositoryException e)
-      {
-         fail(e.getLocalizedMessage());
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         fail(e.getLocalizedMessage());
-      }
-      if (defRep == null || names == null)
-         fail("Fail init params");
-
-      for (int i = 0; i < names.length; i++)
-      {
-         WorkspaceEntry workspaceEntry =
-            helper.getNewWs(names[i], isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-               JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
-         assertNotNull(workspaceEntry);
-
-         try
+         if (repository != null)
          {
-            helper.createWorkspace(workspaceEntry, container);
-            fail();
-         }
-         catch (RepositoryConfigurationException e)
-         {
-            // Ok
-         }
-         catch (RepositoryException e)
-         {
-            fail();
+            helper.removeRepository(container, repository.getConfiguration().getName());
          }
       }
    }
 
    public void testAddWorkspaceWithIvalidVs() throws RepositoryConfigurationException, Exception
    {
-      File file = File.createTempFile("test", ".dat");
-      file.deleteOnExit();
-
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs("WsInvalidVs", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.SOURCE_NAME), file.getAbsolutePath(), wsEntry.getContainer());
+      ManageableRepository repository = null;
       try
       {
-         helper.createWorkspace(workspaceEntry, container);
-         fail();
-      }
-      catch (Throwable e)
-      {
-         // ok
-         // e.printStackTrace();
-         // log.info(e.getLocalizedMessage());
+         String dsName = helper.createDatasource();
+         repository = helper.createRepository(container, false, dsName);
+
+         try
+         {
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+
+            ValueStorageEntry valueStorageEntry = wsEntry.getContainer().getValueStorages().get(0);
+
+            ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
+            spe.add(new SimpleParameterEntry("path", "/unknown/path"));
+            valueStorageEntry.setParameters(spe);
+
+            wsEntry.getContainer().getValueStorages().set(0, valueStorageEntry);
+
+            helper.addWorkspace(repository, wsEntry);
+         }
+         catch (RepositoryConfigurationException e)
+         {
+            // ok;
+         }
       }
       finally
       {
-         file.delete();
-      }
-   }
-
-   public void testAddWorkspaceWithValidVs() throws Exception
-   {
-
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs("WsValidVs", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(), wsEntry
-            .getContainer());
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep = (RepositoryImpl)service.getDefaultRepository();;
-
-      helper.createWorkspace(workspaceEntry, container);
-
-      assertNotNull(defRep);
-      RepositoryEntry repoEntry = defRep.getConfiguration();
-      List<WorkspaceEntry> wsEntrys = repoEntry.getWorkspaceEntries();
-
-      for (WorkspaceEntry wEntry : wsEntrys)
-      {
-         if (wEntry.getName().equals(workspaceEntry.getName()))
+         if (repository != null)
          {
-            ContainerEntry containerEntry = wEntry.getContainer();
-            assertNotNull(containerEntry);
-            assertNotNull(containerEntry.getValueStorages());
-            assertEquals(1, containerEntry.getValueStorages().size());
+            helper.removeRepository(container, repository.getConfiguration().getName());
          }
       }
-
    }
 
    public void testCreateWsNoConfig() throws RepositoryConfigurationException, Exception
    {
-
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs("wsnoconfig", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
-      assertNotNull(workspaceEntry);
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep;
+      ManageableRepository repository = null;
       try
       {
-         defRep = (RepositoryImpl)service.getDefaultRepository();
-         defRep.createWorkspace(workspaceEntry.getName());
-         fail();
-      }
-      catch (RepositoryException e)
-      {
-      }
-      catch (RepositoryConfigurationException e)
-      {
-      }
+         String dsName = helper.createDatasource();
+         repository = helper.createRepository(container, false, dsName);
 
+         try
+         {
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+            wsEntry.setContainer(new ContainerEntry(
+               "org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", new ArrayList()));
+
+            helper.addWorkspace(repository, wsEntry);
+            fail();
+         }
+         catch (Exception e)
+         {
+            // ok;
+         }
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testInitNewWS() throws RepositoryConfigurationException, Exception
    {
+      ManageableRepository repository = null;
+      try
+      {
+         String dsName = helper.createDatasource();
+         repository = helper.createRepository(container, false, dsName);
 
-      WorkspaceEntry workspaceEntry = null;
-      workspaceEntry =
-         helper.getNewWs("newws", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.SOURCE_NAME), null, wsEntry.getContainer());
-      assertNotNull(workspaceEntry);
+         SessionImpl session = null;
+         try
+         {
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+            helper.addWorkspace(repository, wsEntry);
 
-      helper.createWorkspace(workspaceEntry, container);
-
-      doTestOnWorkspace(workspaceEntry.getName());
+            session = (SessionImpl)repository.login(credentials, wsEntry.getName());
+            assertNotNull(session.getRootNode());
+         }
+         catch (RepositoryException e)
+         {
+            e.printStackTrace();
+            fail();
+         }
+         finally
+         {
+            session.logout();
+         }
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testMixMultiAndSingleDbWs() throws RepositoryConfigurationException, Exception
    {
-
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs("MixMultiAndSingleDbWs", !isDefaultWsMultiDb, null, "target/temp/values/"
-            + IdGenerator.generate(), wsEntry.getContainer());
+      ManageableRepository repository = null;
       try
       {
-         helper.createWorkspace(workspaceEntry, container);
-         fail();
+         String dsName = helper.createDatasource();
+         repository = helper.createRepository(container, false, dsName);
+
+         try
+         {
+            WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, dsName);
+            helper.addWorkspace(repository, wsEntry);
+            fail();
+         }
+         catch (Exception e)
+         {
+            // ok;
+         }
       }
-      catch (RepositoryException e)
+      finally
       {
-         fail();
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         // e.printStackTrace();
-         // ok;
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
       }
    }
 
    public void testRemoveSystemWorkspace() throws Exception
    {
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep = (RepositoryImpl)service.getDefaultRepository();
-      String systemWsName = defRep.getSystemWorkspaceName();
-      assertFalse(defRep.canRemoveWorkspace(systemWsName));
-   }
-
-   public void testRemoveWorkspace() throws Exception
-   {
-
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs("wsForRemove", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(), wsEntry
-            .getContainer());
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep = (RepositoryImpl)service.getDefaultRepository();
+      ManageableRepository repository = null;
       try
       {
-         helper.createWorkspace(workspaceEntry, container);
-         doTestOnWorkspace(workspaceEntry.getName());
-         assertTrue(defRep.canRemoveWorkspace(workspaceEntry.getName()));
-         String[] names = service.getDefaultRepository().getWorkspaceNames();
-         service.getDefaultRepository().removeWorkspace(workspaceEntry.getName());
-         String[] namesAfter = service.getDefaultRepository().getWorkspaceNames();
+         String dsName = helper.createDatasource();
+         repository = helper.createRepository(container, false, dsName);
 
-         // remove one
-         assertTrue(names.length == namesAfter.length + 1);
-         for (int i = 0; i < namesAfter.length; i++)
-         {
-            if (workspaceEntry.getName().equals(namesAfter[i]))
-            {
-               fail();
-            }
-         }
-
-      }
-      catch (RepositoryException e)
-      {
-         e.printStackTrace();
-         fail(e.getLocalizedMessage());
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         fail(e.getLocalizedMessage());
-      }
-      if (defRep != null)
-      {
          try
          {
-            Session sess = defRep.getSystemSession(workspaceEntry.getName());
+            repository.removeWorkspace(repository.getConfiguration().getSystemWorkspaceName());
             fail();
          }
          catch (RepositoryException e)
          {
-            // Ok
+         }
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
          }
       }
    }
 
-   private void doTestOnWorkspace(String wsName) throws RepositoryException, RepositoryConfigurationException
+   public void testRemoveWorkspace() throws Exception
    {
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      Session sess = service.getDefaultRepository().getSystemSession(wsName);
-
-      Node root2 = sess.getRootNode();
-      assertNotNull(root2);
-
-      // assertNotNull(root2.getNode("jcr:system"));
-      //
-      // assertNotNull(root2.getNode("jcr:system/exo:namespaces"));
-      root2.addNode("node1");
-      assertTrue(root2.hasNode("node1"));
-      sess.save();
-      assertTrue(root2.hasNode("node1"));
-      root2.getNode("node1").remove();
-      assertFalse(root2.hasNode("node1"));
-      sess.save();
-      assertFalse(root2.hasNode("node1"));
-      sess.logout();
+      ManageableRepository repository = null;
+      try
+      {
+         String dsName = helper.createDatasource();
+         repository = helper.createRepository(container, false, dsName);
+         WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+   
+         helper.addWorkspace(repository, wsEntry);
+         assertEquals(2, repository.getWorkspaceNames().length);
+   
+         repository.removeWorkspace(wsEntry.getName());
+         assertEquals(1, repository.getWorkspaceNames().length);
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
-
 }

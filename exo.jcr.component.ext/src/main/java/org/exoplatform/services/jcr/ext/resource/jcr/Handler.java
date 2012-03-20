@@ -18,7 +18,9 @@
  */
 package org.exoplatform.services.jcr.ext.resource.jcr;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.RepositoryService;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
@@ -29,15 +31,16 @@ import org.exoplatform.services.security.ConversationState;
 import org.picocontainer.Startable;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
 
-import javax.jcr.Session;
+import javax.jcr.RepositoryException;
 
 /**
  * URLStreamHandler for protocol <tt>jcr://</tt>.
- * 
+ *
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: $
  */
@@ -48,12 +51,13 @@ public class Handler extends URLStreamHandler implements Startable
     * This is implements as Startable to be independent from other services. It
     * should be guaranty created, and set special system property.
     * Static fields repositoryService, nodeRepresentationService should be
-    * initialized once when Handler created by container. 
+    * initialized once when Handler created by container.
     */
 
    /**
-    * It specifies the package prefix name with should be added in System property
-    * java.protocol.handler.pkgs. Protocol handlers will be in a class called <tt>jcr</tt>.Handler.
+    * It specifies the package prefix name with should be added in System
+    * property java.protocol.handler.pkgs. Protocol handlers will be in a class
+    * called <tt>jcr</tt>.Handler.
     */
    private static final String protocolPathPkg = "org.exoplatform.services.jcr.ext.resource";
 
@@ -106,33 +110,50 @@ public class Handler extends URLStreamHandler implements Startable
          // ThreadLocalSessionProvider or System SessionProvider
          SessionProvider sessionProvider = threadLocalSessionProviderService.getSessionProvider(null);
 
+         boolean closeSessionProvider = false;
          if (sessionProvider == null && ConversationState.getCurrent() != null)
+         {
             sessionProvider =
                (SessionProvider)ConversationState.getCurrent().getAttribute(SessionProvider.SESSION_PROVIDER);
+         }
 
-         // if still not set use anonymous session provider
          if (sessionProvider == null)
+         {
             sessionProvider = SessionProvider.createAnonimProvider();
+            closeSessionProvider = true;
+         }
 
-         ManageableRepository repository;
          String repositoryName = nodeReference.getRepository();
-         if (repositoryName == null || repositoryName.length() == 0)
-            repository = sessionProvider.getCurrentRepository();
-         else
-            repository = repositoryService.getRepository(repositoryName);
+         if (repositoryName != null && repositoryName.length() > 0)
+         {
+            ManageableRepository repository = repositoryService.getRepository(repositoryName);
+            sessionProvider.setCurrentRepository(repository);
+         }
 
          String workspaceName = nodeReference.getWorkspace();
-         if (workspaceName == null || workspaceName.length() == 0)
-            workspaceName = sessionProvider.getCurrentWorkspace();
+         if (workspaceName != null && workspaceName.length() > 0)
+         {
+            sessionProvider.setCurrentWorkspace(workspaceName);
+         }
 
-         Session ses = sessionProvider.getSession(workspaceName, repository);
-         JcrURLConnection conn = new JcrURLConnection(nodeReference, ses, nodeRepresentationService);
+         JcrURLConnection conn =
+            new JcrURLConnection(nodeReference, sessionProvider, nodeRepresentationService, closeSessionProvider);
          return conn;
 
       }
-      catch (Exception e)
+      catch (RepositoryException e)
       {
-         e.printStackTrace();
+         //e.printStackTrace();
+         throw new IOException("Open connection to URL '" + url.toString() + "' failed!");
+      }
+      catch (URISyntaxException e)
+      {
+         //e.printStackTrace();
+         throw new IOException("Open connection to URL '" + url.toString() + "' failed!");
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         //e.printStackTrace();
          throw new IOException("Open connection to URL '" + url.toString() + "' failed!");
       }
    }
@@ -144,11 +165,12 @@ public class Handler extends URLStreamHandler implements Startable
     */
    public void start()
    {
-      String existingProtocolPathPkgs = System.getProperty("java.protocol.handler.pkgs");
+      String existingProtocolPathPkgs = PrivilegedSystemHelper.getProperty("java.protocol.handler.pkgs");
       if (existingProtocolPathPkgs == null)
-         System.setProperty("java.protocol.handler.pkgs", protocolPathPkg);
+         PrivilegedSystemHelper.setProperty("java.protocol.handler.pkgs", protocolPathPkg);
       else if (existingProtocolPathPkgs.indexOf(protocolPathPkg) == -1)
-         System.setProperty("java.protocol.handler.pkgs", existingProtocolPathPkgs + "|" + protocolPathPkg);
+         PrivilegedSystemHelper.setProperty("java.protocol.handler.pkgs", existingProtocolPathPkgs + "|"
+            + protocolPathPkg);
    }
 
    /**

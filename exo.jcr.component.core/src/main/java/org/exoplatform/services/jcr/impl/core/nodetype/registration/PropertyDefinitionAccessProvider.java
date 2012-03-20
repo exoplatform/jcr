@@ -63,11 +63,6 @@ public class PropertyDefinitionAccessProvider extends AbstractItemDefinitionAcce
 
          boolean multiple = readMandatoryBoolean(nodeData, Constants.JCR_MULTIPLE);
 
-         // TODO 3 Query atributes
-         //         boolean isQueryOrderable = readMandatoryBoolean(nodeData, Constants.JCR_QUERYORDERABLE);
-         //         String[] availableQueryOperators = readMandatoryStrings(nodeData, Constants.JCR_AVAILABLEQUERYOPERATORS);
-         //         boolean isFullTextSearchable = readMandatoryBoolean(nodeData, Constants.JCR_ISFULLTEXTSEARCHABLE);
-
          String[] valueConstraints = readStrings(nodeData, Constants.JCR_VALUECONSTRAINTS);
          String[] defaultValues = readStrings(nodeData, Constants.JCR_DEFAULTVALUES);
 
@@ -94,7 +89,6 @@ public class PropertyDefinitionAccessProvider extends AbstractItemDefinitionAcce
 
       writeBoolean(changesLog, propertyDefinition, Constants.JCR_MULTIPLE, propertyDefinitionData.isMultiple());
 
-      //TODO 3 Query atributes
       //      writeBoolean(changesLog, propertyDefinition, Constants.JCR_QUERYORDERABLE, propertyDefinitionData
       //         .isQueryOrderable());
       //      writeStrings(changesLog, propertyDefinition, Constants.JCR_AVAILABLEQUERYOPERATORS, propertyDefinitionData

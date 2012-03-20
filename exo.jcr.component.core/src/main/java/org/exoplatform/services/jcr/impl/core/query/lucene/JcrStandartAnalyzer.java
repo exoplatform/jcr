@@ -16,11 +16,13 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.Reader;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.exoplatform.commons.utils.SecurityHelper;
+
+import java.io.Reader;
+import java.security.PrivilegedAction;
 
 /**
  * This is the global jackrabbit lucene analyzer. By default, all
@@ -38,7 +40,13 @@ public class JcrStandartAnalyzer  extends Analyzer {
      * The default Jackrabbit analyzer if none is configured in <code><SearchIndex></code>
      * configuration.
      */
-    private Analyzer defaultAnalyzer =  new StandardAnalyzer(new String[]{});
+   private Analyzer defaultAnalyzer = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Analyzer>()
+   {
+      public Analyzer run()
+      {
+         return new StandardAnalyzer(new String[]{});
+      }
+   });
 
     /**
      * The indexing configuration.
@@ -64,7 +72,8 @@ public class JcrStandartAnalyzer  extends Analyzer {
      * Reader. If the fieldName (property) is configured to have a different
      * analyzer than the default, this analyzer is used for tokenization
      */
-    public TokenStream tokenStream(String fieldName, Reader reader) {
+    @Override
+   public TokenStream tokenStream(String fieldName, Reader reader) {
         if (indexingConfig != null) {
             Analyzer propertyAnalyzer = indexingConfig.getPropertyAnalyzer(fieldName);
             if (propertyAnalyzer != null) {

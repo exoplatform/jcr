@@ -51,66 +51,6 @@ import java.util.List;
 public class MultiDbJDBCConnection extends JDBCStorageConnection
 {
 
-   protected PreparedStatement findItemById;
-
-   protected PreparedStatement findItemByPath;
-
-   protected PreparedStatement findItemByName;
-
-   protected PreparedStatement findChildPropertyByPath;
-
-   protected PreparedStatement findPropertyByName;
-
-   protected PreparedStatement findDescendantNodes;
-
-   protected PreparedStatement findDescendantProperties;
-
-   protected PreparedStatement findReferences;
-
-   protected PreparedStatement findValuesByPropertyId;
-
-   protected PreparedStatement findValuesDataByPropertyId;
-
-   protected PreparedStatement findValuesStorageDescriptorsByPropertyId;
-
-   protected PreparedStatement findValueByPropertyIdOrderNumber;
-
-   protected PreparedStatement findNodesByParentId;
-   
-   protected PreparedStatement findNodesCountByParentId;
-
-   protected PreparedStatement findPropertiesByParentId;
-
-   protected PreparedStatement insertNode;
-
-   protected PreparedStatement insertProperty;
-
-   protected PreparedStatement insertReference;
-
-   protected PreparedStatement insertValue;
-
-   protected PreparedStatement updateItem;
-
-   protected PreparedStatement updateItemPath;
-
-   protected PreparedStatement updateNode;
-
-   protected PreparedStatement updateProperty;
-
-   protected PreparedStatement updateValue;
-
-   protected PreparedStatement deleteItem;
-
-   protected PreparedStatement deleteNode;
-
-   protected PreparedStatement deleteProperty;
-
-   protected PreparedStatement deleteReference;
-
-   protected PreparedStatement deleteValue;
-
-   protected PreparedStatement renameNode;
-
    /**
     * Multidatabase JDBC Connection constructor.
     * 
@@ -135,6 +75,7 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getIdentifier(final String internalId)
    {
       return internalId;
@@ -143,6 +84,7 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getInternalId(final String identifier)
    {
       return identifier;
@@ -183,13 +125,17 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
 
       FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID = "select distinct STORAGE_DESC from JCR_MVALUE where PROPERTY_ID=?";
 
-      FIND_VALUE_BY_PROPERTYID_OREDERNUMB = "select DATA, STORAGE_DESC from JCR_MVALUE where PROPERTY_ID=? and ORDER_NUM=?";
-
       FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?" + " order by N_ORDER_NUM";
-      
+
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
+         "select count(*), max(N_ORDER_NUM) from JCR_MITEM where I_CLASS=1 and PARENT_ID=?";
+
       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?";
 
       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=2 and PARENT_ID=?" + " order by ID";
+
+      FIND_MAX_PROPERTY_VERSIONS =
+         "select max(VERSION) FROM JCR_MITEM WHERE PARENT_ID=? and NAME=? and I_INDEX=? and I_CLASS=2";
 
       INSERT_NODE =
          "insert into JCR_MITEM(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,"
@@ -353,6 +299,7 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected ResultSet findItemByName(String parentId, String name, int index) throws SQLException
    {
       if (findItemByName == null)
@@ -431,6 +378,21 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
+   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
+   {
+      if (findLastOrderNumberByParentId == null)
+         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
+      else
+         findLastOrderNumberByParentId.clearParameters();
+
+      findLastOrderNumberByParentId.setString(1, parentIdentifier);
+      return findLastOrderNumberByParentId.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    protected ResultSet findChildNodesCountByParentIdentifier(String parentIdentifier) throws SQLException
    {
       if (findNodesCountByParentId == null)
@@ -457,11 +419,21 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
       return findPropertiesByParentId.executeQuery();
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
+      throws SQLException
+   {
+      throw new UnsupportedOperationException("findChildNodesByParentIdentifier is not supported for old queries");
+   }
+
    // -------- values processing ------------
 
    /**
     * {@inheritDoc}
     */
+   @Override
    protected int addValueData(String cid, int orderNumber, InputStream stream, int streamLength, String storageDesc)
       throws SQLException
    {
@@ -491,6 +463,7 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected int deleteValueData(String cid) throws SQLException
    {
       if (deleteValue == null)
@@ -505,6 +478,7 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
    protected ResultSet findValuesByPropertyId(String cid) throws SQLException
    {
       if (findValuesByPropertyId == null)
@@ -514,21 +488,6 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
 
       findValuesByPropertyId.setString(1, cid);
       return findValuesByPropertyId.executeQuery();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException
-   {
-      if (findValueByPropertyIdOrderNumber == null)
-         findValueByPropertyIdOrderNumber = dbConnection.prepareStatement(FIND_VALUE_BY_PROPERTYID_OREDERNUMB);
-      else
-         findValueByPropertyIdOrderNumber.clearParameters();
-
-      findValueByPropertyIdOrderNumber.setString(1, cid);
-      findValueByPropertyIdOrderNumber.setInt(2, orderNumb);
-      return findValueByPropertyIdOrderNumber.executeQuery();
    }
 
    /**
@@ -566,5 +525,82 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
 
       findValuesStorageDescriptorsByPropertyId.setString(1, cid);
       return findValuesStorageDescriptorsByPropertyId.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
+   {
+      throw new UnsupportedOperationException(
+         "The method findNodesAndProperties is not supported for this type of connection use the complex queries instead");
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected void deleteLockProperties() throws SQLException
+   {
+      PreparedStatement removeValuesStatement = null;
+      PreparedStatement removeItemsStatement = null;
+
+      try
+      {
+         removeValuesStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_MVALUE WHERE PROPERTY_ID IN "
+               + "(SELECT ID FROM JCR_MITEM WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
+
+         removeItemsStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_MITEM WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep'"
+               + " OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'");
+
+         removeValuesStatement.executeUpdate();
+         removeItemsStatement.executeUpdate();
+      }
+      finally
+      {
+         if (removeValuesStatement != null)
+         {
+            try
+            {
+               removeValuesStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+
+         if (removeItemsStatement != null)
+         {
+            try
+            {
+               removeItemsStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findMaxPropertyVersion(String parentId, String name, int index) throws SQLException
+   {
+      if (findMaxPropertyVersions == null)
+      {
+         findMaxPropertyVersions = dbConnection.prepareStatement(FIND_MAX_PROPERTY_VERSIONS);
+      }
+
+      findMaxPropertyVersions.setString(1, getInternalId(parentId));
+      findMaxPropertyVersions.setString(2, name);
+      findMaxPropertyVersions.setInt(3, index);
+
+      return findMaxPropertyVersions.executeQuery();
    }
 }

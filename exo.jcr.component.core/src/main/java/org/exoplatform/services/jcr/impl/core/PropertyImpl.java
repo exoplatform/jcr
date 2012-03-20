@@ -28,6 +28,8 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.core.nodetype.PropertyDefinitionImpl;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.InputStream;
 import java.util.Calendar;
@@ -52,6 +54,11 @@ import javax.jcr.version.VersionException;
  */
 public class PropertyImpl extends ItemImpl implements Property
 {
+
+   /**
+    * Logger.
+    */
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.PropertyImpl");
 
    /**
     * Value type.
@@ -337,8 +344,7 @@ public class PropertyImpl extends ItemImpl implements Property
 
       return new PropertyDefinitionImpl(propertyDef, session.getWorkspace().getNodeTypesHolder(),
          (ExtendedNodeTypeManager)session.getWorkspace().getNodeTypeManager(), session.getSystemLocationFactory(),
-         session.getValueFactory());
-
+         session.getValueFactory(), session.getTransientNodesManager());
    }
 
    /**
@@ -570,20 +576,20 @@ public class PropertyImpl extends ItemImpl implements Property
     */
    public String dump()
    {
-      String vals = "Property ";
+      StringBuilder vals = new StringBuilder("Property ");
       try
       {
-         vals = getPath() + " values: ";
+         vals = new StringBuilder(getPath()).append(" values: ");
          for (int i = 0; i < getValueArray().length; i++)
          {
-            vals += new String(((BaseValue)getValueArray()[i]).getInternalData().getAsByteArray()) + ";";
+            vals.append(new String(((BaseValue)getValueArray()[i]).getInternalData().getAsByteArray())).append(";");
          }
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         LOG.error(e.getLocalizedMessage(), e);
       }
-      return vals;
+      return vals.toString();
    }
 
    // ----------------------- Object -----------------------
@@ -607,6 +613,24 @@ public class PropertyImpl extends ItemImpl implements Property
          }
       }
       return false;
+   }
+
+   @Override
+   public String toString()
+   {
+      String typeName;
+      try
+      {
+         typeName = PropertyType.nameFromValue(type);
+      }
+      catch (IllegalArgumentException e)
+      {
+         // Value has abnormal type
+         typeName = String.valueOf(type);
+      }
+      return String.format("Property {\n id: %s;\n path: %s;\n type: %s;\n multi-valued: %b\n}", data == null
+         ? "not valid property" : data.getIdentifier(), qpath == null ? "undefined" : qpath.getAsString(), typeName,
+         data == null ? false : isMultiValued());
    }
 
 }

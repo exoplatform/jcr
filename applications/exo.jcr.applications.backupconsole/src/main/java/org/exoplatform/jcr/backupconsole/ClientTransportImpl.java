@@ -29,6 +29,8 @@ import org.exoplatform.common.http.client.NVPair;
 import java.io.IOException;
 import java.net.URL;
 
+import javax.ws.rs.core.Response;
+
 /**
  * Created by The eXo Platform SAS. <br/>Date:
  * 
@@ -57,6 +59,16 @@ public class ClientTransportImpl implements ClientTransport
     * Flag is SSL.
     */
    private final String protocol;
+   
+   /**
+    * Realm to connection
+    */
+   private String realm = null;
+   
+   /**
+    * Form authentication parameters.
+    */
+   private FormAuthentication formAuthentication;
 
    /**
     * Constructor.
@@ -64,7 +76,6 @@ public class ClientTransportImpl implements ClientTransport
     * @param login Login string.
     * @param password Password string.
     * @param host host string.
-    * @param isSSL isSSL flag.
     */
    public ClientTransportImpl(String login, String password, String host, String protocol)
    {
@@ -75,10 +86,24 @@ public class ClientTransportImpl implements ClientTransport
    }
 
    /**
+    * Constructor.
+
+    * @param formAuthentication form authentication parameters.
+    * @param login Login string.
+    * @param password Password string.
+    * @param host host string.
+    */
+   public ClientTransportImpl(FormAuthentication formAuthentication, String host, String protocol)
+   {
+      this(null, null, host, protocol);
+      this.formAuthentication = formAuthentication;
+   }
+
+   /**
     * Get realm by URL.
     * 
     * @param sUrl URL string.
-    * @return realm name string.
+    * @return realm name or null.
     * @throws IOException transport exception.
     * @throws ModuleException ModuleException.
     */
@@ -97,6 +122,10 @@ public class ClientTransportImpl implements ClientTransport
          HTTPResponse resp = connection.Get(url.getFile());
 
          String authHeader = resp.getHeader("WWW-Authenticate");
+         if (authHeader == null)
+         {
+            return null;
+         }
 
          String realm = authHeader.split("=")[1];
          realm = realm.substring(1, realm.length() - 1);
@@ -122,9 +151,56 @@ public class ClientTransportImpl implements ClientTransport
 
          URL url = new URL(complURL);
          HTTPConnection connection = new HTTPConnection(url);
-         connection.removeModule(CookieModule.class);
+         connection.setAllowUserInteraction(false);
 
-         connection.addBasicAuthorization(getRealm(complURL), login, password);
+         //authentication
+         if (formAuthentication != null)
+         {
+            //form authentication 
+            HTTPResponse respLogin;
+
+            URL urlLogin = new URL(protocol + "://" + host + formAuthentication.getFormPath());
+
+            HTTPConnection connectionLogin = new HTTPConnection(urlLogin);
+            connectionLogin.setAllowUserInteraction(false);
+
+            NVPair[] formParams = new NVPair[formAuthentication.getFormParams().size()];
+            int pairCount = 0;
+            for (String key : formAuthentication.getFormParams().keySet())
+            {
+               formParams[pairCount++] = new NVPair(key, formAuthentication.getFormParams().get(key));
+            }
+
+            if ("POST".equalsIgnoreCase(formAuthentication.getMethod()))
+            {
+               respLogin = connectionLogin.Post(urlLogin.getFile(), formParams);
+            }
+            else
+            {
+               respLogin = connectionLogin.Get(urlLogin.getFile(), formParams);
+            }
+
+            if (Response.Status.OK.getStatusCode() != respLogin.getStatusCode())
+            {
+               System.out.println("Form authentication is fail, status code : " + respLogin.getStatusCode()); //NOSONAR
+               System.exit(0);
+            }
+         }
+         else
+         {
+            // basic authorization
+            if (realm == null)
+            {
+               realm = getRealm(complURL);
+               if (realm == null)
+               {
+                  throw new BackupExecuteException(
+                     "Can not connect to server using basic authentication. Try to use form authentication.");
+               }
+            }
+
+            connection.addBasicAuthorization(realm, login, password);
+         }
 
          HTTPResponse resp;
          if (postData == null)
@@ -147,7 +223,6 @@ public class ClientTransportImpl implements ClientTransport
       {
          throw new BackupExecuteException(e.getMessage(), e);
       }
-
    }
 
    /**
@@ -157,14 +232,61 @@ public class ClientTransportImpl implements ClientTransport
    {
       try
       {
-         // execute the POST
+         // execute the GET
          String complURL = protocol + "://" + host + sURL;
 
          URL url = new URL(complURL);
          HTTPConnection connection = new HTTPConnection(url);
-         connection.removeModule(CookieModule.class);
+         connection.setAllowUserInteraction(false);
 
-         connection.addBasicAuthorization(getRealm(complURL), login, password);
+         //authentication
+         if (formAuthentication != null)
+         {
+            //form authentication 
+            HTTPResponse respLogin;
+
+            URL urlLogin = new URL(protocol + "://" + host + formAuthentication.getFormPath());
+
+            HTTPConnection connectionLogin = new HTTPConnection(urlLogin);
+            connectionLogin.setAllowUserInteraction(false);
+
+            NVPair[] formParams = new NVPair[formAuthentication.getFormParams().size()];
+            int pairCount = 0;
+            for (String key : formAuthentication.getFormParams().keySet())
+            {
+               formParams[pairCount++] = new NVPair(key, formAuthentication.getFormParams().get(key));
+            }
+
+            if ("POST".equalsIgnoreCase(formAuthentication.getMethod()))
+            {
+               respLogin = connectionLogin.Post(urlLogin.getFile(), formParams);
+            }
+            else
+            {
+               respLogin = connectionLogin.Get(urlLogin.getFile(), formParams);
+            }
+
+            if (Response.Status.OK.getStatusCode() != respLogin.getStatusCode())
+            {
+               System.out.println("Form authentication is fail, status code : " + respLogin.getStatusCode()); //NOSONAR
+               System.exit(0);
+            }
+         }
+         else
+         {
+            // basic authorization
+            if (realm == null)
+            {
+               realm = getRealm(complURL);
+               if (realm == null)
+               {
+                  throw new BackupExecuteException(
+                     "Can not connect to server using basic authentication. Try to use form authentication.");
+               }
+            }
+
+            connection.addBasicAuthorization(realm, login, password);
+         }
 
          HTTPResponse resp = connection.Get(url.getFile());
 

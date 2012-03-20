@@ -79,9 +79,18 @@ public class InternalQName extends QName
       if (o == null)
          return false;
 
-      if (!(o instanceof InternalQName))
-         return false;
+      if (o instanceof InternalQName)
+      {
+         InternalQName that = (InternalQName)o;
+         if (hashCode == that.hashCode)
+         {
+            String s1 = getAsString();
+            String s2 = that.getAsString();
+            return s1.equals(s2);
+         }
+      }
 
-      return hashCode == o.hashCode() && getAsString().equals(((QName)o).getAsString());
+      return false;
+
    }
 }

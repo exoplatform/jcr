@@ -16,17 +16,19 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.index.TermPositionVector;
+
+import java.io.IOException;
 
 /**
  * <code>WeightedHTMLExcerpt</code> creates a HTML excerpt with the following
  * format:
  * <pre>
  * &lt;div>
- *     &lt;span>&lt;strong>Jackrabbit&lt;/strong> implements both the mandatory XPath and optional SQL &lt;strong>query&lt;/strong> syntax.&lt;/span>
- *     &lt;span>Before parsing the XPath &lt;strong>query&lt;/strong> in &lt;strong>Jackrabbit&lt;/strong>, the statement is surrounded&lt;/span>
+ *     &lt;span>&lt;strong>Jackrabbit&lt;/strong> implements both the mandatory XPath and optional SQL &lt;
+ *     strong>query&lt;/strong> syntax.&lt;/span>
+ *     &lt;span>Before parsing the XPath &lt;strong>query&lt;/strong> in &lt;strong>Jackrabbit&lt;/strong>, 
+ *     the statement is surrounded&lt;/span>
  * &lt;/div>
  * </pre>
  * In contrast to {@link DefaultHTMLExcerpt} this implementation weights

@@ -19,16 +19,11 @@
 package org.exoplatform.services.jcr.impl.core.access;
 
 import org.exoplatform.services.jcr.access.AuthenticationPolicy;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
-import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.IdentityRegistry;
-import org.exoplatform.services.security.MembershipEntry;
-
-import java.util.HashSet;
 
 import javax.jcr.LoginException;
 
@@ -59,18 +54,7 @@ abstract public class BaseAuthenticator implements AuthenticationPolicy
     */
    public ConversationState authenticate() throws LoginException
    {
-
-      ConversationState state = ConversationState.getCurrent();
-
-      if (state == null)
-      {
-         log.debug("No current identity found, ANONYMOUS one will be used");
-         return new ConversationState(new Identity(SystemIdentity.ANONIM, new HashSet<MembershipEntry>()));
-      }
-
-      ConversationState.setCurrent(state);
-      return state;
-
+      return ConversationState.getCurrent();
    }
 
 }

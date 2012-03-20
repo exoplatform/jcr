@@ -19,6 +19,9 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.apache.ws.commons.util.Base64;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -43,20 +46,22 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
+import org.exoplatform.services.jcr.impl.xml.importing.ACLInitializationHelper;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Stack;
 
 import javax.jcr.NamespaceException;
@@ -84,9 +89,19 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
    public static final String RESTORE_PATH_PARAMETER = "restore-path";
 
-   protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceInitializer");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceInitializer");
 
    protected final String workspaceName;
+
+   /**
+    * Workspace entry.
+    */
+   protected final WorkspaceEntry workspaceEntry;
+
+   /**
+    * Repository Entry.
+    */
+   protected final RepositoryEntry repositoryEntry;
 
    protected final DataManager dataManager;
 
@@ -94,14 +109,21 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
    private final LocationFactory locationFactory;
 
-   private final int maxBufferSize;
+   protected final int maxBufferSize;
 
    /**
     * Cleaner should be started! .
     */
-   private final FileCleaner fileCleaner;
+   protected final FileCleaner fileCleaner;
 
    protected String restorePath;
+
+   protected final File tempDir;
+
+   /**
+    * Indicates if restore action in progress or not.
+    */
+   volatile private boolean isRestoreInProgress = false;
 
    protected class TempOutputStream extends ByteArrayOutputStream
    {
@@ -116,6 +138,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          return buf.length;
       }
 
+      @Override
       public void close()
       {
          buf = null;
@@ -180,6 +203,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          this.string.append(text);
       }
 
+      @Override
       boolean isText()
       {
          return true;
@@ -206,7 +230,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       @Override
       void close() throws IOException
       {
-         this.decoder.flush();
+         this.decoder.close();
       }
 
       @Override
@@ -253,7 +277,9 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          {
             if (buffer.length >= maxBufferSize)
             {
-               buff = new FileOutputStream(tmpFile = File.createTempFile("jcrrestorewi", ".tmp"));
+               buff =
+                  PrivilegedFileHelper.fileOutputStream(tmpFile =
+                     SpoolFile.createTempFile("jcrrestorewi", ".tmp", tempDir));
             }
             else
             {
@@ -263,7 +289,9 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          else if (tmpFile == null && (((TempOutputStream)buff).getSize() + buffer.length) > maxBufferSize)
          {
             // spool to file
-            FileOutputStream fout = new FileOutputStream(tmpFile = File.createTempFile("jcrrestorewi", ".tmp"));
+            FileOutputStream fout =
+               PrivilegedFileHelper.fileOutputStream(tmpFile =
+                  SpoolFile.createTempFile("jcrrestorewi", ".tmp", tempDir));
             fout.write(((TempOutputStream)buff).getBuffer());
             buff.close();
             buff = fout; // use file
@@ -277,7 +305,9 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
          super.flush();
 
          if (buff != null)
+         {
             buff.close();
+         }
       }
 
       File getFile() throws IOException
@@ -304,6 +334,10 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
       int orderNumber = 0;
 
+      private String exoOwner;
+
+      private List<String> exoPrivileges;
+
       HashMap<InternalQName, Integer> childNodesMap = new HashMap<InternalQName, Integer>();
 
       SVNodeData(QPath path, String identifier, String parentIdentifier, int version, int orderNum)
@@ -319,6 +353,31 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       public void setMixinTypeNames(InternalQName[] mixinTypeNames)
       {
          this.mixinTypeNames = mixinTypeNames;
+      }
+
+      public String getExoOwner()
+      {
+         return exoOwner;
+      }
+
+      public List<String> getExoPrivileges()
+      {
+         return exoPrivileges;
+      }
+
+      public void setExoOwner(String exoOwner)
+      {
+         this.exoOwner = exoOwner;
+      }
+
+      public void setExoPrivileges(List<String> exoPrivileges)
+      {
+         this.exoPrivileges = exoPrivileges;
+      }
+
+      public void setACL(AccessControlList acl)
+      {
+         this.acl = acl;
       }
 
       /**
@@ -386,27 +445,11 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
    public SysViewWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-      AccessManager accessManager) throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
+            AccessManager accessManager, FileCleanerHolder cleanerHolder) throws RepositoryConfigurationException,
+            PathNotFoundException, RepositoryException
    {
-
-      this.workspaceName = config.getName();
-
-      this.dataManager = dataManager;
-
-      this.namespaceRegistry = namespaceRegistry;
-      this.locationFactory = locationFactory;
-
-      this.fileCleaner = new FileCleaner(false); // cleaner should be started!
-      this.maxBufferSize =
-         config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
-            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
-
-      this.restorePath =
-         config.getInitializer().getParameterValue(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, null);
-      if (this.restorePath == null)
-         throw new RepositoryConfigurationException("Workspace (" + workspaceName
-            + ") RestoreIntializer should have mandatory parameter "
-            + SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER);
+      this(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
+               accessManager, config.getInitializer().getParameterValue(RESTORE_PATH_PARAMETER, null), cleanerHolder);
    }
 
    /**
@@ -436,21 +479,32 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
    public SysViewWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-      AccessManager accessManager, String restorePath) throws RepositoryException
+            AccessManager accessManager, String restorePath, FileCleanerHolder cleanerHolder)
+            throws RepositoryException
    {
-
+      this.workspaceEntry = config;
       this.workspaceName = config.getName();
+      
+      this.repositoryEntry = repConfig;
 
       this.dataManager = dataManager;
 
       this.namespaceRegistry = namespaceRegistry;
       this.locationFactory = locationFactory;
 
-      this.fileCleaner = new FileCleaner(false); // cleaner should be started!
+      this.fileCleaner = cleanerHolder.getFileCleaner();
       this.maxBufferSize =
          config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
       this.restorePath = restorePath;
+
+      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+
+      if (this.restorePath == null)
+      {
+         throw new RepositoryException(RESTORE_PATH_PARAMETER + " is absent in workpsace [" + workspaceName
+            + "] configuration ");
+      }
    }
 
    /**
@@ -458,46 +512,46 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
     */
    public NodeData initWorkspace() throws RepositoryException
    {
-
       if (isWorkspaceInitialized())
       {
          return (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
       }
 
+      long start = System.currentTimeMillis();
+
+      isRestoreInProgress = true;
       try
       {
-         long start = System.currentTimeMillis();
-
-         PlainChangesLog changes = read();
-
-         TransactionChangesLog tLog = new TransactionChangesLog(changes);
-         tLog.setSystemId(Constants.JCR_CORE_RESTORE_WORKSPACE_INITIALIZER_SYSTEM_ID); // mark changes
-
-         dataManager.save(tLog);
-
-         final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
-
-         log.info("Workspace " + workspaceName + " restored from file " + restorePath + " in "
-            + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
-
-         return root;
+         doRestore();
       }
-      catch (XMLStreamException e)
+      catch (Throwable e)
       {
          throw new RepositoryException(e);
       }
-      catch (FactoryConfigurationError e)
+      finally
       {
-         throw new RepositoryException(e);
+         isRestoreInProgress = false;
       }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (IllegalNameException e)
-      {
-         throw new RepositoryException(e);
-      }
+
+      final NodeData root = (NodeData)dataManager.getItemData(Constants.ROOT_UUID);
+
+      LOG.info("Workspace [" + workspaceName + "] restored from storage " + restorePath + " in "
+         + (System.currentTimeMillis() - start) * 1d / 1000 + "sec");
+
+      return root;
+   }
+
+   /**
+    * Perform restore operation.
+    */
+   protected void doRestore() throws Throwable
+   {
+      PlainChangesLog changes = read();
+
+      TransactionChangesLog tLog = new TransactionChangesLog(changes);
+      tLog.setSystemId(Constants.JCR_CORE_RESTORE_WORKSPACE_INITIALIZER_SYSTEM_ID); // mark changes
+
+      dataManager.save(tLog);
    }
 
    /**
@@ -520,7 +574,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       NamespaceException, RepositoryException, IllegalNameException
    {
 
-      InputStream input = new FileInputStream(restorePath);
+      InputStream input = PrivilegedFileHelper.fileInputStream(restorePath);
       try
       {
          XMLStreamReader reader = XMLInputFactory.newInstance().createXMLStreamReader(input);
@@ -607,6 +661,11 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
 
                            SVNodeData currentNode = new SVNodeData(currentPath, exoId, parentId, 0, orderNumber);
 
+                           AccessControlList acl =
+                              ACLInitializationHelper.initAcl(parents.size() == 0 ? null : parents.peek().getACL(),
+                                 null, null);
+                           currentNode.setACL(acl);
+
                            // push current node as parent
                            parents.push(currentNode);
 
@@ -616,7 +675,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                               true));
                         }
                         else
-                           log.warn("Node skipped name=" + svName + " id=" + exoId + ". Context node "
+                           LOG.warn("Node skipped name=" + svName + " id=" + exoId + ". Context node "
                               + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
 
                      }
@@ -650,12 +709,12 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                                     ("true".equals(exoMultivalued) ? true : false));
                            }
                            else
-                              log.warn("Property can'b be first name=" + svName + " type=" + svType + " id=" + exoId
+                              LOG.warn("Property can'b be first name=" + svName + " type=" + svType + " id=" + exoId
                                  + ". Node should be prior. Context node "
                                  + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
                         }
                         else
-                           log.warn("Property skipped name=" + svName + " type=" + svType + " id=" + exoId
+                           LOG.warn("Property skipped name=" + svName + " type=" + svType + " id=" + exoId
                               + ". Context node "
                               + (parents.size() > 0 ? parents.peek().getQPath().getAsString() : "/"));
 
@@ -721,6 +780,41 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                               }
                               parent.setMixinTypeNames(mixins);
                            }
+                           else if (currentProperty.getQPath().getName().equals(Constants.EXO_OWNER))
+                           {
+                              String exoOwner =
+                                 new String(currentProperty.getValues().get(0).getAsByteArray(),
+                                    Constants.DEFAULT_ENCODING);
+                              parent.setExoOwner(exoOwner);
+
+                              SVNodeData curParent = parents.pop();
+
+                              AccessControlList acl =
+                                 ACLInitializationHelper.initAcl(parents.size() == 0 ? null : parents.peek().getACL(),
+                                    exoOwner, curParent.getExoPrivileges());
+                              curParent.setACL(acl);
+
+                              parents.push(curParent);
+                           }
+                           else if (currentProperty.getQPath().getName().equals(Constants.EXO_PERMISSIONS))
+                           {
+                              List<String> exoPrivileges = new ArrayList<String>();
+                              for (int i = 0; i < currentProperty.getValues().size(); i++)
+                              {
+                                 exoPrivileges.add(new String(currentProperty.getValues().get(i).getAsByteArray(),
+                                    Constants.DEFAULT_ENCODING));
+                              }
+                              parent.setExoPrivileges(exoPrivileges);
+
+                              SVNodeData curParent = parents.pop();
+
+                              AccessControlList acl =
+                                 ACLInitializationHelper.initAcl(parents.size() == 0 ? null : parents.peek().getACL(),
+                                    curParent.getExoOwner(), exoPrivileges);
+                              curParent.setACL(acl);
+
+                              parents.push(curParent);
+                           }
 
                            // add property, no event fire, persisted, internally created, root is ancestor to
                            // save
@@ -765,12 +859,14 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                            }
                            else
                            {
+
                               File pfile = propertyValue.getFile();
                               if (pfile != null)
                               {
                                  vdata =
                                     new TransientValueData(currentProperty.getValues().size(), null, null,
-                                       new SpoolFile(pfile.getAbsolutePath()), fileCleaner, maxBufferSize, null, true);
+                                       new SpoolFile(PrivilegedFileHelper.getAbsolutePath(pfile)), fileCleaner,
+                                       maxBufferSize, null, true);
                               }
                               else
                               {
@@ -780,7 +876,8 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                         }
                         else
                         {
-                           vdata = new TransientValueData(currentProperty.getValues().size(), propertyValue.getText()); // other like String
+                           // other like String
+                           vdata = new TransientValueData(currentProperty.getValues().size(), propertyValue.getText());
                         }
 
                         currentProperty.getValues().add(vdata);
@@ -802,20 +899,30 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void start()
    {
-      fileCleaner.start();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void stop()
    {
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public boolean isWorkspaceInitialized()
    {
       try
       {
-         return dataManager.getItemData(Constants.ROOT_UUID) == null ? false : true;
+         // If someone invoke isWorkspaceInitialized() during restore action then NullNodeData for root node will be pushed
+         // into the cache and will be there even restore is finished and data will be placed into DB. 
+         return isRestoreInProgress ? false : dataManager.getItemData(Constants.ROOT_UUID) != null;
       }
       catch (RepositoryException e)
       {

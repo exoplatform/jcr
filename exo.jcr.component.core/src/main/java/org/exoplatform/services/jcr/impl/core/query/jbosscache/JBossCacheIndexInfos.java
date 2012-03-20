@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
 import org.exoplatform.services.jcr.impl.core.query.lucene.MultiIndex;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
@@ -83,16 +84,17 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
    /**
     * @param cache instance of JbossCache that is used to deliver index names
     */
-   public JBossCacheIndexInfos(Cache<Serializable, Object> cache, boolean system, IndexerIoModeHandler modeHandler)
+   public JBossCacheIndexInfos(Fqn<String> rootFqn, Cache<Serializable, Object> cache, boolean system,
+      IndexerIoModeHandler modeHandler)
    {
-      this(DEFALUT_NAME, cache, system, modeHandler);
+      this(rootFqn, DEFALUT_NAME, cache, system, modeHandler);
    }
 
    /**
     * @param fileName where index names are stored.
     * @param cache instance of JbossCache that is used to deliver index names
     */
-   public JBossCacheIndexInfos(String fileName, Cache<Serializable, Object> cache, boolean system,
+   public JBossCacheIndexInfos(Fqn<String> rootFqn, String fileName, Cache<Serializable, Object> cache, boolean system,
       IndexerIoModeHandler modeHandler)
    {
       super(fileName);
@@ -100,9 +102,10 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
       this.modeHandler = modeHandler;
       modeHandler.addIndexerIoModeListener(this);
       // store parsed FQN to avoid it's parsing each time cache event is generated
-      namesFqn = Fqn.fromString(system ? SYSINDEX_NAMES : INDEX_NAMES);
+      namesFqn = Fqn.fromRelativeElements(rootFqn, system ? SYSINDEX_NAMES : INDEX_NAMES);
+
       Node<Serializable, Object> cacheRoot = cache.getRoot();
-      // prepare cache structures
+
       if (!cacheRoot.hasChild(namesFqn))
       {
          cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
@@ -112,6 +115,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
       {
          cache.getNode(namesFqn).setResident(true);
       }
+
       if (modeHandler.getMode() == IndexerIoMode.READ_ONLY)
       {
          // Currently READ_ONLY is set, so new lists should be fired to multiIndex.
@@ -120,7 +124,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener#onChangeMode(org.exoplatform.services.jcr.impl.core.query.IndexerIoMode)
+    * {@inheritDoc}
     */
    public void onChangeMode(IndexerIoMode mode)
    {
@@ -132,7 +136,10 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
          // re-read from FS current actual list.
          try
          {
-            super.read();
+            if (!multiIndex.isStopped())
+            {
+               super.read();
+            }
          }
          catch (IOException e)
          {
@@ -158,7 +165,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
          // write to FS
          super.write();
          // write to cache
-         cache.put(namesFqn, LIST_KEY, getNames());
+         PrivilegedJBossCacheHelper.put(cache, namesFqn, LIST_KEY, getNames());
       }
    }
 

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.storage;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+
 import java.util.Calendar;
 
 import javax.jcr.RepositoryException;
@@ -36,6 +38,15 @@ public interface WorkspaceDataContainer extends DataContainer
 {
 
    // configuration params
+   public static final String TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME = "trigger-events-for-descendents-on-rename";
+
+   public static final boolean TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME_DEFAULT = true;
+
+   public static final String LAZY_NODE_ITERATOR_PAGE_SIZE = "lazy-node-iterator-page-size";
+
+   public static final int LAZY_NODE_ITERATOR_PAGE_SIZE_DEFAULT = 100;
+
+   public static final int LAZY_NODE_ITERATOR_PAGE_SIZE_MIN = 20;
 
    public final static String CONTAINER_NAME = "containerName";
 
@@ -45,9 +56,13 @@ public interface WorkspaceDataContainer extends DataContainer
 
    public final static int DEF_MAXBUFFERSIZE = 1024 * 200; // 200k
 
-   public final static String DEF_SWAPDIR = System.getProperty("java.io.tmpdir");
+   public final static String DEF_SWAPDIR = PrivilegedSystemHelper.getProperty("java.io.tmpdir");
 
    public final static String CHECK_SNS_NEW_CONNECTION = "check-sns-new-connection";
+
+   public final static String ACL_BF_FALSE_PROPBABILITY = "acl-bloomfilter-false-positive-probability";
+
+   public final static String ACL_BF_ELEMENTS_NUMBER = "acl-bloomfilter-elements-number";
 
    /**
     * [G.A] do we need it here or in WorkspaceDataManager better??
@@ -95,4 +110,5 @@ public interface WorkspaceDataContainer extends DataContainer
     * @return the value of 'check-sns-new-connection' parameter 
     */
    boolean isCheckSNSNewConnection();
+
 }

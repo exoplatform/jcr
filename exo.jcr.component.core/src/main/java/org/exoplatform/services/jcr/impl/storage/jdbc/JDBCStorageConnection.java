@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -27,12 +28,16 @@ import org.exoplatform.services.jcr.datamodel.IllegalACLException;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
@@ -49,7 +54,6 @@ import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -58,12 +62,19 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.StringTokenizer;
+import java.util.TreeSet;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
+import javax.jcr.UnsupportedRepositoryOperationException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -77,11 +88,12 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * Helper.
     */
-   class WriteValueHelper extends ValueFileIOHelper
+   protected class WriteValueHelper extends ValueFileIOHelper
    {
       /**
        * {@inheritDoc}
        */
+      @Override
       public void writeStreamedValue(File file, ValueData value) throws IOException
       {
          super.writeStreamedValue(file, value);
@@ -121,6 +133,72 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected final WriteValueHelper writeValueHelper = new WriteValueHelper();
 
+   // All statements should be closed in closeStatements() method.
+
+   protected PreparedStatement findItemById;
+
+   protected PreparedStatement findItemByPath;
+
+   protected PreparedStatement findItemByName;
+
+   protected PreparedStatement findChildPropertyByPath;
+
+   protected PreparedStatement findPropertyByName;
+
+   protected PreparedStatement findDescendantNodes;
+
+   protected PreparedStatement findDescendantProperties;
+
+   protected PreparedStatement findReferences;
+
+   protected PreparedStatement findValuesByPropertyId;
+
+   protected PreparedStatement findValuesStorageDescriptorsByPropertyId;
+
+   protected PreparedStatement findValuesDataByPropertyId;
+
+   protected PreparedStatement findNodesByParentId;
+
+   protected PreparedStatement findLastOrderNumberByParentId;
+
+   protected PreparedStatement findNodesCountByParentId;
+
+   protected PreparedStatement findPropertiesByParentId;
+
+   protected PreparedStatement findMaxPropertyVersions;
+
+   protected PreparedStatement insertItem;
+
+   protected PreparedStatement insertNode;
+
+   protected PreparedStatement insertProperty;
+
+   protected PreparedStatement insertReference;
+
+   protected PreparedStatement insertValue;
+
+   protected PreparedStatement updateItem;
+
+   protected PreparedStatement updateItemPath;
+
+   protected PreparedStatement updateNode;
+
+   protected PreparedStatement updateProperty;
+
+   protected PreparedStatement deleteItem;
+
+   protected PreparedStatement deleteNode;
+
+   protected PreparedStatement deleteProperty;
+
+   protected PreparedStatement deleteReference;
+
+   protected PreparedStatement deleteValue;
+
+   protected PreparedStatement renameNode;
+
+   protected PreparedStatement findNodesAndProperties;
+
    /**
     * Read-only flag, if true the connection is marked as READ-ONLY.
     */
@@ -159,13 +237,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       this.dbConnection = dbConnection;
       this.readOnly = readOnly;
 
-      // Fix for Sybase jConnect JDBC driver bug.
-      // Which throws SQLException(JZ016: The AutoCommit option is already set to
-      // false)
-      // if conn.setAutoCommit(false) called twise or more times with value
-      // 'false'.
-      // TODO remove workaround for Sybase, jconn 6.05 Build 26564
-      if (dbConnection.getAutoCommit())
+      if (!readOnly && dbConnection.getAutoCommit())
       {
          dbConnection.setAutoCommit(false);
       }
@@ -268,17 +340,41 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
-         if (!this.readOnly)
-         {
-            dbConnection.rollback();
-         }
+         closeStatements();
 
-         dbConnection.close();
-
-         // rollback from the end
-         for (int p = valueChanges.size() - 1; p >= 0; p--)
+         if (!readOnly)
          {
-            valueChanges.get(p).rollback();
+            try
+            {
+               dbConnection.rollback();               
+            }
+            finally
+            {
+               // rollback from the end
+               IOException e = null;
+               for (int p = valueChanges.size() - 1; p >= 0; p--)
+               {
+                  try
+                  {
+                     valueChanges.get(p).rollback();
+                  }
+                  catch (IOException e1)
+                  {
+                     if (e == null)
+                     {
+                        e = e1;
+                     }
+                     else
+                     {
+                        LOG.error("Could not rollback value change", e1);
+                     }
+                  }
+               }               
+               if (e != null)
+               {
+                  throw e;
+               }
+            }
          }
       }
       catch (SQLException e)
@@ -292,6 +388,17 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       finally
       {
          valueChanges.clear();
+         try
+         {
+            dbConnection.close();
+         }
+         catch (SQLException e)
+         {
+            if (LOG.isWarnEnabled())
+            {
+               LOG.warn("Could not close the connection", e);
+            }
+         }         
       }
    }
 
@@ -303,15 +410,209 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
-         // If READ-ONLY status back it to READ-WRITE (we assume it was original state)
-         if (readOnly)
+         closeStatements();
+
+         if (!readOnly && dbConnection.getTransactionIsolation() > Connection.TRANSACTION_READ_COMMITTED)
          {
-            dbConnection.setReadOnly(true);
+            dbConnection.rollback();
          }
 
          dbConnection.close();
       }
       catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * Close all statements.
+    * 
+    * @throws SQLException
+    */
+   protected void closeStatements()
+   {
+      try
+      {
+         if (findItemById != null)
+         {
+            findItemById.close();
+         }
+
+         if (findItemByPath != null)
+         {
+            findItemByPath.close();
+         }
+
+         if (findItemByName != null)
+         {
+            findItemByName.close();
+         }
+
+         if (findChildPropertyByPath != null)
+         {
+            findChildPropertyByPath.close();
+         }
+
+         if (findPropertyByName != null)
+         {
+            findPropertyByName.close();
+         }
+
+         if (findDescendantNodes != null)
+         {
+            findDescendantNodes.close();
+         }
+
+         if (findDescendantProperties != null)
+         {
+            findDescendantProperties.close();
+         }
+
+         if (findReferences != null)
+         {
+            findReferences.close();
+         }
+
+         if (findValuesByPropertyId != null)
+         {
+            findValuesByPropertyId.close();
+         }
+
+         if (findValuesStorageDescriptorsByPropertyId != null)
+         {
+            findValuesStorageDescriptorsByPropertyId.close();
+         }
+
+         if (findValuesDataByPropertyId != null)
+         {
+            findValuesDataByPropertyId.close();
+         }
+
+         if (findNodesByParentId != null)
+         {
+            findNodesByParentId.close();
+         }
+
+         if (findLastOrderNumberByParentId != null)
+         {
+            findLastOrderNumberByParentId.close();
+         }
+
+         if (findNodesCountByParentId != null)
+         {
+            findNodesCountByParentId.close();
+         }
+
+         if (findPropertiesByParentId != null)
+         {
+            findPropertiesByParentId.close();
+         }
+
+         if (findMaxPropertyVersions != null)
+         {
+            findMaxPropertyVersions.close();
+         }
+
+         if (insertItem != null)
+         {
+            insertItem.close();
+         }
+
+         if (insertNode != null)
+         {
+            insertNode.close();
+         }
+
+         if (insertProperty != null)
+         {
+            insertProperty.close();
+         }
+
+         if (insertReference != null)
+         {
+            insertReference.close();
+         }
+
+         if (insertValue != null)
+         {
+            insertValue.close();
+         }
+
+         if (updateItem != null)
+         {
+            updateItem.close();
+         }
+
+         if (updateItemPath != null)
+         {
+            updateItemPath.close();
+         }
+
+         if (updateNode != null)
+         {
+            updateNode.close();
+         }
+
+         if (updateProperty != null)
+         {
+            updateProperty.close();
+         }
+
+         if (deleteItem != null)
+         {
+            deleteItem.close();
+         }
+
+         if (deleteNode != null)
+         {
+            deleteNode.close();
+         }
+
+         if (deleteProperty != null)
+         {
+            deleteProperty.close();
+         }
+
+         if (deleteReference != null)
+         {
+            deleteReference.close();
+         }
+
+         if (deleteValue != null)
+         {
+            deleteValue.close();
+         }
+
+         if (renameNode != null)
+         {
+            renameNode.close();
+         }
+
+         if (findNodesAndProperties != null)
+         {
+            findNodesAndProperties.close();
+         }
+      }
+      catch (SQLException e)
+      {
+         LOG.error("Can't close the statement: " + e);
+      }
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public final void prepare() throws IllegalStateException, RepositoryException
+   {
+      try
+      {
+         for (ValueIOChannel vo : valueChanges)
+         {
+            vo.prepare();
+         }
+      }
+      catch (IOException e)
       {
          throw new RepositoryException(e);
       }
@@ -325,32 +626,45 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
-         if (!this.readOnly)
-         {
-            dbConnection.commit();
-         }
+         closeStatements();
 
-         dbConnection.close();
-
-         try
+         if (!readOnly)
          {
-            for (ValueIOChannel vo : valueChanges)
+            try
             {
-               vo.commit();
+               for (ValueIOChannel vo : valueChanges)
+               {
+                  vo.twoPhaseCommit();
+               }
             }
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException(e);
-         }
-         finally
-         {
-            valueChanges.clear();
+            catch (IOException e)
+            {
+               throw new RepositoryException(e);
+            }
+            finally
+            {
+               valueChanges.clear();
+            }
+            dbConnection.commit();
          }
       }
       catch (SQLException e)
       {
          throw new RepositoryException(e);
+      }
+      finally
+      {
+         try
+         {
+            dbConnection.close();
+         }
+         catch (SQLException e)
+         {
+            if (LOG.isWarnEnabled())
+            {
+               LOG.warn("Could not close the connection", e);
+            }
+         }
       }
    }
 
@@ -483,7 +797,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (LOG.isDebugEnabled())
          {
             LOG.debug("Node deleted " + data.getQPath().getAsString() + ", " + data.getIdentifier() + ", "
-               + ((NodeData)data).getPrimaryTypeName().getAsString());
+               + (data).getPrimaryTypeName().getAsString());
          }
 
       }
@@ -525,12 +839,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
          if (LOG.isDebugEnabled())
          {
-            LOG.debug("Property deleted "
-               + data.getQPath().getAsString()
-               + ", "
-               + data.getIdentifier()
-               + (((PropertyData)data).getValues() != null ? ", values count: "
-                  + ((PropertyData)data).getValues().size() : ", NULL data"));
+            LOG.debug("Property deleted " + data.getQPath().getAsString() + ", " + data.getIdentifier()
+               + ((data).getValues() != null ? ", values count: " + (data).getValues().size() : ", NULL data"));
          }
 
       }
@@ -601,9 +911,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
          // update type
          if (updatePropertyByIdentifier(data.getPersistedVersion(), data.getType(), cid) <= 0)
+         {
             throw new JCRInvalidItemStateException("(update) Property not found " + data.getQPath().getAsString() + " "
                + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
                ItemState.UPDATED);
+         }
 
          // update reference
          try
@@ -635,13 +947,17 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       catch (IOException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Property update. IO error: " + e, e);
+         }
          throw new RepositoryException("Error of Property Value update " + e, e);
       }
       catch (SQLException e)
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.error("Property update. Database error: " + e, e);
+         }
          exceptionHandler.handleUpdateException(e, data);
       }
    }
@@ -655,13 +971,27 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       try
       {
          ResultSet node = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()));
-         List<NodeData> childrens = new ArrayList<NodeData>();
-         while (node.next())
+         try
          {
-            childrens.add((NodeData)itemData(parent.getQPath(), node, I_CLASS_NODE, parent.getACL()));
-         }
+            List<NodeData> childrens = new ArrayList<NodeData>();
+            while (node.next())
+            {
+               childrens.add((NodeData)itemData(parent.getQPath(), node, I_CLASS_NODE, parent.getACL()));
+            }
 
-         return childrens;
+            return childrens;
+         }
+         finally
+         {
+            try
+            {
+               node.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
       }
       catch (SQLException e)
       {
@@ -676,19 +1006,120 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * {@inheritDoc}
     */
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+      IllegalStateException
+   {
+      //return all child nodes by default
+      return getChildNodesData(parent);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getLastOrderNumber(NodeData parent) throws RepositoryException
+   {
+      checkIfOpened();
+      try
+      {
+         ResultSet count = findLastOrderNumberByParentIdentifier(getInternalId(parent.getIdentifier()));
+         try
+         {
+            if (count.next() && count.getInt(1) > 0)
+            {
+               return count.getInt(2);
+            }
+            else
+            {
+               return -1;
+            }
+         }
+         finally
+         {
+            try
+            {
+               count.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getMaxPropertyVersion(PropertyData data) throws RepositoryException
+   {
+      checkIfOpened();
+      try
+      {
+         ResultSet count = findMaxPropertyVersion(data.getParentIdentifier(), data.getQPath().getName().getAsString(), data.getQPath().getIndex());
+         try
+         {
+            if (count.next())
+            {
+               return count.getInt(1);
+            }
+            else
+            {
+               return 0;
+            }
+         }
+         finally
+         {
+            try
+            {
+               count.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public int getChildNodesCount(NodeData parent) throws RepositoryException
    {
       checkIfOpened();
       try
       {
          ResultSet count = findChildNodesCountByParentIdentifier(getInternalId(parent.getIdentifier()));
-         if (count.next())
+         try
          {
-            return count.getInt(1);
+            if (count.next())
+            {
+               return count.getInt(1);
+            }
+            else
+            {
+               throw new RepositoryException("FATAL No resulton childNodes count for "
+                  + parent.getQPath().getAsString());
+            }
          }
-         else
+         finally
          {
-            throw new RepositoryException("FATAL No resulton childNodes count for " + parent.getQPath().getAsString());
+            try
+            {
+               count.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
          }
       }
       catch (SQLException e)
@@ -706,11 +1137,27 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       try
       {
          ResultSet prop = findChildPropertiesByParentIdentifier(getInternalId(parent.getIdentifier()));
-         List<PropertyData> children = new ArrayList<PropertyData>();
-         while (prop.next())
-            children.add((PropertyData)itemData(parent.getQPath(), prop, I_CLASS_PROPERTY, null));
+         try
+         {
+            List<PropertyData> children = new ArrayList<PropertyData>();
+            while (prop.next())
+            {
+               children.add((PropertyData)itemData(parent.getQPath(), prop, I_CLASS_PROPERTY, null));
+            }
 
-         return children;
+            return children;
+         }
+         finally
+         {
+            try
+            {
+               prop.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
       }
       catch (SQLException e)
       {
@@ -720,6 +1167,125 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          throw new RepositoryException(e);
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilter)
+      throws RepositoryException, IllegalStateException
+   {
+      //return all child properties by default
+      return getChildPropertiesData(parent);
+   }
+
+   /**
+    * Returns from storage the next page of nodes and its properties.
+    */
+   public List<NodeDataIndexing> getNodesAndProperties(String lastNodeId, int offset, int limit)
+      throws RepositoryException, IllegalStateException
+   {
+      List<NodeDataIndexing> result = new ArrayList<NodeDataIndexing>();
+
+      checkIfOpened();
+      try
+      {
+         ResultSet resultSet = findNodesAndProperties(lastNodeId, offset, limit);
+         int processed = 0;
+
+         try
+         {
+            TempNodeData tempNodeData = null;
+
+            while (resultSet.next())
+            {
+               if (tempNodeData == null)
+               {
+                  tempNodeData = new TempNodeData(resultSet);
+                  processed++;
+               }
+               else if (!resultSet.getString(COLUMN_ID).equals(tempNodeData.cid))
+               {
+                  if (!needToSkipOffsetNodes() || processed > offset)
+                  {
+                     result.add(createNodeDataIndexing(tempNodeData));
+                  }
+
+                  tempNodeData = new TempNodeData(resultSet);
+                  processed++;
+               }
+
+               if (!needToSkipOffsetNodes() || processed > offset)
+               {
+                  String key = resultSet.getString("P_NAME");
+
+                  SortedSet<TempPropertyData> values = tempNodeData.properties.get(key);
+                  if (values == null)
+                  {
+                     values = new TreeSet<TempPropertyData>();
+                     tempNodeData.properties.put(key, values);
+                  }
+
+                  values.add(new ExtendedTempPropertyData(resultSet));
+               }
+            }
+
+            if (tempNodeData != null && (!needToSkipOffsetNodes() || processed > offset))
+            {
+               result.add(createNodeDataIndexing(tempNodeData));
+            }
+         }
+         finally
+         {
+            try
+            {
+               resultSet.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (IllegalNameException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+
+      return result;
+   }
+
+   /**
+    * Some implementations could require to skip first 'offset' nodes from
+    * result set. 
+    */
+   protected boolean needToSkipOffsetNodes()
+   {
+      return false;
+   }
+
+   /**
+    * 
+    * @param parent
+    * @param lastOrderNum
+    * @param limit
+    * @return
+    * @throws RepositoryException
+    * @throws IllegalStateException
+    */
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childNodes)
+      throws RepositoryException, IllegalStateException
+   {
+      // not supported by non-CQ deprecated JDBC container
+      throw new UnsupportedRepositoryOperationException();
    }
 
    /**
@@ -731,11 +1297,27 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       try
       {
          ResultSet prop = findChildPropertiesByParentIdentifier(getInternalId(parent.getIdentifier()));
-         List<PropertyData> children = new ArrayList<PropertyData>();
-         while (prop.next())
-            children.add(propertyData(parent.getQPath(), prop));
+         try
+         {
+            List<PropertyData> children = new ArrayList<PropertyData>();
+            while (prop.next())
+            {
+               children.add(propertyData(parent.getQPath(), prop));
+            }
 
-         return children;
+            return children;
+         }
+         finally
+         {
+            try
+            {
+               prop.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
       }
       catch (SQLException e)
       {
@@ -746,6 +1328,16 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          throw new RepositoryException(e);
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+      UnsupportedOperationException
+   {
+      throw new UnsupportedOperationException(
+         "This method is not supported by the old JDBCWorkspaceDataContainer, use CQJDBCWorkspaceDataContainer instead.");
+   }
 
    /**
     * {@inheritDoc}
@@ -755,16 +1347,28 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       return getItemByIdentifier(getInternalId(identifier));
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException, IllegalStateException
+   {
+      return getItemData(parentData, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+      IllegalStateException
    {
 
       if (parentData != null)
       {
-         return getItemByName(parentData, getInternalId(parentData.getIdentifier()), name);
+         return getItemByName(parentData, getInternalId(parentData.getIdentifier()), name, itemType);
       }
 
       // it's a root node
-      return getItemByName(null, null, name);
+      return getItemByName(null, null, name, itemType);
    }
 
    /**
@@ -776,53 +1380,26 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       try
       {
          ResultSet refProps = findReferences(getInternalId(nodeIdentifier));
-         List<PropertyData> references = new ArrayList<PropertyData>();
-         while (refProps.next())
-         {
-            references.add((PropertyData)itemData(null, refProps, I_CLASS_PROPERTY, null));
-         }
-         return references;
-      }
-      catch (SQLException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e);
-      }
-   }
-
-   /**
-    * Reads Property Value from persistent storage.
-    * 
-    * @param propertyId String, Property id
-    * @param orderNumb int, Value order number (in list of values)
-    * @param persistedVersion int 
-    * @return ValueData
-    * @throws RepositoryException if read error occurs
-    */
-   public ValueData getValue(String propertyId, int orderNumb, int persistedVersion) throws RepositoryException
-   {
-      try
-      {
-         String cid = getInternalId(propertyId);
-         ResultSet valueRecord = findValueByPropertyIdOrderNumber(cid, orderNumb);
          try
          {
-            if (valueRecord.next())
+            List<PropertyData> references = new ArrayList<PropertyData>();
+            while (refProps.next())
             {
-               String storageId = valueRecord.getString(COLUMN_VSTORAGE_DESC);
-               return valueRecord.wasNull() ? readValueData(cid, orderNumb, persistedVersion, valueRecord
-                  .getBinaryStream(COLUMN_VDATA)) : readValueData(propertyId, orderNumb, storageId);
+               references.add((PropertyData)itemData(null, refProps, I_CLASS_PROPERTY, null));
             }
+            return references;
          }
          finally
          {
-            valueRecord.close();
+            try
+            {
+               refProps.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
          }
-
-         return null;
       }
       catch (SQLException e)
       {
@@ -850,15 +1427,28 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected ItemData getItemByIdentifier(String cid) throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
-      ResultSet item = null;
       try
       {
-         item = findItemByIdentifier(cid);
-         if (item.next())
+         ResultSet item = findItemByIdentifier(cid);
+         try
          {
-            return itemData(null, item, item.getInt(COLUMN_CLASS), null);
+            if (item.next())
+            {
+               return itemData(null, item, item.getInt(COLUMN_CLASS), null);
+            }
+            return null;
          }
-         return null;
+         finally
+         {
+            try
+            {
+               item.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
       }
       catch (SQLException e)
       {
@@ -867,18 +1457,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       catch (IOException e)
       {
          throw new RepositoryException("getItemData() error", e);
-      }
-      finally
-      {
-         try
-         {
-            if (item != null)
-               item.close();
-         }
-         catch (SQLException e)
-         {
-            LOG.error("getItemData() Error close resultset " + e.getMessage());
-         }
       }
    }
 
@@ -891,23 +1469,49 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     *          - parent container internal id (depends on Multi/Single DB)
     * @param name
     *          - item name
+    * @param itemType
+    *          - item type         
     * @return - ItemData instance
     * @throws RepositoryException
     *           Repository error
     * @throws IllegalStateException
     *           if connection is closed
     */
-   protected ItemData getItemByName(NodeData parent, String parentId, QPathEntry name) throws RepositoryException,
-      IllegalStateException
+   protected ItemData getItemByName(NodeData parent, String parentId, QPathEntry name, ItemType itemType)
+      throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
-      ResultSet item = null;
       try
       {
-         item = findItemByName(parentId, name.getAsString(), name.getIndex());
-         if (item.next())
-            return itemData(parent.getQPath(), item, item.getInt(COLUMN_CLASS), parent.getACL());
-         return null;
+         ResultSet item = null;
+         try
+         {
+            item = findItemByName(parentId, name.getAsString(), name.getIndex());
+            while (item.next())
+            {
+               int columnClass = item.getInt(COLUMN_CLASS);
+               if (itemType == ItemType.UNKNOWN || columnClass == itemType.ordinal())
+               {
+                  return itemData(parent.getQPath(), item, columnClass, parent.getACL());
+               }
+            }
+
+            return null;
+         }
+         finally
+         {
+            try
+            {
+               if (item != null)
+               {
+                  item.close();
+               }
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
       }
       catch (SQLException e)
       {
@@ -916,18 +1520,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       catch (IOException e)
       {
          throw new RepositoryException(e);
-      }
-      finally
-      {
-         try
-         {
-            if (item != null)
-               item.close();
-         }
-         catch (SQLException e)
-         {
-            LOG.error("getItemData() Error close resultset " + e.getMessage());
-         }
       }
    }
 
@@ -948,7 +1540,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    {
       return traverseQPathSQ(cpid);
    }
-   
+
    /**
     * The method <code>traverseQPath</code> implemented thanks to simple queries. It allows
     * to use Simple Queries instead of Complex Queries when complex queries are much slower such
@@ -961,21 +1553,34 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       String caid = cpid; // container ancestor id
       do
       {
-         ResultSet parent = null;
+         ResultSet parent = findItemByIdentifier(caid);
          try
          {
-            parent = findItemByIdentifier(caid);
             if (!parent.next())
+            {
                throw new InvalidItemStateException("Parent not found, uuid: " + getIdentifier(caid));
+            }
 
             QPathEntry qpe =
-               new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX));
+               new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX), caid);
             qrpath.add(qpe);
             caid = parent.getString(COLUMN_PARENTID);
+
+            if (caid.equals(parent.getString(COLUMN_ID)))
+            {
+               throw new InvalidItemStateException("An item with id='" + getIdentifier(caid) + "' is its own parent");
+            }
          }
          finally
          {
-            parent.close();
+            try
+            {
+               parent.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
          }
       }
       while (!caid.equals(Constants.ROOT_PARENT_UUID));
@@ -1028,215 +1633,30 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
    }
 
-   /**
-    * Find ancestor permissions by cpid. Will search till find the permissions or meet a root node.
-    * 
-    * @param cpid
-    *          - initial parent node id
-    * @return Collection<String>
-    * @throws SQLException
-    *           if database error
-    * @throws IllegalACLException
-    *           if wrong ACL
-    * @throws IllegalNameException
-    *           if wrong QName
-    * @throws RepositoryException
-    *           if Repository error
-    */
-   private List<AccessControlEntry> traverseACLPermissions(String cpid) throws SQLException, IllegalACLException,
-      IllegalNameException, RepositoryException
-   {
-      String caid = cpid;
-      while (!caid.equals(Constants.ROOT_PARENT_UUID))
-      {
-         MixinInfo naMixins = readMixins(caid);
-         if (naMixins.hasPrivilegeable())
-            return readACLPermisions(caid);
-
-         if (naMixins.parentId == null)
-            caid = findParentId(caid);
-         else
-            caid = naMixins.parentId;
-      }
-
-      throw new IllegalACLException("Can not find permissions for a node with id " + getIdentifier(cpid));
-   }
-
    protected String findParentId(String cid) throws SQLException, RepositoryException
    {
       ResultSet pidrs = findItemByIdentifier(cid);
       try
       {
          if (pidrs.next())
+         {
             return pidrs.getString(COLUMN_PARENTID);
+         }
          else
+         {
             throw new RepositoryException("Item not found id: " + getIdentifier(cid));
+         }
       }
       finally
       {
-         pidrs.close();
-      }
-   }
-
-   /**
-    * Find ancestor owner by cpid. Will search till find the owner or meet a root node.
-    * 
-    * @param cpid
-    *          - initial parent node id
-    * @return owner name
-    * @throws SQLException
-    *           if database error
-    * @throws IllegalACLException
-    *           if wrong ACL
-    * @throws IllegalNameException
-    *           if wrong QName
-    * @throws RepositoryException
-    *           if Repository error
-    */
-   private String traverseACLOwner(String cpid) throws SQLException, IllegalACLException, IllegalNameException,
-      RepositoryException
-   {
-      String caid = cpid;
-
-      while (!caid.equals(Constants.ROOT_PARENT_UUID))
-      {
-         MixinInfo naMixins = readMixins(caid);
-         if (naMixins.hasOwneable())
-            return readACLOwner(caid);
-
-         if (naMixins.parentId == null)
-            caid = findParentId(caid);
-         else
-            caid = naMixins.parentId;
-      }
-
-      throw new IllegalACLException("Can not find owner for a node with id " + getIdentifier(cpid));
-   }
-
-   /**
-    * Find ancestor ACL by cpid. Will search till find the ACL or meet a root node.
-    * 
-    * @param cpid
-    *          - initial parent node id
-    * @return owner name
-    * @throws SQLException
-    *           if database error
-    * @throws IllegalACLException
-    *           if wrong ACL
-    * @throws IllegalNameException
-    *           if wrong QName
-    * @throws RepositoryException
-    *           if Repository error
-    */
-   private AccessControlList traverseACL(String cpid) throws SQLException, IllegalACLException, IllegalNameException,
-      RepositoryException
-   {
-      String naOwner = null;
-      List<AccessControlEntry> naPermissions = null;
-
-      String caid = cpid;
-
-      while (!caid.equals(Constants.ROOT_PARENT_UUID))
-      {
-         MixinInfo naMixins = readMixins(caid);
-         if (naOwner == null && naMixins.hasOwneable())
-         {
-            naOwner = readACLOwner(caid);
-            if (naPermissions != null)
-               break;
-         }
-         if (naPermissions == null && naMixins.hasPrivilegeable())
-         {
-            naPermissions = readACLPermisions(caid);
-            if (naOwner != null)
-               break;
-         }
-
-         if (naMixins.parentId == null)
-            caid = findParentId(caid);
-         else
-            caid = naMixins.parentId;
-      }
-
-      if (naOwner != null && naPermissions != null)
-      {
-         // got all
-         return new AccessControlList(naOwner, naPermissions);
-      }
-      else if (naOwner == null && naPermissions == null)
-      {
-         // Default values (i.e. ACL is disabled in repository)
-         return new AccessControlList();
-      }
-      else
-         throw new IllegalACLException("ACL is not found for node with id " + getIdentifier(cpid)
-            + " or for its ancestors. But repository is ACL enabled.");
-   }
-
-   /**
-    * [PN] Experimental. Use SP for traversing Qpath on the database server side. Hm, I haven't a
-    * good result for that yet. Few seconds only for TCK execution. PGSQL SP: CREATE OR REPLACE
-    * FUNCTION get_qpath(parentId VARCHAR) RETURNS SETOF record AS $$ DECLARE cur_item RECORD; cur_id
-    * varchar; BEGIN cur_id := parentId; WHILE NOT cur_id = ' ' LOOP SELECT id, name, parent_id,
-    * i_index INTO cur_item FROM JCR_SITEM WHERE ID=cur_id; IF NOT found THEN RETURN; END IF; RETURN
-    * NEXT cur_item; cur_id := cur_item.parent_id; END LOOP; RETURN; END; $$ LANGUAGE plpgsql;
-    * 
-    * @param cpid
-    * @return
-    * @throws SQLException
-    *           if database error
-    * @throws InvalidItemStateException
-    *           if Item state is obsolete
-    * @throws IllegalNameException
-    *           if invalid QName
-    */
-   private QPath traverseQPath_SP_PGSQL(String cpid) throws SQLException, InvalidItemStateException,
-      IllegalNameException
-   {
-      // get item by Identifier usecase:
-      // find parent path in db by cpid
-      if (cpid == null)
-      {
-         // root node
-         return null; // Constants.ROOT_PATH
-      }
-      else
-      {
-         List<QPathEntry> qrpath = new ArrayList<QPathEntry>(); // reverted path
-         PreparedStatement cstmt = null;
          try
          {
-            cstmt =
-               dbConnection
-                  .prepareStatement("select * from get_qpath(?) AS (id varchar, name varchar, parent_id varchar, i_index int)");
-            cstmt.setString(1, cpid);
-            // cstmt.setString(2, caid);
-            ResultSet parent = cstmt.executeQuery();
-
-            while (parent.next())
-            {
-               QPathEntry qpe =
-                  new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX));
-               qrpath.add(qpe);
-            }
-
-            // parent = findItemByIdentifier(caid);
-            if (qrpath.size() <= 0)
-               throw new InvalidItemStateException("Parent not found, uuid: " + getIdentifier(cpid));
+            pidrs.close();
          }
-         finally
+         catch (SQLException e)
          {
-            if (cstmt != null)
-               cstmt.close();
+            LOG.error("Can't close the ResultSet: " + e);
          }
-
-         QPathEntry[] qentries = new QPathEntry[qrpath.size()];
-         int qi = 0;
-         for (int i = qrpath.size() - 1; i >= 0; i--)
-         {
-            qentries[qi++] = qrpath.get(i);
-         }
-         return new QPath(qentries);
       }
    }
 
@@ -1411,7 +1831,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             return mns;
          }
          else
+         {
             return new InternalQName[0];
+         }
       }
 
       /**
@@ -1472,9 +1894,13 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                   mts.add(mxn);
 
                   if (!privilegeable && Constants.EXO_PRIVILEGEABLE.equals(mxn))
+                  {
                      privilegeable = true;
+                  }
                   else if (!owneable && Constants.EXO_OWNEABLE.equals(mxn))
+                  {
                      owneable = true;
+                  }
                } // else, if SQL NULL - skip it
             }
             while (mtrs.next());
@@ -1484,7 +1910,14 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
       finally
       {
-         mtrs.close();
+         try
+         {
+            mtrs.close();
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Can't close the ResultSet: " + e);
+         }
       }
    }
 
@@ -1518,12 +1951,21 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             return naPermissions;
          }
          else
+         {
             throw new IllegalACLException("Property exo:permissions is not found for node with id: "
                + getIdentifier(cid));
+         }
       }
       finally
       {
-         exoPerm.close();
+         try
+         {
+            exoPerm.close();
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Can't close the ResultSet: " + e);
+         }
       }
    }
 
@@ -1544,13 +1986,24 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       try
       {
          if (exoOwner.next())
+         {
             return new String(exoOwner.getBytes(COLUMN_VDATA));
+         }
          else
+         {
             throw new IllegalACLException("Property exo:owner is not found for node with id: " + getIdentifier(cid));
+         }
       }
       finally
       {
-         exoOwner.close();
+         try
+         {
+            exoOwner.close();
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Can't close the ResultSet: " + e);
+         }
       }
    }
 
@@ -1582,7 +2035,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected PersistedNodeData loadNodeRecord(QPath parentPath, String cname, String cid, String cpid, int cindex,
       int cversion, int cnordernumb, AccessControlList parentACL) throws RepositoryException, SQLException
    {
-
       try
       {
          InternalQName qname = InternalQName.parse(cname);
@@ -1592,7 +2044,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (parentPath != null)
          {
             // get by parent and name
-            qpath = QPath.makeChildPath(parentPath, qname, cindex);
+            qpath = QPath.makeChildPath(parentPath, qname, cindex, cid);
             parentCid = cpid;
          }
          else
@@ -1606,19 +2058,21 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             else
             {
-               qpath = QPath.makeChildPath(traverseQPath(cpid), qname, cindex);
+               qpath = QPath.makeChildPath(traverseQPath(cpid), qname, cindex, cid);
                parentCid = cpid;
             }
          }
 
+         // PRIMARY
+         ResultSet ptProp = findPropertyByName(cid, Constants.JCR_PRIMARYTYPE.getAsString());
          try
          {
-            // PRIMARY
-            ResultSet ptProp = findPropertyByName(cid, Constants.JCR_PRIMARYTYPE.getAsString());
 
             if (!ptProp.next())
+            {
                throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
                   + qpath.getAsString() + ", id " + cid + ", container " + this.containerName, null);
+            }
 
             byte[] data = ptProp.getBytes(COLUMN_VDATA);
             InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
@@ -1674,14 +2128,18 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             else
             {
                if (parentACL != null)
+               {
                   // construct ACL from existed parent ACL
                   acl =
                      new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
                         .getPermissionEntries() : null);
+               }
                else
+               {
                   // have to search nearest ancestor owner and permissions in ACL manager
                   // acl = traverseACL(cpid);
                   acl = null;
+               }
             }
 
             return new PersistedNodeData(getIdentifier(cid), qpath, getIdentifier(parentCid), cversion, cnordernumb,
@@ -1691,6 +2149,17 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          {
             throw new RepositoryException("FATAL ERROR Node " + getIdentifier(cid) + " " + qpath.getAsString()
                + " has wrong formed ACL. ", e);
+         }
+         finally
+         {
+            try
+            {
+               ptProp.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
          }
       }
       catch (IllegalNameException e)
@@ -1798,7 +2267,14 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
       finally
       {
-         valueRecords.close();
+         try
+         {
+            valueRecords.close();
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Can't close the ResultSet: " + e);
+         }
       }
    }
 
@@ -1840,7 +2316,14 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
       finally
       {
-         valueRecords.close();
+         try
+         {
+            valueRecords.close();
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Can't close the ResultSet: " + e);
+         }
       }
 
       return data;
@@ -1897,8 +2380,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       throws SQLException, IOException
    {
 
-      ResultSet valueResultSet = null;
-
       byte[] buffer = new byte[0];
       byte[] spoolBuffer = new byte[ValueFileIOHelper.IOBUFFER_SIZE];
       int read;
@@ -1910,6 +2391,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          // stream from database
          if (content != null)
+         {
             while ((read = content.read(spoolBuffer)) >= 0)
             {
                if (out != null)
@@ -1929,7 +2411,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                      buffer = null;
                      break;
                   }
-                  out = new FileOutputStream(swapFile);
+                  out = PrivilegedFileHelper.fileOutputStream(swapFile);
                   out.write(buffer, 0, len);
                   out.write(spoolBuffer, 0, read);
                   buffer = null;
@@ -1945,11 +2427,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                   len += read;
                }
             }
+         }
       }
       finally
       {
-         if (valueResultSet != null)
-            valueResultSet.close();
          if (out != null)
          {
             out.close();
@@ -2010,7 +2491,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                   swapFile.spoolDone();
                }
 
-               long vlen = swapFile.length();
+               long vlen = PrivilegedFileHelper.length(swapFile);
                if (vlen <= Integer.MAX_VALUE)
                {
                   streamLength = (int)vlen;
@@ -2038,6 +2519,210 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
    }
 
+   /**
+    * Build node data and its properties data from temporary stored info.
+    * 
+    * @return NodeDataIndexing
+    * @throws RepositoryException
+    * @throws IOException 
+    * @throws SQLException 
+    * @throws IllegalNameException 
+    */
+   protected NodeDataIndexing createNodeDataIndexing(TempNodeData tempNode) throws RepositoryException, SQLException,
+      IOException, IllegalNameException
+   {
+      String parentCid;
+      QPath parentPath;
+
+      if (tempNode.cpid.equals(Constants.ROOT_PARENT_UUID))
+      {
+         // root node
+         parentCid = null;
+         parentPath = Constants.ROOT_PATH;
+      }
+      else
+      {
+         parentCid = tempNode.cpid;
+         parentPath =
+            QPath.makeChildPath(traverseQPath(tempNode.cpid), InternalQName.parse(tempNode.cname), tempNode.cindex);
+      }
+
+      // primary type if exists in the list of properties
+      InternalQName ptName = null;
+      ValueData ptValue = null;
+
+      SortedSet<TempPropertyData> ptTempProp = tempNode.properties.get(Constants.JCR_PRIMARYTYPE.getAsString());
+      if (ptTempProp != null)
+      {
+         ptValue = ptTempProp.first().getValueData();
+         ptName = InternalQName.parse(new String(ptValue.getAsByteArray(), Constants.DEFAULT_ENCODING));
+      }
+
+      // mixins if exist in the list of properties
+      List<ValueData> mixinsData = new ArrayList<ValueData>();
+      List<InternalQName> mixins = new ArrayList<InternalQName>();
+
+      Set<TempPropertyData> mixinsTempProps = tempNode.properties.get(Constants.JCR_MIXINTYPES.getAsString());
+      if (mixinsTempProps != null)
+      {
+         for (TempPropertyData mxnb : mixinsTempProps)
+         {
+            ValueData vdata = mxnb.getValueData();
+
+            mixinsData.add(vdata);
+            mixins.add(InternalQName.parse(new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING)));
+         }
+      }
+
+      // build node data. No need to load ACL. The node will be pushed directly for reindexing. 
+      NodeData nodeData =
+         new PersistedNodeData(getIdentifier(tempNode.cid), parentPath, getIdentifier(parentCid), tempNode.cversion,
+            tempNode.cnordernumb, ptName, mixins.toArray(new InternalQName[mixins.size()]), null);
+
+      Map<String, PropertyData> childProps = new HashMap<String, PropertyData>();
+      for (String propName : tempNode.properties.keySet())
+      {
+         ExtendedTempPropertyData prop = (ExtendedTempPropertyData)tempNode.properties.get(propName).first();
+
+         String identifier = getIdentifier(prop.id);
+         QPath qpath = QPath.makeChildPath(parentPath, InternalQName.parse(prop.name));
+
+         List<ValueData> valueData = new ArrayList<ValueData>();
+
+         if (propName.equals(Constants.JCR_PRIMARYTYPE.getAsString()))
+         {
+            valueData.add(ptValue);
+         }
+         else if (propName.equals(Constants.JCR_MIXINTYPES.getAsString()))
+         {
+            valueData = mixinsData;
+         }
+         else
+         {
+            for (TempPropertyData tempProp : tempNode.properties.get(propName))
+            {
+               ExtendedTempPropertyData exTempProp = (ExtendedTempPropertyData)tempProp;
+
+               valueData.add(exTempProp.getValueData());
+            }
+         }
+
+         // build property data
+         PropertyData pdata =
+            new PersistedPropertyData(identifier, qpath, tempNode.cid, prop.version, prop.type, prop.multi, valueData);
+
+         childProps.put(propName, pdata);
+      }
+
+      return new NodeDataIndexing(nodeData, childProps);
+   }
+
+   /**
+    * Class needed temporary to store node data info. 
+    */
+   protected class TempNodeData
+   {
+      public String cid;
+
+      public String cname;
+
+      public int cversion;
+
+      public String cpid;
+
+      public int cindex;
+
+      public int cnordernumb;
+
+      public Map<String, SortedSet<TempPropertyData>> properties = new HashMap<String, SortedSet<TempPropertyData>>();
+
+      public TempNodeData(ResultSet item) throws SQLException
+      {
+         cid = item.getString(COLUMN_ID);
+         cname = item.getString(COLUMN_NAME);
+         cversion = item.getInt(COLUMN_VERSION);
+         cpid = item.getString(COLUMN_PARENTID);
+         cindex = item.getInt(COLUMN_INDEX);
+         cnordernumb = item.getInt(COLUMN_NORDERNUM);
+      }
+   }
+
+   /**
+    * Class needs temporary to store value info.
+    */
+   protected class TempPropertyData implements Comparable<TempPropertyData>
+   {
+      protected final int orderNum;
+
+      protected ValueData data;
+
+      public TempPropertyData(ResultSet item) throws SQLException
+      {
+         this(item, true);
+      }
+
+      public TempPropertyData(ResultSet item, boolean readValue) throws SQLException
+      {
+         orderNum = item.getInt(COLUMN_VORDERNUM);
+         data = readValue ? new ByteArrayPersistedValueData(orderNum, item.getBytes(COLUMN_VDATA)) : null;
+      }
+
+      public int compareTo(TempPropertyData o)
+      {
+         return orderNum - o.orderNum;
+      }
+
+      public ValueData getValueData()
+      {
+         return data;
+      }
+   }
+
+   /**
+    * Class needs temporary to store whole property data info.
+    */
+   protected class ExtendedTempPropertyData extends TempPropertyData
+   {
+      protected final String id;
+
+      protected final String name;
+
+      protected final int version;
+
+      protected final int type;
+
+      protected final boolean multi;
+
+      protected final String storage_desc;
+
+      public ExtendedTempPropertyData(ResultSet item) throws SQLException, ValueStorageNotFoundException, IOException
+      {
+         super(item, false);
+         id = item.getString("P_ID");
+         name = item.getString("P_NAME");
+         version = item.getInt("P_VERSION");
+         type = item.getInt("P_TYPE");
+         multi = item.getBoolean("P_MULTIVALUED");
+         storage_desc = item.getString(COLUMN_VSTORAGE_DESC);
+         InputStream is = item.getBinaryStream(COLUMN_VDATA);
+         data =
+            storage_desc == null ? readValueData(id, orderNum, version, is) : readValueData(getIdentifier(id),
+               orderNum, storage_desc);
+      }
+   }
+
+   /**
+    * The comparator used to sort the value data
+    */
+   protected static Comparator<ValueData> COMPARATOR_VALUE_DATA = new Comparator<ValueData>()
+   {
+
+      public int compare(ValueData vd1, ValueData vd2)
+      {
+         return vd1.getOrderNumber() - vd2.getOrderNumber();
+      }
+   };
+
    protected abstract int addNodeRecord(NodeData data) throws SQLException;
 
    protected abstract int addPropertyRecord(PropertyData prop) throws SQLException;
@@ -2050,15 +2735,28 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected abstract ResultSet findChildNodesByParentIdentifier(String parentIdentifier) throws SQLException;
 
+   protected abstract ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException;
+
    protected abstract ResultSet findChildNodesCountByParentIdentifier(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findChildPropertiesByParentIdentifier(String parentIdentifier) throws SQLException;
+
+   protected abstract ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException;
+
+   protected abstract ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
+      throws SQLException;
 
    protected abstract int addReference(PropertyData data) throws SQLException, IOException;
 
    protected abstract int renameNode(NodeData data) throws SQLException;
 
    protected abstract int deleteReference(String propertyIdentifier) throws SQLException;
+
+   /**
+    * Deletes [http://www.jcp.org/jcr/1.0]lockOwner and [http://www.jcp.org/jcr/1.0]lockIsDeep
+    * properties directly from DB.
+    */
+   protected abstract void deleteLockProperties() throws SQLException;
 
    protected abstract ResultSet findReferences(String nodeIdentifier) throws SQLException;
 
@@ -2079,5 +2777,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected abstract ResultSet findValuesStorageDescriptorsByPropertyId(String cid) throws SQLException;
 
-   protected abstract ResultSet findValueByPropertyIdOrderNumber(String cid, int orderNumb) throws SQLException;
+   protected abstract ResultSet findMaxPropertyVersion(String parentId, String name, int index) throws SQLException;
+
 }

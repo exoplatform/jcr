@@ -18,8 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
+
 import java.io.File;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
@@ -89,7 +93,7 @@ public class SwapFile extends SpoolFile
       synchronized (inShare)
       {
          SwapFile newsf = new SwapFile(parent, child);
-         String absPath = newsf.getAbsolutePath();
+         String absPath = PrivilegedFileHelper.getAbsolutePath(newsf);
 
          SwapFile swapped = inShare.get(absPath);
          if (swapped != null)
@@ -104,7 +108,8 @@ public class SwapFile extends SpoolFile
                catch (final InterruptedException e)
                {
                   // thinking that is ok, i.e. this thread is interrupted
-                  throw new IOException("Swap file read error " + swapped.getAbsolutePath() + ". " + e)
+                  throw new IOException("Swap file read error " + PrivilegedFileHelper.getAbsolutePath(swapped) + ". "
+                     + e)
                   {
                      @Override
                      public Throwable getCause()
@@ -154,16 +159,28 @@ public class SwapFile extends SpoolFile
    {
       synchronized (inShare)
       {
-         if (super.delete())
+         final SpoolFile sf = this;
+
+         PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
+         {
+            public Boolean run()
+            {
+               return sf.exists() ? SwapFile.super.delete() : true;
+            }
+         };
+         boolean res = SecurityHelper.doPrivilegedAction(action);
+
+         if (res)
          {
             // remove from shared files list
-            inShare.remove(getAbsolutePath());
+            inShare.remove(PrivilegedFileHelper.getAbsolutePath(this));
 
             // make sure that the file doesn't make any other thread await in 'get' method
             // impossible case as 'delete' and 'get' which may waiting for, synchronized by inShare map.
             // spoolDone();
 
             return true;
+
          }
 
          return false;

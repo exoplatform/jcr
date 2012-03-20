@@ -37,6 +37,7 @@ import javax.jcr.RepositoryException;
 import javax.ws.rs.core.StreamingOutput;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 /**
@@ -101,7 +102,6 @@ public class VersionTreeResponseEntity implements StreamingOutput
          this.xmlStreamWriter =
             XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream, Constants.DEFAULT_ENCODING);
          xmlStreamWriter.setNamespaceContext(namespaceContext);
-         xmlStreamWriter.setDefaultNamespace("DAV:");
 
          xmlStreamWriter.writeStartDocument();
          xmlStreamWriter.writeStartElement("D", "multistatus", "DAV:");
@@ -129,7 +129,12 @@ public class VersionTreeResponseEntity implements StreamingOutput
          xmlStreamWriter.writeEndElement();
          xmlStreamWriter.writeEndDocument();
       }
-      catch (Exception exc)
+      catch (XMLStreamException exc)
+      {
+         log.error(exc.getMessage(), exc);
+         throw new IOException(exc.getMessage());
+      }
+      catch (RepositoryException exc)
       {
          log.error(exc.getMessage(), exc);
          throw new IOException(exc.getMessage());

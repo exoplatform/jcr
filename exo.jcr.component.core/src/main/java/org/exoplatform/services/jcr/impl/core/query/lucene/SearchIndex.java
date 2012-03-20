@@ -35,16 +35,26 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.SortComparatorSource;
 import org.apache.lucene.search.SortField;
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
+import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
+import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -66,18 +76,13 @@ import org.xml.sax.SAXException;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
+import java.security.PrivilegedAction;
+import java.util.*;
+import java.util.concurrent.CountDownLatch;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.query.InvalidQueryException;
@@ -89,7 +94,7 @@ import javax.xml.parsers.ParserConfigurationException;
  * Implements a {@link org.apache.jackrabbit.core.query.QueryHandler} using
  * Lucene.
  */
-public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener
+public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener, Suspendable
 {
 
    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
@@ -129,6 +134,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *             calculated as follows: 2 *
     *             Runtime.getRuntime().availableProcessors().
     */
+   @Deprecated
    public static final int DEFAULT_EXTRACTOR_POOL_SIZE = 0;
 
    /**
@@ -163,10 +169,40 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public static final int DEFAULT_TERM_INFOS_INDEX_DIVISOR = 1;
 
    /**
+    * The default value for {@link #reindexingPageSize}.
+    */
+   public static final int DEFAULT_REINDEXING_PAGE_SIZE = 100;
+
+   /**
+    * The default value for {@link #rdbmsReindexing}.
+    */
+   public static final boolean DEFAULT_RDBMS_REINDEXING = true;
+
+   /**
+    * The default value for {@link #asyncReindexing}.
+    */
+   public static final boolean DEFAULT_ASYNC_REINDEXING = false;
+
+   /**
+    * The default value for {@link #indexingThreadPoolSize}
+    */
+   private static final Integer DEFAULT_INDEXING_THREAD_POOL_SIZE = Runtime.getRuntime().availableProcessors();
+
+   /** 
+    * The default value for {@link #indexRecoveryMode}. 
+    */
+   public static final String INDEX_RECOVERY_MODE_FROM_INDEXING = "from-indexing";
+
+   /** 
+    * The alternative value for {@link #indexRecoveryMode}. 
+    */
+   public static final String INDEX_RECOVERY_MODE_FROM_COORDINATOR = "from-coordinator";
+
+   /**
     * Default name of the error log file
     */
    private static final String ERROR_LOG = "error.log";
-
+   
    /**
     * The actual index
     */
@@ -384,6 +420,16 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    private SpellChecker spellChecker;
 
    /**
+    * Return most popular results.
+    */
+   private boolean spellCheckerMorePopular = true;
+
+   /**
+    * Minimal distance between spell checked word and proposed word. 
+    */
+   private float spellCheckerMinDistance = 0.55f;
+
+   /**
     * The similarity in use for indexing and searching.
     */
    private Similarity similarity = Similarity.getDefault();
@@ -421,6 +467,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    private boolean closed = false;
 
    /**
+    * Allows or denies queries while index is offline.
+    */
+   private boolean allowQuery = true;
+
+   /**
     * Text extractor for extracting text content of binary properties.
     */
    private DocumentReaderService extractor;
@@ -435,7 +486,67 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    private ErrorLog errorLog;
 
+   /**
+    * The unique id of the workspace corresponding to current instance of {@link SearchIndex}
+    */
+   private final String wsId;
+
    private final ConfigurationManager cfm;
+
+   /**
+    * Maximum amount of nodes which can be retrieved from storage for re-indexing purpose. 
+    */
+   private int reindexingPageSize = DEFAULT_REINDEXING_PAGE_SIZE;
+
+   /**
+    * Indicates what reindexing mechanism need to use. 
+    */
+   private boolean rdbmsReindexing = DEFAULT_RDBMS_REINDEXING;
+
+   /** 
+    * The way to create initial index.. 
+    */
+   private String indexRecoveryMode = INDEX_RECOVERY_MODE_FROM_COORDINATOR;
+
+   /**
+    * Defines reindexing synchronization policy. Whether or not start it asynchronously  
+    */
+   private boolean asyncReindexing = DEFAULT_ASYNC_REINDEXING;
+
+   /**
+    * Waiting query execution until resume. 
+    */
+   protected CountDownLatch latcher = null;
+
+   /**
+    * Indicates if component suspended or not.
+    */
+   protected boolean isSuspended = false;
+
+   protected final Set<String> recoveryFilterClasses;
+
+   protected List<AbstractRecoveryFilter> recoveryFilters = null;
+
+   protected Map<String, String> optionalParameters = new HashMap<String, String>();
+
+   protected Integer indexingThreadPoolSize = DEFAULT_INDEXING_THREAD_POOL_SIZE;
+
+   /**
+    * Working constructor.
+    * 
+    * @throws RepositoryConfigurationException
+    * @throws IOException
+    */
+   public SearchIndex(String wsId, QueryHandlerEntry queryHandlerConfig, ConfigurationManager cfm) throws IOException,
+      RepositoryConfigurationException
+   {
+      this.wsId = wsId;
+      this.analyzer = new JcrStandartAnalyzer();
+      this.cfm = cfm;
+      SearchIndexConfigurationHelper searchIndexConfigurationHelper = new SearchIndexConfigurationHelper(this);
+      searchIndexConfigurationHelper.init(queryHandlerConfig);
+      this.recoveryFilterClasses = new LinkedHashSet<String>();
+   }
 
    /**
     * Working constructor.
@@ -446,12 +557,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public SearchIndex(QueryHandlerEntry queryHandlerConfig, ConfigurationManager cfm) throws IOException,
       RepositoryConfigurationException
    {
-      this.analyzer = new JcrStandartAnalyzer();
-      // this.queryHandlerConfig = new QueryHandlerEntryWrapper(
-      // queryHandlerConfig);
-      this.cfm = cfm;
-      SearchIndexConfigurationHelper searchIndexConfigurationHelper = new SearchIndexConfigurationHelper(this);
-      searchIndexConfigurationHelper.init(queryHandlerConfig);
+      this(null, queryHandlerConfig, cfm);
    }
 
    /**
@@ -460,8 +566,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public SearchIndex()
    {
       this.analyzer = new JcrStandartAnalyzer();
-      // this.queryHandlerConfig = null;
       this.cfm = null;
+      this.wsId = null;
+      this.recoveryFilterClasses = new LinkedHashSet<String>();
    }
 
    /**
@@ -473,6 +580,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *             if an error occurs while initializing this handler.
     * @throws RepositoryException
     */
+   @Override
    public void doInit() throws IOException, RepositoryException
    {
       QueryHandlerContext context = getContext();
@@ -482,11 +590,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          throw new IOException("SearchIndex requires 'path' parameter in configuration!");
       }
 
-      File indexDirectory;
+      final File indexDirectory;
       if (path != null)
       {
-
          indexDirectory = new File(path);
+
          if (!indexDirectory.exists())
          {
             if (!indexDirectory.mkdirs())
@@ -545,38 +653,38 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       // if RW mode, create initial index and start check
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
-         if (index.numDocs() == 0 && context.isCreateInitialIndex())
+         // set true if indexRecoveryFilters are required and some filter gives positive flag
+         final boolean doReindexing = (index.numDocs() == 0 && context.isCreateInitialIndex());
+         // if existing index should be removed
+         final boolean doForceReindexing = (context.isRecoveryFilterUsed() && isIndexRecoveryRequired());
+
+         final boolean doCheck = (consistencyCheckEnabled && (index.getRedoLogApplied() || forceConsistencyCheck));
+         final ItemDataConsumer itemStateManager = context.getItemStateManager();
+
+         if (isAsyncReindexing() && doReindexing)
          {
-            index.createInitialIndex(context.getItemStateManager());
+            log.info("Launching reindexing in asynchronous mode.");
+            new Thread(new Runnable()
+            {
+               public void run()
+               {
+                  try
+                  {
+                     reindex(doReindexing, doForceReindexing, doCheck, itemStateManager);
+                  }
+                  catch (IOException e)
+                  {
+                     log
+                        .error(
+                           "Error while reindexing the workspace. Please fix the problem, delete index and restart server.",
+                           e);
+                  }
+               }
+            }, "Reindexing-" + context.getRepositoryName() + "-" + context.getContainer().getWorkspaceName()).start();
          }
-         if (consistencyCheckEnabled && (index.getRedoLogApplied() || forceConsistencyCheck))
+         else
          {
-            log.info("Running consistency check...");
-            try
-            {
-               ConsistencyCheck check = ConsistencyCheck.run(index, context.getItemStateManager());
-               if (autoRepair)
-               {
-                  check.repair(true);
-               }
-               else
-               {
-                  List<ConsistencyCheckError> errors = check.getErrors();
-                  if (errors.size() == 0)
-                  {
-                     log.info("No errors detected.");
-                  }
-                  for (Iterator<ConsistencyCheckError> it = errors.iterator(); it.hasNext();)
-                  {
-                     ConsistencyCheckError err = it.next();
-                     log.info(err.toString());
-                  }
-               }
-            }
-            catch (Exception e)
-            {
-               log.warn("Failed to run consistency check on index: " + e);
-            }
+            reindex(doReindexing, doForceReindexing, doCheck, itemStateManager);
          }
       }
       // initialize spell checker
@@ -589,8 +697,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             new Integer(getIndexFormatVersion().getVersion()));
       }
 
-      File file = new File(indexDirectory, ERROR_LOG);
-      errorLog = new ErrorLog(file, errorLogfileSize);
+      doInitErrorLog();
+
       // reprocess any notfinished notifies;
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
@@ -598,6 +706,298 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       }
 
       modeHandler.addIndexerIoModeListener(this);
+   }
+
+   /**
+    * @return the wsId
+    */
+   public String getWsId()
+   {
+      return wsId;
+   }
+
+   /**
+    * Adds new recovery filter to existing list.
+    * 
+    * @param recoveryFilterClassName
+    */
+   public void addRecoveryFilterClass(String recoveryFilterClassName)
+   {
+      recoveryFilterClasses.add(recoveryFilterClassName);
+   }
+
+   /**
+    * Puts optional parameter not listed in {@link QueryHandlerParams}. Usually used by
+    * extended plug-ins or services like RecoveryFilters.
+    * 
+    * @param key
+    * @param value
+    */
+   public void addOptionalParameter(String key, String value)
+   {
+      optionalParameters.put(key, value);
+   }
+
+   /**
+    * Returns whole set of optional (additional) parameters from QueryHandlerEntry 
+    * that are not listed in {@link QueryHandlerParams}. Can be used by extended 
+    * services and plug-ins requirind additional configuration. 
+    * 
+    * @return unmodifiable map
+    */
+   public Map<String, String> getOptionalParameters()
+   {
+      return Collections.unmodifiableMap(optionalParameters);
+   }
+
+   /**
+    * Invokes all recovery filters from the set
+    * @return true if any filter requires reindexing 
+    */
+   @SuppressWarnings("unchecked")
+   private boolean isIndexRecoveryRequired() throws RepositoryException
+   {
+      // instantiate filters first, if not initialized
+      if (recoveryFilters == null)
+      {
+         recoveryFilters = new ArrayList<AbstractRecoveryFilter>();
+         log.info("Initializing RecoveryFilters.");
+         // add default filter, if none configured.
+         if (recoveryFilterClasses.isEmpty())
+         {
+            this.recoveryFilterClasses.add(DocNumberRecoveryFilter.class.getName());
+         }
+         for (String recoveryFilterClassName : recoveryFilterClasses)
+         {
+            AbstractRecoveryFilter filter = null;
+            Class<? extends AbstractRecoveryFilter> filterClass;
+            try
+            {
+               filterClass =
+                  (Class<? extends AbstractRecoveryFilter>)Class.forName(recoveryFilterClassName, true, this.getClass()
+                     .getClassLoader());
+               Constructor<? extends AbstractRecoveryFilter> constuctor = filterClass.getConstructor(SearchIndex.class);
+               filter = constuctor.newInstance(this);
+               recoveryFilters.add(filter);
+            }
+            catch (ClassNotFoundException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (IllegalArgumentException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (InstantiationException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (IllegalAccessException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (InvocationTargetException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (SecurityException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+            catch (NoSuchMethodException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+         }
+      }
+
+      // invoke filters
+      for (AbstractRecoveryFilter filter : recoveryFilters)
+      {
+         if (filter.accept())
+         {
+            return true;
+         }
+      }
+      return false;
+   }
+
+   /**
+    * @param doReindexing
+    *          performs indexing if set to true 
+    * @param doForceReindexing
+    *          skips index existence check
+    * @param doCheck
+    *          checks index
+    * @param itemStateManager
+    * @throws IOException
+    */
+   private void reindex(boolean doReindexing, boolean doForceReindexing, boolean doCheck,
+      ItemDataConsumer itemStateManager) throws IOException
+   {
+      if (doReindexing || doForceReindexing)
+      {
+         index.createInitialIndex(itemStateManager, doForceReindexing);
+      }
+      if (doCheck)
+      {
+         log.info("Running consistency check...");
+         try
+         {
+            ConsistencyCheck check = ConsistencyCheck.run(index, itemStateManager);
+            if (autoRepair)
+            {
+               check.repair(true);
+            }
+            else
+            {
+               List<ConsistencyCheckError> errors = check.getErrors();
+               if (errors.size() == 0)
+               {
+                  log.info("No errors detected.");
+               }
+               for (Iterator<ConsistencyCheckError> it = errors.iterator(); it.hasNext();)
+               {
+                  ConsistencyCheckError err = it.next();
+                  log.info(err.toString());
+               }
+            }
+         }
+         catch (Exception e)
+         {
+            log.warn("Failed to run consistency check on index: " + e);
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void checkIndex(ItemDataConsumer itemStateManager, boolean isSystem, final InspectionReport report)
+      throws RepositoryException, IOException
+   {
+
+      // The visitor, that performs item enumeration and checks if all nodes present in 
+      // persistent layer are indexed. Also collects the list of all indexed nodes
+      // to optimize the process of backward check, when index is traversed to find
+      // references to already deleted nodes
+      class ItemDataIndexConsistencyVisitor extends ItemDataTraversingVisitor
+      {
+         private final IndexReader indexReader;
+
+         private final Set<String> indexedNodes = new HashSet<String>();
+
+         /**
+          * @param dataManager
+          */
+         public ItemDataIndexConsistencyVisitor(ItemDataConsumer dataManager, IndexReader indexReader)
+         {
+            super(dataManager);
+            this.indexReader = indexReader;
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         @Override
+         protected void entering(PropertyData property, int level) throws RepositoryException
+         {
+            // ignore properties;
+         }
+
+         /**
+          * {@inheritDoc}
+          */
+         @Override
+         protected void entering(NodeData node, int level) throws RepositoryException
+         {
+            // process node uuids one-by-one
+            try
+            {
+               String uuid = node.getIdentifier();
+               TermDocs docs = indexReader.termDocs(new Term(FieldNames.UUID, uuid));
+
+               if (docs.next())
+               {
+                  indexedNodes.add(uuid);
+                  docs.doc();
+                  if (docs.next())
+                  {
+                     //multiple entries
+                     report.logComment("Multiple entires.");
+                     report.logBrokenObjectAndSetInconsistency("ID=" + uuid);
+                  }
+               }
+               else
+               {
+                  report.logComment("Not indexed.");
+                  report.logBrokenObjectAndSetInconsistency("ID=" + uuid);
+               }
+            }
+            catch (IOException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+         }
+
+         @Override
+         protected void leaving(PropertyData property, int level) throws RepositoryException
+         {
+            // ignore properties
+         }
+
+         @Override
+         protected void leaving(NodeData node, int level) throws RepositoryException
+         {
+            // do nothing
+         }
+
+         @Override
+         protected void visitChildProperties(NodeData node) throws RepositoryException
+         {
+            //do nothing
+         }
+
+         public Set<String> getIndexedNodes()
+         {
+            return indexedNodes;
+         }
+      }
+
+      // check relation Persistent Layer -> Index
+      // If current workspace is system, then need to invoke reader correspondent to system index
+      IndexReader indexReader = getIndexReader(isSystem);
+      try
+      {
+         ItemData root = itemStateManager.getItemData(Constants.ROOT_UUID);
+         ItemDataIndexConsistencyVisitor visitor = new ItemDataIndexConsistencyVisitor(itemStateManager, indexReader);
+         root.accept(visitor);
+
+         Set<String> documentUUIDs = visitor.getIndexedNodes();
+
+         // check relation Index -> Persistent Layer
+         // find document that do not corresponds to real node
+         // iterate on documents one-by-one
+         for (int i = 0; i < indexReader.maxDoc(); i++)
+         {
+            if (indexReader.isDeleted(i))
+            {
+               continue;
+            }
+            final int currentIndex = i;
+            Document d = indexReader.document(currentIndex, FieldSelectors.UUID);
+            String uuid = d.get(FieldNames.UUID);
+            if (!documentUUIDs.contains(uuid))
+            {
+               report.logComment("Document corresponds to removed node.");
+               report.logBrokenObjectAndSetInconsistency("ID=" + uuid);
+            }
+         }
+      }
+      finally
+      {
+         Util.closeOrRelease(indexReader);
+      }
    }
 
    /**
@@ -666,11 +1066,32 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       IOException
    {
       checkOpen();
+      apply(getChanges(remove, add));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void apply(ChangesHolder changes) throws RepositoryException, IOException
+   {
+      checkOpen();
+      // index may not be initialized, but some operation can be performed in cluster environment
+      if (index != null)
+      {
+         index.update(changes.getRemove(), changes.getAdd());
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ChangesHolder getChanges(Iterator<String> remove, Iterator<NodeData> add)
+   {
       final Map<String, NodeData> aggregateRoots = new HashMap<String, NodeData>();
       final Set<String> removedNodeIds = new HashSet<String>();
       final Set<String> addedNodeIds = new HashSet<String>();
 
-      index.update(IteratorUtils.toList(new TransformIterator(remove, new Transformer()
+      Collection<String> docIdsToRemove = IteratorUtils.toList(new TransformIterator(remove, new Transformer()
       {
          public Object transform(Object input)
          {
@@ -678,7 +1099,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             removedNodeIds.add(uuid);
             return uuid;
          }
-      })), IteratorUtils.toList(new TransformIterator(add, new Transformer()
+      }));
+      Collection<Document> docsToAdd = IteratorUtils.toList(new TransformIterator(add, new Transformer()
       {
          public Object transform(Object input)
          {
@@ -703,7 +1125,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             }
             return doc;
          }
-      })));
+      }));
 
       // remove any aggregateRoot nodes that are new
       // and therefore already up-to-date
@@ -733,8 +1155,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             }
          });
          modified.addAll(aggregateRoots.values());
-         index.update(aggregateRoots.keySet(), modified);
+         docIdsToRemove.addAll(aggregateRoots.keySet());
+         docsToAdd.addAll(modified);
       }
+      if (docIdsToRemove.isEmpty() && docsToAdd.isEmpty())
+      {
+         return null;
+      }
+      return new ChangesHolder(docIdsToRemove, docsToAdd);
    }
 
    /**
@@ -809,25 +1237,40 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void close()
    {
-      if (synonymProviderConfigFs != null)
+      if (!closed)
       {
-         try
+         // cleanup resources obtained by filters
+         if (recoveryFilters != null)
          {
-            synonymProviderConfigFs.close();
+            for (AbstractRecoveryFilter filter : recoveryFilters)
+            {
+               filter.close();
+            }
+            recoveryFilters.clear();
+            recoveryFilters = null;
          }
-         catch (IOException e)
+
+         if (synonymProviderConfigFs != null)
          {
-            log.warn("Exception while closing FileSystem", e);
+            try
+            {
+               synonymProviderConfigFs.close();
+            }
+            catch (IOException e)
+            {
+               log.warn("Exception while closing FileSystem", e);
+            }
          }
+         if (spellChecker != null)
+         {
+            spellChecker.close();
+         }
+         errorLog.close();
+         index.close();
+         getContext().destroy();
+         closed = true;
+         log.info("Index closed: " + path);
       }
-      if (spellChecker != null)
-      {
-         spellChecker.close();
-      }
-      index.close();
-      getContext().destroy();
-      closed = true;
-      log.info("Index closed: " + path);
    }
 
    /**
@@ -855,6 +1298,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public MultiColumnQueryHits executeQuery(SessionImpl session, AbstractQueryImpl queryImpl, Query query,
       QPath[] orderProps, boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
    {
+      waitForResuming();
+
       checkOpen();
 
       Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
@@ -865,6 +1310,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       return new FilterMultiColumnQueryHits(searcher.execute(query, sort, resultFetchHint,
          QueryImpl.DEFAULT_SELECTOR_NAME))
       {
+         @Override
          public void close() throws IOException
          {
             try
@@ -903,6 +1349,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public MultiColumnQueryHits executeQuery(SessionImpl session, MultiColumnQuery query, QPath[] orderProps,
       boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
    {
+      waitForResuming();
+
       checkOpen();
 
       Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
@@ -912,6 +1360,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       searcher.setSimilarity(getSimilarity());
       return new FilterMultiColumnQueryHits(query.execute(searcher, sort, resultFetchHint))
       {
+         @Override
          public void close() throws IOException
          {
             try
@@ -1096,6 +1545,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    protected IndexReader getIndexReader(boolean includeSystemIndex) throws IOException
    {
+      // deny query execution if index in offline mode and allowQuery is false
+      if (!index.isOnline() && !allowQuery)
+      {
+         throw new IndexOfflineIOException("Index is offline");
+      }
       QueryHandler parentHandler = getContext().getParentHandler();
       CachingMultiIndexReader parentReader = null;
       if (parentHandler instanceof SearchIndex && includeSystemIndex)
@@ -1166,6 +1620,28 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    protected Document createDocument(NodeData node, NamespaceMappings nsMappings, IndexFormatVersion indexFormatVersion)
       throws RepositoryException
+   {
+      return createDocument(new NodeDataIndexing(node), nsMappings, indexFormatVersion);
+   }
+
+   /**
+    * Creates a lucene <code>Document</code> for a node state using the
+    * namespace mappings <code>nsMappings</code>.
+    * 
+    * @param node
+    *            the node state to index.
+    * @param nsMappings
+    *            the namespace mappings of the search index.
+    * @param indexFormatVersion
+    *            the index format version that should be used to index the
+    *            passed node state.
+    * @return a lucene <code>Document</code> that contains all properties of
+    *         <code>node</code>.
+    * @throws RepositoryException
+    *             if an error occurs while indexing the <code>node</code>.
+    */
+   protected Document createDocument(NodeDataIndexing node, NamespaceMappings nsMappings,
+      IndexFormatVersion indexFormatVersion) throws RepositoryException
    {
       NodeIndexer indexer = new NodeIndexer(node, getContext().getItemStateManager(), nsMappings, extractor);
       indexer.setSupportHighlighting(supportHighlighting);
@@ -1252,7 +1728,17 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             sp = synonymProviderClass.newInstance();
             sp.initialize(createSynonymProviderConfigResource());
          }
-         catch (Exception e)
+         catch (IOException e)
+         {
+            log.warn("Exception initializing synonym provider: " + synonymProviderClass, e);
+            sp = null;
+         }
+         catch (InstantiationException e)
+         {
+            log.warn("Exception initializing synonym provider: " + synonymProviderClass, e);
+            sp = null;
+         }
+         catch (IllegalAccessException e)
          {
             log.warn("Exception initializing synonym provider: " + synonymProviderClass, e);
             sp = null;
@@ -1306,8 +1792,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          InputStream fsr;
          // simple sanity check
-         String separator = System.getProperty("file.separator");
-         if (synonymProviderConfigPath.endsWith(System.getProperty("file.separator")))
+         String separator = PrivilegedSystemHelper.getProperty("file.separator");
+         if (synonymProviderConfigPath.endsWith(PrivilegedSystemHelper.getProperty("file.separator")))
          {
             throw new IOException("Invalid synonymProviderConfigPath: " + synonymProviderConfigPath);
          }
@@ -1319,12 +1805,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             {
                File root = new File(path, synonymProviderConfigPath.substring(0, lastSeparator));
                fsr =
-                  new BufferedInputStream(new FileInputStream(new File(root, synonymProviderConfigPath
+                  new BufferedInputStream(PrivilegedFileHelper.fileInputStream(new File(root, synonymProviderConfigPath
                      .substring(lastSeparator + 1))));
             }
             else
             {
-               fsr = new BufferedInputStream(new FileInputStream(new File(synonymProviderConfigPath)));
+               fsr = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(new File(synonymProviderConfigPath)));
 
             }
             synonymProviderConfigFs = fsr;
@@ -1357,15 +1843,24 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    protected SpellChecker createSpellChecker()
    {
+      // spell checker config
       SpellChecker spCheck = null;
       if (spellCheckerClass != null)
       {
          try
          {
             spCheck = spellCheckerClass.newInstance();
-            spCheck.init(this);
+            spCheck.init(SearchIndex.this, spellCheckerMinDistance, spellCheckerMorePopular);
          }
-         catch (Exception e)
+         catch (IOException e)
+         {
+            log.warn("Exception initializing spell checker: " + spellCheckerClass, e);
+         }
+         catch (InstantiationException e)
+         {
+            log.warn("Exception initializing spell checker: " + spellCheckerClass, e);
+         }
+         catch (IllegalAccessException e)
          {
             log.warn("Exception initializing spell checker: " + spellCheckerClass, e);
          }
@@ -1386,40 +1881,46 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          if (indexingConfigPath != null)
          {
 
-            // File config = new File(indexingConfigPath);
-
-            InputStream is = SearchIndex.class.getResourceAsStream(indexingConfigPath);
-            if (is == null)
+            // File config = PrivilegedFileHelper.file(indexingConfigPath);
+            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
             {
-               try
+               public Object run()
                {
-                  is = cfm.getInputStream(indexingConfigPath);
-               }
-               catch (Exception e1)
-               {
-                  log.warn("Unable to load configuration " + indexingConfigPath);
-               }
-            }
+                  InputStream is = SearchIndex.class.getResourceAsStream(indexingConfigPath);
+                  if (is == null)
+                  {
+                     try
+                     {
+                        is = cfm.getInputStream(indexingConfigPath);
+                     }
+                     catch (Exception e1)
+                     {
+                        log.warn("Unable to load configuration " + indexingConfigPath);
+                     }
+                  }
 
-            try
-            {
-               DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-               DocumentBuilder builder = factory.newDocumentBuilder();
-               builder.setEntityResolver(new IndexingConfigurationEntityResolver());
-               indexingConfiguration = builder.parse(is).getDocumentElement();
-            }
-            catch (ParserConfigurationException e)
-            {
-               log.warn("Unable to create XML parser", e);
-            }
-            catch (IOException e)
-            {
-               log.warn("Exception parsing " + indexingConfigPath, e);
-            }
-            catch (SAXException e)
-            {
-               log.warn("Exception parsing " + indexingConfigPath, e);
-            }
+                  try
+                  {
+                     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                     DocumentBuilder builder = factory.newDocumentBuilder();
+                     builder.setEntityResolver(new IndexingConfigurationEntityResolver());
+                     indexingConfiguration = builder.parse(is).getDocumentElement();
+                  }
+                  catch (ParserConfigurationException e)
+                  {
+                     log.warn("Unable to create XML parser", e);
+                  }
+                  catch (IOException e)
+                  {
+                     log.warn("Exception parsing " + indexingConfigPath, e);
+                  }
+                  catch (SAXException e)
+                  {
+                     log.warn("Exception parsing " + indexingConfigPath, e);
+                  }
+                  return null;
+               }
+            });
          }
       }
       return indexingConfiguration;
@@ -1623,10 +2124,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *            aggregate roots are collected in this map. Key=UUID,
     *            value=NodeState.
     */
-   protected void retrieveAggregateRoot(Set<String> removedNodeIds, Map<String, NodeData> map)
+   protected void retrieveAggregateRoot(final Set<String> removedNodeIds, final Map<String, NodeData> map)
 
    {
-
       if (indexingConfig != null)
       {
          AggregateRule[] aggregateRules = indexingConfig.getAggregateRules();
@@ -1634,57 +2134,71 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          {
             return;
          }
-         int found = 0;
-         long time = System.currentTimeMillis();
-         try
+         long time = 0;
+         if (log.isDebugEnabled())
          {
-            CachingMultiIndexReader reader = index.getIndexReader();
-            try
+            time = System.currentTimeMillis();
+         }
+         int found = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
+         {
+            public Integer run()
             {
-               Term aggregateUUIDs = new Term(FieldNames.AGGREGATED_NODE_UUID, "");
-               TermDocs tDocs = reader.termDocs();
+               int found = 0;
                try
                {
-                  ItemDataConsumer ism = getContext().getItemStateManager();
-                  for (Iterator<String> it = removedNodeIds.iterator(); it.hasNext();)
+                  CachingMultiIndexReader reader = index.getIndexReader();
+                  try
                   {
-                     String id = it.next();
-                     aggregateUUIDs = aggregateUUIDs.createTerm(id);
-                     tDocs.seek(aggregateUUIDs);
-                     while (tDocs.next())
+                     Term aggregateUUIDs = new Term(FieldNames.AGGREGATED_NODE_UUID, "");
+                     TermDocs tDocs = reader.termDocs();
+                     try
                      {
-                        Document doc = reader.document(tDocs.doc(), FieldSelectors.UUID);
-                        String uuid = doc.get(FieldNames.UUID);
-                        ItemData itd = ism.getItemData(uuid);
-                        if (itd == null)
+                        ItemDataConsumer ism = getContext().getItemStateManager();
+                        for (Iterator<String> it = removedNodeIds.iterator(); it.hasNext();)
                         {
-                           continue;
+                           String id = it.next();
+                           aggregateUUIDs = aggregateUUIDs.createTerm(id);
+                           tDocs.seek(aggregateUUIDs);
+                           while (tDocs.next())
+                           {
+                              Document doc = reader.document(tDocs.doc(), FieldSelectors.UUID);
+                              String uuid = doc.get(FieldNames.UUID);
+                              ItemData itd = ism.getItemData(uuid);
+                              if (itd == null)
+                              {
+                                 continue;
+                              }
+                              if (!itd.isNode())
+                              {
+                                 throw new RepositoryException("Item with id:" + uuid + " is not a node");
+                              }
+                              map.put(uuid, (NodeData)itd);
+                              found++;
+                           }
                         }
-                        if (!itd.isNode())
-                        {
-                           throw new RepositoryException("Item with id:" + uuid + " is not a node");
-                        }
-                        map.put(uuid, (NodeData)itd);
-                        found++;
+                     }
+                     finally
+                     {
+                        tDocs.close();
                      }
                   }
+                  finally
+                  {
+                     reader.release();
+                  }
                }
-               finally
+               catch (Exception e)
                {
-                  tDocs.close();
+                  log.warn("Exception while retrieving aggregate roots", e);
                }
+               return found;
             }
-            finally
-            {
-               reader.release();
-            }
-         }
-         catch (Exception e)
+         });
+         if (log.isDebugEnabled())
          {
-            log.warn("Exception while retrieving aggregate roots", e);
+            time = System.currentTimeMillis() - time;
+            log.debug("Retrieved {} aggregate roots in {} ms.", new Integer(found), new Long(time));
          }
-         time = System.currentTimeMillis() - time;
-         log.debug("Retrieved {} aggregate roots in {} ms.", new Integer(found), new Long(time));
       }
    }
 
@@ -1798,6 +2312,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          return hi;
       }
 
+      @Override
       public boolean equals(Object obj)
       {
          if (obj instanceof CombinedIndexReader)
@@ -1808,6 +2323,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          return false;
       }
 
+      @Override
       public int hashCode()
       {
          int hash = 0;
@@ -1880,10 +2396,18 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class analyzerClass = Class.forName(analyzerClassName);
+         Class<?> analyzerClass = Class.forName(analyzerClassName);
          analyzer.setDefaultAnalyzer((Analyzer)analyzerClass.newInstance());
       }
-      catch (Exception e)
+      catch (InstantiationException e)
+      {
+         log.warn("Invalid Analyzer class: " + analyzerClassName, e);
+      }
+      catch (IllegalAccessException e)
+      {
+         log.warn("Invalid Analyzer class: " + analyzerClassName, e);
+      }
+      catch (ClassNotFoundException e)
       {
          log.warn("Invalid Analyzer class: " + analyzerClassName, e);
       }
@@ -1909,7 +2433,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void setPath(String path)
    {
 
-      this.path = path.replace("${java.io.tmpdir}", System.getProperty("java.io.tmpdir"));
+      this.path = path.replace("${java.io.tmpdir}", PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
 
    }
 
@@ -2385,6 +2909,24 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    }
 
    /**
+    * Set SpellChecker morePopular parameter.
+    * @param morePopular boolean
+    */
+   public void setSpellCheckerMorePopuar(boolean morePopular)
+   {
+      spellCheckerMorePopular = morePopular;
+   }
+
+   /**
+    * Set SpellChecker minimal word distance.
+    * @param minDistance float
+    */
+   public void setSpellCheckerMinDistance(float minDistance)
+   {
+      spellCheckerMinDistance = minDistance;
+   }
+
+   /**
     * @return the class name of the spell checker implementation or
     *         <code>null</code> if none is set.
     */
@@ -2452,10 +2994,18 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class similarityClass = Class.forName(className);
+         Class<?> similarityClass = Class.forName(className);
          similarity = (Similarity)similarityClass.newInstance();
       }
-      catch (Exception e)
+      catch (ClassNotFoundException e)
+      {
+         log.warn("Invalid Similarity class: " + className, e);
+      }
+      catch (InstantiationException e)
+      {
+         log.warn("Invalid Similarity class: " + className, e);
+      }
+      catch (IllegalAccessException e)
       {
          log.warn("Invalid Similarity class: " + className, e);
       }
@@ -2533,6 +3083,38 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    }
 
    /**
+    * @return the current value for reindexingPageSize
+    */
+   public int getReindexingPageSize()
+   {
+      return reindexingPageSize;
+   }
+
+   /**
+    * @return the current value for rdbmsReindexing
+    */
+   public boolean isRDBMSReindexing()
+   {
+      return rdbmsReindexing;
+   }
+
+   /**
+    * @return the current value for asyncReindexing
+    */
+   public boolean isAsyncReindexing()
+   {
+      return asyncReindexing;
+   }
+
+   /** 
+    * @return the current value for indexRecoveryMode 
+    */
+   public String getIndexRecoveryMode()
+   {
+      return indexRecoveryMode;
+   }
+
+   /**
     * Sets a new value for termInfosIndexDivisor.
     * 
     * @param termInfosIndexDivisor
@@ -2562,6 +3144,50 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void setInitializeHierarchyCache(boolean initializeHierarchyCache)
    {
       this.initializeHierarchyCache = initializeHierarchyCache;
+   }
+
+   /**
+    * Set a new value for reindexingPageSize.
+    * 
+    * @param reindexingPageSize
+    *            the new value
+    */
+   public void setReindexingPageSize(int reindexingPageSize)
+   {
+      this.reindexingPageSize = reindexingPageSize;
+   }
+
+   /**
+    * Set a new value for reindexingPageSize.
+    * 
+    * @param reindexingPageSize
+    *            the new value
+    */
+   public void setRDBMSReindexing(boolean rdbmsReindexing)
+   {
+      this.rdbmsReindexing = rdbmsReindexing;
+   }
+
+   /**
+    *  Set a new value for indexRecoveryMode. 
+    * 
+    * @param indexRecoveryMode 
+    *          the new value for indexRecoveryMode
+    */
+   public void setIndexRecoveryMode(String indexRecoveryMode)
+   {
+      this.indexRecoveryMode = indexRecoveryMode;
+   }
+
+   /**
+    *  Set a new value for asyncReindexing. 
+    * 
+    * @param indexRecoveryMode 
+    *          the new value for asyncReindexing
+    */
+   public void setAsyncReindexing(boolean asyncReindexing)
+   {
+      this.asyncReindexing = asyncReindexing;
    }
 
    // ----------------------------< internal
@@ -2595,6 +3221,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       // backup the remove and add iterators
       errorLog.writeChanges(removed, added);
+   }
+
+   /**
+    * Initialization error log.
+    */
+   private void doInitErrorLog() throws IOException
+   {
+      File file = new File(new File(path), ERROR_LOG);
+      errorLog = new ErrorLog(file, errorLogfileSize);
    }
 
    private void recoverErrorLog(ErrorLog errlog) throws IOException, RepositoryException
@@ -2680,13 +3315,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public QueryHits executeQuery(Query query) throws IOException
    {
+      waitForResuming();
+
       checkOpen();
 
       IndexReader reader = getIndexReader(true);
       IndexSearcher searcher = new IndexSearcher(reader);
       searcher.setSimilarity(getSimilarity());
 
-      return new LuceneQueryHits(reader, searcher, query);
+      return new LuceneQueryHits(reader, searcher, query, true);
    }
 
    /**
@@ -2699,7 +3336,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          if (mode == IndexerIoMode.READ_WRITE)
          {
             // reprocess any notfinished notifies;
-            log.info("Proceessing eroor log ...");
+            log.info("Processing error log ...");
             recoverErrorLog(errorLog);
          }
       }
@@ -2711,5 +3348,118 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          log.error("Can not recover error log.", e);
       }
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean, boolean)
+    */
+   public void setOnline(boolean isOnline, boolean allowQuery, boolean dropStaleIndexes) throws IOException
+   {
+      checkOpen();
+      if (isOnline)
+      {
+         this.allowQuery = true;
+      }
+      else
+      {
+         this.allowQuery = allowQuery;
+      }
+      index.setOnline(isOnline, dropStaleIndexes);
+   }
+
+   /**
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#isOnline()
+    */
+   public boolean isOnline()
+   {
+      return index.isOnline();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void suspend() throws SuspendException
+   {
+      latcher = new CountDownLatch(1);
+      close();
+
+      isSuspended = true;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void resume() throws ResumeException
+   {
+      try
+      {
+         closed = false;
+         doInit();
+
+         latcher.countDown();
+
+         isSuspended = false;
+      }
+      catch (IOException e)
+      {
+         throw new ResumeException(e);
+      }
+      catch (RepositoryException e)
+      {
+         throw new ResumeException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isSuspended()
+   {
+      return isSuspended;
+   }
+
+   /**
+    * If component is suspended need to wait resuming and not allow
+    * execute query on closed index.
+    * 
+    * @throws IOException
+    */
+   private void waitForResuming() throws IOException
+   {
+      if (isSuspended)
+      {
+         try
+         {
+            latcher.await();
+         }
+         catch (InterruptedException e)
+         {
+            throw new IOException(e);
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getPriority()
+   {
+      return PRIORITY_NORMAL;
+   }
+
+   /**
+    * @return the indexingThreadPoolSize
+    */
+   public Integer getIndexingThreadPoolSize()
+   {
+      return indexingThreadPoolSize;
+   }
+
+   /**
+    * @param indexingThreadPoolSize the indexingThreadPoolSize to set
+    */
+   public void setIndexingThreadPoolSize(Integer indexingThreadPoolSize)
+   {
+      this.indexingThreadPoolSize = indexingThreadPoolSize;
    }
 }

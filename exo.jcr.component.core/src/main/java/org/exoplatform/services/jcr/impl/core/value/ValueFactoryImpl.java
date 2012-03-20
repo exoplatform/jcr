@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.datamodel.Identifier;
@@ -30,7 +31,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.WorkspaceFileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -54,7 +55,7 @@ import javax.jcr.ValueFormatException;
  * ValueFactory implementation
  * 
  * @author Gennady Azarenkov
- * @version $Id: ValueFactoryImpl.java 11907 2008-03-13 15:36:21Z ksm $
+ * @version $Id$
  */
 
 public class ValueFactoryImpl implements ValueFactory
@@ -71,15 +72,13 @@ public class ValueFactoryImpl implements ValueFactory
    private int maxBufferSize;
 
    public ValueFactoryImpl(LocationFactory locationFactory, WorkspaceEntry workspaceConfig,
-      WorkspaceFileCleanerHolder cleanerHolder)
+      FileCleanerHolder cleanerHolder)
    {
 
       this.locationFactory = locationFactory;
       this.fileCleaner = cleanerHolder.getFileCleaner();
+      this.tempDirectory = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
 
-      this.tempDirectory = new File(System.getProperty("java.io.tmpdir"));
-
-      // TODO we use WorkspaceDataContainer constants but is it ok?
       this.maxBufferSize =
          workspaceConfig.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
@@ -87,10 +86,9 @@ public class ValueFactoryImpl implements ValueFactory
 
    public ValueFactoryImpl(LocationFactory locationFactory)
    {
-
       this.locationFactory = locationFactory;
-      this.tempDirectory = new File(System.getProperty("java.io.tmpdir"));
       this.maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;
+      this.tempDirectory = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
    }
 
    /**

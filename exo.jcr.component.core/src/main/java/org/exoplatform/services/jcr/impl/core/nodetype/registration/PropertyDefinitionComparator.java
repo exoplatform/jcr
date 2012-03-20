@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -38,6 +39,7 @@ import org.exoplatform.services.jcr.impl.core.value.ValueConstraintsMatcher;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -84,6 +86,7 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
       this.locationFactory = locationFactory;
    }
 
+   @Override
    public PlainChangesLog compare(NodeTypeData registeredNodeType, PropertyDefinitionData[] ancestorDefinition,
       PropertyDefinitionData[] recipientDefinition) throws RepositoryException
    {
@@ -158,7 +161,8 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
          else
          {
             PropertyData propertyData =
-               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
+               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0),
+                  ItemType.PROPERTY);
             if (propertyData.getValues().size() > 1)
             {
                throw new ConstraintViolationException("Can't change property definition "
@@ -186,46 +190,17 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
          getNodes(nodesData, new InternalQName[]{}, new InternalQName[]{recipientDefinitionData.getName()});
       if (mandatoryNodes.size() > 0)
       {
-         String message =
-            "Can not change " + recipientDefinitionData.getName().getAsString()
-               + " property definition from mandatory=false to mandatory = true , because " + " the following nodes ";
+         StringBuilder message =
+            new StringBuilder("Can not change ").append(recipientDefinitionData.getName().getAsString()).append(
+               " property definition from mandatory=false to mandatory = true , because ").append(" the following nodes ");
+
          for (NodeData nodeData : mandatoryNodes)
          {
-            message += nodeData.getQPath().getAsString() + " ";
+            message.append(nodeData.getQPath().getAsString()).append(" ");
          }
-         message += "  doesn't have these properties ";
+         message.append("  doesn't have these properties ");
 
-         throw new ConstraintViolationException(message);
-      }
-   }
-
-   /**
-    * @param registeredNodeType
-    * @param nodes
-    * @param recipientDefinitionData
-    * @throws RepositoryException
-    */
-   private void checkProtected(NodeTypeData registeredNodeType, List<NodeData> nodesData,
-      PropertyDefinitionData recipientDefinitionData) throws RepositoryException
-   {
-      if (Constants.JCR_ANY_NAME.equals(recipientDefinitionData.getName()) && recipientDefinitionData.isMandatory())
-         throw new ConstraintViolationException("Invalid property definition " + recipientDefinitionData.getName()
-            + ". Residual definition can't be protected");
-
-      List<NodeData> protectedNodes =
-         getNodes(nodesData, new InternalQName[]{}, new InternalQName[]{recipientDefinitionData.getName()});
-      if (protectedNodes.size() > 0)
-      {
-         String message =
-            "Can not change " + recipientDefinitionData.getName().getAsString()
-               + " property definition from Protected=false to Protected = true , because " + " the following nodes ";
-         for (NodeData nodeData : protectedNodes)
-         {
-            message += nodeData.getQPath().getAsString() + " ";
-         }
-         message += "  doesn't have these properties ";
-
-         throw new ConstraintViolationException(message);
+         throw new ConstraintViolationException(message.toString());
       }
    }
 
@@ -275,7 +250,8 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
          else
          {
             PropertyData propertyData =
-               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
+               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0),
+                  ItemType.PROPERTY);
             if (recipientDefinitionData.getRequiredType() != PropertyType.UNDEFINED
                && propertyData.getType() != recipientDefinitionData.getRequiredType())
             {
@@ -329,14 +305,14 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
          else
          {
             PropertyData propertyData =
-               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0));
+               (PropertyData)dataConsumer.getItemData(nodeData, new QPathEntry(recipientDefinitionData.getName(), 0),
+                  ItemType.PROPERTY);
             checkValueConstraints(recipientDefinitionData, propertyData);
          }
       }
    }
 
-   private void checkValueConstraints(PropertyDefinitionData def, PropertyData propertyData)
-      throws ConstraintViolationException, RepositoryException
+   private void checkValueConstraints(PropertyDefinitionData def, PropertyData propertyData) throws RepositoryException
    {
 
       ValueConstraintsMatcher constraints =
@@ -359,7 +335,11 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
                   strVal = "PropertyType.BINARY";
                }
             }
-            catch (Throwable e)
+            catch (IllegalStateException e)
+            {
+               LOG.error("Error of value read: " + e.getMessage(), e);
+            }
+            catch (IOException e)
             {
                LOG.error("Error of value read: " + e.getMessage(), e);
             }
@@ -389,7 +369,8 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
                && newPropertyDefinitionData.isAutoCreated())
             {
                ItemData pdata =
-                  dataConsumer.getItemData(nodeData, new QPathEntry(newPropertyDefinitionData.getName(), 0));
+                  dataConsumer.getItemData(nodeData, new QPathEntry(newPropertyDefinitionData.getName(), 0),
+                     ItemType.UNKNOWN);
                if (pdata == null || (pdata != null && pdata.isNode()))
                {
                   PlainChangesLog autoCreatedChanges =
@@ -522,8 +503,8 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
             checkRequiredType(registeredNodeType, recipientDefinitionData, allRecipientDefinition, nodesData);
          }
          // ValueConstraints
-         if (!Arrays.deepEquals(ancestorDefinitionData.getValueConstraints(), recipientDefinitionData
-            .getValueConstraints()))
+         if (!Arrays.deepEquals(ancestorDefinitionData.getValueConstraints(),
+            recipientDefinitionData.getValueConstraints()))
          {
             checkValueConstraints(registeredNodeType, recipientDefinitionData, allRecipientDefinition, nodesData);
          }
@@ -554,7 +535,6 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
             {
                List<PropertyData> childs = dataConsumer.getChildPropertiesData(nodeData);
                // more then mixin and primary type
-               // TODO it could be possible, check add definitions
                for (PropertyData propertyData : childs)
                {
                   if (!isNonResidualMatch(propertyData.getQPath().getName(), recipientDefinition))
@@ -569,19 +549,18 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
          }
          else if (!isResidualMatch(removePropertyDefinitionData.getName(), recipientDefinition))
          {
-            // TODO more complex exception
             List<NodeData> nodes =
                getNodes(nodesData, new InternalQName[]{removePropertyDefinitionData.getName()}, new InternalQName[]{});
             if (nodes.size() > 0)
             {
-               String message =
-                  "Can not remove " + removePropertyDefinitionData.getName().getAsString()
-                     + " PropertyDefinitionData, because the following nodes have these properties: ";
+               StringBuilder message =
+                  new StringBuilder("Can not remove ").append(removePropertyDefinitionData.getName().getAsString())
+                     .append(" PropertyDefinitionData, because the following nodes have these properties: ");
                for (NodeData nodeData : nodes)
                {
-                  message += nodeData.getQPath().getAsString() + " ";
+                  message.append(nodeData.getQPath().getAsString()).append(" ");
                }
-               throw new ConstraintViolationException(message);
+               throw new ConstraintViolationException(message.toString());
 
             }
          }

@@ -18,16 +18,20 @@
  */
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.database.utils.ExceptionManagementHelper;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -40,10 +44,6 @@ import java.util.regex.Pattern;
  */
 public class DBInitializer
 {
-
-   static public String SQL_DELIMITER = ";";
-
-   static public String SQL_DELIMITER_COMMENT_PREFIX = "/*$DELIMITER:";
 
    static public String SQL_CREATETABLE = "^(CREATE(\\s)+TABLE(\\s)+(IF(\\s)+NOT(\\s)+EXISTS(\\s)+)*){1}";
 
@@ -103,76 +103,18 @@ public class DBInitializer
 
    protected String script(String scriptPath) throws IOException
    {
-      return readScriptResource(scriptPath);
+      return DBInitializerHelper.readScriptResource(scriptPath);
    }
 
-   protected String readScriptResource(String path) throws IOException
+   protected boolean isTableExists(final Connection conn, final String tableName) throws SQLException
    {
-      InputStream is = this.getClass().getResourceAsStream(path);
-      InputStreamReader isr = new InputStreamReader(is);
-      try
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
       {
-         StringBuilder sbuff = new StringBuilder();
-         char[] buff = new char[is.available()];
-         int r = 0;
-         while ((r = isr.read(buff)) > 0)
+         public Boolean run()
          {
-            sbuff.append(buff, 0, r);
+            return JDBCUtils.tableExists(tableName, conn);
          }
-
-         return sbuff.toString();
-      }
-      finally
-      {
-         try
-         {
-            is.close();
-         }
-         catch (IOException e)
-         {
-         }
-      }
-   }
-
-   public String cleanWhitespaces(String string)
-   {
-      if (string != null)
-      {
-         char[] cc = string.toCharArray();
-         for (int ci = cc.length - 1; ci > 0; ci--)
-         {
-            if (Character.isWhitespace(cc[ci]))
-            {
-               cc[ci] = ' ';
-            }
-         }
-         return new String(cc);
-      }
-      return string;
-   }
-
-   protected boolean isTableExists(Connection conn, String tableName) throws SQLException
-   {
-      ResultSet trs = conn.getMetaData().getTables(null, null, tableName, null);
-      boolean res = false;
-      while (trs.next())
-      {
-         res = true; // check for columns/table type matching etc.
-      }
-      return res;
-   }
-
-   protected boolean isIndexExists(Connection conn, String tableName, String indexName) throws SQLException
-   {
-      ResultSet irs = conn.getMetaData().getIndexInfo(null, null, tableName, false, true);
-      boolean res = false;
-      while (irs.next())
-      {
-         if (irs.getShort("TYPE") != DatabaseMetaData.tableIndexStatistic
-            && irs.getString("INDEX_NAME").equalsIgnoreCase(indexName))
-            res = true; // check for index params matching etc.
-      }
-      return res;
+      });
    }
 
    protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
@@ -180,12 +122,7 @@ public class DBInitializer
       return false;
    }
 
-   protected boolean isTriggerExists(Connection conn, String triggerName) throws SQLException
-   {
-      return false;
-   }
-
-   public boolean isObjectExists(Connection conn, String sql) throws SQLException
+   private boolean isObjectExists(Connection conn, String sql, Set<String> existingTables) throws SQLException
    {
       Matcher tMatcher = creatTablePattern.matcher(sql);
       if (tMatcher.find())
@@ -199,7 +136,10 @@ public class DBInitializer
             if (isTableExists(conn, tableName))
             {
                if (LOG.isDebugEnabled())
+               {
                   LOG.debug("Table is already exists " + tableName);
+               }
+               existingTables.add(tableName);
                return true;
             }
          }
@@ -215,7 +155,10 @@ public class DBInitializer
             if (isTableExists(conn, tableName))
             {
                if (LOG.isDebugEnabled())
+               {
                   LOG.debug("View is already exists " + tableName);
+               }
+               existingTables.add(tableName);
                return true;
             }
          }
@@ -234,10 +177,13 @@ public class DBInitializer
                if ((tMatcher = dbObjectNamePattern.matcher(onTableName)).find())
                {
                   String tableName = onTableName.substring(tMatcher.start(), tMatcher.end());
-                  if (isIndexExists(conn, tableName, indexName))
+                  if (existingTables.contains(tableName))
                   {
                      if (LOG.isDebugEnabled())
-                        LOG.debug("Index is already exists " + indexName);
+                     {
+                        LOG.debug("The table " + tableName + " already exists so we assume that the index " + indexName
+                           + " exists also.");
+                     }
                      return true;
                   }
                }
@@ -266,7 +212,9 @@ public class DBInitializer
             if (isSequenceExists(conn, sequenceName))
             {
                if (LOG.isDebugEnabled())
+               {
                   LOG.debug("Sequence is already exists " + sequenceName);
+               }
                return true;
             }
          }
@@ -278,10 +226,13 @@ public class DBInitializer
          {
             // got trigger name
             String triggerName = sql.substring(tMatcher.start(), tMatcher.end());
-            if (isTriggerExists(conn, triggerName))
+            if (!existingTables.isEmpty())
             {
                if (LOG.isDebugEnabled())
-                  LOG.debug("Trigger is already exists " + triggerName);
+               {
+                  LOG.debug("At least one table has been created so we assume that the trigger " + triggerName
+                     + " exists also");
+               }
                return true;
             }
          }
@@ -289,7 +240,9 @@ public class DBInitializer
       else
       {
          if (LOG.isDebugEnabled())
+         {
             LOG.debug("Command is not detected for check '" + sql + "'");
+         }
       }
 
       return false;
@@ -297,86 +250,95 @@ public class DBInitializer
 
    public void init() throws DBInitializerException
    {
-      String[] scripts = null;
-      if (script.startsWith(SQL_DELIMITER_COMMENT_PREFIX))
-      {
-         // read custom prefix
-         try
-         {
-            String s = script.substring(SQL_DELIMITER_COMMENT_PREFIX.length());
-            int endOfDelimIndex = s.indexOf("*/");
-            String delim = s.substring(0, endOfDelimIndex).trim();
-            s = s.substring(endOfDelimIndex + 2).trim();
-            scripts = s.split(delim);
-         }
-         catch (IndexOutOfBoundsException e)
-         {
-            LOG.warn("Error of parse SQL-script file. Invalid DELIMITER configuration. Valid format is '"
-               + SQL_DELIMITER_COMMENT_PREFIX + "XXX*/' at begin of the SQL-script file, where XXX - DELIMITER string."
-               + " Spaces will be trimed. ", e);
-            LOG.info("Using DELIMITER:[" + SQL_DELIMITER + "]");
-            scripts = script.split(SQL_DELIMITER);
-         }
-      }
-      else
-      {
-         scripts = script.split(SQL_DELIMITER);
-      }
-
+      String[] scripts = DBInitializerHelper.scripts(script);
       String sql = null;
+      Statement st = null;
+      Set<String> existingTables = new HashSet<String>();
       try
       {
-         connection.setAutoCommit(false);
-
+         st = connection.createStatement();
+         // all DDL queries executed in separated transactions
+         // Required for SyBase, when checking table existence 
+         // and performing DDLs inside single transaction. 
+         connection.setAutoCommit(true);
          for (String scr : scripts)
          {
-            String s = cleanWhitespaces(scr.trim());
+            String s = DBInitializerHelper.cleanWhitespaces(scr.trim());
             if (s.length() > 0)
             {
-               if (isObjectExists(connection, sql = s))
+               if (isObjectExists(connection, sql = s, existingTables))
+               {
                   continue;
+               }
 
                if (LOG.isDebugEnabled())
                {
                   LOG.debug("Execute script: \n[" + sql + "]");
                }
-
-               connection.createStatement().executeUpdate(sql);
+               final Statement finalSt = st;
+               final String finalSql = sql;
+               SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
+               {
+                  public Object run() throws Exception
+                  {
+                     finalSt.executeUpdate(finalSql);
+                     return null;
+                  }
+               });
             }
          }
 
          postInit(connection);
-
-         connection.commit();
          LOG.info("DB schema of DataSource: '" + containerName + "' initialized succesfully");
       }
       catch (SQLException e)
       {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.error("Problem creating database structure.", e);
+         }
+         LOG
+            .warn("Some tables were created and not rolled back. Please make sure to drop them manually in datasource : '"
+               + containerName + "'");
+
+         boolean isAlreadyCreated = false;
          try
          {
-            connection.rollback();
+            isAlreadyCreated = isObjectExists(connection, sql, existingTables);
          }
-         catch (SQLException re)
+         catch (SQLException ce)
          {
-            LOG.error("Rollback error " + e, e);
+            LOG.warn("Can not check does the objects from " + sql + " exists");
          }
 
-         SQLException next = e.getNextException();
-         String errorTrace = "";
-         while (next != null)
+         if (isAlreadyCreated)
          {
-            errorTrace += next.getMessage() + "; ";
-            next = next.getNextException();
+            LOG.warn("Could not create db schema of DataSource: '" + containerName + "'. Reason: Objects form " + sql
+               + " already exists");
          }
-         Throwable cause = e.getCause();
-         String msg =
-            "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
-               + errorTrace + (cause != null ? " (Cause: " + cause.getMessage() + ")" : "") + ". Last command: " + sql;
+         else
+         {
+            String msg =
+                     "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
+                              + ExceptionManagementHelper.getFullSQLExceptionMessage(e) + ". Last command: " + sql;
 
-         throw new DBInitializerException(msg, e);
+            throw new DBInitializerException(msg, e);
+         }
       }
       finally
       {
+         if (st != null)
+         {
+            try
+            {
+               st.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the Statement: " + e);
+            }
+         }
+
          try
          {
             connection.close();

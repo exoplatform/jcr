@@ -41,7 +41,7 @@ import javax.naming.NamingException;
 public class BasicAppContext extends ContextBase implements JCRAppContext
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.framework.command.BasicAppContext");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.BasicAppContext");
 
    protected final SessionProvider sessionProvider;
 

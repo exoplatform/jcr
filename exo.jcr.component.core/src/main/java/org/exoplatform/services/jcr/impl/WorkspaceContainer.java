@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.management.annotations.Managed;
@@ -32,6 +33,8 @@ import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.security.PrivilegedAction;
+
 import javax.jcr.RepositoryException;
 
 /**
@@ -42,12 +45,12 @@ import javax.jcr.RepositoryException;
  */
 
 @Managed
-@NameTemplate({@Property(key = "container", value = "workspace"), @Property(key = "name", value = "{Name}")})
+@NameTemplate(@Property(key = "workspace", value = "{Name}"))
 @NamingContext(@Property(key = "workspace", value = "{Name}"))
 public class WorkspaceContainer extends ExoContainer
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceContainer");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceContainer");
 
    private final String name;
 
@@ -56,12 +59,19 @@ public class WorkspaceContainer extends ExoContainer
    public WorkspaceContainer(RepositoryContainer parent, WorkspaceEntry config) throws RepositoryException,
       RepositoryConfigurationException
    {
-
       // Before repository instantiation
       super(new MX4JComponentAdapterFactory(), parent);
 
       repositoryContainer = parent;
       this.name = config.getName();
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            context.setName(repositoryContainer.getContext().getName() + "-" + name);
+            return null;
+         }
+      });
    }
 
    // Components access methods -------
@@ -83,22 +93,13 @@ public class WorkspaceContainer extends ExoContainer
       return (WorkspaceInitializer)getComponentInstanceOfType(WorkspaceInitializer.class);
    }
 
-   /*
-    * (non-Javadoc)
-    * @see org.picocontainer.defaults.DefaultPicoContainer#stop()
+   /**
+    * {@inheritDoc}
     */
    @Override
-   public void stop()
+   public synchronized void stop()
    {
-      try
-      {
-         stopContainer();
-      }
-      catch (Exception e)
-      {
-         log.error(e.getLocalizedMessage(), e);
-      }
       super.stop();
+      super.unregisterAllComponents();
    }
-
 }

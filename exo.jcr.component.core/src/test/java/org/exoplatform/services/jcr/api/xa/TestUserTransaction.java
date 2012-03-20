@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.api.xa;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.core.XASession;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.transaction.TransactionService;
 
@@ -31,6 +30,7 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 import javax.naming.InitialContext;
+import javax.transaction.Transaction;
 import javax.transaction.UserTransaction;
 
 /**
@@ -115,7 +115,7 @@ public class TestUserTransaction extends JcrAPIBaseTest
       ut.begin();
       log.info("after begin");
       // we need to create the session within the transaction to ensure that it will be enlisted
-      Session session = (SessionImpl)repository.login(credentials, "ws");
+      Session session = repository.login(credentials, "ws");
       session.getRootNode().addNode("txcommit");
       session.save();
       assertNotNull(session.getItem("/txcommit"));
@@ -143,7 +143,7 @@ public class TestUserTransaction extends JcrAPIBaseTest
 
       ut.begin();
       // we need to create the session within the transaction to ensure that it will be enlisted
-      Session session = (SessionImpl)repository.login(credentials, "ws");
+      Session session = repository.login(credentials, "ws");
       session.getRootNode().addNode("txrollback");
       session.save();
       assertNotNull(session.getItem("/txrollback"));
@@ -199,9 +199,6 @@ public class TestUserTransaction extends JcrAPIBaseTest
 
       ut.begin();
 
-      // In a case of reusing Have to enlist the resource once again!
-      ((XASession)s1).enlistResource();
-
       tx2.addNode("txcommit21");
       s1.save();
       ut.commit();
@@ -235,13 +232,18 @@ public class TestUserTransaction extends JcrAPIBaseTest
          repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
       
       Node tx1 = s1.getRootNode().getNode("pretx").addNode("tx1");
-      s1.save();
       
       Node tx2 = s2.getRootNode().getNode("pretx").addNode("tx2");
-      s2.save();
 
+      // keep this change out of the current Tx, this is necessary since
+      // we have now auto-enlistment mechanism that is triggered at session save
+      Transaction tx = txService.getTransactionManager().suspend();
       s0.save(); // save that parent of tx1 removed
+      txService.getTransactionManager().resume(tx);
 
+      s1.save();
+      s2.save();
+      
       try
       {
          ut.commit();
@@ -251,9 +253,11 @@ public class TestUserTransaction extends JcrAPIBaseTest
       catch (Exception e)
       {
          // ok
-         assertNotNull(((XASession) s1).getCommitException());
       }
 
+      s1.logout();
+      s2.logout();      
+      
       try {
          session.getItem("/pretx/tx1");
          fail("PathNotFoundException should be thrown");

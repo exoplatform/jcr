@@ -1,0 +1,210 @@
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+   <parent>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.applications.config</artifactId>
+      <version>1.14.8-GA-SNAPSHOT</version>
+      <relativePath>../exo.jcr.applications.config/pom.xml</relativePath>
+   </parent>
+
+   <modelVersion>4.0.0</modelVersion>
+   <artifactId>exo.jcr.applications.jonas</artifactId>
+   <packaging>pom</packaging>
+   <name>eXo JCR :: Applications :: Jonas AS</name>
+   <url>http://www.exoplatform.org</url>
+   <description>eXo JCR Jonas Applications Server</description>
+   
+   <properties>
+     <enforcer.skip>true</enforcer.skip>
+   </properties>
+
+   <dependencies>
+      <dependency>
+        <groupId>org.exoplatform.jcr</groupId>
+        <artifactId>exo.jcr.connectors.jca</artifactId>
+        <version>1.14.8-GA-SNAPSHOT</version>
+        <type>rar</type>
+        <scope>runtime</scope>
+      </dependency>
+
+      <!-- Jonas AS 4.10.4 work only with  HSQLDB 1.8.0.7 -->
+      <dependency>
+         <groupId>hsqldb</groupId>
+         <artifactId>hsqldb</artifactId>
+         <version>1.8.0.7</version>
+         <scope>runtime</scope>
+      </dependency>
+      <dependency>
+         <groupId>commons-io</groupId>
+         <artifactId>commons-io</artifactId>
+         <scope>runtime</scope>
+      </dependency>
+   </dependencies>
+
+   <profiles>
+   <profile>
+      <id>deploy</id>
+      <activation>
+         <activeByDefault>false</activeByDefault> 
+      </activation>
+      <build>
+      <plugins>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>install</phase>
+                  <goals>
+                     <goal>assembly</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <configuration>
+               <descriptors>
+                  <descriptor>../product-exo-jcr-as-descriptor.xml</descriptor>
+               </descriptors>
+               <finalName>lib</finalName>
+               <ignoreDirFormatExtensions>false</ignoreDirFormatExtensions>
+            </configuration>
+         </plugin>
+         <plugin>
+            <artifactId>maven-antrun-plugin</artifactId>
+            <executions>
+               <execution>
+                  <phase>install</phase>
+                  <goals>
+                     <goal>run</goal>
+                  </goals>
+               </execution>
+            </executions>
+            <configuration>
+               <tasks>
+                  <!--copying the AS-->
+                  <delete dir="${exo.projects.directory.working}/exo-jonas" includeEmptyDirs="true" quiet="yes" />
+                  <copy todir="${exo.projects.directory.working}/exo-jonas" verbose="false" overwrite="true">
+                     <fileset dir="${exo.projects.directory.dependencies}/${exo.projects.app.jonas.version}" />
+                  </copy>
+
+                  <!-- Removing timestamps from SNAPSHOT jars-->
+                  <move todir="${basedir}/target/lib-binary.dir/">
+                    <fileset dir="${basedir}/target/lib-binary.dir/">
+                      <include name="**/*.jar" />
+                    </fileset>
+                    <mapper>
+                      <firstmatchmapper>
+                        <!-- If a timestamped SNAPSHOT is used -->
+                        <regexpmapper from="(.*)-([0-9]+(.[0-9]+)*-(.*))-([0-9]{8}.[0-9]{6})-([0-9]+).jar" to="\1-${project.version}.jar" casesensitive="no" />
+                        <!-- By default keep the name -->
+                        <flattenmapper />
+                      </firstmatchmapper>
+                    </mapper>
+                  </move>
+
+                  <!-- Coping jars -->
+                  <copy todir="${exo.projects.directory.working}/exo-jonas/lib/apps/" verbose="true" overwrite="true">
+                    <fileset dir="${basedir}/target/lib-binary.dir">
+                      <include name="**/*.jar" />
+                      <exclude name="**/hsqldb*.jar" />
+                    </fileset>
+                  </copy>
+
+                  <!-- Removing timestamps from SNAPSHOT wars-->
+                  <move todir="${basedir}/target/lib-binary.dir/">
+                     <fileset dir="${basedir}/target/lib-binary.dir/">
+                        <include name="**/*.war" />
+                     </fileset>
+                     <mapper>
+                        <firstmatchmapper>
+                           <!-- If a timestamped SNAPSHOT is used -->
+                           <regexpmapper from="exo.jcr.applications.(.*)-([0-9]+(.[0-9]+)*-(.*))-([0-9]{8}.[0-9]{6})-([0-9]+).war" to="\1.war" casesensitive="no" />
+                           <!-- Otherwise -->
+                           <globmapper from="exo.jcr.applications.*-${project.version}.war" to="*.war" casesensitive="no" />
+                           <!-- By default keep the name -->
+                        </firstmatchmapper>
+                     </mapper>
+                  </move>
+
+                  <!-- Renaming rar -->
+                  <move todir="${basedir}/target/lib-binary.dir/">
+                     <fileset dir="${basedir}/target/lib-binary.dir/">
+                        <include name="**/*.rar" />
+                     </fileset>
+                     <mapper>
+                        <firstmatchmapper>
+                           <regexpmapper from="exo.jcr.connectors.jca.*.rar" to="exo.jcr.connectors.jca.rar" casesensitive="no" />
+                        </firstmatchmapper>
+                     </mapper>
+                  </move>
+
+                  <!-- Copying patch directory -->
+                  <copy todir="${exo.projects.directory.working}/exo-jonas/" verbose="true" overwrite="true">
+                     <fileset dir="${basedir}/../product-patches/as/jonas/" />
+                  </copy>
+                  <replace dir="${exo.projects.directory.working}/exo-jonas/" token="@exo.deploy.profile@" value="${exo.deploy.profile}" />
+                  <move file="${exo.projects.directory.working}/exo-jonas/bin/nt/jonas.bat" tofile="${exo.projects.directory.working}/exo-jonas/bin/nt/jonas-${exo.deploy.profile}.bat" />
+                  <move file="${exo.projects.directory.working}/exo-jonas/bin/unix/jonas" tofile="${exo.projects.directory.working}/exo-jonas/bin/unix/jonas-${exo.deploy.profile}" />
+
+                  <!-- Coping wars, rar -->
+                  <copy todir="${exo.projects.directory.working}/exo-jonas/apps/autoload/exoplatform.ear" verbose="true" overwrite="true">
+                    <fileset dir="${basedir}/target/lib-binary.dir">
+                      <include name="**/*.war" />
+                      <include name="**/*.rar" />
+                    </fileset>
+                  </copy>
+
+                  <chmod dir="${exo.projects.directory.working}/exo-jonas/bin/unix" perm="+x" includes="*" />                  
+
+                  <!--replacing hsqldb with new version-->
+                  <delete file="${exo.projects.directory.working}/exo-jonas/lib/commons/jonas/hsqldb.jar" />
+                  <copy todir="${exo.projects.directory.working}/exo-jonas/lib/commons/jonas/">
+                     <fileset dir="${basedir}/target/lib-binary.dir/">
+                        <include name="**/hsqldb*.jar" />
+                     </fileset>
+                  </copy>
+
+                  <delete file="${exo.projects.directory.working}/exo-jonas/lib/commons/jonas/carol/jgroups-all.jar" />
+               </tasks>
+            </configuration>
+            <dependencies>
+               <dependency>
+                  <groupId>org.apache.ant</groupId>
+                  <artifactId>ant-launcher</artifactId>
+                  <version>1.8.1</version>
+               </dependency>
+               <dependency>
+                  <groupId>org.apache.ant</groupId>
+                  <artifactId>ant</artifactId>
+                  <version>1.8.1</version>
+               </dependency>
+               <dependency>
+                  <groupId>org.apache.ant</groupId>
+                  <artifactId>ant-nodeps</artifactId>
+                  <version>1.8.1</version>
+               </dependency>
+            </dependencies>
+         </plugin>
+      </plugins>
+     </build>
+    </profile>
+   </profiles>
+
+</project>

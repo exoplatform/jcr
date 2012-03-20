@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
+import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.ext.backup.server.WorkspaceRestoreExeption;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
@@ -50,7 +51,7 @@ public class JobWorkspaceRestore extends Thread
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobWorkspaceRestore");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.JobWorkspaceRestore");
 
    /**
     * RESTORE_STARTED. The state of start restore.
@@ -80,17 +81,17 @@ public class JobWorkspaceRestore extends Thread
    /**
     * The destination repository.
     */
-   private final String repositoryName;
+   protected final String repositoryName;
 
    /**
     * The WorkspaceEntry to restored workspace.
     */
-   private final WorkspaceEntry wEntry;
+   protected final WorkspaceEntry wEntry;
 
    /**
     * The repository service.
     */
-   private final RepositoryService repositoryService;
+   protected final RepositoryService repositoryService;
 
    /**
     * The backup manager.
@@ -115,7 +116,7 @@ public class JobWorkspaceRestore extends Thread
    /**
     * The BackupChainLog for restore.
     */
-   private final BackupChainLog backupChainLog;
+   protected final BackupChainLog backupChainLog;
 
    /**
     * JobWorkspaceRestore constructor.
@@ -134,6 +135,7 @@ public class JobWorkspaceRestore extends Thread
    public JobWorkspaceRestore(RepositoryService repositoryService, BackupManager backupManager, String repositoryName,
       BackupChainLog log, WorkspaceEntry wEntry)
    {
+      super("JobWorkspaceRestore " + repositoryName + "_" + wEntry.getName());
       this.repositoryService = repositoryService;
       this.backupManager = backupManager;
       this.repositoryName = repositoryName;
@@ -145,24 +147,16 @@ public class JobWorkspaceRestore extends Thread
    /**
     * {@inheritDoc}
     */
+   @Override
    public void run()
    {
       try
       {
-         stateRestore = RESTORE_STARTED;
-         startTime = Calendar.getInstance();
-
          restore();
-
-         stateRestore = RESTORE_SUCCESSFUL;
-         endTime = Calendar.getInstance();
       }
       catch (Throwable t)
       {
-         stateRestore = RESTORE_FAIL;
-         restoreException = t;
-
-         log.error("The restore was fail", t);
+         LOG.error("The restore was fail", t);
       }
    }
 
@@ -172,7 +166,34 @@ public class JobWorkspaceRestore extends Thread
     * @throws Throwable
     *           will be generated the Throwable
     */
-   private void restore() throws Throwable
+   final protected void restore() throws Throwable
+   {
+      try
+      {
+         stateRestore = RESTORE_STARTED;
+         startTime = Calendar.getInstance();
+
+         restoreWorkspace();
+
+         stateRestore = RESTORE_SUCCESSFUL;
+         endTime = Calendar.getInstance();
+      }
+      catch (Throwable t)
+      {
+         stateRestore = RESTORE_FAIL;
+         restoreException = t;
+
+         throw new RepositoryRestoreExeption(t.getMessage(), t);
+      }
+   }
+
+   /**
+    * Will be restored the workspace.
+    * 
+    * @throws Throwable
+    *           will be generated the Throwable
+    */
+   protected void restoreWorkspace() throws Throwable
    {
       boolean restored = true;
       RepositoryImpl repository = (RepositoryImpl)repositoryService.getRepository(repositoryName);
@@ -210,11 +231,10 @@ public class JobWorkspaceRestore extends Thread
             }
          }
       }
-
    }
 
    /**
-    * removeWorkspace.
+    * Remove workspace.
     *
     * @param mr
     *          ManageableRepository, the manageable repository
@@ -223,7 +243,7 @@ public class JobWorkspaceRestore extends Thread
     * @throws RepositoryException
     *           will be generated the RepositoryException
     */
-   private void removeWorkspace(ManageableRepository mr, String workspaceName) throws RepositoryException
+   protected void removeWorkspace(ManageableRepository mr, String workspaceName) throws RepositoryException
    {
 
       boolean isExists = false;

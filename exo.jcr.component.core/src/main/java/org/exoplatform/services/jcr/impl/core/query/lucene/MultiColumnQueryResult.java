@@ -65,7 +65,6 @@ public class MultiColumnQueryResult extends QueryResultImpl
     */
    protected ExcerptProvider createExcerptProvider() throws IOException
    {
-      // TODO
       return null;
    }
 }

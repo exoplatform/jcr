@@ -16,20 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.xpath;
 
-import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.RepositoryException;
-import javax.jcr.query.InvalidQueryException;
-
 import org.apache.commons.collections.map.ReferenceMap;
-
 import org.exoplatform.commons.utils.ISO8601;
-import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -51,6 +39,16 @@ import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.TextsearchQueryNode;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
+
+import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.RepositoryException;
+import javax.jcr.query.InvalidQueryException;
 
 
 /**
@@ -376,7 +374,8 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
             case JJTSTEPEXPR:
                 if (isAttributeAxis(node)) {
                     if (queryNode.getType() == QueryNode.TYPE_RELATION
-                            || (queryNode.getType() == QueryNode.TYPE_DEREF && ((DerefQueryNode) queryNode).getRefProperty() == null)
+                            || (queryNode.getType() == QueryNode.TYPE_DEREF 
+                                     && ((DerefQueryNode) queryNode).getRefProperty() == null)
                             || queryNode.getType() == QueryNode.TYPE_ORDER
                             || queryNode.getType() == QueryNode.TYPE_PATH
                             || queryNode.getType() == QueryNode.TYPE_TEXTSEARCH) {
@@ -606,7 +605,7 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
         Node p = node.jjtGetParent();
         for (int i = 0; i < p.jjtGetNumChildren(); i++) {
             SimpleNode c = (SimpleNode) p.jjtGetChild(i);
-            if (c == node) {
+            if (c == node) { // NOSONAR
                 queryNode = factory.createLocationStepQueryNode(parent);
                 queryNode.setNameTest(null);
                 queryNode.setIncludeDescendants(descendant);
@@ -823,7 +822,8 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
                             value = value.substring(1, value.length() - 1);
                             Calendar c = ISO8601.parse(value);
                             if (c == null) {
-                                exceptions.add(new InvalidQueryException("Unable to parse string literal for xs:dateTime: " + value));
+                                exceptions.add(new InvalidQueryException("Unable to parse string literal for xs:dateTime: " 
+                                         + value));
                             } else {
                                 rel.setDateValue(c.getTime());
                             }
@@ -974,7 +974,7 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
                             Node p = node.jjtGetParent();
                             for (int i = 0; i < p.jjtGetNumChildren(); i++) {
                                 SimpleNode c = (SimpleNode) p.jjtGetChild(i);
-                                if (c == node) {
+                                if (c == node) { // NOSONAR
                                     break;
                                 }
                                 descendant = (c.getId() == JJTSLASHSLASH

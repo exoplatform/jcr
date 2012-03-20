@@ -16,11 +16,13 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.lang.reflect.InvocationTargetException;
-
 import EDU.oswego.cs.dl.util.concurrent.Callable;
 import EDU.oswego.cs.dl.util.concurrent.FutureResult;
 import EDU.oswego.cs.dl.util.concurrent.PooledExecutor;
+import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * <code>DynamicPooledExecutor</code> implements an executor, which dynamically
@@ -50,6 +52,12 @@ public class DynamicPooledExecutor {
     public DynamicPooledExecutor() {
         executor = new PooledExecutor();
         executor.setKeepAliveTime(500);
+        executor.setThreadFactory(new ThreadFactory() {
+           AtomicInteger count = new AtomicInteger();
+           public Thread newThread(Runnable command) {
+              return new Thread(command, "DynamicPooledExecutor-thread-" + count.incrementAndGet());
+            }
+          });
         adjustPoolSize();
     }
 

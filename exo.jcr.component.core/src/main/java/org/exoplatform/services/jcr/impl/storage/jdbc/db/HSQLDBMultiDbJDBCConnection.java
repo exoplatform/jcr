@@ -35,26 +35,26 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
 
    /**
-      * HSQLDB Multidatabase JDBC Connection constructor.
-      * 
-      * @param dbConnection
-      *          JDBC connection, shoudl be opened before
-      * @param readOnly
-      *          boolean if true the dbConnection was marked as READ-ONLY.
-      * @param containerName
-      *          Workspace Storage Container name (see configuration)
-      * @param valueStorageProvider
-      *          External Value Storages provider
-      * @param maxBufferSize
-      *          Maximum buffer size (see configuration)
-      * @param swapDirectory
-      *          Swap directory File (see configuration)
-      * @param swapCleaner
-      *          Swap cleaner (internal FileCleaner).
-      * @throws SQLException
-      * 
-      * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
-      */
+    * HSQLDB Multidatabase JDBC Connection constructor.
+    * 
+    * @param dbConnection
+    *          JDBC connection, shoudl be opened before
+    * @param readOnly
+    *          boolean if true the dbConnection was marked as READ-ONLY.
+    * @param containerName
+    *          Workspace Storage Container name (see configuration)
+    * @param valueStorageProvider
+    *          External Value Storages provider
+    * @param maxBufferSize
+    *          Maximum buffer size (see configuration)
+    * @param swapDirectory
+    *          Swap directory File (see configuration)
+    * @param swapCleaner
+    *          Swap cleaner (internal FileCleaner).
+    * @throws SQLException
+    * 
+    * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
+    */
    public HSQLDBMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
       ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
       throws SQLException
@@ -74,6 +74,8 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
          "select V.DATA" + " from JCR_MITEM I, JCR_MVALUE V"
             + " where I.PARENT_ID=? and I.I_CLASS=2 and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
       FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1" + " order by N_ORDER_NUM";
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
+         "select count(*), max(N_ORDER_NUM) from JCR_MITEM where PARENT_ID=? and I_CLASS=1";
       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=1";
       FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where PARENT_ID=? and I_CLASS=2" + " order by ID";
    }

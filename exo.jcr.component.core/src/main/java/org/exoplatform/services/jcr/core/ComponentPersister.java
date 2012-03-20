@@ -20,8 +20,6 @@ package org.exoplatform.services.jcr.core;
 
 import org.picocontainer.Startable;
 
-import javax.jcr.RepositoryException;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -34,7 +32,6 @@ public interface ComponentPersister extends Startable
     * Indicate what storage filled with some data.
     * 
     * @return isStorageFilled flag.
-    * @throws RepositoryException
     */
    public boolean isStorageFilled();
 

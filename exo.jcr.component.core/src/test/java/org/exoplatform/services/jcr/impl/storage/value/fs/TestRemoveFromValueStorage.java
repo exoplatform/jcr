@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.BaseStandaloneTest;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -27,6 +29,7 @@ import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
@@ -98,7 +101,7 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
          generator.nextBytes(smallValue);
          values[i] = testRoot.getSession().getValueFactory().createValue(new ByteArrayInputStream(smallValue));
       }
-      
+
       if (values.length == 1)
       {
          prop = testRoot.setProperty("binaryProperty", values[0]);
@@ -112,60 +115,68 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
 
    public void testRemoveValue() throws Exception
    {
-      // reading values directly from value storage
-      PropertyImpl propertyImpl = (PropertyImpl)prop;
-      ValueStoragePluginProvider storageProvider =
-         (ValueStoragePluginProvider)mySession.getContainer().getComponentInstanceOfType(
-            ValueStoragePluginProvider.class);
+      WorkspaceContainerFacade containerFacade = repository.getWorkspaceContainer(mySession.getWorkspace().getName());
+      WorkspaceEntry wsConfig = (WorkspaceEntry)containerFacade.getComponent(WorkspaceEntry.class);
 
-      String propertyId = propertyImpl.getInternalIdentifier();
-      int count = prop.getValues().length;
-      Map<Integer, FileIOChannel> channels = new HashMap<Integer, FileIOChannel>();
-
-      for (int i = 0; i < count; i++)
+      if (wsConfig.getContainer().getValueStorages() != null && wsConfig.getContainer().getValueStorages().size() > 0)
       {
-         ValueIOChannel channel = storageProvider.getApplicableChannel((PropertyData)propertyImpl.getData(), i);
-         if (channel != null)
-         {
-            channels.put(i, (FileIOChannel)channel);
-         }
-      }
 
-      for (int i = 0; i < count; i++)
-      {
-         try
-         {
-            channels.get(i).read(propertyId, i, 2100 * 1024);
-         }
-         catch (Exception e)
-         {
-            fail("Poperty value " + i + " can't be read!");
-         }
-      }
+         // reading values directly from value storage
+         PropertyImpl propertyImpl = (PropertyImpl)prop;
+         ValueStoragePluginProvider storageProvider =
+            (ValueStoragePluginProvider)containerFacade.getComponent(ValueStoragePluginProvider.class);
 
-      prop.remove();
-      mySession.save();
+         String propertyId = propertyImpl.getInternalIdentifier();
+         int count = prop.getValues().length;
+         Map<Integer, FileIOChannel> channels = new HashMap<Integer, FileIOChannel>();
 
-      // checking whether values are still in value storage.
-      for (int i = 0; i < count; i++)
-      {
-         try
+         for (int i = 0; i < count; i++)
          {
-            // TreeFileIOChannel always returns a File. But if this file doesn't
-            // really exists is size is 0.
-            File value = channels.get(i).getFile(propertyId, i);
-            if (value.length() == 0)
+            ValueIOChannel channel = storageProvider.getApplicableChannel((PropertyData)propertyImpl.getData(), i);
+            if (channel != null)
             {
-               throw new Exception("");
+               channels.put(i, (FileIOChannel)channel);
             }
-            fail("Poperty value still can be found in value-storage but should have been already deleted!");
          }
-         catch (Exception e)
+
+         for (int i = 0; i < channels.size(); i++)
          {
-            // ok
+            try
+            {
+               channels.get(i).read(propertyId, i, 2100 * 1024);
+            }
+            catch (IOException e)
+            {
+               fail("Poperty value " + i + " can't be read!");
+            }
+         }
+
+         prop.remove();
+         mySession.save();
+
+         // checking whether values are still in value storage.
+         for (int i = 0; i < channels.size(); i++)
+         {
+            try
+            {
+               // TreeFileIOChannel always returns a File. But if this file doesn't
+               // really exists is size is 0.
+               File value = channels.get(i).getFile(propertyId, i);
+               if (value.length() != 0)
+               {
+                  fail("Poperty value still can be found in value-storage but should have been already deleted!");
+               }
+            }
+            catch (IOException e)
+            {
+               // ok
+            }
          }
       }
-
+      else
+      {
+         log.warn("Value storages are not configured, test skipped.");
+      }
    }
 
    @Override

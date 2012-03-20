@@ -613,14 +613,19 @@ public class ChannelManager implements RequestHandler, MembershipListener
             if (channel.getView() != null)
             {
                if (channel.getView().getMembers().size() == confMembersCount)
-                  // TODO run without one (few) members will not work, see LastMemberWaiter in initializer
+               {
                   packetsHandler.handle();
+               }
                else
+               {
                   LOG.warn("Not all members connected to the channel " + +channel.getView().getMembers().size()
                      + " != " + confMembersCount + ", queue message " + message);
+               }
             }
             else
+            {
                LOG.warn("No members found or channel closed, queue message " + message);
+            }
 
             return new String("Success");
          }

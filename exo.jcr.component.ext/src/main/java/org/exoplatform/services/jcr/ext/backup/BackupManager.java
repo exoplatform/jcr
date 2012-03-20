@@ -359,5 +359,5 @@ public interface BackupManager
     *           return the current backup to repository 
     */
    RepositoryBackupChain findRepositoryBackupId(String id);
-
+   
 }

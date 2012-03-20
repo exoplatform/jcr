@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Kernel.InitialContextBinderservice">
+  <?dbhtml filename="ch-initialcontext-binder-service.html"?>
+
+  <title>Initial Context Binder</title>
+
+  <para>Initial Context Binder is responsible for binding references at
+  runtime, persisting in file and automatically rebinding. Java temp directory
+  is used to persist references in bind-references.xml file by default. In
+  case when need to definde special file it can be done by add parameter to
+  <link linkend="Kernel.JNDINaming">InitialContextInitializer</link>
+  configuration.</para>
+
+  <section>
+    <title>API</title>
+
+    <para>Service provide methods for binding reference:</para>
+
+    <programlisting language="java">public void bind(String bindName, String className, String factory, String factoryLocation, Map&lt;String, String&gt; refAddr) throws NamingException, FileNotFoundException, XMLStreamExcept</programlisting>
+
+    <itemizedlist>
+      <listitem>
+        <para>bindName - name of binding</para>
+      </listitem>
+
+      <listitem>
+        <para>className - the fully-qualified name of the class of the object
+        to which this Reference refers</para>
+      </listitem>
+
+      <listitem>
+        <para>factory - the name of the factory class for creating an instance
+        of the object to which this Reference refers</para>
+      </listitem>
+
+      <listitem>
+        <para>factoryLocation - the location of the factory class</para>
+      </listitem>
+
+      <listitem>
+        <para>refAddr - object's properties map</para>
+      </listitem>
+    </itemizedlist>
+
+    <programlisting language="java">public void bind(String bindName, Reference ref) throws NamingException, FileNotFoundException, XMLStreamExcept</programlisting>
+
+    <para>Returns reference associated with defined name:</para>
+
+    <programlisting language="java">public Reference getReference(String bindName)</programlisting>
+
+    <para>Unbind the Reference with defined name:</para>
+
+    <programlisting language="java">public void unbind(String bindName) throws NamingException, FileNotFoundException, XMLStreamException</programlisting>
+  </section>
+</chapter>

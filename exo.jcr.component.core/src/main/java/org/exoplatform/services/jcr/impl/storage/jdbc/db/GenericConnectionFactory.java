@@ -226,10 +226,9 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
    {
       try
       {
-         final Connection conn =
+         Connection conn =
             dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager.getConnection(
                dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
-
          if (readOnly)
          {
             // set this feature only if it asked
@@ -253,5 +252,24 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
    public Connection getJdbcConnection() throws RepositoryException
    {
       return getJdbcConnection(false);
+   }
+
+   /**
+    * Indicates if component support extracting data from storage using paging.
+    * 
+    * @return boolean
+    */   
+   public boolean isReindexingSupport()
+   {
+      return false;
+   }
+   
+   /**
+    * Indicates whether the id of the last item is needed for paging
+    * @return <code>true</code> if the id is needed, <code>false</code> otherwise.
+    */
+   public boolean isIDNeededForPaging()
+   {
+      return true;
    }
 }

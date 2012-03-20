@@ -25,6 +25,7 @@ import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.util.ArrayList;
 
+import javax.jcr.Item;
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Session;
@@ -38,7 +39,7 @@ import javax.jcr.Session;
 public class CmdRnTo extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdRnTo");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.CmdRnTo");
 
    public CmdRnTo()
    {
@@ -75,21 +76,46 @@ public class CmdRnTo extends FtpCommandImpl
             return;
          }
 
-         curSession.move(clientSession().getPrevParamsEx(), repoPath);
-         curSession.save();
+         // now check does move executed on same workspace
+         ArrayList<String> prevParamPath = clientSession().getFullPath(clientSession().getPrevParamsEx());
+         String prevRepoPath = clientSession().getRepoPath(prevParamPath);
+         if (prevParamPath.get(0).equals(newPath.get(0)))
+         {
+            //its the same workspace
+            curSession.move(prevRepoPath, repoPath);
+            curSession.save();
+         }
+         else
+         {
+            // there is different workspaces operation
+            curSession.getWorkspace().copy(prevParamPath.get(0), prevRepoPath, repoPath);
+            // now remove source node
+            Session srcSession = clientSession().getSession(prevParamPath.get(0));
+            Item item = srcSession.getItem(prevRepoPath);
+            item.remove();
+            srcSession.save();
+         }
 
          reply(String.format(FtpConst.Replyes.REPLY_250, FtpConst.Commands.CMD_RNTO));
          return;
       }
       catch (PathNotFoundException pexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + pexc.getMessage());
+         }
       }
       catch (NoSuchWorkspaceException wexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + wexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exceprion. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exceprion. " + exc.getMessage(), exc);
       }
 
       reply(String.format(FtpConst.Replyes.REPLY_550, pathName));

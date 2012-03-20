@@ -37,7 +37,7 @@ import org.picocontainer.Startable;
 public class FtpServiceImpl implements FtpService, Startable
 {
 
-   private Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpServiceImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.FtpServiceImpl");
 
    private CommandService commandService = null;
 
@@ -58,25 +58,25 @@ public class FtpServiceImpl implements FtpService, Startable
 
    public void start()
    {
-      log.info("Start service.");
+      LOG.info("Start service.");
       try
       {
-         ftpServer = new FtpServerImpl(config, commandService, repositoryService.getRepository());
+         ftpServer = new FtpServerImpl(config, commandService, repositoryService);
          ftpServer.start();
       }
       catch (Exception e)
       {
-         log.info("Unhandled exception. could not get repository!!!! " + e.getMessage(), e);
+         LOG.info("Unhandled exception. could not get repository!!!! " + e.getMessage(), e);
       }
    }
 
    public void stop()
    {
-      log.info("Stopping...");
+      LOG.info("Stopping...");
       if (ftpServer != null)
          ftpServer.stop();
       else
-         log.warn("Service isn't started");
+         LOG.warn("Service isn't started");
    }
 
 }

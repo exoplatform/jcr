@@ -278,7 +278,7 @@ class CachingIndexReader extends FilterIndexReader
     */
    public TermDocs termDocs(Term term) throws IOException
    {
-      if (term.field() == FieldNames.UUID)
+      if (term!=null && term.field() == FieldNames.UUID)
       {
          // check cache if we have one
          if (cache != null)
@@ -404,7 +404,7 @@ class CachingIndexReader extends FilterIndexReader
             }
             initializeParents(reader);
          }
-         catch (Exception e)
+         catch (IOException e)
          {
             // only log warn message during regular operation
             if (!stopRequested)
@@ -448,7 +448,11 @@ class CachingIndexReader extends FilterIndexReader
        */
       private void initializeParents(IndexReader reader) throws IOException
       {
-         long time = System.currentTimeMillis();
+         long time = 0;
+         if (log.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();
+         }
          final Map docs = new HashMap();
          // read UUIDs
          collectTermDocs(reader, new Term(FieldNames.UUID, ""), new TermDocsCollector()

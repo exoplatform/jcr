@@ -127,7 +127,7 @@ public class DisplayJCRContentServlet extends HttpServlet
       }
       catch (Exception e)
       {
-         e.printStackTrace();
+         e.printStackTrace(); //NOSONAR
          throw new ServletException(e);
       }
    }

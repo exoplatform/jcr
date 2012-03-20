@@ -337,7 +337,8 @@ public class Text
     * 
     * <pre>
     * unreserved  = alphanum | mark
-    * mark        = &quot;-&quot; | &quot;_&quot; | &quot;.&quot; | &quot;!&quot; | &quot;&tilde;&quot; | &quot;*&quot; | &quot;'&quot; | &quot;(&quot; | &quot;)&quot;
+    * mark        = &quot;-&quot; | &quot;_&quot; | &quot;.&quot; | &quot;!&quot; | &quot;&tilde;&quot; | &quot;*&quot; | 
+    * &quot;'&quot; | &quot;(&quot; | &quot;)&quot;
     * </pre>
     */
    public static BitSet URISave;

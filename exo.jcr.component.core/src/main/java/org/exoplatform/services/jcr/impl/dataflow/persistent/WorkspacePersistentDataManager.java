@@ -33,13 +33,17 @@ import org.exoplatform.services.jcr.dataflow.persistent.PersistedItemData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManagerListener;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
@@ -50,13 +54,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS.<br>
@@ -85,10 +94,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    protected final WorkspaceDataContainer systemDataContainer;
 
    /**
-    * Value sorages provider (for dest file suggestion on save).
-    */
-   // TODO protected final ValueStoragePluginProvider valueStorageProvider;
-   /**
     * Persistent level listeners. This listeners can be filtered by filters from
     * <code>liestenerFilters</code> list.
     */
@@ -100,14 +105,75 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    protected final List<MandatoryItemsPersistenceListener> mandatoryListeners;
 
    /**
-    * Persistent level liesteners filters.
+    * Persistent level listeners filters.
     */
-   protected final List<ItemsPersistenceListenerFilter> liestenerFilters;
+   protected final List<ItemsPersistenceListenerFilter> listenerFilters;
 
    /**
     * Read-only status.
     */
    protected boolean readOnly = false;
+
+   /**
+    * The resource manager
+    */
+   private final TransactionableResourceManager txResourceManager;
+
+   /**
+    * The transaction manager
+    */
+   protected final TransactionManager transactionManager;
+   /**
+    * Changes log wrapper adds possibility to replace changes log.
+    * Changes log contains transient data on save but listeners should be notifyed
+    * with persisted data only.
+    */
+   protected class ChangesLogWrapper implements ItemStateChangesLog
+   {
+      private ItemStateChangesLog log;
+
+      ChangesLogWrapper(ItemStateChangesLog log)
+      {
+         this.log = log;
+      }
+
+      /**
+       * Replace log with persisted data only.
+       */
+      protected void setLog(ItemStateChangesLog log)
+      {
+         this.log = log;
+      }
+
+      protected ItemStateChangesLog getChangesLog()
+      {
+         return log;
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public List<ItemState> getAllStates()
+      {
+         return log.getAllStates();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public int getSize()
+      {
+         return log.getSize();
+      }
+
+      /**
+       * {@inheritDoc}
+       */
+      public String dump()
+      {
+         return log.dump();
+      }
+   }
 
    /**
     * WorkspacePersistentDataManager constructor.
@@ -117,24 +183,42 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * @param systemDataContainerHolder
     *          holder of system workspace data container
     */
-   public WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
-   //ValueStoragePluginProvider valueStorageProvider, 
+   protected WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
       SystemDataContainerHolder systemDataContainerHolder)
+   {
+      this(dataContainer, systemDataContainerHolder, null, null);
+   }
+
+   /**
+    * WorkspacePersistentDataManager constructor.
+    * 
+    * @param dataContainer
+    *          workspace data container
+    * @param systemDataContainerHolder
+    *          holder of system workspace data container
+    * @param txResourceManager
+    *          the resource manager used to manage the whole tx
+    */
+   public WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
+      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager, TransactionManager transactionManager)
    {
       this.dataContainer = dataContainer;
       this.systemDataContainer = systemDataContainerHolder.getContainer();
-      // this.valueStorageProvider = valueStorageProvider;
 
       this.listeners = new ArrayList<ItemsPersistenceListener>();
       this.mandatoryListeners = new ArrayList<MandatoryItemsPersistenceListener>();
-      this.liestenerFilters = new ArrayList<ItemsPersistenceListenerFilter>();
+      this.listenerFilters = new ArrayList<ItemsPersistenceListenerFilter>();
+      this.txResourceManager = txResourceManager;
+      this.transactionManager = transactionManager;
    }
 
    /**
     * {@inheritDoc}
     */
-   public void save(final ItemStateChangesLog changesLog) throws RepositoryException
+   public void save(final ChangesLogWrapper logWrapper) throws RepositoryException
    {
+      final ItemStateChangesLog changesLog = logWrapper.getChangesLog();
+
       // check if this workspace container is not read-only
       if (readOnly && !(changesLog instanceof ReadOnlyThroughChanges))
       {
@@ -145,7 +229,8 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
 
       // whole log will be reconstructed with persisted data 
       ItemStateChangesLog persistedLog;
-
+      boolean failed = true;
+      ConnectionMode mode = getMode();
       try
       {
          if (changesLog instanceof PlainChangesLogImpl)
@@ -171,7 +256,12 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             // we don't support other types now... i.e. add else-if for that type here
             throw new RepositoryException("Unsupported changes log class " + changesLog.getClass());
          }
-         persister.commit();
+         // replace log with persisted data only
+         logWrapper.setLog(persistedLog);
+         persister.prepare();
+         notifySaveItems(persistedLog, true);
+         onCommit(persister, mode);
+         failed = false;
       }
       catch (IOException e)
       {
@@ -179,10 +269,117 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       }
       finally
       {
-         persister.rollback();
+         persister.clear();
+         if (failed)
+         {
+            persister.rollback();
+         }
       }
+   }
 
-      notifySaveItems(persistedLog, true);
+   /**
+    * @return the current tx mode
+    */
+   private ConnectionMode getMode()
+   {
+      if (txResourceManager != null && txResourceManager.isGlobalTxActive())
+      {
+         return ConnectionMode.GLOBAL_TX;
+      }
+      else if (transactionManager != null)
+      {
+         return ConnectionMode.WITH_TRANSACTION_MANAGER;
+      }
+      return ConnectionMode.NORMAL;
+   }
+
+   /**
+    * @param persister
+    * @throws RepositoryException
+    */
+   private void onCommit(final ChangesLogPersister persister, ConnectionMode mode) throws RepositoryException
+   {
+      if (mode == ConnectionMode.NORMAL)
+      {
+         // The commit is done normally
+         persister.commit();
+      }
+      else if (mode == ConnectionMode.WITH_TRANSACTION_MANAGER)
+      {
+         try
+         {
+            transactionManager.getTransaction().registerSynchronization(new Synchronization()
+            {
+
+               public void beforeCompletion()
+               {
+               }
+
+               public void afterCompletion(int status)
+               {
+                  switch (status)
+                  {
+                     case Status.STATUS_COMMITTED:
+                        try
+                        {
+                           persister.commit();
+                        }
+                        catch (Exception e)
+                        {
+                           throw new RuntimeException("Could not commit the transaction", e);
+                        }
+                        break;
+                     case Status.STATUS_UNKNOWN:
+                        LOG.warn("Status UNKNOWN received in afterCompletion method, some data could have been corrupted !!");
+                     case Status.STATUS_MARKED_ROLLBACK:
+                     case Status.STATUS_ROLLEDBACK:
+                        try
+                        {
+                           persister.rollback();
+                        }
+                        catch (Exception e)
+                        {
+                           LOG.error("Could not roll back the transaction", e);
+                        }
+                        break;
+
+                     default:
+                        throw new IllegalStateException("illegal status: " + status);
+                  }                  
+               }
+            });
+         }
+         catch (Exception e)
+         {
+            throw new RepositoryException("Cannot register the synchronization for a late commit", e);
+         }
+      }
+      else if (mode == ConnectionMode.GLOBAL_TX)
+      {
+         // The commit or rollback will be done by callback once the tx will be completed since it could
+         // fail later in the tx
+         txResourceManager.addListener(new TransactionableResourceManagerListener()
+         {
+
+            public void onCommit(boolean onePhase) throws Exception
+            {
+               persister.commit();
+            }
+
+            public void onAfterCompletion(int status) throws Exception
+            {
+            }
+
+            public void onAbort() throws Exception
+            {
+               persister.rollback();
+            }
+         });
+      }
+   }
+
+   private enum ConnectionMode {
+      NORMAL, WITH_TRANSACTION_MANAGER, GLOBAL_TX
    }
 
    class ChangesLogPersister
@@ -206,6 +403,24 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          }
       }
 
+      protected void prepare() throws IllegalStateException, RepositoryException
+      {
+         if (thisConnection != null && thisConnection.isOpened())
+         {
+            thisConnection.prepare();
+         }
+         if (systemConnection != null && !systemConnection.equals(thisConnection) && systemConnection.isOpened())
+         {
+            systemConnection.prepare();
+         }
+      }
+
+      protected void clear()
+      {
+         // help to GC
+         addedNodes.clear();
+      }
+
       protected void rollback() throws IllegalStateException, RepositoryException
       {
          if (thisConnection != null && thisConnection.isOpened())
@@ -216,27 +431,24 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          {
             systemConnection.rollback();
          }
-
-         // help to GC
-         addedNodes.clear();
       }
 
       protected WorkspaceStorageConnection getSystemConnection() throws RepositoryException
       {
          return systemConnection == null
          // we need system connection but it's not exist
-            ? systemConnection = (systemDataContainer != dataContainer
+            ? systemConnection = (systemDataContainer != dataContainer // NOSONAR
             // if it's different container instances
                ? systemDataContainer.equals(dataContainer) && thisConnection != null
                // but container confugrations are same and non-system connnection open
                   // reuse this connection as system
                   ? systemDataContainer.reuseConnection(thisConnection)
                   // or open one new system
-                  : systemDataContainer.openConnection()
+                  : systemDataContainer.openConnection(false)
                // else if it's same container instances (system and this)
                : thisConnection == null
                // and non-system connection doens't exist - open it
-                  ? thisConnection = dataContainer.openConnection()
+                  ? thisConnection = dataContainer.openConnection(false)
                   // if already open - use it
                   : thisConnection)
             // system connection opened - use it
@@ -247,18 +459,18 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       {
          return thisConnection == null
          // we need this conatiner conection
-            ? thisConnection = (systemDataContainer != dataContainer
+            ? thisConnection = (systemDataContainer != dataContainer // NOSONAR
             // if it's different container instances
                ? dataContainer.equals(systemDataContainer) && systemConnection != null
                // but container confugrations are same and system connnection open
                   // reuse system connection as this
                   ? dataContainer.reuseConnection(systemConnection)
                   // or open one new
-                  : dataContainer.openConnection()
+                  : dataContainer.openConnection(false)
                // else if it's same container instances (system and this)
                : systemConnection == null
                // and system connection doens't exist - open it
-                  ? systemConnection = dataContainer.openConnection()
+                  ? systemConnection = dataContainer.openConnection(false)
                   // if already open - use it
                   : systemConnection)
             // this connection opened - use it
@@ -269,9 +481,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          RepositoryException, IOException
       {
          // copy state
-         PlainChangesLogImpl newLog =
-            new PlainChangesLogImpl(new ArrayList<ItemState>(), changesLog.getSessionId(), changesLog.getEventType(),
-               changesLog.getPairId());
+         PlainChangesLogImpl newLog = PlainChangesLogImpl.createCopy(new ArrayList<ItemState>(), changesLog);
+
+         Map<String, PropertyData> lastUpdateStates = new HashMap<String, PropertyData>();
 
          for (Iterator<ItemState> iter = changesLog.getAllStates().iterator(); iter.hasNext();)
          {
@@ -301,45 +513,51 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                   if (prevData.getValues() != null) // null if it's DELETE state
                   {
                      List<ValueData> values = new ArrayList<ValueData>();
-                     for (int i = 0; i < prevData.getValues().size(); i++)
+
+                     if (prevState.isRenamed() && lastUpdateStates.containsKey(prevState.getData().getIdentifier()))
                      {
-                        ValueData vd = prevData.getValues().get(i);
-
-                        if (vd instanceof TransientValueData)
+                        values = lastUpdateStates.get(prevState.getData().getIdentifier()).getValues();
+                     }
+                     else
+                     {
+                        for (int i = 0; i < prevData.getValues().size(); i++)
                         {
-                           TransientValueData tvd = (TransientValueData)vd;
-                           ValueData pvd;
+                           ValueData vd = prevData.getValues().get(i);
 
-                           if (vd.isByteArray())
+                           if (vd instanceof TransientValueData)
                            {
-                              pvd = new ByteArrayPersistedValueData(i, vd.getAsByteArray());
-                              values.add(pvd);
-                           }
-                           else
-                           {
-                              // TODO ask dest file from VS provider, can be null after
-                              // TODO for JBC case, the storage connection will evict the replicated Value to read it from the DB
-                              File destFile = null;
+                              TransientValueData tvd = (TransientValueData)vd;
+                              ValueData pvd;
 
-                              if (tvd.getSpoolFile() != null)
+                              if (vd.isByteArray())
                               {
-                                 // spooled to temp file
-                                 pvd = new StreamPersistedValueData(i, tvd.getSpoolFile(), destFile);
+                                 pvd = new ByteArrayPersistedValueData(i, vd.getAsByteArray());
+                                 values.add(pvd);
                               }
                               else
                               {
-                                 // with original stream
-                                 pvd = new StreamPersistedValueData(i, tvd.getOriginalStream(), destFile);
+                                 File destFile = null;
+
+                                 if (tvd.getSpoolFile() != null)
+                                 {
+                                    // spooled to temp file
+                                    pvd = new StreamPersistedValueData(i, tvd.getSpoolFile(), destFile);
+                                 }
+                                 else
+                                 {
+                                    // with original stream
+                                    pvd = new StreamPersistedValueData(i, tvd.getOriginalStream(), destFile);
+                                 }
+
+                                 values.add(pvd);
                               }
 
-                              values.add(pvd);
+                              tvd.delegate(pvd);
                            }
-
-                           tvd.delegate(pvd);
-                        }
-                        else
-                        {
-                           values.add(vd);
+                           else
+                           {
+                              values.add(vd);
+                           }
                         }
                      }
 
@@ -347,6 +565,11 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                         new PersistedPropertyData(prevData.getIdentifier(), prevData.getQPath(), prevData
                            .getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getType(), prevData
                            .isMultiValued(), values);
+
+                     if (prevState.isAdded() || prevState.isUpdated())
+                     {
+                        lastUpdateStates.put(prevState.getData().getIdentifier(), (PropertyData)newData);
+                     }
                   }
                   else
                   {
@@ -360,15 +583,18 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
 
             ItemState itemState =
                new ItemState(newData, prevState.getState(), prevState.isEventFire(), prevState.getAncestorToSave(),
-                  prevState.isInternallyCreated(), prevState.isPersisted());
+                  prevState.isInternallyCreated(), prevState.isPersisted(), prevState.getOldPath());
 
             newLog.add(itemState);
 
             // save state
             if (itemState.isPersisted())
             {
-               long start = System.currentTimeMillis();
-
+               long start = 0;
+               if (LOG.isDebugEnabled())
+               {
+                  start = System.currentTimeMillis();
+               }
                ItemData data = itemState.getData();
 
                WorkspaceStorageConnection conn;
@@ -405,6 +631,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                }
             }
          }
+
+         lastUpdateStates.clear(); //help to GC
+
          return newLog;
       }
    }
@@ -443,10 +672,14 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             if (skipVersionStorage)
             {
                if (!ref.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+               {
                   refProps.add(ref);
+               }
             }
             else
+            {
                refProps.add(ref);
+            }
          }
          return refProps;
       }
@@ -461,11 +694,61 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    public List<NodeData> getChildNodesData(final NodeData nodeData) throws RepositoryException
    {
-
       final WorkspaceStorageConnection con = dataContainer.openConnection();
       try
       {
          return con.getChildNodesData(nodeData);
+      }
+      finally
+      {
+         con.close();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean getChildNodesDataByPage(final NodeData nodeData, int fromOrderNum, int toOrderNum,
+      List<NodeData> childNodes) throws RepositoryException
+   {
+      final WorkspaceStorageConnection con = dataContainer.openConnection();
+      try
+      {
+         return con.getChildNodesDataByPage(nodeData, fromOrderNum, toOrderNum, childNodes);
+      }
+      finally
+      {
+         con.close();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<NodeData> getChildNodesData(final NodeData nodeData, List<QPathEntryFilter> patternFilters)
+      throws RepositoryException
+   {
+
+      final WorkspaceStorageConnection con = dataContainer.openConnection();
+      try
+      {
+         return con.getChildNodesData(nodeData, patternFilters);
+      }
+      finally
+      {
+         con.close();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getLastOrderNumber(final NodeData nodeData) throws RepositoryException
+   {
+      final WorkspaceStorageConnection con = dataContainer.openConnection();
+      try
+      {
+         return con.getLastOrderNumber(nodeData);
       }
       finally
       {
@@ -498,6 +781,23 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       try
       {
          return con.getChildPropertiesData(nodeData);
+      }
+      finally
+      {
+         con.close();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getChildPropertiesData(final NodeData nodeData,
+      final List<QPathEntryFilter> itemDataFilters) throws RepositoryException
+   {
+      final WorkspaceStorageConnection con = dataContainer.openConnection();
+      try
+      {
+         return con.getChildPropertiesData(nodeData, itemDataFilters);
       }
       finally
       {
@@ -577,7 +877,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       NodeData parent = (NodeData)acon.getItemData(node.getParentIdentifier());
       QPathEntry myName = node.getQPath().getEntries()[node.getQPath().getEntries().length - 1];
       ItemData sibling =
-         acon.getItemData(parent, new QPathEntry(myName.getNamespace(), myName.getName(), myName.getIndex() - 1));
+         acon.getItemData(parent, new QPathEntry(myName.getNamespace(), myName.getName(), myName.getIndex() - 1),
+            ItemType.NODE);
+
       if (sibling == null || !sibling.isNode())
       {
          throw new InvalidItemStateException("Node can't be saved " + node.getQPath().getAsString()
@@ -600,9 +902,13 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    {
 
       if (item.isNode())
+      {
          con.delete((NodeData)item);
+      }
       else
+      {
          con.delete((PropertyData)item);
+      }
    }
 
    /**
@@ -614,7 +920,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     *          connection
     * @throws RepositoryException
     * @throws InvalidItemStateException
-    *           if the item not found TODO compare persistedVersion number
+    *           if the item not found
     */
    protected void doUpdate(final ItemData item, final WorkspaceStorageConnection con) throws RepositoryException,
       InvalidItemStateException
@@ -701,22 +1007,34 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    public void addItemPersistenceListener(ItemsPersistenceListener listener)
    {
       if (listener instanceof MandatoryItemsPersistenceListener)
+      {
          mandatoryListeners.add((MandatoryItemsPersistenceListener)listener);
+      }
       else
+      {
          listeners.add(listener);
+      }
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("Workspace '" + this.dataContainer.getName() + "' listener registered: " + listener);
+      }
    }
 
    public void removeItemPersistenceListener(ItemsPersistenceListener listener)
    {
       if (listener instanceof MandatoryItemsPersistenceListener)
+      {
          mandatoryListeners.remove(listener);
+      }
       else
+      {
          listeners.remove(listener);
+      }
 
       if (LOG.isDebugEnabled())
+      {
          LOG.debug("Workspace '" + this.dataContainer.getName() + "' listener unregistered: " + listener);
+      }
    }
 
    /**
@@ -724,7 +1042,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    public void addItemPersistenceListenerFilter(ItemsPersistenceListenerFilter filter)
    {
-      this.liestenerFilters.add(filter);
+      this.listenerFilters.add(filter);
    }
 
    /**
@@ -732,7 +1050,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    public void removeItemPersistenceListenerFilter(ItemsPersistenceListenerFilter filter)
    {
-      this.liestenerFilters.remove(filter);
+      this.listenerFilters.remove(filter);
    }
 
    /**
@@ -745,10 +1063,12 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    protected boolean isListenerAccepted(ItemsPersistenceListener listener)
    {
-      for (ItemsPersistenceListenerFilter f : liestenerFilters)
+      for (ItemsPersistenceListenerFilter f : listenerFilters)
       {
          if (!f.accept(listener))
+         {
             return false;
+         }
       }
 
       return true;
@@ -798,10 +1118,19 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    public ItemData getItemData(final NodeData parentData, final QPathEntry name) throws RepositoryException
    {
+      return getItemData(parentData, name, ItemType.UNKNOWN);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(final NodeData parentData, final QPathEntry name, ItemType itemType)
+      throws RepositoryException
+   {
       final WorkspaceStorageConnection con = dataContainer.openConnection();
       try
       {
-         return con.getItemData(parentData, name);
+         return con.getItemData(parentData, name, itemType);
       }
       finally
       {
@@ -824,5 +1153,4 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    {
       this.readOnly = status;
    }
-
 }

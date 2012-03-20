@@ -22,9 +22,6 @@ import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 
 import java.io.Externalizable;
 import java.io.IOException;

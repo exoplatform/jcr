@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.util;
 
+import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -36,10 +37,25 @@ public class ConfigurationFormat
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ConfigurationFormat");
 
+   public static boolean parseBoolean(String text)
+   {
+      try
+      {
+         text = Deserializer.resolveNClean(text);
+         return Boolean.valueOf(text).booleanValue();
+      }
+      catch (Throwable e)
+      {
+         LOG.warn("Unparseable boolean '" + text + "'.", e);
+         return false;
+      }
+   }
+
    public static int parseInt(String text)
    {
       try
       {
+         text = Deserializer.resolveNClean(text);
          return StringNumberParser.parseInt(text);
       }
       catch (Throwable e)
@@ -53,6 +69,7 @@ public class ConfigurationFormat
    {
       try
       {
+         text = Deserializer.resolveNClean(text);
          return StringNumberParser.parseLong(text);
       }
       catch (Throwable e)
@@ -66,12 +83,54 @@ public class ConfigurationFormat
    {
       try
       {
+         text = Deserializer.resolveNClean(text);
          return StringNumberParser.parseTime(text);
       }
       catch (Throwable e)
       {
          LOG.warn("Unparseable time (as long) '" + text + "'. Check StringNumberParser.parseTime for details.", e);
          return 0l;
+      }
+   }
+
+   public static String serializeTime(long time)
+   {
+      try
+      {
+         return StringNumberParser.serializeTime(time);
+      }
+      catch (Throwable e)
+      {
+         LOG.warn("Unserialable time '" + time + "'. Check StringNumberParser.serializeTime for details.", e);
+         return "";
+      }
+   }
+
+   public static String serializeInt(int integerValue)
+   {
+      try
+      {
+         return StringNumberParser.serializeInt(integerValue);
+      }
+      catch (Throwable e)
+      {
+         LOG.warn("Unserialable integer value '" + integerValue
+            + "'. Check StringNumberParser.serializeInt for details.", e);
+         return "";
+      }
+   }
+
+   public static String serializeLong(long longValue)
+   {
+      try
+      {
+         return StringNumberParser.serializeLong(longValue);
+      }
+      catch (Throwable e)
+      {
+         LOG.warn("Unserialable long value '" + longValue
+            + "'. Check StringNumberParser.serializeLong for details.", e);
+         return "";
       }
    }
 

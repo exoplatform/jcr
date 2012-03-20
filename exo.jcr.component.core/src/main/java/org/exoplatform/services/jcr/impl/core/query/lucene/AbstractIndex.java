@@ -122,7 +122,7 @@ abstract class AbstractIndex
     * @param indexingQueue the indexing queue.
     * @throws IOException if the index cannot be initialized.
     */
-   AbstractIndex(Analyzer analyzer, Similarity similarity, Directory directory, DocNumberCache cache,
+   AbstractIndex(final Analyzer analyzer, Similarity similarity, final Directory directory, DocNumberCache cache,
       IndexingQueue indexingQueue) throws IOException
    {
       this.analyzer = analyzer;
@@ -130,7 +130,8 @@ abstract class AbstractIndex
       this.directory = directory;
       this.cache = cache;
       this.indexingQueue = indexingQueue;
-      this.isExisting = IndexReader.indexExists(directory);
+
+      AbstractIndex.this.isExisting = IndexReader.indexExists(directory);
 
       if (!isExisting)
       {
@@ -170,59 +171,45 @@ abstract class AbstractIndex
     * @param docs the documents to add.
     * @throws IOException if an error occurs while writing to the index.
     */
-   void addDocuments(Document[] docs) throws IOException
+   void addDocuments(final Document[] docs) throws IOException
    {
       final IndexWriter writer = getIndexWriter();
-      DynamicPooledExecutor.Command[] commands = new DynamicPooledExecutor.Command[docs.length];
-      for (int i = 0; i < docs.length; i++)
+
+      IOException ioExc = null;
+      try
       {
-         // check if text extractor completed its work
-         final Document doc = getFinishedDocument(docs[i]);
-         // create a command for inverting the document
-         commands[i] = new DynamicPooledExecutor.Command()
+         for (Document doc : docs)
          {
-            public Object call() throws Exception
+            try
             {
-               long time = System.currentTimeMillis();
-               writer.addDocument(doc);
-               return new Long(System.currentTimeMillis() - time);
+               writer.addDocument(getFinishedDocument(doc));
             }
-         };
-      }
-      DynamicPooledExecutor.Result[] results = EXECUTOR.executeAndWait(commands);
-      invalidateSharedReader();
-      IOException ex = null;
-      for (int i = 0; i < results.length; i++)
-      {
-         if (results[i].getException() != null)
-         {
-            Throwable cause = results[i].getException().getCause();
-            if (ex == null)
+            catch (Throwable e)
             {
-               // only throw the first exception
-               if (cause instanceof IOException)
+               if (ioExc == null)
                {
-                  ex = (IOException)cause;
+                  if (e instanceof IOException)
+                  {
+                     ioExc = (IOException)e;
+                  }
+                  else
+                  {
+                     ioExc = Util.createIOException(e);
+                  }
                }
-               else
-               {
-                  throw Util.createIOException(cause);
-               }
-            }
-            else
-            {
-               // all others are logged
-               log.warn("Exception while inverting document", cause);
+
+               log.warn("Exception while inverting document", e);
             }
          }
-         else
-         {
-            log.debug("Inverted document in {} ms", results[i].get());
-         }
       }
-      if (ex != null)
+      finally
       {
-         throw ex;
+         invalidateSharedReader();
+      }
+
+      if (ioExc != null)
+      {
+         throw ioExc;
       }
    }
 
@@ -235,7 +222,7 @@ abstract class AbstractIndex
     * @throws IOException if an error occurs while removing the document.
     * @return number of documents deleted
     */
-   int removeDocument(Term idTerm) throws IOException
+   int removeDocument(final Term idTerm) throws IOException
    {
       return getIndexReader().deleteDocuments(idTerm);
    }
@@ -258,8 +245,7 @@ abstract class AbstractIndex
 
       if (indexReader == null || !indexReader.isCurrent())
       {
-         IndexReader reader = IndexReader.open(getDirectory());
-         reader.setTermInfosIndexDivisor(termInfosIndexDivisor);
+         IndexReader reader = IndexReader.open(getDirectory(), null, false, termInfosIndexDivisor);
          indexReader = new CommittableIndexReader(reader);
       }
       return indexReader;
@@ -276,7 +262,7 @@ abstract class AbstractIndex
     * @return a read-only index reader.
     * @throws IOException if an error occurs while obtaining the index reader.
     */
-   synchronized ReadOnlyIndexReader getReadOnlyIndexReader(boolean initCache) throws IOException
+   synchronized ReadOnlyIndexReader getReadOnlyIndexReader(final boolean initCache) throws IOException
    {
       // get current modifiable index reader
       CommittableIndexReader modifiableReader = getIndexReader();
@@ -322,8 +308,7 @@ abstract class AbstractIndex
       if (sharedReader == null)
       {
          // create new shared reader
-         IndexReader reader = IndexReader.open(getDirectory(), true);
-         reader.setTermInfosIndexDivisor(termInfosIndexDivisor);
+         IndexReader reader = IndexReader.open(getDirectory(), null, true, termInfosIndexDivisor);
          CachingIndexReader cr = new CachingIndexReader(reader, cache, initCache);
          sharedReader = new SharedIndexReader(cr);
       }
@@ -385,7 +370,7 @@ abstract class AbstractIndex
     *                 commit.
     * @throws IOException if an error occurs while commiting changes.
     */
-   protected synchronized void commit(boolean optimize) throws IOException
+   protected synchronized void commit(final boolean optimize) throws IOException
    {
       if (indexReader != null)
       {
@@ -708,6 +693,7 @@ abstract class AbstractIndex
       {
          super(new OutputStream()
          {
+            @Override
             public void write(int b)
             {
                // do nothing
@@ -715,11 +701,13 @@ abstract class AbstractIndex
          });
       }
 
+      @Override
       public void print(String s)
       {
          buffer.append(s);
       }
 
+      @Override
       public void println(String s)
       {
          buffer.append(s);

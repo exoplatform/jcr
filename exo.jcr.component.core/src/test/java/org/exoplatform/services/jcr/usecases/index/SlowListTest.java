@@ -50,20 +50,18 @@ public class SlowListTest extends BaseUsecasesTest
       long start, end;
       InputStream is = SlowListTest.class.getResourceAsStream("/index/test_index.xls");
       assertNotNull("Can not create an input stream from file for indexing", is);
-      int size = is.available();
-      byte b[] = new byte[size];
-      is.read(b);
-      is.close();
+
       Node test = root.addNode("cms2").addNode("test");
       start = System.currentTimeMillis(); // to get the time of start
       assertNotNull("Can not create a test node for indexing", test);
       for (int i = 0; i < 111; i++)
       {
+         is = SlowListTest.class.getResourceAsStream("/index/test_index.xls");
          String name = new String("nnn-" + i);
          Node cool = test.addNode(name, "nt:file");
          Node contentNode = cool.addNode("jcr:content", "nt:resource");
-         contentNode.setProperty("jcr:encoding", "UTF-8");
-         contentNode.setProperty("jcr:data", session.getValueFactory().createValue(new String(b)));
+         //contentNode.setProperty("jcr:encoding", "UTF-8");
+         contentNode.setProperty("jcr:data", is);
          contentNode.setProperty("jcr:mimeType", "application/excel");
          contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
          assertNotNull("Can not create a cool node for indexing", cool);

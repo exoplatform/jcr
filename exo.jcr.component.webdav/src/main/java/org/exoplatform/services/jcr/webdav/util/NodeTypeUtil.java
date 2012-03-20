@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.webdav.WebDavConst;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
@@ -52,6 +51,7 @@ public class NodeTypeUtil
          // Default nodetype for the file.
          return null;
    }
+
    /**
     * Returns the NodeType of content node according to the Content-NodeType
     * header.

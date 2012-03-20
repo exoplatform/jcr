@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -37,6 +38,11 @@ public class CASableTreeFileValueStorage extends TreeFileValueStorage
    private ValueContentAddressStorage vcas;
 
    private String digestAlgo;
+
+   public CASableTreeFileValueStorage(FileCleaner cleaner)
+   {
+      super(cleaner);
+   }
 
    /**
     * {@inheritDoc}
@@ -55,7 +61,23 @@ public class CASableTreeFileValueStorage extends TreeFileValueStorage
       {
          vcas = (ValueContentAddressStorage)Class.forName(vcasType).newInstance();
       }
-      catch (Exception e)
+      catch (ExceptionInInitializerError e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (SecurityException e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (InstantiationException e)
+      {
+         throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
+      }
+      catch (IllegalAccessException e)
       {
          throw new RepositoryConfigurationException("VCAS Storage class load error " + e, e);
       }

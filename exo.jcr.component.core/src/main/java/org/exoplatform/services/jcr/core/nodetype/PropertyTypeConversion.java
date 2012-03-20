@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.core.nodetype;
 
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import javax.jcr.PropertyType;
 
@@ -29,6 +31,9 @@ import javax.jcr.PropertyType;
  */
 public class PropertyTypeConversion
 {
+
+   private static final Log LOG = ExoLogger
+      .getLogger("org.exoplatform.services.jcr.core.nodetype.PropertyTypeConversion");
 
    public static String serializeType(int propertyType)
    {
@@ -41,10 +46,18 @@ public class PropertyTypeConversion
       catch (IllegalArgumentException e)
       {
          // r = PropertyType.TYPENAME_UNDEFINED;
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       catch (Exception e)
       {
          // r = PropertyType.TYPENAME_UNDEFINED;
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return r;
    }
@@ -60,10 +73,18 @@ public class PropertyTypeConversion
       catch (IllegalArgumentException e)
       {
          // r = PropertyType.TYPENAME_UNDEFINED;
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       catch (Exception e)
       {
          // r = PropertyType.TYPENAME_UNDEFINED;
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return r;
    }

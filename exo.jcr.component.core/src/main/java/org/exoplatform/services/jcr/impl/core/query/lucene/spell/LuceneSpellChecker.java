@@ -24,20 +24,20 @@ import org.apache.lucene.search.spell.LuceneDictionary;
 import org.apache.lucene.search.spell.SpellChecker;
 import org.apache.lucene.store.AlreadyClosedException;
 import org.apache.lucene.store.Directory;
-import org.apache.lucene.store.FSDirectory;
-import org.apache.lucene.store.NativeFSLockFactory;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.TraversingQueryNodeVisitor;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -53,8 +53,8 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
    /**
     * Logger instance for this class.
     */
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.LuceneSpellChecker");
-
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.LuceneSpellChecker");
+   
    public static final class FiveSecondsRefreshInterval extends LuceneSpellChecker
    {
       public FiveSecondsRefreshInterval()
@@ -143,18 +143,13 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
    }
 
    /**
-    * Initializes this spell checker.
-    * 
-    * @param handler
-    *            the query handler that created this spell checker.
-    * @throws IOException
-    *             if <code>handler</code> is not of type {@link SearchIndex}.
+    * {@inheritDoc}
     */
-   public void init(QueryHandler handler) throws IOException
+   public void init(QueryHandler handler, float minDistance, boolean morePopular) throws IOException
    {
       if (handler instanceof SearchIndex)
       {
-         this.spellChecker = new InternalSpellChecker((SearchIndex)handler);
+         this.spellChecker = new InternalSpellChecker((SearchIndex)handler, minDistance, morePopular);
       }
       else
       {
@@ -183,8 +178,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
       spellChecker.close();
    }
 
-   // ------------------------------< internal
-   // >--------------------------------
+   // ------------------------------< internal >--------------------------------
 
    /**
     * Returns the fulltext statement of a spellcheck relation query node or
@@ -200,6 +194,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
       final String[] stmt = new String[1];
       aqt.accept(new TraversingQueryNodeVisitor()
       {
+         @Override
          public Object visit(RelationQueryNode node, Object o) throws RepositoryException
          {
             if (stmt[0] == null && node.getOperation() == RelationQueryNode.OPERATION_SPELLCHECK)
@@ -233,30 +228,45 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
       /**
        * The directory where the spell index is stored.
        */
-      private final Directory spellIndexDirectory;
+      private Directory spellIndexDirectory;
 
       /**
        * The underlying spell checker.
        */
       private SpellChecker spellChecker;
 
+      private final boolean morePopular;
+
       /**
        * Creates a new internal spell checker.
        * 
        * @param handler
        *            the associated query handler.
+       * @param minDistance
+       *            minimal distance between  word and proposed close word. Float value 0..1.
+       * @param morePopular
+       *            return only the suggest words that are as frequent or more frequent than the searched word 
        */
-      InternalSpellChecker(SearchIndex handler) throws IOException
+      InternalSpellChecker(final SearchIndex handler, float minDistance, boolean morePopular) throws IOException
       {
          this.handler = handler;
-         String path = handler.getContext().getIndexDirectory() + File.separatorChar + "spellchecker";
-         this.spellIndexDirectory = FSDirectory.getDirectory(path, new NativeFSLockFactory(path));
-         if (IndexReader.indexExists(spellIndexDirectory))
+         spellIndexDirectory = null;
+         SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
          {
-            this.lastRefresh = System.currentTimeMillis();
-         }
+            public Object run() throws Exception
+            {
+               spellIndexDirectory = handler.getDirectoryManager().getDirectory("spellchecker");
+                  
+               if (IndexReader.indexExists(spellIndexDirectory))
+               {
+                  lastRefresh = System.currentTimeMillis();
+               }
+               return null;
+            }
+         });
          this.spellChecker = new SpellChecker(spellIndexDirectory);
-         this.spellChecker.setAccuracy(0.55f);
+         this.spellChecker.setAccuracy(minDistance);
+         this.morePopular = morePopular;
          refreshSpellChecker();
       }
 
@@ -291,7 +301,16 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   sb.replace(t.startOffset(), t.endOffset(), suggestions[i]);
                }
             }
-            return sb.toString();
+            // if suggestion is same as a statement return null
+            String result = sb.toString();
+            if (statement.equalsIgnoreCase(result))
+            {
+               return null;
+            }
+            else
+            {
+               return result;
+            }
          }
          else
          {
@@ -303,11 +322,21 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
       {
          try
          {
-            spellIndexDirectory.close();
+            SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+            {
+               public Object run() throws Exception
+               {
+                  spellIndexDirectory.close();
+                  return null;
+               }
+            });
          }
          catch (IOException e)
          {
-            // ignore
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
          // urgh, the lucene spell checker cannot be closed explicitly.
          // finalize will close the reader...
@@ -375,11 +404,11 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
        * @throws IOException
        *             if an error occurs while spell checking.
        */
-      private String[] check(String words[]) throws IOException
+      private String[] check(final String words[]) throws IOException
       {
          refreshSpellChecker();
          boolean hasSuggestion = false;
-         IndexReader reader = handler.getIndexReader();
+         final IndexReader reader = handler.getIndexReader();
          try
          {
             for (int retries = 0; retries < 100; retries++)
@@ -389,7 +418,17 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   String[] suggestion = new String[words.length];
                   for (int i = 0; i < words.length; i++)
                   {
-                     String[] similar = spellChecker.suggestSimilar(words[i], 5, reader, FieldNames.FULLTEXT, true);
+                     final int currentIndex = i;
+                     String[] similar =
+                        SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<String[]>()
+                        {
+                           public String[] run() throws Exception
+                           {
+                              return spellChecker.suggestSimilar(words[currentIndex], 5, reader, FieldNames.FULLTEXT,
+                                 morePopular);
+                           }
+                        });
+
                      if (similar.length > 0)
                      {
                         suggestion[i] = similar[0];
@@ -402,7 +441,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   }
                   if (hasSuggestion)
                   {
-                     log.debug("Successful after " + new Integer(retries) + " retries");
+                     LOG.debug("Successful after " + new Integer(retries) + " retries");
                      return suggestion;
                   }
                   else
@@ -416,6 +455,10 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   // spell checker is closed while searching for
                   // suggestions. this is actually a design flaw in the
                   // lucene spell checker, but for now we simply retry
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
                }
             }
             // unsuccessful after retries
@@ -423,7 +466,14 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
          }
          finally
          {
-            reader.close();
+            SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+            {
+               public Object run() throws Exception
+               {
+                  Util.closeOrRelease(reader);
+                  return null;
+               }
+            });
          }
       }
 
@@ -450,35 +500,47 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                   {
                      public void run()
                      {
+
                         try
                         {
-                           IndexReader reader = handler.getIndexReader();
-                           try
+                           SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
                            {
-                              long time = System.currentTimeMillis();
-                              Dictionary dict = new LuceneDictionary(reader, FieldNames.FULLTEXT);
-                              log.debug("Starting spell checker index refresh");
-                              spellChecker.indexDictionary(dict);
-                              time = System.currentTimeMillis() - time;
-                              time = time / 1000;
-                              log.info("Spell checker index refreshed in: " + new Long(time) + " s.");
-                           }
-                           finally
-                           {
-                              reader.close();
-                              synchronized (InternalSpellChecker.this)
+                              public Object run() throws Exception
                               {
-                                 refreshing = false;
+                                 IndexReader reader = handler.getIndexReader();
+                                 try
+                                 {
+                                    long time = System.currentTimeMillis();
+                                    Dictionary dict = new LuceneDictionary(reader, FieldNames.FULLTEXT);
+                                    LOG.debug("Starting spell checker index refresh");
+                                    spellChecker.indexDictionary(dict);
+                                    time = System.currentTimeMillis() - time;
+                                    time = time / 1000;
+                                    LOG.info("Spell checker index refreshed in: " + new Long(time) + " s.");
+                                 }
+                                 finally
+                                 {
+                                    Util.closeOrRelease(reader);
+                                    synchronized (InternalSpellChecker.this)
+                                    {
+                                       refreshing = false;
+                                    }
+                                 }
+                                 return null;
                               }
-                           }
+                           });
                         }
                         catch (IOException e)
                         {
-                           // ignore
+                           if (LOG.isTraceEnabled())
+                           {
+                              LOG.trace("An exception occurred: " + e.getMessage());
+                           }
                         }
                      }
                   };
                   new Thread(refresh, "SpellChecker Refresh").start();
+
                   lastRefresh = System.currentTimeMillis();
                }
             }

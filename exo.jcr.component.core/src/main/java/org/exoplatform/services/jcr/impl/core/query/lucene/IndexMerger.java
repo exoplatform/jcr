@@ -108,7 +108,7 @@ class IndexMerger extends Thread implements IndexListener
    IndexMerger(MultiIndex multiIndex)
    {
       this.multiIndex = multiIndex;
-      setName("IndexMerger");
+      setName("Index Merger" + (multiIndex.workspaceId == null ? "" : " " + multiIndex.workspaceId));
       setDaemon(true);
       try
       {
@@ -294,7 +294,7 @@ class IndexMerger extends Thread implements IndexListener
             isIdle = true;
          }
          Merge task = (Merge)mergeTasks.remove();
-         if (task == QUIT)
+         if (task == QUIT) // NOSONAR
          {
             mergerIdle.release();
             break;
@@ -366,6 +366,8 @@ class IndexMerger extends Thread implements IndexListener
                if (!indexReplacement.attempt(0))
                {
                   log.debug("index merging canceled");
+                  // if index not passed to multiIndex, then it will never be closed
+                  index.close();
                   break;
                }
                try

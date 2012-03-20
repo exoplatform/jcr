@@ -16,10 +16,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
+
+import java.io.IOException;
 
 /**
  * <code>RefCountingIndexReader</code>...
@@ -48,7 +48,8 @@ public class RefCountingIndexReader
     /**
      * @return the current reference count value.
      */
-    synchronized int getRefCount() {
+    @Override
+   public synchronized int getRefCount() {
         return refCount;
     }
 
@@ -65,7 +66,8 @@ public class RefCountingIndexReader
 
     //-----------------------< FilterIndexReader >--------------------------
 
-    protected void doClose() throws IOException {
+    @Override
+   protected void doClose() throws IOException {
         Util.closeOrRelease(in);
     }
 }

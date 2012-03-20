@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.ftp.data;
 
-import org.exoplatform.services.ftp.FtpConst;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.ftp.client.FtpClientSession;
 import org.exoplatform.services.ftp.config.FtpConfig;
 import org.exoplatform.services.log.ExoLogger;
@@ -31,6 +31,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS Author : Vitaly Guly <gavrik-vetal@ukr.net/mail.ru>
@@ -41,7 +42,7 @@ import java.net.SocketAddress;
 public class FtpDataTransiverImpl implements FtpDataTransiver
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpDataTransiverImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.FtpDataTransiverImpl");
 
    private FtpClientSession clientSession;
 
@@ -116,7 +117,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
          }
          catch (Exception exc)
          {
-            log.info("Unhandled exception. " + exc.getMessage(), exc);
+            LOG.info("Unhandled exception. " + exc.getMessage(), exc);
          }
       }
 
@@ -128,7 +129,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
          }
          catch (IOException ioexc)
          {
-            log.info("Closing socket failure.");
+            LOG.info("Closing socket failure.");
          }
 
       }
@@ -146,7 +147,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
    }
 
@@ -207,18 +208,33 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
    protected class AcceptDataConnect extends Thread
    {
 
-      protected Log acceptLog = ExoLogger.getLogger("jcr.AcceptDataConnect");
+      public AcceptDataConnect()
+      {
+         super("AcceptDataConnect"
+                  + (configuration.getPortalContainer() == null ? "" : " "
+                           + configuration.getPortalContainer().getName()));
+      }
+      
+      protected Log acceptLog = ExoLogger.getLogger("exo.jcr.component.ftp.AcceptDataConnect");
 
+      @Override
       public void run()
       {
          try
          {
-            dataSocket = serverSocket.accept();
+            dataSocket = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Socket>()
+            {
+               public Socket run() throws Exception
+               {
+                  return serverSocket.accept();
+               }
+            });
+
             serverSocket.close();
          }
          catch (Exception exc)
          {
-            log.info("Unhandled exception. " + exc.getMessage(), exc);
+            LOG.info("Unhandled exception. " + exc.getMessage(), exc);
          }
       }
 
@@ -227,8 +243,16 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
    protected class ConnectDataPort extends Thread
    {
 
-      protected Log connectLog = ExoLogger.getLogger("jcr.ConnectDataPort");
+      public ConnectDataPort()
+      {
+         super("ConnectDataPort"
+                  + (configuration.getPortalContainer() == null ? "" : " "
+                           + configuration.getPortalContainer().getName()));
+      }
 
+      protected Log connectLog = ExoLogger.getLogger("exo.jcr.component.ftp.ConnectDataPort");
+
+      @Override
       public void run()
       {
          try
@@ -239,7 +263,7 @@ public class FtpDataTransiverImpl implements FtpDataTransiver
          }
          catch (Exception exc)
          {
-            log.info("Unhandled exception. " + exc.getMessage(), exc);
+            LOG.info("Unhandled exception. " + exc.getMessage(), exc);
          }
       }
 

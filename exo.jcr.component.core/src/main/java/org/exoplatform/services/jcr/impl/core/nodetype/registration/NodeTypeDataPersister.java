@@ -20,10 +20,8 @@ package org.exoplatform.services.jcr.impl.core.nodetype.registration;
 
 import org.exoplatform.services.jcr.core.ComponentPersister;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
-import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
@@ -59,7 +57,6 @@ public interface NodeTypeDataPersister extends ComponentPersister
     * 
     * @param os output stream
     * @param nodeTypes
-    * @throws IOException
     * @throws RepositoryException
     */
    public void addNodeTypes(List<NodeTypeData> nodeTypes) throws RepositoryException;
@@ -79,7 +76,6 @@ public interface NodeTypeDataPersister extends ComponentPersister
     * @param is input stream
     * @return
     * @throws RepositoryException
-    * @throws IllegalNameException 
     */
    public List<NodeTypeData> getAllNodeTypes() throws RepositoryException;
 
@@ -97,7 +93,6 @@ public interface NodeTypeDataPersister extends ComponentPersister
    * 
    * @param os output stream
    * @param nodeTypes
-   * @throws IOException
    * @throws RepositoryException
    */
    public void update(List<NodeTypeData> nodeTypes, UpdateNodeTypeObserver observer) throws RepositoryException;

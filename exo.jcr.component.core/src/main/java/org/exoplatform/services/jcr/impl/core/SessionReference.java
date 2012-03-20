@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
@@ -35,6 +38,11 @@ import javax.jcr.Session;
  */
 public class SessionReference extends WeakReference<Session>
 {
+
+   /**
+    * The logger instance for this class.
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionReference");
 
    //
    private static final int INITIAL_DELAY = 10;
@@ -75,7 +83,7 @@ public class SessionReference extends WeakReference<Session>
    {
       public void run()
       {
-         System.out.println("Starting detector task");
+         LOG.info("Starting detector task");
 
          //
          ArrayList<SessionReference> list;
@@ -117,13 +125,13 @@ public class SessionReference extends WeakReference<Session>
                   objects.remove(ref.key);
                   Exception e = new Exception();
                   e.setStackTrace(ref.stack);
-                  System.out.println("<" + error + ">");
-                  e.printStackTrace();
-                  System.out.println("</" + error + ">");
+                  LOG.error("<" + error + ">");
+                  LOG.error(e.getLocalizedMessage(), e);
+                  LOG.error("</" + error + ">");
                }
             }
          }
-         System.out.println("Finished detector task");
+         LOG.info("Finished detector task");
       }
    };
 

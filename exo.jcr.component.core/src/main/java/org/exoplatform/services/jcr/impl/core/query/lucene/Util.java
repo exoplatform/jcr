@@ -55,7 +55,7 @@ public class Util
     *
     * @param old the document to dispose.
     */
-   public static void disposeDocument(Document old)
+   public static void disposeDocument(final Document old)
    {
       for (Iterator it = old.getFields().iterator(); it.hasNext();)
       {
@@ -147,7 +147,7 @@ public class Util
     * @throws IOException if an error occurs while closing or releasing the
     *                     index reader.
     */
-   public static void closeOrRelease(IndexReader reader) throws IOException
+   public static void closeOrRelease(final IndexReader reader) throws IOException
    {
       if (reader instanceof ReleaseableIndexReader)
       {
@@ -192,7 +192,6 @@ public class Util
          case PropertyType.REFERENCE :
          case PropertyType.STRING :
             return ValueDataConvertor.readString(value);
-            // TODO: JSR 283 now node types
          default :
             return null;
       }
@@ -226,7 +225,6 @@ public class Util
          case PropertyType.REFERENCE :
          case PropertyType.STRING :
             return value.getString();
-            // TODO: JSR 283 now node types
          default :
             throw new RepositoryException("Unsupported type: " + PropertyType.nameFromValue(value.getType()));
       }
@@ -247,7 +245,7 @@ public class Util
     */
    public static int compare(Comparable c1, Comparable c2)
    {
-      if (c1 == c2)
+      if (c1 == c2) // NOSONAR
       {
          return 0;
       }
@@ -313,7 +311,6 @@ public class Util
          case PropertyType.STRING :
             c2 = v2.getString();
             break;
-         // TODO: JSR 283 now node types
          default :
             throw new RepositoryException("Unsupported type: " + PropertyType.nameFromValue(v2.getType()));
       }
@@ -398,7 +395,6 @@ public class Util
     */
    public static long getLength(ValueData value, int propType)
    {
-      // TODO: support new JSR 283 property types
       if (propType == PropertyType.BINARY)
       {
          return value.getLength();

@@ -26,11 +26,13 @@ import org.apache.lucene.search.TermQuery;
 import org.exoplatform.services.document.DocumentReader;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.impl.MSExcelDocumentReader;
+import org.exoplatform.services.document.impl.tika.TikaDocumentReader;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 
-import java.io.File;
 import java.io.FileInputStream;
+import java.net.URL;
 import java.util.Calendar;
 
 /**
@@ -44,10 +46,10 @@ public class TestExcelFileSearch extends BaseQueryTest
 
    public void testFindFileContent() throws Exception
    {
-      File file = new File("src/test/resources/test.xls");
-      assertTrue("/test/resources/book.xls not found", file.exists());
+      URL url = TestExcelFileSearch.class.getResource("/test.xls");
+      assertNotNull("test.xls not found", url);
 
-      FileInputStream fis = new FileInputStream(file);
+      FileInputStream fis = new FileInputStream(url.getFile());
 
       NodeImpl node = (NodeImpl)root.addNode("excelFile", "nt:file");
       NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
@@ -59,7 +61,7 @@ public class TestExcelFileSearch extends BaseQueryTest
       root.save();
 
       fis.close();
-      fis = new FileInputStream(file);
+      fis = new FileInputStream(url.getFile());
       DocumentReaderService extr =
          (DocumentReaderService)session.getContainer().getComponentInstanceOfType(DocumentReaderService.class);
 
@@ -68,7 +70,19 @@ public class TestExcelFileSearch extends BaseQueryTest
 
       System.out.println(dreader);
 
-      assertTrue(dreader instanceof MSExcelDocumentReader);
+      if (dreader instanceof MSExcelDocumentReader)
+      {
+         // OK
+      }
+      else if (dreader instanceof TikaDocumentReader)
+      {
+         String[] mimetypes = ((TikaDocumentReader)dreader).getMimeTypes();
+         assertEquals("application/excel", mimetypes[0]);
+      }
+      else
+      {
+         fail("Wrong document reader");
+      }
 
       // String text = dreader.getContentAsText(fis);
 
@@ -87,6 +101,8 @@ public class TestExcelFileSearch extends BaseQueryTest
       TermQuery query = new TermQuery(new Term(FieldNames.FULLTEXT, word));
       Hits result = is.search(query);
       assertEquals(1, result.length());
+      is.close();
+      Util.closeOrRelease(reader);
    }
 
 }

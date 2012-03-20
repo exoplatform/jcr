@@ -42,7 +42,7 @@ import javax.jcr.Session;
 public class CmdRetr extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdRetr");
+   private static final Log LOG = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdRetr");
 
    public CmdRetr()
    {
@@ -142,7 +142,7 @@ public class CmdRetr extends FtpCommandImpl
       }
       catch (Throwable exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       clientSession().closeDataTransiver();
@@ -154,24 +154,39 @@ public class CmdRetr extends FtpCommandImpl
       ArrayList<String> newPath = clientSession().getFullPath(resName);
       try
       {
-         String repoPath = clientSession().getRepoPath(newPath);
-         Session curSession = clientSession().getSession(newPath.get(0));
-
-         Node parentNode = (Node)curSession.getItem(repoPath);
-         if (parentNode.isNodeType(FtpConst.NodeTypes.NT_FILE))
+         if (!newPath.isEmpty())
          {
-            return true;
+            String repoPath = clientSession().getRepoPath(newPath);
+            Session curSession = clientSession().getSession(newPath.get(0));
+
+            Node parentNode = (Node)curSession.getItem(repoPath);
+            if (parentNode.isNodeType(FtpConst.NodeTypes.NT_FILE))
+            {
+               return true;
+            }
+         }
+         else
+         {
+            return false;
          }
       }
       catch (PathNotFoundException exc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + exc.getMessage());
+         }
       }
       catch (NoSuchWorkspaceException wexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + wexc.getMessage());
+         }
       }
       catch (Throwable exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       return false;
    }

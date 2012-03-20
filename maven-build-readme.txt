@@ -10,4 +10,3 @@ JCR Ext
 =======
 Goto JCR exo.jcr.component.ext and call:
 mvn clean test                - to run eXo JCR Ext tests... tests set managed by surefire-plugin configuration.
-

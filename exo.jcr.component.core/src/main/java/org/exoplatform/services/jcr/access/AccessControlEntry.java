@@ -37,6 +37,10 @@ public class AccessControlEntry
 
    public static final String DELIMITER = " ";
 
+   private Integer hashcode = null;
+
+   private String asString = null;
+
    public AccessControlEntry(String identity, String permission)
    {
       this.identity = identity;
@@ -70,9 +74,26 @@ public class AccessControlEntry
    
    public String getAsString()
    {
-      return identity + AccessControlEntry.DELIMITER + permission;
+      if (asString == null)
+      {
+         asString = identity + AccessControlEntry.DELIMITER + permission;
+      }
+
+      return asString;
    }
 
+   @Override
+   public int hashCode()
+   {
+      if (hashcode == null)
+      {
+         hashcode = getAsString().hashCode();
+      }
+
+      return hashcode;
+   }
+
+   @Override
    public boolean equals(Object obj)
    {
       if (obj == this)

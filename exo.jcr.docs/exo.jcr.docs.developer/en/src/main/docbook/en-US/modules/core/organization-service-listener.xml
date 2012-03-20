@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"hp://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Core.OrganizationListener">
+  <?dbhtml filename="ch-organization-service-listener.html"?>
+
+  <title>Organization Listener</title>
+
+    <para>The <link linkend="Core.OrganizationService">Organization
+    Service</link> provides a mechanism to receive notifications when:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>A User is created, deleted or modified.</para>
+      </listitem>
+
+      <listitem>
+        <para>A Group is created, deleted or modified.</para>
+      </listitem>
+
+      <listitem>
+        <para>A Membership is created or removed.</para>
+      </listitem>
+    </itemizedlist>
+
+    <para>This mechanism is very useful to cascade some actions when the
+    organization model is modified. For example, it is currently used to
+    :</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Initialize the personal portal pages.</para>
+      </listitem>
+
+      <listitem>
+        <para>Initialize the personal calendars, address books and mail
+        accounts in CS.</para>
+      </listitem>
+
+      <listitem>
+        <para>Create drives and personal areas in ECM.</para>
+      </listitem>
+    </itemizedlist>
+  
+  <section>
+    <title>Writing your own listeners</title>
+
+    <para>To implement your own listener, you just need to write extend some
+    existing listener classes. These classes define hooks that are invoked
+    before or after operations are performed on organization model.</para>
+
+    <section>
+      <title>UserEventListener</title>
+
+      <para>To listen to user changes, you need to extend
+      &lt;&gt;org.exoplatform.services.organization.UserEventListener&lt;/&gt;
+      :</para>
+
+      <programlisting language="java">public class MyUserListener extends UserEventListener {
+
+  public void preSave(User user, boolean isNew) throws Exception {
+    System.out.println("Before " + (isNew?"creating":"updating") + " user " + user.getUserName());
+  }
+
+  public void postSave(User user, boolean isNew) throws Exception { 
+    System.out.println("After user " + user.getUserName() + (isNew?" created":" updated"));
+  }
+
+  public void preDelete(User user) throws Exception {
+    System.out.println("Before deleting user " + user.getUserName());
+  }
+
+  public void preDelete(User user) throws Exception {
+    System.out.println("After deleting user " + user.getUserName());
+  }
+
+}</programlisting>
+    </section>
+
+    <section>
+      <title>GroupEventListener</title>
+
+      <para>To listen group changes, you need to extend
+      org.exoplatform.services.organization.GroupEventListener
+      :</para>
+
+      <programlisting language="java">public class MyGroupListener extends GroupEventListener {
+
+  public void preSave(Group group, boolean isNew) throws Exception {
+    System.out.println("Before " + (isNew?"creating":"updating") + " group " + group.getName());
+  }
+
+  public void postSave(Group group, boolean isNew) throws Exception { 
+    System.out.println("After group " + group.getName() + (isNew?" created":" updated"));
+  }
+
+  public void preDelete(Group group) throws Exception {
+    System.out.println("Before deleting group " + group.getName());
+  }
+
+  public void preDelete(Group group) throws Exception {
+    System.out.println("After deleting group " + group.getName());
+  }
+}</programlisting>
+    </section>
+
+    <section>
+      <title>MembershipEventListener</title>
+
+      <para>To listen to membership changes, you need to extend
+      org.exoplatform.services.organization.MembershipEventListener
+      :</para>
+
+      <programlisting language="java">public class MyMembershipListener extends MembershipEventListener {
+
+  public void preSave(Membership membership, boolean isNew) throws Exception {
+    System.out.println("Before " + (isNew?"creating":"updating") + " membership.");
+  }
+
+  public void postSave(Membership membership, boolean isNew) throws Exception { 
+    System.out.println("After membership " + (isNew?" created":" updated"));
+  }
+
+  public void preDelete(Membership membership) throws Exception {
+    System.out.println("Before deleting membership");
+  }
+
+  public void preDelete(Membership membership) throws Exception {
+    System.out.println("After deleting membership");
+  }
+}</programlisting>
+    </section>
+  </section>
+
+  <section>
+    <title>Registering your listeners</title>
+
+    <para>Registering the listeners is then achieved by using the ExoContainer
+    plugin mechanism. Learn more about it on the <link
+    linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
+    for Beginners</link> article.</para>
+
+    <para>To effectively register organization service's listeners you simply
+    need to use the addListenerPlugin seer injector.</para>
+
+    <para>So, the easiest way to register your listeners is to pack them into
+    a .jar and create a configuration file into it under <emphasis
+    role="bold">mylisteners.jar!/conf/portal/configuration.xml</emphasis></para>
+
+    <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;configuration&gt;
+ &lt;external-component-plugins&gt;
+  &lt;target-component&gt;org.exoplatform.services.organization.OrganizationService&lt;/target-component&gt;
+   &lt;component-plugin&gt;
+    &lt;name&gt;myuserplugin&lt;/name&gt;
+    &lt;set-method&gt;addListenerPlugin&lt;/set-method&gt;
+    &lt;type&gt;org.example.MyUserListener&lt;/type&gt;
+    &lt;description&gt;&lt;/description&gt;      
+   &lt;/component-plugin&gt;
+   &lt;component-plugin&gt;
+    &lt;name&gt;mygroupplugin&lt;/name&gt;
+    &lt;set-method&gt;addListenerPlugin&lt;/set-method&gt;
+    &lt;type&gt;org.example.MyGroupListener&lt;/type&gt;
+    &lt;description&gt;&lt;/description&gt;      
+   &lt;/component-plugin&gt;
+   &lt;component-plugin&gt;
+    &lt;name&gt;mymembershipplugin&lt;/name&gt;
+    &lt;set-method&gt;addListenerPlugin&lt;/set-method&gt;
+    &lt;type&gt;org.example.MyMembershipListener&lt;/type&gt;
+    &lt;description&gt;&lt;/description&gt;      
+   &lt;/component-plugin&gt;
+  &lt;/external-component-plugins&gt;
+&lt;configuration&gt;</programlisting>
+
+    <para>Now, simply deploy the jar under $TOMCAT_HOME/lib and your listeners
+    are ready!</para>
+
+    <para><note>
+        <para>Be aware that you need to set proper RuntimePermission to be
+        able to add or remove Listeners. To do that you need to grant the
+        following permission for your code</para>
+
+        <programlisting>permission java.lang.RuntimePermission "manageListeners"</programlisting>
+      </note></para>
+  </section>
+</chapter>

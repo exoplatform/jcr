@@ -21,14 +21,17 @@ package org.exoplatform.services.jcr.impl.xml.exporting;
 import org.apache.ws.commons.util.Base64;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.NamespaceException;
@@ -47,6 +50,8 @@ public class SystemViewStreamExporter extends StreamExporter
 
    private static final int BUFFER_SIZE = 3 * 1024 * 3;
 
+   private static final List<String> exportedVersionHistories = new ArrayList<String>();
+
    /**
     * @param writer
     * @param session
@@ -59,7 +64,15 @@ public class SystemViewStreamExporter extends StreamExporter
       NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse)
       throws NamespaceException, RepositoryException
    {
-      super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse);
+      this(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse, false);
+   }
+
+   public SystemViewStreamExporter(XMLStreamWriter writer, ItemDataConsumer dataManager,
+      NamespaceRegistry namespaceRegistry, ValueFactoryImpl systemValueFactory, boolean skipBinary, boolean noRecurse,
+      boolean exportChildVersionHistory) throws NamespaceException, RepositoryException
+   {
+      super(writer, dataManager, namespaceRegistry, systemValueFactory, skipBinary, noRecurse,
+         exportChildVersionHistory);
    }
 
    /*
@@ -145,6 +158,40 @@ public class SystemViewStreamExporter extends StreamExporter
    {
       try
       {
+         if (exportChildVersionHistory && node.getPrimaryTypeName().equals(Constants.NT_VERSIONEDCHILD))
+         {
+            try
+            {
+               PropertyData childVersionHistory =
+                  ((PropertyData)dataManager.getItemData(node, new QPathEntry(Constants.JCR_CHILDVERSIONHISTORY, 1),
+                     ItemType.PROPERTY));
+               String childVersionHistoryId =
+                  getValueAsStringForExport(childVersionHistory.getValues().get(0), childVersionHistory.getType());
+
+               //check does this child version history was already exported
+               if (!exportedVersionHistories.contains(childVersionHistoryId))
+               {
+
+                  writer.writeStartElement(Constants.NS_SV_PREFIX, Constants.SV_VERSION_HISTORY, getSvNamespaceUri());
+                  writer.writeAttribute(Constants.NS_SV_PREFIX, getSvNamespaceUri(), Constants.SV_NAME,
+                     childVersionHistoryId);
+
+                  NodeData versionStorage = (NodeData)dataManager.getItemData(Constants.VERSIONSTORAGE_UUID);
+                  NodeData childVersionNodeData =
+                     (NodeData)dataManager.getItemData(versionStorage, new QPathEntry("", childVersionHistoryId, 1),
+                        ItemType.NODE);
+                  childVersionNodeData.accept(this);
+
+                  writer.writeEndElement();
+                  exportedVersionHistories.add(childVersionHistoryId);
+               }
+            }
+            catch (IOException e)
+            {
+               throw new RepositoryException("Can't export versioned child version history: " + e.getMessage(), e);
+            }
+         }
+
          writer.writeEndElement();
       }
       catch (XMLStreamException e)
@@ -190,12 +237,22 @@ public class SystemViewStreamExporter extends StreamExporter
             else
             {
                InputStream is = data.getAsStream();
-               byte[] buffer = new byte[BUFFER_SIZE];
-               int len;
-               while ((len = is.read(buffer)) > 0)
+               try
                {
-                  char[] charbuf1 = Base64.encode(buffer, 0, len, 0, "").toCharArray();
-                  writer.writeCharacters(charbuf1, 0, charbuf1.length);
+                  byte[] buffer = new byte[BUFFER_SIZE];
+                  int len;
+                  while ((len = is.read(buffer)) > 0)
+                  {
+                     char[] charbuf1 = Base64.encode(buffer, 0, len, 0, "").toCharArray();
+                     writer.writeCharacters(charbuf1, 0, charbuf1.length);
+                  }
+               }
+               finally
+               {
+                  if (is != null)
+                  {
+                     is.close();
+                  }
                }
             }
          }

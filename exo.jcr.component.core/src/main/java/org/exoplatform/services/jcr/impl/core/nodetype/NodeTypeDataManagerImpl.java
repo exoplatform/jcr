@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
@@ -33,6 +34,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -54,6 +56,7 @@ import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
 import java.io.InputStream;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -84,7 +87,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    private static final String NODETYPES_FILE = "nodetypes.xml";
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataManagerImpl");
+   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataManagerImpl");
 
    protected final String accessControlPolicy;
 
@@ -100,6 +103,10 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    protected final NodeTypeRepository nodeTypeRepository;
 
+   protected final NodeTypeConverter nodeTypeConverter;
+
+   protected final NodeTypeDataValidator nodeTypeDataValidator;
+
    /**
     * Listeners (soft references)
     */
@@ -109,37 +116,21 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    private boolean started = false;
 
-   public NodeTypeDataManagerImpl(final RepositoryEntry config, final LocationFactory locationFactory,
-      final NamespaceRegistry namespaceRegistry, final NodeTypeDataPersister persister,
-      final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder)
-      throws RepositoryException
-   {
-
-      this.namespaceRegistry = namespaceRegistry;
-
-      this.locationFactory = locationFactory;
-      this.dataManager = dataManager;
-      this.indexSearcherHolder = indexSearcherHolder;
-
-      this.valueFactory = new ValueFactoryImpl(locationFactory);
-      this.accessControlPolicy = config.getAccessControl();
-
-      this.nodeTypeRepository = new InmemoryNodeTypeRepository(persister);
-      this.listeners = Collections.synchronizedMap(new WeakHashMap<NodeTypeManagerListener, NodeTypeManagerListener>());
-      this.buildInNodeTypesNames = new HashSet<InternalQName>();
-   }
-
    /**
-    * @param accessControlPolicy
-    * @param locationFactory
-    * @param namespaceRegistry
-    * @param persister
-    * @throws RepositoryException
+    * NodeTypeDataManagerImpl constructor.
+    * 
+    * @param accessControlPolicy String
+    * @param locationFactory LocationFactory
+    * @param namespaceRegistry NamespaceRegistry
+    * @param persister NodeTypeDataPersister
+    * @param dataManager ItemDataConsumer
+    * @param indexSearcherHolder RepositoryIndexSearcherHolder
+    * @param nodeTypeRepository NodeTypeRepository
     */
    public NodeTypeDataManagerImpl(final String accessControlPolicy, final LocationFactory locationFactory,
       final NamespaceRegistry namespaceRegistry, final NodeTypeDataPersister persister,
       final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder,
-      final NodeTypeRepository nodeTypeRepository) throws RepositoryException
+      final NodeTypeRepository nodeTypeRepository)
    {
 
       this.namespaceRegistry = namespaceRegistry;
@@ -153,6 +144,27 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       this.nodeTypeRepository = nodeTypeRepository;
       this.listeners = Collections.synchronizedMap(new WeakHashMap<NodeTypeManagerListener, NodeTypeManagerListener>());
       this.buildInNodeTypesNames = new HashSet<InternalQName>();
+
+      this.nodeTypeConverter = new NodeTypeConverter(this.locationFactory, this.accessControlPolicy);
+      this.nodeTypeDataValidator = new NodeTypeDataValidator(this.locationFactory, this.nodeTypeRepository);
+   }
+
+   /**
+    * Constructor for in-container use.
+    * 
+    * @param config RepositoryEntry
+    * @param locationFactory LocationFactory
+    * @param namespaceRegistry NamespaceRegistry
+    * @param persister NodeTypeDataPersister
+    * @param dataManager ItemDataConsumer
+    * @param indexSearcherHolder RepositoryIndexSearcherHolder
+    */
+   public NodeTypeDataManagerImpl(final RepositoryEntry config, final LocationFactory locationFactory,
+      final NamespaceRegistry namespaceRegistry, final NodeTypeDataPersister persister,
+      final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder)
+   {
+      this(config.getAccessControl(), locationFactory, namespaceRegistry, persister, dataManager, indexSearcherHolder,
+         new InmemoryNodeTypeRepository(persister));
    }
 
    /**
@@ -174,7 +186,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
     * @throws RepositoryException 
     */
    public NodeDefinitionData[] getAllChildNodeDefinitions(final InternalQName... nodeTypeNames)
-
    {
       final Collection<NodeDefinitionData> defsAny = new ArrayList<NodeDefinitionData>();
       final HashMap<InternalQName, NodeDefinitionData> defs = new HashMap<InternalQName, NodeDefinitionData>();
@@ -212,7 +223,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       }
 
       defsAny.addAll(defs.values());
-
+      
       return defsAny.toArray(new NodeDefinitionData[defsAny.size()]);
    }
 
@@ -289,16 +300,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public NodeDefinitionData getChildNodeDefinition(final InternalQName nodeName, final InternalQName... nodeTypeNames)
       throws RepositoryException
    {
-
-      NodeDefinitionData ndResidual = this.nodeTypeRepository.getDefaultChildNodeDefinition(nodeName, nodeTypeNames);
-
-      if (ndResidual == null && !Constants.JCR_ANY_NAME.equals(nodeName))
-      {
-         ndResidual = getChildNodeDefinition(Constants.JCR_ANY_NAME, nodeTypeNames);
-      }
-
-      return ndResidual;
-
+      return this.nodeTypeRepository.getDefaultChildNodeDefinition(nodeName, nodeTypeNames);
    }
 
    /**
@@ -308,19 +310,53 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public NodeDefinitionData getChildNodeDefinition(final InternalQName nodeName, final InternalQName primaryNodeType,
       final InternalQName[] mixinTypes) throws RepositoryException
    {
+      return getChildNodeDefinition(nodeName, getNodeTypeNames(primaryNodeType, mixinTypes));
+   }
 
-      if (mixinTypes != null)
+   /**
+    * {@inheritDoc}
+    */
+   public NodeDefinitionData getChildNodeDefinition(InternalQName nodeName, InternalQName nodeType,
+      InternalQName parentNodeType, InternalQName[] parentMixinTypes) throws RepositoryException
+   {
+      NodeDefinitionData[] defs = getAllChildNodeDefinitions(getNodeTypeNames(parentNodeType, parentMixinTypes));
+
+      NodeDefinitionData residualDef = null;
+      NodeDefinitionData firstResidualDef = null;
+
+      outer : for (NodeDefinitionData nodeDef : defs)
       {
-         final InternalQName[] nts = new InternalQName[mixinTypes.length + 1];
-         nts[0] = primaryNodeType;
-         for (int i = 0; i < mixinTypes.length; i++)
+         if (nodeDef.getName().equals(nodeName))
          {
-            nts[i + 1] = mixinTypes[i];
+            return nodeDef;
          }
-         return getChildNodeDefinition(nodeName, nts);
+         else if (nodeDef.isResidualSet())
+         {
+            // store first residual definition to be able to return
+            if (firstResidualDef == null)
+            {
+               firstResidualDef = nodeDef;
+            }
+
+            // check required primary types
+            for (InternalQName requiredPrimaryType : nodeDef.getRequiredPrimaryTypes())
+            {
+               if (!isNodeType(requiredPrimaryType, nodeType))
+               {
+                  continue outer;
+               }
+            }
+
+            // when there are several suitable definitions take the most older
+            if (residualDef == null
+               || isNodeType(residualDef.getRequiredPrimaryTypes()[0], nodeDef.getRequiredPrimaryTypes()[0]))
+            {
+               residualDef = nodeDef;
+            }
+         }
       }
 
-      return getChildNodeDefinition(nodeName, primaryNodeType);
+      return residualDef != null ? residualDef : firstResidualDef;
    }
 
    /**
@@ -429,10 +465,9 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       {
          final InternalQName[] nts = new InternalQName[mixinTypes.length + 1];
          nts[0] = primaryNodeType;
-         for (int i = 0; i < mixinTypes.length; i++)
-         {
-            nts[i + 1] = mixinTypes[i];
-         }
+
+         System.arraycopy(mixinTypes, 0, nts, 1, mixinTypes.length);
+
          return getPropertyDefinitions(propertyName, nts);
       }
 
@@ -580,9 +615,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public List<NodeTypeData> registerNodeTypes(final InputStream is, final int alreadyExistsBehaviour,
       final String contentType) throws RepositoryException
    {
-
-      final NodeTypeConverter nodeTypeConverter = new NodeTypeConverter(this.locationFactory, this.accessControlPolicy);
-      final NodeTypeDataValidator nodeTypeDataValidator = new NodeTypeDataValidator(this.nodeTypeRepository);
       NodeTypeDataPersister serializer = null;
       if (contentType.equalsIgnoreCase(TEXT_XML))
       {
@@ -611,9 +643,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public List<NodeTypeData> registerNodeTypes(final List<NodeTypeValue> ntvalues, final int alreadyExistsBehaviour)
       throws RepositoryException
    {
-
-      final NodeTypeConverter nodeTypeConverter = new NodeTypeConverter(this.locationFactory, this.accessControlPolicy);
-      final NodeTypeDataValidator nodeTypeDataValidator = new NodeTypeDataValidator(this.nodeTypeRepository);
       // convert to Node data.
       final List<NodeTypeData> nodeTypes = nodeTypeConverter.convertFromValueToData(ntvalues);
 
@@ -697,7 +726,8 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       // update primary type
 
       final PropertyData item =
-         (PropertyData)this.dataManager.getItemData(nodeData, new QPathEntry(Constants.JCR_PRIMARYTYPE, 1));
+         (PropertyData)this.dataManager.getItemData(nodeData, new QPathEntry(Constants.JCR_PRIMARYTYPE, 1),
+            ItemType.PROPERTY);
 
       final TransientPropertyData primaryTypeData =
          new TransientPropertyData(item.getQPath(), item.getIdentifier(), item.getPersistedVersion(), item.getType(),
@@ -740,7 +770,13 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
             // check if default node type saved
             if (!nodeTypeRepository.isStorageFilled())
             {
-               final InputStream xml = NodeTypeManagerImpl.class.getResourceAsStream(NODETYPES_FILE);
+               final InputStream xml = SecurityHelper.doPrivilegedAction(new PrivilegedAction<InputStream>()
+               {
+                  public InputStream run()
+                  {
+                     return NodeTypeManagerImpl.class.getResourceAsStream(NODETYPES_FILE);
+                  }
+               });
 
                if (xml != null)
                {
@@ -826,35 +862,32 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       final Set<InternalQName> descendantNt = this.nodeTypeRepository.getSubtypes(nodeTypeName);
       if (descendantNt.size() > 0)
       {
-         String message =
-            "Can not remove " + nodeTypeName.getAsString()
-               + "nodetype, because the following node types depend on it: ";
+         StringBuilder message =
+            new StringBuilder("Can not remove ").append(nodeTypeName.getAsString()).append(
+               "nodetype, because the following node types depend on it: ");
          for (final InternalQName internalQName : descendantNt)
          {
-            message += internalQName.getAsString() + " ";
+            message.append(internalQName.getAsString()).append(" ");
          }
-         throw new RepositoryException(message);
+         throw new RepositoryException(message.toString());
       }
       final Set<String> nodes = this.indexSearcherHolder.getNodesByNodeType(nodeTypeName);
       if (nodes.size() > 0)
       {
-         String message =
-            "Can not remove " + nodeTypeName.getAsString()
-               + " nodetype, because the following node types is used in nodes with uuid: ";
+         StringBuilder message =
+            new StringBuilder("Can not remove ").append(nodeTypeName.getAsString()).append(
+               " nodetype, because the following node types is used in nodes with uuid: ");
          for (final String uuids : nodes)
          {
-            message += uuids + " ";
+            message.append(uuids).append(" ");
          }
-         throw new RepositoryException(message);
-
+         throw new RepositoryException(message.toString());
       }
-      this.nodeTypeRepository.removeNodeType(nodeType);
+      this.nodeTypeRepository.unregisterNodeType(nodeType);
    }
 
    /**
-    * @throws RepositoryException 
-    * @throws ConstraintViolationException 
-    * @see org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager#updateNodeType(org.exoplatform.services.jcr.core.nodetype.NodeTypeData, org.exoplatform.services.jcr.core.nodetype.NodeTypeData, java.util.Map)
+    * {@inheritDoc}
     */
    public PlainChangesLog updateNodeType(NodeTypeData ancestorDefinition, NodeTypeData recipientDefinition,
       Map<InternalQName, NodeTypeData> volatileNodeTypes) throws ConstraintViolationException, RepositoryException
@@ -1003,5 +1036,19 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       this.nodeTypeRepository.addNodeType(recipientDefinition, volatileNodeTypes);
 
       return changesLog;
+   }
+
+   private InternalQName[] getNodeTypeNames(final InternalQName primaryNodeType, final InternalQName[] mixinTypes)
+      throws RepositoryException
+   {
+      InternalQName[] ntn = new InternalQName[1 + (mixinTypes == null ? 0 : mixinTypes.length)];
+      ntn[0] = primaryNodeType;
+
+      if (mixinTypes != null)
+      {
+         System.arraycopy(mixinTypes, 0, ntn, 1, mixinTypes.length);
+      }
+
+      return ntn;
    }
 }

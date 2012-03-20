@@ -32,10 +32,10 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
 import java.util.Set;
 
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.ws.rs.core.StreamingOutput;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
@@ -55,7 +55,7 @@ public class PropFindResponseEntity implements StreamingOutput
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.PropFindResponseEntity");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.PropFindResponseEntity");
 
    /**
     * XML writer.
@@ -91,6 +91,11 @@ public class PropFindResponseEntity implements StreamingOutput
     * Boolean flag, shows if only property names a requested.
     */
    protected final boolean propertyNamesOnly;
+   
+   /**
+    * Session.
+    */
+   protected final Session session;
 
    /**
     * Constructor.
@@ -100,13 +105,20 @@ public class PropFindResponseEntity implements StreamingOutput
     * @param propertyNames the list of properties requested
     * @param propertyNamesOnly if only property names a requested
     */
-   public PropFindResponseEntity(int depth, Resource rootResource, Set<QName> propertyNames, boolean propertyNamesOnly)
+   public PropFindResponseEntity(int depth, Resource rootResource, Set<QName> propertyNames, boolean propertyNamesOnly,
+            Session session)
    {
       this.rootResource = rootResource;
       this.namespaceContext = rootResource.getNamespaceContext();
       this.propertyNames = propertyNames;
       this.depth = depth;
       this.propertyNamesOnly = propertyNamesOnly;
+      this.session = session;
+   }
+
+   public PropFindResponseEntity(int depth, Resource rootResource, Set<QName> propertyNames, boolean propertyNamesOnly)
+   {
+      this(depth, rootResource, propertyNames, propertyNamesOnly, null);
    }
 
    /**
@@ -120,7 +132,6 @@ public class PropFindResponseEntity implements StreamingOutput
          this.xmlStreamWriter =
             XMLOutputFactory.newInstance().createXMLStreamWriter(outputStream, Constants.DEFAULT_ENCODING);
          xmlStreamWriter.setNamespaceContext(namespaceContext);
-         xmlStreamWriter.setDefaultNamespace("DAV:");
 
          xmlStreamWriter.writeStartDocument();
          xmlStreamWriter.writeStartElement("D", "multistatus", "DAV:");
@@ -136,9 +147,24 @@ public class PropFindResponseEntity implements StreamingOutput
 
          // rootNode.accept(this);
       }
-      catch (Exception exc)
+      catch (XMLStreamException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
+         throw new IOException(exc.getMessage());
+      }
+      catch (RepositoryException exc)
+      {
+         LOG.error(exc.getMessage(), exc);
+         throw new IOException(exc.getMessage());
+      }
+      catch (IllegalResourceTypeException exc)
+      {
+         LOG.error(exc.getMessage(), exc);
+         throw new IOException(exc.getMessage());
+      }
+      catch (URISyntaxException exc)
+      {
+         LOG.error(exc.getMessage(), exc);
          throw new IOException(exc.getMessage());
       }
    }
@@ -161,7 +187,7 @@ public class PropFindResponseEntity implements StreamingOutput
       xmlStreamWriter.writeStartElement("DAV:", "response");
 
       xmlStreamWriter.writeStartElement("DAV:", "href");
-      String href = URLDecoder.decode(resource.getIdentifier().toASCIIString(), "UTF-8");
+      String href = resource.getIdentifier().toASCIIString();
       if (resource.isCollection())
       {
          xmlStreamWriter.writeCharacters(href + "/");
@@ -173,7 +199,7 @@ public class PropFindResponseEntity implements StreamingOutput
       xmlStreamWriter.writeEndElement();
 
       PropstatGroupedRepresentation propstat =
-         new PropstatGroupedRepresentation(resource, propertyNames, propertyNamesOnly);
+         new PropstatGroupedRepresentation(resource, propertyNames, propertyNamesOnly, session);
 
       PropertyWriteUtil.writePropStats(xmlStreamWriter, propstat.getPropStats());
 

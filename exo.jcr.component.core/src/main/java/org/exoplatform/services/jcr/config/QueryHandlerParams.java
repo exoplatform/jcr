@@ -83,6 +83,10 @@ public interface QueryHandlerParams
 
    public static final String PARAM_SPELLCHECKER_CLASS = "spellchecker-class";
 
+   public static final String PARAM_SPELLCHECKER_MORE_POPULAR = "spellchecker-more-popular";
+
+   public static final String PARAM_SPELLCHECKER_DISTANCE = "spellchecker-min-distance";
+
    public static final String PARAM_SUPPORT_HIGHLIGHTING = "support-highlighting";
 
    public static final String PARAM_SYNONYMPROVIDER_CLASS = "synonymprovider-class";
@@ -92,9 +96,9 @@ public interface QueryHandlerParams
    public static final String PARAM_USE_COMPOUNDFILE = "use-compoundfile";
 
    public static final String PARAM_VOLATILE_IDLE_TIME = "volatile-idle-time";
-   
+
    public static final String PARAM_MAX_VOLATILE_SIZE = "max-volatile-size";
-   
+
    public static final String PARAM_MAX_VOLATILE_TIME = "max-volatile-time";
 
    //since https://jira.jboss.org/jira/browse/EXOJCR-17
@@ -105,9 +109,16 @@ public interface QueryHandlerParams
 
    public static final String PARAM_CHANGES_FILTER_CLASS = "changesfilter-class";
 
-   public static final String PARAM_JBOSSCACHE_CONFIGURATION = "jbosscache-configuration";
+   public static final String PARAM_REINDEXING_PAGE_SIZE = "reindexing-page-size";
+
+   public static final String PARAM_RDBMS_REINDEXING = "rdbms-reindexing";
    
-   public static final String PARAM_JBOSSCACHE_PUSHSTATE = "jbosscache-sscl-push.state.enabled";
+   public static final String PARAM_ASYNC_REINDEXING = "async-reindexing";
    
-   public static final String PARAM_JBOSSCACHE_PUSHSTATE_TIMEOUT = "jbosscache-sscl-push.state.timeout";
+   public static final String PARAM_INDEX_RECOVERY_MODE = "index-recovery-mode";
+   
+   public static final String PARAM_INDEX_RECOVERY_FILTER = "index-recovery-filter";
+   
+   public static final String PARAM_INDEXING_THREAD_POOL_SIZE = "indexing-thread-pool-size";
+
 }

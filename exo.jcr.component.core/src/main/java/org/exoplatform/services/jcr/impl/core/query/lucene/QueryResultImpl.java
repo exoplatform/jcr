@@ -18,6 +18,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -47,7 +48,7 @@ public abstract class QueryResultImpl implements QueryResult
    /**
     * The logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.QueryResultImpl");
+   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.QueryResultImpl");
 
    /**
     * The search index to execute the query.
@@ -142,6 +143,11 @@ public abstract class QueryResultImpl implements QueryResult
    private final long limit;
 
    /**
+    * If <code>true</code>, it means we're using a System session.
+    */
+   private final boolean isSystemSession;
+
+   /**
     * Creates a new query result. The concrete sub class is responsible for
     * calling {@link #getResults(long)} after this constructor had been called.
     *
@@ -182,6 +188,7 @@ public abstract class QueryResultImpl implements QueryResult
       this.docOrder = orderProps.length == 0 && documentOrder;
       this.offset = offset;
       this.limit = limit;
+      this.isSystemSession = SystemIdentity.SYSTEM.equals(session.getUserID());
    }
 
    /**
@@ -202,7 +209,7 @@ public abstract class QueryResultImpl implements QueryResult
       catch (NamespaceException npde)
       {
          String msg = "encountered invalid property name";
-         log.debug(msg);
+         LOG.debug(msg);
          throw new RepositoryException(msg, npde);
       }
    }
@@ -285,9 +292,9 @@ public abstract class QueryResultImpl implements QueryResult
     */
    protected void getResults(long size) throws RepositoryException
    {
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug("getResults({}) limit={}", new Long(size), new Long(limit));
+         LOG.debug("getResults({}) limit={}", new Long(size), new Long(limit));
       }
 
       long maxResultSize = size;
@@ -308,9 +315,16 @@ public abstract class QueryResultImpl implements QueryResult
       MultiColumnQueryHits result = null;
       try
       {
-         long time = System.currentTimeMillis();
+         long time = 0;
+         if (LOG.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();
+         }
          result = executeQuery(maxResultSize);
-         log.debug("query executed in {} ms", new Long(System.currentTimeMillis() - time));
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("query executed in {} ms", new Long(System.currentTimeMillis() - time));
+         }
          // set selector names
          selectorNames = result.getSelectorNames();
 
@@ -325,16 +339,26 @@ public abstract class QueryResultImpl implements QueryResult
             result.skip(start);
          }
 
-         time = System.currentTimeMillis();
+         if (LOG.isDebugEnabled())
+         {
+            time = System.currentTimeMillis();
+         }
          collectScoreNodes(result, resultNodes, maxResultSize);
-         log.debug("retrieved ScoreNodes in {} ms", new Long(System.currentTimeMillis() - time));
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("retrieved ScoreNodes in {} ms", new Long(System.currentTimeMillis() - time));
+         }
 
          // update numResults
          numResults = result.getSize();
       }
+      catch (IndexOfflineIOException e)
+      {
+         throw new IndexOfflineRepositoryException(e.getMessage(), e);
+      }
       catch (IOException e)
       {
-         log.error("Exception while executing query: ", e);
+         LOG.error("Exception while executing query: ", e);
          // todo throw?
       }
       finally
@@ -347,7 +371,7 @@ public abstract class QueryResultImpl implements QueryResult
             }
             catch (IOException e)
             {
-               log.warn("Unable to close query result: " + e);
+               LOG.warn("Unable to close query result: " + e);
             }
          }
       }
@@ -376,7 +400,7 @@ public abstract class QueryResultImpl implements QueryResult
             break;
          }
          // check access
-         if (isAccessGranted(sn))
+         if (!docOrder || isAccessGranted(sn))
          {
             collector.add(sn);
          }
@@ -398,11 +422,14 @@ public abstract class QueryResultImpl implements QueryResult
     */
    private boolean isAccessGranted(ScoreNode[] nodes) throws RepositoryException
    {
+      if (isSystemSession)
+      {
+         return true;
+      }
       for (int i = 0; i < nodes.length; i++)
       {
          try
          {
-            // TODO: rather use AccessManager.canRead(Path)
             //if (nodes[i] != null && !accessMgr.isGranted(nodes[i].getNodeId(), PermissionType.READ)) {
             if (nodes[i] != null)
             {
@@ -418,7 +445,10 @@ public abstract class QueryResultImpl implements QueryResult
          }
          catch (ItemNotFoundException e)
          {
-            // node deleted while query was executed
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
       }
       return true;
@@ -483,24 +513,15 @@ public abstract class QueryResultImpl implements QueryResult
          else
          {
             // attempt to get enough results
-            try
+            long expectedPosition = position + skipNum;
+            while (position < expectedPosition)
             {
-               getResults(position + invalid + (int)skipNum);
-               if (resultNodes.size() >= position + skipNum)
-               {
-                  // skip within already fetched results
-                  position += skipNum - 1;
-                  fetchNext();
-               }
-               else
+               fetchNext();
+               if (next == null)
                {
                   // not enough results after getResults()
                   throw new NoSuchElementException();
                }
-            }
-            catch (RepositoryException e)
-            {
-               throw new NoSuchElementException(e.getMessage());
             }
          }
       }
@@ -638,7 +659,7 @@ public abstract class QueryResultImpl implements QueryResult
                }
                catch (RepositoryException e)
                {
-                  log.warn("Exception getting more results: " + e);
+                  LOG.warn("Exception getting more results: " + e);
                }
                // check again
                if (nextPos >= resultNodes.size())
@@ -648,6 +669,25 @@ public abstract class QueryResultImpl implements QueryResult
                }
             }
             next = (ScoreNode[])resultNodes.get(nextPos);
+            try
+            {
+               if (!isAccessGranted(next))
+               {
+                  next = null;
+                  invalid++;
+                  resultNodes.remove(nextPos);
+                  if (LOG.isDebugEnabled())
+                  {
+                     LOG.debug("The node is invalid since we don't have sufficient rights to access it, "
+                        + "it will be removed from the results set");
+                  }
+               }
+            }
+            catch (RepositoryException e)
+            {
+               LOG.error("Could not check access permission", e);
+               break;
+            }
          }
          position++;
       }

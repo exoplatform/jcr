@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.ext.replication.recovery;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -81,8 +83,8 @@ public class AbstractFSAccess
    {
       byte[] buf = new byte[BUFFER_1KB * BUFFER_20X];
 
-      File tempFile = File.createTempFile("" + System.currentTimeMillis(), "" + System.nanoTime());
-      FileOutputStream fos = new FileOutputStream(tempFile);
+      File tempFile = PrivilegedFileHelper.createTempFile("" + System.currentTimeMillis(), "" + System.nanoTime());
+      FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
       int len;
 
       while ((len = is.read(buf)) > 0)
@@ -110,8 +112,8 @@ public class AbstractFSAccess
       int bufferSize = BUFFER_1KB * BUFFER_8X;
       byte[] buf = new byte[bufferSize];
 
-      File tempFile = File.createTempFile("" + System.currentTimeMillis(), "" + System.nanoTime());
-      FileOutputStream fos = new FileOutputStream(tempFile);
+      File tempFile = PrivilegedFileHelper.createTempFile("" + System.currentTimeMillis(), "" + System.nanoTime());
+      FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
       long readBytes = fileSize;
 
       while (readBytes > 0)

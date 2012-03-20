@@ -25,9 +25,6 @@ import java.util.Calendar;
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 15.01.2008
  * 
- * TODO message may be associated with chain, i.e. it's will be possible to select only given chain
- * messages in BackupMessagesLog
- * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: BackupMessage.java 760 2008-02-07 15:08:07Z pnedonosko $
  */

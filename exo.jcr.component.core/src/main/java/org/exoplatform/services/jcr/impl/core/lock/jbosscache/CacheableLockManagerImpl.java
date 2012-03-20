@@ -16,75 +16,56 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
+import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
-import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
-import org.exoplatform.services.jcr.dataflow.CompositeChangesLog;
-import org.exoplatform.services.jcr.dataflow.DataManager;
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
-import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
-import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
-import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.SessionDataManager;
-import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
-import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
-import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.CacheableSessionLockManager;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
-import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.observation.ExtendedEvent;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
+import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheSPI;
+import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
+import org.jboss.cache.config.Configuration.CacheMode;
+import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.jboss.cache.loader.CacheLoader;
 import org.jboss.cache.loader.CacheLoaderManager;
 import org.jboss.cache.lock.TimeoutException;
-import org.picocontainer.Startable;
 
 import java.io.Serializable;
-import java.math.BigInteger;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
 import javax.naming.InitialContext;
 import javax.sql.DataSource;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -97,30 +78,29 @@ import javax.transaction.TransactionManager;
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "lockmanager"))
-public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPersistenceListener, Startable
+public class CacheableLockManagerImpl extends AbstractCacheableLockManager
 {
-   /**
-    *  The name to property time out.  
-    */
-   public static final String TIME_OUT = "time-out";
-
-   /**
-    *  The name to property cache configuration. 
-    */
-   public static final String JBOSSCACCHE_CONFIG = "jbosscache-configuration";
 
    public static final String JBOSSCACHE_JDBC_CL_DATASOURCE = "jbosscache-cl-cache.jdbc.datasource";
 
-   public static final String JBOSSCACHE_JDBC_CL_NODE_COLUMN = "jbosscache-cl-cache.jdbc.node.type";
+   public static final String JBOSSCACHE_JDBC_CL_NODE_COLUMN_TYPE = "jbosscache-cl-cache.jdbc.node.type";
 
-   public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN = "jbosscache-cl-cache.jdbc.fqn.type";
+   public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN_TYPE = "jbosscache-cl-cache.jdbc.fqn.type";
 
-   public static final String JBOSSCACHE_JDBC_CL_AUTO = "auto";
+   public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN = "jbosscache-cl-cache.jdbc.fqn.column";
+
+   public static final String JBOSSCACHE_JDBC_CL_PARENT_COLUMN = "jbosscache-cl-cache.jdbc.parent.column";
+
+   public static final String JBOSSCACHE_JDBC_TABLE_NAME = "jbosscache-cl-cache.jdbc.table.name";
 
    /**
-    * Default lock time out. 30min
+    * Indicate whether the JBoss Cache instance used can be shared with other caches
     */
-   public static final long DEFAULT_LOCK_TIMEOUT = 1000 * 60 * 30;
+   public static final String JBOSSCACHE_SHAREABLE = "jbosscache-shareable";
+
+   public static final Boolean JBOSSCACHE_SHAREABLE_DEFAULT = Boolean.FALSE;
+
+   public static final String JBOSSCACHE_JDBC_CL_AUTO = "auto";
 
    /**
     * Name of lock root in jboss-cache.
@@ -137,38 +117,18 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     */
    private final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CacheableLockManagerImpl");
 
-   /**
-    * Data manager.
-    */
-   private final DataManager dataManager;
-
-   /**
-    * Run time lock time out.
-    */
-   private long lockTimeOut;
-
-   /**
-    * Lock remover thread.
-    */
-   private LockRemover lockRemover;
-
-   /**
-    * The current Transaction Manager
-    */
-   private TransactionManager tm;
-
    private Cache<Serializable, Object> cache;
 
    private final Fqn<String> lockRoot;
 
-   /**
-    * SessionLockManagers that uses this LockManager.
-    */
-   private Map<String, CacheableSessionLockManager> sessionLockManagers;
+   private final boolean shareable;
 
+   private final JmxRegistrationManager jmxManager;
+   
    /**
     * Constructor.
     * 
+    * @param ctx The container context
     * @param dataManager - workspace persistent data manager
     * @param config - workspace entry
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
@@ -176,32 +136,33 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     *          the transaction service
     * @throws RepositoryConfigurationException
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm)
-      throws RepositoryConfigurationException, RepositoryException
+   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+      InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
+      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, transactionService.getTransactionManager(), cfm);
+      this(ctx, dataManager, config, context, transactionService.getTransactionManager(), cfm, lockRemoverHolder);
    }
 
    /**
     * Constructor.
     * 
+    * @param ctx The container context
     * @param dataManager - workspace persistent data manager
     * @param config - workspace entry
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
     * @throws RepositoryConfigurationException
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, ConfigurationManager cfm) throws RepositoryConfigurationException,
-      RepositoryException
+   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+      InitialContextInitializer context, ConfigurationManager cfm, LockRemoverHolder lockRemoverHolder)
+      throws RepositoryConfigurationException, RepositoryException
    {
-      this(dataManager, config, context, (TransactionManager)null, cfm);
-
+      this(ctx, dataManager, config, context, (TransactionManager)null, cfm, lockRemoverHolder);
    }
 
    /**
     * Constructor.
     * 
+    * @param ctx The container context
     * @param dataManager - workspace persistent data manager
     * @param config - workspace entry
     * @param context InitialContextInitializer, needed to reload context after JBoss cache creation
@@ -209,42 +170,15 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
     *          the transaction manager
     * @throws RepositoryConfigurationException
     */
-   public CacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
-      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm)
-      throws RepositoryConfigurationException, RepositoryException
+   public CacheableLockManagerImpl(ExoContainerContext ctx, WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
+      InitialContextInitializer context, TransactionManager transactionManager, ConfigurationManager cfm,
+      LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
    {
-      lockRoot = Fqn.fromElements(LOCKS);
-
-      List<SimpleParameterEntry> paramenerts = config.getLockManager().getParameters();
-
-      this.dataManager = dataManager;
-      if (config.getLockManager() != null)
-      {
-         if (paramenerts != null && config.getLockManager().getParameterValue(TIME_OUT, null) != null)
-         {
-            long timeOut = config.getLockManager().getParameterTime(TIME_OUT);
-            lockTimeOut = timeOut > 0 ? timeOut : DEFAULT_LOCK_TIMEOUT;
-         }
-         else
-         {
-            lockTimeOut =
-               config.getLockManager().getTimeout() > 0 ? config.getLockManager().getTimeout() : DEFAULT_LOCK_TIMEOUT;
-         }
-      }
-      else
-      {
-         lockTimeOut = DEFAULT_LOCK_TIMEOUT;
-      }
-
-      sessionLockManagers = new ConcurrentHashMap<String, CacheableSessionLockManager>();
-
-      dataManager.addItemPersistenceListener(this);
+      super(dataManager, config, transactionManager, lockRemoverHolder);
 
       // make cache
       if (config.getLockManager() != null)
       {
-         this.tm = transactionManager;
-
          // create cache using custom factory
          ExoJBossCacheFactory<Serializable, Object> factory =
             new ExoJBossCacheFactory<Serializable, Object>(cfm, transactionManager);
@@ -253,39 +187,140 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          configureJDBCCacheLoader(config.getLockManager());
 
          cache = factory.createCache(config.getLockManager());
+        
+         Fqn<String> rootFqn = Fqn.fromElements(config.getUniqueName());
 
-         cache.create();
-         // Add the cache loader needed to prevent TimeoutException
-         addCacheLoader();
-         cache.start();
+         shareable =
+            config.getLockManager().getParameterBoolean(JBOSSCACHE_SHAREABLE, JBOSSCACHE_SHAREABLE_DEFAULT)
+               .booleanValue();
+         lockRoot = shareable ? Fqn.fromRelativeElements(rootFqn, LOCKS) : Fqn.fromElements(LOCKS);
+
+         cache = ExoJBossCacheFactory.getUniqueInstance(CacheType.LOCK_CACHE, rootFqn, cache, shareable);
+         this.jmxManager = ExoJBossCacheFactory.getJmxRegistrationManager(ctx, cache, CacheType.LOCK_CACHE);
+         if (jmxManager != null)
+         {
+            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+            {
+               public Void run()
+               {
+                  jmxManager.registerAllMBeans();
+                  return null;
+               }
+            });
+         }
+         PrivilegedJBossCacheHelper.create(cache);
+         if (cache.getCacheStatus().startAllowed())
+         {
+            // Add the cache loader needed to prevent TimeoutException
+            addCacheLoader();
+            PrivilegedJBossCacheHelper.start(cache);
+         }
 
          createStructuredNode(lockRoot);
-
-         // Context recall is a workaround of JDBCCacheLoader starting. 
-         context.recall();
       }
       else
       {
          throw new RepositoryConfigurationException("Cache configuration not found");
       }
+
+      this.getNumLocks = new LockActionNonTxAware<Integer, Object>()
+      {
+         public Integer execute(Object arg)
+         {
+            return ((CacheSPI<Serializable, Object>)cache).getNumberOfNodes() - 1;
+         }
+      };
+
+      this.hasLocks = new LockActionNonTxAware<Boolean, Object>()
+      {
+         public Boolean execute(Object arg)
+         {
+            return ((CacheSPI<Serializable, Object>)cache).getNode(lockRoot).hasChildrenDirect();
+         }
+      };
+
+      this.isLockLive = new LockActionNonTxAware<Boolean, String>()
+      {
+         public Boolean execute(String nodeId)
+         {
+            if (cache.get(makeLockFqn(nodeId), LOCK_DATA) != null) //pendingLocks.containsKey(nodeId) || 
+            {
+               return true;
+            }
+
+            return false;
+         }
+      };
+
+      this.refresh = new LockActionNonTxAware<Object, LockData>()
+      {
+         public Object execute(LockData newLockData) throws LockException
+         {
+            Fqn<String> fqn = makeLockFqn(newLockData.getNodeIdentifier());
+            Object oldValue = PrivilegedJBossCacheHelper.put(cache, fqn, LOCK_DATA, newLockData);
+            if (oldValue == null)
+            {
+               throw new LockException("Can't refresh lock for node " + newLockData.getNodeIdentifier()
+                  + " since lock is not exist");
+            }
+            return null;
+         }
+      };
+
+      this.lockExist = new LockActionNonTxAware<Boolean, String>()
+      {
+         public Boolean execute(String nodeId) throws LockException
+         {
+            return cache.get(makeLockFqn(nodeId), LOCK_DATA) != null;
+         }
+      };
+
+      this.getLockDataById = new LockActionNonTxAware<LockData, String>()
+      {
+         public LockData execute(String nodeId) throws LockException
+         {
+            return (LockData)cache.get(makeLockFqn(nodeId), LOCK_DATA);
+         }
+      };
+
+      this.getLockList = new LockActionNonTxAware<List<LockData>, Object>()
+      {
+         public List<LockData> execute(Object arg) throws LockException
+         {
+            Set<Object> nodesId = cache.getChildrenNames(lockRoot);
+
+            List<LockData> locksData = new ArrayList<LockData>();
+            for (Object nodeId : nodesId)
+            {
+               LockData lockData = (LockData)cache.get(makeLockFqn((String)nodeId), LOCK_DATA);
+               if (lockData != null)
+               {
+                  locksData.add(lockData);
+               }
+            }
+            return locksData;
+         }
+      };
    }
+
 
    /**
     * If JDBC cache loader is used, then fills-in column types. If column type configured from jcr-configuration file,
     * then nothing is overridden. Parameters are injected into the given parameterEntry.
     */
-   public void configureJDBCCacheLoader(MappedParametrizedObjectEntry parameterEntry) throws RepositoryException
+   private void configureJDBCCacheLoader(MappedParametrizedObjectEntry parameterEntry) throws RepositoryException
    {
       String dataSourceName = parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_DATASOURCE, null);
       // if data source is defined, then inject correct data-types.
-      // Also it cans be not defined and nothing should be injected (i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
+      // Also it cans be not defined and nothing should be injected 
+      // (i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
       if (dataSourceName != null)
       {
          String dialect;
          // detect dialect of data-source
          try
          {
-            DataSource dataSource = (DataSource)new InitialContext().lookup(dataSourceName);
+            final DataSource dataSource = (DataSource)new InitialContext().lookup(dataSourceName);
             if (dataSource == null)
             {
                throw new RepositoryException("DataSource (" + dataSourceName + ") can't be null");
@@ -294,7 +329,34 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
             Connection jdbcConn = null;
             try
             {
-               jdbcConn = dataSource.getConnection();
+               PrivilegedExceptionAction<Connection> action = new PrivilegedExceptionAction<Connection>()
+               {
+                  public Connection run() throws Exception
+                  {
+                     return dataSource.getConnection();
+                  }
+               };
+               try
+               {
+                  jdbcConn = SecurityHelper.doPrivilegedExceptionAction(action);
+               }
+               catch (PrivilegedActionException pae)
+               {
+                  Throwable cause = pae.getCause();
+                  if (cause instanceof SQLException)
+                  {
+                     throw (SQLException)cause;
+                  }
+                  else if (cause instanceof RuntimeException)
+                  {
+                     throw (RuntimeException)cause;
+                  }
+                  else
+                  {
+                     throw new RuntimeException(cause);
+                  }
+               }
+
                dialect = DialectDetecter.detect(jdbcConn.getMetaData());
             }
             finally
@@ -321,57 +383,63 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
          String blobType = "BLOB";
          String charType = "VARCHAR(512)";
          // HSSQL
-         if (dialect.equals(DBConstants.DB_DIALECT_HSQLDB))
+         if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
          {
-            blobType = "OBJECT";
+            blobType = "VARBINARY(65535)";
          }
          // MYSQL
-         else if (dialect.equals(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
          {
             blobType = "LONGBLOB";
          }
          // ORACLE
-         else if (dialect.equals(DBConstants.DB_DIALECT_ORACLE) || dialect.equals(DBConstants.DB_DIALECT_ORACLEOCI))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
          {
             // Oracle suggests the use VARCHAR2 instead of VARCHAR while declaring data type.
             charType = "VARCHAR2(512)";
          }
          // POSTGRE SQL
-         else if (dialect.equals(DBConstants.DB_DIALECT_PGSQL))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
          {
             blobType = "bytea";
          }
          // Microsoft SQL
-         else if (dialect.equals(DBConstants.DB_DIALECT_MSSQL))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL))
          {
             blobType = "VARBINARY(MAX)";
          }
          // SYBASE
-         else if (dialect.equals(DBConstants.DB_DIALECT_SYBASE))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
          {
             blobType = "IMAGE";
          }
          // INGRES
-         else if (dialect.equals(DBConstants.DB_DIALECT_INGRES))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_INGRES))
          {
             blobType = "long byte";
          }
          // else GENERIC, DB2 etc
 
          // set parameters if not defined
-         // if parameter is missing in configuration, then getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, JBOSSCACHE_JDBC_CL_AUTO) 
-         // will return JBOSSCACHE_JDBC_CL_AUTO. If parameter is present in configuration and equals to "auto", then it should be replaced 
+         // if parameter is missing in configuration, then 
+         // getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, JBOSSCACHE_JDBC_CL_AUTO) 
+         // will return JBOSSCACHE_JDBC_CL_AUTO. If parameter is present in configuration and 
+         // equals to "auto", then it should be replaced 
          // with correct value for given database
-         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, JBOSSCACHE_JDBC_CL_AUTO)
+         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN_TYPE, JBOSSCACHE_JDBC_CL_AUTO)
             .equalsIgnoreCase(JBOSSCACHE_JDBC_CL_AUTO))
          {
-            parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN, blobType);
+            parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_NODE_COLUMN_TYPE, blobType);
          }
 
-         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, JBOSSCACHE_JDBC_CL_AUTO).equalsIgnoreCase(
+         if (parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN_TYPE, JBOSSCACHE_JDBC_CL_AUTO).equalsIgnoreCase(
             JBOSSCACHE_JDBC_CL_AUTO))
          {
-            parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN, charType);
+            parameterEntry.putParameterValue(JBOSSCACHE_JDBC_CL_FQN_COLUMN_TYPE, charType);
          }
       }
       else
@@ -431,375 +499,57 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
       }
    }
 
-   @Managed
-   @ManagedDescription("Remove the expired locks")
-   public void cleanExpiredLocks()
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void stop()
    {
-      removeExpired();
-   }
+      super.stop();
 
-   public long getDefaultLockTimeOut()
-   {
-      return lockTimeOut;
-   }
-
-   private final LockActionNonTxAware<Integer, Object> getNumLocks = new LockActionNonTxAware<Integer, Object>()
-   {
-      public Integer execute(Object arg)
+      if (shareable)
       {
-         return cache.getChildrenNames(lockRoot).size();
+         // The cache cannot be stopped since it can be shared so we remove the root node instead
+         cache.getInvocationContext().getOptionOverrides().setSuppressPersistence(true);
+         cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
+         cache.removeNode(lockRoot);
       }
-   };
 
-   @Managed
-   @ManagedDescription("The number of active locks")
-   public int getNumLocks()
-   {
       try
       {
-         return executeLockActionNonTxAware(getNumLocks, null);
+         ExoJBossCacheFactory.releaseUniqueInstance(CacheType.LOCK_CACHE, cache);
       }
-      catch (LockException e)
+      catch (RepositoryConfigurationException e)
       {
-         // ignore me will never occur
+         LOG.error("Can not release cache instance", e);
       }
-      return -1;
-   }
 
-   /**
-    * Return new instance of session lock manager.
-    */
-   public SessionLockManager getSessionLockManager(String sessionId, SessionDataManager transientManager)
-   {
-      CacheableSessionLockManager sessionManager = new CacheableSessionLockManager(sessionId, this, transientManager);
-      sessionLockManagers.put(sessionId, sessionManager);
-      return sessionManager;
-   }
-
-   private final LockActionNonTxAware<Boolean, String> isLockLive = new LockActionNonTxAware<Boolean, String>()
-   {
-      public Boolean execute(String nodeId)
+      if (jmxManager != null)
       {
-         if (cache.get(makeLockFqn(nodeId), LOCK_DATA) != null) //pendingLocks.containsKey(nodeId) || 
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
          {
-            return true;
-         }
-
-         return false;
-      }
-   };
-
-   /**
-    * Check is LockManager contains lock. No matter it is in pending or persistent state.
-    * 
-    * @param nodeId - locked node id
-    * @return 
-    */
-   public boolean isLockLive(String nodeId) throws LockException
-   {
-      try
-      {
-         return executeLockActionNonTxAware(isLockLive, nodeId);
-      }
-      catch (LockException e)
-      {
-         // ignore me will never occur
-      }
-      return false;
+            public Void run()
+            {
+               jmxManager.unregisterAllMBeans();
+               return null;
+            }
+         });
+      }      
    }
 
    /**
     * {@inheritDoc}
     */
-   public boolean isTXAware()
-   {
-      return true;
-   }
-
-   /*
-    * (non-Javadoc)
-    * @seeorg.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener#onSaveItems(org.
-    * exoplatform.services.jcr.dataflow.ItemStateChangesLog)
-    */
-   public void onSaveItems(ItemStateChangesLog changesLog)
-   {
-      List<PlainChangesLog> chengesLogList = new ArrayList<PlainChangesLog>();
-      if (changesLog instanceof TransactionChangesLog)
-      {
-         ChangesLogIterator logIterator = ((TransactionChangesLog)changesLog).getLogIterator();
-
-         while (logIterator.hasNextLog())
-         {
-            chengesLogList.add(logIterator.nextLog());
-         }
-      }
-      else if (changesLog instanceof PlainChangesLog)
-      {
-         chengesLogList.add((PlainChangesLog)changesLog);
-      }
-      else if (changesLog instanceof CompositeChangesLog)
-      {
-         for (ChangesLogIterator iter = ((CompositeChangesLog)changesLog).getLogIterator(); iter.hasNextLog();)
-         {
-            chengesLogList.add(iter.nextLog());
-         }
-      }
-
-      List<LockOperationContainer> containers = new ArrayList<LockOperationContainer>();
-
-      for (PlainChangesLog currChangesLog : chengesLogList)
-      {
-         String sessionId = currChangesLog.getSessionId();
-
-         String nodeIdentifier;
-         try
-         {
-            switch (currChangesLog.getEventType())
-            {
-               case ExtendedEvent.LOCK :
-                  if (currChangesLog.getSize() < 2)
-                  {
-                     LOG.error("Incorrect changes log  of type ExtendedEvent.LOCK size=" + currChangesLog.getSize()
-                        + "<2 \n" + currChangesLog.dump());
-                     break;
-                  }
-                  nodeIdentifier = currChangesLog.getAllStates().get(0).getData().getParentIdentifier();
-
-                  CacheableSessionLockManager session = sessionLockManagers.get(sessionId);
-                  if (session != null && session.containsPendingLock(nodeIdentifier))
-                  {
-                     containers.add(new LockOperationContainer(nodeIdentifier, currChangesLog.getSessionId(),
-                        ExtendedEvent.LOCK));
-                  }
-                  else
-                  {
-                     LOG.error("Lock must exist in pending locks.");
-                  }
-                  break;
-               case ExtendedEvent.UNLOCK :
-                  if (currChangesLog.getSize() < 2)
-                  {
-                     LOG.error("Incorrect changes log  of type ExtendedEvent.UNLOCK size=" + currChangesLog.getSize()
-                        + "<2 \n" + currChangesLog.dump());
-                     break;
-                  }
-
-                  containers.add(new LockOperationContainer(currChangesLog.getAllStates().get(0).getData()
-                     .getParentIdentifier(), currChangesLog.getSessionId(), ExtendedEvent.UNLOCK));
-                  break;
-               default :
-                  HashSet<String> removedLock = new HashSet<String>();
-                  for (ItemState itemState : currChangesLog.getAllStates())
-                  {
-                     // this is a node and node is locked
-                     if (itemState.getData().isNode() && lockExist(itemState.getData().getIdentifier()))
-                     {
-                        nodeIdentifier = itemState.getData().getIdentifier();
-                        if (itemState.isDeleted())
-                        {
-                           removedLock.add(nodeIdentifier);
-                        }
-                        else if (itemState.isAdded() || itemState.isRenamed() || itemState.isUpdated())
-                        {
-                           removedLock.remove(nodeIdentifier);
-                        }
-                     }
-                  }
-                  for (String identifier : removedLock)
-                  {
-                     containers.add(new LockOperationContainer(identifier, currChangesLog.getSessionId(),
-                        ExtendedEvent.UNLOCK));
-                  }
-                  break;
-            }
-         }
-         catch (IllegalStateException e)
-         {
-            LOG.error(e.getLocalizedMessage(), e);
-         }
-      }
-
-      // sort locking and unlocking operations to avoid deadlocks in JBossCache
-      Collections.sort(containers);
-      for (LockOperationContainer container : containers)
-      {
-         try
-         {
-            container.apply();
-         }
-         catch (LockException e)
-         {
-            LOG.error(e.getMessage(), e);
-         }
-      }
-   }
-
-   /**
-    * Class containing operation type (LOCK or UNLOCK) and all the needed information like node uuid and session id.
-    */
-   private class LockOperationContainer implements Comparable<LockOperationContainer>
-   {
-
-      private String identifier;
-
-      private String sessionId;
-
-      private int type;
-
-      /**
-       * @param identifier node identifier 
-       * @param sessionId id of session
-       * @param type ExtendedEvent type specifying the operation (LOCK or UNLOCK)
-       */
-      public LockOperationContainer(String identifier, String sessionId, int type)
-      {
-         super();
-         this.identifier = identifier;
-         this.sessionId = sessionId;
-         this.type = type;
-      }
-
-      /**
-       * @return node identifier
-       */
-      public String getIdentifier()
-      {
-         return identifier;
-      }
-
-      public void apply() throws LockException
-      {
-         // invoke internalLock in LOCK operation
-         if (type == ExtendedEvent.LOCK)
-         {
-            internalLock(sessionId, identifier);
-         }
-         // invoke internalUnLock in UNLOCK operation
-         else if (type == ExtendedEvent.UNLOCK)
-         {
-            internalUnLock(sessionId, identifier);
-         }
-      }
-
-      /**
-       * @see java.lang.Comparable#compareTo(java.lang.Object)
-       */
-      public int compareTo(LockOperationContainer o)
-      {
-         return identifier.compareTo(o.getIdentifier());
-      }
-   }
-
-   private final LockActionNonTxAware<Object, LockData> refresh = new LockActionNonTxAware<Object, LockData>()
-   {
-      public Object execute(LockData newLockData) throws LockException
-      {
-         Fqn<String> fqn = makeLockFqn(newLockData.getNodeIdentifier());
-         Object oldValue = cache.put(fqn, LOCK_DATA, newLockData);
-         if (oldValue == null)
-         {
-            throw new LockException("Can't refresh lock for node " + newLockData.getNodeIdentifier()
-               + " since lock is not exist");
-         }
-         return null;
-      }
-   };
-
-   /**
-    * Refreshed lock data in cache
-    * 
-    * @param newLockData
-    */
-   public void refreshLockData(LockData newLockData) throws LockException
-   {
-      executeLockActionNonTxAware(refresh, newLockData);
-   }
-
-   /**
-    * Remove expired locks. Used from LockRemover.
-    */
-   public synchronized void removeExpired()
-   {
-      final List<String> removeLockList = new ArrayList<String>();
-
-      for (LockData lock : getLockList())
-      {
-         if (!lock.isSessionScoped() && lock.getTimeToDeath() < 0)
-         {
-            removeLockList.add(lock.getNodeIdentifier());
-         }
-      }
-
-      Collections.sort(removeLockList);
-
-      for (String rLock : removeLockList)
-      {
-         removeLock(rLock);
-      }
-   }
-
-   /*
-    * (non-Javadoc)
-    * @see org.picocontainer.Startable#start()
-    */
-   public void start()
-   {
-      lockRemover = new LockRemover(this);
-   }
-
-   /*
-    * (non-Javadoc)
-    * @see org.picocontainer.Startable#stop()
-    */
-   public void stop()
-   {
-      lockRemover.halt();
-      lockRemover.interrupt();
-      sessionLockManagers.clear();
-      cache.stop();
-   }
-
-   /**
-    * Copy <code>PropertyData prop<code> to new TransientItemData
-    * 
-    * @param prop
-    * @return
-    * @throws RepositoryException
-    */
-   private TransientItemData copyItemData(PropertyData prop) throws RepositoryException
-   {
-      if (prop == null)
-      {
-         return null;
-      }
-
-      // make a copy, value may be null for deleting items
-      TransientPropertyData newData =
-         new TransientPropertyData(prop.getQPath(), prop.getIdentifier(), prop.getPersistedVersion(), prop.getType(),
-            prop.getParentIdentifier(), prop.isMultiValued(), prop.getValues());
-
-      return newData;
-   }
-
-   /**
-    * Internal lock
-    * 
-    * @param nodeIdentifier
-    * @throws LockException
-    */
-   private synchronized void internalLock(String sessionId, String nodeIdentifier) throws LockException
+   @Override
+   protected synchronized void internalLock(String sessionId, String nodeIdentifier) throws LockException
    {
       CacheableSessionLockManager session = sessionLockManagers.get(sessionId);
       if (session != null && session.containsPendingLock(nodeIdentifier))
       {
          LockData lockData = session.getPendingLock(nodeIdentifier);
-         Fqn<String> lockPath = makeLockFqn(lockData.getNodeIdentifier());
-
-         // addChild will add if absent or return old if present
-         Node<Serializable, Object> node = cache.getRoot().addChild(lockPath);
 
          // this will return null if success. And old data if something exists...
-         LockData oldLockData = (LockData)node.putIfAbsent(LOCK_DATA, lockData);
+         LockData oldLockData = doPut(lockData);
 
          if (oldLockData != null)
          {
@@ -816,19 +566,16 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    }
 
    /**
-    * Internal unlock.
-    * 
-    * @param sessionId
-    * @param nodeIdentifier
-    * @throws LockException
+    * {@inheritDoc}
     */
-   private synchronized void internalUnLock(String sessionId, String nodeIdentifier) throws LockException
+   @Override
+   protected synchronized void internalUnLock(String sessionId, String nodeIdentifier) throws LockException
    {
       LockData lData = getLockDataById(nodeIdentifier);
 
       if (lData != null)
       {
-         cache.removeNode(makeLockFqn(nodeIdentifier));
+         doRemove(lData);
 
          CacheableSessionLockManager sessMgr = sessionLockManagers.get(sessionId);
          if (sessMgr != null)
@@ -836,237 +583,6 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
             sessMgr.notifyLockRemoved(nodeIdentifier);
          }
       }
-   }
-
-   private final LockActionNonTxAware<Boolean, String> lockExist = new LockActionNonTxAware<Boolean, String>()
-   {
-      public Boolean execute(String nodeId) throws LockException
-      {
-         return cache.get(makeLockFqn(nodeId), LOCK_DATA) != null;
-      }
-   };
-
-   /**
-    * {@inheritDoc}
-    */
-   public boolean lockExist(String nodeId)
-   {
-      try
-      {
-         return executeLockActionNonTxAware(lockExist, nodeId);
-      }
-      catch (LockException e)
-      {
-         // ignore me will never occur
-      }
-      return false;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public String getLockTokenHash(String token)
-   {
-      String hash = "";
-      try
-      {
-         MessageDigest m = MessageDigest.getInstance("MD5");
-         m.update(token.getBytes(), 0, token.length());
-         hash = new BigInteger(1, m.digest()).toString(16);
-      }
-      catch (NoSuchAlgorithmException e)
-      {
-         LOG.error("Can't get instanse of MD5 MessageDigest!", e);
-      }
-      return hash;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public LockData getExactNodeOrCloseParentLock(NodeData node) throws RepositoryException
-   {
-      if (node == null)
-         return null;
-      LockData retval = null;
-      retval = getLockDataById(node.getIdentifier());
-      if (retval == null)
-      {
-         NodeData parentData = (NodeData)dataManager.getItemData(node.getParentIdentifier());
-         if (parentData != null)
-         {
-            retval = getExactNodeOrCloseParentLock(parentData);
-         }
-      }
-      return retval;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public LockData getExactNodeLock(NodeData node) throws RepositoryException
-   {
-      LockData retval = null;
-      if (node != null)
-      {
-         retval = getLockDataById(node.getIdentifier());
-      }
-      return retval;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public LockData getClosedChild(NodeData node) throws RepositoryException
-   {
-      LockData retval = null;
-
-      List<NodeData> childData = dataManager.getChildNodesData(node);
-      for (NodeData nodeData : childData)
-      {
-         retval = getLockDataById(nodeData.getIdentifier());
-         if (retval != null)
-            return retval;
-      }
-      // child not found try to find dipper
-      for (NodeData nodeData : childData)
-      {
-         retval = getClosedChild(nodeData);
-         if (retval != null)
-            return retval;
-      }
-      return retval;
-   }
-
-   private final LockActionNonTxAware<LockData, String> getLockDataById = new LockActionNonTxAware<LockData, String>()
-   {
-      public LockData execute(String nodeId) throws LockException
-      {
-         return (LockData)cache.get(makeLockFqn(nodeId), LOCK_DATA);
-      }
-   };
-
-   protected LockData getLockDataById(String nodeId)
-   {
-      try
-      {
-         return executeLockActionNonTxAware(getLockDataById, nodeId);
-      }
-      catch (LockException e)
-      {
-         // ignore me will never occur
-      }
-      return null;
-   }
-
-   private final LockActionNonTxAware<List<LockData>, Object> getLockList =
-      new LockActionNonTxAware<List<LockData>, Object>()
-      {
-         public List<LockData> execute(Object arg) throws LockException
-         {
-            Set<Object> nodesId = cache.getChildrenNames(lockRoot);
-
-            List<LockData> locksData = new ArrayList<LockData>();
-            for (Object nodeId : nodesId)
-            {
-               LockData lockData = (LockData)cache.get(makeLockFqn((String)nodeId), LOCK_DATA);
-               if (lockData != null)
-               {
-                  locksData.add(lockData);
-               }
-            }
-            return locksData;
-         }
-      };
-
-   protected synchronized List<LockData> getLockList()
-   {
-      try
-      {
-         return executeLockActionNonTxAware(getLockList, null);
-      }
-      catch (LockException e)
-      {
-         // ignore me will never occur
-      }
-      return null;
-   }
-
-   /**
-    * Remove lock, used by Lock remover.
-    * 
-    * @param nodeIdentifier String
-    */
-   protected void removeLock(String nodeIdentifier)
-   {
-      try
-      {
-         NodeData nData = (NodeData)dataManager.getItemData(nodeIdentifier);
-
-         //TODO EXOJCR-412, should be refactored in future.
-         //Skip removing, because that node was removed in other node of cluster.  
-         if (nData == null)
-         {
-            return;
-         }
-
-         PlainChangesLog changesLog =
-            new PlainChangesLogImpl(new ArrayList<ItemState>(), SystemIdentity.SYSTEM, ExtendedEvent.UNLOCK);
-
-         ItemData lockOwner =
-            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKOWNER, 1)));
-
-         //TODO EXOJCR-412, should be refactored in future.
-         //Skip removing, because that lock was removed in other node of cluster.  
-         if (lockOwner == null)
-         {
-            return;
-         }
-
-         changesLog.add(ItemState.createDeletedState(lockOwner));
-
-         ItemData lockIsDeep =
-            copyItemData((PropertyData)dataManager.getItemData(nData, new QPathEntry(Constants.JCR_LOCKISDEEP, 1)));
-
-         //TODO EXOJCR-412, should be refactored in future.
-         //Skip removing, because that lock was removed in other node of cluster.  
-         if (lockIsDeep == null)
-         {
-            return;
-         }
-
-         changesLog.add(ItemState.createDeletedState(lockIsDeep));
-
-         // lock probably removed by other thread
-         if (lockOwner == null && lockIsDeep == null)
-         {
-            return;
-         }
-
-         dataManager.save(new TransactionChangesLog(changesLog));
-      }
-      catch (JCRInvalidItemStateException e)
-      {
-         //TODO EXOJCR-412, should be refactored in future.
-         //Skip property not found in DB, because that lock property was removed in other node of cluster.
-         if (LOG.isDebugEnabled())
-         {
-            LOG.debug("The propperty was removed in other node of cluster.", e);
-         }
-
-      }
-      catch (RepositoryException e)
-      {
-         LOG.error("Error occur during removing lock" + e.getLocalizedMessage(), e);
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void closeSessionLockManager(String sessionID)
-   {
-      sessionLockManagers.remove(sessionID);
    }
 
    /**
@@ -1083,67 +599,69 @@ public class CacheableLockManagerImpl implements CacheableLockManager, ItemsPers
    /**
     *  Will be created structured node in cache, like /$LOCKS
     */
-   private void createStructuredNode(Fqn<String> fqn)
+   private void createStructuredNode(final Fqn<String> fqn)
    {
       Node<Serializable, Object> node = cache.getRoot().getChild(fqn);
       if (node == null)
       {
-         cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
-         node = cache.getRoot().addChild(fqn);
+         PrivilegedAction<Node<Serializable, Object>> action = new PrivilegedAction<Node<Serializable, Object>>()
+         {
+            public Node<Serializable, Object> run()
+            {
+               cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
+               return cache.getRoot().addChild(fqn);
+            }
+         };
+         node = SecurityHelper.doPrivilegedAction(action);
       }
       node.setResident(true);
    }
 
    /**
-    * Execute the given action outside a transaction. This is needed since the {@link Cache} used by {@link CacheableLockManagerImpl}
-    * manages the persistence of its locks thanks to a {@link CacheLoader} and a {@link CacheLoader} lock the JBoss cache {@link Node}
-    * even for read operations which cause deadlock issue when a XA {@link Transaction} is already opened
-    * @throws LockException when a exception occurs
+    * {@inheritDoc}
     */
-   private <R, A> R executeLockActionNonTxAware(LockActionNonTxAware<R, A> action, A arg) throws LockException
+   @Override
+   protected LockData doPut(LockData lockData)
    {
-      Transaction tx = null;
-      try
-      {
-         if (tm != null)
-         {
-            try
-            {
-               tx = tm.suspend();
-            }
-            catch (Exception e)
-            {
-               LOG.warn("Cannot suspend the current transaction", e);
-            }
-         }
-         return action.execute(arg);
-      }
-      finally
-      {
-         if (tx != null)
-         {
-            try
-            {
-               tm.resume(tx);
-            }
-            catch (Exception e)
-            {
-               LOG.warn("Cannot resume the current transaction", e);
-            }
-         }
-      }
+      Fqn<String> lockPath = makeLockFqn(lockData.getNodeIdentifier());
+
+      // addChild will add if absent or return old if present
+      Node<Serializable, Object> node = cache.getRoot().addChild(lockPath);
+
+      // this will return null if success. And old data if something exists...
+      return (LockData)node.putIfAbsent(LOCK_DATA, lockData);
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void doRemove(LockData lockData)
+   {
+      PrivilegedJBossCacheHelper.removeNode(cache, makeLockFqn(lockData.getNodeIdentifier()));
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected boolean isAloneInCluster()
+   {
+      return cache.getConfiguration().getCacheMode() == CacheMode.LOCAL || cache.getMembers().size() == 1;
    }
 
    /**
-    * Actions that are not supposed to be called within a transaction
-    * 
-    * Created by The eXo Platform SAS
-    * Author : Nicolas Filotto 
-    *          nicolas.filotto@exoplatform.com
-    * 21 janv. 2010
+    * {@inheritDoc}
     */
-   private static interface LockActionNonTxAware<R, A>
+   @Override
+   protected void doClean()
    {
-      R execute(A arg) throws LockException;
+      if (cache.getCacheStatus() == CacheStatus.STARTED)
+      {
+         for (LockData lockData : getLockList())
+         {
+            doRemove(lockData);
+         }
+      }
    }
 }

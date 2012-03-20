@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -33,9 +34,7 @@ import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -211,11 +210,11 @@ public class TransientValueData implements ValueData
             {
                if (spoolFile != null)
                {
-                  return new FileInputStream(spoolFile); // from spool file
+                  return PrivilegedFileHelper.fileInputStream(spoolFile); // from spool file
                }
                else
                {
-                  throw new NullPointerException("Stream already consumed");
+                  throw new IllegalArgumentException("Stream already consumed");
                }
             }
          }
@@ -227,7 +226,7 @@ public class TransientValueData implements ValueData
             }
             else if (spoolFile != null)
             {
-               return new FileInputStream(spoolFile); // from spool file if initialized
+               return PrivilegedFileHelper.fileInputStream(spoolFile); // from spool file if initialized
             }
             else if (tmpStream != null)
             {
@@ -235,7 +234,7 @@ public class TransientValueData implements ValueData
             }
             else
             {
-               throw new NullPointerException("Null Stream data ");
+               throw new IllegalArgumentException("Null Stream data ");
             }
          }
       }
@@ -253,14 +252,13 @@ public class TransientValueData implements ValueData
        */
       public long getLength()
       {
-         // TODO try ask on FileChannel (via FileInputStream if have such stream).
          if (isByteArrayAfterSpool())
          {
             return data.length;
          }
          else
          {
-            return spoolFile.length();
+            return PrivilegedFileHelper.length(spoolFile);
          }
       }
 
@@ -344,7 +342,7 @@ public class TransientValueData implements ValueData
          else
          {
             if (spoolChannel == null)
-               spoolChannel = new FileInputStream(spoolFile).getChannel();
+               spoolChannel = PrivilegedFileHelper.fileInputStream(spoolFile).getChannel();
 
             // validation
             if (position >= spoolChannel.size() && position > 0)
@@ -355,7 +353,7 @@ public class TransientValueData implements ValueData
 
             MappedByteBuffer bb = spoolChannel.map(FileChannel.MapMode.READ_ONLY, position, length);
 
-            WritableByteChannel ch = Channels.newChannel(stream); // TODO don't use Channels.newChannel on java5
+            WritableByteChannel ch = Channels.newChannel(stream);
             ch.write(bb);
             ch.close();
 
@@ -379,6 +377,7 @@ public class TransientValueData implements ValueData
       /**
        * {@inheritDoc}
        */
+      @Override
       protected void finalize() throws Throwable
       {
          deleteCurrentSpoolFile();
@@ -478,7 +477,7 @@ public class TransientValueData implements ValueData
          {
             SpoolFile sf = SpoolFile.createTempFile("jcrvd", null, tempDirectory);
             sf.acquire(this);
-            sfout = new FileOutputStream(sf);
+            sfout = PrivilegedFileHelper.fileOutputStream(sf);
 
             while ((read = tmpStream.read(tmpBuff)) >= 0)
                sfout.write(tmpBuff, 0, read);
@@ -568,7 +567,8 @@ public class TransientValueData implements ValueData
                   sf = SpoolFile.createTempFile("jcrvd", null, tempDirectory);
                   sf.acquire(this);
 
-                  sfout = new FileOutputStream(sf);
+                  sfout = PrivilegedFileHelper.fileOutputStream(sf);
+
                   sfout.write(buffer, 0, len);
                   sfout.write(tmpBuff, 0, read);
                   buffer = null;
@@ -642,7 +642,7 @@ public class TransientValueData implements ValueData
        */
       private byte[] fileToByteArray() throws IOException
       {
-         FileChannel fch = new FileInputStream(spoolFile).getChannel();
+         FileChannel fch = PrivilegedFileHelper.fileInputStream(spoolFile).getChannel();
 
          if (LOG.isDebugEnabled() && fch.size() > maxBufferSize)
          {
@@ -652,7 +652,6 @@ public class TransientValueData implements ValueData
 
          try
          {
-            //TODO do refactor of work with NIO and java6
             ByteBuffer bb = ByteBuffer.allocate((int)fch.size());
             fch.read(bb);
             if (bb.hasArray())
@@ -691,12 +690,12 @@ public class TransientValueData implements ValueData
 
             if (spoolFile instanceof SpoolFile)
             {
-               ((SpoolFile)spoolFile).release(this);
+               (spoolFile).release(this);
             }
 
-            if (deleteSpoolFile && spoolFile.exists())
+            if (deleteSpoolFile && PrivilegedFileHelper.exists(spoolFile))
             {
-               if (!spoolFile.delete())
+               if (!PrivilegedFileHelper.delete(spoolFile))
                {
                   if (fileCleaner != null)
                   {
@@ -704,12 +703,14 @@ public class TransientValueData implements ValueData
 
                      if (LOG.isDebugEnabled())
                      {
-                        LOG.debug("Could not remove file. Add to fileCleaner " + spoolFile.getAbsolutePath());
+                        LOG.debug("Could not remove file. Add to fileCleaner "
+                           + PrivilegedFileHelper.getAbsolutePath(spoolFile));
                      }
                   }
                   else
                   {
-                     LOG.warn("Could not remove temporary file on finalize " + spoolFile.getAbsolutePath());
+                     LOG.warn("Could not remove temporary file on finalize "
+                        + PrivilegedFileHelper.getAbsolutePath(spoolFile));
                   }
                }
             }

@@ -18,29 +18,19 @@
  */
 package org.exoplatform.services.jcr.ext.repository;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Iterator;
-
-import javax.jcr.NoSuchWorkspaceException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.ws.rs.core.MultivaluedMap;
-
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.backup.ContainerRequestUserRole;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.rest.RequestHandler;
 import org.exoplatform.services.rest.impl.ContainerResponse;
 import org.exoplatform.services.rest.impl.InputHeadersMap;
@@ -56,6 +46,18 @@ import org.exoplatform.ws.frameworks.json.impl.JsonGeneratorImpl;
 import org.exoplatform.ws.frameworks.json.impl.JsonParserImpl;
 import org.exoplatform.ws.frameworks.json.value.JsonValue;
 
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+import javax.jcr.NoSuchWorkspaceException;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.ws.rs.core.MultivaluedMap;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -68,6 +70,8 @@ import org.exoplatform.ws.frameworks.json.value.JsonValue;
 public class RestRepositoryServiceTest extends BaseStandaloneTest
 {
    private String REST_REPOSITORY_SERVICE_PATH = RestRepositoryService.Constants.BASE_URL;
+
+   protected TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
 
    private RequestHandler handler;
 
@@ -337,7 +341,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
       cres = new ContainerResponse(responseWriter);
       handler.handleRequest(creq, cres);
 
-      assertEquals(204, cres.getStatus());
+      assertEquals(200, cres.getStatus());
 
       try
       {
@@ -352,8 +356,10 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
 
    public void testRemoveRepository() throws Exception
    {
-      String wsName = "ws";
-      String repoName = "db2";
+      ManageableRepository repository = helper.createRepository(container, true, null);
+
+      String wsName = repository.getConfiguration().getSystemWorkspaceName();
+      String repoName = repository.getConfiguration().getName();
 
       Session session =
          repositoryService.getRepository(repoName).login(new CredentialsImpl("root", "exo".toCharArray()), wsName);
@@ -363,7 +369,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
 
       ContainerRequestUserRole creq =
-         new ContainerRequestUserRole("POST", new URI(REST_REPOSITORY_SERVICE_PATH
+         new ContainerRequestUserRole("GET", new URI(REST_REPOSITORY_SERVICE_PATH
             + RestRepositoryService.Constants.OperationType.REMOVE_REPOSITORY + "/" + repoName + "/false/"),
             new URI(""), null, new InputHeadersMap(headers));
 
@@ -375,7 +381,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
 
       //remove with prepare close sessions
       creq =
-         new ContainerRequestUserRole("POST", new URI(REST_REPOSITORY_SERVICE_PATH
+         new ContainerRequestUserRole("GET", new URI(REST_REPOSITORY_SERVICE_PATH
             + RestRepositoryService.Constants.OperationType.REMOVE_REPOSITORY + "/" + repoName + "/true/"),
             new URI(""), null, new InputHeadersMap(headers));
 
@@ -383,7 +389,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
       cres = new ContainerResponse(responseWriter);
       handler.handleRequest(creq, cres);
 
-      assertEquals(204, cres.getStatus());
+      assertEquals(200, cres.getStatus());
 
       try
       {
@@ -433,7 +439,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
 
       // Indexer
       ArrayList qParams = new ArrayList();
-      qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + wsName));
+      qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + skipInvalidCharacters(wsName)));
       QueryHandlerEntry qEntry = new QueryHandlerEntry(defWEntry.getQueryHandler().getType(), qParams);
 
       ws1back.setQueryHandler(qEntry);
@@ -447,7 +453,7 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
          if (newp.getName().equals("source-name"))
             newp.setValue(sourceName);
          else if (newp.getName().equals("swap-directory"))
-            newp.setValue("target/temp/swap/" + wsName);
+            newp.setValue("target/temp/swap/" + skipInvalidCharacters(wsName));
          else if (newp.getName().equals("multi-db"))
             newp.setValue(Boolean.toString(multiDb));
 
@@ -458,5 +464,18 @@ public class RestRepositoryServiceTest extends BaseStandaloneTest
       ws1back.setContainer(ce);
 
       return ws1back;
+   }
+
+   private String skipInvalidCharacters(String s)
+   {
+      if (File.separator.equals("\\"))
+      {
+         return s.replaceAll("[:,?]", "_");
+      }
+      else
+      {
+         return s;
+      }
+
    }
 }

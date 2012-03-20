@@ -20,7 +20,14 @@ import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
+
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -38,6 +45,18 @@ public class TestMultipleListenersNotifying extends TestCase
       public TestDataManager()
       {
          super(null, new SystemDataContainerHolder(null));
+      }
+
+      public void save(ItemStateChangesLog changes) throws InvalidItemStateException, UnsupportedOperationException,
+         RepositoryException
+      {
+         super.save(new ChangesLogWrapper(changes));
+      }
+
+      public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
+         throws RepositoryException
+      {
+         return null;
       }
    }
 

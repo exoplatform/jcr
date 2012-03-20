@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -63,6 +65,11 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
    protected Stack<NodeData> parents;
 
    /**
+    * Contains instance of source parent
+    */
+   protected NodeData srcParent;
+
+   /**
     * The list of added item states
     */
    protected List<ItemState> addStates = new ArrayList<ItemState>();
@@ -80,6 +87,11 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
 
    protected QPath ancestorToSave = null;
 
+   /** 
+    * Trigger events for descendents. 
+   */
+   protected boolean triggerEventsForDescendents;
+
    /**
     * Creates an instance of this class.
     * 
@@ -93,18 +105,39 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
     *          - Source data manager
     * @param keepIdentifiers
     *          - Is it necessity to keep <code>Identifiers</code>
+    * @param triggerEventsForDescendents 
+    *          - Trigger events for descendents.          
     */
-
-   public ItemDataMoveVisitor(NodeData parent, InternalQName dstNodeName, NodeTypeDataManager nodeTypeManager,
-      SessionDataManager srcDataManager, boolean keepIdentifiers)
+   public ItemDataMoveVisitor(NodeData parent, InternalQName dstNodeName, NodeData srcParent,
+      NodeTypeDataManager nodeTypeManager, SessionDataManager srcDataManager, boolean keepIdentifiers,
+      boolean triggerEventsForDescendents)
    {
-      super(srcDataManager);
+      super(srcDataManager, triggerEventsForDescendents ? INFINITE_DEPTH : 0);
       this.keepIdentifiers = keepIdentifiers;
       this.ntManager = nodeTypeManager;
       this.destNodeName = dstNodeName;
 
       this.parents = new Stack<NodeData>();
       this.parents.add(parent);
+      this.srcParent = srcParent;
+      this.triggerEventsForDescendents = triggerEventsForDescendents;
+   }
+
+   /** 
+    * Creates an instance of this class. 
+    * 
+    * @param parent - The parent node 
+    * @param dstNodeName Destination node name 
+    * @param nodeTypeManager - The NodeTypeManager 
+    * @param srcDataManager - Source data manager 
+    * @param keepIdentifiers - Is it necessity to keep <code>Identifiers</code> 
+    * @param skipEventsForDescendents - Don't generate events for the 
+    *          descendants. 
+    */
+   public ItemDataMoveVisitor(NodeData parent, InternalQName dstNodeName, NodeData srcParent,
+      NodeTypeDataManager nodeTypeManager, SessionDataManager srcDataManager, boolean keepIdentifiers)
+   {
+      this(parent, dstNodeName, srcParent, nodeTypeManager, srcDataManager, keepIdentifiers, true);
    }
 
    @Override
@@ -116,7 +149,7 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
          ancestorToSave = QPath.getCommonAncestorPath(curParent().getQPath(), node.getQPath());
       }
 
-      NodeData parent = curParent();
+      NodeData destParent = curParent();
 
       int destIndex; // index for path
       int destOrderNum; // order number
@@ -126,67 +159,67 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
       {
          qname = destNodeName;
 
-         List<NodeData> destChilds = dataManager.getChildNodesData(parent);
+         List<NodeData> destChilds = dataManager.getChildNodesData(destParent);
          List<NodeData> srcChilds;
-         NodeData srcParent;
 
          destIndex = 1;
-         destOrderNum = destChilds.size() > 0 ? destChilds.get(destChilds.size() - 1).getOrderNumber() + 1 : 0;
 
-         if (parent.getIdentifier().equals(node.getParentIdentifier()))
+         // If ordering is supported by the node
+         // type of the parent node of the new location, then the
+         // newly moved node is appended to the end of the child
+         // node list.
+         destOrderNum = 0;
+         for (NodeData child : destChilds)
          {
-            // move to another dest
+            if (child.getOrderNumber() + 1 > destOrderNum)
+            {
+               destOrderNum = child.getOrderNumber() + 1;
+            }
+         }
+
+         if (destParent == srcParent) // NOSONAR
+         {
+            // move to same parent
             srcChilds = destChilds;
-            srcParent = parent;
          }
          else
          {
-            // move of SNSes on same parent
-            // find index and orederNum on destination
+            // move to another parent
+            srcChilds = dataManager.getChildNodesData(srcParent);
+            // find index on destination
             for (NodeData dchild : destChilds)
             {
-               if (dchild.getQPath().getName().equals(qname))
+               if (dchild.getQPath().getName().equals(destNodeName))
+               {
                   destIndex++;
+               }
             }
-
-            // for fix SNSes on source
-            srcParent = (NodeData)dataManager.getItemData(node.getParentIdentifier());
-            if (srcParent == null)
-               throw new RepositoryException("FATAL: parent Node not for " + node.getQPath().getAsString()
-                  + ", parent id: " + node.getParentIdentifier());
-
-            srcChilds = dataManager.getChildNodesData(srcParent);
          }
 
-         int srcOrderNum = 0;
          int srcIndex = 1;
 
-         // Calculate SNS index on source
+         // Fix SNS on source
          for (int i = 0; i < srcChilds.size(); i++)
          {
             NodeData child = srcChilds.get(i);
             if (!child.getIdentifier().equals(node.getIdentifier()))
             {
-               if (child.getQPath().getName().equals(qname))
+               if ((child.getQPath().getName()).getAsString().equals((node.getQPath().getName()).getAsString()))
                {
                   QPath siblingPath = QPath.makeChildPath(srcParent.getQPath(), child.getQPath().getName(), srcIndex);
                   TransientNodeData sibling =
                      new TransientNodeData(siblingPath, child.getIdentifier(), child.getPersistedVersion() + 1, child
-                        .getPrimaryTypeName(), child.getMixinTypeNames(), srcOrderNum, // orderNum
-                        child.getParentIdentifier(), child.getACL());
+                        .getPrimaryTypeName(), child.getMixinTypeNames(), child.getOrderNumber(), child
+                        .getParentIdentifier(), child.getACL());
                   addStates.add(new ItemState(sibling, ItemState.UPDATED, true, ancestorToSave, false, true));
-
                   srcIndex++;
                }
-
-               srcOrderNum++;
+               // find index on destination in case when destination the same as source
+               if (srcChilds == destChilds && (child.getQPath().getName().equals(destNodeName))) // NOSONAR
+               {
+                  destIndex++;
+               }
             }
-         }
-
-         if (srcChilds == destChilds)
-         {
-            destIndex = srcIndex;
-            destOrderNum = srcOrderNum;
          }
       }
       else
@@ -198,11 +231,29 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
 
       String id = keepIdentifiers ? node.getIdentifier() : IdGenerator.generate();
 
-      QPath qpath = QPath.makeChildPath(parent.getQPath(), qname, destIndex);
+      QPath qpath = QPath.makeChildPath(destParent.getQPath(), qname, destIndex);
+
+      AccessControlList acl = destParent.getACL();
+
+      boolean isPrivilegeable =
+         ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
+
+      boolean isOwneable =
+         ntManager.isNodeType(Constants.EXO_OWNEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
+
+      if (isPrivilegeable || isOwneable)
+      {
+         List<AccessControlEntry> permissionEntries = new ArrayList<AccessControlEntry>();
+         permissionEntries.addAll((isPrivilegeable ? node.getACL() : destParent.getACL()).getPermissionEntries());
+
+         String owner = isOwneable ? node.getACL().getOwner() : destParent.getACL().getOwner();
+
+         acl = new AccessControlList(owner, permissionEntries);
+      }
 
       TransientNodeData newNode =
-         new TransientNodeData(qpath, id, -1, node.getPrimaryTypeName(), node.getMixinTypeNames(), destOrderNum, parent
-            .getIdentifier(), node.getACL());
+         new TransientNodeData(qpath, id, -1, node.getPrimaryTypeName(), node.getMixinTypeNames(), destOrderNum,
+            destParent.getIdentifier(), acl);
 
       parents.push(newNode);
 
@@ -210,6 +261,12 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
       // if level == 0 set internal createt as false for validating on save
       addStates.add(new ItemState(newNode, ItemState.RENAMED, level == 0, ancestorToSave, false, level == 0));
       deleteStates.add(new ItemState(node, ItemState.DELETED, level == 0, ancestorToSave, false, false));
+
+      if (!triggerEventsForDescendents)
+      {
+         addStates.add(new ItemState(newNode, ItemState.PATH_CHANGED, false, ancestorToSave, false, false, node
+            .getQPath()));
+      }
    }
 
    @Override

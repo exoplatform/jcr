@@ -41,7 +41,7 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
 {
 
    /** Logger instance for this class */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.DocOrderScoreNodeIterator");
+   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.DocOrderScoreNodeIterator");
 
    /** A node iterator with ordered nodes */
    private ScoreNodeIterator orderedNodes;
@@ -172,7 +172,11 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
       {
          return;
       }
-      long time = System.currentTimeMillis();
+      long time = 0;
+      if (LOG.isDebugEnabled())
+      {
+         time = System.currentTimeMillis();
+      }
       ScoreNode[][] nodes = (ScoreNode[][])scoreNodes.toArray(new ScoreNode[scoreNodes.size()][]);
 
       final Set<String> invalidIDs = new HashSet<String>(2);
@@ -203,15 +207,18 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
          }
          catch (SortFailedException e)
          {
-            // retry
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
 
       }
       while (invalidIDs.size() > 0);
 
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug("" + nodes.length + " node(s) ordered in " + (System.currentTimeMillis() - time) + " ms");
+         LOG.debug("" + nodes.length + " node(s) ordered in " + (System.currentTimeMillis() - time) + " ms");
       }
 
       orderedNodes = new ScoreNodeIteratorImpl(nodes);
@@ -325,7 +332,7 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
          }
          catch (Exception e)
          {
-            log.error("Exception while sorting nodes in document order: " + e.toString(), e);
+            LOG.error("Exception while sorting nodes in document order: " + e.toString(), e);
          }
 
          // if we get here something went wrong
@@ -333,11 +340,11 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
          if (n1 != null)
             invalidIDs.add(n1.getNodeId());
          else
-            log.warn("Null ScoreNode n1 will not be added into invalid identifiers set");
+            LOG.warn("Null ScoreNode n1 will not be added into invalid identifiers set");
          if (n2 != null)
             invalidIDs.add(n2.getNodeId());
          else
-            log.warn("Null ScoreNode n2 will not be added into invalid identifiers set");
+            LOG.warn("Null ScoreNode n2 will not be added into invalid identifiers set");
 
          // terminate sorting
          throw new SortFailedException();

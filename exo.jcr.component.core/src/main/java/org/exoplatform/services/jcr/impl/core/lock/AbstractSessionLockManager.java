@@ -19,7 +19,9 @@
 package org.exoplatform.services.jcr.impl.core.lock;
 
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+import org.exoplatform.services.security.IdentityConstants;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
@@ -85,6 +87,30 @@ public abstract class AbstractSessionLockManager implements SessionLockManager
       }
 
       return checkPersistedLocks(data);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isLockHolder(NodeImpl node) throws RepositoryException
+   {
+      NodeData nodeData = (NodeData)node.getData();
+
+      // check if session has system credentials 
+      if (IdentityConstants.SYSTEM.equals(node.getSession().getUserID()))
+      {
+         return true;
+      }
+
+      //check is parent node also new
+      if (transientManager.isNew(nodeData.getIdentifier()) && transientManager.isNew(nodeData.getParentIdentifier()))
+      {
+         return true;
+      }
+      else
+      {
+         return isPersistedLockHolder(nodeData);
+      }
    }
 
    /**

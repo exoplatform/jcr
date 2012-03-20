@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.webdav.Range;
+import org.exoplatform.services.jcr.webdav.WebDavConst;
 import org.exoplatform.services.jcr.webdav.resource.CollectionResource;
 import org.exoplatform.services.jcr.webdav.resource.FileResource;
 import org.exoplatform.services.jcr.webdav.resource.Resource;
@@ -40,10 +41,15 @@ import org.exoplatform.services.rest.impl.header.MediaTypeHelper;
 
 import java.io.InputStream;
 import java.net.URI;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
@@ -67,7 +73,18 @@ public class GetCommand
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.GetCommand");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.GetCommand");
+
+   private Map<String, String> xsltParams;
+
+   public GetCommand()
+   {
+   }
+
+   public GetCommand(Map<String, String> xsltParams)
+   {
+      this.xsltParams = xsltParams;
+   }
 
    /**
     * GET content of the resource. Can be return content of the file. The content
@@ -82,7 +99,7 @@ public class GetCommand
     * @return the instance of javax.ws.rs.core.Response
     */
    public Response get(Session session, String path, String version, String baseURI, List<Range> ranges,
-      String ifModifiedSince, HashMap<MediaType, String> cahceControls)
+      String ifModifiedSince, HashMap<MediaType, String> cacheControls)
    {
       if (version == null)
       {
@@ -113,7 +130,7 @@ public class GetCommand
                VersionedResource versionedFile = new VersionedFileResource(uri, node, nsContext);
                resource = versionedFile.getVersionHistory().getVersion(version);
                
-               lastModifiedProperty = resource.getProperty(FileResource.CREATIONDATE);
+               lastModifiedProperty = resource.getProperty(FileResource.GETLASTMODIFIED);
                istream = ((VersionResource)resource).getContentAsStream();
             }
             else
@@ -125,9 +142,18 @@ public class GetCommand
             }
 
             // check before any other reads
-            if ((ifModifiedSince != null) && (ifModifiedSince.equals(lastModifiedProperty.getValue())))
+            
+            if (ifModifiedSince != null) 
             {
-               return Response.notModified().entity("Not Modified").build();
+               DateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.MODIFICATION, Locale.US);
+               Date lastModifiedDate = dateFormat.parse(lastModifiedProperty.getValue());
+               
+               dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
+               Date ifModifiedSinceDate = dateFormat.parse(ifModifiedSince);
+               
+               if(ifModifiedSinceDate.getTime() >= lastModifiedDate.getTime()){
+                  return Response.notModified().entity("Not Modified").build();
+               }
             }
 
             HierarchicalProperty contentLengthProperty = resource.getProperty(FileResource.GETCONTENTLENGTH);
@@ -148,7 +174,7 @@ public class GetCommand
                return Response.ok().header(HttpHeaders.CONTENT_LENGTH, Long.toString(contentLength)).header(
                   ExtHttpHeaders.ACCEPT_RANGES, "bytes").header(ExtHttpHeaders.LAST_MODIFIED,
                   lastModifiedProperty.getValue()).header(ExtHttpHeaders.CACHE_CONTROL,
-                  generateCacheControl(cahceControls, contentType)).entity(istream).type(contentType).build();
+                  generateCacheControl(cacheControls, contentType)).entity(istream).type(contentType).build();
             }
 
             // one range
@@ -165,10 +191,12 @@ public class GetCommand
 
                RangedInputStream rangedInputStream = new RangedInputStream(istream, start, end);
 
-               return Response.status(HTTPStatus.PARTIAL).header(HttpHeaders.CONTENT_LENGTH,
-                  Long.toString(returnedContentLength)).header(ExtHttpHeaders.ACCEPT_RANGES, "bytes").header(
-                  ExtHttpHeaders.CONTENTRANGE, "bytes " + start + "-" + end + "/" + contentLength).entity(
-                  rangedInputStream).build();
+               return Response.status(HTTPStatus.PARTIAL)
+                  .header(HttpHeaders.CONTENT_LENGTH, Long.toString(returnedContentLength))
+                  .header(ExtHttpHeaders.ACCEPT_RANGES, "bytes")
+                  .header(ExtHttpHeaders.LAST_MODIFIED, lastModifiedProperty.getValue())
+                  .header(ExtHttpHeaders.CONTENTRANGE, "bytes " + start + "-" + end + "/" + contentLength)
+                  .entity(rangedInputStream).type(contentType).build();
             }
 
             // multipart byte ranges as byte:0-100,80-150,210-300
@@ -184,8 +212,9 @@ public class GetCommand
             MultipartByterangesEntity mByterangesEntity =
                new MultipartByterangesEntity(resource, ranges, contentType, contentLength);
 
-            return Response.status(HTTPStatus.PARTIAL).header(ExtHttpHeaders.ACCEPT_RANGES, "bytes").entity(
-               mByterangesEntity).build();
+            return Response.status(HTTPStatus.PARTIAL).header(ExtHttpHeaders.ACCEPT_RANGES, "bytes")
+               .header(ExtHttpHeaders.LAST_MODIFIED, lastModifiedProperty.getValue()).entity(mByterangesEntity)
+               .type(ExtHttpHeaders.MULTIPART_BYTERANGES + WebDavConst.BOUNDARY).build();
          }
          else
          {
@@ -193,7 +222,8 @@ public class GetCommand
             resource = new CollectionResource(uri, node, nsContext);
             istream = ((CollectionResource)resource).getContentAsStream(baseURI);
 
-            XSLTStreamingOutput entity = new XSLTStreamingOutput("get.method.template", new StreamSource(istream));
+            XSLTStreamingOutput entity =
+               new XSLTStreamingOutput("get.method.template", new StreamSource(istream), xsltParams);
 
             return Response.ok(entity, MediaType.TEXT_HTML).build();
 
@@ -206,12 +236,12 @@ public class GetCommand
       }
       catch (RepositoryException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
    }

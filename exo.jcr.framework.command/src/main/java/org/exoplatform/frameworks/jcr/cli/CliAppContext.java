@@ -64,7 +64,7 @@ public class CliAppContext extends BasicAppContext
       }
       catch (Exception e)
       {
-         log.error("GetUserName error: " + e);
+         LOG.error("GetUserName error: " + e);
          return "Undefined";
       }
    }

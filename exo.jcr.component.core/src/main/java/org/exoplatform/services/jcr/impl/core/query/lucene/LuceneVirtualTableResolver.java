@@ -19,9 +19,9 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.index.Term;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.services.jcr.core.NamespaceAccessor;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -51,7 +51,7 @@ public class LuceneVirtualTableResolver extends NodeTypeVirtualTableResolver<Que
    /**
     * Class logger.
     */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.LuceneVirtualTableResolver");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.LuceneVirtualTableResolver");
 
    private final String mixinTypesField;
 

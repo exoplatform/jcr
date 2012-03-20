@@ -39,7 +39,7 @@ import javax.jcr.Session;
 public class CmdSize extends FtpCommandImpl
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "CmdSize");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.CmdSize");
 
    public CmdSize()
    {
@@ -79,13 +79,21 @@ public class CmdSize extends FtpCommandImpl
       }
       catch (PathNotFoundException pexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + pexc.getMessage());
+         }
       }
       catch (NoSuchWorkspaceException wexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + wexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       reply(String.format(FtpConst.Replyes.REPLY_550_SIZE, resName));
    }

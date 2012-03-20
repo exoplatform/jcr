@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<chapter id="Kernel.Manageability">
+  <?dbhtml filename="ch-kernel-menegeability.html"?>
+
+  <title>Manageability</title>
+
+    <para>The kernel has a framework for exposing a management view of the
+    various sub systems of the platform. The management view is a lose term
+    for defining how we can access relevant information about the system and
+    how we can apply management operations. JMX is the de facto standard for
+    exposing a management view in the Java Platform but we take in
+    consideration other kind of views such as REST web services. Therefore,
+    the framework is not tied to JMX, yet it provides a JMX part to define
+    more precisely details related to the JMX management view. The legacy
+    framework is still in use but is deprecated in favor of the new framework
+    as it is less tested and less efficient. It will be removed by
+    sanitization in the future.</para>
+
+  <section>
+    <title>Managed framework API</title>
+
+    <para>The managed frameworks defines an API for exposing a management view
+    of objects. The API is targeted for internal use and is not a public API.
+    The framework leverages Java 5 annotations to describe the management view
+    from an object.</para>
+
+    <section>
+      <title>Annotations</title>
+
+      <section>
+        <title>@org.exoplatform.management.annotations.Managed
+        annotation</title>
+
+        <para>The @Managed annotates elements that wants to expose a
+        management view to a management layer.</para>
+
+        <para><emphasis role="bold">@Managed for objects</emphasis></para>
+
+        <para>The framework will export a management view for the objects
+        annotated.</para>
+
+        <para><emphasis role="bold">@Managed for
+        getter/setter</emphasis></para>
+
+        <para>Defines a managed property. An annotated getter defines a read
+        property, an annotated setter defines a write property and if matching
+        getter/setter are annotated it defines a read/write property.</para>
+
+        <para><emphasis role="bold">@Managed on method</emphasis></para>
+
+        <para>Defines a managed operation.</para>
+      </section>
+
+      <section>
+        <title>@org.exoplatform.management.annotations.ManagedDescription</title>
+
+        <para>The @ManagedDescription annotation provides a description of a
+        managed element. It is valid to annotated object or methods. It takes
+        as sole argument a string that is the description value.</para>
+      </section>
+
+      <section>
+        <title>@org.exoplatform.management.annotations.ManagedName</title>
+
+        <para>The @ManagedName annotation provides an alternative name for
+        managed properties. It is used to accomodate legacy methods of an
+        object that can be renamed for compatibility reasons. It takes as sole
+        argument a string that is the name value.</para>
+      </section>
+
+      <section>
+        <title>@org.exoplatform.management.annotations.ManagedBy</title>
+
+        <para>The @ManagedBy annotation defines a delegate class for exposing
+        a management view. The sole argument of the annotation are class
+        litterals. The delegate class must provide a constructor with the
+        managed object as argument.</para>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>JMX Management View</title>
+
+    <section>
+      <title>JMX Annotations</title>
+
+      <section>
+        <title>@org.exoplatform.management.jmx.annotations.Property
+        annotation</title>
+
+        <para>The @Property annotation is used to within other annotations
+        such as @NameTemplate or @NamingContext. It should be seen as a
+        structural way for a list of properties. A property is made of a key
+        and a value. The value can either be a string litteral or it can be
+        surrounded by curly brace to be a dynamic property. A dynamic property
+        is resolved against the instance of the object at runtime.</para>
+      </section>
+
+      <section>
+        <title>@org.exoplatform.management.jmx.annotations.NameTemplate
+        annotation</title>
+
+        <para>The @NameTemplate defines a template that is used at
+        registration time of a managed object to create the JMX object name.
+        The template is formed of properties.</para>
+
+        <programlisting language="java">@NameTemplate({
+  @Property(key="container", value="workspace"),
+  @Property(key="name", value="{Name}")})</programlisting>
+      </section>
+
+      <section>
+        <title>@org.exoplatform.management.jmx.annotations.NamingContext
+        annotation</title>
+
+        <para>The @NamingContext annotations defines a set of properties which
+        are used within a management context. It allows to propagate
+        properties down to managed objects which are defined by an object
+        implementing the ManagementAware interface. The goal is to scope
+        different instances of the same class that would have the same object
+        name otherwise.</para>
+
+        <programlisting language="java">@NamingContext(@Property(key="workspace", value="{Name}"))</programlisting>
+      </section>
+    </section>
+  </section>
+
+  <section>
+    <title>Example</title>
+
+    <section>
+      <title>CacheService example</title>
+
+      <para>The cache service delegates most of the work to the
+      CacheServiceManaged class by using the @ManagedBy annotation. At runtime
+      when a new cache is created, it calls the CacheServiceManaged class in
+      order to let the CacheServiceManaged object register the cache.</para>
+
+      <programlisting language="java">@ManagedBy(CacheServiceManaged.class)
+public class CacheServiceImpl implements CacheService {
+
+  CacheServiceManaged managed;
+  ...
+  synchronized private ExoCache createCacheInstance(String region) throws Exception {
+    ...
+    if (managed != null) {
+      managed.registerCache(simple);
+    }
+    ...
+  }
+}</programlisting>
+
+      <para>The ExoCache interface is annotated to define its management view.
+      The @NameTemplate is used to produce object name values when ExoCache
+      instance are registered.</para>
+
+      <programlisting language="java">@Managed
+@NameTemplate({@Property(key="service", value="cache"), @Property(key="name", value="{Name}")})
+@ManagedDescription("Exo Cache")
+public interface ExoCache {
+
+  @Managed
+  @ManagedName("Name")
+  @ManagedDescription("The cache name")
+  public String getName();
+
+  @Managed
+  @ManagedName("Capacity")
+  @ManagedDescription("The maximum capacity")
+  public int getMaxSize();
+
+  @Managed
+  @ManagedDescription("Evict all entries of the cache")
+  public void clearCache() throws Exception;
+
+  ...
+}</programlisting>
+
+      <para>The CacheServiceManaged is the glue code between the CacheService
+      and the management view. The main reason is that only exo services are
+      registered automatically against the management view. Any other managed
+      bean must be registered manually for now. Therefore, it needs to know
+      about the management layer via the management context. The management
+      context allows an object implementing the ManagementAware interface to
+      receive a context to perform further registration of managed
+      objects.</para>
+
+      <programlisting language="java">@Managed
+public class CacheServiceManaged implements ManagementAware {
+
+  /** . */
+  private ManagementContext context;
+
+  /** . */
+  private CacheServiceImpl cacheService;
+
+  public CacheServiceManaged(CacheServiceImpl cacheService) {
+    this.cacheService = cacheService;
+
+    //
+    cacheService.managed = this;
+  }
+
+  public void setContext(ManagementContext context) {
+    this.context = context;
+  }
+
+  void registerCache(ExoCache cache) {
+    if (context != null) {
+      context.register(cache);
+    }
+  }
+}</programlisting>
+    </section>
+  </section>
+</chapter>

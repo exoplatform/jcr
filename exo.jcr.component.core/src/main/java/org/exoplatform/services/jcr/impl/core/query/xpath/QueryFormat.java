@@ -16,16 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.xpath;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.List;
-import java.util.TimeZone;
-
-import javax.jcr.NamespaceException;
-import javax.jcr.RepositoryException;
-import javax.jcr.query.InvalidQueryException;
-
 import org.exoplatform.commons.utils.ISO8601;
+import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -47,8 +39,15 @@ import org.exoplatform.services.jcr.impl.core.query.QueryNodeVisitor;
 import org.exoplatform.services.jcr.impl.core.query.QueryRootNode;
 import org.exoplatform.services.jcr.impl.core.query.RelationQueryNode;
 import org.exoplatform.services.jcr.impl.core.query.TextsearchQueryNode;
-
 import org.exoplatform.services.jcr.impl.util.ISO9075;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.RepositoryException;
+import javax.jcr.query.InvalidQueryException;
 
 /**
  * Implements the query node tree serialization into a String.
@@ -510,7 +509,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
         } else if (node.getValueType() == TYPE_STRING) {
             b.append("'").append(node.getStringValue().replaceAll("'", "''")).append("'");
         } else if (node.getValueType() == TYPE_DATE || node.getValueType() == TYPE_TIMESTAMP) {
-            Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            Calendar cal = Calendar.getInstance(Tools.getTimeZone("UTC"));
             cal.setTime(node.getDateValue());
             b.append(resolver.createJCRName(XPathQueryBuilder.XS_DATETIME).getAsString());
             b.append("('").append(ISO8601.format(cal)).append("')");

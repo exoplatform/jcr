@@ -88,13 +88,13 @@ public class JCRWebdavConnection extends HTTPConnection
    public HTTPResponse addNode(String name, String[] mixinTypes, byte[] data) throws IOException, ModuleException
    {
       // construct string containing mixins in comma separated format
-      String mixins = mixinTypes.length > 0 ? mixinTypes[0] : "";
+      StringBuilder mixins = new StringBuilder(mixinTypes.length > 0 ? mixinTypes[0] : "");
       for (int i = 1; i < mixinTypes.length; i++)
       {
-         mixins = mixins + ", " + mixinTypes[i];
+         mixins.append(", ").append(mixinTypes[i]);
       }
       NVPair[] headers = new NVPair[2];
-      headers[0] = new NVPair(ExtHttpHeaders.CONTENT_MIXINTYPES, mixins);
+      headers[0] = new NVPair(ExtHttpHeaders.CONTENT_MIXINTYPES, mixins.toString());
       headers[1] = new NVPair(HttpHeaders.CONTENT_TYPE, "text/plain");
       HTTPResponse response = Put(workspacePath + name, data, headers);
       response.getStatusCode();

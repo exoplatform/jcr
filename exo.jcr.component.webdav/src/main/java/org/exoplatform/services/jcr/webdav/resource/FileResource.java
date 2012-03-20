@@ -19,7 +19,9 @@
 package org.exoplatform.services.jcr.webdav.resource;
 
 import org.exoplatform.common.util.HierarchicalProperty;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.webdav.WebDavConst;
+import org.exoplatform.services.jcr.webdav.command.acl.ACLProperties;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -64,6 +66,8 @@ public class FileResource extends GenericResource
       // FILE_SKIP.add("jcr:primaryType");
       FILE_SKIP.add("jcr:mixinTypes");
       FILE_SKIP.add("jcr:created");
+      FILE_SKIP.add("jcr:lockOwner");
+      FILE_SKIP.add("jcr:lockIsDeep");
    };
 
    /**
@@ -76,6 +80,8 @@ public class FileResource extends GenericResource
       CONTENT_SKIP.add("jcr:lastModified");
       CONTENT_SKIP.add("jcr:mimeType");
       CONTENT_SKIP.add("jcr:uuid");
+      CONTENT_SKIP.add("jcr:lockOwner");
+      CONTENT_SKIP.add("jcr:lockIsDeep");
 
       CONTENT_SKIP.add("dc:date");
       CONTENT_SKIP.add("exo:internalUse");
@@ -222,7 +228,15 @@ public class FileResource extends GenericResource
       }
       else if (name.equals(GETLASTMODIFIED))
       {
-         Calendar modified = contentNode().getProperty("jcr:lastModified").getDate();
+         Calendar modified;
+         try
+         {
+            modified = contentNode().getProperty("jcr:lastModified").getDate();
+         }
+         catch (PathNotFoundException e)
+         {
+            modified = node.getProperty("jcr:created").getDate();
+         }
          HierarchicalProperty lastModified = new HierarchicalProperty(name, modified, MODIFICATION_PATTERN);
          lastModified.setAttribute("b:dt", "dateTime.rfc1123");
          return lastModified;
@@ -268,7 +282,9 @@ public class FileResource extends GenericResource
             return lockDiscovery(token, owner, "86400");
          }
          else
+         {
             throw new PathNotFoundException();
+         }
       }
       else if (name.equals(ISVERSIONED))
       {
@@ -277,6 +293,14 @@ public class FileResource extends GenericResource
       else if (name.equals(SUPPORTEDMETHODSET))
       {
          return supportedMethodSet();
+      }
+      else if (name.equals(ACLProperties.ACL))
+      {
+         return ACLProperties.getACL((NodeImpl)node);
+      }
+      else if (name.equals(OWNER))
+      {
+         return ACLProperties.getOwner((NodeImpl)node);
       }
       else
       {
@@ -305,7 +329,18 @@ public class FileResource extends GenericResource
             String propertyValue;
             if (property.getDefinition().isMultiple())
             {
-               propertyValue = property.getValues()[0].getString();
+               if (property.getValues().length >= 1)
+               {
+                  propertyValue = property.getValues()[0].getString();
+               }
+               else
+               {
+                  // this means that we return empty value, because according to WebDAV spec:
+                  // this is a property whose semantics and syntax are not enforced by the server
+                  // the server only records the value of a dead property;
+                  // the client is responsible for maintaining the consistency of the syntax and semantics of a dead property. 
+                  propertyValue = "";
+               }
             }
             else
             {
@@ -313,7 +348,6 @@ public class FileResource extends GenericResource
             }
             return new HierarchicalProperty(name, propertyValue);
          }
-
       }
    }
 

@@ -24,15 +24,15 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-applications-parent</artifactId>
-    <version>1.14.0-Beta01-SNAPSHOT</version>
+    <version>1.14.8-GA-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.applications.backupconsole</artifactId>
   <name>eXo JCR :: Applications :: Backup Console</name>
   <properties>
-    <exo.test.includes>*</exo.test.includes>
     <childDelegation>true</childDelegation>
     <enforcer.skip>true</enforcer.skip>
   </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
@@ -59,6 +59,11 @@
       <groupId>javax.ws.rs</groupId>
       <artifactId>jsr311-api</artifactId>
     </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
+      <scope>runtime</scope>
+    </dependency>
   </dependencies>
   <build>
     <pluginManagement>
@@ -77,26 +82,36 @@
           </configuration>
         </plugin>
       </plugins>
-    </pluginManagement>
-    <plugins>
-      <plugin>
-        <artifactId>maven-assembly-plugin</artifactId>
-        <configuration>
-          <descriptors>
-            <descriptor>${basedir}/src/main/assemblies/binary-assembly.xml</descriptor>
-          </descriptors>
-          <finalName>backupconsole</finalName>
-        </configuration>
-        <executions>
-          <execution>
-            <id>binary</id>
-            <phase>package</phase>
-            <goals>
-              <goal>directory-single</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-    </plugins>
+    </pluginManagement>    
   </build>
+  <profiles>
+    <profile>
+      <id>deploy</id>
+      <activation>
+         <activeByDefault>false</activeByDefault>
+      </activation>
+      <build>
+        <plugins>
+          <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <configuration>
+              <descriptors>
+                <descriptor>${basedir}/src/main/assemblies/binary-assembly.xml</descriptor>
+              </descriptors>
+              <finalName>backupconsole</finalName>
+            </configuration>
+            <executions>
+              <execution>
+                <id>binary</id>
+                <phase>package</phase>
+                <goals>
+                  <goal>directory-single</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>      
+    </profile>
+  </profiles>
 </project>

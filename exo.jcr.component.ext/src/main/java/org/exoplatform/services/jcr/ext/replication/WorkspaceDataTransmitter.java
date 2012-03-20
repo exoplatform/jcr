@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.replication;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
@@ -85,6 +86,7 @@ public class WorkspaceDataTransmitter implements ItemsPersistenceListener
    public WorkspaceDataTransmitter(CacheableWorkspaceDataManager dataManager) throws RepositoryConfigurationException
    {
       dataManager.addItemPersistenceListener(this);
+      // need to use FileCleaner from FileCleanerHolder
       this.fileCleaner = new FileCleaner(ReplicationService.FILE_CLEANRE_TIMEOUT);
    }
 
@@ -168,8 +170,8 @@ public class WorkspaceDataTransmitter implements ItemsPersistenceListener
       String identifier = IdGenerator.generate();
       String fName = recoveryManager.save(isChangesLog, identifier);
 
-      channelManager.sendBinaryFile(new File(fName).getCanonicalPath(), ownName, identifier, systemId,
-         Packet.PacketType.BINARY_CHANGESLOG_PACKET);
+      channelManager.sendBinaryFile(PrivilegedFileHelper.getCanonicalPath(new File(fName)), ownName, identifier,
+         systemId, Packet.PacketType.BINARY_CHANGESLOG_PACKET);
 
       return identifier;
    }

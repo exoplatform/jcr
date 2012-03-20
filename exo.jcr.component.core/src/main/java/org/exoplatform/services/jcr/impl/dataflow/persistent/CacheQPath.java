@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -68,37 +69,42 @@ class CacheQPath extends CacheKey
 
    private final String key;
 
+   private final ItemType itemType;
+
    /**
     * For CPath will be stored in cache C
     */
-   CacheQPath(String parentId, QPath path)
+   CacheQPath(String parentId, QPath path, ItemType itemType)
    {
       this.parentId = parentId;
       this.path = path;
-      this.key = key(this.parentId, this.path.getEntries());
+      this.itemType = itemType;
+      this.key = key(this.parentId, this.path.getEntries(), this.itemType);
    }
 
    /**
     * For CPath will be searched in cache C
     */
-   CacheQPath(String parentId, QPathEntry name)
+   CacheQPath(String parentId, QPathEntry name, ItemType itemType)
    {
       this.parentId = parentId;
       this.path = null;
-      this.key = key(this.parentId, name);
+      this.itemType = itemType;
+      this.key = key(this.parentId, name, this.itemType);
    }
 
-   protected String key(final String parentId, final QPathEntry[] pathEntries)
+   protected String key(final String parentId, final QPathEntry[] pathEntries, ItemType itemType)
    {
-      return key(parentId, pathEntries[pathEntries.length - 1]);
+      return key(parentId, pathEntries[pathEntries.length - 1], itemType);
    }
 
-   protected String key(final String parentId, final QPathEntry name)
+   protected String key(final String parentId, final QPathEntry name, ItemType itemType)
    {
       StringBuilder sk = new StringBuilder();
       // sk.append(BASE); for strong hash code, skip it when equals uses String.equals
       sk.append(parentId != null ? parentId : Constants.ROOT_PARENT_UUID);
       sk.append(name.getAsString(true));
+      sk.append(itemType.toString());
       return sk.toString();
    }
 

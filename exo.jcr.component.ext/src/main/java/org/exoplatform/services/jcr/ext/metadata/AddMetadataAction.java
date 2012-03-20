@@ -22,6 +22,7 @@ import org.apache.commons.chain.Context;
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.command.action.Action;
+import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.HandlerNotFoundException;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
@@ -39,8 +40,8 @@ import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.Properties;
 import java.util.Map.Entry;
+import java.util.Properties;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Value;
@@ -63,7 +64,7 @@ public class AddMetadataAction implements Action
    {
 
       PropertyImpl property = (PropertyImpl)ctx.get("currentItem");
-      NodeImpl parent = (NodeImpl)property.getParent();
+      NodeImpl parent = property.getParent();
       if (!parent.isNodeType("nt:resource"))
       {
          throw new Exception("incoming node is not nt:resource type");
@@ -113,7 +114,9 @@ public class AddMetadataAction implements Action
             (DocumentReaderService)((ExoContainer)ctx.get("exocontainer"))
                .getComponentInstanceOfType(DocumentReaderService.class);
          if (readerService == null)
-            throw new NullPointerException("No DocumentReaderService configured for current container");
+         {
+            throw new IllegalArgumentException("No DocumentReaderService configured for current container");
+         }
 
          Properties props = new Properties();
          try
@@ -123,6 +126,10 @@ public class AddMetadataAction implements Action
          catch (HandlerNotFoundException e)
          {
             log.debug(e.getMessage());
+         }
+         catch (DocumentReadException e)
+         {
+            log.warn(e.getMessage(), e);
          }
 
          Iterator entries = props.entrySet().iterator();

@@ -24,8 +24,6 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.NodeSPI;
 import org.jboss.cache.eviction.EvictionActionPolicy;
 
-import java.util.Set;
-
 /**
  * This class is used to prevent the memory leak described here http://community.jboss.org/thread/147084
  * and corresponding to the JIRA https://jira.jboss.org/jira/browse/JBCACHE-1567
@@ -39,7 +37,7 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
 {
    Cache<?, ?> cache;
 
-   private static final Log log = LogFactory.getLog("exo.jcr.component.core.DefaultEvictionActionPolicy");
+   private static final Log LOG = LogFactory.getLog("exo.jcr.component.core.DefaultEvictionActionPolicy");
 
    public void setCache(Cache<?, ?> cache)
    {
@@ -52,50 +50,54 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
       boolean result;
       try
       {
-         if (log.isTraceEnabled())
-            log.trace("Evicting Fqn " + fqn);
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("Evicting Fqn " + fqn);
+         }
          cache.evict(fqn);
          result = true;
       }
       catch (Exception e)
       {
-         if (log.isDebugEnabled())
-            log.debug("Unable to evict " + fqn, e);
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Unable to evict " + fqn, e);
+         }
          result = false;
       }
-      if (fqn.size() != 3)
+      if (fqn.size() != 4)
       {
          return result;
       }
       try
       {
          Fqn parentFqn = fqn.getParent();
-         if (parentFqn.get(0).equals(JBossCacheWorkspaceStorageCache.CHILD_NODES)
-            || parentFqn.get(0).equals(JBossCacheWorkspaceStorageCache.CHILD_PROPS))
+         if (parentFqn.get(1).equals(JBossCacheWorkspaceStorageCache.CHILD_NODES)
+            || parentFqn.get(1).equals(JBossCacheWorkspaceStorageCache.CHILD_PROPS))
          {
-            // The expected data structure is of type $CHILD_NODES/${node-id}/${sub-node-name} or
-            // $CHILD_PROPS/${node-id}/${sub-property-name}
+            // The expected data structure is of type ${ws-id}/$CHILD_NODES/${node-id}/${sub-node-name} or
+            // ${ws-id}/$CHILD_PROPS/${node-id}/${sub-property-name}
 
-            // We use the method getChildrenNamesDirect to avoid going through 
+            // We use the method hasChildrenDirect to avoid going through 
             // the intercepter chain (EXOJCR-460)
             NodeSPI node = ((CacheSPI)cache).peek(parentFqn, false);
             // Check if not null, possibly this node was concurrently removed 
-            if (node != null)
+            if (node != null && !node.hasChildrenDirect())
             {
-               Set<Object> names = node.getChildrenNamesDirect();
-               if (names.isEmpty() || (names.size() == 1 && names.contains(fqn.get(2))))
+               if (LOG.isTraceEnabled())
                {
-                  if (log.isTraceEnabled())
-                     log.trace("Evicting Fqn " + fqn);
-                  cache.evict(parentFqn);
+                  LOG.trace("Evicting Fqn " + fqn);
                }
+               cache.evict(parentFqn);
             }
          }
       }
-      catch (Exception e)
+      catch (IllegalStateException e)
       {
-         if (log.isDebugEnabled())
-            log.debug("Unable to evict " + fqn, e);
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Unable to evict " + fqn, e);
+         }
       }
       return result;
    }

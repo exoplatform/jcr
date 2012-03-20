@@ -76,7 +76,8 @@ public abstract class AbstractWriteOnlyCacheLoader
     */
    public void prepare(Object tx, List<Modification> modifications, boolean onePhase) throws Exception
    {
-      throw new WriteOnlyCacheLoaderException("The method 'prepare(Object tx, List<Modification> modifications, boolean onePhase)' should not be called.");
+      throw new WriteOnlyCacheLoaderException(
+               "The method 'prepare(Object tx, List<Modification> modifications, boolean onePhase)' should not be called.");
    }
 
    /**

@@ -25,10 +25,12 @@ import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+import org.exoplatform.services.security.MembershipEntry;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.util.Collection;
 
 import javax.jcr.Credentials;
 import javax.jcr.LoginException;
@@ -128,6 +130,18 @@ public class BindableRepositoryImpl implements Serializable, Referenceable, Mana
    public Session getSystemSession(String workspaceName) throws RepositoryException
    {
       return delegatee.getSystemSession(workspaceName);
+   }
+
+   /*
+    * (non-Javadoc)
+    * @see
+    * org.exoplatform.services.jcr.core.ManageableRepository#getDynamicSession
+    * (java.lang.String)
+    */
+   public Session getDynamicSession(String workspaceName, Collection<MembershipEntry> membershipEntries)
+            throws RepositoryException
+   {
+      return delegatee.getDynamicSession(workspaceName, membershipEntries);
    }
 
    /*
@@ -237,9 +251,14 @@ public class BindableRepositoryImpl implements Serializable, Referenceable, Mana
       return delegatee.getState();
    }
 
-   public void setState(int state)
+   public void setState(int state) throws RepositoryException
    {
       delegatee.setState(state);
+   }
+
+   public String getStateTitle()
+   {
+      return delegatee.getStateTitle();
    }
 
 }

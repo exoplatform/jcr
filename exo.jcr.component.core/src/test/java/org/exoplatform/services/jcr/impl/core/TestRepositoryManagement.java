@@ -18,21 +18,32 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.CacheEntry;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.ConfigurationHelper;
-import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
+import org.jibx.runtime.BindingDirectory;
+import org.jibx.runtime.IBindingFactory;
+import org.jibx.runtime.IMarshallingContext;
+import org.jibx.runtime.IUnmarshallingContext;
 
-import javax.jcr.NamespaceException;
-import javax.jcr.Node;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
 import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
@@ -51,523 +62,484 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
    private boolean isDefaultWsMultiDb;
 
-   private final ConfigurationHelper helper;
+   private final TesterConfigurationHelper helper;
+   
 
    public TestRepositoryManagement()
    {
       super();
-      this.helper = ConfigurationHelper.getInstence();
+      this.helper = TesterConfigurationHelper.getInstance();
    }
-
-   // TODO remove this method
-   public void createDafaultRepository(String repoName, String defaultWs) throws Exception
-   {
-
-      RepositoryEntry repositoryEntry = new RepositoryEntry();
-
-      repositoryEntry.setName(repoName);
-      repositoryEntry.setSessionTimeOut(3600000);
-      repositoryEntry.setAuthenticationPolicy("org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator");
-      repositoryEntry.setSecurityDomain("exo-domain");
-      repositoryEntry.setSystemWorkspaceName(defaultWs);
-      repositoryEntry.setDefaultWorkspaceName(defaultWs);
-
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs(defaultWs, isDefaultWsMultiDb, null, "target/temp/values/" + IdGenerator.generate(), wsEntry
-            .getContainer());
-
-      repositoryEntry.addWorkspace(workspaceEntry);
-
-      WorkspaceEntry secondWs =
-         helper.getNewWs(defaultWs + IdGenerator.generate(), isDefaultWsMultiDb, isDefaultWsMultiDb ? null
-            : workspaceEntry.getContainer().getParameterValue("sourceName"), "target/temp/values/"
-            + IdGenerator.generate(), wsEntry.getContainer());
-
-      repositoryEntry.addWorkspace(secondWs);
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-
-      service.createRepository(repositoryEntry);
-   }
-
-   @Override
-   public void setUp() throws Exception
-   {
-      // bindDs();
-      super.setUp();
-      wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
-      if ("true".equals(wsEntry.getContainer().getParameterValue("multi-db")))
-      {
-         isDefaultWsMultiDb = true;
-      }
-
-   }
-
+      
    public void testAddNewRepository() throws Exception
    {
-      RepositoryEntry repositoryEntry = new RepositoryEntry();
-
-      repositoryEntry.setName("repo4TestCreateRepository");
-      repositoryEntry.setSessionTimeOut(3600000);
-      repositoryEntry.setAuthenticationPolicy("org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator");
-      repositoryEntry.setSecurityDomain("exo-domain");
-      repositoryEntry.setSystemWorkspaceName("ws4TestCreateRepository");
-      repositoryEntry.setDefaultWorkspaceName("ws4TestCreateRepository");
-      //
-      // List params = new ArrayList();
-      // params.add(new SimpleParameterEntry("sourceName", getNewDs()));
-      // params.add(new SimpleParameterEntry("db-type", "generic"));
-      // params.add(new SimpleParameterEntry("multi-db", "false"));
-      // params.add(new SimpleParameterEntry("update-storage", "true"));
-      // params.add(new SimpleParameterEntry("max-buffer-size", "204800"));
-      // params.add(new SimpleParameterEntry("swap-directory",
-      // "target/temp/swap/ws"));
-      //
-      // ContainerEntry containerEntry = new
-      // ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
-      // (ArrayList) params);
-      // containerEntry.setParameters(params);
-      //
-      // WorkspaceEntry workspaceEntry = new
-      // WorkspaceEntry("ws4TestCreateRepository", "nt:unstructured");
-      //    
-
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs("ws4TestCreateRepository", isDefaultWsMultiDb, wsEntry.getContainer().getParameterValue(
-            JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(), wsEntry
-            .getContainer());
-
-      repositoryEntry.addWorkspace(workspaceEntry);
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-
-      service.createRepository(repositoryEntry);
-
-      RepositoryImpl newRtepository = (RepositoryImpl)service.getRepository("repo4TestCreateRepository");
+      ManageableRepository repository = null;
       try
       {
+         repository = helper.createRepository(container, false, null);
 
-         Session sess = newRtepository.getSystemSession(workspaceEntry.getName());
-
-         Node root = sess.getRootNode();
-         assertNotNull(root);
-
-         assertNotNull(root.getNode("jcr:system"));
-
-         assertNotNull(root.getNode("jcr:system/exo:namespaces"));
-         root.addNode("testNode");
-         sess.save();
-         Node testNode = root.getNode("testNode");
-         assertNotNull(testNode);
-         sess.logout();
-      }
-      catch (RepositoryException e)
-      {
-         fail();
-      }
-      RepositoryImpl defRep = (RepositoryImpl)service.getDefaultRepository();
-      Session sess = null;
-      try
-      {
-
-         sess = defRep.getSystemSession();
-
-         Node root = sess.getRootNode();
-         assertNotNull(root);
-
-         assertNotNull(root.getNode("jcr:system"));
-
-         assertNotNull(root.getNode("jcr:system/exo:namespaces"));
-         // root.addNode("testNode");
-         // sess.save();
-         Node testNode = root.getNode("testNode");
-
-      }
-      catch (PathNotFoundException e)
-      {
-         // Ok
+         Session session = null;
+         try
+         {
+            session = repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+            assertNotNull(session.getRootNode());
+         }
+         finally
+         {
+            if (session != null)
+            {
+               session.logout();
+            }
+         }
       }
       finally
       {
-         if (sess != null)
-            sess.logout();
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
       }
-      service.removeRepository("repo4TestCreateRepository");
+   }
+
+   public void testMarshalUnmarshalRepositoryConfiguration() throws Exception
+   {
+
+      ManageableRepository repository = null;
+      try
+      {
+         repository = helper.createRepository(container, false, null);
+
+         final long lockManagerTimeOut =
+            repository.getConfiguration().getWorkspaceEntries().get(0).getLockManager().getTimeout();
+
+         // 1st marshal configuration
+         File tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
+         PrivilegedFileHelper.deleteOnExit(tempFile);
+
+         IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IMarshallingContext mctx = factory.createMarshallingContext();
+
+         FileOutputStream saveStream = new FileOutputStream(tempFile);
+         ArrayList<RepositoryEntry> repositoryEntries = new ArrayList<RepositoryEntry>();
+         repositoryEntries.add(repository.getConfiguration());
+
+         RepositoryServiceConfiguration newRepositoryServiceConfiguration =
+            new RepositoryServiceConfiguration(repositoryService.getConfig().getDefaultRepositoryName(),
+               repositoryEntries);
+         mctx.marshalDocument(newRepositoryServiceConfiguration, "ISO-8859-1", null, saveStream);
+         saveStream.close();
+
+         // 1st unmarshal
+         factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IUnmarshallingContext uctx = factory.createUnmarshallingContext();
+         RepositoryServiceConfiguration conf =
+            (RepositoryServiceConfiguration)uctx
+               .unmarshalDocument(PrivilegedFileHelper.fileInputStream(tempFile), null);
+
+         // 1st check
+         RepositoryEntry unmarshledRepositoryEntry =
+            conf.getRepositoryConfiguration(repository.getConfiguration().getName());
+         assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
+            .getTimeout());
+
+         // 2nd marshal configuration
+         tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
+         PrivilegedFileHelper.deleteOnExit(tempFile);
+
+         factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         mctx = factory.createMarshallingContext();
+         saveStream = new FileOutputStream(tempFile);
+         repositoryEntries = new ArrayList<RepositoryEntry>();
+         repositoryEntries.add(repository.getConfiguration());
+
+         newRepositoryServiceConfiguration =
+            new RepositoryServiceConfiguration(repositoryService.getConfig().getDefaultRepositoryName(),
+               repositoryEntries);
+         mctx.marshalDocument(newRepositoryServiceConfiguration, "ISO-8859-1", null, saveStream);
+         saveStream.close();
+
+         // 2nd unmarshal
+         factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         uctx = factory.createUnmarshallingContext();
+         conf =
+            (RepositoryServiceConfiguration)uctx
+               .unmarshalDocument(PrivilegedFileHelper.fileInputStream(tempFile), null);
+
+         // 2nd check
+         unmarshledRepositoryEntry = conf.getRepositoryConfiguration(repository.getConfiguration().getName());
+         assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
+            .getTimeout());
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testAddNewRepositoryWithSameName() throws Exception
    {
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-
-      RepositoryEntry repositoryEntry = new RepositoryEntry();
-
-      repositoryEntry.setName(service.getConfig().getDefaultRepositoryName());
-      repositoryEntry.setSessionTimeOut(3600000);
-      repositoryEntry.setAuthenticationPolicy("org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator");
-      repositoryEntry.setSecurityDomain("exo-domain");
-      repositoryEntry.setSystemWorkspaceName("ws4testAddNewRepositoryWithSameName");
-      repositoryEntry.setDefaultWorkspaceName("ws4testAddNewRepositoryWithSameName");
-
-      // List params = new ArrayList();
-      // params.add(new SimpleParameterEntry("sourceName", getNewDs()));
-      // params.add(new SimpleParameterEntry("db-type", "generic"));
-      // params.add(new SimpleParameterEntry("multi-db", "false"));
-      // params.add(new SimpleParameterEntry("update-storage", "true"));
-      // params.add(new SimpleParameterEntry("max-buffer-size", "204800"));
-      // params.add(new SimpleParameterEntry("swap-directory",
-      // "target/temp/swap/ws"));
-      //
-      // ContainerEntry containerEntry = new
-      // ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
-      // (ArrayList) params);
-      // containerEntry.setParameters(params);
-
-      // WorkspaceEntry workspaceEntry = new
-      // WorkspaceEntry("ws4TestCreateRepository", "nt:unstructured");
-      // workspaceEntry.setContainer(containerEntry);
-
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs("ws4testAddNewRepositoryWithSameName", isDefaultWsMultiDb, null, "target/temp/values/"
-            + IdGenerator.generate(), wsEntry.getContainer());
-      repositoryEntry.addWorkspace(workspaceEntry);
-
+      ManageableRepository repository = null;
       try
       {
-         service.createRepository(repositoryEntry);
-         fail();
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         // ok
-      }
+         repository = helper.createRepository(container, false, null);
 
+         try
+         {
+            RepositoryEntry rEntry = helper.createRepositoryEntry(false, null, null, true);
+            rEntry.setName(repository.getConfiguration().getName());
+
+            helper.createRepository(container, rEntry);
+            fail();
+         }
+         catch (Exception e)
+         {
+            // ok
+         }
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testCanRemove() throws Exception
    {
-      RepositoryEntry repositoryEntry = new RepositoryEntry();
-
-      repositoryEntry.setName("repo4testCanRemove");
-      repositoryEntry.setSessionTimeOut(3600000);
-      repositoryEntry.setAuthenticationPolicy("org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator");
-      repositoryEntry.setSecurityDomain("exo-domain");
-      repositoryEntry.setSystemWorkspaceName("ws4testCanRemove");
-      repositoryEntry.setDefaultWorkspaceName("ws4testCanRemove");
-
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs("ws4testCanRemove", isDefaultWsMultiDb, null, "target/temp/values/" + IdGenerator.generate(),
-            wsEntry.getContainer());
-
-      repositoryEntry.addWorkspace(workspaceEntry);
-
-      WorkspaceEntry secondWs =
-         helper.getNewWs("ws4testCanRemove2", isDefaultWsMultiDb, isDefaultWsMultiDb ? null : wsEntry.getContainer()
-            .getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(),
-            wsEntry.getContainer());
-      // WorkspaceEntry secondWs = TestWorkspaceManagement.getNewWs(null, false,
-      // dsName,null);
-      repositoryEntry.addWorkspace(secondWs);
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-
-      service.createRepository(repositoryEntry);
-
-      RepositoryImpl newRtepository = (RepositoryImpl)service.getRepository("repo4testCanRemove");
+      ManageableRepository repository = null;
       try
       {
+         repository = helper.createRepository(container, false, null);
 
-         Session sess = newRtepository.getSystemSession();
+         RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
-         Node root = sess.getRootNode();
-         assertNotNull(root);
-         sess.logout();
+         SessionImpl session =
+            (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
 
-         Session sess2 = newRtepository.getSystemSession(secondWs.getName());
-
-         Node root2 = sess2.getRootNode();
-         assertNotNull(root2);
-         assertFalse(service.canRemoveRepository("repo4testCanRemove"));
-         sess2.logout();
-         assertTrue(service.canRemoveRepository("repo4testCanRemove"));
-         service.removeRepository("repo4testCanRemove");
+         assertFalse(service.canRemoveRepository(repository.getConfiguration().getName()));
+         session.logout();
+         assertTrue(service.canRemoveRepository(repository.getConfiguration().getName()));
       }
-      catch (RepositoryException e)
+      finally
       {
-         e.printStackTrace();
-         fail();
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
       }
-
    }
 
    public void testInitNameSpaces() throws Exception
    {
-      // Test initialization of common node types
-      String REPONAME = "testInitNameSpaces";
-      String WSNAME = "ws4" + REPONAME;
-
-      createDafaultRepository(REPONAME, WSNAME);
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-
-      RepositoryImpl newRepository = (RepositoryImpl)service.getRepository(REPONAME);
-      Session sess = newRepository.getSystemSession(WSNAME);
-
-      assertEquals("http://www.apache.org/jackrabbit/test", sess.getNamespaceURI("test"));
-      assertEquals("http://www.exoplatform.org/jcr/test/1.0", sess.getNamespaceURI("exojcrtest"));
-
+      ManageableRepository repository = null;
       try
       {
-         sess.getNamespaceURI("blabla");
-         fail();
-      }
-      catch (NamespaceException e)
-      {
-         // ok;
-      }
+         repository = helper.createRepository(container, false, null);
 
+         SessionImpl session = null;
+         try
+         {
+            session =
+               (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+
+            assertEquals("http://www.apache.org/jackrabbit/test", session.getNamespaceURI("test"));
+            assertEquals("http://www.exoplatform.org/jcr/test/1.0", session.getNamespaceURI("exojcrtest"));
+         }
+         finally
+         {
+            if (session != null)
+            {
+               session.logout();
+            }
+         }
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
    }
 
    public void testInitNodeTypes() throws Exception
    {
-
-      // Test initialization of common node types
-      String REPONAME = "testInitNodeTypesCommonRepository";
-      String WSNAME = "ws4testInitNodeTypes";
-
-      createDafaultRepository(REPONAME, WSNAME);
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-
-      RepositoryImpl newRepository = (RepositoryImpl)service.getRepository(REPONAME);
-      Session sess = newRepository.getSystemSession(WSNAME);
-      Node newRoot = sess.getRootNode();
+      ManageableRepository repository = null;
       try
       {
+         repository = helper.createRepository(container, false, null);
 
-         assertNotNull(newRoot);
+         SessionImpl session = null;
+         try
+         {
+            session =
+               (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
 
-         assertNotNull(newRoot.getNode("jcr:system"));
-
-         assertNotNull(newRoot.getNode("jcr:system/exo:namespaces"));
-         newRoot.addNode("testNode", "exojcrtest:sub1");
-         sess.save();
-         Node testNode = newRoot.getNode("testNode");
-         assertNotNull(testNode);
+            // check if nt:folder nodetype exists
+            session.getRootNode().addNode("folder", "nt:folder");
+            session.save();
+         }
+         finally
+         {
+            if (session != null)
+            {
+               session.logout();
+            }
+         }
       }
-      catch (RepositoryException e)
+      finally
       {
-         fail();
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
       }
-      try
-      {
-         newRoot.addNode("testNode2", "exojcrtest:sub2");
-         fail();
-      }
-      catch (NoSuchNodeTypeException e)
-      {
-         // ok
-      }
-      try
-      {
-         newRoot.addNode("testNode2", "exojcrtest:test2");
-         fail();
-      }
-      catch (NoSuchNodeTypeException e)
-      {
-         // ok
-      }
-
-      sess.logout();
-
-      assertTrue(service.canRemoveRepository(REPONAME));
-
-      service.removeRepository(REPONAME);
-
-      // test initialization node types only for one repository
-      REPONAME = "testInitNodeTypesRepository";
-      createDafaultRepository(REPONAME, WSNAME);
-
-      newRepository = (RepositoryImpl)service.getRepository(REPONAME);
-      sess = newRepository.getSystemSession(WSNAME);
-      newRoot = sess.getRootNode();
-
-      try
-      {
-
-         assertNotNull(newRoot);
-
-         assertNotNull(newRoot.getNode("jcr:system"));
-
-         assertNotNull(newRoot.getNode("jcr:system/exo:namespaces"));
-         newRoot.addNode("testNode2", "exojcrtest:sub2");
-         sess.save();
-         Node testNode = newRoot.getNode("testNode2");
-         assertNotNull(testNode);
-      }
-      catch (RepositoryException e)
-      {
-         e.printStackTrace();
-         fail();
-      }
-      try
-      {
-         newRoot.addNode("testNode3", "exojcrtest:test2");
-         fail();
-      }
-      catch (NoSuchNodeTypeException e)
-      {
-         // ok
-      }
-      sess.logout();
-
-      assertTrue(service.canRemoveRepository(REPONAME));
-
-      service.removeRepository(REPONAME);
-
-      // test initialization node types only for one repository
-      REPONAME = "testInitNodeTypesRepositoryTest2";
-      createDafaultRepository(REPONAME, WSNAME);
-
-      newRepository = (RepositoryImpl)service.getRepository(REPONAME);
-      sess = newRepository.getSystemSession(WSNAME);
-      newRoot = sess.getRootNode();
-
-      try
-      {
-
-         assertNotNull(newRoot);
-
-         assertNotNull(newRoot.getNode("jcr:system"));
-
-         assertNotNull(newRoot.getNode("jcr:system/exo:namespaces"));
-         newRoot.addNode("testNode4", "exojcrtest:test2");
-         sess.save();
-         Node testNode = newRoot.getNode("testNode4");
-         assertNotNull(testNode);
-      }
-      catch (RepositoryException e)
-      {
-         fail();
-      }
-      try
-      {
-         newRoot.addNode("testNode5", "exojcrtest:sub2");
-         fail();
-      }
-      catch (NoSuchNodeTypeException e)
-      {
-         // ok
-      }
-      sess.logout();
-
-      assertTrue(service.canRemoveRepository(REPONAME));
-
-      service.removeRepository(REPONAME);
-
    }
 
    public void testRemove() throws Exception
    {
-      RepositoryEntry repositoryEntry = new RepositoryEntry();
-
-      repositoryEntry.setName("repo4testRemove");
-      repositoryEntry.setSessionTimeOut(3600000);
-      repositoryEntry.setAuthenticationPolicy("org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator");
-      repositoryEntry.setSecurityDomain("exo-domain");
-      repositoryEntry.setSystemWorkspaceName("ws4testRemove");
-      repositoryEntry.setDefaultWorkspaceName("ws4testRemove");
-
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs("ws4testRemove", isDefaultWsMultiDb, null, "target/temp/values/" + IdGenerator.generate(),
-            wsEntry.getContainer());
-
-      repositoryEntry.addWorkspace(workspaceEntry);
-
-      WorkspaceEntry secondWs =
-         helper.getNewWs("ws4testRemove2", isDefaultWsMultiDb, isDefaultWsMultiDb ? null : wsEntry.getContainer()
-            .getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/" + IdGenerator.generate(),
-            wsEntry.getContainer());
-      repositoryEntry.addWorkspace(secondWs);
+      ManageableRepository repository = helper.createRepository(container, false, null);
 
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      service.removeRepository(repository.getConfiguration().getName());
 
-      service.createRepository(repositoryEntry);
-
-      RepositoryImpl newRtepository = (RepositoryImpl)service.getRepository("repo4testRemove");
-      assertTrue(service.canRemoveRepository("repo4testRemove"));
-
-      service.removeRepository("repo4testRemove");
-   }
-
-   public void testRemoveOtherThread() throws Exception
-   {
-      RepositoryEntry repositoryEntry = new RepositoryEntry();
-
-      repositoryEntry.setName("repo4RemoveOtherThread");
-      repositoryEntry.setSessionTimeOut(3600000);
-      repositoryEntry.setAuthenticationPolicy("org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator");
-      repositoryEntry.setSecurityDomain("exo-domain");
-      repositoryEntry.setSystemWorkspaceName("ws4RemoveOtherThread");
-      repositoryEntry.setDefaultWorkspaceName("ws4RemoveOtherThread");
-
-      WorkspaceEntry workspaceEntry =
-         helper.getNewWs("ws4RemoveOtherThread", isDefaultWsMultiDb, null, "target/temp/values/"
-            + IdGenerator.generate(), wsEntry.getContainer());
-
-      repositoryEntry.addWorkspace(workspaceEntry);
-
-      WorkspaceEntry secondWs =
-         helper.getNewWs("ws4RemoveOtherThread2", isDefaultWsMultiDb, isDefaultWsMultiDb ? null : wsEntry
-            .getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME), "target/temp/values/"
-            + IdGenerator.generate(), wsEntry.getContainer());
-
-      repositoryEntry.addWorkspace(secondWs);
-
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-
-      service.createRepository(repositoryEntry);
-
-      // RepositoryImpl newRepository = (RepositoryImpl)
-      // service.getRepository("repo4RemoveOtherThread");
-      assertTrue(service.canRemoveRepository("repo4RemoveOtherThread"));
-
-      RepositoryRemover remover = new RepositoryRemover("repo4RemoveOtherThread", service);
-      remover.start();
-      Thread.sleep(1000 * 10);// 10 sec
       try
       {
-         service.getRepository("repo4RemoveOtherThread");
-         fail();
+         service.getRepository(repository.getConfiguration().getName());
       }
-      catch (RepositoryException e)
+      catch (Exception e)
       {
-         // ok
+
       }
    }
 
-   private class RepositoryRemover extends Thread
+   public void testAddNewRepositorMultiThreading() throws Exception
    {
-      private final String repoName;
+      int theadsCount = 10;
 
-      private final RepositoryService service;
+      RepositoryCreationThread[] threads = new RepositoryCreationThread[theadsCount];
 
-      RepositoryRemover(String repoName, RepositoryService service)
+      try
       {
-         this.repoName = repoName;
-         this.service = service;
+         CountDownLatch latcher = new CountDownLatch(1);
 
+         for (int i = 0; i < theadsCount; i++)
+         {
+            threads[i] = new RepositoryCreationThread(latcher);
+            threads[i].start();
+         }
+
+         latcher.countDown();
+
+         for (int i = 0; i < theadsCount; i++)
+         {
+            threads[i].join();
+         }
+
+         PropertiesParam props = new PropertiesParam();
+         props.setProperty("dialect", "auto");
+         props.setProperty("source-name", "jdbcjcr");
+
+         JDBCConfigurationPersister persiter = new JDBCConfigurationPersister();
+         persiter.init(props);
+
+         IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IUnmarshallingContext uctx = factory.createUnmarshallingContext();
+         RepositoryServiceConfiguration storedConf =
+            (RepositoryServiceConfiguration)uctx.unmarshalDocument(persiter.read(), null);
+
+         for (int i = 0; i < theadsCount; i++)
+         {
+            // test if respository has been created
+            ManageableRepository repository = threads[i].getRepository();
+            assertNotNull(repository);
+
+            // check configuration in persiter
+            storedConf.getRepositoryConfiguration(repository.getConfiguration().getName());
+
+            // check configuration in RepositoryServic
+            assertNotNull(repositoryService.getConfig().getRepositoryConfiguration(
+               repository.getConfiguration().getName()));
+
+            // login into newly created repository
+            ManageableRepository newRepository =
+               repositoryService.getRepository(repository.getConfiguration().getName());
+
+            Session session = null;
+            try
+            {
+               session = repository.login(credentials, newRepository.getConfiguration().getSystemWorkspaceName());
+               assertNotNull(session.getRootNode());
+            }
+            finally
+            {
+               if (session != null)
+               {
+                  session.logout();
+               }
+            }
+         }
+      }
+      finally
+      {
+         for (int i = 0; i < theadsCount; i++)
+         {
+            helper.removeRepository(container, threads[i].getRepository().getConfiguration().getName());
+         }
+      }
+   }
+
+   private class RepositoryCreationThread extends Thread
+   {
+      private CountDownLatch latcher;
+
+      private ManageableRepository tRrepository;
+
+      RepositoryCreationThread(CountDownLatch latcher)
+      {
+         this.latcher = latcher;
       }
 
-      @Override
-      public void run()
+      /**
+        * {@inheritDoc}
+        */
+   
+
+   public void run()
+   {
+   try
+   {
+     latcher.await();
+     tRrepository = helper.createRepository(container, false, null);
+   }
+   catch (Exception e)
+   {
+     e.printStackTrace();
+   }
+   }
+
+   public ManageableRepository getRepository()
+   {
+   return tRrepository;
+   }
+   }
+
+   public void testCreateAterRemoveCheckOldContent() throws Exception
+   {
+      ManageableRepository newRepository = null;
+      try
       {
+         RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+         RepositoryEntry repoEntry = helper.createRepositoryEntry(false, null, null, true);
+
          try
          {
-            if (service.canRemoveRepository(repoName))
-               service.removeRepository(repoName);
+            Class
+               .forName("org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache");
+
+            ArrayList cacheParams = new ArrayList();
+            cacheParams.add(new SimpleParameterEntry("infinispan-configuration",
+               "conf/standalone/cluster/test-infinispan-config.xml"));
+            cacheParams.add(new SimpleParameterEntry("jgroups-configuration", "conf/udp-mux-v3.xml"));
+            cacheParams.add(new SimpleParameterEntry("infinispan-cluster-name", "JCR-cluster-Test"));
+            cacheParams.add(new SimpleParameterEntry("use-distributed-cache", "false"));
+            CacheEntry cacheEntry = new CacheEntry(cacheParams);
+            cacheEntry
+               .setType("org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache");
+            cacheEntry.setEnabled(true);
+
+            ArrayList<WorkspaceEntry> wsList = repoEntry.getWorkspaceEntries();
+
+            wsList.get(0).setCache(cacheEntry);
+            repoEntry.setWorkspaceEntries(wsList);
          }
-         catch (RepositoryException e)
+         catch (ClassNotFoundException e)
          {
-            e.printStackTrace();
+         }
+
+         service.createRepository(repoEntry);
+         service.getConfig().retain();
+
+         ManageableRepository repository = service.getRepository(repoEntry.getName());
+
+         // add content
+         Session session =
+            repository.login(new CredentialsImpl("admin", "admin".toCharArray()), repository.getConfiguration()
+               .getSystemWorkspaceName());
+         session.getRootNode().addNode("test");
+         session.save();
+         session.logout();
+
+         // copy repository configuration
+         RepositoryEntry repositoryEntry = helper.copyRepositoryEntry(repository.getConfiguration());
+
+         String newDatasourceName = helper.createDatasource();
+
+         for (WorkspaceEntry ws : repositoryEntry.getWorkspaceEntries())
+         {
+            List<SimpleParameterEntry> parameters = ws.getContainer().getParameters();
+            for (int i = 0; i <= parameters.size(); i++)
+            {
+               SimpleParameterEntry spe = parameters.get(i);
+               if (spe.getName().equals("source-name"))
+               {
+                  parameters.add(i, new SimpleParameterEntry(spe.getName(), newDatasourceName));
+                  break;
+               }
+            }
+         }
+
+         service.removeRepository(repository.getConfiguration().getName());
+
+         try
+         {
+            service.getRepository(repository.getConfiguration().getName());
+            fail();
+         }
+         catch (Exception e)
+         {
+         }
+
+         // create new repository 
+         service.createRepository(repositoryEntry);
+         service.getConfig().retain();
+
+         newRepository = service.getRepository(repositoryEntry.getName());
+
+         Session newSession = null;
+         try
+         {
+            newSession =
+               newRepository.login(new CredentialsImpl("admin", "admin".toCharArray()), newRepository
+                  .getConfiguration().getSystemWorkspaceName());
+
+            try
+            {
+               newSession.getRootNode().getNode("test");
+               fail("Node 'test' should not exists after remove repository and recreate new.");
+            }
+            catch (PathNotFoundException e)
+            {
+               //ok
+            }
+         }
+         finally
+         {
+            if (newSession != null)
+            {
+               newSession.logout();
+            }
+         }
+      }
+      finally
+      {
+         if (newRepository != null)
+         {
+            helper.removeRepository(container, newRepository.getConfiguration().getName());
          }
       }
    }

@@ -35,7 +35,6 @@ import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -61,7 +60,7 @@ public class SearchResultResponseEntity implements StreamingOutput
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.SearchResultResponseEntity");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.SearchResultResponseEntity");
 
    /**
     * Namespace conetext.
@@ -118,7 +117,6 @@ public class SearchResultResponseEntity implements StreamingOutput
             XMLOutputFactory.newInstance().createXMLStreamWriter(outStream, Constants.DEFAULT_ENCODING);
 
          xmlStreamWriter.setNamespaceContext(nsContext);
-         xmlStreamWriter.setDefaultNamespace("DAV:");
 
          xmlStreamWriter.writeStartDocument();
          xmlStreamWriter.writeStartElement("D", "multistatus", "DAV:");
@@ -127,6 +125,7 @@ public class SearchResultResponseEntity implements StreamingOutput
          xmlStreamWriter.writeAttribute("xmlns:b", "urn:uuid:c2f41010-65b3-11d1-a29f-00aa00c14882/");
 
          NodeIterator nodeIter = queryResult.getNodes();
+         Set<URI> resultNodes = new HashSet<URI>();
          while (nodeIter.hasNext())
          {
             Node nextNode = nodeIter.nextNode();
@@ -146,44 +145,50 @@ public class SearchResultResponseEntity implements StreamingOutput
 
             URI uri = new URI(TextUtil.escape(baseURI + nextNode.getPath(), '%', true));
 
-            Resource resource;
-            if (ResourceUtil.isVersioned(nextNode))
+            // if URI is new, and wasn't previously being written, then write it
+            if (resultNodes.add(uri))
             {
-               if (ResourceUtil.isFile(nextNode))
+               Resource resource;
+               if (ResourceUtil.isVersioned(nextNode))
                {
-                  resource = new VersionedFileResource(uri, nextNode, nsContext);
+                  if (ResourceUtil.isFile(nextNode))
+                  {
+                     resource = new VersionedFileResource(uri, nextNode, nsContext);
+                  }
+                  else
+                  {
+                     resource = new VersionedCollectionResource(uri, nextNode, nsContext);
+                  }
                }
                else
                {
-                  resource = new VersionedCollectionResource(uri, nextNode, nsContext);
+                  if (ResourceUtil.isFile(nextNode))
+                  {
+                     resource = new FileResource(uri, nextNode, nsContext);
+                  }
+                  else
+                  {
+                     resource = new CollectionResource(uri, nextNode, nsContext);
+                  }
                }
+
+               xmlStreamWriter.writeStartElement("DAV:", "response");
+
+               xmlStreamWriter.writeStartElement("DAV:", "href");
+               xmlStreamWriter.writeCharacters(resource.getIdentifier().toASCIIString());
+               xmlStreamWriter.writeEndElement();
+
+               PropstatGroupedRepresentation propstat = new PropstatGroupedRepresentation(resource, properties, false);
+
+               PropertyWriteUtil.writePropStats(xmlStreamWriter, propstat.getPropStats());
+
+               xmlStreamWriter.writeEndElement();
             }
-            else
-            {
-               if (ResourceUtil.isFile(nextNode))
-               {
-                  resource = new FileResource(uri, nextNode, nsContext);
-               }
-               else
-               {
-                  resource = new CollectionResource(uri, nextNode, nsContext);
-               }
-            }
-
-            xmlStreamWriter.writeStartElement("DAV:", "response");
-
-            xmlStreamWriter.writeStartElement("DAV:", "href");
-            xmlStreamWriter.writeCharacters(URLDecoder.decode(resource.getIdentifier().toASCIIString(), "UTF-8"));
-            xmlStreamWriter.writeEndElement();
-
-            PropstatGroupedRepresentation propstat = new PropstatGroupedRepresentation(resource, properties, false);
-
-            PropertyWriteUtil.writePropStats(xmlStreamWriter, propstat.getPropStats());
-
-            xmlStreamWriter.writeEndElement();
 
          }
-
+         // for better GC
+         resultNodes.clear();
+         resultNodes = null;
          // D:multistatus
          xmlStreamWriter.writeEndElement();
          xmlStreamWriter.writeEndDocument();
@@ -194,12 +199,8 @@ public class SearchResultResponseEntity implements StreamingOutput
       }
       catch (Exception exc)
       {
-
-         System.out.println("Unhandled Exception. " + exc.getMessage());
-         log.error(exc.getMessage(), exc);
-
+         LOG.error(exc.getMessage(), exc);
          throw new IOException(exc.getMessage());
       }
    }
-
 }

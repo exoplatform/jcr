@@ -18,11 +18,13 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
-import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -40,6 +42,8 @@ import java.util.List;
 
 public class TransactionChangesLog implements CompositeChangesLog, Externalizable
 {
+
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TransactionChangesLog");
 
    private static final long serialVersionUID = 4866736965040228027L;
 
@@ -66,6 +70,14 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       changesLogs.add(log);
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void removeLog(PlainChangesLog log)
+   {
+      changesLogs.remove(log);
+   }
+
    /*
     * (non-Javadoc)
     * 
@@ -81,10 +93,6 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
     */
    public List<ItemState> getAllStates()
    {
-      // TODO [PN] use a wrapping List/Iterator for all changes logs instead of
-      // putting all logs
-      // content into one list
-      // will increase a performance of tx-related operations
       List<ItemState> states = new ArrayList<ItemState>();
       for (PlainChangesLog changesLog : changesLogs)
       {
@@ -139,14 +147,15 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       return null;
    }
 
-   public ItemState getItemState(NodeData parentData, QPathEntry name)
+   public ItemState getItemState(NodeData parentData, QPathEntry name, ItemType itemType)
    {
       List<ItemState> allStates = getAllStates();
       for (int i = allStates.size() - 1; i >= 0; i--)
       {
          ItemState state = allStates.get(i);
          if (state.getData().getParentIdentifier().equals(parentData.getIdentifier())
-            && state.getData().getQPath().getEntries()[state.getData().getQPath().getEntries().length - 1].isSame(name))
+            && state.getData().getQPath().getEntries()[state.getData().getQPath().getEntries().length - 1].isSame(name)
+            && itemType.isSuitableFor(state.getData()))
             return state;
       }
       return null;
@@ -159,19 +168,21 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       {
          ItemData item = state.getData();
          if (item.getParentIdentifier().equals(rootIdentifier) && item.isNode() == forNodes)
+         {
             list.add(state);
+         }
       }
       return list;
    }
 
    public String dump()
    {
-      String str = "ChangesLog: size" + changesLogs.size() + "\n ";
+      StringBuilder str = new StringBuilder("ChangesLog: size").append(changesLogs.size()).append("\n ");
       for (PlainChangesLog cLog : changesLogs)
       {
-         str += cLog.dump() + "\n";
+         str.append(cLog.dump()).append("\n");
       }
-      return str;
+      return str.toString();
    }
 
    // Need for Externalizable

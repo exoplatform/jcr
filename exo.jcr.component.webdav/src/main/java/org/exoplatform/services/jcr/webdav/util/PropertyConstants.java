@@ -202,6 +202,25 @@ public interface PropertyConstants
    QName JCR_CONTENT = new QName("jcr:", "content");
 
    /**
+    * dav:isreadonly property for MicroSoft Webfolders extension.
+    */
+   QName IS_READ_ONLY = new QName("DAV:", "isreadonly");
+
+   /**
+    * dav:include element for dav:allprop of PROPFIND method
+    * See <a href='http://www.webdav.org/specs/rfc4918.html#METHOD_PROPFIND'>HTTP Extensions for Web Distributed Authoring 
+    * and Versioning (WebDAV)</a> for more information..
+    */
+   QName DAV_ALLPROP_INCLUDE = new QName("DAV:", "include");
+
+   /**
+    * dav:allprop element for dav:allprop of PROPFIND method
+    * See <a href='http://www.webdav.org/specs/rfc4918.html#METHOD_PROPFIND'>HTTP Extensions for Web Distributed Authoring 
+    * and Versioning (WebDAV)</a> for more information..
+    */
+   QName DAV_ALLPROP = new QName("DAV:", "allprop");
+
+   /**
     * Creation date pattern.
     */
    String CREATION_PATTERN = "yyyy-MM-dd'T'HH:mm:ss'Z'";

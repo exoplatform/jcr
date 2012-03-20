@@ -18,12 +18,15 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.ext.replication.FixupStream;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.util.IdGenerator;
@@ -33,7 +36,6 @@ import org.exoplatform.services.log.Log;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -55,7 +57,7 @@ public class PendingChangesLog
    /**
     * The apache logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.PendingChangesLog");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.PendingChangesLog");
 
    /**
     * The definition of ChangesLog types.
@@ -115,7 +117,7 @@ public class PendingChangesLog
    /**
     * The list of Files who are contains in ChangesLog.
     */
-   private List<File> listFile;
+   private List<SpoolFile> listFile;
 
    /**
     * The identification string for PendingChangesLog.
@@ -133,6 +135,11 @@ public class PendingChangesLog
    private byte[] data;
 
    /**
+    * Temporary directory;
+    */
+   private final File tempDir;
+
+   /**
     * PendingChangesLog constructor.
     * 
     * @param itemDataChangesLog
@@ -148,9 +155,10 @@ public class PendingChangesLog
       listInputStream = new ArrayList<InputStream>();
       listFixupStream = new ArrayList<FixupStream>();
       containerType = analysisItemDataChangesLog();
-      listFile = new ArrayList<File>();
+      listFile = new ArrayList<SpoolFile>();
       identifier = IdGenerator.generate();
       this.fileCleaner = fileCleaner;
+      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -174,10 +182,11 @@ public class PendingChangesLog
       listInputStream = new ArrayList<InputStream>();
       listFixupStream = new ArrayList<FixupStream>();
       listRandomAccessFile = new ArrayList<RandomAccessFile>();
-      listFile = new ArrayList<File>();
+      listFile = new ArrayList<SpoolFile>();
       this.identifier = identifier;
       containerType = type;
       this.fileCleaner = fileCleaner;
+      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -192,6 +201,7 @@ public class PendingChangesLog
    {
       this.identifier = identifier;
       data = new byte[dataLength];
+      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -207,12 +217,13 @@ public class PendingChangesLog
     *          the FileCleaner
     */
    public PendingChangesLog(TransactionChangesLog transactionChangesLog, List<FixupStream> listFixupStreams,
-      List<File> listFiles, FileCleaner fileCleaner)
+      List<SpoolFile> listFiles, FileCleaner fileCleaner)
    {
       this.itemDataChangesLog = transactionChangesLog;
       this.listFixupStream = listFixupStreams;
       this.listFile = listFiles;
       this.fileCleaner = fileCleaner;
+      this.tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
    }
 
    /**
@@ -274,7 +285,7 @@ public class PendingChangesLog
     * 
     * @return List return list of Files
     */
-   public List<File> getListFile()
+   public List<SpoolFile> getListFile()
    {
       return listFile;
    }
@@ -305,9 +316,9 @@ public class PendingChangesLog
       {
          ItemData itemData = itemState.getData();
 
-         if (itemData instanceof TransientPropertyData)
+         if (itemData instanceof PersistedPropertyData)
          {
-            TransientPropertyData propertyData = (TransientPropertyData)itemData;
+            PersistedPropertyData propertyData = (PersistedPropertyData)itemData;
             if ((propertyData.getValues() != null))
                for (int j = 0; j < propertyData.getValues().size(); j++)
                   if (!(propertyData.getValues().get(j).isByteArray()))
@@ -418,15 +429,15 @@ public class PendingChangesLog
          }
          catch (InterruptedException ie)
          {
-            log.error("The interrupted exceptio : ", ie);
+            LOG.error("The interrupted exceptio : ", ie);
          }
          catch (IndexOutOfBoundsException ioobe)
          {
-            if (log.isDebugEnabled())
+            if (LOG.isDebugEnabled())
             {
-               log.info("listFixupStream.size() == " + listFixupStream.size());
-               log.info("listRandomAccessFile.size() == " + listRandomAccessFile.size());
-               log.info(" i == " + i);
+               LOG.info("listFixupStream.size() == " + listFixupStream.size());
+               LOG.info("listRandomAccessFile.size() == " + listRandomAccessFile.size());
+               LOG.info(" i == " + i);
             }
             synchronized (this)
             {
@@ -457,10 +468,10 @@ public class PendingChangesLog
    {
       this.getFixupStreams().add(fs);
 
-      File f = File.createTempFile("tempFile" + IdGenerator.generate(), ".tmp");
+      SpoolFile f = SpoolFile.createTempFile("tempFile" + IdGenerator.generate(), ".tmp", tempDir);
 
       this.getListFile().add(f);
-      this.getListRandomAccessFiles().add(new RandomAccessFile(f, "rw"));
+      this.getListRandomAccessFiles().add(PrivilegedFileHelper.randomAccessFile(f, "rw"));
 
    }
 
@@ -472,21 +483,18 @@ public class PendingChangesLog
     */
    public void restore() throws IOException
    {
-      // TODO same code as in BackupWorkspaceInitializer?
-
       List<ItemState> listItemState = itemDataChangesLog.getAllStates();
       for (int i = 0; i < this.listFixupStream.size(); i++)
       {
          ItemState itemState = listItemState.get(listFixupStream.get(i).getItemSateId());
          ItemData itemData = itemState.getData();
 
-         TransientPropertyData propertyData = (TransientPropertyData)itemData;
-         TransientValueData tvd =
-            (TransientValueData)(propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
+         PersistedPropertyData propertyData = (PersistedPropertyData)itemData;
+         ValueData vd = (propertyData.getValues().get(listFixupStream.get(i).getValueDataId()));
 
          // re-init the value
-         tvd.delegate(new TransientValueData(tvd.getOrderNumber(), null, null, new SpoolFile(listFile.get(i)
-            .getAbsolutePath()), fileCleaner, -1, null, true));
+         propertyData.getValues().set(listFixupStream.get(i).getValueDataId(),
+            new StreamPersistedValueData(vd.getOrderNumber(), listFile.get(i)));
       }
 
       if (listRandomAccessFile != null)
@@ -495,7 +503,6 @@ public class PendingChangesLog
 
       for (int i = 0; i < listFile.size(); i++)
          fileCleaner.addFile(listFile.get(i));
-
    }
 
 }

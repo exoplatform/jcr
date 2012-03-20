@@ -4,10 +4,10 @@
 1.1. settings.xml. There should be the correct application server version (e.g <exo.projects.app.tomcat.version>) etc.
 1.2. exo directory structure.
 1.3. Maven version 2.2.1 (or higher).
-1.4. Make sure you have run mvn insctal within ./config folder.  
-2. Run "mvn -f product-exo-jcr-as-tomcat6.xml clean install antrun:run" command.
+1.4. Make sure you have run mvn instal within ./config folder.  
+2. Go to folder "exo.jcr.applications.tomcat" and run "mvn clean install -Pdeploy" command. This will pack JCR with JBoss Cache based components. Or run "mvn clean install -Pdeploy,ispn" to pack JCR with Infinispan based components.
+2.1 If you want to deploy JBoss or Jonas use exo.jcr.applications.jboss or exo.jcr.applications.jonas respectively.
 3. If the command has executed successfully, go to exo-tomcat and run "eXo run" command.
-4. You may use other product-exo-jcr-as* and an application server if you need. 
 
 Application server's specific configs is placed in product-patches/as/ folder.
 

@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -122,8 +123,8 @@ public class VersionHistoryDataHelper extends TransientNodeData
       TransientNodeData vh = init(versionable, changes);
 
       // TransientItemData
-      this.parentIdentifier = vh.getParentIdentifier().intern();
-      this.identifier = vh.getIdentifier().intern();
+      this.parentIdentifier = vh.getParentIdentifier();
+      this.identifier = vh.getIdentifier();
       this.qpath = vh.getQPath();
       this.persistedVersion = vh.getPersistedVersion();
 
@@ -139,7 +140,8 @@ public class VersionHistoryDataHelper extends TransientNodeData
 
       NodeData vData = (NodeData)dataManager.getItemData(getIdentifier());
 
-      NodeData rootVersion = (NodeData)dataManager.getItemData(vData, new QPathEntry(Constants.JCR_ROOTVERSION, 0));
+      NodeData rootVersion =
+         (NodeData)dataManager.getItemData(vData, new QPathEntry(Constants.JCR_ROOTVERSION, 0), ItemType.NODE);
 
       List<NodeData> vChilds = new ArrayList<NodeData>();
 
@@ -165,7 +167,8 @@ public class VersionHistoryDataHelper extends TransientNodeData
       for (NodeData vd : versionsData)
       {
 
-         PropertyData createdData = (PropertyData)dataManager.getItemData(vd, new QPathEntry(Constants.JCR_CREATED, 0));
+         PropertyData createdData =
+            (PropertyData)dataManager.getItemData(vd, new QPathEntry(Constants.JCR_CREATED, 0), ItemType.PROPERTY);
 
          if (createdData == null)
             throw new VersionException("jcr:created is not found, version: " + vd.getQPath().getAsString());
@@ -191,12 +194,12 @@ public class VersionHistoryDataHelper extends TransientNodeData
 
    public NodeData getVersionData(InternalQName versionQName) throws VersionException, RepositoryException
    {
-      return (NodeData)dataManager.getItemData(this, new QPathEntry(versionQName, 0));
+      return (NodeData)dataManager.getItemData(this, new QPathEntry(versionQName, 0), ItemType.NODE);
    }
 
    public NodeData getVersionLabelsData() throws VersionException, RepositoryException
    {
-      return (NodeData)dataManager.getItemData(this, new QPathEntry(Constants.JCR_VERSIONLABELS, 0));
+      return (NodeData)dataManager.getItemData(this, new QPathEntry(Constants.JCR_VERSIONLABELS, 0), ItemType.NODE);
    }
 
    public List<PropertyData> getVersionLabels() throws VersionException, RepositoryException
@@ -242,7 +245,7 @@ public class VersionHistoryDataHelper extends TransientNodeData
       NodeData rootItem = (NodeData)dataManager.getItemData(Constants.SYSTEM_UUID);
 
       NodeData versionStorageData =
-         (NodeData)dataManager.getItemData(rootItem, new QPathEntry(Constants.JCR_VERSIONSTORAGE, 1)); // Constants
+         (NodeData)dataManager.getItemData(rootItem, new QPathEntry(Constants.JCR_VERSIONSTORAGE, 1), ItemType.NODE); // Constants
       // Make versionStorageData transient
       if (!(versionStorageData instanceof TransientNodeData))
          versionStorageData =
@@ -305,11 +308,7 @@ public class VersionHistoryDataHelper extends TransientNodeData
          TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_MIXINTYPES, PropertyType.NAME, true,
             new TransientValueData(Constants.MIX_REFERENCEABLE));
 
-      // jcr:created
-      // TODO Current time source was
-      // rvCreated.setValue(new
-      // TransientValueData(dataManager.getTransactManager().getStorageDataManager
-      // ().getCurrentTime()));
+      // jcr:created     
       TransientPropertyData rvCreated =
          TransientPropertyData.createPropertyData(rootVersionData, Constants.JCR_CREATED, PropertyType.DATE, false,
             new TransientValueData(Calendar.getInstance()));
@@ -332,19 +331,19 @@ public class VersionHistoryDataHelper extends TransientNodeData
 
       // update all
       QPath vpath = versionable.getQPath();
-      changes.add(new ItemState(versionHistory, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(vhPrimaryType, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(vhUuid, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(vhVersionableUuid, ItemState.ADDED, true, vpath));
+      changes.add(new ItemState(versionHistory, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(vhPrimaryType, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(vhUuid, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(vhVersionableUuid, ItemState.ADDED, true, vpath, true));
 
-      changes.add(new ItemState(vhVersionLabels, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(vlPrimaryType, ItemState.ADDED, true, vpath));
+      changes.add(new ItemState(vhVersionLabels, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(vlPrimaryType, ItemState.ADDED, true, vpath, true));
 
-      changes.add(new ItemState(rootVersionData, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(rvPrimaryType, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(rvMixinTypes, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(rvUuid, ItemState.ADDED, true, vpath));
-      changes.add(new ItemState(rvCreated, ItemState.ADDED, true, vpath));
+      changes.add(new ItemState(rootVersionData, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(rvPrimaryType, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(rvMixinTypes, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(rvUuid, ItemState.ADDED, true, vpath, true));
+      changes.add(new ItemState(rvCreated, ItemState.ADDED, true, vpath, true));
 
       changes.add(ItemState.createAddedState(vh));
       changes.add(ItemState.createAddedState(bv));

@@ -74,7 +74,7 @@ public abstract class AbstractQueryHandler implements QueryHandler
     */
    protected IndexInfos indexInfos;
 
-   private IndexUpdateMonitor indexUpdateMonitor;
+   protected IndexUpdateMonitor indexUpdateMonitor;
 
    public boolean isInitialized()
    {
@@ -82,7 +82,7 @@ public abstract class AbstractQueryHandler implements QueryHandler
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setIndexerIoModeHandler(org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler)
+    * {@inheritDoc}
     */
    public void setIndexerIoModeHandler(IndexerIoModeHandler modeHandler) throws IOException
    {
@@ -90,7 +90,15 @@ public abstract class AbstractQueryHandler implements QueryHandler
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setContext(org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext)
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#getIndexerIoModeHandler()
+    */
+   public IndexerIoModeHandler getIndexerIoModeHandler()
+   {
+      return modeHandler;
+   }
+
+   /**
+    * {@inheritDoc}
     */
    public void setContext(QueryHandlerContext context)
    {
@@ -102,7 +110,6 @@ public abstract class AbstractQueryHandler implements QueryHandler
     */
    public void init() throws IOException, RepositoryException, RepositoryConfigurationException
    {
-      // TODO Auto-generated method stub
       doInit();
       initialized = true;
    }
@@ -209,6 +216,7 @@ public abstract class AbstractQueryHandler implements QueryHandler
     * 
     * @param idleTime the query handler idle time.
     */
+   @Deprecated
    public void setIdleTime(String idleTime)
    {
       log.warn("Parameter 'idleTime' is not supported anymore. "
@@ -225,7 +233,7 @@ public abstract class AbstractQueryHandler implements QueryHandler
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setIndexInfos(org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos)
+    * {@inheritDoc}
     */
    public void setIndexInfos(IndexInfos indexInfos)
    {

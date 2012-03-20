@@ -23,10 +23,12 @@ import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.commons.utils.MimeTypeResolver;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
+import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.webdav.command.AclCommand;
 import org.exoplatform.services.jcr.webdav.command.CopyCommand;
 import org.exoplatform.services.jcr.webdav.command.DeleteCommand;
 import org.exoplatform.services.jcr.webdav.command.GetCommand;
@@ -51,6 +53,7 @@ import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ExtHttpHeaders;
+import org.exoplatform.services.rest.ext.webdav.method.ACL;
 import org.exoplatform.services.rest.ext.webdav.method.CHECKIN;
 import org.exoplatform.services.rest.ext.webdav.method.CHECKOUT;
 import org.exoplatform.services.rest.ext.webdav.method.COPY;
@@ -71,10 +74,15 @@ import org.exoplatform.services.rest.resource.ResourceContainer;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.PathNotFoundException;
@@ -136,6 +144,10 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
    private HashMap<MediaType, String> cacheControlMap = new HashMap<MediaType, String>();
 
+   public static final String FOLDER_ICON_PATH = "folder-icon-path";
+
+   public static final String UNTRUSTED_USER_AGENTS = "untrusted-user-agents";
+
    /**
     * Logger.
     */
@@ -182,9 +194,21 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    private String autoVersionType = "checkout-checkin";
 
    /**
+    * XSLT parameters.
+    */
+   private Map<String, String> xsltParams = new HashMap<String, String>();
+
+   /**
+    * Set of untrusted user agents. Special rules are applied for listed agents.
+    */
+   private Set<String> untrustedUserAgents = new HashSet<String>();
+
+   /**
     * The list of allowed methods.
     */
    private static final String ALLOW;
+
+   private final MimeTypeResolver mimeTypeResolver;
 
    static
    {
@@ -221,6 +245,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       this.sessionProviderService = sessionProviderService;
       this.repositoryService = repositoryService;
       this.nullResourceLocks = new NullResourceLocksHolder();
+
+      ValueParam pXSLTParam = params.getValueParam(FOLDER_ICON_PATH);
+      if (pXSLTParam != null)
+      {
+         xsltParams.put(FOLDER_ICON_PATH, pXSLTParam.getValue());
+         log.info(FOLDER_ICON_PATH + " = " + pXSLTParam.getValue());
+      }
 
       ValueParam pDefFolderNodeType = params.getValueParam(INIT_PARAM_DEF_FOLDER_NODE_TYPE);
       if (pDefFolderNodeType != null)
@@ -283,6 +314,131 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       }
 
+      ValuesParam pUntrustedUserAgents = params.getValuesParam(UNTRUSTED_USER_AGENTS);
+      if (pUntrustedUserAgents != null)
+      {
+         untrustedUserAgents.addAll((List<String>)pUntrustedUserAgents.getValues());
+      }
+
+      this.mimeTypeResolver = new MimeTypeResolver();
+      this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
+   }
+
+   /**
+    * Constructor.
+    * 
+    * @param params Initialization params
+    * @param repositoryService repository service
+    * @param sessionProviderService session provider service
+    */
+   protected WebDavServiceImpl(Map<String, String> params, RepositoryService repositoryService,
+      ThreadLocalSessionProviderService sessionProviderService) throws Exception
+   {
+      this.sessionProviderService = sessionProviderService;
+      this.repositoryService = repositoryService;
+      this.nullResourceLocks = new NullResourceLocksHolder();
+
+      String paramValue = params.get(FOLDER_ICON_PATH);
+      if (paramValue != null)
+      {
+         xsltParams.put(FOLDER_ICON_PATH, paramValue);
+         log.info(FOLDER_ICON_PATH + " = " + paramValue);
+      }
+
+      paramValue = params.get(INIT_PARAM_DEF_FOLDER_NODE_TYPE);
+      if (paramValue != null)
+      {
+         defaultFolderNodeType = paramValue;
+         log.info(INIT_PARAM_DEF_FOLDER_NODE_TYPE + " = " + defaultFolderNodeType);
+      }
+
+      paramValue = params.get(INIT_PARAM_DEF_FILE_NODE_TYPE);
+      if (paramValue != null)
+      {
+         defaultFileNodeType = paramValue;
+         log.info(INIT_PARAM_DEF_FILE_NODE_TYPE + " = " + defaultFileNodeType);
+      }
+
+      paramValue = params.get(INIT_PARAM_DEF_FILE_MIME_TYPE);
+      if (paramValue != null)
+      {
+         defaultFileMimeType = paramValue;
+         log.info(INIT_PARAM_DEF_FILE_MIME_TYPE + " = " + defaultFileMimeType);
+      }
+
+      paramValue = params.get(INIT_PARAM_UPDATE_POLICY);
+      if (paramValue != null)
+      {
+         updatePolicyType = paramValue;
+         log.info(INIT_PARAM_UPDATE_POLICY + " = " + updatePolicyType);
+      }
+
+      paramValue = params.get(INIT_PARAM_AUTO_VERSION);
+      if (paramValue != null)
+      {
+         autoVersionType = paramValue;
+         log.info(INIT_PARAM_AUTO_VERSION + " = " + autoVersionType);
+      }
+
+      paramValue = params.get(INIT_PARAM_CACHE_CONTROL);
+      if (paramValue != null)
+      {
+         try
+         {
+            String[] elements = paramValue.split(";");
+            for (String element : elements)
+            {
+               String cacheValue = element.split(":")[1];
+               String keys = element.split(":")[0];
+               for (String key : keys.split(","))
+               {
+                  MediaType mediaType = new MediaType(key.split("/")[0], key.split("/")[1]);
+                  cacheControlMap.put(mediaType, cacheValue);
+               }
+            }
+         }
+         catch (Exception e)
+         {
+            log.warn("Invalid " + INIT_PARAM_CACHE_CONTROL + " parameter");
+         }
+
+      }
+
+      /*
+       * As this constructor receives Map<String, String> instead of InitParams
+       * we cannot pass multi-valued parameters in the form of 
+       * String -> Collection  
+       * We pass a set of 'untrusted-user-agents' as a single String
+       * with mime types separated by comma (",")
+       * i.e. "agent1, agent2, agent3"
+       */
+      paramValue = params.get(UNTRUSTED_USER_AGENTS);
+      if (paramValue != null)
+      {
+         for (String mimeType : paramValue.split(","))
+         {
+            untrustedUserAgents.add(mimeType.trim());
+         }
+      }
+
+      this.mimeTypeResolver = new MimeTypeResolver();
+      this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
+   }
+
+   /**
+    * Constructor.
+    * 
+    * @param repositoryService repository service
+    * @param sessionProviderService session provider service
+    */
+   protected WebDavServiceImpl(RepositoryService repositoryService,
+      ThreadLocalSessionProviderService sessionProviderService)
+   {
+      this.sessionProviderService = sessionProviderService;
+      this.repositoryService = repositoryService;
+      this.nullResourceLocks = new NullResourceLocksHolder();
+      this.mimeTypeResolver = new MimeTypeResolver();
+      this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
    }
 
    /**
@@ -354,6 +510,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.DEPTH) String depthHeader,
       @HeaderParam(ExtHttpHeaders.OVERWRITE) String overwriteHeader, @Context UriInfo uriInfo, HierarchicalProperty body)
    {
+      // to trace if an item on destination path exists
+      boolean itemExisted = false;
 
       if (log.isDebugEnabled())
       {
@@ -366,17 +524,29 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          String serverURI = uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).build().toString();
 
-         destinationHeader = TextUtil.unescape(destinationHeader, '%');
+         // destinationHeader could begins from workspace name (passed from cms 
+         // WebDAVServiceImpl) and doesn't contain neither host no repository name 
+         URI dest = buildURI(destinationHeader);
+         URI base = buildURI(serverURI);
 
-         if (!destinationHeader.startsWith(serverURI))
+         String destPath = dest.getPath();
+         int repoIndex = destPath.indexOf(repoName);
+
+         // check if destination corresponds to base uri
+         // if the destination is on another server
+         // or destination header is malformed
+         // we return BAD_GATEWAY(502) HTTP status
+         // more info here http://www.webdav.org/specs/rfc2518.html#METHOD_COPY
+         if (dest.getHost() != null && !base.getHost().equals(dest.getHost()))
          {
             return Response.status(HTTPStatus.BAD_GATEWAY).entity("Bad Gateway").build();
          }
 
+         destPath = normalizePath(repoIndex == -1 ? destPath : destPath.substring(repoIndex + repoName.length() + 1));
+
          String srcWorkspace = workspaceName(repoPath);
          String srcNodePath = path(repoPath);
 
-         String destPath = destinationHeader.substring(serverURI.length() + 1);
          String destWorkspace = workspaceName(destPath);
          String destNodePath = path(destPath);
 
@@ -388,17 +558,18 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
          if (overwrite)
          {
-            delete(repoName, destPath, lockTokenHeader, ifHeader);
+            Response delResponse = delete(repoName, destPath, lockTokenHeader, ifHeader);
+            itemExisted = (delResponse.getStatus() == HTTPStatus.NO_CONTENT);
          }
          else
          {
-            Session session = session(repoName, workspaceName(repoPath), null);
+            Session session = session(repoName, srcWorkspace, null);
 
             if (session.getRootNode().hasNode(TextUtil.relativizePath(repoPath)))
             {
-               return Response.status(HTTPStatus.PRECON_FAILED).entity("Not Found").build();
+               return Response.status(HTTPStatus.PRECON_FAILED)
+                  .entity("Item exists on destination path, while overwriting is forbidden").build();
             }
-
          }
 
          if (depth.getStringValue().equalsIgnoreCase("infinity"))
@@ -407,11 +578,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             if (srcWorkspace.equals(destWorkspace))
             {
                Session session = session(repoName, destWorkspace, lockTokens);
-               return new CopyCommand().copy(session, srcNodePath, destNodePath);
+               return new CopyCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).copy(
+                  session, srcNodePath, destNodePath);
             }
 
             Session destSession = session(repoName, destWorkspace, lockTokens);
-            return new CopyCommand().copy(destSession, srcWorkspace, srcNodePath, destNodePath);
+            return new CopyCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).copy(
+               destSession, srcWorkspace, srcNodePath, destNodePath);
 
          }
          else if (depth.getIntValue() == 0)
@@ -422,8 +595,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
             Session session = session(repoName, destWorkspace, lockTokens);
 
-            return new MkColCommand(nullResourceLocks).mkCol(session, destNodePath + "/" + nodeName,
-               defaultFolderNodeType, null, lockTokens);
+            return new MkColCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName))
+               .mkCol(session, destNodePath + "/" + nodeName, defaultFolderNodeType, null, lockTokens);
 
          }
          else
@@ -435,6 +608,11 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (PreconditionException exc)
       {
          return Response.status(HTTPStatus.BAD_REQUEST).entity(exc.getMessage()).build();
+      }
+      catch (NoSuchWorkspaceException e)
+      {
+         log.error("NoSuchWorkspaceException " + e.getMessage(), e);
+         return Response.status(HTTPStatus.CONFLICT).entity(e.getMessage()).build();
       }
       catch (Exception exc)
       {
@@ -465,6 +643,10 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          if (lockTokenHeader != null)
          {
             lockTokenHeader = lockTokenHeader.substring(1, lockTokenHeader.length() - 1);
+            if (lockTokenHeader.contains(WebDavConst.Lock.OPAQUE_LOCK_TOKEN))
+            {
+               lockTokenHeader = lockTokenHeader.split(":")[1];
+            }
          }
          return new DeleteCommand().delete(session, path(repoPath), lockTokenHeader);
       }
@@ -522,8 +704,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
                   int dash = token.indexOf("-");
                   if (dash == -1)
                   {
-                     return Response.status(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE).entity(
-                        "Requested Range Not Satisfiable").build();
+                     return Response.status(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+                        .entity("Requested Range Not Satisfiable").build();
                   }
                   else if (dash == 0)
                   {
@@ -545,7 +727,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String uri =
             uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
                .toString();
-         return new GetCommand().get(session, path(repoPath), version, uri, ranges, ifModifiedSince, cacheControlMap);
+         return new GetCommand(xsltParams).get(session, path(repoPath), version, uri, ranges, ifModifiedSince,
+            cacheControlMap);
 
       }
       catch (PathNotFoundException exc)
@@ -628,7 +811,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
 
       }
       catch (Exception exc)
@@ -677,13 +860,24 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * {@inheritDoc}
     */
+   @Deprecated
+   public Response mkcol(String repoName, String repoPath, String lockTokenHeader, String ifHeader,
+      String nodeTypeHeader, String mixinTypesHeader)
+   {
+      return mkcol(repoName, repoPath, lockTokenHeader, ifHeader, nodeTypeHeader, mixinTypesHeader, null);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    @MKCOL
    @Path("/{repoName}/{repoPath:.*}/")
    public Response mkcol(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
       @HeaderParam(ExtHttpHeaders.LOCKTOKEN) String lockTokenHeader, @HeaderParam(ExtHttpHeaders.IF) String ifHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String nodeTypeHeader,
-      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypesHeader)
+      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypesHeader, @Context UriInfo uriInfo)
    {
+
       if (log.isDebugEnabled())
       {
          log.debug("MKCOL " + repoName + "/" + repoPath);
@@ -701,13 +895,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             nodeType = defaultFolderNodeType;
          }
 
-         return new MkColCommand(nullResourceLocks).mkCol(session, path(repoPath), nodeType, NodeTypeUtil
-            .getMixinTypes(mixinTypesHeader), tokens);
+         return new MkColCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).mkCol(
+            session, path(repoPath), nodeType, NodeTypeUtil.getMixinTypes(mixinTypesHeader), tokens);
       }
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
@@ -727,6 +921,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.DEPTH) String depthHeader,
       @HeaderParam(ExtHttpHeaders.OVERWRITE) String overwriteHeader, @Context UriInfo uriInfo, HierarchicalProperty body)
    {
+      // to trace if an item on destination path exists
+      boolean itemExisted = false;
 
       if (log.isDebugEnabled())
       {
@@ -739,14 +935,26 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          String serverURI = uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).build().toString();
 
-         destinationHeader = TextUtil.unescape(destinationHeader, '%');
+         // destinationHeader could begins from workspace name (passed from cms
+         // WebDAVServiceImpl) and doesn't contain neither host no repository name
+         URI dest = buildURI(destinationHeader);
+         URI base = buildURI(serverURI);
 
-         if (!destinationHeader.startsWith(serverURI))
+         String destPath = dest.getPath();
+         int repoIndex = destPath.indexOf(repoName);
+
+         // check if destination corresponds to base uri
+         // if the destination is on another server
+         // or destination header is malformed
+         // we return BAD_GATEWAY(502) HTTP status
+         // more info here http://www.webdav.org/specs/rfc2518.html#METHOD_MOVE
+         if (dest.getHost() != null && !base.getHost().equals(dest.getHost()))
          {
             return Response.status(HTTPStatus.BAD_GATEWAY).entity("Bad Gateway").build();
          }
 
-         String destPath = destinationHeader.substring(serverURI.length() + 1);
+         destPath = normalizePath(repoIndex == -1 ? destPath : destPath.substring(repoIndex + repoName.length() + 1));
+
          String destWorkspace = workspaceName(destPath);
          String destNodePath = path(destPath);
 
@@ -761,18 +969,19 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
          if (overwrite)
          {
-            delete(repoName, destPath, lockTokenHeader, ifHeader);
+            Response delResponse = delete(repoName, destPath, lockTokenHeader, ifHeader);
+            itemExisted = (delResponse.getStatus() == HTTPStatus.NO_CONTENT);
          }
          else
          {
-            Session session = session(repoName, workspaceName(repoPath), null);
+            Session session = session(repoName, srcWorkspace, null);
             String uri =
-               uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
-                  .toString();
+               uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(srcWorkspace).build().toString();
             Response prpfind = new PropFindCommand().propfind(session, destNodePath, body, depth.getIntValue(), uri);
             if (prpfind.getStatus() != HTTPStatus.NOT_FOUND)
             {
-               return Response.status(HTTPStatus.PRECON_FAILED).entity("Preconditions Failed").build();
+               return Response.status(HTTPStatus.PRECON_FAILED)
+                  .entity("Item exists on destination path, while overwriting is forbidden").build();
             }
          }
 
@@ -781,18 +990,25 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             if (srcWorkspace.equals(destWorkspace))
             {
                Session session = session(repoName, srcWorkspace, lockTokens);
-               return new MoveCommand().move(session, srcNodePath, destNodePath);
+               return new MoveCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).move(
+                  session, srcNodePath, destNodePath);
             }
 
             Session srcSession = session(repoName, srcWorkspace, lockTokens);
             Session destSession = session(repoName, destWorkspace, lockTokens);
-            return new MoveCommand().move(srcSession, destSession, srcNodePath, destNodePath);
+            return new MoveCommand(uriInfo.getBaseUriBuilder().path(getClass()).path(repoName), itemExisted).move(
+               srcSession, destSession, srcNodePath, destNodePath);
          }
          else
          {
             return Response.status(HTTPStatus.BAD_REQUEST).entity("Bad Request").build();
          }
 
+      }
+      catch (NoSuchWorkspaceException e)
+      {
+         log.error("NoSuchWorkspaceException " + e.getMessage(), e);
+         return Response.status(HTTPStatus.CONFLICT).entity(e.getMessage()).build();
       }
       catch (Exception exc)
       {
@@ -819,9 +1035,9 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          "<DAV:basicsearch>" + "<exo:sql xmlns:exo=\"http://exoplatform.com/jcr\"/>"
             + "<exo:xpath xmlns:exo=\"http://exoplatform.com/jcr\"/>";
 
-      return Response.ok().header(ExtHttpHeaders.ALLOW, /* allowCommands */ALLOW).header(ExtHttpHeaders.DAV,
-         "1, 2, ordered-collections").header(ExtHttpHeaders.DASL, DASL_VALUE).header(ExtHttpHeaders.MSAUTHORVIA, "DAV")
-         .build();
+      return Response.ok().header(ExtHttpHeaders.ALLOW, /* allowCommands */ALLOW)
+         .header(ExtHttpHeaders.DAV, "1, 2, ordered-collections, access-control")
+         .header(ExtHttpHeaders.DASL, DASL_VALUE).header(ExtHttpHeaders.MSAUTHORVIA, "DAV").build();
    }
 
    /**
@@ -883,7 +1099,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       }
       catch (NoSuchWorkspaceException exc)
       {
-         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
       }
       catch (PreconditionException exc)
       {
@@ -936,6 +1152,33 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * {@inheritDoc}
     */
+   @Deprecated
+   public Response put(String repoName, String repoPath, String lockTokenHeader, String ifHeader,
+      String fileNodeTypeHeader, String contentNodeTypeHeader, String mixinTypes, MediaType mediatype,
+      InputStream inputStream)
+   {
+      return put(repoName, repoPath, lockTokenHeader, ifHeader, fileNodeTypeHeader, contentNodeTypeHeader, mixinTypes,
+         mediatype, inputStream, null);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Deprecated
+   public Response put(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
+      @HeaderParam(ExtHttpHeaders.LOCKTOKEN) String lockTokenHeader, @HeaderParam(ExtHttpHeaders.IF) String ifHeader,
+      @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
+      @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
+      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypes,
+      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype, InputStream inputStream, @Context UriInfo uriInfo)
+   {
+      return put(repoName, repoPath, lockTokenHeader, ifHeader, fileNodeTypeHeader, contentNodeTypeHeader, mixinTypes,
+         mediatype, null, inputStream, uriInfo);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    @PUT
    @Path("/{repoName}/{repoPath:.*}/")
    public Response put(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
@@ -943,9 +1186,9 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypes,
-      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype, InputStream inputStream)
+      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype,
+      @HeaderParam(ExtHttpHeaders.USER_AGENT) String userAgent, InputStream inputStream, @Context UriInfo uriInfo)
    {
-
       if (log.isDebugEnabled())
       {
          log.debug("PUT " + repoName + "/" + repoPath);
@@ -958,10 +1201,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String mimeType = null;
          String encoding = null;
 
-         if (mediatype == null)
+         if (mediatype == null || untrustedUserAgents.contains(userAgent))
          {
-            MimeTypeResolver mimeTypeResolver = new MimeTypeResolver();
-            mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
             mimeType = mimeTypeResolver.getMimeType(TextUtil.nameOnly(repoPath));
          }
          else
@@ -984,15 +1225,15 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          NodeType nodeType = ntm.getNodeType(contentNodeType);
          NodeTypeUtil.checkContentResourceType(nodeType);
 
-         return new PutCommand(nullResourceLocks).put(session, path(repoPath), inputStream, fileNodeType,
-            contentNodeType, NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType,
-            autoVersionType, tokens);
+         return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).put(
+            session, path(repoPath), inputStream, fileNodeType, contentNodeType,
+            NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType, autoVersionType, tokens);
 
       }
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
-         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
 
       }
       catch (NoSuchNodeTypeException exc)
@@ -1146,6 +1387,41 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
+    * {@inheritDoc}
+    */
+   @ACL
+   @Path("/{repoName}/{repoPath:.*}/")
+   public Response acl(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
+      @HeaderParam(ExtHttpHeaders.LOCKTOKEN) String lockTokenHeader, @HeaderParam(ExtHttpHeaders.IF) String ifHeader,
+      HierarchicalProperty body)
+   {
+      if (log.isDebugEnabled())
+      {
+         log.debug("ACL " + repoName + "/" + repoPath);
+      }
+
+      repoPath = normalizePath(repoPath);
+
+      try
+      {
+         List<String> lockTokens = lockTokens(lockTokenHeader, ifHeader);
+         Session session = session(repoName, workspaceName(repoPath), lockTokens);
+         return new AclCommand().acl(session, path(repoPath), body);
+      }
+
+      catch (NoSuchWorkspaceException exc)
+      {
+         log.error("NoSuchWorkspace. " + exc.getMessage());
+         return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
+      }
+      catch (Exception exc)
+      {
+         log.error(exc.getMessage(), exc);
+         return Response.status(HTTPStatus.INTERNAL_ERROR).entity(exc.getMessage()).build();
+      }
+   }
+
+   /**
     * Gives access to the current session.
     * 
     * @param repoName repository name
@@ -1154,7 +1430,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @return current session
     * @throws Exception {@link Exception}
     */
-   protected Session session(String repoName, String wsName, List<String> lockTokens) throws Exception
+   protected Session session(String repoName, String wsName, List<String> lockTokens) throws Exception,
+      NoSuchWorkspaceException
    {
       ManageableRepository repo = this.repositoryService.getRepository(repoName);
       SessionProvider sp = sessionProviderService.getSessionProvider(null);
@@ -1261,9 +1538,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       if (lockTokenHeader != null)
       {
-         lockTokenHeader = lockTokenHeader.substring(1, lockTokenHeader.length() - 1);
+         if (lockTokenHeader.startsWith("<"))
+         {
+            lockTokenHeader = lockTokenHeader.substring(1, lockTokenHeader.length() - 1);
+         }
 
-         if (lockTokenHeader.contains("opaquelocktoken"))
+         if (lockTokenHeader.contains(WebDavConst.Lock.OPAQUE_LOCK_TOKEN))
          {
             lockTokenHeader = lockTokenHeader.split(":")[1];
          }
@@ -1275,10 +1555,29 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          String headerLockToken = ifHeader.substring(ifHeader.indexOf("("));
          headerLockToken = headerLockToken.substring(2, headerLockToken.length() - 2);
+         if (headerLockToken.contains(WebDavConst.Lock.OPAQUE_LOCK_TOKEN))
+         {
+            headerLockToken = headerLockToken.split(":")[1];
+         }
          lockTokens.add(headerLockToken);
       }
 
       return lockTokens;
+   }
+
+   /** 
+    * Build URI from string. 
+    */
+   private URI buildURI(String path) throws URISyntaxException
+   {
+      try
+      {
+         return new URI(path);
+      }
+      catch (URISyntaxException e)
+      {
+         return new URI(TextUtil.escape(path, '%', true));
+      }
    }
 
 }

@@ -41,7 +41,7 @@ import java.util.Set;
 public abstract class AbstractBackupJob implements BackupJob
 {
 
-   protected int state;
+   protected volatile int state;
 
    protected int id;
 
@@ -66,6 +66,7 @@ public abstract class AbstractBackupJob implements BackupJob
 
       NotifyThread(BackupJobListener[] listeners, BackupJob job)
       {
+         super("NotifyThread");
          super.setDaemon(true); // The Java Virtual Machine exits when the only threads running are all
          // daemon threads.
          this.listeners = listeners;
@@ -92,6 +93,7 @@ public abstract class AbstractBackupJob implements BackupJob
       ErrorNotifyThread(BackupJobListener[] listeners, BackupJob job, String message, Throwable error)
       {
          super(listeners, job);
+         setName("ErrorNotifyThread");
          this.error = error;
          this.message = message;
       }

@@ -23,7 +23,12 @@ import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.concurrent.Semaphore;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Created by The eXo Platform SAS
@@ -36,7 +41,7 @@ import java.util.concurrent.Semaphore;
 public class TreeFileIOChannel extends FileIOChannel
 {
 
-   private static Semaphore mkdirsLock = new Semaphore(1);
+   private static final ConcurrentMap<String, Lock> locks = new ConcurrentHashMap<String, Lock>(64, 0.75f, 64);
 
    TreeFileIOChannel(File rootDir, FileCleaner cleaner, String storageId, ValueDataResourceHolder resources)
    {
@@ -80,12 +85,12 @@ public class TreeFileIOChannel extends FileIOChannel
    protected String buildPathX(String fileName)
    {
       char[] chs = fileName.toCharArray();
-      String path = "";
+      StringBuilder path = new StringBuilder();
       for (char ch : chs)
       {
-         path += File.separator + ch;
+         path.append(File.separator).append(ch);
       }
-      return path;
+      return path.toString();
    }
 
    // best for now, 12.07.07
@@ -93,13 +98,13 @@ public class TreeFileIOChannel extends FileIOChannel
    {
       final int xLength = 8;
       char[] chs = fileName.toCharArray();
-      String path = "";
+      StringBuilder path = new StringBuilder();
       for (int i = 0; i < xLength; i++)
       {
-         path += File.separator + chs[i];
+         path.append(File.separator).append(chs[i]);
       }
-      path += fileName.substring(xLength);
-      return path;
+      path.append(fileName.substring(xLength));
+      return path.toString();
    }
 
    protected String buildPathXX2X4(String fileName)
@@ -108,67 +113,96 @@ public class TreeFileIOChannel extends FileIOChannel
       final int xLength = 8;
       boolean xxBlock = true;
       char[] chs = fileName.toCharArray();
-      String path = "";
+      StringBuilder path = new StringBuilder();
+
       for (int xxi = 0; xxi < xxLength; xxi++)
       {
          char ch = chs[xxi];
-         path += xxBlock ? File.separator + ch : ch;
+         path.append(xxBlock ? File.separator + ch : ch);
          xxBlock = !xxBlock;
       }
       for (int xi = xxLength; xi < xLength; xi++)
       {
-         path += File.separator + chs[xi];
+         path.append(File.separator).append(chs[xi]);
       }
-      path += fileName.substring(xLength);
-      return path;
+      path.append(fileName.substring(xLength));
+      return path.toString();
    }
 
    protected String buildPathXX(String fileName)
    {
       char[] chs = fileName.toCharArray();
-      String path = "";
+      StringBuilder path = new StringBuilder();
       boolean block = true;
       for (char ch : chs)
       {
-         path += block ? File.separator + ch : ch;
+         path.append(block ? File.separator + ch : ch);
          block = !block;
       }
-      return path;
+      return path.toString();
    }
 
    protected String buildPathXX8(String fileName)
    {
       final int xxLength = 16; // length / 2 = xx length
       char[] chs = fileName.toCharArray();
-      String path = "";
+      StringBuilder path = new StringBuilder();
       boolean block = true;
       for (int i = 0; i < xxLength; i++)
       {
          char ch = chs[i];
-         path += block ? File.separator + ch : ch;
+         path.append(block ? File.separator + ch : ch);
          block = !block;
       }
-      path += fileName.substring(xxLength);
-      return path;
+      path.append(fileName.substring(xxLength));
+      return path.toString();
    }
 
-   static private boolean mkdirs(final File dir)
+   private static void mkdirs(File dir)
    {
-      // TODO issue on JIRA syncronized method removed and semaphore use
+      if (dir.exists())
+      {
+         return;
+      }
+      List<File> dir2Create = new ArrayList<File>();
+      dir2Create.add(dir);
+      dir = dir.getParentFile();
+      while (dir != null && !dir.exists())
+      {
+         dir2Create.add(0, dir);
+         dir = dir.getParentFile();
+      }
+      for (int i = 0, length = dir2Create.size(); i < length; i++)
+      {
+         mkdir(dir2Create.get(i));
+      }
+   }
+   
+   private static void mkdir(File dir)
+   {
+      String path = dir.getAbsolutePath();
+      Lock lock = locks.get(path);
+      if (lock == null)
+      {
+         lock = new ReentrantLock();
+         Lock prevLock = locks.putIfAbsent(path, lock);
+         if (prevLock != null)
+         {
+            lock = prevLock;
+         }
+      }
+      lock.lock();
       try
       {
-         mkdirsLock.acquire();
-         return dir.mkdirs();
-      }
-      catch (InterruptedException e)
-      {
-         // chLog.error("mkdirs error on " + dir.getAbsolutePath() + ". " + e, e);
-         // return false;
-         throw new IllegalStateException("mkdirs error on " + dir.getAbsolutePath() + " due to " + e, e);
+         if (!dir.exists())
+         {
+            dir.mkdir();
+         }
       }
       finally
       {
-         mkdirsLock.release();
+         lock.unlock();
+         locks.remove(path, lock);
       }
    }
 }

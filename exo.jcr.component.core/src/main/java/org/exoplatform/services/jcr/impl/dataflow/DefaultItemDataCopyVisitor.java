@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -46,6 +48,11 @@ import javax.jcr.RepositoryException;
 
 public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVisitor
 {
+
+   /**
+    * Destination data manager.
+    */
+   protected SessionDataManager dstDataManager;
 
    /**
     * Destination node name
@@ -84,17 +91,18 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
     *          - Destination node name
     * @param nodeTypeManager
     *          - The NodeTypeManager
-    * @param dataManager
+    * @param srcDataManager
     *          - Source data manager
     * @param keepIdentifiers
     *          - Is it necessity to keep <code>Identifier</code>
     */
 
    public DefaultItemDataCopyVisitor(NodeData parent, InternalQName destNodeName, NodeTypeDataManager nodeTypeManager,
-      SessionDataManager dataManager, boolean keepIdentifiers)
+      SessionDataManager srcDataManager, SessionDataManager dstDataManager, boolean keepIdentifiers)
    {
-      super(dataManager);
+      super(srcDataManager);
 
+      this.dstDataManager = dstDataManager;
       this.keepIdentifiers = keepIdentifiers;
       this.ntManager = nodeTypeManager;
       this.destNodeName = destNodeName;
@@ -152,7 +160,8 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
       // If ordering is supported by the node type of the parent node of the new
       // location, then the newly moved node is appended to the end of the child node list.
       int orderNum = 0;
-      if (ntManager.isOrderableChildNodesSupported(parent.getPrimaryTypeName(), parent.getMixinTypeNames()))
+      if (level == 0
+         && ntManager.isOrderableChildNodesSupported(parent.getPrimaryTypeName(), parent.getMixinTypeNames()))
       {
          orderNum = calculateNewNodeOrderNumber();
       }
@@ -160,12 +169,29 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
       {
          orderNum = node.getOrderNumber(); // has no matter
       }
-
       String id = keepIdentifiers ? node.getIdentifier() : IdGenerator.generate();
 
+      AccessControlList acl = parent.getACL();
+
+      boolean isPrivilegeable =
+         ntManager.isNodeType(Constants.EXO_PRIVILEGEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
+
+      boolean isOwneable =
+         ntManager.isNodeType(Constants.EXO_OWNEABLE, node.getPrimaryTypeName(), node.getMixinTypeNames());
+
+      if (isPrivilegeable || isOwneable)
+      {
+         List<AccessControlEntry> permissionEntries = new ArrayList<AccessControlEntry>();
+         permissionEntries.addAll((isPrivilegeable ? node.getACL() : parent.getACL()).getPermissionEntries());
+
+         String owner = isOwneable ? node.getACL().getOwner() : parent.getACL().getOwner();
+
+         acl = new AccessControlList(owner, permissionEntries);
+      }
+
       TransientNodeData newNode =
-         new TransientNodeData(qpath, id, -1, node.getPrimaryTypeName(), node.getMixinTypeNames(), orderNum, parent
-            .getIdentifier(), node.getACL());
+         new TransientNodeData(qpath, id, -1, node.getPrimaryTypeName(), node.getMixinTypeNames(), orderNum,
+            parent.getIdentifier(), acl);
 
       parents.push(newNode);
 
@@ -244,7 +270,7 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
 
    protected int calculateNewNodeOrderNumber() throws RepositoryException
    {
-      return dataManager.getChildNodesCount(curParent());
+      return dstDataManager.getLastOrderNumber(curParent()) + 1;
    }
 
    protected QPath calculateNewNodePath(NodeData node, int level) throws RepositoryException
@@ -253,7 +279,7 @@ public abstract class DefaultItemDataCopyVisitor extends AbstractItemDataCopyVis
 
       InternalQName qname = null;
 
-      List<NodeData> existedChilds = dataManager.getChildNodesData(parent);
+      List<NodeData> existedChilds = dstDataManager.getChildNodesData(parent);
       int newIndex = 1;
       if (level == 0)
       {

@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
@@ -38,6 +39,8 @@ import javax.jcr.RepositoryException;
  */
 public class StreamPersistedValueData extends FilePersistedValueData
 {
+
+   private static final long serialVersionUID = -5831609242005946202L;
 
    protected InputStream stream;
 
@@ -170,7 +173,6 @@ public class StreamPersistedValueData extends FilePersistedValueData
    @Override
    public InputStream getAsStream() throws IOException
    {
-      // TODO check if file exists, wait a bit (for replication etc.)
       return super.getAsStream();
    }
 
@@ -182,11 +184,11 @@ public class StreamPersistedValueData extends FilePersistedValueData
    {
       if (file != null)
       {
-         return file.length();
+         return PrivilegedFileHelper.length(file);
       }
       else if (tempFile != null)
       {
-         return tempFile.length();
+         return PrivilegedFileHelper.length(tempFile);
       }
       else if (stream instanceof FileInputStream)
       {
@@ -224,6 +226,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected void finalize() throws Throwable
    {
       try

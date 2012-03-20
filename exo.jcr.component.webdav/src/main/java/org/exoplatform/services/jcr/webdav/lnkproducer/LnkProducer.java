@@ -50,7 +50,7 @@ public class LnkProducer implements ResourceContainer
    /**
     * logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.LnkProducer");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.LnkProducer");
 
    /**
     * Default constructor.
@@ -88,7 +88,7 @@ public class LnkProducer implements ResourceContainer
       }
       catch (IOException exc)
       {
-         log.error(exc.getMessage(), exc);
+         LOG.error(exc.getMessage(), exc);
          throw new WebApplicationException(exc);
       }
 

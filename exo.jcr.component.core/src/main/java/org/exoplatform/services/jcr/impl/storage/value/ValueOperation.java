@@ -49,11 +49,26 @@ public interface ValueOperation
    void rollback() throws IOException;
 
    /**
-    * Commit Value content.
+    * Commit Value content (one phase).
     * 
     * @throws IOException
     *           if error occurs
     */
    void commit() throws IOException;
 
+   /**
+    * Prepare Value content.
+    * 
+    * @throws IOException
+    *           if error occurs
+    */
+   void prepare() throws IOException;
+   
+   /**
+    * Commit Value content (two phases).
+    * 
+    * @throws IOException
+    *           if error occurs
+    */
+   void twoPhaseCommit() throws IOException;
 }

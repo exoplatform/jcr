@@ -67,7 +67,9 @@ public class TestAccess extends BaseStandaloneTest
          session.save();
       }
       else
+      {
          accessTestRoot = (ExtendedNode)session.getRootNode().getNode("accessTestRoot");
+      }
    }
 
    @Override
@@ -78,6 +80,7 @@ public class TestAccess extends BaseStandaloneTest
       super.tearDown();
    }
 
+   @Override
    public String getRepositoryName()
    {
       return "db1";
@@ -178,7 +181,9 @@ public class TestAccess extends BaseStandaloneTest
 
       session.save();
       if (log.isDebugEnabled())
+      {
          log.debug("NODE PERM 1 >>> " + node.getACL().dump());
+      }
       // change permission
       HashMap<String, String[]> perm = new HashMap<String, String[]>();
       perm.put("john", new String[]{PermissionType.ADD_NODE, PermissionType.READ});
@@ -187,22 +192,30 @@ public class TestAccess extends BaseStandaloneTest
       // showPermissions("accessTestRoot/testIfPermissionSaved");
 
       if (log.isDebugEnabled())
+      {
          log.debug("NODE PERM 1 >>> " + node.getACL().dump());
+      }
 
       session.save();
 
       if (log.isDebugEnabled())
+      {
          log.debug("NODE PERM 2 >>> " + node.getACL().dump());
+      }
 
       // get node in new session
       NodeImpl testNode =
          (NodeImpl)repository.getSystemSession().getRootNode().getNode("accessTestRoot/testIfPermissionSaved");
 
       if (log.isDebugEnabled())
+      {
          log.debug("NODE PERM 4 >>> " + node.getACL().dump());
+      }
 
       if (log.isDebugEnabled())
+      {
          log.debug("TEST PERM >>> " + testNode.getACL().dump());
+      }
 
       showPermissions("accessTestRoot/testIfPermissionSaved");
 
@@ -741,17 +754,10 @@ public class TestAccess extends BaseStandaloneTest
       {
          fail("AccessControlException should not have been thrown ");
       }
-      try
-      {
-         testByOwnerNode.remove();
-         session1.save();
-         fail();
-      }
-      catch (AccessDeniedException e)
-      {
-         // fail("AccessControlException should not have been thrown ");
-      }
 
+      //john is node owner so he can remove no matter what permission are assigned to node
+      testByOwnerNode.remove();
+      session1.save();
    }
 
    public void testRemoveExoOwnable() throws Exception
@@ -784,8 +790,8 @@ public class TestAccess extends BaseStandaloneTest
          (ExtendedNode)session2.getRootNode().getNode("accessTestRoot/testRemoveExoOwnable/subroot");
       assertEquals("john", subRoot2.getProperty("exo:owner").getString());
       assertEquals("john", subRoot2.getACL().getOwner());
-      Node testNode2 = subRoot1.getNode("node");
-      testNode.remove();
+      Node testNode2 = subRoot2.getNode("node");
+      testNode2.remove();
 
       session2.save();
 
@@ -1087,7 +1093,9 @@ public class TestAccess extends BaseStandaloneTest
       NodeImpl node = (NodeImpl)this.repository.getSystemSession().getRootNode().getNode(path);
       AccessControlList acl = node.getACL();
       if (log.isDebugEnabled())
+      {
          log.debug("DUMP: " + acl.dump());
+      }
 
    }
 

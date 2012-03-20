@@ -32,6 +32,12 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
     */
    private final int index;
 
+   private String cachedToString;
+
+   private String cachedToStringShowIndex;
+
+   private String id;
+   
    /**
     * QPathEntry constructor.
     * 
@@ -42,10 +48,27 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
     */
    public QPathEntry(InternalQName qName, int index)
    {
-      super(qName.getNamespace(), qName.getName());
-      this.index = index > 0 ? index : 1;
+      this(qName, index, null);
    }
 
+   
+   /**
+    * QPathEntry constructor.
+    * 
+    * @param qName
+    *          - InternalQName (full qualified name)
+    * @param index
+    *          - Item index
+    * @param id
+    *          - Item id
+    */
+   public QPathEntry(InternalQName qName, int index, String id)
+   {
+      super(qName.getNamespace(), qName.getName());
+      this.index = index > 0 ? index : 1;
+      this.id = id;
+   }
+   
    /**
     * QPathEntry constructor.
     * 
@@ -58,8 +81,26 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
     */
    public QPathEntry(String namespace, String name, int index)
    {
+      this(namespace, name, index, null);
+   }
+   
+   /**
+    * QPathEntry constructor.
+    * 
+    * @param namespace
+    *          - namespace URI
+    * @param name
+    *          - Item name
+    * @param index
+    *          - Item index
+    * @param id
+    *          - Item id
+    */
+   public QPathEntry(String namespace, String name, int index, String id)
+   {
       super(namespace, name);
       this.index = index > 0 ? index : 1;
+      this.id = id;
    }
 
    /**
@@ -85,6 +126,16 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
 
       InternalQName qname = InternalQName.parse(qnameString);
       return new QPathEntry(qname, Integer.valueOf(indexString));
+   }   
+   
+   /**
+    * Return Item id, can be null since it could not be set
+    * 
+    * @return the id of the item
+    */
+   public String getId()
+   {
+      return id;
    }
 
    /**
@@ -128,7 +179,44 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
     */
    public String getAsString(boolean showIndex)
    {
-      return super.getAsString() + (showIndex ? QPath.PREFIX_DELIMITER + this.index : "");
+      if (showIndex)
+      {
+         if (cachedToStringShowIndex != null)
+         {
+            return cachedToStringShowIndex;
+         }
+      }
+      else
+      {
+         if (cachedToString != null)
+         {
+            return cachedToString;
+         }
+      }
+
+      //
+      String res;
+      if (showIndex)
+      {
+         res = super.getAsString() + QPath.PREFIX_DELIMITER + getIndex();
+      }
+      else
+      {
+         res = super.getAsString();
+      }
+
+      //
+      if (showIndex)
+      {
+         cachedToStringShowIndex = res;
+      }
+      else
+      {
+         cachedToString = res;
+      }
+
+      //
+      return res;
    }
 
    /**
@@ -158,4 +246,18 @@ public class QPathEntry extends InternalQName implements Comparable<QPathEntry>
       return getAsString(true);
    }
 
+   @Override
+   public boolean equals(Object o)
+   {
+      boolean result = super.equals(o);
+
+      if (result == true && (o instanceof QPathEntry))
+      {
+         return result && (getIndex() == ((QPathEntry)o).getIndex());
+      }
+      else
+      {
+         return result;
+      }
+   }
 }

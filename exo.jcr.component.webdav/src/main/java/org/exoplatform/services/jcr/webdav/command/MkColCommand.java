@@ -34,6 +34,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.lock.LockException;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  * Created by The eXo Platform SAS Author : <a
@@ -56,6 +57,11 @@ public class MkColCommand
    private final NullResourceLocksHolder nullResourceLocks;
 
    /**
+    * Provides URI information needed for 'location' header in 'CREATED' response
+    */
+   private final UriBuilder uriBuilder;
+
+   /**
     * Constructor. 
     * 
     * @param nullResourceLocks resource locks. 
@@ -63,6 +69,19 @@ public class MkColCommand
    public MkColCommand(final NullResourceLocksHolder nullResourceLocks)
    {
       this.nullResourceLocks = nullResourceLocks;
+      this.uriBuilder = null;
+   }
+
+   /**
+    * Constructor. 
+    * 
+    * @param nullResourceLocks resource locks. 
+    * @param uriBuilder - provide data used in 'location' header
+    */
+   public MkColCommand(final NullResourceLocksHolder nullResourceLocks, UriBuilder uriBuilder)
+   {
+      this.nullResourceLocks = nullResourceLocks;
+      this.uriBuilder = uriBuilder;
    }
 
    /**
@@ -77,6 +96,7 @@ public class MkColCommand
     */
    public Response mkCol(Session session, String path, String nodeType, List<String> mixinTypes, List<String> tokens)
    {
+
       Node node;
       try
       {
@@ -89,6 +109,7 @@ public class MkColCommand
             addMixins(node, mixinTypes);
          }
          session.save();
+
       }
 
       catch (ItemExistsException exc)
@@ -117,6 +138,12 @@ public class MkColCommand
          return Response.serverError().entity(exc.getMessage()).build();
       }
 
+      if (uriBuilder != null)
+      {
+         return Response.created(uriBuilder.path(session.getWorkspace().getName()).path(path).build()).build();
+      }
+
+      // to save compatibility if uriBuilder is not provided
       return Response.status(HTTPStatus.CREATED).build();
    }
 

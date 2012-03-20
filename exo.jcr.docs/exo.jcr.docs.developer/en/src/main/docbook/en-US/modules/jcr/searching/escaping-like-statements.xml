@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.EscapinginLIKEStatements">
+  <title>Escaping in LIKE Statements</title>
+
+  <para>Find all nodes with a mixin type 'mix:title' and whose property
+  'jcr:title' starts with 'P%ri'.</para>
+
+  <para>As you see "P%rison break" contains the symbol '%'. This symbol is
+  reserved for LIKE comparisons. So what can we do?</para>
+
+  <para>Within the LIKE pattern, literal instances of percent ("%") or
+  underscore ("_") must be escaped. The SQL ESCAPE clause allows the
+  definition of an arbitrary escape character within the context of a single
+  LIKE statement. The following example defines the backslash ' \' as escape
+  character:</para>
+
+  <programlisting>SELECT * FROM mytype WHERE a LIKE 'foo\%' ESCAPE '\'</programlisting>
+
+  <para>XPath does not have any specification for defining escape symbols, so
+  we must use the default escape character (' \').</para>
+
+  <section>
+    <title>Repository structure</title>
+
+    <para>The repository contains mix:title nodes, where jcr:title can have
+    different values.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>root</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>document1 (mix:title) jcr:title="Star wars"
+            jcr:description="Dart rules!!"</para>
+          </listitem>
+
+          <listitem>
+            <para>document2 (mix:title) jcr:title="P%rison break"
+            jcr:description="Run, Forest, run ))"</para>
+          </listitem>
+
+          <listitem>
+            <para>document3 (mix:title) jcr:title="Panopticum"
+            jcr:description="It's imagine film"</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Query execution</title>
+
+    <para><emphasis role="bold">SQL</emphasis></para>
+
+    <programlisting language="java">// make SQL query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String sqlStatement = "SELECT * FROM mix:title WHERE jcr:title LIKE 'P#%ri%' ESCAPE '#'";
+Query query = queryManager.createQuery(sqlStatement, Query.SQL);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+
+    <para><emphasis role="bold">XPath</emphasis></para>
+
+    <programlisting language="java">// make XPath query
+QueryManager queryManager = workspace.getQueryManager();
+// create query
+String xpathStatement = "//element(*,mix:title)[jcr:like(@jcr:title, 'P\\%ri%')]";
+Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
+// execute query and fetch result
+QueryResult result = query.execute();</programlisting>
+  </section>
+
+  <section>
+    <title>Fetching result</title>
+
+    <para>Let's get nodes:</para>
+
+    <programlisting language="java">NodeIterator it = result.getNodes();
+
+if(it.hasNext())
+{
+   Node findedNode = it.nextNode();
+}</programlisting>
+
+    <para>NodeIterator will return "document2".</para>
+
+    <para>We can also get a table:</para>
+
+    <programlisting language="java">String[] columnNames = result.getColumnNames();
+RowIterator rit = result.getRows();
+while (rit.hasNext())
+{
+   Row row = rit.nextRow();
+   // get values of the row
+   Value[] values = row.getValues();
+}</programlisting>
+
+    <para>The table content is <table>
+        <title>Table content</title>
+
+        <tgroup cols="4">
+          <thead>
+            <row>
+              <entry>jcr:title</entry>
+
+              <entry>jcr:description</entry>
+
+              <entry>jcr:path</entry>
+
+              <entry>jcr:score</entry>
+            </row>
+          </thead>
+
+          <tbody>
+            <row>
+              <entry>P%rison break</entry>
+
+              <entry>Run, Forest, run ))</entry>
+
+              <entry>/document2</entry>
+
+              <entry>7452</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table></para>
+  </section>
+</section>

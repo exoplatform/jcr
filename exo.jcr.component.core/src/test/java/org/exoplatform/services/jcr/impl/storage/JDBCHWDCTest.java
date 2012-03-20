@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.dataflow.SharedDataManager;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -36,7 +37,6 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableDataManager;
-import org.exoplatform.services.jcr.impl.dataflow.session.WorkspaceStorageDataManagerProxy;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.util.IdGenerator;
@@ -142,7 +142,7 @@ public class JDBCHWDCTest extends JcrImplBaseTest
       con = wdContainer.openConnection();
       try
       {
-         NodeData storedNode = (NodeData)con.getItemData(rootData, new QPathEntry(nodeName, 1));
+         NodeData storedNode = (NodeData)con.getItemData(rootData, new QPathEntry(nodeName, 1), ItemType.NODE);
          assertEquals(path, storedNode.getQPath());
       }
       catch (Exception e)
@@ -211,7 +211,7 @@ public class JDBCHWDCTest extends JcrImplBaseTest
       // get
       try
       {
-         NodeData storedNode = (NodeData)wdm.getItemData(rootData, new QPathEntry(nodeName, 1));
+         NodeData storedNode = (NodeData)wdm.getItemData(rootData, new QPathEntry(nodeName, 1), ItemType.NODE);
          assertEquals(path, storedNode.getQPath());
       }
       catch (Exception e)

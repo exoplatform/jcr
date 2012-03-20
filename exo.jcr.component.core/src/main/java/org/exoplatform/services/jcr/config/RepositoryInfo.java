@@ -46,6 +46,8 @@ public class RepositoryInfo
 
    protected long sessionTimeOut;
 
+   protected int lockRemoverMaxThreadCount;
+
    public RepositoryInfo()
    {
 
@@ -190,17 +192,43 @@ public class RepositoryInfo
    }
 
    /**
+    * Returns LockRemovers per-repository max threads count.
+    * @return LockRemovers per-repository max threads count
+    */
+   public int getLockRemoverThreadsCount()
+   {
+      return lockRemoverMaxThreadCount;
+   }
+
+   /**
+    * Sets LockRemovers per-repository max threads count.
+    * @param lockRemoverMaxThreadCount
+    */
+   public void setLockRemoverThreadsCount(int lockRemoverMaxThreadCount)
+   {
+      this.lockRemoverMaxThreadCount = lockRemoverMaxThreadCount;
+   }
+
+   /**
     * Merges the current {@link RepositoryInfo} with the given one. The current {@link RepositoryInfo}
     * has the highest priority thus only absent data will be overrode
     * @param entry the entry to merge with the current {@link RepositoryInfo}
     */
    void merge(RepositoryInfo entry)
    {
-      if (systemWorkspaceName == null) setSystemWorkspaceName(entry.systemWorkspaceName);
-      if (defaultWorkspaceName == null) setDefaultWorkspaceName(entry.defaultWorkspaceName);
-      if (accessControl == null) setAccessControl(entry.accessControl);
-      if (securityDomain == null) setSecurityDomain(entry.securityDomain);
-      if (authenticationPolicy == null) setAuthenticationPolicy(entry.authenticationPolicy);
-      if (sessionTimeOut == 0) setSessionTimeOut(entry.sessionTimeOut);
-   }   
+      if (systemWorkspaceName == null)
+         setSystemWorkspaceName(entry.systemWorkspaceName);
+      if (defaultWorkspaceName == null)
+         setDefaultWorkspaceName(entry.defaultWorkspaceName);
+      if (accessControl == null)
+         setAccessControl(entry.accessControl);
+      if (securityDomain == null)
+         setSecurityDomain(entry.securityDomain);
+      if (authenticationPolicy == null)
+         setAuthenticationPolicy(entry.authenticationPolicy);
+      if (sessionTimeOut == 0)
+         setSessionTimeOut(entry.sessionTimeOut);
+      if (lockRemoverMaxThreadCount == 0)
+         setLockRemoverThreadsCount(entry.lockRemoverMaxThreadCount);
+   }
 }

@@ -79,8 +79,9 @@ JONAS_OPTS="\
 
 # ------------------------- Begin eXo configuration ----------------------------
 cd $JONAS_ROOT/bin
-JONAS_OPTS="$JONAS_OPTS -Dorg.exoplatform.services.log.Log=org.apache.commons.logging.impl.SimpleLog -Djava.awt.headless=true"
+JONAS_OPTS="$JONAS_OPTS -Dorg.exoplatform.services.log.Log=org.apache.commons.logging.impl.SimpleLog -Djava.awt.headless=true -Dexo.profiles=@exo.deploy.profile@ -Djava.net.preferIPv4Stack=true -Dexo.jcr.parent.dir=.."
 JAVA_OPTS="$JAVA_OPTS -Xmx512M"
+
 # -------------------------- End eXo configuration -----------------------------
 
 # ---------------------------------------------

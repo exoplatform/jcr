@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -58,9 +59,28 @@ public class LocalWorkspaceDataManagerStub extends VersionableWorkspaceDataManag
     * {@inheritDoc}
     */
    @Override
+   public List<NodeData> getChildNodesData(NodeData nodeData, List<QPathEntryFilter> patternFilters) throws RepositoryException
+   {
+      return Collections.unmodifiableList(super.getChildNodesData(nodeData, patternFilters));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public List<PropertyData> getChildPropertiesData(NodeData parent) throws RepositoryException
    {
       return Collections.unmodifiableList(super.getChildPropertiesData(parent));
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException
+   {
+      return Collections.unmodifiableList(super.getChildPropertiesData(parent, itemDataFilters));
    }
 
    /**

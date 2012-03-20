@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.initializer.impl;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.ext.initializer.NoMemberToSendException;
 import org.exoplatform.services.jcr.ext.initializer.RemoteTransport;
 import org.exoplatform.services.jcr.ext.initializer.RemoteWorkspaceInitializationException;
@@ -26,7 +27,6 @@ import org.exoplatform.services.jcr.ext.replication.storage.InvalidChecksumExcep
 import org.exoplatform.services.jcr.ext.replication.transport.ChannelManager;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.security.MessageDigest;
@@ -175,7 +175,7 @@ public class RemoteTransportImpl implements RemoteTransport
       NoMemberToSendException
    {
 
-      if (!workspaceData.exists())
+      if (!PrivilegedFileHelper.exists(workspaceData))
          throw new RemoteWorkspaceInitializationException("The file with workspace data not exists.");
 
       byte[] crc;
@@ -241,9 +241,9 @@ public class RemoteTransportImpl implements RemoteTransport
    private byte[] getCheckSum(File f) throws NoSuchAlgorithmException, IOException
    {
       MessageDigest digest = MessageDigest.getInstance("MD5");
-      InputStream in = new FileInputStream(f);
+      InputStream in = PrivilegedFileHelper.fileInputStream(f);
 
-      long length = f.length();
+      long length = PrivilegedFileHelper.length(f);
 
       byte[] buff = new byte[BUFFER_SIZE];
       for (; length >= BUFFER_SIZE; length -= BUFFER_SIZE)

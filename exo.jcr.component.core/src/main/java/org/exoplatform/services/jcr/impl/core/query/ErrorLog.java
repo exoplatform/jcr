@@ -17,18 +17,20 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -95,24 +97,30 @@ public class ErrorLog
     * @param log
     * @throws IOException
     */
-   private void openFile(File log) throws IOException
+   private void openFile(final File log) throws IOException
    {
-      // set file size;
-      if (!log.exists())
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
       {
-         log.getParentFile().mkdirs();
-         log.createNewFile();
-
-         out = new FileOutputStream(log).getChannel();
-         out.position(1024 * fileSize - 1);
-         out.write(ByteBuffer.wrap(new byte[]{0}));
-         out.position(0);
-         out.force(false);
-      }
-      else
-      {
-         out = new FileOutputStream(log, true).getChannel();
-      }
+         public Void run() throws Exception
+         {
+            // set file size;
+            if (!log.exists())
+            {
+               log.getParentFile().mkdirs();
+               log.createNewFile();
+               out = new FileOutputStream(log).getChannel();
+               out.position(1024 * fileSize - 1);
+               out.write(ByteBuffer.wrap(new byte[]{0}));
+               out.position(0);
+               out.force(false);
+            }
+            else
+            {
+               out = new FileOutputStream(log, true).getChannel();
+            }
+            return null;
+         }
+      });
    }
 
    /**
@@ -123,7 +131,7 @@ public class ErrorLog
     * @throws IOException
     *             if the node cannot be written to the redo log.
     */
-   public void append(String action, String uuid) throws IOException
+   public void append(final String action, final String uuid) throws IOException
    {
       initOut();
       out.write(ByteBuffer.wrap((action + " " + uuid + "\n").getBytes()));
@@ -155,7 +163,7 @@ public class ErrorLog
       {
          out.truncate(0);
          out.close();
-         out = new FileOutputStream(logFile).getChannel();
+         out = PrivilegedFileHelper.fileOutputStream(logFile).getChannel();
          out.position(1024 * fileSize - 1);
          out.write(ByteBuffer.wrap(new byte[]{0}));
          out.position(0);
@@ -173,7 +181,7 @@ public class ErrorLog
    {
       if (out == null)
       {
-         FileOutputStream os = new FileOutputStream(logFile, false);
+         FileOutputStream os = PrivilegedFileHelper.fileOutputStream(logFile, false);
          out = os.getChannel();
       }
    }
@@ -186,7 +194,7 @@ public class ErrorLog
     */
    public List<String> readList() throws IOException
    {
-      InputStream in = new FileInputStream(logFile);
+      InputStream in = PrivilegedFileHelper.fileInputStream(logFile);
       try
       {
          List<String> list = new ArrayList<String>();
@@ -264,6 +272,24 @@ public class ErrorLog
       finally
       {
          flush();
+      }
+   }
+
+   /**
+    * Closes ErrorLog and frees resources associated with it.
+    */
+   public void close()
+   {
+      if (out != null)
+      {
+         try
+         {
+            out.close();
+         }
+         catch (IOException e)
+         {
+            out = null;
+         }
       }
    }
 

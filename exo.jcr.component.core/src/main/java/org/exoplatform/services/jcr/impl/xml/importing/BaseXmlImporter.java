@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing;
 
-import org.exoplatform.services.jcr.access.AccessControlEntry;
-import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
@@ -27,10 +25,10 @@ import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
-import org.exoplatform.services.jcr.datamodel.IllegalACLException;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -41,6 +39,7 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
+import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.xml.VersionHistoryRemover;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportItemData;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
@@ -56,7 +55,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
-import java.util.StringTokenizer;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.ItemExistsException;
@@ -108,7 +106,7 @@ public abstract class BaseXmlImporter implements ContentImporter
 
    protected final ValueFactoryImpl valueFactory;
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ImporterBase");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ImporterBase");
 
    public BaseXmlImporter(NodeData parent, QPath ancestorToSave, int uuidBehavior, ItemDataConsumer dataConsumer,
       NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,
@@ -155,18 +153,19 @@ public abstract class BaseXmlImporter implements ContentImporter
 
       Collections.sort(changesLog.getAllStates(), new PathSorter());
 
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         String str = "";
+         StringBuilder str = new StringBuilder();
          for (int i = 0; i < changesLog.getAllStates().size(); i++)
-            str +=
-               " " + ItemState.nameFromValue(changesLog.getAllStates().get(i).getState()) + "\t\t"
-                  + changesLog.getAllStates().get(i).getData().getIdentifier() + "\t" + "isPersisted="
-                  + changesLog.getAllStates().get(i).isPersisted() + "\t" + "isEventFire="
-                  + changesLog.getAllStates().get(i).isEventFire() + "\t" + "isInternallyCreated="
-                  + changesLog.getAllStates().get(i).isInternallyCreated() + "\t"
-                  + changesLog.getAllStates().get(i).getData().getQPath().getAsString() + "\n";
-         log.debug(str);
+         {
+            str.append(" ").append(ItemState.nameFromValue(changesLog.getAllStates().get(i).getState())).append("\t\t");
+            str.append(changesLog.getAllStates().get(i).getData().getIdentifier()).append("\t").append("isPersisted=");
+            str.append(changesLog.getAllStates().get(i).isPersisted()).append("\t").append("isEventFire=");
+            str.append(changesLog.getAllStates().get(i).isEventFire()).append("\t").append("isInternallyCreated=");
+            str.append(changesLog.getAllStates().get(i).isInternallyCreated()).append("\t");
+            str.append(changesLog.getAllStates().get(i).getData().getQPath().getAsString()).append("\n");
+         }
+         LOG.debug(str);
       }
       if (isNeedReloadAncestorToSave)
       {
@@ -174,7 +173,7 @@ public abstract class BaseXmlImporter implements ContentImporter
          for (ItemState itemState : changesLog.getAllStates())
          {
             newChangesLog.add(new ItemState(itemState.getData(), itemState.getState(), itemState.isEventFire(),
-               ancestorToSave, itemState.isInternallyCreated(), itemState.isPersisted()));
+               ancestorToSave, itemState.isInternallyCreated(), itemState.isPersisted(), itemState.getOldPath()));
          }
          changesLog.clear();
          changesLog.addAll(newChangesLog.getAllStates());
@@ -228,7 +227,7 @@ public abstract class BaseXmlImporter implements ContentImporter
       ItemData sameNameNode = null;
       try
       {
-         sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0));
+         sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0), ItemType.NODE, false);
       }
       catch (PathNotFoundException e)
       {
@@ -346,10 +345,10 @@ public abstract class BaseXmlImporter implements ContentImporter
 
       PlainChangesLogImpl changes = new PlainChangesLogImpl();
       // using VH helper as for one new VH, all changes in changes log
-      new VersionHistoryDataHelper(nodeData, changes, dataConsumer, nodeTypeDataManager, nodeData
-         .getVersionHistoryIdentifier(), nodeData.getBaseVersionIdentifier());
+      new VersionHistoryDataHelper(nodeData, changes, dataConsumer, nodeTypeDataManager,
+         nodeData.getVersionHistoryIdentifier(), nodeData.getBaseVersionIdentifier());
 
-      if (uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING && !newVersionHistory)
+      if (!newVersionHistory)
       {
          for (ItemState state : changes.getAllStates())
          {
@@ -382,6 +381,15 @@ public abstract class BaseXmlImporter implements ContentImporter
     */
    protected void checkReferenceable(ImportNodeData currentNodeInfo, String olUuid) throws RepositoryException
    {
+      // if node is in version storrage - do not assign new id from jcr:uuid
+      // property
+      if (Constants.JCR_VERSION_STORAGE_PATH.getDepth() + 3 <= currentNodeInfo.getQPath().getDepth()
+         && currentNodeInfo.getQPath().getEntries()[Constants.JCR_VERSION_STORAGE_PATH.getDepth() + 3]
+            .equals(Constants.JCR_FROZENNODE)
+         && currentNodeInfo.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
+      {
+         return;
+      }
 
       String identifier = validateUuidCollision(olUuid);
 
@@ -441,89 +449,6 @@ public abstract class BaseXmlImporter implements ContentImporter
       currentNodeInfo.setIdentifier(identifier);
    }
 
-   protected AccessControlList initAcl(AccessControlList parentACL, boolean isOwneable, boolean isPrivilegeable,
-      String owner, List<String> exoPermissions)
-   {
-      AccessControlList acl;
-      if (isOwneable)
-      {
-         // has own owner
-         if (isPrivilegeable)
-         {
-            // and permissions
-            acl = new AccessControlList(owner, readACLPermisions(exoPermissions));
-         }
-         else if (parentACL != null)
-         {
-            // use permissions from existed parent
-            acl = new AccessControlList(owner, parentACL.hasPermissions() ? parentACL.getPermissionEntries() : null);
-         }
-         else
-         {
-            // have to search nearest ancestor permissions in ACL manager
-            // acl = new AccessControlList(owner,
-            // traverseACLPermissions(cpid));
-            acl = new AccessControlList(owner, null);
-         }
-      }
-      else if (isPrivilegeable)
-      {
-         // has own permissions
-         if (isOwneable)
-         {
-            // and owner
-            acl = new AccessControlList(owner, readACLPermisions(exoPermissions));
-         }
-         else if (parentACL != null)
-         {
-            // use owner from existed parent
-            acl = new AccessControlList(parentACL.getOwner(), readACLPermisions(exoPermissions));
-         }
-         else
-         {
-            // have to search nearest ancestor owner in ACL manager
-            // acl = new AccessControlList(traverseACLOwner(cpid),
-            // readACLPermisions(cid));
-            acl = new AccessControlList(null, readACLPermisions(exoPermissions));
-         }
-      }
-      else
-      {
-         if (parentACL != null)
-            // construct ACL from existed parent ACL
-            acl =
-               new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
-                  .getPermissionEntries() : null);
-         else
-            // have to search nearest ancestor owner and permissions in ACL manager
-            // acl = traverseACL(cpid);
-            acl = null;
-      }
-      return acl;
-   }
-
-   /**
-    * Return permission values or throw an exception. We assume the node is
-    * mix:privilegeable.
-    * 
-    * @param cid Node id
-    * @return list of ACL entries
-    * @throws IllegalACLException if property exo:permissions is not found for
-    *           node
-    */
-   protected List<AccessControlEntry> readACLPermisions(List<String> exoPermissions)
-   {
-      List<AccessControlEntry> naPermissions = new ArrayList<AccessControlEntry>();
-
-      for (String perm : exoPermissions)
-      {
-
-         StringTokenizer parser = new StringTokenizer(perm, AccessControlEntry.DELIMITER);
-         naPermissions.add(new AccessControlEntry(parser.nextToken(), parser.nextToken()));
-
-      }
-      return naPermissions;
-   }
 
    /**
     * Check if item with uuid=identifier exists. If no item exist return same
@@ -534,7 +459,7 @@ public abstract class BaseXmlImporter implements ContentImporter
     * <li>IMPORT_UUID_COLLISION_REMOVE_EXISTING - Remove same uuid item and his
     * subtree. Also if item MIX_VERSIONABLE, remove version history</li>
     * <li>IMPORT_UUID_COLLISION_REPLACE_EXISTING - Remove same uuid item and his
-    * subtree.</li>
+    * subtree. Also if item MIX_VERSIONABLE, remove version history</li>
     * <li>IMPORT_UUID_COLLISION_THROW - throw new ItemExistsException</li>
     * </ol>
     * 
@@ -577,6 +502,11 @@ public abstract class BaseXmlImporter implements ContentImporter
                      removeExisted(sameUuidItem);
                      break;
                   case ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING :
+                     // remove version history before removing item
+                     if (isMixVersionable)
+                     {
+                        removeVersionHistory(sameUuidItem);
+                     }
                      removeExisted(sameUuidItem);
                      ItemData parentOfsameUuidItem = dataConsumer.getItemData(sameUuidItem.getParentIdentifier());
                      tree.push(ImportNodeData.createCopy((NodeData)parentOfsameUuidItem));
@@ -585,15 +515,18 @@ public abstract class BaseXmlImporter implements ContentImporter
                      // If an incoming referenceable node has the same UUID as a node
                      // already existing in the workspace then a SAXException is thrown
                      // by the ContentHandler during deserialization.
-                     throw new ItemExistsException("An incoming referenceable node has the same "
-                        + "UUID as a node already existing in the workspace!");
+                     throw new JCRItemExistsException("An incoming referenceable node has the same "
+                        + "UUID as a node already existing in the workspace! UUID:" + identifier, identifier);
                   default :
                }
             }
          }
          catch (ItemNotFoundException e)
          {
-            // node not found, it's ok - willing create one new
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
 
       }
@@ -634,7 +567,7 @@ public abstract class BaseXmlImporter implements ContentImporter
     * @param identifer
     * @return
     */
-   private ItemState getLastItemState(String identifer)
+   protected ItemState getLastItemState(String identifer)
    {
       List<ItemState> allStates = changesLog.getAllStates();
       for (int i = allStates.size() - 1; i >= 0; i--)
@@ -657,7 +590,7 @@ public abstract class BaseXmlImporter implements ContentImporter
    {
       String id1 = data.getParentIdentifier();
       String id2 = parent.getIdentifier();
-      if (id1 == id2)
+      if (id1 == id2) // NOSONAR 
          return true;
       if (id1 == null && id2 != null)
          return false;
@@ -723,7 +656,8 @@ public abstract class BaseXmlImporter implements ContentImporter
       try
       {
          PropertyData vhpd =
-            (PropertyData)dataConsumer.getItemData(mixVersionableNode, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1));
+            (PropertyData)dataConsumer.getItemData(mixVersionableNode, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1),
+               ItemType.PROPERTY);
          try
          {
             String vhID = new String(vhpd.getValues().get(0).getAsByteArray());

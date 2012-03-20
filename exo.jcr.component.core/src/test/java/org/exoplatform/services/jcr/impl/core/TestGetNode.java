@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 
+import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 
 /**
@@ -46,6 +47,19 @@ public class TestGetNode extends JcrImplBaseTest
       {
          fail("Exception should not be thrown");
       }
+   }
+
+   public void testGetNodeAndPropertyWithSameName() throws Exception
+   {
+      String sameName = "sameName";
+      Node rootNode = session.getRootNode();
+      Node aNode = rootNode.addNode("a");
+      aNode.addNode(sameName);
+      aNode.setProperty(sameName, "aa");
+      session.save();
+
+      assertNotNull(aNode.getProperty(sameName));
+      assertNotNull(aNode.getNode(sameName));
    }
 
 }

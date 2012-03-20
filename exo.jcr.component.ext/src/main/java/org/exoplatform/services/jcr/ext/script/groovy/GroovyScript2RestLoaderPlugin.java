@@ -21,12 +21,15 @@ package org.exoplatform.services.jcr.ext.script.groovy;
 import org.exoplatform.container.component.BaseComponentPlugin;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
@@ -37,6 +40,9 @@ public class GroovyScript2RestLoaderPlugin extends BaseComponentPlugin
 
    /** Logger. */
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestLoaderPlugin");
+
+   /** Repository service **/
+   private static RepositoryService repositoryService;
 
    /** Configurations for scripts what were got from XML. */
    private List<XMLGroovyScript2Rest> l = new ArrayList<XMLGroovyScript2Rest>();
@@ -51,9 +57,12 @@ public class GroovyScript2RestLoaderPlugin extends BaseComponentPlugin
    private String node;
 
    @SuppressWarnings("unchecked")
-   public GroovyScript2RestLoaderPlugin(InitParams params)
+   public GroovyScript2RestLoaderPlugin(InitParams params, RepositoryService repoServiceo)
    {
-      repository = params.getValueParam("repository").getValue();
+      this.repositoryService = repoServiceo;
+
+      repository = params.containsKey("repository") ? params.getValueParam("repository").getValue() : null;
+
       workspace = params.getValueParam("workspace").getValue();
       node = params.getValueParam("node").getValue();
       Iterator<PropertiesParam> iterator = params.getPropertiesParamIterator();
@@ -75,11 +84,30 @@ public class GroovyScript2RestLoaderPlugin extends BaseComponentPlugin
    }
 
    /**
-    * @return the repository
+    * Get working repository name. Returns the repository name from configuration 
+    * if it previously configured and returns the name of current repository in other case.
+    *
+    * @return String
+    *           repository name
+    * @throws RepositoryException
     */
    public String getRepository()
    {
-      return repository;
+      if (repository == null)
+      {
+         try
+         {
+            return repositoryService.getCurrentRepository().getConfiguration().getName();
+         }
+         catch (RepositoryException e)
+         {
+            throw new RuntimeException("Can not get current repository and repository name was not configured", e);
+         }
+      }
+      else
+      {
+         return repository;
+      }
    }
 
    /**

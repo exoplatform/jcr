@@ -18,12 +18,15 @@
  */
 package org.exoplatform.services.jcr.impl.config;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.jcr.config.ConfigurationPersister;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
@@ -35,11 +38,12 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -68,7 +72,6 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    public RepositoryServiceConfigurationImpl(InitParams params, ConfigurationManager configurationService,
       InitialContextInitializer initialContextInitializer) throws RepositoryConfigurationException
    {
-
       param = params.getValueParam("conf-path");
 
       if (params.getPropertiesParam("working-conf") != null)
@@ -122,13 +125,14 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
     * (non-Javadoc)
     * @see org.exoplatform.services.jcr.config.RepositoryServiceConfiguration#isRetainable()
     */
+   @Override
    public boolean isRetainable()
    {
       if (configurationPersister != null)
       {
          return true;
       }
-      
+
       String strfileUri = param.getValue();
       URL fileURL;
       try
@@ -148,6 +152,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
     * 
     * @throws RepositoryException
     */
+   @Override
    public synchronized void retain() throws RepositoryException
    {
       try
@@ -168,15 +173,58 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          else
          {
             URL filePath = configurationService.getURL(param.getValue());
-            File sourceConfig = new File(filePath.toURI());
+            final File sourceConfig = new File(filePath.toURI());
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-            File backUp = new File(sourceConfig.getAbsoluteFile() + "_" + format.format(new Date()));
-            if (!sourceConfig.renameTo(backUp))
-               throw new RepositoryException("Can't back up configuration on path " + sourceConfig.getAbsolutePath());
-            saveStream = new FileOutputStream(sourceConfig);
+            final File backUp = new File(sourceConfig.getAbsoluteFile() + "_" + format.format(new Date()));
+
+            try
+            {
+               SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
+               {
+                  public Void run() throws IOException
+                  {
+                     DirectoryHelper.deleteDstAndRename(sourceConfig, backUp);
+                     return null;
+                  }
+               });
+            }
+            catch (IOException ioe)
+            {
+               throw new RepositoryException("Can't back up configuration on path "
+                  + PrivilegedFileHelper.getAbsolutePath(sourceConfig), ioe);
+            }
+
+            saveStream = PrivilegedFileHelper.fileOutputStream(sourceConfig);
          }
 
-         IBindingFactory bfact = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IBindingFactory bfact;
+         try
+         {
+            bfact = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<IBindingFactory>()
+            {
+               public IBindingFactory run() throws Exception
+               {
+                  return BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+               }
+            });
+         }
+         catch (PrivilegedActionException pae)
+         {
+            Throwable cause = pae.getCause();
+            if (cause instanceof JiBXException)
+            {
+               throw (JiBXException)cause;
+            }
+            else if (cause instanceof RuntimeException)
+            {
+               throw (RuntimeException)cause;
+            }
+            else
+            {
+               throw new RuntimeException(cause);
+            }
+         }
+         
          IMarshallingContext mctx = bfact.createMarshallingContext();
 
          mctx.marshalDocument(this, "ISO-8859-1", null, saveStream);
@@ -185,7 +233,6 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          // writing configuration in to the persister
          if (configurationPersister != null)
          {
-            // TODO file output stream
             configurationPersister.write(new ByteArrayInputStream(((ByteArrayOutputStream)saveStream).toByteArray()));
          }
 
@@ -213,37 +260,6 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
 
    }
 
-   private void initFromStream(InputStream jcrConfigurationInputStream) throws RepositoryConfigurationException
-   {
-      try
-      {
-         if (configurationPersister != null)
-         {
-            if (!configurationPersister.hasConfig())
-            {
-               configurationPersister.write(jcrConfigurationInputStream);
-            }
-            init(configurationPersister.read());
-         }
-         else
-         {
-            init(jcrConfigurationInputStream);
-         }
-      }
-      finally
-      {
-         try
-         {
-            jcrConfigurationInputStream.close();
-         }
-         catch (IOException e)
-         {
-            // ignore me
-         }
-      }
-
-   }
-
    /**
     * {@inheritDoc}
     */
@@ -251,32 +267,41 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    {
       try
       {
+         // Start from extensions first
+         String[] paths = configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
+         for (int i = paths.length - 1; i >= 0; i--)
+         {
+            // We start from the last one because as it is the one with highest priority
+            if (i == paths.length - 1)
+            {
+               init(configurationService.getInputStream(paths[i]));
+            }
+            else
+            {
+               merge(configurationService.getInputStream(paths[i]));
+            }
+         }
+
+         // Then from normal config
          if (configExtensionPaths.isEmpty())
          {
-            initFromStream(configurationService.getInputStream(param.getValue()));
+            init(configurationService.getInputStream(param.getValue()));
          }
          else
          {
-
-            String[] paths = (String[])configExtensionPaths.toArray(new String[configExtensionPaths.size()]);
-            for (int i = paths.length - 1; i >= 0; i--)
-            {
-               // We start from the last one because as it is the one with highest priority
-               if (i == paths.length - 1)
-               {
-                  init(configurationService.getInputStream(paths[i]));
-               }
-               else
-               {
-                  merge(configurationService.getInputStream(paths[i]));
-               }
-            }
             merge(configurationService.getInputStream(param.getValue()));
-            // Store the merged configuration
-            if (configurationPersister != null && !configurationPersister.hasConfig())
+         }
+
+         // Then from config from persister
+         if (configurationPersister != null)
+         {
+            if (configurationPersister.hasConfig())
             {
-               retain();
+               merge(configurationPersister.read());
             }
+
+            // Store the merged configuration
+            retain();
          }
       }
       catch (RepositoryConfigurationException e)

@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexingConfigurationImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -178,8 +179,8 @@ public class TestIndexingConfig extends BaseQueryTest
          hits = is.search(compl);
          assertEquals(1, hits.length());
 
-         //ir.close();
          is.close();
+         Util.closeOrRelease(ir);
       }
       catch (Exception e)
       {
@@ -249,8 +250,8 @@ public class TestIndexingConfig extends BaseQueryTest
          hits = is.search(compl);
          assertEquals(1, hits.length());
 
-         ir.close();
          is.close();
+         Util.closeOrRelease(ir);
       }
       catch (Exception e)
       {
@@ -319,8 +320,8 @@ public class TestIndexingConfig extends BaseQueryTest
          hits = is.search(compl);
          assertEquals(1, hits.length());
 
-         ir.close();
          is.close();
+         Util.closeOrRelease(ir);
       }
       catch (Exception e)
       {
@@ -390,8 +391,8 @@ public class TestIndexingConfig extends BaseQueryTest
          hits = is.search(compl);
          assertEquals(1, hits.length());
 
-         ir.close();
          is.close();
+         Util.closeOrRelease(ir);
       }
       catch (Exception e)
       {
@@ -409,10 +410,22 @@ public class TestIndexingConfig extends BaseQueryTest
 
       Hits result = is.search(query);
 
-      if (result.length() == 1)
-         return result.doc(0);
-      else if (result.length() > 1)
-         throw new RepositoryException("Results more then one");
+      try
+      {
+         if (result.length() == 1)
+         {
+            return result.doc(0);
+         }
+         else if (result.length() > 1)
+         {
+            throw new RepositoryException("Results more then one");
+         }
+      }
+      finally
+      {
+         is.close();
+         Util.closeOrRelease(reader);
+      }
 
       return null;
    }

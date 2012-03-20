@@ -18,16 +18,15 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 
 
-import javax.jcr.NamespaceException;
-import javax.jcr.NamespaceRegistry;
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.core.NamespaceAccessor;
-import org.exoplatform.services.jcr.impl.core.query.lucene.NamespaceMappings;
 
 import java.util.Enumeration;
 import java.util.Properties;
 import java.util.Set;
+
+import javax.jcr.NamespaceException;
+import javax.jcr.NamespaceRegistry;
+import javax.jcr.RepositoryException;
 
 /**
  * A simple namespace resolver implementation, that uses the additional
@@ -106,20 +105,17 @@ public class AdditionalNamespaceResolver implements NamespaceAccessor {
 
    public String[] getAllNamespacePrefixes() throws RepositoryException
    {
-      // TODO Auto-generated method stub
       Set keySet = prefixToURI.keySet();
       return (String[])keySet.toArray();
    }
 
    public String getNamespacePrefixByURI(String uri) throws NamespaceException, RepositoryException
    {
-      // TODO Auto-generated method stub
       return getPrefix(uri);
    }
 
    public String getNamespaceURIByPrefix(String prefix) throws NamespaceException, RepositoryException
    {
-      // TODO Auto-generated method stub
       return getURI(prefix);
    }
 

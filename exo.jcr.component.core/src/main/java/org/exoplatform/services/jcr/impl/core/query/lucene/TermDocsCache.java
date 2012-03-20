@@ -92,7 +92,7 @@ public class TermDocsCache
     */
    public TermDocs termDocs(final Term t) throws IOException
    {
-      if (t.field() != field)
+      if (t==null || t.field() != field)
       {
          return reader.termDocs(t);
       }

@@ -50,7 +50,7 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
    /**
     * Logger instance for this class.
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.AbstractExcerpt");
+   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.AbstractExcerpt");
 
    /**
     * The search index.
@@ -110,7 +110,7 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
 
          if (fields == null)
          {
-            log.debug("Fulltext field not stored, using {}", SimpleExcerptProvider.class.getName());
+            LOG.debug("Fulltext field not stored, using {}", SimpleExcerptProvider.class.getName());
             SimpleExcerptProvider exProvider = new SimpleExcerptProvider();
             exProvider.init(query, index);
             return exProvider.getExcerpt(id, maxFragments, maxFragmentSize);
@@ -157,7 +157,7 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
          }
          else
          {
-            log.debug("No TermPositionVector on Fulltext field.");
+            LOG.debug("No TermPositionVector on Fulltext field.");
             return null;
          }
       }
@@ -286,7 +286,10 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
       }
       catch (IOException e)
       {
-         // should never happen, we are reading from a string
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
       return new TermPositionVector()

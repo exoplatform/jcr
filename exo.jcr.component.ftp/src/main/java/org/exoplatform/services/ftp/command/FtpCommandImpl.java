@@ -48,7 +48,7 @@ import javax.jcr.Session;
 public abstract class FtpCommandImpl implements FtpCommand
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpCommandImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.FtpCommandImpl");
 
    protected boolean isNeedLogin = true;
 
@@ -111,6 +111,10 @@ public abstract class FtpCommandImpl implements FtpCommand
       {
          if (newPath.size() == 0)
          {
+            if (clientSession().getFtpServer().getRepository() == null)
+            {
+               throw new RepositoryException("Repository can not be retrieved.");
+            }
             String[] workspaces = clientSession().getFtpServer().getRepository().getWorkspaceNames();
             for (int i = 0; i < workspaces.length; i++)
             {
@@ -150,7 +154,7 @@ public abstract class FtpCommandImpl implements FtpCommand
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
          return null;
       }
       return files;
@@ -174,13 +178,21 @@ public abstract class FtpCommandImpl implements FtpCommand
       }
       catch (PathNotFoundException pexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + pexc.getMessage());
+         }
       }
       catch (NoSuchWorkspaceException wexc)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + wexc.getMessage());
+         }
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
       reply(String.format(FtpConst.Replyes.REPLY_550, resName));
    }
@@ -192,9 +204,15 @@ public abstract class FtpCommandImpl implements FtpCommand
       {
          path = params[1];
 
+         // ingoring some unknows client options
          if (path.startsWith("-la"))
          {
             path = path.substring(3);
+         }
+
+         if (path.startsWith("-a"))
+         {
+            path = path.substring(2);
          }
 
          while (path.startsWith(" "))
@@ -225,7 +243,7 @@ public abstract class FtpCommandImpl implements FtpCommand
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage(), exc);
+         LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
 
       FtpSystemCoder systemCoder =
@@ -263,8 +281,8 @@ public abstract class FtpCommandImpl implements FtpCommand
       }
       catch (Exception exc)
       {
-         log.info("Unhandled exception. " + exc.getMessage());
-         log.info("Data transmit failed.");
+         LOG.info("Unhandled exception. " + exc.getMessage());
+         LOG.info("Data transmit failed.");
       }
       reply(FtpConst.Replyes.REPLY_226);
 

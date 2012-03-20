@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.ftp.data;
 
-import org.exoplatform.services.ftp.FtpConst;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -34,7 +33,7 @@ import java.io.OutputStream;
 public class FtpSlowOutputStream extends OutputStream
 {
 
-   private static Log log = ExoLogger.getLogger(FtpConst.FTP_PREFIX + "FtpSlowOutputStream");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ftp.FtpSlowOutputStream");
 
    private OutputStream nativeOutputStream;
 
@@ -58,7 +57,7 @@ public class FtpSlowOutputStream extends OutputStream
          }
          catch (Exception exc)
          {
-            log.info("Unhandled exception. " + exc.getMessage(), exc);
+            LOG.info("Unhandled exception. " + exc.getMessage(), exc);
          }
          writed = 0;
       }

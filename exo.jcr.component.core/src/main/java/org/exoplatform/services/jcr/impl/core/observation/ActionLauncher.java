@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.observation;
 
+import org.exoplatform.services.jcr.core.ExtendedSession;
+import org.exoplatform.services.jcr.core.ExtendedWorkspace;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
@@ -31,7 +33,6 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
@@ -56,7 +57,7 @@ public class ActionLauncher implements ItemsPersistenceListener
 
    public final int SKIP_EVENT = Integer.MIN_VALUE;
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.ActionLauncher");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ActionLauncher");
 
    private final ObservationManagerRegistry observationRegistry;
 
@@ -92,9 +93,19 @@ public class ActionLauncher implements ItemsPersistenceListener
             PlainChangesLog subLog = logIterator.nextLog();
             String sessionId = subLog.getSessionId();
 
-            SessionImpl userSession = sessionRegistry.getSession(sessionId);
+            ExtendedSession userSession;
+
+            if (subLog.getSession() != null)
+            {
+               userSession = subLog.getSession();
+            }
+            else
+            {
+               userSession = sessionRegistry.getSession(sessionId);
+            }
 
             if (userSession != null)
+            {
                for (ItemState itemState : subLog.getAllStates())
                {
                   if (itemState.isEventFire())
@@ -118,11 +129,12 @@ public class ActionLauncher implements ItemsPersistenceListener
                      }
                      catch (RepositoryException e)
                      {
-                        log.error("Can not fire ActionLauncher.onSaveItems() for " + item.getQPath().getAsString()
-                           + " reason: " + e);
+                        LOG.error("Can not fire ActionLauncher.onSaveItems() for " + item.getQPath().getAsString()
+                           + " reason: " + e.getMessage());
                      }
                   }
                }
+            }
          }
          if (events.getSize() > 0)
          {
@@ -141,15 +153,15 @@ public class ActionLauncher implements ItemsPersistenceListener
 
    private boolean isSessionMatch(ListenerCriteria criteria, String sessionId)
    {
-      if (criteria.getNoLocal() && criteria.getSessionId().equals(sessionId))
-         return false;
-      return true;
+      return !(criteria.getNoLocal() && criteria.getSessionId().equals(sessionId));
    }
 
-   private boolean isPathMatch(ListenerCriteria criteria, ItemData item, SessionImpl userSession)
+   private boolean isPathMatch(ListenerCriteria criteria, ItemData item, ExtendedSession userSession)
    {
       if (criteria.getAbsPath() == null)
+      {
          return true;
+      }
       try
       {
          QPath cLoc = userSession.getLocationFactory().parseAbsPath(criteria.getAbsPath()).getInternalPath();
@@ -171,25 +183,33 @@ public class ActionLauncher implements ItemsPersistenceListener
    {
 
       if (criteria.getIdentifier() == null)
+      {
          return true;
+      }
 
       // assotiated parent is node itself for node and parent for property ????
       for (int i = 0; i < criteria.getIdentifier().length; i++)
       {
          if (item.isNode() && criteria.getIdentifier()[i].equals(item.getIdentifier()))
+         {
             return true;
+         }
          else if (!item.isNode() && criteria.getIdentifier()[i].equals(item.getParentIdentifier()))
+         {
             return true;
+         }
       }
       return false;
 
    }
 
-   private boolean isNodeTypeMatch(ListenerCriteria criteria, ItemData item, SessionImpl userSession,
+   private boolean isNodeTypeMatch(ListenerCriteria criteria, ItemData item, ExtendedSession userSession,
       PlainChangesLog changesLog) throws RepositoryException
    {
       if (criteria.getNodeTypeName() == null)
+      {
          return true;
+      }
 
       NodeData node = (NodeData)workspaceDataManager.getItemData(item.getParentIdentifier());
       if (node == null)
@@ -208,13 +228,13 @@ public class ActionLauncher implements ItemsPersistenceListener
 
          if (node == null)
          {
-            log.warn("Item's " + item.getQPath().getAsString() + " associated parent (" + item.getParentIdentifier()
+            LOG.warn("Item's " + item.getQPath().getAsString() + " associated parent (" + item.getParentIdentifier()
                + ") can't be found nor in workspace nor in current changes. Nodetype filter is rejected.");
             return false;
          }
       }
 
-      NodeTypeDataManager ntManager = userSession.getWorkspace().getNodeTypesHolder();
+      NodeTypeDataManager ntManager = ((ExtendedWorkspace)userSession.getWorkspace()).getNodeTypesHolder();
       LocationFactory locationFactory = userSession.getLocationFactory();
       for (int i = 0; i < criteria.getNodeTypeName().length; i++)
       {
@@ -231,7 +251,9 @@ public class ActionLauncher implements ItemsPersistenceListener
             testQNames[0] = node.getPrimaryTypeName();
          }
          if (ntManager.isNodeType(criteriaNT.getName(), testQNames))
+         {
             return true;
+         }
       }
       return false;
    }
@@ -242,24 +264,40 @@ public class ActionLauncher implements ItemsPersistenceListener
       if (state.getData().isNode())
       {
          if (state.isAdded() || state.isRenamed() || state.isUpdated())
+         {
             return Event.NODE_ADDED;
+         }
          else if (state.isDeleted())
+         {
             return Event.NODE_REMOVED;
+         }
          else if (state.isUpdated())
+         {
             return SKIP_EVENT;
+         }
          else if (state.isUnchanged())
+         {
             return SKIP_EVENT;
+         }
       }
       else
       { // property
          if (state.isAdded())
+         {
             return Event.PROPERTY_ADDED;
+         }
          else if (state.isDeleted())
+         {
             return Event.PROPERTY_REMOVED;
+         }
          else if (state.isUpdated())
+         {
             return Event.PROPERTY_CHANGED;
+         }
          else if (state.isUnchanged())
+         {
             return SKIP_EVENT;
+         }
       }
       throw new RepositoryException("Unexpected ItemState for Node " + ItemState.nameFromValue(state.getState()) + " "
          + state.getData().getQPath().getAsString());

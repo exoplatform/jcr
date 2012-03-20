@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.log.ExoLogger;
@@ -25,8 +26,6 @@ import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -59,7 +58,6 @@ public class EditableValueData extends TransientValueData
          this.spooled = true;
       }
 
-      // TODO use InputStream instead of spoolFile and use Channel.transferFrom.
       public NewEditableValueData(SpoolFile spoolFile, int orderNumber, FileCleaner fileCleaner, int maxBufferSize,
          File tempDirectory) throws IOException
       {
@@ -77,7 +75,7 @@ public class EditableValueData extends TransientValueData
 
             sch = new RandomAccessFile(sf, "rw").getChannel();
 
-            FileChannel sourceCh = new FileInputStream(spoolFile).getChannel();
+            FileChannel sourceCh = PrivilegedFileHelper.fileInputStream(spoolFile).getChannel();
             try
             {
                sch.transferFrom(sourceCh, 0, sourceCh.size());
@@ -92,10 +90,14 @@ public class EditableValueData extends TransientValueData
             try
             {
                sch.close();
-               sf.delete();
+               PrivilegedFileHelper.delete(sf);
             }
             catch (Exception e1)
             {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e1.getMessage());
+               }
             }
             throw new IOException("init error " + e.getMessage())
             {
@@ -125,7 +127,7 @@ public class EditableValueData extends TransientValueData
          this.maxIOBuffSize = calcMaxIOSize();
 
          SpoolFile sf = SpoolFile.createTempFile("jcrvdedit", null, tempDirectory);
-         OutputStream sfout = new FileOutputStream(sf);
+         OutputStream sfout = PrivilegedFileHelper.fileOutputStream(sf);
          try
          {
             byte[] tmpBuff = new byte[2048];
@@ -143,10 +145,14 @@ public class EditableValueData extends TransientValueData
             try
             {
                sfout.close();
-               sf.delete();
+               PrivilegedFileHelper.delete(sf);
             }
             catch (Exception e1)
             {
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e1.getMessage());
+               }
             }
             throw new IOException("init error " + e.getMessage())
             {
@@ -161,7 +167,7 @@ public class EditableValueData extends TransientValueData
          this.data = null;
 
          this.spoolFile = sf;
-         this.spoolChannel = new RandomAccessFile(sf, "rw").getChannel();
+         this.spoolChannel = PrivilegedFileHelper.randomAccessFile(sf, "rw").getChannel();
 
          this.spooled = true;
       }
@@ -281,7 +287,6 @@ public class EditableValueData extends TransientValueData
                   }
 
                   // write update data
-                  // TODO don't use Channels.newChannel in Java5
                   ReadableByteChannel sch = Channels.newChannel(stream);
                   chch.transferFrom(sch, newIndex, length);
                   sch.close();
@@ -298,10 +303,14 @@ public class EditableValueData extends TransientValueData
                   try
                   {
                      chch.close();
-                     chf.delete();
+                     PrivilegedFileHelper.delete(chf);
                   }
                   catch (Exception e1)
                   {
+                     if (LOG.isTraceEnabled())
+                     {
+                        LOG.trace("An exception occurred: " + e1.getMessage());
+                     }
                   }
                   throw new IOException("update error " + e.getMessage())
                   {
@@ -383,10 +392,14 @@ public class EditableValueData extends TransientValueData
                   try
                   {
                      chch.close();
-                     chf.delete();
+                     PrivilegedFileHelper.delete(chf);
                   }
                   catch (Exception e1)
                   {
+                     if (LOG.isTraceEnabled())
+                     {
+                        LOG.trace("An exception occurred: " + e1.getMessage());
+                     }
                   }
                   throw new IOException("setLength(" + size + ") error. " + e.getMessage())
                   {
@@ -426,7 +439,7 @@ public class EditableValueData extends TransientValueData
             spoolChannel.close();
 
             // delete file
-            if (!spoolFile.delete())
+            if (!PrivilegedFileHelper.delete(spoolFile))
             {
                if (fileCleaner != null)
                {
@@ -436,7 +449,7 @@ public class EditableValueData extends TransientValueData
                else
                {
                   LOG.warn("Could not remove temporary file on switch to bytes, fileCleaner not found. "
-                     + spoolFile.getAbsolutePath());
+                     + PrivilegedFileHelper.getAbsolutePath(spoolFile));
                }
             }
 
