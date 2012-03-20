@@ -1213,8 +1213,22 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public static DatabaseStructureType getDatabaseType(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
    {
-      String dbStructureType = wsConfig.getContainer().getParameterValue(DB_STRUCTURE_TYPE).toUpperCase();
-      return JDBCDataContainerConfig.DatabaseStructureType.valueOf(dbStructureType);
+	   try
+	   {
+	      if (wsConfig.getContainer().getParameterBoolean("multi-db"))
+	      {
+	         return JDBCDataContainerConfig.DatabaseStructureType.MULTI;
+	      }
+	      else
+	      {
+	         return JDBCDataContainerConfig.DatabaseStructureType.SINGLE;
+	      }
+	   }
+	   catch (Exception e)
+	   {
+	      String dbStructureType = wsConfig.getContainer().getParameterValue(DB_STRUCTURE_TYPE).toUpperCase();
+	      return JDBCDataContainerConfig.DatabaseStructureType.valueOf(dbStructureType);
+	   }
    }
 
    /**
