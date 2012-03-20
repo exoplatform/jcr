@@ -30,11 +30,11 @@
    <name>eXo JCR :: Component :: Core Service based on ISPN 5</name>
    <description>eXo JCR Service core component based on Infinispan 5</description>
    <properties>
-      <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
+      <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-ispn.xml</jcr.test.configuration.file>
       <cache.enabled>true</cache.enabled>
       <value.storage.enabled>true</value.storage.enabled>
       <statistics.enabled>false</statistics.enabled>
-      <properties.url.suffix>.properties</properties.url.suffix>
+      <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <test.cache.all>**/persistent/cache/**</test.cache.all>
       <!-- ispn specific exclude by default -->
@@ -756,14 +756,21 @@
       <profile>
          <id>sjdbc</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc.xml</jcr.test.configuration.file>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc-ispn.xml</jcr.test.configuration.file>
             <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
          </properties>
       </profile>      
       <profile>
+         <id>ijdbc</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-ispn.xml</jcr.test.configuration.file>
+            <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
+         </properties>
+      </profile> 
+      <profile>
          <id>cluster</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration.xml</jcr.test.configuration.file>
+            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-ijdbc-ispn.xml</jcr.test.configuration.file>
          </properties>
       </profile>      
    </profiles>

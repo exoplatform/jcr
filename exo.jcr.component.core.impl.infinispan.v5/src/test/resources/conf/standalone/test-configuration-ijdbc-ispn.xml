@@ -134,12 +134,12 @@
             <value>jar:/conf/test/nodetypes-impl.xml</value>
             <value>jar:/conf/test/nodetypes-usecase.xml</value>
             <value>jar:/conf/test/nodetypes-config.xml</value>
-            <value>jar:/conf/test/nodetypes-config-extended.xml</value>            
+            <value>jar:/conf/test/nodetypes-config-extended.xml</value>  
             <value>jar:/conf/test/wcm-nodetypes.xml</value>
             <value>jar:/conf/test/nodetypes-publication-config.xml</value>
             <value>jar:/conf/test/publication-plugins-nodetypes-config.xml</value>          
           </values-param>
-
+          
           <values-param>
             <name>testInitNodeTypesRepository</name>
             <description>
@@ -174,7 +174,7 @@
       <value-param>
         <name>conf-path</name>
         <description>JCR configuration file</description>
-        <value>jar:/conf/standalone/cluster/test-jcr-config-jbc.xml</value>
+        <value>jar:/conf/standalone/test-jcr-config-ijdbc-ispn.xml</value>
       </value-param>
       <properties-param>
         <name>working-conf</name>
@@ -200,13 +200,13 @@
   </component>
 
   <component>
-     <key>org.jboss.cache.transaction.TransactionManagerLookup</key>
-     <type>org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup</type>
+     <key>org.infinispan.transaction.lookup.TransactionManagerLookup</key>
+     <type>org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup</type>
   </component>
    
   <component>
     <key>org.exoplatform.services.transaction.TransactionService</key>
-    <type>org.exoplatform.services.transaction.jbosscache.JBossTransactionsService</type>
+    <type>org.exoplatform.services.transaction.infinispan.JBossTransactionsService</type>
     <init-params>
       <value-param>
         <name>timeout</name>
@@ -215,24 +215,6 @@
     </init-params>   
   </component>
   
-  <component>
-    <key>org.exoplatform.services.rpc.RPCService</key>
-    <type>org.exoplatform.services.rpc.impl.RPCServiceImpl</type>
-    <init-params>
-      <value-param>
-        <name>jgroups-configuration</name>
-        <value>jar:/conf/standalone/cluster/udp-mux.xml</value>
-      </value-param>
-      <value-param>
-        <name>jgroups-cluster-name</name>
-        <value>RPCService-Cluster</value>
-      </value-param>
-      <value-param>
-        <name>jgroups-default-timeout</name>
-        <value>0</value>
-      </value-param>
-    </init-params>
-  </component>  
   <!-- component>
     <key>org.exoplatform.services.transaction.TransactionService</key>
     <type>org.exoplatform.services.transaction.impl.jotm.TransactionServiceJotmImpl</type>
@@ -274,7 +256,88 @@
         </properties-param>
       </init-params>
     </component-plugin>
-	<component-plugin>
+    <component-plugin>
+      <name>bind.datasource</name>
+      <set-method>addPlugin</set-method>
+      <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+      <init-params>
+        <value-param>
+          <name>bind-name</name>
+          <value>jdbcjcr1</value>
+        </value-param>
+        <value-param>
+          <name>class-name</name>
+          <value>javax.sql.DataSource</value>
+        </value-param>
+        <value-param>
+          <name>factory</name>
+          <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+        </value-param>
+        <properties-param>
+          <name>ref-addresses</name>
+          <description>ref-addresses</description>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr1.url:jdbc:hsqldb:file:target/temp/data/jcr}"/>
+          <property name="username" value="${jdbcjcr1.username:sa}"/>
+          <property name="password" value="${jdbcjcr1.password:}"/>
+        </properties-param>
+      </init-params>
+    </component-plugin>
+    <component-plugin>
+      <name>bind.datasource</name>
+      <set-method>addPlugin</set-method>
+      <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+      <init-params>
+        <value-param>
+          <name>bind-name</name>
+          <value>jdbcjcr2</value>
+        </value-param>
+        <value-param>
+          <name>class-name</name>
+          <value>javax.sql.DataSource</value>
+        </value-param>
+        <value-param>
+          <name>factory</name>
+          <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+        </value-param>
+        <properties-param>
+          <name>ref-addresses</name>
+          <description>ref-addresses</description>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr2.url:jdbc:hsqldb:file:target/temp/data/jcr2}"/>
+          <property name="username" value="${jdbcjcr2.username:sa}"/>
+          <property name="password" value="${jdbcjcr2.password:}"/>
+        </properties-param>
+      </init-params>
+    </component-plugin>
+        <component-plugin>
+      <name>bind.datasource</name>
+      <set-method>addPlugin</set-method>
+      <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+      <init-params>
+        <value-param>
+          <name>bind-name</name>
+          <value>jdbcjcr3</value>
+        </value-param>
+        <value-param>
+          <name>class-name</name>
+          <value>javax.sql.DataSource</value>
+        </value-param>
+        <value-param>
+          <name>factory</name>
+          <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+        </value-param>
+        <properties-param>
+          <name>ref-addresses</name>
+          <description>ref-addresses</description>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr3.url:jdbc:hsqldb:file:target/temp/data/jcr3}"/>
+          <property name="username" value="${jdbcjcr3.username:sa}"/>
+          <property name="password" value="${jdbcjcr3.password:}"/>
+        </properties-param>
+      </init-params>
+    </component-plugin>
+    <component-plugin>
       <name>bind.datasource</name>
       <set-method>addPlugin</set-method>
       <type>org.exoplatform.services.naming.BindReferencePlugin</type>
@@ -336,6 +399,33 @@
       <init-params>
         <value-param>
           <name>bind-name</name>
+          <value>jdbcjcr1db2</value>
+        </value-param>
+        <value-param>
+          <name>class-name</name>
+          <value>javax.sql.DataSource</value>
+        </value-param>
+        <value-param>
+          <name>factory</name>
+          <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+        </value-param>
+        <properties-param>
+          <name>ref-addresses</name>
+          <description>ref-addresses</description>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr1db2.url:jdbc:hsqldb:file:target/temp/data/jcrdb2}"/>
+          <property name="username" value="${jdbcjcr1db2.username:sa}"/>
+          <property name="password" value="${jdbcjcr1db2.password:}"/>
+        </properties-param>
+      </init-params>
+    </component-plugin>
+    <component-plugin>
+      <name>bind.datasource</name>
+      <set-method>addPlugin</set-method>
+      <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+      <init-params>
+        <value-param>
+          <name>bind-name</name>
           <value>jdbcjcrtck</value>
         </value-param>
         <value-param>
@@ -353,6 +443,60 @@
           <property name="url" value="${jdbcjcrtck.url:jdbc:hsqldb:file:target/temp/data/portaltck}"/>
           <property name="username" value="${jdbcjcrtck.username:sa}"/>
           <property name="password" value="${jdbcjcrtck.password:}"/>
+        </properties-param>
+      </init-params>
+    </component-plugin>
+    <component-plugin>
+      <name>bind.datasource</name>
+      <set-method>addPlugin</set-method>
+      <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+      <init-params>
+        <value-param>
+          <name>bind-name</name>
+          <value>jdbcjcr1tck</value>
+        </value-param>
+        <value-param>
+          <name>class-name</name>
+          <value>javax.sql.DataSource</value>
+        </value-param>
+        <value-param>
+          <name>factory</name>
+          <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+        </value-param>
+        <properties-param>
+          <name>ref-addresses</name>
+          <description>ref-addresses</description>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr1tck.url:jdbc:hsqldb:file:target/temp/data/jcrtck}"/>
+          <property name="username" value="${jdbcjcr1tck.username:sa}"/>
+          <property name="password" value="${jdbcjcr1tck.password:}"/>
+        </properties-param>
+      </init-params>
+    </component-plugin>
+    <component-plugin>
+      <name>bind.datasource</name>
+      <set-method>addPlugin</set-method>
+      <type>org.exoplatform.services.naming.BindReferencePlugin</type>
+      <init-params>
+        <value-param>
+          <name>bind-name</name>
+          <value>jdbcjcr2tck</value>
+        </value-param>
+        <value-param>
+          <name>class-name</name>
+          <value>javax.sql.DataSource</value>
+        </value-param>
+        <value-param>
+          <name>factory</name>
+          <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
+        </value-param>
+        <properties-param>
+          <name>ref-addresses</name>
+          <description>ref-addresses</description>
+          <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
+          <property name="url" value="${jdbcjcr2tck.url:jdbc:hsqldb:file:target/temp/data/jcr2tck}"/>
+          <property name="username" value="${jdbcjcr2tck.username:sa}"/>
+          <property name="password" value="${jdbcjcr2tck.password:}"/>
         </properties-param>
       </init-params>
     </component-plugin>

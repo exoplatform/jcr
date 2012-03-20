@@ -137,9 +137,9 @@
             <value>jar:/conf/test/nodetypes-config-extended.xml</value>            
             <value>jar:/conf/test/wcm-nodetypes.xml</value>
             <value>jar:/conf/test/nodetypes-publication-config.xml</value>
-            <value>jar:/conf/test/publication-plugins-nodetypes-config.xml</value>
+            <value>jar:/conf/test/publication-plugins-nodetypes-config.xml</value>          
           </values-param>
-          
+
           <values-param>
             <name>testInitNodeTypesRepository</name>
             <description>
@@ -174,7 +174,7 @@
       <value-param>
         <name>conf-path</name>
         <description>JCR configuration file</description>
-        <value>jar:/conf/standalone/test-jcr-config-sjdbc.xml</value>
+        <value>jar:/conf/standalone/cluster/test-jcr-config-ijdbc-jbc.xml</value>
       </value-param>
       <properties-param>
         <name>working-conf</name>
@@ -200,13 +200,13 @@
   </component>
 
   <component>
-     <key>org.infinispan.transaction.lookup.TransactionManagerLookup</key>
-     <type>org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup</type>
+     <key>org.jboss.cache.transaction.TransactionManagerLookup</key>
+     <type>org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup</type>
   </component>
    
   <component>
     <key>org.exoplatform.services.transaction.TransactionService</key>
-    <type>org.exoplatform.services.transaction.infinispan.JBossTransactionsService</type>
+    <type>org.exoplatform.services.transaction.jbosscache.JBossTransactionsService</type>
     <init-params>
       <value-param>
         <name>timeout</name>
@@ -215,6 +215,24 @@
     </init-params>   
   </component>
   
+  <component>
+    <key>org.exoplatform.services.rpc.RPCService</key>
+    <type>org.exoplatform.services.rpc.impl.RPCServiceImpl</type>
+    <init-params>
+      <value-param>
+        <name>jgroups-configuration</name>
+        <value>jar:/conf/standalone/cluster/udp-mux.xml</value>
+      </value-param>
+      <value-param>
+        <name>jgroups-cluster-name</name>
+        <value>RPCService-Cluster</value>
+      </value-param>
+      <value-param>
+        <name>jgroups-default-timeout</name>
+        <value>0</value>
+      </value-param>
+    </init-params>
+  </component>  
   <!-- component>
     <key>org.exoplatform.services.transaction.TransactionService</key>
     <type>org.exoplatform.services.transaction.impl.jotm.TransactionServiceJotmImpl</type>
@@ -253,7 +271,6 @@
           <property name="url" value="${jdbcjcr.url:jdbc:hsqldb:file:target/temp/data/portal;hsqldb.tx=mvcc}"/>
           <property name="username" value="${jdbcjcr.username:sa}"/>
           <property name="password" value="${jdbcjcr.password:}"/>
-          <property name="maxActive" value="20" />
         </properties-param>
       </init-params>
     </component-plugin>
@@ -420,7 +437,7 @@
         </properties-param>
       </init-params>
     </component-plugin>
-    <component-plugin>
+   <component-plugin>
       <name>bind.datasource</name>
       <set-method>addPlugin</set-method>
       <type>org.exoplatform.services.naming.BindReferencePlugin</type>

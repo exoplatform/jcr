@@ -35,7 +35,7 @@
       <cache.enabled>true</cache.enabled>
       <value.storage.enabled>true</value.storage.enabled>
       <statistics.enabled>false</statistics.enabled>
-      <properties.url.suffix>-ijdbc.properties</properties.url.suffix>
+      <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <test.cache.all>**/persistent/cache/**</test.cache.all>
       <!-- ispn specific exclude by default -->
@@ -982,7 +982,7 @@
       <profile>
          <id>mjdbc</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-jbc.xml</jcr.test.configuration.file>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-mjdbc-jbc.xml</jcr.test.configuration.file>
             <properties.url.suffix>.properties</properties.url.suffix>
          </properties>
       </profile>      
@@ -996,7 +996,7 @@
       <profile>
          <id>cluster</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-jbc.xml</jcr.test.configuration.file>
+            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-ijdbc-jbc.xml</jcr.test.configuration.file>
          </properties>
       </profile>      
       <profile>

@@ -17,3 +17,4 @@
 * Lucene 3.0
 * Isolated DB Concept (EXOJCR-1754)
 * Not supported parameters driverClassName, url, username, password, sourceName in JDBC workspace datacontainer
+* "multi-db" parameter is deprecated in JDBC workspace datacontainer
