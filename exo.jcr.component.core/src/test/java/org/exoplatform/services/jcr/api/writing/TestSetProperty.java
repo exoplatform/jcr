@@ -41,6 +41,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
+import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.OnParentVersionAction;
 
 /**
@@ -323,6 +324,33 @@ public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceL
          fail("exception should have been thrown");
       }
       catch (ValueFormatException e)
+      {
+      }
+
+      try
+      {
+         node.setProperty("jcr:versionStorage", 20D);
+         fail("exception should have been thrown");
+      }
+      catch (ConstraintViolationException e)
+      {
+      }
+
+      try
+      {
+         node.setProperty("jcr:versionStorage", valueFactory.createValue(20L), PropertyType.LONG);
+         fail("exception should have been thrown");
+      }
+      catch (ConstraintViolationException e)
+      {
+      }
+
+      try
+      {
+         node.setProperty("jcr:versionStorage", "20", PropertyType.LONG);
+         fail("exception should have been thrown");
+      }
+      catch (ConstraintViolationException e)
       {
       }
    }

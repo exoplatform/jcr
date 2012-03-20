@@ -18,8 +18,6 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
-import org.apache.lucene.document.Field;
-import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
@@ -31,9 +29,7 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
-import java.io.StringReader;
 import java.util.BitSet;
-import java.util.Iterator;
 
 /**
  * Implements common functionality for a lucene index.
@@ -99,11 +95,6 @@ abstract class AbstractIndex
    private ReadOnlyIndexReader readOnlyReader;
 
    /**
-    * The indexing queue.
-    */
-   private IndexingQueue indexingQueue;
-
-   /**
     * Flag that indicates whether there was an index present in the directory
     * when this AbstractIndex was created.
     */
@@ -119,17 +110,15 @@ abstract class AbstractIndex
     * @param cache         the document number cache if this index should use
     *                      one; otherwise <code>cache</code> is
     *                      <code>null</code>.
-    * @param indexingQueue the indexing queue.
     * @throws IOException if the index cannot be initialized.
     */
-   AbstractIndex(final Analyzer analyzer, Similarity similarity, final Directory directory, DocNumberCache cache,
-      IndexingQueue indexingQueue) throws IOException
+   AbstractIndex(final Analyzer analyzer, Similarity similarity, final Directory directory, DocNumberCache cache)
+      throws IOException
    {
       this.analyzer = analyzer;
       this.similarity = similarity;
       this.directory = directory;
       this.cache = cache;
-      this.indexingQueue = indexingQueue;
 
       AbstractIndex.this.isExisting = IndexReader.indexExists(directory);
 
@@ -182,7 +171,7 @@ abstract class AbstractIndex
          {
             try
             {
-               writer.addDocument(getFinishedDocument(doc));
+               writer.addDocument(doc);
             }
             catch (Throwable e)
             {
@@ -502,64 +491,6 @@ abstract class AbstractIndex
       }
    }
 
-   /**
-    * Returns a document that is finished with text extraction and is ready to
-    * be added to the index.
-    *
-    * @param doc the document to check.
-    * @return <code>doc</code> if it is finished already or a stripped down
-    *         copy of <code>doc</code> without text extractors.
-    * @throws IOException if the document cannot be added to the indexing
-    *                     queue.
-    */
-   private Document getFinishedDocument(Document doc) throws IOException
-   {
-      if (!Util.isDocumentReady(doc))
-      {
-         Document copy = new Document();
-         // mark the document that reindexing is required
-         copy.add(new Field(FieldNames.REINDEXING_REQUIRED, "", Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
-         Iterator fields = doc.getFields().iterator();
-         while (fields.hasNext())
-         {
-            Fieldable f = (Fieldable)fields.next();
-            Fieldable field = null;
-            Field.TermVector tv = getTermVectorParameter(f);
-            Field.Store stored = getStoreParameter(f);
-            Field.Index indexed = getIndexParameter(f);
-            if (f instanceof LazyTextExtractorField || f.readerValue() != null)
-            {
-               // replace all readers with empty string reader
-               field = new Field(f.name(), new StringReader(""), tv);
-            }
-            else if (f.stringValue() != null)
-            {
-               field = new Field(f.name(), f.stringValue(), stored, indexed, tv);
-            }
-            else if (f.isBinary())
-            {
-               field = new Field(f.name(), f.binaryValue(), stored);
-            }
-            if (field != null)
-            {
-               field.setOmitNorms(f.getOmitNorms());
-               copy.add(field);
-            }
-         }
-         // schedule the original document for later indexing
-         Document existing = indexingQueue.addDocument(doc);
-         if (existing != null)
-         {
-            // the queue already contained a pending document for this
-            // node. -> dispose the document
-            Util.disposeDocument(existing);
-         }
-         // use the stripped down copy for now
-         doc = copy;
-      }
-      return doc;
-   }
-
    //-------------------------< properties >-----------------------------------
 
    /**
@@ -605,80 +536,6 @@ abstract class AbstractIndex
    }
 
    //------------------------------< internal >--------------------------------
-
-   /**
-    * Returns the index parameter set on <code>f</code>.
-    *
-    * @param f a lucene field.
-    * @return the index parameter on <code>f</code>.
-    */
-   private Field.Index getIndexParameter(Fieldable f)
-   {
-      if (!f.isIndexed())
-      {
-         return Field.Index.NO;
-      }
-      else if (f.isTokenized())
-      {
-         return Field.Index.ANALYZED;
-      }
-      else
-      {
-         return Field.Index.NOT_ANALYZED;
-      }
-   }
-
-   /**
-    * Returns the store parameter set on <code>f</code>.
-    *
-    * @param f a lucene field.
-    * @return the store parameter on <code>f</code>.
-    */
-   private Field.Store getStoreParameter(Fieldable f)
-   {
-      if (f.isCompressed())
-      {
-         return Field.Store.COMPRESS;
-      }
-      else if (f.isStored())
-      {
-         return Field.Store.YES;
-      }
-      else
-      {
-         return Field.Store.NO;
-      }
-   }
-
-   /**
-    * Returns the term vector parameter set on <code>f</code>.
-    *
-    * @param f a lucene field.
-    * @return the term vector parameter on <code>f</code>.
-    */
-   private Field.TermVector getTermVectorParameter(Fieldable f)
-   {
-      if (f.isStorePositionWithTermVector() && f.isStoreOffsetWithTermVector())
-      {
-         return Field.TermVector.WITH_POSITIONS_OFFSETS;
-      }
-      else if (f.isStorePositionWithTermVector())
-      {
-         return Field.TermVector.WITH_POSITIONS;
-      }
-      else if (f.isStoreOffsetWithTermVector())
-      {
-         return Field.TermVector.WITH_OFFSETS;
-      }
-      else if (f.isTermVectorStored())
-      {
-         return Field.TermVector.YES;
-      }
-      else
-      {
-         return Field.TermVector.NO;
-      }
-   }
 
    /**
     * Adapter to pipe info messages from lucene into log messages.

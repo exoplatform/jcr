@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -105,7 +106,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * The logger instance for this class
     */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.MultiIndex");
+   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.MultiIndex");
 
    /**
     * Names of active persistent index directories.
@@ -218,11 +219,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private RedoLog redoLog = null;
 
    /**
-    * The indexing queue with pending text extraction jobs.
-    */
-   private IndexingQueue indexingQueue;
-
-   /**
     * Set&lt;NodeId> of uuids that should not be indexed.
     */
    private final IndexingTree indexingTree;
@@ -258,6 +254,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * The handler of the Indexer io mode
     */
    private final IndexerIoModeHandler modeHandler;
+
+   /**
+    * Nodes count
+    */
+   private AtomicLong nodesCount;
 
    /**
     * The shutdown hook
@@ -328,24 +329,17 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // written to disk.
          if (!directoryManager.hasDirectory(name))
          {
-            log.debug("index does not exist anymore: " + name);
+            LOG.debug("index does not exist anymore: " + name);
             // move on to next index
             continue;
          }
          PersistentIndex index =
-            new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
-               directoryManager);
+            new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, directoryManager);
          index.setMaxFieldLength(handler.getMaxFieldLength());
          index.setUseCompoundFile(handler.getUseCompoundFile());
          index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
          indexes.add(index);
       }
-
-      // this method is run in privileged mode internally
-      IndexingQueueStore store = new IndexingQueueStore(indexDir);
-
-      // initialize indexing queue
-      this.indexingQueue = new IndexingQueue(store);
 
       // init volatile index
       resetVolatileIndex();
@@ -361,7 +355,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          reader.release();
       }
-      indexingQueue.initialize(this);
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
          // will also initialize IndexMerger
@@ -383,10 +376,42 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                // can't register shutdown hook because
                // jvm shutdown sequence has already begun,
                // silently ignore...
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
             return null;
          }
       });
+   }
+
+   /**
+    * Create thread finding count of nodes.
+    */
+   private Thread createThreadFindNodesCount(final Reindexable reindexableComponent)
+   {
+      return new Thread("Nodes count(" + handler.getContext().getWorkspaceName() + ")")
+      {
+         public void run()
+         {
+            try
+            {
+               if (reindexableComponent != null)
+               {
+                  Long value = reindexableComponent.getNodesCount();
+                  if (value != null)
+                  {
+                     nodesCount = new AtomicLong(value);
+                  }
+               }
+            }
+            catch (RepositoryException e)
+            {
+               LOG.error("Can't calculate nodes count : " + e.getMessage());
+            }
+         }
+      };
    }
 
    /**
@@ -446,7 +471,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
       if (doForceReindexing && !indexes.isEmpty())
       {
-         log.info("Removing stale indexes (" + handler.getContext().getWorkspacePath(true) + ").");
+         LOG.info("Removing stale indexes (" + handler.getContext().getWorkspacePath(true) + ").");
 
          List<PersistentIndex> oldIndexes = new ArrayList<PersistentIndex>(indexes);
          for (PersistentIndex persistentIndex : oldIndexes)
@@ -471,7 +496,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   if (handler.getContext().getIndexRecovery() != null && handler.getContext().getRPCService() != null
                      && !handler.getContext().getRPCService().isCoordinator())
                   {
-                     log.info("Retrieving index from coordinator (" + handler.getContext().getWorkspacePath(true)
+                     LOG.info("Retrieving index from coordinator (" + handler.getContext().getWorkspacePath(true)
                         + ")...");
                      indexCreated = recoveryIndexFromCoordinator();
 
@@ -482,7 +507,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                      }
                      else
                      {
-                        log.info("Index can'b be retrieved from coordinator now, because it is offline. "
+                        LOG.info("Index can'b be retrieved from coordinator now, because it is offline. "
                            + "Possibly coordinator node performs reindexing now. Switching to local re-indexing.");
                      }
                   }
@@ -491,7 +516,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                      if (handler.getContext().getRPCService() == null)
                      {
                         // logging an event, when RPCService is not configured in clustered mode
-                        log.error("RPC Service is not configured but required for copying the index "
+                        LOG.error("RPC Service is not configured but required for copying the index "
                            + "from coordinator node. Index will be created by re-indexing.");
                      }
                      else
@@ -500,13 +525,13 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                         {
                            // Should never occurs, but logging an event, when RPCService configured, but IndexRecovery
                            // instance is missing
-                           log.error("Instance of IndexRecovery class is missing for unknown reason. Index will be"
+                           LOG.error("Instance of IndexRecovery class is missing for unknown reason. Index will be"
                               + " created by re-indexing.");
                         }
                         if (handler.getContext().getRPCService().isCoordinator())
                         {
                            // logging an event when first node starts
-                           log.info("Copying the index from coordinator configured, but this node is the "
+                           LOG.info("Copying the index from coordinator configured, but this node is the "
                               + "only one in a cluster. Index will be created by re-indexing.");
                         }
                      }
@@ -516,14 +541,18 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
             if (!indexCreated)
             {
+
                // traverse and index workspace
                executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
-
-               long count;
 
                // check if we have deal with RDBMS reindexing mechanism
                Reindexable rdbmsReindexableComponent =
                   (Reindexable)handler.getContext().getContainer().getComponent(Reindexable.class);
+
+               Thread thread = createThreadFindNodesCount(rdbmsReindexableComponent);
+               thread.start();
+
+               long count;
 
                if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
                   && rdbmsReindexableComponent.isReindexingSupport())
@@ -539,7 +568,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                }
 
                executeAndLog(new Commit(getTransactionId()));
-               log.info("Initial index for {} nodes created ({}).", new Long(count), handler.getContext()
+               LOG.info("Initial index for {} nodes created ({}).", new Long(count), handler.getContext()
                   .getWorkspacePath(true));
                releaseMultiReader();
                scheduleFlushTask();
@@ -624,7 +653,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       executeAndLog(new Commit(getTransactionId()));
-      log.info("Created initial index for {} nodes", new Long(count));
+      LOG.info("Created initial index for {} nodes", new Long(count));
       releaseMultiReader();
 
    }
@@ -683,7 +712,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                catch (IOException e)
                {
                   // do not fail if an exception is thrown here
-                  log.warn("unable to prepare index reader " + "for queries during update", e);
+                  LOG.warn("unable to prepare index reader " + "for queries during update", e);
                }
             }
             ReadOnlyIndexReader lastIndexReader = null;
@@ -707,6 +736,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                {
                   // this is safe index reader retrieval. The last index already closed, possibly merged or 
                   // any other exception that occurs here
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
                }
 
                for (Iterator<Document> it = add.iterator(); it.hasNext();)
@@ -759,7 +792,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                            }
                            catch (Exception e)
                            {
-                              log.debug("Some exception occured, during index check");
+                              LOG.debug("Some exception occured, during index check");
                            }
                         }
                      }
@@ -813,7 +846,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          catch (IOException e)
          {
             // do not fail if an exception is thrown here
-            log.warn("unable to prepare index reader " + "for queries during update", e);
+            LOG.warn("unable to prepare index reader " + "for queries during update", e);
          }
       }
 
@@ -1071,7 +1104,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             catch (IOException ex)
             {
-               log.warn("Exception releasing index reader: " + ex);
+               LOG.warn("Exception releasing index reader: " + ex);
             }
             (entry.getValue()).resetListener();
          }
@@ -1122,7 +1155,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       try
       {
          index =
-            new PersistentIndex(indexName, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+            new PersistentIndex(indexName, handler.getTextAnalyzer(), handler.getSimilarity(), cache,
                directoryManager);
       }
       catch (IOException e)
@@ -1193,15 +1226,15 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          // force initializing of caches
          long time = 0;
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
             time = System.currentTimeMillis();
          }
          index.getReadOnlyIndexReader(true).release();
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
             time = System.currentTimeMillis() - time;
-            log.debug("hierarchy cache initialized in {} ms", new Long(time));
+            LOG.debug("hierarchy cache initialized in {} ms", new Long(time));
          }
       }
 
@@ -1412,7 +1445,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          catch (IOException e)
          {
-            log.error("Exception while closing search index.", e);
+            LOG.error("Exception while closing search index.", e);
          }
          if (modeHandler.getMode().equals(IndexerIoMode.READ_WRITE))
          {
@@ -1422,7 +1455,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             catch (IOException e)
             {
-               log.error("Exception while closing search index.", e);
+               LOG.error("Exception while closing search index.", e);
             }
          }
          volatileIndex.close();
@@ -1431,9 +1464,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             (indexes.get(i)).close();
          }
 
-         // close indexing queue
-         indexingQueue.close();
-
          // finally close directory
          try
          {
@@ -1441,7 +1471,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          catch (IOException e)
          {
-            log.error("Exception while closing directory.", e);
+            LOG.error("Exception while closing directory.", e);
          }
          modeHandler.removeIndexerIoModeListener(this);
          indexUpdateMonitor.removeIndexUpdateMonitorListener(this);
@@ -1460,6 +1490,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   // can't register shutdown hook because
                   // jvm shutdown sequence has already begun,
                   // silently ignore...
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
                }
                return null;
             }
@@ -1475,16 +1509,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    NamespaceMappings getNamespaceMappings()
    {
       return nsMappings;
-   }
-
-   /**
-    * Returns the indexing queue for this multi index.
-    * 
-    * @return the indexing queue for this multi index.
-    */
-   public IndexingQueue getIndexingQueue()
-   {
-      return indexingQueue;
    }
 
    /**
@@ -1569,7 +1593,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       indexNames.removeName(index.getName());
       synchronized (deletable)
       {
-         log.debug("Moved " + index.getName() + " to deletable");
+         LOG.debug("Moved " + index.getName() + " to deletable");
          deletable.add(index.getName());
       }
    }
@@ -1667,7 +1691,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       if (merger != null)
       {
-         log.info("IndexMerger initialization called twice.");
+         LOG.info("IndexMerger initialization called twice.");
       }
       merger = new IndexMerger(this);
       merger.setMaxMergeDocs(handler.getMaxMergeDocs());
@@ -1720,8 +1744,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          @Override
          public void run()
          {
-            // check if there are any indexing jobs finished
-            checkIndexingQueue();
             // check if volatile index should be flushed
             checkFlush();
          }
@@ -1736,7 +1758,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private void resetVolatileIndex() throws IOException
    {
-      volatileIndex = new VolatileIndex(handler.getTextAnalyzer(), handler.getSimilarity(), indexingQueue);
+      volatileIndex = new VolatileIndex(handler.getTextAnalyzer(), handler.getSimilarity());
       volatileIndex.setUseCompoundFile(handler.getUseCompoundFile());
       volatileIndex.setMaxFieldLength(handler.getMaxFieldLength());
       volatileIndex.setBufferSize(handler.getBufferSize());
@@ -1813,7 +1835,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
 
          long time = 0;
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
             time = System.currentTimeMillis();
          }
@@ -1831,15 +1853,16 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // create new volatile index
          resetVolatileIndex();
 
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
             time = System.currentTimeMillis() - time;
-            log.debug("Committed in-memory index in " + time + "ms.");
+            LOG.debug("Committed in-memory index in " + time + "ms.");
          }
       }
    }
 
-   private long createIndex(NodeData node, ItemDataConsumer stateMgr) throws IOException, RepositoryException
+   private long createIndex(NodeData node, ItemDataConsumer stateMgr) throws IOException,
+      RepositoryException
    {
       MultithreadedIndexing indexing = new MultithreadedIndexing(node, stateMgr);
       return indexing.launch(false);
@@ -1867,8 +1890,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *             if the task has been interrupted 
     */
    private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
-      final AtomicLong count) throws IOException, RepositoryException, InterruptedException
+      final AtomicLong count, final AtomicLong processed) throws IOException, RepositoryException, InterruptedException
    {
+      processed.incrementAndGet();
       if (stopped)
       {
          throw new InterruptedException();
@@ -1880,17 +1904,23 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       executeAndLog(new AddNode(getTransactionId(), node.getIdentifier(), true));
+
       if (count.incrementAndGet() % 1000 == 0)
       {
-         log.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count.get()));
+         if (nodesCount == null)
+         {
+            LOG.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count.get()));
+         }
+         else
+         {
+            DecimalFormat format = new DecimalFormat("###.#");
+            LOG.info("indexing... {} ({}%)", node.getQPath().getAsString(),
+               format.format(Math.min(100d * processed.get() / nodesCount.get(), 100)));
+         }
       }
 
       synchronized (this)
       {
-         if (count.get() % 10 == 0)
-         {
-            checkIndexingQueue(true);
-         }
          checkVolatileCommit();
       }
 
@@ -1901,7 +1931,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
       catch (RepositoryException e)
       {
-         log.error(
+         LOG.error(
             "Error indexing subtree " + node.getQPath().getAsString() + ". Check JCR consistency. " + e.getMessage(), e);
          return;
       }
@@ -1913,14 +1943,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             public Void call() throws Exception
             {
-               createIndex(tasks, node, stateMgr, count, nodeData);
+               createIndex(tasks, node, stateMgr, count, nodeData, processed);
                return null;
             }
          };
          if (!tasks.offer(task))
          {
             // All threads have tasks to do so we do it ourself
-            createIndex(tasks, node, stateMgr, count, nodeData);
+            createIndex(tasks, node, stateMgr, count, nodeData, processed);
          }
       }
    }
@@ -1949,7 +1979,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *             if the task has been interrupted 
     */
    private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
-      final AtomicLong count, final NodeData nodeData) throws RepositoryException, IOException, InterruptedException
+      final AtomicLong count, final NodeData nodeData, final AtomicLong processed) throws RepositoryException,
+      IOException, InterruptedException
    {
       NodeData childState = null;
       try
@@ -1958,20 +1989,20 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
       catch (RepositoryException e)
       {
-         log.error(
+         LOG.error(
             "Error indexing subtree " + node.getQPath().getAsString() + ". Check JCR consistency. " + e.getMessage(), e);
          return;
       }
 
       if (childState == null)
       {
-         log.error("Error indexing subtree " + node.getQPath().getAsString() + ". Item not found.");
+         LOG.error("Error indexing subtree " + node.getQPath().getAsString() + ". Item not found.");
          return;
       }
 
       if (nodeData != null)
       {
-         createIndex(tasks, nodeData, stateMgr, count);
+         createIndex(tasks, nodeData, stateMgr, count, processed);
       }
    }
 
@@ -2011,11 +2042,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * @throws InterruptedException
     *             if the task has been interrupted 
     */
-   private void createIndex(final NodeDataIndexingIterator iterator, NodeData rootNode, final AtomicLong count)
-      throws RepositoryException, InterruptedException, IOException
+   private void createIndex(final NodeDataIndexingIterator iterator, NodeData rootNode, final AtomicLong count,
+      final AtomicLong processed) throws RepositoryException, InterruptedException, IOException
    {
       for (NodeDataIndexing node : iterator.next())
       {
+         processed.incrementAndGet();
          if (stopped)
          {
             throw new InterruptedException();
@@ -2034,15 +2066,20 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          executeAndLog(new AddNode(getTransactionId(), node, true));
          if (count.incrementAndGet() % 1000 == 0)
          {
-            log.info("indexing... {} ({})", node.getQPath().getAsString(), new Long(count.get()));
+            if (nodesCount == null)
+            {
+               LOG.info("indexing... {} ({})", node.getQPath().getAsString(), count.get());
+            }
+            else
+            {
+               DecimalFormat format = new DecimalFormat("###.#");
+               LOG.info("indexing... {} ({}%)", node.getQPath().getAsString(),
+                  format.format(Math.min(100d * processed.get() / nodesCount.get(), 100)));
+            }
          }
 
          synchronized (this)
          {
-            if (count.get() % 10 == 0)
-            {
-               checkIndexingQueue(true);
-            }
             checkVolatileCommit();
          }
       }
@@ -2069,7 +2106,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *             if thread was interrupted
     */
    private void createIndex(final Queue<Callable<Void>> tasks, final NodeDataIndexingIterator iterator,
-      final NodeData rootNode, final AtomicLong count) throws IOException, RepositoryException, InterruptedException
+      final NodeData rootNode, final AtomicLong count, final AtomicLong processing) throws IOException,
+      RepositoryException, InterruptedException
    {
       while (iterator.hasNext())
       {
@@ -2078,7 +2116,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             public Void call() throws Exception
             {
-               createIndex(iterator, rootNode, count);
+               createIndex(iterator, rootNode, count, processing);
                return null;
             }
          };
@@ -2086,7 +2124,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          if (!tasks.offer(task))
          {
             // All threads have tasks to do so we do it ourself
-            createIndex(iterator, rootNode, count);
+            createIndex(iterator, rootNode, count, processing);
          }
       }
    }
@@ -2107,7 +2145,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             else
             {
-               log.info("Unable to delete obsolete index: " + indexName);
+               LOG.info("Unable to delete obsolete index: " + indexName);
             }
          }
       }
@@ -2129,7 +2167,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
       catch (IOException e)
       {
-         log.warn("Unable to remove file 'deletable'.", e);
+         LOG.warn("Unable to remove file 'deletable'.", e);
       }
    }
 
@@ -2152,7 +2190,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             if (redoLog.hasEntries())
             {
-               log.debug("Flushing index after being idle for " + idleTime + " ms.");
+               LOG.debug("Flushing index after being idle for " + idleTime + " ms.");
                synchronized (updateMonitor)
                {
                   //updateInProgress = true;
@@ -2176,79 +2214,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          catch (IOException e)
          {
-            log.error("Unable to commit volatile index", e);
+            LOG.error("Unable to commit volatile index", e);
          }
       }
-   }
-
-   /**
-    * Checks the indexing queue for finished text extrator jobs and updates the
-    * index accordingly if there are any new ones. This method is synchronized
-    * and should only be called by the timer task that periodically checks if
-    * there are documents ready in the indexing queue. A new transaction is
-    * used when documents are transfered from the indexing queue to the index.
-    */
-   private synchronized void checkIndexingQueue()
-   {
-      checkIndexingQueue(false);
-   }
-
-   /**
-    * Checks the indexing queue for finished text extrator jobs and updates the
-    * index accordingly if there are any new ones.
-    * 
-    * @param transactionPresent
-    *            whether a transaction is in progress and the current
-    *            {@link #getTransactionId()} should be used. If
-    *            <code>false</code> a new transaction is created when documents
-    *            are transfered from the indexing queue to the index.
-    */
-   private void checkIndexingQueue(boolean transactionPresent)
-   {
-      // EXOJCR-1337, have been commented since it is not used
-      //      Document[] docs = indexingQueue.getFinishedDocuments();
-      //      Map<String, Document> finished = new HashMap<String, Document>();
-      //      for (int i = 0; i < docs.length; i++)
-      //      {
-      //         String uuid = docs[i].get(FieldNames.UUID);
-      //         finished.put(uuid, docs[i]);
-      //      }
-      //
-      //      // now update index with the remaining ones if there are any
-      //      if (!finished.isEmpty())
-      //      {
-      //         log.info("updating index with {} nodes from indexing queue.", new Long(finished.size()));
-      //
-      //         // remove documents from the queue
-      //         for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
-      //         {
-      //            indexingQueue.removeDocument(it.next().toString());
-      //         }
-      //
-      //         try
-      //         {
-      //            if (transactionPresent)
-      //            {
-      //               for (Iterator<String> it = finished.keySet().iterator(); it.hasNext();)
-      //               {
-      //                  executeAndLog(new DeleteNode(getTransactionId(), it.next()));
-      //               }
-      //               for (Iterator<Document> it = finished.values().iterator(); it.hasNext();)
-      //               {
-      //                  executeAndLog(new AddNode(getTransactionId(), it.next()));
-      //               }
-      //            }
-      //            else
-      //            {
-      //               update(finished.keySet(), finished.values());
-      //            }
-      //         }
-      //         catch (IOException e)
-      //         {
-      //            // update failed
-      //            log.warn("Failed to update index with deferred text extraction", e);
-      //         }
-      //      }
    }
 
    // ------------------------< Actions
@@ -2609,8 +2577,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * The maximum length of a AddNode String.
        */
-      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length()
-         + Constants.UUID_FORMATTED_LENGTH + 2;
+      private static final int ENTRY_LENGTH =
+         Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to add.
@@ -2738,7 +2706,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             catch (RepositoryException e)
             {
                // node does not exist anymore
-               log.debug(e.getMessage());
+               LOG.debug(e.getMessage());
             }
          }
 
@@ -3011,8 +2979,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * The maximum length of a DeleteNode String.
        */
-      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length()
-         + Constants.UUID_FORMATTED_LENGTH + 2;
+      private static final int ENTRY_LENGTH =
+         Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to remove.
@@ -3063,13 +3031,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       public void execute(MultiIndex index) throws IOException
       {
          String uuidString = uuid.toString();
-         // check if indexing queue is still working on
-         // this node from a previous update
-         Document doc = index.indexingQueue.removeDocument(uuidString);
-         if (doc != null)
-         {
-            Util.disposeDocument(doc);
-         }
          Term idTerm = new Term(FieldNames.UUID, uuidString);
          // if the document cannot be deleted from the volatile index
          // delete it from one of the persistent indexes.
@@ -3309,7 +3270,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
       catch (IOException e)
       {
-         log.error("An error occurs while changing of mode " + mode, e);
+         LOG.error("An error occurs while changing of mode " + mode, e);
       }
    }
 
@@ -3420,12 +3381,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             // written to disk.
             if (!directoryManager.hasDirectory(name))
             {
-               log.debug("index does not exist anymore: " + name);
+               LOG.debug("index does not exist anymore: " + name);
                // move on to next index
                continue;
             }
             PersistentIndex index =
-               new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+               new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache,
                   directoryManager);
             index.setMaxFieldLength(handler.getMaxFieldLength());
             index.setUseCompoundFile(handler.getUseCompoundFile());
@@ -3459,7 +3420,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             catch (IOException e)
             {
-               log.error("An error occurred while trying to wake up the sleeping threads", e);
+               LOG.error("An error occurred while trying to wake up the sleeping threads", e);
             }
          }
       }
@@ -3495,7 +3456,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // switching to ONLINE
          if (isOnline)
          {
-            log.info("Setting index ONLINE ({})", handler.getContext().getWorkspacePath(true));
+            LOG.info("Setting index ONLINE ({})", handler.getContext().getWorkspacePath(true));
             if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
             {
                offlineIndex.commit(true);
@@ -3519,15 +3480,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          // switching to OFFLINE
          else
          {
-            log.info("Setting index OFFLINE ({})", handler.getContext().getWorkspacePath(true));
+            LOG.info("Setting index OFFLINE ({})", handler.getContext().getWorkspacePath(true));
             if (merger != null)
             {
                merger.dispose();
                merger = null;
             }
             offlineIndex =
-               new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
-                  directoryManager);
+               new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, directoryManager);
             if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
             {
                flush();
@@ -3576,6 +3536,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * The total amount of nodes already indexed
        */
       private final AtomicLong count = new AtomicLong();
+
+      private final AtomicLong processing = new AtomicLong();
 
       /**
        * The list of indexing tasks left to do
@@ -3683,7 +3645,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             public Void call() throws Exception
             {
-               createIndex(tasks, node, stateMgr, count);
+               createIndex(tasks, node, stateMgr, count, processing);
                return null;
             }
          });
@@ -3703,7 +3665,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             public Void call() throws Exception
             {
-               createIndex(tasks, iterator, rootNode, count);
+               createIndex(tasks, iterator, rootNode, count, processing);
                return null;
             }
          });

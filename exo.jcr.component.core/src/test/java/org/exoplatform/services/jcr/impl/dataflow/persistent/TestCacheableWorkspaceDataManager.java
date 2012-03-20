@@ -316,14 +316,6 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
 
       private volatile ItemData itemData;
 
-      /**
-       * {@inheritDoc}
-       */
-      public ItemData get(String parentIdentifier, QPathEntry name)
-      {
-         return get(parentIdentifier, name, ItemType.UNKNOWN);
-      }
-
       public ItemData get(String parentIdentifier, QPathEntry name, ItemType itemType)
       {
          if (itemData != null && itemType.isSuitableFor(itemData))
@@ -535,15 +527,6 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
 
       public AtomicInteger getItemDataByNodeDataNQPathEntryCalls = new AtomicInteger();
 
-      /**
-       * {@inheritDoc}
-       */
-      public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,
-         IllegalStateException
-      {
-         return getItemData(parentData, name, ItemType.UNKNOWN);
-      }
-
       public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
          IllegalStateException
       {
@@ -637,6 +620,13 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
          return null;
       }
 
+      /**
+       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getNodesCount()
+       */
+      public long getNodesCount() throws RepositoryException
+      {
+         throw new UnsupportedOperationException();
+      }
    };
 
    private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase

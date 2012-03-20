@@ -98,14 +98,6 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
    /**
     * {@inheritDoc}
     */
-   public ItemData getItemData(NodeData parent, QPathEntry name) throws RepositoryException
-   {
-      return getItemData(parent, name, ItemType.UNKNOWN);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException
    {
       return getItemData(parent, name, itemType, true);

@@ -22,11 +22,13 @@ import org.apache.lucene.analysis.WhitespaceAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanQuery;
-import org.apache.lucene.search.Hits;
-import org.apache.lucene.search.IndexSearcher;
-import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.search.BooleanClause.Occur;
+import org.apache.lucene.search.BooleanQuery;
+import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreDoc;
+import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
+import org.apache.lucene.util.Version;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
@@ -101,7 +103,7 @@ public class TestIndexingConfig extends BaseQueryTest
 
       indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + simple, new SimpleAnalyzer());
       indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + whitespace, new WhitespaceAnalyzer());
-      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + stop, new StopAnalyzer());
+      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + stop, new StopAnalyzer(Version.LUCENE_24));
       testRoot = testSession.getRootNode().addNode("testrootAnalyzers");
       root.save();
    }
@@ -130,7 +132,7 @@ public class TestIndexingConfig extends BaseQueryTest
          // There must be [the] [quick] [brown] [fox] [jumped] [over] [the] [lazy] [dogs]
          // in Node1
 
-         Document doc = this.getDocument(testNode1.getInternalIdentifier(), false);
+         ScoreDoc doc = this.getDocument(testNode1.getInternalIdentifier(), false);
          assertNotNull(doc);
 
          TermQuery the = new TermQuery(new Term("FULL:" + simple, "the"));
@@ -155,8 +157,8 @@ public class TestIndexingConfig extends BaseQueryTest
          IndexReader ir = searchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
-         Hits hits = is.search(compl);
-         assertEquals(1, hits.length());
+         TopDocs search = is.search(compl, null, Integer.MAX_VALUE);
+         assertEquals(1, search.totalHits);
 
          // Test is there are all terms
          // There must be [xy] [z] [corporation] [xyz] [example] [com]
@@ -176,8 +178,8 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(example, Occur.MUST);
          compl.add(com, Occur.MUST);
 
-         hits = is.search(compl);
-         assertEquals(1, hits.length());
+         search = is.search(compl, null, Integer.MAX_VALUE);
+         assertEquals(1, search.totalHits);
 
          is.close();
          Util.closeOrRelease(ir);
@@ -230,8 +232,8 @@ public class TestIndexingConfig extends BaseQueryTest
          IndexReader ir = searchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
-         Hits hits = is.search(compl);
-         assertEquals(1, hits.length());
+         TopDocs search = is.search(compl, null, Integer.MAX_VALUE);
+         assertEquals(1, search.totalHits);
 
          // Test is there are all terms
          // There must be [XY&Z] [Corporation] [-] [xyz@example.com]
@@ -247,8 +249,8 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(defiz, Occur.MUST);
          compl.add(example, Occur.MUST);
 
-         hits = is.search(compl);
-         assertEquals(1, hits.length());
+         search = is.search(compl, null, Integer.MAX_VALUE);
+         assertEquals(1, search.totalHits);
 
          is.close();
          Util.closeOrRelease(ir);
@@ -296,8 +298,8 @@ public class TestIndexingConfig extends BaseQueryTest
          IndexReader ir = searchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
-         Hits hits = is.search(compl);
-         assertEquals(1, hits.length());
+         TopDocs search = is.search(compl, null, Integer.MAX_VALUE);
+         assertEquals(1, search.totalHits);
 
          // Test is there are all terms
          // There must be [xy] [z] [corporation] [xyz] [example] [com]
@@ -317,8 +319,8 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(example, Occur.MUST);
          compl.add(com, Occur.MUST);
 
-         hits = is.search(compl);
-         assertEquals(1, hits.length());
+         search = is.search(compl, null, Integer.MAX_VALUE);
+         assertEquals(1, search.totalHits);
 
          is.close();
          Util.closeOrRelease(ir);
@@ -370,8 +372,8 @@ public class TestIndexingConfig extends BaseQueryTest
          IndexReader ir = searchIndex.getIndexReader();
          IndexSearcher is = new IndexSearcher(ir);
 
-         Hits hits = is.search(compl);
-         assertEquals(1, hits.length());
+         TopDocs search = is.search(compl, null, Integer.MAX_VALUE);
+         assertEquals(1, search.totalHits);
 
          // Test is there are all terms
          // Terms [xy&z] [corporation] [xyz@example] [com] - it's a default
@@ -388,8 +390,8 @@ public class TestIndexingConfig extends BaseQueryTest
          compl.add(corporation, Occur.MUST);
          compl.add(com, Occur.MUST);
 
-         hits = is.search(compl);
-         assertEquals(1, hits.length());
+         search = is.search(compl, null, Integer.MAX_VALUE);
+         assertEquals(1, search.totalHits);
 
          is.close();
          Util.closeOrRelease(ir);
@@ -401,22 +403,22 @@ public class TestIndexingConfig extends BaseQueryTest
       }
    }
 
-   protected Document getDocument(String nodeIdentifer, boolean includeSystemIndex) throws IOException,
+   protected ScoreDoc getDocument(String nodeIdentifer, boolean includeSystemIndex) throws IOException,
       RepositoryException
    {
       IndexReader reader = ((SearchIndex)searchManager.getHandler()).getIndexReader();
       IndexSearcher is = new IndexSearcher(reader);
       TermQuery query = new TermQuery(new Term(FieldNames.UUID, nodeIdentifer));
 
-      Hits result = is.search(query);
+      TopDocs topDocs = is.search(query, null, Integer.MAX_VALUE);
 
       try
       {
-         if (result.length() == 1)
+         if (topDocs.totalHits == 1)
          {
-            return result.doc(0);
+            return topDocs.scoreDocs[0];
          }
-         else if (result.length() > 1)
+         else if (topDocs.totalHits > 1)
          {
             throw new RepositoryException("Results more then one");
          }

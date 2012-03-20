@@ -280,4 +280,17 @@
       </childNodeDefinition>
     </childNodeDefinitions>
   </nodeType>
+  
+  <nodeType name="exo:myTypeJCR1703" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+  	<supertypes>
+      <supertype>nt:base</supertype>
+    </supertypes>
+  	<childNodeDefinitions>
+    	<childNodeDefinition name="exo:myChildNode" defaultPrimaryType="nt:unstructured" autoCreated="true" mandatory="false" onParentVersion="IGNORE" protected="true" sameNameSiblings="false">
+        	<requiredPrimaryTypes>
+               <requiredPrimaryType>nt:base</requiredPrimaryType>
+            </requiredPrimaryTypes>
+        </childNodeDefinition>
+    </childNodeDefinitions>
+  </nodeType>
 </nodeTypes>

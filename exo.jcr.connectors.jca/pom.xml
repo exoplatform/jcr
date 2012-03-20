@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>1.14.8-GA-SNAPSHOT</version>
+    <version>1.15.0-Beta01-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.connectors.jca</artifactId>
   <packaging>rar</packaging>
@@ -40,7 +40,40 @@
       <groupId>javax.resource</groupId>
       <artifactId>connector-api</artifactId>
       <scope>provided</scope>
-    </dependency>    
+    </dependency>
+    <dependency>
+      <groupId>commons-pool</groupId>
+      <artifactId>commons-pool</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.kernel</groupId>
+      <artifactId>exo.kernel.container</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.kernel</groupId>
+      <artifactId>exo.kernel.commons</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>javax.jcr</groupId>
+      <artifactId>jcr</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.ow2.spec.ee</groupId>
+      <artifactId>ow2-jta-1.1-spec</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.transaction</groupId>
+      <artifactId>jta</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.jboss.javaee</groupId>
+      <artifactId>jboss-transaction-api</artifactId>
+      <scope>provided</scope>
+    </dependency>
   </dependencies>
   <build>
     <resources>
@@ -56,6 +89,7 @@
         <artifactId>maven-jar-plugin</artifactId>
         <configuration>
           <archive>
+            <index>false</index>
             <manifest>
               <addClasspath>true</addClasspath>
             </manifest>

@@ -18,15 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.File;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
@@ -42,149 +39,19 @@ import javax.sql.DataSource;
  */
 public class GenericConnectionFactory implements WorkspaceStorageConnectionFactory
 {
-   protected final Log log = ExoLogger.getLogger("exo.jcr.component.core.GenericConnectionFactory");
+   protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.GenericConnectionFactory");
 
    protected final DataSource dbDataSource;
 
-   protected final String dbDriver;
-
-   protected final String dbUrl;
-
-   protected final String dbUserName;
-
-   protected final String dbPassword;
-
-   protected final String containerName;
-
-   protected final boolean multiDb;
-
-   protected final ValueStoragePluginProvider valueStorageProvider;
-
-   protected final int maxBufferSize;
-
-   protected final File swapDirectory;
-
-   protected final FileCleaner swapCleaner;
+   protected final JDBCDataContainerConfig containerConfig;
 
    /**
     * GenericConnectionFactory constructor.
-    * 
-    * @param dataSource
-    *          - DataSource
-    * @param dbDriver
-    *          - JDBC Driver
-    * @param dbUrl
-    *          - JDBC URL
-    * @param dbUserName
-    *          - database username
-    * @param dbPassword
-    *          - database user password
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
     */
-   protected GenericConnectionFactory(DataSource dataSource, String dbDriver, String dbUrl, String dbUserName,
-      String dbPassword, String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider,
-      int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+   public GenericConnectionFactory(DataSource dataSource, JDBCDataContainerConfig containerConfig)
    {
-
-      this.containerName = containerName;
-      this.multiDb = multiDb;
-      this.valueStorageProvider = valueStorageProvider;
-      this.maxBufferSize = maxBufferSize;
-      this.swapDirectory = swapDirectory;
-      this.swapCleaner = swapCleaner;
-
+      this.containerConfig = containerConfig;
       this.dbDataSource = dataSource;
-      this.dbDriver = dbDriver;
-      this.dbUrl = dbUrl;
-      this.dbUserName = dbUserName;
-      this.dbPassword = dbPassword;
-   }
-
-   /**
-    * GenericConnectionFactory constructor.
-    * 
-    * @param dataSource
-    *          - DataSource
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    */
-   public GenericConnectionFactory(DataSource dataSource, String containerName, boolean multiDb,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
-   {
-
-      this(dataSource, null, null, null, null, containerName, multiDb, valueStorageProvider, maxBufferSize,
-         swapDirectory, swapCleaner);
-   }
-
-   /**
-    * GenericConnectionFactory constructor.
-    * 
-    * @param dbDriver
-    *          - JDBC Driver
-    * @param dbUrl
-    *          - JDBC URL
-    * @param dbUserName
-    *          - database username
-    * @param dbPassword
-    *          - database user password
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    */
-   public GenericConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
-   {
-
-      this(null, dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-         swapDirectory, swapCleaner);
-
-      try
-      {
-         Class.forName(dbDriver).newInstance();
-      }
-      catch (InstantiationException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (IllegalAccessException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (ClassNotFoundException e)
-      {
-         throw new RepositoryException(e);
-      }
    }
 
    /**
@@ -203,14 +70,12 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
       try
       {
 
-         if (multiDb)
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
-            return new MultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-               valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+            return new MultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }
 
-         return new SingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName, valueStorageProvider,
-            maxBufferSize, swapDirectory, swapCleaner);
+         return new SingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
 
       }
       catch (SQLException e)
@@ -226,9 +91,8 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
    {
       try
       {
-         Connection conn =
-            dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager.getConnection(
-               dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
+         Connection conn = dbDataSource.getConnection();
+
          if (readOnly)
          {
             // set this feature only if it asked
@@ -258,12 +122,12 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
     * Indicates if component support extracting data from storage using paging.
     * 
     * @return boolean
-    */   
+    */
    public boolean isReindexingSupport()
    {
       return false;
    }
-   
+
    /**
     * Indicates whether the id of the last item is needed for paging
     * @return <code>true</code> if the id is needed, <code>false</code> otherwise.

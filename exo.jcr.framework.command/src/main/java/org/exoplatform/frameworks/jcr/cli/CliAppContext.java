@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.core.ManageableRepository;
 
 import java.util.List;
 
-import javax.jcr.Credentials;
 import javax.jcr.Item;
 import javax.naming.NamingException;
 
@@ -44,13 +43,6 @@ public class CliAppContext extends BasicAppContext
    protected final String outputKey = "OUTPUT";
 
    public CliAppContext(ManageableRepository rep, String parametersKey) throws NamingException
-   {
-      super(rep);
-      this.parametersKey = parametersKey;
-   }
-
-   @Deprecated
-   public CliAppContext(ManageableRepository rep, String parametersKey, Credentials cred) throws NamingException
    {
       super(rep);
       this.parametersKey = parametersKey;

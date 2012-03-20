@@ -418,12 +418,14 @@ class ChildAxisQuery extends Query implements JcrQuery
          this.hResolver = hResolver;
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
-      public boolean next() throws IOException
+      public int nextDoc() throws IOException
       {
+         if (nextDoc == NO_MORE_DOCS)
+         {
+            return nextDoc;
+         }
+
          calculateChildren();
          do
          {
@@ -431,52 +433,44 @@ class ChildAxisQuery extends Query implements JcrQuery
          }
          while (nextDoc > -1 && !indexIsValid(nextDoc));
 
-         return nextDoc > -1;
+         if (nextDoc < 0)
+         {
+            nextDoc = NO_MORE_DOCS;
+         }
+         return nextDoc;
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
-      public int doc()
+      public int docID()
       {
          return nextDoc;
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
       public float score() throws IOException
       {
          return 1.0f;
       }
 
-      /**
-       * {@inheritDoc}
-       */
       @Override
-      public boolean skipTo(int target) throws IOException
+      public int advance(int target) throws IOException
       {
+         if (nextDoc == NO_MORE_DOCS)
+         {
+            return nextDoc;
+         }
+
          calculateChildren();
          nextDoc = hits.skipTo(target);
          while (nextDoc > -1 && !indexIsValid(nextDoc))
          {
-            next();
+            nextDoc();
          }
-         return nextDoc > -1;
-      }
-
-      /**
-       * {@inheritDoc}
-       *
-       * @throws UnsupportedOperationException this implementation always
-       *                                       throws an <code>UnsupportedOperationException</code>.
-       */
-      @Override
-      public Explanation explain(int doc) throws IOException
-      {
-         throw new UnsupportedOperationException();
+         if (nextDoc < 0)
+         {
+            nextDoc = NO_MORE_DOCS;
+         }
+         return nextDoc;
       }
 
       private void calculateChildren() throws IOException
@@ -492,7 +486,7 @@ class ChildAxisQuery extends Query implements JcrQuery
                contextScorer.score(new AbstractHitCollector()
                {
                   @Override
-                  public void collect(int doc, float score)
+                  protected void collect(int doc, float score)
                   {
                      calc[0].collectContextHit(doc);
                   }
@@ -505,22 +499,22 @@ class ChildAxisQuery extends Query implements JcrQuery
                contextScorer.score(new AbstractHitCollector()
                {
 
-                  private List docIds = new ArrayList();
+                  private List<Integer> docIds = new ArrayList<Integer>();
 
                   @Override
-                  public void collect(int doc, float score)
+                  protected void collect(int doc, float score)
                   {
                      calc[0].collectContextHit(doc);
                      if (docIds != null)
                      {
-                        docIds.add(new Integer(doc));
+                        docIds.add(doc);
                         if (docIds.size() > CONTEXT_SIZE_THRESHOLD)
                         {
                            // switch
                            calc[0] = new HierarchyResolvingChildrenCalculator(reader, hResolver);
-                           for (Iterator it = docIds.iterator(); it.hasNext();)
+                           for (int docId : docIds)
                            {
-                              calc[0].collectContextHit(((Integer)it.next()).intValue());
+                              calc[0].collectContextHit(docId);
                            }
                            // indicate that we switched
                            docIds = null;

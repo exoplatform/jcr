@@ -860,16 +860,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * {@inheritDoc}
     */
-   @Deprecated
-   public Response mkcol(String repoName, String repoPath, String lockTokenHeader, String ifHeader,
-      String nodeTypeHeader, String mixinTypesHeader)
-   {
-      return mkcol(repoName, repoPath, lockTokenHeader, ifHeader, nodeTypeHeader, mixinTypesHeader, null);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    @MKCOL
    @Path("/{repoName}/{repoPath:.*}/")
    public Response mkcol(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
@@ -877,7 +867,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String nodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypesHeader, @Context UriInfo uriInfo)
    {
-
       if (log.isDebugEnabled())
       {
          log.debug("MKCOL " + repoName + "/" + repoPath);
@@ -1152,33 +1141,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * {@inheritDoc}
     */
-   @Deprecated
-   public Response put(String repoName, String repoPath, String lockTokenHeader, String ifHeader,
-      String fileNodeTypeHeader, String contentNodeTypeHeader, String mixinTypes, MediaType mediatype,
-      InputStream inputStream)
-   {
-      return put(repoName, repoPath, lockTokenHeader, ifHeader, fileNodeTypeHeader, contentNodeTypeHeader, mixinTypes,
-         mediatype, inputStream, null);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Deprecated
-   public Response put(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
-      @HeaderParam(ExtHttpHeaders.LOCKTOKEN) String lockTokenHeader, @HeaderParam(ExtHttpHeaders.IF) String ifHeader,
-      @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
-      @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
-      @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypes,
-      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype, InputStream inputStream, @Context UriInfo uriInfo)
-   {
-      return put(repoName, repoPath, lockTokenHeader, ifHeader, fileNodeTypeHeader, contentNodeTypeHeader, mixinTypes,
-         mediatype, null, inputStream, uriInfo);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    @PUT
    @Path("/{repoName}/{repoPath:.*}/")
    public Response put(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
@@ -1186,7 +1148,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       @HeaderParam(ExtHttpHeaders.FILE_NODETYPE) String fileNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String contentNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypes,
-      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediatype,
+      @HeaderParam(ExtHttpHeaders.CONTENT_TYPE) MediaType mediaType,
       @HeaderParam(ExtHttpHeaders.USER_AGENT) String userAgent, InputStream inputStream, @Context UriInfo uriInfo)
    {
       if (log.isDebugEnabled())
@@ -1201,14 +1163,14 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String mimeType = null;
          String encoding = null;
 
-         if (mediatype == null || untrustedUserAgents.contains(userAgent))
+         if (mediaType == null || untrustedUserAgents.contains(userAgent))
          {
             mimeType = mimeTypeResolver.getMimeType(TextUtil.nameOnly(repoPath));
          }
          else
          {
-            mimeType = mediatype.getType() + "/" + mediatype.getSubtype();
-            encoding = mediatype.getParameters().get("charset");
+            mimeType = mediaType.getType() + "/" + mediaType.getSubtype();
+            encoding = mediaType.getParameters().get("charset");
          }
 
          List<String> tokens = lockTokens(lockTokenHeader, ifHeader);

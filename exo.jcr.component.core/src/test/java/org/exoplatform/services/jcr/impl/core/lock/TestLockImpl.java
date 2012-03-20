@@ -35,7 +35,7 @@ public class TestLockImpl extends JcrImplBaseTest
 {
    private ExtendedNode lockedNode = null;
 
-   private LockManagerImpl service;
+   private WorkspaceLockManager service;
 
    private static final long LOCK_TIMEOUT = 5; // sec
 
@@ -48,7 +48,7 @@ public class TestLockImpl extends JcrImplBaseTest
 
       super.setUp();
 
-      service = (LockManagerImpl)container.getComponentInstanceOfType(LockManagerImpl.class);
+      service = (WorkspaceLockManager)container.getComponentInstanceOfType(WorkspaceLockManager.class);
 
       if (lockedNode == null)
          try

@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.api.importing;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.ExtendedWorkspace;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -86,11 +87,14 @@ public abstract class AbstractImportTest extends JcrAPIBaseTest
       {
          NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
          InputStream is = TestDocumentViewImport.class.getResourceAsStream("/nodetypes/ext-registry-nodetypes.xml");
-         ntManager.registerNodeTypes(is, 0);
+         ntManager.registerNodeTypes(is, 0, NodeTypeDataManager.TEXT_XML);
          ntManager.registerNodeTypes(TestDocumentViewImport.class
-            .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config.xml"), 0);
+            .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config.xml"), 0,
+            NodeTypeDataManager.TEXT_XML);
          ntManager.registerNodeTypes(TestDocumentViewImport.class
-            .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config-extended.xml"), 0);
+            .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config-extended.xml"), 0,
+            NodeTypeDataManager.TEXT_XML);
+
          isInitialized = true;
       }
    }

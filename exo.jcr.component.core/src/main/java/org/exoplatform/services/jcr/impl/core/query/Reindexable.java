@@ -47,4 +47,12 @@ public interface Reindexable
     */
    boolean isReindexingSupport();
 
+   /**
+    * Return nodes count.
+    * 
+    * @return
+    *       nodes count
+    * @throws RepositoryException
+    */
+   Long getNodesCount() throws RepositoryException;
 }

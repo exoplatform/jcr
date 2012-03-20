@@ -23,9 +23,11 @@ import org.apache.lucene.search.BooleanQuery;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.impl.core.ExtendedNamespaceRegistry;
+import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.RepositoryIndexSearcherHolder;
 
+import java.util.Arrays;
 import java.util.Set;
 
 import javax.jcr.NamespaceException;
@@ -89,6 +91,8 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
       }
       assertTrue(prefixes.length >= 7);
 
+      assertTrue(Arrays.asList(session.getWorkspace().getNamespaceRegistry().getPrefixes()).containsAll(
+         Arrays.asList(namespaceRegistry.getPrefixes())));
    }
 
    public void testGetURIs() throws RepositoryException
@@ -357,6 +361,42 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
       {
          e.printStackTrace();
          fail();
+      }
+   }
+
+   public void testIsDefaultPrefix()
+   {
+      assertTrue(((NamespaceRegistryImpl)namespaceRegistry).isDefaultPrefix("nt"));
+      assertFalse(((NamespaceRegistryImpl)namespaceRegistry).isDefaultPrefix("somePrefix"));
+   }
+
+   public void testIsDefaultNamespace() throws NamespaceException, RepositoryException
+   {      
+      NamespaceRegistryImpl nameSpace = (NamespaceRegistryImpl)namespaceRegistry;
+      String uri = workspace.getNamespaceRegistry().getURI("nt");
+      
+      assertTrue(nameSpace.isDefaultNamespace(uri));
+      assertFalse(nameSpace.isDefaultNamespace(" "));
+   }
+
+   public void testValidateNamespace() throws RepositoryException
+   {
+      try
+      {
+         ((NamespaceRegistryImpl)namespaceRegistry).validateNamespace("some:text", "");
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+
+      try
+      {
+         ((NamespaceRegistryImpl)namespaceRegistry).validateNamespace("nt", null);
+         fail();
+      }
+      catch (NamespaceException e)
+      {
       }
    }
 }

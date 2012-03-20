@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.File;
@@ -101,7 +102,7 @@ public class DeleteValues extends ValueFileOperation
             if (file.exists())
             {
                bckFiles[i] = new File(file.getAbsolutePath() + "." + System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet());
-               move(file, bckFiles[i]);
+               DirectoryHelper.renameFile(file, bckFiles[i]);
             }           
          }
       }
@@ -120,13 +121,7 @@ public class DeleteValues extends ValueFileOperation
                File f = bckFiles[i];
                if (f != null)
                {
-                  // As the files could be registered to the file cleaner 
-                  // to be removed in case of a move that failed
-                  // or in case of a WriteValue.rollback() that could not
-                  // remove the file, we need to unregister the files that
-                  // will be restored thanks to the backup file
-                  cleaner.removeFile(files[i]);
-                  move(f, files[i]);
+                  DirectoryHelper.renameFile(f, files[i]);
                }
             }
          }
@@ -148,9 +143,11 @@ public class DeleteValues extends ValueFileOperation
             for (File f : bckFiles)
             {
                if (f != null && !f.delete())
-               {
+                  // Possible place of error: FileNotFoundException when we delete/update existing
+                  // Value and then add/update again.
+                  // After the time the Cleaner will delete the file which is mapped to the Value.
+                  // Don't use cleaner! Care about transaction-style files isolation per-user etc. 
                   cleaner.addFile(f);
-               }
             }
          }
          finally

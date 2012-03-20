@@ -46,12 +46,18 @@ public class JCRContentFCKeditor extends FCKeditor
 
    private final static Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.JCRContentFCKeditor");
 
-   private Node file;
+   private final String filePath;
+
+   private final SessionProviderService sessionProviderService;
+
+   private final ManageableRepository repo;
 
    public JCRContentFCKeditor(HttpServletRequest req, String parInstanceName, String workspaceName, String filePath,
       String newNodeType) throws RepositoryException
    {
       super(req, parInstanceName);
+
+      this.filePath = filePath;
 
       ExoContainer container =
          (ExoContainer)req.getSession().getServletContext().getAttribute(WebConstants.EXO_CONTAINER);
@@ -60,26 +66,32 @@ public class JCRContentFCKeditor extends FCKeditor
          container = PortalContainer.getCurrentInstance(req.getSession().getServletContext());
       }
 
-      SessionProviderService sessionProviderService =
+      sessionProviderService =
          (SessionProviderService)container.getComponentInstanceOfType(SessionProviderService.class);
 
       RepositoryService repositoryService =
          (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
-      ManageableRepository repo = repositoryService.getCurrentRepository();
+      repo = repositoryService.getCurrentRepository();
       Session session =
          sessionProviderService.getSessionProvider(null).getSession(repo.getConfiguration().getDefaultWorkspaceName(),
             repo);
+
+      Node file;
       try
       {
-         this.file = (Node)session.getItem(filePath);
+         file = (Node)session.getItem(filePath);
       }
       catch (PathNotFoundException e1)
       {
-         this.file = session.getRootNode().addNode(filePath.substring(1), newNodeType);
+         file = session.getRootNode().addNode(filePath.substring(1), newNodeType);
       }
+      
       if (!file.isNodeType("nt:file"))
+      {
          throw new RepositoryException("The Node should be nt:file type");
+      }
+
       try
       {
          Property content = (Property)session.getItem(filePath + "/jcr:content/jcr:data");
@@ -95,8 +107,21 @@ public class JCRContentFCKeditor extends FCKeditor
    {
       // file.setProperty("jcr:content/jcr:data", value);
       // [VO] "jcr:content/jcr:data" - impossible according to spec
-      file.getNode("jcr:content").setProperty("jcr:data", value);
-      setValue(value);
-      file.getSession().save();
+      Session session =
+         sessionProviderService.getSessionProvider(null).getSession(repo.getConfiguration().getDefaultWorkspaceName(),
+            repo);
+
+      try
+      {
+         Node file = (Node)session.getItem(filePath);
+
+         file.getNode("jcr:content").setProperty("jcr:data", value);
+         setValue(value);
+         file.getSession().save();
+      }
+      finally
+      {
+         session.logout();
+      }
    }
 }

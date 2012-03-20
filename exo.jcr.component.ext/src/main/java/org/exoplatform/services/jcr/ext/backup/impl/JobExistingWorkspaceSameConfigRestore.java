@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -78,7 +79,7 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
       {
          ManageableRepository repository = repositoryService.getRepository(repositoryName);
 
-         if (wEntry.getContainer().getParameterBoolean("multi-db") == false)
+         if (!JDBCWorkspaceDataContainer.getDatabaseType(wEntry).isMultiDatabase())
          {
             for (String wsName : repository.getWorkspaceNames())
             {

@@ -362,19 +362,6 @@ public class TransientValueData implements ValueData
       }
 
       /**
-       * Helper method to simplify operations that requires stringified data.
-       * 
-       * @return String
-       * @throws IOException
-       *           if read error
-       */
-      @Deprecated
-      public String getString() throws IOException
-      {
-         return new String(getAsByteArray(), Constants.DEFAULT_ENCODING);
-      }
-
-      /**
        * {@inheritDoc}
        */
       @Override
@@ -457,64 +444,6 @@ public class TransientValueData implements ValueData
             }
          }
          return false;
-      }
-
-      /**
-       * Spool ValueData InputStream to a temp File.
-       */
-      @Deprecated
-      protected void spoolInputStreamAlways()
-      {
-
-         if (spooled || tmpStream == null) // already spooled
-            return;
-
-         byte[] tmpBuff = new byte[2048];
-         OutputStream sfout = null;
-         int read = 0;
-
-         try
-         {
-            SpoolFile sf = SpoolFile.createTempFile("jcrvd", null, tempDirectory);
-            sf.acquire(this);
-            sfout = PrivilegedFileHelper.fileOutputStream(sf);
-
-            while ((read = tmpStream.read(tmpBuff)) >= 0)
-               sfout.write(tmpBuff, 0, read);
-
-            this.spoolChannel = null;
-            this.spoolFile = sf;
-
-            this.data = null;
-            this.spooled = true;
-         }
-         catch (IOException e)
-         {
-            throw new IllegalStateException(e);
-         }
-         finally
-         {
-            try
-            {
-               if (sfout != null)
-                  sfout.close();
-            }
-            catch (IOException e)
-            {
-               LOG.error("Error of spool output close.", e);
-            }
-
-            if (this.closeTmpStream)
-               try
-               {
-                  this.tmpStream.close();
-               }
-               catch (IOException e)
-               {
-                  LOG.error("Error of source input close.", e);
-               }
-            this.tmpStream = null;
-         }
       }
 
       /**

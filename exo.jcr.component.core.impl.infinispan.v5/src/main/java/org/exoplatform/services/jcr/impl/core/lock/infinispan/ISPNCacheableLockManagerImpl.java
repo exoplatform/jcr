@@ -22,6 +22,7 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
+import org.exoplatform.services.database.utils.DialectDetecter;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -31,7 +32,6 @@ import org.exoplatform.services.jcr.impl.core.lock.cacheable.CacheableSessionLoc
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
@@ -39,6 +39,7 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.Cache;
+import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.lifecycle.ComponentStatus;
 
 import java.io.Serializable;
@@ -85,7 +86,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    /**
     * Logger
     */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.InfinispanLockManagerImpl");//NOSONAR
+   private final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.InfinispanLockManagerImpl");
 
    private Cache<Serializable, Object> cache;
 
@@ -113,7 +114,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       if (config.getLockManager() != null)
       {
          // create cache using custom factory
-         ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm, transactionManager);
+         ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
 
          // configure cache loader parameters with correct DB data-types
          configureJDBCCacheLoader(config.getLockManager());
@@ -240,7 +241,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
                   Throwable cause = pae.getCause();
                   if (cause instanceof SQLException)
                   {
-                     throw (SQLException)cause;//NOSONAR
+                     throw (SQLException)cause;
                   }
                   else if (cause instanceof RuntimeException)
                   {
@@ -248,7 +249,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
                   }
                   else
                   {
-                     throw new RuntimeException(cause);//NOSONAR
+                     throw new RuntimeException(cause);
                   }
                }
 
@@ -269,7 +270,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
                }
             }
          }
-         catch (Exception e)//NOSONAR
+         catch (Exception e)
          {
             throw new RepositoryException("Error configuring JDBC cache loader", e);
          }
@@ -433,7 +434,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected boolean isAloneInCluster()
    {
-      return cache.getAdvancedCache().getRpcManager() == null || cache.getCacheManager().getMembers().size() == 1;
+      return cache.getConfiguration().getCacheMode() == CacheMode.LOCAL
+         || cache.getCacheManager().getMembers().size() == 1;
    }
 
    /**

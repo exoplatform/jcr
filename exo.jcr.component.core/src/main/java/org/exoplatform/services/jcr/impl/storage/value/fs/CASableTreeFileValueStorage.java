@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
@@ -59,7 +60,7 @@ public class CASableTreeFileValueStorage extends TreeFileValueStorage
       // get other vcas specific props and make VCAS
       try
       {
-         vcas = (ValueContentAddressStorage)Class.forName(vcasType).newInstance();
+         vcas = (ValueContentAddressStorage)ClassLoading.forName(vcasType, this).newInstance();
       }
       catch (ExceptionInInitializerError e)
       {

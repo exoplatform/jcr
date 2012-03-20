@@ -44,11 +44,9 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValu
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.ValueFileIOHelper;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -115,17 +113,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     */
    public static final int I_CLASS_PROPERTY = 2;
 
-   protected final ValueStoragePluginProvider valueStorageProvider;
-
-   protected final int maxBufferSize;
-
-   protected final File swapDirectory;
-
-   protected final FileCleaner swapCleaner;
+   protected final JDBCDataContainerConfig containerConfig;
 
    protected final Connection dbConnection;
-
-   protected final String containerName;
 
    protected final SQLExceptionHandler exceptionHandler;
 
@@ -199,53 +189,100 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected PreparedStatement findNodesAndProperties;
 
+   protected PreparedStatement findNodesCount;
+
    /**
     * Read-only flag, if true the connection is marked as READ-ONLY.
     */
    protected final boolean readOnly;
 
    /**
-     * JDBCStorageConnection constructor.
-     * 
-     * @param dbConnection
-     *          JDBC connection
-     * @param containerName
-     *          Workspace conatiner name
-     * @param valueStorageProvider
-     *          External Value Storage provider
-     * @param maxBufferSize
-     *          maximum buffer size (config)
-     * @param swapDirectory
-     *          swap directory (config)
-     * @param swapCleaner
-     *          swap cleaner (FileCleaner)
-     * @throws SQLException
-     *           database error
-     */
-   protected JDBCStorageConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+    * JDBCStorageConnection constructor.
+    * 
+    * @param dbConnection
+    *          JDBC connection, should be opened before
+    * @param readOnly
+    *          boolean if true the dbConnection was marked as READ-ONLY.
+    * @param containerConfig
+    *          Workspace Storage Container configuration
+    */
+   protected JDBCStorageConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
 
-      this.valueStorageProvider = valueStorageProvider;
-
-      this.maxBufferSize = maxBufferSize;
-      this.swapDirectory = swapDirectory;
-      this.swapCleaner = swapCleaner;
-      this.containerName = containerName;
-
       this.dbConnection = dbConnection;
       this.readOnly = readOnly;
+      this.containerConfig = containerConfig;
 
       if (!readOnly && dbConnection.getAutoCommit())
       {
          dbConnection.setAutoCommit(false);
       }
 
+      prepareEntityNames();
       prepareQueries();
-      this.exceptionHandler = new SQLExceptionHandler(containerName, this);
+      this.exceptionHandler = new SQLExceptionHandler(this.containerConfig.containerName, this);
 
       this.valueChanges = new ArrayList<ValueIOChannel>();
+   }
+
+   protected void prepareEntityNames()
+   {
+      switch (containerConfig.dbStructureType)
+      {
+         case MULTI :
+            JCR_ITEM = "JCR_MITEM";
+            JCR_VALUE = "JCR_MVALUE";
+            JCR_REF = "JCR_MREF";
+            JCR_PK_ITEM = "JCR_PK_MITEM";
+            JCR_FK_ITEM_PARENT = "JCR_FK_MITEM_PARENT";
+            JCR_IDX_ITEM_PARENT = "JCR_IDX_MITEM_PARENT";
+            JCR_IDX_ITEM_PARENT_ID = "JCR_IDX_MITEM_PARENT_ID";
+            JCR_PK_VALUE = "JCR_PK_MVALUE";
+            JCR_FK_VALUE_PROPERTY = "JCR_FK_MVALUE_PROPERTY";
+            JCR_IDX_VALUE_PROPERTY = "JCR_IDX_MVALUE_PROPERTY";
+            JCR_PK_REF = "JCR_PK_MREF";
+            JCR_IDX_REF_PROPERTY = "JCR_IDX_MREF_PROPERTY";
+            JCR_IDX_ITEM_N_ORDER_NUM = "JCR_IDX_MITEM_N_ORDER_NUM";
+            JCR_IDX_ITEM_PARENT_FK = "JCR_IDX_MITEM_PARENT_FK";
+            break;
+         case SINGLE :
+            JCR_ITEM = "JCR_SITEM";
+            JCR_VALUE = "JCR_SVALUE";
+            JCR_REF = "JCR_SREF";
+            JCR_PK_ITEM = "JCR_PK_SITEM";
+            JCR_FK_ITEM_PARENT = "JCR_FK_SITEM_PARENT";
+            JCR_IDX_ITEM_PARENT = "JCR_IDX_SITEM_PARENT";
+            JCR_IDX_ITEM_PARENT_ID = "JCR_IDX_SITEM_PARENT_ID";
+            JCR_PK_VALUE = "JCR_PK_SVALUE";
+            JCR_FK_VALUE_PROPERTY = "JCR_FK_SVALUE_PROPERTY";
+            JCR_IDX_VALUE_PROPERTY = "JCR_IDX_SVALUE_PROPERTY";
+            JCR_PK_REF = "JCR_PK_SREF";
+            JCR_IDX_REF_PROPERTY = "JCR_IDX_SREF_PROPERTY";
+            JCR_IDX_ITEM_N_ORDER_NUM = "JCR_IDX_SITEM_N_ORDER_NUM";
+            JCR_IDX_ITEM_PARENT_FK = "JCR_IDX_SITEM_PARENT_FK";
+            break;
+
+         case ISOLATED :
+            JCR_ITEM = "JCR_I" + containerConfig.dbTableSuffix;
+            JCR_VALUE = "JCR_V" + containerConfig.dbTableSuffix;
+            JCR_REF = "JCR_R" + containerConfig.dbTableSuffix;
+            JCR_PK_ITEM = "JCR_PK_I" + containerConfig.dbTableSuffix;
+            JCR_FK_ITEM_PARENT = "JCR_FK_I" + containerConfig.dbTableSuffix + "_PARENT";
+            JCR_IDX_ITEM_PARENT = "JCR_IDX_I" + containerConfig.dbTableSuffix + "_PARENT";
+            JCR_IDX_ITEM_PARENT_ID = "JCR_IDX_I" + containerConfig.dbTableSuffix + "_PARENT_ID";
+            JCR_PK_VALUE = "JCR_PK_V" + containerConfig.dbTableSuffix;
+            JCR_FK_VALUE_PROPERTY = "JCR_FK_V" + containerConfig.dbTableSuffix + "_PROPERTY";
+            JCR_IDX_VALUE_PROPERTY = "JCR_IDX_V" + containerConfig.dbTableSuffix + "_PROPERTY";
+            JCR_PK_REF = "JCR_PK_R" + containerConfig.dbTableSuffix;
+            JCR_IDX_REF_PROPERTY = "JCR_IDX_R" + containerConfig.dbTableSuffix + "_PROPERTY";
+            JCR_IDX_ITEM_N_ORDER_NUM = "JCR_IDX_I" + containerConfig.dbTableSuffix + "_N_ORDER_NUM";
+            JCR_IDX_ITEM_PARENT_FK = "JCR_IDX_I" + containerConfig.dbTableSuffix + "_PARENT_FK";
+            break;
+
+         default :
+            break;
+      }
    }
 
    /**
@@ -327,7 +364,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
       catch (SQLException e)
       {
-         LOG.error(e);
+         LOG.error("An exception occured: " + e.getMessage());
          return false;
       }
    }
@@ -593,10 +630,15 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          {
             findNodesAndProperties.close();
          }
+
+         if (findNodesCount != null)
+         {
+            findNodesCount.close();
+         }
       }
       catch (SQLException e)
       {
-         LOG.error("Can't close the statement: " + e);
+         LOG.error("Can't close the statement: " + e.getMessage());
       }
    }
    
@@ -989,7 +1031,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1041,7 +1083,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1118,7 +1160,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1155,7 +1197,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1243,7 +1285,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1315,7 +1357,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1328,7 +1370,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          throw new RepositoryException(e);
       }
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -1345,14 +1387,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    public ItemData getItemData(String identifier) throws RepositoryException, IllegalStateException
    {
       return getItemByIdentifier(getInternalId(identifier));
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException, IllegalStateException
-   {
-      return getItemData(parentData, name, ItemType.UNKNOWN);
    }
 
    /**
@@ -1397,7 +1431,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1409,6 +1443,33 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          throw new RepositoryException(e);
       }
+   }
+
+   /**
+    * Reads count of nodes in workspace.
+    * 
+    * @return
+    *          nodes count 
+    * @throws RepositoryException
+    *           if a database access error occurs
+    */
+   public long getNodesCount() throws RepositoryException
+   {
+      ResultSet countNodes;
+      try
+      {
+         countNodes = findNodesCount();
+         if (countNodes.next())
+         {
+            return countNodes.getLong(1);
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+
+      throw new RepositoryException("Can not calculate nodes count");
    }
 
    // ------------------ Private methods ---------------
@@ -1446,7 +1507,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1509,7 +1570,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1579,7 +1640,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -1655,7 +1716,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
    }
@@ -1916,7 +1977,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
    }
@@ -1964,7 +2025,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
    }
@@ -2002,7 +2063,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
    }
@@ -2071,7 +2132,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             if (!ptProp.next())
             {
                throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
-                  + qpath.getAsString() + ", id " + cid + ", container " + this.containerName, null);
+                  + qpath.getAsString() + ", id " + cid + ", container " + this.containerConfig.containerName, null);
             }
 
             byte[] data = ptProp.getBytes(COLUMN_VDATA);
@@ -2095,8 +2156,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                {
                   // use permissions from existed parent
                   acl =
-                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions() ? parentACL
-                        .getPermissionEntries() : null);
+                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions()
+                        ? parentACL.getPermissionEntries() : null);
                }
                else
                {
@@ -2131,8 +2192,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                {
                   // construct ACL from existed parent ACL
                   acl =
-                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
-                        .getPermissionEntries() : null);
+                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions()
+                        ? parentACL.getPermissionEntries() : null);
                }
                else
                {
@@ -2158,7 +2219,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
       }
@@ -2250,7 +2311,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
                if (!valueRecords.wasNull())
                {
-                  final ValueIOChannel channel = valueStorageProvider.getChannel(storageId);
+                  final ValueIOChannel channel = this.containerConfig.valueStorageProvider.getChannel(storageId);
                   try
                   {
                      channel.delete(pdata.getIdentifier());
@@ -2273,7 +2334,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
    }
@@ -2309,8 +2370,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             final int orderNum = valueRecords.getInt(COLUMN_VORDERNUM);
             final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
             ValueData vdata =
-               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion, valueRecords
-                  .getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion,
+                  valueRecords.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
             data.add(vdata);
          }
       }
@@ -2322,7 +2383,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
          catch (SQLException e)
          {
-            LOG.error("Can't close the ResultSet: " + e);
+            LOG.error("Can't close the ResultSet: " + e.getMessage());
          }
       }
 
@@ -2349,10 +2410,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected ValueData readValueData(String identifier, int orderNumber, String storageId) throws SQLException,
       IOException, ValueStorageNotFoundException
    {
-      ValueIOChannel channel = valueStorageProvider.getChannel(storageId);
+      ValueIOChannel channel = this.containerConfig.valueStorageProvider.getChannel(storageId);
       try
       {
-         return channel.read(identifier, orderNumber, maxBufferSize);
+         return channel.read(identifier, orderNumber, this.containerConfig.maxBufferSize);
       }
       finally
       {
@@ -2400,11 +2461,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                   out.write(spoolBuffer, 0, read);
                   len += read;
                }
-               else if (len + read > maxBufferSize)
+               else if (len + read > this.containerConfig.maxBufferSize)
                {
                   // threshold for keeping data in memory exceeded;
                   // create temp file and spool buffer contents
-                  swapFile = SwapFile.get(swapDirectory, cid + orderNumber + "." + version);
+                  swapFile = SwapFile.get(this.containerConfig.swapDirectory, cid + orderNumber + "." + version);
                   if (swapFile.isSpooled())
                   {
                      // break, value already spooled
@@ -2440,7 +2501,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
       if (buffer == null)
       {
-         return new CleanableFilePersistedValueData(orderNumber, swapFile, swapCleaner);
+         return new CleanableFilePersistedValueData(orderNumber, swapFile, this.containerConfig.swapCleaner);
       }
 
       return new ByteArrayPersistedValueData(orderNumber, buffer);
@@ -2464,7 +2525,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       for (int i = 0; i < vdata.size(); i++)
       {
          ValueData vd = vdata.get(i);
-         ValueIOChannel channel = valueStorageProvider.getApplicableChannel(data, i);
+         ValueIOChannel channel = this.containerConfig.valueStorageProvider.getApplicableChannel(data, i);
          InputStream stream;
          int streamLength;
          String storageId;
@@ -2481,7 +2542,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             {
                StreamPersistedValueData streamData = (StreamPersistedValueData)vd;
 
-               SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion());
+               SwapFile swapFile =
+                  SwapFile.get(this.containerConfig.swapDirectory, cid + i + "." + data.getPersistedVersion());
                try
                {
                   writeValueHelper.writeStreamedValue(swapFile, streamData);
@@ -2766,6 +2828,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       throws SQLException;
 
    protected abstract int updatePropertyByIdentifier(int version, int type, String identifier) throws SQLException;
+
+   protected abstract ResultSet findNodesCount() throws SQLException;
 
    // -------- values processing ------------
    protected abstract int addValueData(String cid, int orderNumber, InputStream stream, int streamLength,

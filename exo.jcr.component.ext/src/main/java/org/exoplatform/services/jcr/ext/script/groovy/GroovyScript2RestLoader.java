@@ -98,8 +98,10 @@ import javax.xml.parsers.ParserConfigurationException;
  */
 @SuppressWarnings("deprecation")
 @Path("script/groovy")
-public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements Startable
+public class GroovyScript2RestLoader implements Startable
 {
+   protected GroovyJaxrsPublisher groovyPublisher;
+
    protected static class InnerGroovyJaxrsPublisher extends GroovyJaxrsPublisher
    {
       public InnerGroovyJaxrsPublisher(ResourceBinder binder, GroovyScriptInstantiator instantiator,
@@ -110,7 +112,7 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
    }
 
    /** Logger. */
-   static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestLoader");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestLoader");
 
    /** Default node types for Groovy scripts. */
    private static final String DEFAULT_NODETYPE = "exo:groovyResourceContainer";
@@ -192,7 +194,7 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
       ConfigurationManager configurationManager, RegistryService registryService, GroovyJaxrsPublisher groovyPublisher,
       org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler, InitParams params)
    {
-      super(groovyPublisher);
+      this.groovyPublisher = groovyPublisher;
       this.binder = binder;
       this.repositoryService = repositoryService;
       this.configurationManager = configurationManager;
@@ -333,12 +335,15 @@ public class GroovyScript2RestLoader extends BaseGroovyScriptManager implements 
                            }
                            catch (IndexOfflineRepositoryException e)
                            {
-                              //it's okay. Retrying;
+                              if (LOG.isTraceEnabled())
+                              {
+                                 LOG.trace("An exception occurred: " + e.getMessage());
+                              }
                            }
                            catch (Exception e)
                            {
                               // skip
-                              LOG.error(e);
+                              LOG.error("An exception occurred: " + e.getMessage());
                            }
                         }
                         try

@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessControlPolicy;
 import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -44,6 +43,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceD
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -101,33 +101,6 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
          rootPermissions =
             config.getInitializer().getParameterValue(WorkspaceInitializer.ROOT_PERMISSIONS_PARAMETER, null);
          rootNodeType = config.getInitializer().getParameterValue(WorkspaceInitializer.ROOT_NODETYPE_PARAMETER, null);
-      }
-
-      if (config.getAutoInitializedRootNt() != null)
-      {
-         if (rootNodeType == null)
-         {
-            rootNodeType = config.getAutoInitializedRootNt();
-            log.warn("[" + workspaceName + "] auto-init-root-nodetype (" + rootNodeType
-               + ") parameter is DEPRECATED ! Use <initializer .../> instead.");
-         }
-         else
-         {
-            log.warn("[" + workspaceName + "] auto-init-root-nodetype parameter is DEPRECATED ! Skipped.");
-         }
-      }
-      if (config.getAutoInitPermissions() != null)
-      {
-         if (rootPermissions == null)
-         {
-            rootPermissions = config.getAutoInitPermissions();
-            log.warn("[" + workspaceName + "] auto-init-permissions (" + rootPermissions
-               + ") parameter is DEPRECATED ! Use <initializer .../> instead.");
-         }
-         else
-         {
-            log.warn("[" + workspaceName + "] auto-init-permissions parameter is DEPRECATED ! Skipped.");
-         }
       }
 
       // default behaviour root-nodetype=nt:unstructured, root-permissions will be
@@ -198,7 +171,7 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
 
          if (rootPermissions != null)
          {
-            acl.removePermissions(SystemIdentity.ANY);
+            acl.removePermissions(IdentityConstants.ANY);
             acl.addPermissions(rootPermissions);
          }
 
@@ -327,15 +300,15 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
 
       // init version storage
       AccessControlList acl = new AccessControlList();
-      acl.removePermissions(SystemIdentity.ANY);
-      acl.addPermissions(SystemIdentity.ANY, new String[]{PermissionType.READ});
+      acl.removePermissions(IdentityConstants.ANY);
+      acl.addPermissions(IdentityConstants.ANY, new String[]{PermissionType.READ});
 
       for (AccessControlEntry entry : jcrSystem.getACL().getPermissionEntries())
       {
          String identity = entry.getIdentity();
          String permission = entry.getPermission();
 
-         if (!identity.equals(SystemIdentity.ANY) || !permission.equals(PermissionType.READ))
+         if (!identity.equals(IdentityConstants.ANY) || !permission.equals(PermissionType.READ))
          {
             acl.addPermissions(identity, new String[]{permission});
          }

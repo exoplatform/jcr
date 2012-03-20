@@ -76,7 +76,7 @@ public class SystemViewImporter extends BaseXmlImporter
    /**
     * 
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SystemViewImporter");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SystemViewImporter");
 
    protected PropertyInfo propertyInfo = new PropertyInfo();
 
@@ -134,7 +134,7 @@ public class SystemViewImporter extends BaseXmlImporter
       }
       else
       {
-         log.debug("Wrong XML content. Element 'sv:value' expected,"
+         LOG.debug("Wrong XML content. Element 'sv:value' expected,"
             + " but SAX event 'characters' occured. characters:[" + new String(ch, start, length) + "]");
       }
    }
@@ -507,14 +507,11 @@ public class SystemViewImporter extends BaseXmlImporter
       ImportPropertyData propertyData = null;
       if (Constants.JCR_PRIMARYTYPE.equals(propertyInfo.getName()))
       {
-
          propertyData = endPrimaryType();
-
       }
       else if (Constants.JCR_MIXINTYPES.equals(propertyInfo.getName()))
       {
          propertyData = endMixinTypes();
-
       }
       else if (Constants.JCR_UUID.equals(propertyInfo.getName()))
       {
@@ -527,14 +524,12 @@ public class SystemViewImporter extends BaseXmlImporter
             || Constants.JCR_BASEVERSION.equals(propertyInfo.getName()) || Constants.JCR_PREDECESSORS
             .equals(propertyInfo.getName())))
       {
-
          propertyData = null;
 
          endVersionable((ImportNodeData)getParent(), parseValues());
       }
       else
       {
-
          ImportNodeData currentNodeInfo = (ImportNodeData)getParent();
          List<ValueData> values = parseValues();
 
@@ -549,12 +544,13 @@ public class SystemViewImporter extends BaseXmlImporter
          {
             if (!((Boolean)context.get(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS)))
             {
-               log.warn("Property definition not found for " + propertyInfo.getName());
+               LOG.warn("Property definition not found for " + propertyInfo.getName());
                return null;
             }
             else
+            {
                throw new RepositoryException("Property definition not found for " + propertyInfo.getName());
-
+            }
          }
 
          if (values.size() == 1)
@@ -573,14 +569,13 @@ public class SystemViewImporter extends BaseXmlImporter
                   + propertyInfo.getName().getName());
             }
          }
-         log.debug("Import " + propertyInfo.getName().getName() + " size=" + propertyInfo.getValuesSize()
+         LOG.debug("Import " + propertyInfo.getName().getName() + " size=" + propertyInfo.getValuesSize()
             + " isMultivalue=" + isMultivalue);
 
          propertyData =
             new ImportPropertyData(QPath.makeChildPath(currentNodeInfo.getQPath(), propertyInfo.getName()),
                propertyInfo.getIndentifer(), -1, propertyInfo.getType(), currentNodeInfo.getIdentifier(), isMultivalue);
          propertyData.setValues(values);
-
       }
 
       return propertyData;

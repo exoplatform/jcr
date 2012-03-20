@@ -138,7 +138,7 @@ public class WeightedHighlighter extends DefaultHighlighter
                   break;
                }
             }
-            bestFragments.insert(fi);
+            bestFragments.insertWithOverflow(fi);
          }
       }
 

@@ -123,15 +123,15 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
                   Constants.NT_UNSTRUCTURED, null, null)));
 
                if (mode == Mode.READ_FIRST)
-               {
-                  try
-                  {
-                     goSignal.await();
-                  }
-                  catch (InterruptedException e)
-                  {
-                     Thread.currentThread().interrupt();
-                  }
+                {
+                   try
+                   {
+                      goSignal.await();
+                   }
+                   catch (InterruptedException e)
+                   {
+                      Thread.currentThread().interrupt();
+                   }
                }
 
                cwdm.save(chlog);
@@ -180,7 +180,7 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
    }
    private static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection
    {
-
+      
       private Mode mode;
       private CountDownLatch goSignal;
       
@@ -240,15 +240,6 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          throws RepositoryException, IllegalStateException
       {
          return null;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,
-         IllegalStateException
-      {
-         return getItemData(parentData, name, ItemType.UNKNOWN);
       }
 
       public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
@@ -338,6 +329,14 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          UnsupportedOperationException
       {
          return null;
+      }
+
+      /**
+       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getNodesCount()
+       */
+      public long getNodesCount() throws RepositoryException
+      {
+         throw new UnsupportedOperationException();
       }
 
    };

@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.ext.backup.impl;
 
 import org.apache.commons.collections.map.HashedMap;
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
@@ -99,7 +100,7 @@ import javax.xml.parsers.ParserConfigurationException;
 public class BackupManagerImpl implements ExtendedBackupManager, Startable
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.BackupManagerImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.BackupManagerImpl");
 
    /**
     *  Name of default incremental job period parameter in configuration. 
@@ -214,8 +215,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
    private final RegistryService registryService;
 
-   private BackupScheduler scheduler;
-
    private final BackupMessagesLog messages;
 
    private final MessagesListener messagesListener;
@@ -235,15 +234,15 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       public void onError(BackupJob job, String message, Throwable error)
       {
          messages.addError(makeJobInfo(job, error) + message, error);
-         log.error(makeJobInfo(job, error) + message, error);
+         LOG.error(makeJobInfo(job, error) + message, error);
       }
 
       public void onStateChanged(BackupJob job)
       {
          messages.addMessage(makeJobInfo(job, null));
-         if (log.isDebugEnabled())
+         if (LOG.isDebugEnabled())
          {
-            log.debug(makeJobInfo(job, null));
+            LOG.debug(makeJobInfo(job, null));
          }
       }
 
@@ -253,7 +252,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
          if (job != null)
          {
-
             switch (job.getType())
             {
                case BackupJob.FULL : {
@@ -300,7 +298,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             catch (BackupOperationException e)
             {
-               // skip URL
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
             finally
             {
@@ -313,7 +314,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       public String printStackTrace(Throwable error)
       {
-
          ByteArrayOutputStream out = new ByteArrayOutputStream();
          PrintWriter writer = new PrintWriter(out);
          error.printStackTrace(writer);
@@ -380,11 +380,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             catch (InterruptedException e)
             {
-               log.error("The interapted this thread.", e);
+               LOG.error("The interapted this thread.", e);
             }
             catch (Throwable e)
             {
-               log.error("The unknown error", e);
+               LOG.error("The unknown error", e);
             }
          }
       }
@@ -437,11 +437,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             catch (InterruptedException e)
             {
-               log.error("The interapted this thread.", e);
+               LOG.error("The interapted this thread.", e);
             }
             catch (Throwable e)
             {
-               log.error("The unknown error", e);
+               LOG.error("The unknown error", e);
             }
          }
       }
@@ -516,8 +516,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       messages = new BackupMessagesLog(MESSAGES_MAXSIZE);
 
-      scheduler = new BackupScheduler(this, messages);
-
       this.restoreJobs = new ArrayList<JobWorkspaceRestore>();
       this.restoreRepositoryJobs = new ArrayList<JobRepositoryRestore>();
 
@@ -564,7 +562,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
          catch (BackupOperationException e)
          {
-            log.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
+            LOG.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
                e);
          }
       }
@@ -593,7 +591,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
          catch (BackupOperationException e)
          {
-            log.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
+            LOG.warn("Log file " + PrivilegedFileHelper.getAbsolutePath(cf) + " is bussy or corrupted. Skipped. " + e,
                e);
          }
       }
@@ -642,73 +640,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       return false;
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Deprecated
-   public void restore(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry)
-      throws BackupOperationException, RepositoryException, RepositoryConfigurationException,
-      BackupConfigurationException
-   {
-      List<JobEntryInfo> list = log.getJobEntryInfos();
-      BackupConfig config = log.getBackupConfig();
-
-      String reposytoryName = (repositoryName == null ? config.getRepository() : repositoryName);
-      String workspaceName = workspaceEntry.getName();
-
-      // ws should be registered not created
-      if (!workspaceAlreadyExist(reposytoryName, workspaceName))
-      {
-
-         for (int i = 0; i < list.size(); i++)
-         {
-            if (i == 0)
-            {
-               try
-               {
-                  fullRestore(list.get(i).getURL().getPath(), reposytoryName, workspaceName, workspaceEntry);
-               }
-               catch (FileNotFoundException e)
-               {
-                  throw new BackupOperationException("Restore of full backup file error " + e, e);
-               }
-               catch (IOException e)
-               {
-                  throw new BackupOperationException("Restore of full backup file I/O error " + e, e);
-               }
-            }
-            else
-            {
-               try
-               {
-                  incrementalRestore(list.get(i).getURL().getPath(), reposytoryName, workspaceName);
-               }
-               catch (FileNotFoundException e)
-               {
-                  throw new BackupOperationException("Restore of incremental backup file error " + e, e);
-               }
-               catch (IOException e)
-               {
-                  throw new BackupOperationException("Restore of incremental backup file I/O error " + e, e);
-               }
-               catch (ClassNotFoundException e)
-               {
-                  throw new BackupOperationException("Restore of incremental backup error " + e, e);
-               }
-            }
-         }
-      }
-      else
-      {
-         throw new BackupConfigurationException("Workspace should exists " + workspaceName);
-      }
-   }
-
    protected void restoreOverInitializer(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry)
       throws BackupOperationException, RepositoryException, RepositoryConfigurationException,
       BackupConfigurationException
    {
-
       List<JobEntryInfo> list = log.getJobEntryInfos();
       BackupConfig config = log.getBackupConfig();
 
@@ -719,11 +654,11 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       try
       {
-         if ((Class.forName(log.getFullBackupType()).equals(FullBackupJob.class)))
+         if ((ClassLoading.forName(log.getFullBackupType(), this).equals(FullBackupJob.class)))
          {
             fullbackupType = log.getFullBackupType();
          }
-         else if ((Class.forName(log.getFullBackupType())
+         else if ((ClassLoading.forName(log.getFullBackupType(), this)
             .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
          {
             fullbackupType = log.getFullBackupType();
@@ -742,7 +677,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       // ws should not exists.
       if (!workspaceAlreadyExist(reposytoryName, workspaceName))
       {
-
          for (int i = 0; i < list.size(); i++)
          {
             if (i == 0)
@@ -815,7 +749,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    public BackupChain startBackup(BackupConfig config) throws BackupOperationException, BackupConfigurationException,
       RepositoryException, RepositoryConfigurationException
    {
-
       return startBackup(config, null);
    }
 
@@ -926,7 +859,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             catch (Exception exc)
             {
-               log.error("Cannot write init configuration to RegistryService.", exc);
+               LOG.error("Cannot write init configuration to RegistryService.", exc);
             }
          }
          finally
@@ -938,36 +871,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       {
          readParamsFromFile();
       }
-
-      // scan for task files
-      File[] tasks = PrivilegedFileHelper.listFiles(this.logsDirectory, new TaskFilter());
-      for (File task : tasks)
-      {
-         try
-         {
-            scheduler.restore(task);
-         }
-         catch (BackupSchedulerException e)
-         {
-            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
-         }
-         catch (BackupOperationException e)
-         {
-            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
-         }
-         catch (BackupConfigurationException e)
-         {
-            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
-         }
-         catch (RepositoryException e)
-         {
-            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
-         }
-         catch (RepositoryConfigurationException e)
-         {
-            log.error("Can't restore backup scheduler task from file " + PrivilegedFileHelper.getAbsolutePath(task), e);
-         }
-      }
    }
 
    /**
@@ -977,7 +880,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    {
       workspaceBackupStopper.close();
       repositoryBackupStopper.close();
-      scheduler.cancelTimer();
 
       // 1. stop current backup chains
       // for (Iterator iterator = currentBackups.iterator(); iterator.hasNext();) {
@@ -987,17 +889,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       //    
       // // 2. stop all scheduled tasks
       // scheduler = null;
-   }
-
-   @Deprecated
-   private void fullRestore(String pathBackupFile, String repositoryName, String workspaceName,
-      WorkspaceEntry workspaceEntry) throws FileNotFoundException, IOException, RepositoryException,
-      RepositoryConfigurationException
-   {
-
-      RepositoryImpl defRep = (RepositoryImpl)repoService.getRepository(repositoryName);
-
-      defRep.importWorkspace(workspaceEntry.getName(), PrivilegedFileHelper.fileInputStream(pathBackupFile));
    }
 
    private void fullRestoreOverInitializer(String pathBackupFile, String repositoryName, WorkspaceEntry workspaceEntry,
@@ -1010,7 +901,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
 
-      if ((Class.forName(fBackupType).equals(FullBackupJob.class)))
+      if ((ClassLoading.forName(fBackupType, this).equals(FullBackupJob.class)))
       {
          // set the initializer SysViewWorkspaceInitializer
          wiEntry.setType(SysViewWorkspaceInitializer.class.getCanonicalName());
@@ -1020,7 +911,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
          wiEntry.setParameters(wieParams);
       }
-      else if ((Class.forName(fBackupType)
+      else if ((ClassLoading.forName(fBackupType, this)
          .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
       {
          // set the initializer RdbmsWorkspaceInitializer
@@ -1115,10 +1006,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       fullBackupType = getAttributeSmart(element, FULL_BACKUP_TYPE);
       incrementalBackupType = getAttributeSmart(element, INCREMENTAL_BACKUP_TYPE);
 
-      log.info("Backup dir from RegistryService: " + backupDir);
-      log.info("Default incremental job period from RegistryService: " + defIncrPeriod);
-      log.info("Full backup type from RegistryService: " + fullBackupType);
-      log.info("Incremental backup type from RegistryService: " + incrementalBackupType);
+      LOG.info("Backup dir from RegistryService: " + backupDir);
+      LOG.info("Default incremental job period from RegistryService: " + defIncrPeriod);
+      LOG.info("Full backup type from RegistryService: " + fullBackupType);
+      LOG.info("Incremental backup type from RegistryService: " + incrementalBackupType);
 
       checkParams();
    }
@@ -1180,10 +1071,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          pps.getProperty(INCREMENTAL_BACKUP_TYPE) == null ? DEFAULT_VALUE_INCREMENTAL_BACKUP_TYPE : pps
             .getProperty(INCREMENTAL_BACKUP_TYPE);
 
-      log.info("Backup dir from configuration file: " + backupDir);
-      log.info("Full backup type from configuration file: " + fullBackupType);
-      log.info("(Experimental) Incremental backup type from configuration file: " + incrementalBackupType);
-      log.info("(Experimental) Default incremental job period from configuration file: " + defIncrPeriod);
+      LOG.info("Backup dir from configuration file: " + backupDir);
+      LOG.info("Full backup type from configuration file: " + fullBackupType);
+      LOG.info("(Experimental) Incremental backup type from configuration file: " + incrementalBackupType);
+      LOG.info("(Experimental) Default incremental job period from configuration file: " + defIncrPeriod);
 
       checkParams();
    }
@@ -1259,14 +1150,6 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
       }
       return null;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public BackupScheduler getScheduler()
-   {
-      return scheduler;
    }
 
    /**
@@ -1442,6 +1325,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       catch (RepositoryException e)
       {
          //OK. Repository with "repositoryEntry.getName" is not exists.
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
       Map<String, BackupChainLog> workspacesMapping = new HashedMap();
@@ -1687,9 +1574,9 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       boolean isSameConfigRestore = false;
       try
       {
-         if (Class.forName(
-            workspacesMapping.get(repositoryEntry.getWorkspaceEntries().get(0).getName()).getFullBackupType()).equals(
-            org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class))
+         if (ClassLoading.forName(
+            workspacesMapping.get(repositoryEntry.getWorkspaceEntries().get(0).getName()).getFullBackupType(), this)
+            .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class))
          {
             String newConf = new JsonGeneratorImpl().createJsonObject(repositoryEntry).toString();
             String currnetConf =
@@ -1701,19 +1588,19 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
       catch (JsonException e)
       {
-         this.log.error("Can't get JSON object from wokrspace configuration", e);
+         this.LOG.error("Can't get JSON object from wokrspace configuration", e);
       }
       catch (RepositoryException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
       catch (RepositoryConfigurationException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
       catch (ClassNotFoundException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
 
       JobRepositoryRestore jobExistedRepositoryRestore =
@@ -1790,7 +1677,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       boolean isSameConfigRestore = false;
       try
       {
-         if (Class.forName(log.getFullBackupType()).equals(
+         if (ClassLoading.forName(log.getFullBackupType(), this).equals(
             org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class))
          {
 
@@ -1813,19 +1700,19 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
       catch (JsonException e)
       {
-         this.log.error("Can't get JSON object from wokrspace configuration", e);
+         this.LOG.error("Can't get JSON object from wokrspace configuration", e);
       }
       catch (RepositoryException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
       catch (RepositoryConfigurationException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
       catch (ClassNotFoundException e)
       {
-         this.log.error(e);
+         this.LOG.error(e);
       }
 
       JobWorkspaceRestore jobRestore =
@@ -2141,5 +2028,4 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
    }
-
 }

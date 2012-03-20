@@ -50,15 +50,14 @@ public class OfflinePersistentIndex extends PersistentIndex
     * @param analyzer the analyzer for text tokenizing.
     * @param similarity the similarity implementation.
     * @param cache the document number cache
-    * @param indexingQueue the indexing queue.
     * @param directoryManager the directory manager.
     * @throws IOException if an error occurs while opening / creating the
     *  index.
     */
-   OfflinePersistentIndex(Analyzer analyzer, Similarity similarity, DocNumberCache cache, IndexingQueue indexingQueue,
+   OfflinePersistentIndex(Analyzer analyzer, Similarity similarity, DocNumberCache cache,
       DirectoryManager directoryManager) throws IOException
    {
-      super(NAME, analyzer, similarity, cache, indexingQueue, directoryManager);
+      super(NAME, analyzer, similarity, cache, directoryManager);
       this.processedIDs = new ArrayList<String>();
    }
 

@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.config;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -87,7 +88,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
             try
             {
                Class<ConfigurationPersister> configurationPersisterClass =
-                  (Class<ConfigurationPersister>)Class.forName(cn);
+                  (Class<ConfigurationPersister>)ClassLoading.forName(cn, this);
                configurationPersister = configurationPersisterClass.newInstance();
                configurationPersister.init(params.getPropertiesParam("working-conf"));
             }
@@ -176,7 +177,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
             final File sourceConfig = new File(filePath.toURI());
             SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
             final File backUp = new File(sourceConfig.getAbsoluteFile() + "_" + format.format(new Date()));
-
+            
             try
             {
                SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()

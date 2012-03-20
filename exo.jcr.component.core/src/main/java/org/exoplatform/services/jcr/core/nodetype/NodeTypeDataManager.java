@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.core.nodetype;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerListener;
 
 import java.io.InputStream;
 import java.util.List;
@@ -230,4 +231,7 @@ public interface NodeTypeDataManager
    PlainChangesLog updateNodeType(NodeTypeData ancestorDefinition, NodeTypeData recipientDefinition,
       Map<InternalQName, NodeTypeData> volatileNodeTypes) throws ConstraintViolationException, RepositoryException;
 
+   void addListener(NodeTypeManagerListener listener);
+
+   void removeListener(NodeTypeManagerListener listener);
 }

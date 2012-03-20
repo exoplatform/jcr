@@ -90,7 +90,6 @@ public class RESTRegistryService implements ResourceContainer
    public RESTRegistryService(RegistryService regService, ThreadLocalSessionProviderService sessionProviderService)
       throws Exception
    {
-
       this.regService = regService;
       this.sessionProviderService = sessionProviderService;
    }

@@ -23,12 +23,12 @@ import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.security.Identity;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.io.InputStream;
 import java.security.AccessControlException;
@@ -39,6 +39,7 @@ import java.util.Map;
 import javax.jcr.AccessDeniedException;
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -94,7 +95,7 @@ public class TestAccess extends BaseStandaloneTest
    public void testNoAccessControllable() throws Exception
    {
       AccessControlList acl = ((ExtendedNode)root).getACL();
-      assertEquals(SystemIdentity.SYSTEM, acl.getOwner());
+      assertEquals(IdentityConstants.SYSTEM, acl.getOwner());
       assertEquals(PermissionType.ALL.length, acl.getPermissionEntries().size());
       assertEquals(PermissionType.ALL[0], acl.getPermissionEntries().get(0).getPermission());
    }
@@ -106,14 +107,12 @@ public class TestAccess extends BaseStandaloneTest
     */
    public void testOwneable() throws Exception
    {
-
       ExtendedNode node = (ExtendedNode)session.getRootNode().addNode("testACNode");
       node.addMixin("exo:owneable");
       AccessControlList acl = node.getACL();
       assertEquals(session.getUserID(), acl.getOwner());
       assertEquals(PermissionType.ALL.length, acl.getPermissionEntries().size());
       assertEquals(PermissionType.ALL[0], acl.getPermissionEntries().get(0).getPermission());
-
    }
 
    /**
@@ -123,11 +122,10 @@ public class TestAccess extends BaseStandaloneTest
     */
    public void testPrivilegeable() throws Exception
    {
-
       ExtendedNode node = (ExtendedNode)session.getRootNode().addNode("testACNode");
       node.addMixin("exo:privilegeable");
       AccessControlList acl = node.getACL();
-      assertEquals(SystemIdentity.SYSTEM, acl.getOwner());
+      assertEquals(IdentityConstants.SYSTEM, acl.getOwner());
       assertEquals(PermissionType.ALL.length, acl.getPermissionEntries().size());
       assertEquals(PermissionType.ALL[0], acl.getPermissionEntries().get(0).getPermission());
    }
@@ -140,7 +138,6 @@ public class TestAccess extends BaseStandaloneTest
     */
    public void testDefaultAccessControllable() throws Exception
    {
-
       ExtendedNode node = (ExtendedNode)session.getRootNode().addNode("testACNode");
       // node.addMixin("exo:accessControllable");
       node.addMixin("exo:owneable");
@@ -164,7 +161,6 @@ public class TestAccess extends BaseStandaloneTest
 
       assertEquals(PermissionType.ALL.length, acl.getPermissionEntries().size());
       assertEquals(PermissionType.ALL[0], acl.getPermissionEntries().get(0).getPermission());
-
    }
 
    /**
@@ -231,7 +227,6 @@ public class TestAccess extends BaseStandaloneTest
       assertEquals("john", entries.get(0).getIdentity());
       assertEquals(PermissionType.ADD_NODE, entries.get(0).getPermission());
       assertEquals(PermissionType.READ, entries.get(1).getPermission());
-
    }
 
    /**
@@ -307,7 +302,6 @@ public class TestAccess extends BaseStandaloneTest
       catch (AccessControlException e)
       {
       }
-
    }
 
    /**
@@ -366,7 +360,6 @@ public class TestAccess extends BaseStandaloneTest
       catch (AccessDeniedException e)
       {
       }
-
    }
 
    public void testAddNode() throws Exception
@@ -427,7 +420,6 @@ public class TestAccess extends BaseStandaloneTest
       {
          session1.refresh(false);
       }
-
    }
 
    public void testModifyAndReadItem() throws Exception
@@ -570,7 +562,6 @@ public class TestAccess extends BaseStandaloneTest
       assertEquals(credentials.getUserID(), acl.getOwner());
       assertEquals(PermissionType.ALL.length, acl.getPermissionEntries().size());
       assertEquals(PermissionType.ALL[0], acl.getPermissionEntries().get(0).getPermission());
-
    }
 
    public void testPrivilegeableAddNode() throws Exception
@@ -595,7 +586,6 @@ public class TestAccess extends BaseStandaloneTest
       {
          fail("PathNotFoundException or AccessDenied  should not have been thrown ");
       }
-
    }
 
    public void testAddSaveAndRead() throws Exception
@@ -610,7 +600,6 @@ public class TestAccess extends BaseStandaloneTest
       NodeImpl node1 = (NodeImpl)session1.getRootNode().getNode("accessTestRoot/testSetAndRemovePermission");
       assertEquals(8, node1.getACL().getPermissionEntries().size());
       assertEquals(node1.getACL().getOwner(), owner);
-
    }
 
    public void testSetAndRemovePermission() throws Exception
@@ -630,7 +619,6 @@ public class TestAccess extends BaseStandaloneTest
 
       node.removePermission("john");
       assertEquals(PermissionType.ALL.length + 1, node.getACL().getPermissionEntries().size());
-
    }
 
    /**
@@ -683,7 +671,7 @@ public class TestAccess extends BaseStandaloneTest
       Session session1 = repository.login(new CredentialsImpl("mary", "exo".toCharArray()));
       ExtendedNode testRemoveSpecifiedNode =
          (ExtendedNode)session1.getRootNode().getNode("accessTestRoot").getNode("testRemoveSpecified");
-      testRemoveSpecifiedNode.removePermission(SystemIdentity.ANY);
+      testRemoveSpecifiedNode.removePermission(IdentityConstants.ANY);
 
       assertTrue(accessManager.hasPermission(testRemoveSpecifiedNode.getACL(), PermissionType.READ,
          new Identity("john")));
@@ -708,7 +696,6 @@ public class TestAccess extends BaseStandaloneTest
 
    public void testOperationsByOwner() throws Exception
    {
-
       Session session1 = repository.login(new CredentialsImpl("john", "exo".toCharArray()));
       Node accessTestRoot1 = session1.getRootNode().getNode("accessTestRoot");
 
@@ -725,13 +712,13 @@ public class TestAccess extends BaseStandaloneTest
 
       accessTestRoot.setPermission(accessTestRoot.getSession().getUserID(), PermissionType.ALL);
       accessTestRoot.removePermission("john");
-      accessTestRoot.removePermission(SystemIdentity.ANY);
+      accessTestRoot.removePermission(IdentityConstants.ANY);
       accessTestRoot.setPermission("john", new String[]{PermissionType.READ});
 
       ExtendedNode testByOwnerNodeSystem = (ExtendedNode)accessTestRoot.getNode("testByOwnerNode");
       testByOwnerNodeSystem.setPermission(accessTestRoot.getSession().getUserID(), PermissionType.ALL);
       testByOwnerNodeSystem.removePermission("john");
-      testByOwnerNodeSystem.removePermission(SystemIdentity.ANY);
+      testByOwnerNodeSystem.removePermission(IdentityConstants.ANY);
       testByOwnerNodeSystem.setPermission("john", new String[]{PermissionType.READ});
 
       session.save();
@@ -767,7 +754,7 @@ public class TestAccess extends BaseStandaloneTest
       testRoot.setPermission("john", new String[]{PermissionType.READ, PermissionType.ADD_NODE,
          PermissionType.SET_PROPERTY});
       testRoot.setPermission(accessTestRoot.getSession().getUserID(), PermissionType.ALL);
-      testRoot.removePermission(SystemIdentity.ANY);
+      testRoot.removePermission(IdentityConstants.ANY);
 
       ExtendedNode subRoot = (ExtendedNode)testRoot.addNode("subroot");
       accessTestRoot.getSession().save();
@@ -807,7 +794,7 @@ public class TestAccess extends BaseStandaloneTest
       testNode.addMixin("exo:privilegeable");
       session.save();
 
-      Session anonimSession = repository.login(new CredentialsImpl(SystemIdentity.ANONIM, "".toCharArray()));
+      Session anonimSession = repository.login(new CredentialsImpl(IdentityConstants.ANONIM, "".toCharArray()));
       // try {
       // anonimSession.checkPermission(testNode.getPath(), PermissionType.READ);
       // anonimSession.getRootNode().getNode("."+testNode.getPath());
@@ -818,7 +805,7 @@ public class TestAccess extends BaseStandaloneTest
       // }
 
       testNode.setPermission(testNode.getSession().getUserID(), PermissionType.ALL);
-      testNode.removePermission(SystemIdentity.ANY);
+      testNode.removePermission(IdentityConstants.ANY);
       session.save();
       try
       {
@@ -830,7 +817,7 @@ public class TestAccess extends BaseStandaloneTest
 
       }
 
-      testNode.setPermission(SystemIdentity.ANY, new String[]{PermissionType.READ});
+      testNode.setPermission(IdentityConstants.ANY, new String[]{PermissionType.READ});
       session.save();
 
       try
@@ -844,7 +831,7 @@ public class TestAccess extends BaseStandaloneTest
       {
 
       }
-      testNode.removePermission(SystemIdentity.ANY);
+      testNode.removePermission(IdentityConstants.ANY);
       session.save();
       try
       {
@@ -855,7 +842,7 @@ public class TestAccess extends BaseStandaloneTest
       {
 
       }
-      testNode.setPermission(SystemIdentity.ANY, new String[]{PermissionType.READ, PermissionType.SET_PROPERTY,
+      testNode.setPermission(IdentityConstants.ANY, new String[]{PermissionType.READ, PermissionType.SET_PROPERTY,
          PermissionType.REMOVE});
       session.save();
 
@@ -891,7 +878,6 @@ public class TestAccess extends BaseStandaloneTest
       {
 
       }
-
    }
 
    public void testDualCheckPermissions() throws Exception
@@ -902,7 +888,7 @@ public class TestAccess extends BaseStandaloneTest
       testRoot.setPermission("john", new String[]{PermissionType.READ, PermissionType.ADD_NODE,
          PermissionType.SET_PROPERTY});
       testRoot.setPermission(accessTestRoot.getSession().getUserID(), PermissionType.ALL);
-      testRoot.removePermission(SystemIdentity.ANY);
+      testRoot.removePermission(IdentityConstants.ANY);
       accessTestRoot.save();
 
       AccessManager accessManager = ((SessionImpl)accessTestRoot.getSession()).getAccessManager();
@@ -920,7 +906,6 @@ public class TestAccess extends BaseStandaloneTest
 
       assertFalse(accessManager.hasPermission(testRoot.getACL(), new String[]{PermissionType.READ,
          PermissionType.REMOVE}, session1.getUserState().getIdentity()));
-
    }
 
    /**
@@ -934,7 +919,7 @@ public class TestAccess extends BaseStandaloneTest
       testRoot.addMixin("exo:privilegeable");
       session.save();
 
-      testRoot.removePermission(SystemIdentity.ANY);
+      testRoot.removePermission(IdentityConstants.ANY);
 
       try
       {
@@ -962,7 +947,7 @@ public class TestAccess extends BaseStandaloneTest
       testRoot2.addMixin("exo:privilegeable");
       session.save();
 
-      testRoot2.setPermission(SystemIdentity.ANY, new String[]{});
+      testRoot2.setPermission(IdentityConstants.ANY, new String[]{});
       try
       {
          session.save();
@@ -985,7 +970,7 @@ public class TestAccess extends BaseStandaloneTest
       testRoot.addMixin("exo:privilegeable");
       session.save();
 
-      testRoot.setPermission(SystemIdentity.ANY, PermissionType.ALL);
+      testRoot.setPermission(IdentityConstants.ANY, PermissionType.ALL);
       session.save();
 
       session.checkPermission(testRoot.getPath(), PermissionType.ADD_NODE);
@@ -1049,7 +1034,6 @@ public class TestAccess extends BaseStandaloneTest
 
       Node testNodeAdmin = session.getRootNode().getNode("testNode");
       testNodeAdmin.remove();
-
    }
 
    /**
@@ -1088,6 +1072,16 @@ public class TestAccess extends BaseStandaloneTest
       session1.save();
    }
 
+   public void testAccessControlEntryEquals() throws PathNotFoundException, RepositoryException
+   {
+      root.addNode("testNode");
+      ExtendedNode testNode = (ExtendedNode)session.getItem("/testNode");
+      AccessControlEntry perm = testNode.getACL().getPermissionEntries().get(0);
+
+      assertTrue(perm.equals(perm));
+      assertFalse(perm.equals(new Object()));
+   }
+
    private void showPermissions(String path) throws RepositoryException
    {
       NodeImpl node = (NodeImpl)this.repository.getSystemSession().getRootNode().getNode(path);
@@ -1096,7 +1090,5 @@ public class TestAccess extends BaseStandaloneTest
       {
          log.debug("DUMP: " + acl.dump());
       }
-
    }
-
 }

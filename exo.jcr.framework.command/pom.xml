@@ -12,7 +12,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>jcr-parent</artifactId>
-      <version>1.14.8-GA-SNAPSHOT</version>
+      <version>1.15.0-Beta01-SNAPSHOT</version>
    </parent>
    <artifactId>exo.jcr.framework.command</artifactId>
    <name>eXo JCR :: Framework :: Command</name>
@@ -77,6 +77,10 @@
          <artifactId>hsqldb</artifactId>
          <scope>test</scope>
       </dependency>
+      <dependency>
+         <groupId>commons-pool</groupId>
+         <artifactId>commons-pool</artifactId>
+       </dependency>
    </dependencies>
   <build>
     <plugins>
@@ -94,7 +98,7 @@
                   <id>prepare-test-policy</id>
                   <phase>process-test-resources</phase>
                   <configuration>
-                     <tasks>
+                     <target>
                         <echo>Creating Access Policy for tests</echo>
                         <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
                         <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
@@ -109,7 +113,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </tasks>                     
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>

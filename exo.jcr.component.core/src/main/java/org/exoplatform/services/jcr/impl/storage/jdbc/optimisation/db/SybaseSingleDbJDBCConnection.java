@@ -16,12 +16,10 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.SybaseJDBCConnectionHelper.EmptyResultSet;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -73,11 +71,18 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
 
    protected PreparedStatement countNodesInTemporaryTable;
 
-   public SybaseSingleDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-            ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory,
-            FileCleaner swapCleaner) throws SQLException
+   /**
+    * @param dbConnection
+    *          JDBC connection, should be opened before
+    * @param readOnly
+    *          boolean if true the dbConnection was marked as READ-ONLY.
+    * @param containerConfig
+    *          Workspace Storage Container configuration
+    */
+   public SybaseSingleDbJDBCConnection(Connection dbConnection, boolean readOnly,
+      JDBCDataContainerConfig containerConfig) throws SQLException
    {
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
 
    /**
@@ -123,18 +128,18 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
       COUNT_NODES_IN_TEMPORARY_TABLE = "select count(*) from " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
       SELECT_LIMIT_NODES_FROM_TEMPORARY_TABLE =
-               "select * into " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + " from "
-                        + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + " order by "
-                        + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + ".ID DESC";
+         "select * into " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + " from "
+            + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + " order by "
+            + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + ".ID DESC";
 
       FIND_NODES_AND_PROPERTIES =
-               "select " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
-                        + ".*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-                        + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P, "
-                        + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + " where P.PARENT_ID = "
-                        + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
-                        + ".ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID "
-                        + "order by " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + ".ID";
+         "select " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
+            + ".*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P, "
+            + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + " where P.PARENT_ID = "
+            + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
+            + ".ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID " + "order by "
+            + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + ".ID";
 
       DELETE_TEMPORARY_TABLE_A = "drop table " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
@@ -161,17 +166,17 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
          }
 
          selectLimitOffsetNodesIntoTemporaryTable =
-                  dbConnection.prepareStatement(SELECT_LIMIT_OFFSET_NODES_INTO_TEMPORARY_TABLE.replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName));
+            dbConnection.prepareStatement(SELECT_LIMIT_OFFSET_NODES_INTO_TEMPORARY_TABLE.replaceAll(
+               SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName));
 
          countNodesInTemporaryTable =
-                  dbConnection.prepareStatement(COUNT_NODES_IN_TEMPORARY_TABLE.replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName));
+            dbConnection.prepareStatement(COUNT_NODES_IN_TEMPORARY_TABLE.replaceAll(
+               SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName));
 
          selectLimitNodesInTemporaryTable =
-                  dbConnection.prepareStatement(SELECT_LIMIT_NODES_FROM_TEMPORARY_TABLE.replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName).replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME, tempTableBName));
+            dbConnection.prepareStatement(SELECT_LIMIT_NODES_FROM_TEMPORARY_TABLE.replaceAll(
+               SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName).replaceAll(
+               SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME, tempTableBName));
 
          if (findNodesAndProperties != null)
          {
@@ -179,20 +184,19 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
          }
 
          findNodesAndProperties =
-                  dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES.replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME, tempTableBName));
+            dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES.replaceAll(
+               SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME, tempTableBName));
 
          deleteTemporaryTableA =
-                  dbConnection.prepareStatement(DELETE_TEMPORARY_TABLE_A.replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName));
+            dbConnection.prepareStatement(DELETE_TEMPORARY_TABLE_A.replaceAll(
+               SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName));
 
          deleteTemporaryTableB =
-                  dbConnection.prepareStatement(DELETE_TEMPORARY_TABLE_B.replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME, tempTableBName));
+            dbConnection.prepareStatement(DELETE_TEMPORARY_TABLE_B.replaceAll(
+               SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME, tempTableBName));
 
-            
          selectLimitOffsetNodesIntoTemporaryTable.setMaxRows(limit + offset);
-         selectLimitOffsetNodesIntoTemporaryTable.setString(1, containerName);
+         selectLimitOffsetNodesIntoTemporaryTable.setString(1, this.containerConfig.containerName);
          selectLimitOffsetNodesIntoTemporaryTable.setString(2, getInternalId(lastNodeId));
          selectLimitOffsetNodesIntoTemporaryTable.execute();
 
@@ -226,7 +230,7 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
 
          tempTableBCreated = true;
 
-         findNodesAndProperties.setString(1, containerName);
+         findNodesAndProperties.setString(1, this.containerConfig.containerName);
 
          return findNodesAndProperties.executeQuery();
       }

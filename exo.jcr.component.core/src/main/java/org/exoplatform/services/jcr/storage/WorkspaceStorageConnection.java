@@ -53,24 +53,6 @@ public interface WorkspaceStorageConnection
 
    /**
     * Reads <code>ItemData</code> from the storage using item's parent and name relative the parent
-    * location.
-    * 
-    * @param parentData
-    *          - the item's parent NodeData
-    * @param name
-    *          - item's path entry (QName + index)
-    * @return - stored ItemData which has exact the same path Entry (name+index) inside the parent; or
-    *         null if not such an item data found
-    * @throws RepositoryException
-    *           if some exception occurred
-    * @throws IllegalStateException
-    *           if connection is closed
-    */
-   @Deprecated
-   ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException, IllegalStateException;
-
-   /**
-    * Reads <code>ItemData</code> from the storage using item's parent and name relative the parent
     * location of define type.
     * 
     * @param parentData
@@ -429,4 +411,14 @@ public interface WorkspaceStorageConnection
     *           if operation is not supported
     */
    List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException, UnsupportedOperationException;
+
+   /**
+    * Reads count of nodes in workspace.
+    * 
+    * @return
+    *          nodes count 
+    * @throws RepositoryException
+    *           if a database access error occurs
+    */
+   public long getNodesCount() throws RepositoryException;
 }

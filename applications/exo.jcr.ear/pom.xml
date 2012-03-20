@@ -24,15 +24,17 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-applications-parent</artifactId>
-    <version>1.14.8-GA-SNAPSHOT</version>
+    <version>1.15.0-Beta01-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.ear</artifactId>
   <packaging>ear</packaging>
   <name>eXo JCR :: EAR</name>
+
   <properties>
     <enforcer.skip>true</enforcer.skip>
     <exo.deploy.profile>jbc</exo.deploy.profile>
   </properties>
+
 
   <dependencies>
     <dependency>

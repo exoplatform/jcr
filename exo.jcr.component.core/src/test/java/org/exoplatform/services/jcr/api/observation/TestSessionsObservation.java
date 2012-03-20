@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 import javax.jcr.observation.Event;
 
 public class TestSessionsObservation extends JcrAPIBaseTest
@@ -71,7 +70,6 @@ public class TestSessionsObservation extends JcrAPIBaseTest
 
    public void testSessionOpen() throws RepositoryException
    {
-
       int counter = 0;
 
       SimpleListener listener = new SimpleListener("testSessionOpen", log, counter);
@@ -95,7 +93,6 @@ public class TestSessionsObservation extends JcrAPIBaseTest
 
    public void testSessionClosed() throws Exception
    {
-
       int counter = 0;
 
       SimpleListener listener = new SimpleListener("testSessionOpen", log, counter);
@@ -136,7 +133,6 @@ public class TestSessionsObservation extends JcrAPIBaseTest
 
    public void testMultipleSessionClosed() throws Exception
    {
-
       SimpleListener addListener = new SimpleListener("testMultipleSessionClosed__add_nt:file", log, 0);
       SimpleListener removeListener = new SimpleListener("testMultipleSessionClosed__remove", log, 0);
 
@@ -210,7 +206,6 @@ public class TestSessionsObservation extends JcrAPIBaseTest
 
    public void testListenerRemoved() throws Exception
    {
-
       SimpleListener listener1 = new SimpleListener("testListenerRemoved1", log, 0);
       SimpleListener listener2 = new SimpleListener("testListenerRemoved2", log, 0);
 
@@ -261,27 +256,5 @@ public class TestSessionsObservation extends JcrAPIBaseTest
          sessionWs1.getWorkspace().getObservationManager().removeEventListener(listener1);
          sessionWs1.getWorkspace().getObservationManager().removeEventListener(listener2);
       }
-   }
-
-   public void testMoveOnClosedSession() throws Exception
-   {
-
-      testRootWs1.addNode("newNode");
-      sessionWs1.save();
-
-      int counter = 0;
-
-      SimpleListener listener = new SimpleListener("testSessionOpen", log, counter);
-
-      Session sessionWs1ForListener = repository.login(credentials, "ws1");
-
-      sessionWs1ForListener.getWorkspace().getObservationManager().addEventListener(listener,
-         Event.NODE_ADDED | Event.NODE_REMOVED, testRootWs1.getPath() + "/", false, null, null, false);
-
-      sessionWs1ForListener.logout();
-
-      sessionWs1.logout();
-      sessionWs1.getWorkspace().move(testRootWs1.getPath() + "/newNode", testRootWs1.getPath() + "/newNode2");
-      assertEquals(2, listener.getCounter());
    }
 }

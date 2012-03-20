@@ -24,18 +24,18 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>jcr-parent</artifactId>
-      <version>1.14.8-GA-SNAPSHOT</version>
+      <version>1.15.0-Beta01-SNAPSHOT</version>
    </parent>
    <artifactId>exo.jcr.component.core</artifactId>
    <name>eXo JCR :: Component :: Core Service</name>
    <description>eXo JCR Service core component</description>
    <properties>
-      <jcr.test.configuration.file>/conf/standalone/test-configuration-jbc.xml</jcr.test.configuration.file>
+      <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-jbc.xml</jcr.test.configuration.file>
       <jbosscache.shareable>true</jbosscache.shareable>
       <cache.enabled>true</cache.enabled>
       <value.storage.enabled>true</value.storage.enabled>
       <statistics.enabled>false</statistics.enabled>
-      <properties.url.suffix>.properties</properties.url.suffix>
+      <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <test.cache.all>**/persistent/cache/**</test.cache.all>
       <!-- ispn specific exclude by default -->
@@ -108,6 +108,10 @@
          <groupId>org.apache.lucene</groupId>
          <artifactId>lucene-memory</artifactId>
       </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-wordnet</artifactId>
+      </dependency>  
       <dependency>
          <groupId>com.sun.xml.stream</groupId>
          <artifactId>sjsxp</artifactId>
@@ -202,6 +206,14 @@
             </exclusion>
          </exclusions>
       </dependency>    
+      <dependency>
+         <groupId>org.antlr</groupId>
+         <artifactId>antlr-runtime</artifactId>
+      </dependency>
+      <dependency>
+         <groupId>org.antlr</groupId>
+         <artifactId>gunit</artifactId>
+      </dependency>
       <!-- TCK binaries and deps for repo stub, some eXo API test -->
       <dependency>
          <groupId>org.jboss.cache</groupId>
@@ -264,6 +276,7 @@
                <include>**/*.pdf</include>
                <include>**/*.dtd</include>
                <include>**/*.policy</include>
+               <include>**/*.cnd</include>
             </includes>
          </testResource>
       </testResources>
@@ -383,6 +396,7 @@
             <executions>
               <execution>
                 <id>attach-sources</id>
+                <phase>generate-sources</phase>                
                 <goals>
                   <goal>test-jar-no-fork</goal>
                 </goals>
@@ -400,6 +414,40 @@
               </execution>
             </executions>
 		  </plugin>          
+         <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>build-helper-maven-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>add-test-resource</id>
+                  <phase>generate-test-sources</phase>
+                  <goals>
+                     <goal>add-test-resource</goal>
+                  </goals>
+                  <configuration>
+                     <resources>
+                        <resource>
+                           <directory>${project.build.directory}/jackrabbit-jcr-tests</directory>
+                           <excludes>
+                           </excludes>
+                        </resource>
+                     </resources>
+                  </configuration>
+               </execution> 
+               <execution>
+                  <id>add-test-source</id>
+                  <phase>generate-test-sources</phase>
+                  <goals>
+                     <goal>add-test-source</goal>
+                  </goals>
+                  <configuration>
+                     <sources>
+                        <source>${project.build.directory}/jackrabbit-jcr-tests</source>
+                     </sources>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
           <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
@@ -407,7 +455,7 @@
                   <id>delete-sources</id>
                   <phase>process-sources</phase>
                   <configuration>
-                     <tasks>
+                     <target>
                         <echo>Remove files that have been customized</echo>
                         <delete>
                            <fileset dir="${project.build.directory}/generated-sources/javacc/org/exoplatform/services/jcr/impl/core/query">
@@ -418,7 +466,7 @@
                               <include name="xpath/SimpleNode.java" />
                            </fileset>
                         </delete>
-                     </tasks>
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>
@@ -428,7 +476,7 @@
                   <id>prepare-test-policy</id>
                   <phase>process-test-resources</phase>
                   <configuration>
-                     <tasks>
+                     <target>
                         <echo>Creating Access Policy for tests</echo>
                         <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
                         <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
@@ -443,7 +491,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </tasks>                     
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>
@@ -501,6 +549,24 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>taglist-maven-plugin</artifactId>
+            <version>2.4</version>
+         </plugin>
+         
+         <!--  Generate java files from ANTLR grammar files
+               in the 'target/generated-sources/antlr3' direcctory   
+               Grammar files must be located in 'src/test/antlr3' directory
+               Their names must me *.g -->
+         <plugin>
+            <groupId>org.antlr</groupId>
+            <artifactId>antlr3-maven-plugin</artifactId>
+            <version>3.3</version>
+            <executions>
+               <execution>
+                  <goals>
+                     <goal>antlr</goal>
+                  </goals>
+               </execution>
+            </executions>
          </plugin>
       </plugins>
    </build>
@@ -570,6 +636,11 @@
                         <property>
                            <name>jgroups.stack</name>
                            <value>udp</value>
+                        </property>
+                        <!-- Need for TCK tests -->
+                        <property>
+                           <name>exo.jcr.allow.closed.session.usage</name>
+                           <value>true</value>
                         </property>
                      </systemProperties>
                      <includes>
@@ -656,6 +727,11 @@
                         <property>
                            <name>jgroups.stack</name>
                            <value>udp</value>
+                        </property>
+                        <!-- Need for TCK tests -->
+                        <property>
+                           <name>exo.jcr.allow.closed.session.usage</name>
+                           <value>true</value>
                         </property>
                      </systemProperties>
                      <includes>
@@ -904,10 +980,49 @@
          </properties>
       </profile>      
       <profile>
-         <id>cluster</id>
+         <id>mjdbc</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-jbc.xml</jcr.test.configuration.file>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-mjdbc-jbc.xml</jcr.test.configuration.file>
+            <properties.url.suffix>.properties</properties.url.suffix>
          </properties>
       </profile>      
+      <profile>
+         <id>ijdbc</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-jbc.xml</jcr.test.configuration.file>
+            <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
+         </properties>
+      </profile> 
+      <profile>
+         <id>cluster</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-ijdbc-jbc.xml</jcr.test.configuration.file>
+         </properties>
+      </profile>      
+      <profile>
+         <id>gunit</id>
+         <build>
+            <plugins>
+               <!--  Runs gUnit tests to check ANTLR grammaes.
+               Tests must be located in 'src/test/gunit' directory
+                  Their names must be *.testsuite   -->
+               <plugin>
+                  <groupId>org.antlr</groupId>
+                  <artifactId>maven-gunit-plugin</artifactId>
+                  <version>3.2</version>
+                  <executions>
+                     <execution>
+                        <id>maven-gunit-plugin</id>
+                        <phase>test</phase> 
+                        <goals>
+                           <goal>gunit</goal>
+                        </goals>
+                     </execution>
+                  </executions>
+               </plugin>
+            </plugins>
+         </build>
+      </profile>
    </profiles>
 </project>
+

@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.access;
 
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -44,7 +45,7 @@ public class AccessControlList implements Externalizable
 
    private static final long serialVersionUID = 5848327750178729120L;
 
-   private Log log = ExoLogger.getLogger("exo.jcr.component.core.AccessControlList");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.AccessControlList");
 
    public static final String DELIMITER = ";";
 
@@ -54,7 +55,7 @@ public class AccessControlList implements Externalizable
 
    public AccessControlList()
    {
-      this(SystemIdentity.SYSTEM);
+      this(IdentityConstants.SYSTEM);
    }
 
    /**
@@ -69,7 +70,7 @@ public class AccessControlList implements Externalizable
       this.accessList = new ArrayList<AccessControlEntry>();
       for (String str : PermissionType.ALL)
       {
-         accessList.add(new AccessControlEntry(SystemIdentity.ANY, str));
+         accessList.add(new AccessControlEntry(IdentityConstants.ANY, str));
       }
    }
 

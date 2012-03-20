@@ -24,7 +24,7 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>1.14.8-GA-SNAPSHOT</version>
+    <version>1.15.0-Beta01-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.component.ext</artifactId>
   <name>eXo JCR :: Component :: Extension Service</name>
@@ -148,6 +148,38 @@
        <version>5.1.14</version>
        <scope>test</scope>
     </dependency>
+    <dependency>
+       <groupId>org.codehaus.groovy</groupId>
+       <artifactId>groovy-all</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>commons-dbcp</groupId>
+       <artifactId>commons-dbcp</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>org.exoplatform.kernel</groupId>
+       <artifactId>exo.kernel.component.common</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>org.apache.geronimo.specs</groupId>
+       <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+    </dependency>
+    <dependency>
+       <groupId>org.jibx</groupId>
+       <artifactId>jibx-run</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>stax</groupId>
+      <artifactId>stax-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>javax.xml.stream</groupId>
+      <artifactId>stax-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>commons-pool</groupId>
+      <artifactId>commons-pool</artifactId>
+    </dependency>
   </dependencies>
 
   <build>
@@ -194,8 +226,7 @@
             <excludes>
               <exclude>**/BaseStandaloneTest.java</exclude>
               <exclude>**/backup/AbstractBackupTestCase.java</exclude>
-              <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>
-              <exclude>**/backup/TestBackupScheduler.java</exclude>
+              <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>              
               <exclude>**/backup/TestBackupRestart.java</exclude>
               <exclude>**/replication/**</exclude>
               <exclude>**/repository/creation/cluster/**</exclude>
@@ -209,7 +240,7 @@
                   <id>prepare-test-policy</id>
                   <phase>process-test-resources</phase>
                   <configuration>
-                     <tasks>
+                     <target>
                         <echo>Creating Access Policy for tests</echo>
                         <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
                         <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
@@ -224,7 +255,7 @@
                               <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                            </filterset>
                         </copy>
-                     </tasks>                     
+                     </target>
                   </configuration>
                   <goals>
                      <goal>run</goal>
@@ -283,7 +314,7 @@
                            <id>prepare-test-policy</id>
                            <phase>process-test-resources</phase>
                            <configuration>
-                              <tasks>
+                              <target>
                                  <echo>Creating Access Policy for tests</echo>
                                  <makeurl file="${settings.localRepository}" property="localRepositoryURL" />
                                  <makeurl file="${project.build.outputDirectory}" property="outputDirectoryURL" />
@@ -298,7 +329,7 @@
                                        <filter token="TEST_CLASSES" value="${testOutputDirectoryURL}" />
                                     </filterset>
                                  </copy>
-                              </tasks>                     
+                              </target>
                            </configuration>
                            <goals>
                               <goal>run</goal>

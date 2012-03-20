@@ -255,12 +255,6 @@ public class NamespaceDataPersister implements ComponentPersister
    {
    }
 
-   @Deprecated
-   DataManager getDataManager()
-   {
-      return dataManager;
-   }
-
    void loadNamespaces(Map<String, String> namespacesMap, Map<String, String> urisMap) throws RepositoryException
    {
 

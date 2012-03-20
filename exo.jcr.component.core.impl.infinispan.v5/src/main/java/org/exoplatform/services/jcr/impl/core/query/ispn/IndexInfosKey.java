@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.ispn;
 
-import org.exoplatform.services.jcr.infinispan.CacheKey;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.CacheKey;
 
 /**
  * Created by The eXo Platform SAS.
@@ -30,13 +30,30 @@ import org.exoplatform.services.jcr.infinispan.CacheKey;
  */
 public class IndexInfosKey extends CacheKey
 {
-   public IndexInfosKey()
+   IndexInfosKey()
    {
       super();
    }
 
    IndexInfosKey(String id)
    {
-      super(null, id);
+      super(id);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj instanceof IndexInfosKey)
+      {
+         IndexInfosKey key = (IndexInfosKey)obj;
+         return (key.hash == hash && key.id.equals(id));
+      }
+      else
+      {
+         return false;
+      }
    }
 }

@@ -19,10 +19,8 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -42,31 +40,19 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
 {
 
    /**
-      * HSQLDB Singledatabase JDBC Connection constructor.
-      * 
-      * @param dbConnection
-      *          JDBC connection, should be opened before
-      * @param readOnly
-      *          boolean if true the dbConnection was marked as READ-ONLY.
-      * @param containerName
-      *          Workspace Storage Container name (see configuration)
-      * @param valueStorageProvider
-      *          External Value Storages provider
-      * @param maxBufferSize
-      *          Maximum buffer size (see configuration)
-      * @param swapDirectory
-      *          Swap directory File (see configuration)
-      * @param swapCleaner
-      *          Swap cleaner (internal FileCleaner).
-      * @throws SQLException
-      * 
-      * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
-      */
-   public HSQLDBSingleDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+    * HSQLDB Singledatabase JDBC Connection constructor.
+    * 
+    * @param dbConnection
+    *          JDBC connection, should be opened before
+    * @param readOnly
+    *          boolean if true the dbConnection was marked as READ-ONLY.
+    * @param containerConfig
+    *          Workspace Storage Container configuration
+    */
+   public HSQLDBSingleDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
 
    /**
@@ -127,12 +113,16 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected ResultSet findItemByName(String parentId, String name, int index) throws SQLException
    {
       if (findItemByName == null)
+      {
          findItemByName = dbConnection.prepareStatement(FIND_ITEM_BY_NAME);
+      }
       else
+      {
          findItemByName.clearParameters();
+      }
 
       findItemByName.setString(1, parentId);
-      findItemByName.setString(2, containerName);
+      findItemByName.setString(2, this.containerConfig.containerName);
       findItemByName.setString(3, name);
       findItemByName.setInt(4, index);
 
@@ -146,12 +136,16 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected ResultSet findPropertyByName(String parentCid, String name) throws SQLException
    {
       if (findPropertyByName == null)
+      {
          findPropertyByName = dbConnection.prepareStatement(FIND_PROPERTY_BY_NAME);
+      }
       else
+      {
          findPropertyByName.clearParameters();
+      }
 
       findPropertyByName.setString(1, parentCid);
-      findPropertyByName.setString(2, containerName);
+      findPropertyByName.setString(2, this.containerConfig.containerName);
       findPropertyByName.setString(3, name);
 
       return findPropertyByName.executeQuery();
@@ -164,12 +158,16 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected ResultSet findChildNodesByParentIdentifier(String parentCid) throws SQLException
    {
       if (findNodesByParentId == null)
+      {
          findNodesByParentId = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID);
+      }
       else
+      {
          findNodesByParentId.clearParameters();
+      }
 
       findNodesByParentId.setString(1, parentCid);
-      findNodesByParentId.setString(2, containerName);
+      findNodesByParentId.setString(2, this.containerConfig.containerName);
 
       return findNodesByParentId.executeQuery();
    }
@@ -181,12 +179,16 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
    {
       if (findLastOrderNumberByParentId == null)
+      {
          findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
+      }
       else
+      {
          findLastOrderNumberByParentId.clearParameters();
+      }
 
       findLastOrderNumberByParentId.setString(1, parentIdentifier);
-      findLastOrderNumberByParentId.setString(2, containerName);
+      findLastOrderNumberByParentId.setString(2, this.containerConfig.containerName);
 
       return findLastOrderNumberByParentId.executeQuery();
    }
@@ -198,12 +200,16 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected ResultSet findChildNodesCountByParentIdentifier(String parentCid) throws SQLException
    {
       if (findNodesCountByParentId == null)
+      {
          findNodesCountByParentId = dbConnection.prepareStatement(FIND_NODES_COUNT_BY_PARENTID);
+      }
       else
+      {
          findNodesCountByParentId.clearParameters();
+      }
 
       findNodesCountByParentId.setString(1, parentCid);
-      findNodesCountByParentId.setString(2, containerName);
+      findNodesCountByParentId.setString(2, this.containerConfig.containerName);
 
       return findNodesCountByParentId.executeQuery();
    }
@@ -215,12 +221,16 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected ResultSet findChildPropertiesByParentIdentifier(String parentCid) throws SQLException
    {
       if (findPropertiesByParentId == null)
+      {
          findPropertiesByParentId = dbConnection.prepareStatement(FIND_PROPERTIES_BY_PARENTID);
+      }
       else
+      {
          findPropertiesByParentId.clearParameters();
+      }
 
       findPropertiesByParentId.setString(1, parentCid);
-      findPropertiesByParentId.setString(2, containerName);
+      findPropertiesByParentId.setString(2, this.containerConfig.containerName);
 
       return findPropertiesByParentId.executeQuery();
    }
@@ -232,13 +242,17 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier) throws SQLException
    {
       if (findNodesByParentIdCQ == null)
+      {
          findNodesByParentIdCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_CQ);
+      }
       else
+      {
          findNodesByParentIdCQ.clearParameters();
+      }
 
       findNodesByParentIdCQ.setString(1, parentIdentifier);
-      findNodesByParentIdCQ.setString(2, containerName);
-      findNodesByParentIdCQ.setString(3, containerName);
+      findNodesByParentIdCQ.setString(2, this.containerConfig.containerName);
+      findNodesByParentIdCQ.setString(3, this.containerConfig.containerName);
       
       return findNodesByParentIdCQ.executeQuery();
    }
@@ -266,7 +280,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
          query.append(" where I.PARENT_ID='");
          query.append(parentIdentifier);
          query.append("' and I.I_CLASS=1 and I.CONTAINER_NAME='");
-         query.append(containerName);
+         query.append(this.containerConfig.containerName);
          query.append("' and ( ");
          appendPattern(query, pattern.get(0).getQPathEntry(), true);
          for (int i = 1; i < pattern.size(); i++)
@@ -275,7 +289,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             appendPattern(query, pattern.get(i).getQPathEntry(), true);
          }
          query.append(" ) and P.PARENT_ID=I.ID and P.I_CLASS=2 and P.CONTAINER_NAME='");
-         query.append(containerName);
+         query.append(this.containerConfig.containerName);
          query.append("' and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType'");
          query.append(" or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes'");
          query.append(" or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'");
@@ -293,12 +307,16 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException
    {
       if (findPropertiesByParentIdCQ == null)
+      {
          findPropertiesByParentIdCQ = dbConnection.prepareStatement(FIND_PROPERTIES_BY_PARENTID_CQ);
+      }
       else
+      {
          findPropertiesByParentIdCQ.clearParameters();
+      }
 
       findPropertiesByParentIdCQ.setString(1, parentIdentifier);
-      findPropertiesByParentIdCQ.setString(2, containerName);
+      findPropertiesByParentIdCQ.setString(2, this.containerConfig.containerName);
       
        return findPropertiesByParentIdCQ.executeQuery();
    }
@@ -326,7 +344,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
          query.append(" where I.PARENT_ID='");
          query.append(parentCid);
          query.append("' and I.I_CLASS=2 and I.CONTAINER_NAME='");
-         query.append(containerName);
+         query.append(this.containerConfig.containerName);
          query.append("' and ( ");
          appendPattern(query, pattern.get(0).getQPathEntry(), false);
          for (int i = 1; i < pattern.size(); i++)

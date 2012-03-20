@@ -21,6 +21,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.ext.backup.AbstractBackupTestCase;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
@@ -48,8 +49,8 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
    public void testCreateRepositoryMultiDB() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -76,11 +77,11 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
 
       // restore             
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(true, repository.getConfiguration().getSystemWorkspaceName(),
+         helper.createRepositoryEntry(DatabaseStructureType.MULTI, repository.getConfiguration().getSystemWorkspaceName(),
             IdGenerator.generate());
       newRE.setName(tenantName);
 
-      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(true, IdGenerator.generate());
+      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, IdGenerator.generate());
       newWSEntry.setName(wsEntry.getName());
       newRE.addWorkspace(newWSEntry);
 
@@ -125,8 +126,8 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
    {
       // prepare
       String dsName = helper.createDatasource();
-      ManageableRepository repository = helper.createRepository(container, false, dsName);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -155,10 +156,10 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       String newDSName = IdGenerator.generate();
 
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(false, repository.getConfiguration().getSystemWorkspaceName(), newDSName);
+         helper.createRepositoryEntry(DatabaseStructureType.SINGLE, repository.getConfiguration().getSystemWorkspaceName(), newDSName);
       newRE.setName(tenantName);
 
-      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(false, newDSName);
+      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, newDSName);
       newWSEntry.setName(wsEntry.getName());
       newRE.addWorkspace(newWSEntry);
 
@@ -212,8 +213,8 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
 
       // prepare
       String dsName = helper.createDatasource();
-      ManageableRepository repository = helper.createRepository(container, false, dsName);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false, dsName);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.SINGLE, dsName);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, dsName);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -242,10 +243,10 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       String newDSName = IdGenerator.generate();
 
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(false, repository.getConfiguration().getSystemWorkspaceName(), newDSName);
+         helper.createRepositoryEntry(DatabaseStructureType.SINGLE, repository.getConfiguration().getSystemWorkspaceName(), newDSName);
       newRE.setName(tenantName);
 
-      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(false, newDSName);
+      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(DatabaseStructureType.SINGLE, newDSName);
       newWSEntry.setName(wsEntry.getName());
       newRE.addWorkspace(newWSEntry);
 
@@ -324,8 +325,8 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       String tenantName = "new_repository_3";
 
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -347,8 +348,8 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
    public void testCreateRepositoryMultiDBExistingDS() throws Exception
    {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, true, null);
-      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(true, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
       addConent(repository, wsEntry.getName());
 
@@ -375,10 +376,10 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
 
       // restore             
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(true, repository.getConfiguration().getSystemWorkspaceName(), null);
+         helper.createRepositoryEntry(DatabaseStructureType.MULTI, repository.getConfiguration().getSystemWorkspaceName(), null);
       newRE.setName(tenantName);
 
-      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(true, null);
+      WorkspaceEntry newWSEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       newWSEntry.setName(wsEntry.getName());
       newRE.addWorkspace(newWSEntry);
 

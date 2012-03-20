@@ -511,6 +511,11 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       private final int[] singleDoc = new int[1];
 
       /**
+       * The next document id to be returned
+       */
+      private int currentDoc = -1;
+
+      /**
        * Creates a new <code>DescendantSelfAxisScorer</code>.
        *
        * @param similarity the <code>Similarity</code> instance to use.
@@ -529,35 +534,39 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
        * {@inheritDoc}
        */
       @Override
-      public boolean next() throws IOException
+      public int nextDoc() throws IOException
       {
-         collectContextHits();
-         if (!subScorer.next() || contextHits.isEmpty())
+         if (currentDoc == NO_MORE_DOCS)
          {
-            return false;
+            return currentDoc;
          }
-         int nextDoc = subScorer.doc();
-         while (nextDoc > -1)
-         {
 
-            if (isValid(nextDoc))
+         collectContextHits();
+         currentDoc = subScorer.nextDoc();
+         if (contextHits.isEmpty())
+         {
+            currentDoc = NO_MORE_DOCS;
+         }
+         while (currentDoc != NO_MORE_DOCS)
+         {
+            if (isValid(currentDoc))
             {
-               return true;
+               return currentDoc;
             }
 
             // try next
-            nextDoc = subScorer.next() ? subScorer.doc() : -1;
+            currentDoc = subScorer.nextDoc();
          }
-         return false;
+         return currentDoc;
       }
 
       /**
        * {@inheritDoc}
        */
       @Override
-      public int doc()
+      public int docID()
       {
-         return subScorer.doc();
+         return currentDoc;
       }
 
       /**
@@ -573,17 +582,22 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
        * {@inheritDoc}
        */
       @Override
-      public boolean skipTo(int target) throws IOException
+      public int advance(int target) throws IOException
       {
-         boolean match = subScorer.skipTo(target);
-         if (match)
+         if (currentDoc == NO_MORE_DOCS)
          {
-            collectContextHits();
-            return isValid(subScorer.doc()) || next();
+            return currentDoc;
+         }
+
+         currentDoc = subScorer.nextDoc();
+         if (currentDoc == NO_MORE_DOCS)
+         {
+            return NO_MORE_DOCS;
          }
          else
          {
-            return false;
+            collectContextHits();
+            return isValid(currentDoc) ? currentDoc : nextDoc();
          }
       }
 
@@ -591,37 +605,23 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       {
          if (!contextHitsCalculated)
          {
-            long time = 0;
-            if (log.isDebugEnabled())
-            {
-               time = System.currentTimeMillis();
-            }
+            long time = System.currentTimeMillis();
             contextScorer.score(new AbstractHitCollector()
             {
                @Override
-               public void collect(int doc, float score)
+               protected void collect(int doc, float score)
                {
                   contextHits.set(doc);
                }
             }); // find all
             contextHitsCalculated = true;
+            time = System.currentTimeMillis() - time;
             if (log.isDebugEnabled())
             {
-               time = System.currentTimeMillis() - time;
-               log.debug("Collected {} context hits in {} ms for {}", new Object[]{
-                  new Integer(contextHits.cardinality()), new Long(time), DescendantSelfAxisQuery.this});
+               log.debug("Collected {} context hits in {} ms for {}", new Object[]{contextHits.cardinality(), time,
+                  DescendantSelfAxisQuery.this});
             }
          }
-      }
-
-      /**
-       * @throws UnsupportedOperationException this implementation always
-       *                                       throws an <code>UnsupportedOperationException</code>.
-       */
-      @Override
-      public Explanation explain(int doc) throws IOException
-      {
-         throw new UnsupportedOperationException();
       }
 
       /**
@@ -644,7 +644,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
          // check if doc is a descendant of one of the context nodes
          pDocs = hResolver.getParents(doc, pDocs);
 
-         if (pDocs.length == 0 || pDocs[0] < 0)
+         if (pDocs.length == 0)
          {
             return false;
          }
@@ -657,10 +657,9 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
          while (pDocs.length != 0)
          {
             boolean valid = false;
-            for (int i = 0; i < pDocs.length; i++)
+            for (int pDoc : pDocs)
             {
-               int pDoci = pDocs[i];
-               if (pDoci >= 0 && pDoci <= contextHits.size() && ancestorCount >= minLevels && contextHits.get(pDoci))
+               if (ancestorCount >= minLevels && contextHits.get(pDoc))
                {
                   valid = true;
                   break;
@@ -722,9 +721,9 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
          else
          {
             pDocs = new int[0];
-            for (int i = 0; i < docs.length; i++)
+            for (int doc : docs)
             {
-               int[] p = hResolver.getParents(docs[i], new int[0]);
+               int[] p = hResolver.getParents(doc, new int[0]);
                int[] tmp = new int[p.length + pDocs.length];
                System.arraycopy(pDocs, 0, tmp, 0, pDocs.length);
                System.arraycopy(p, 0, tmp, pDocs.length, p.length);

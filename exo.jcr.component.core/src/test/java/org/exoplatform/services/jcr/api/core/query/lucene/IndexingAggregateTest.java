@@ -17,22 +17,20 @@
 package org.exoplatform.services.jcr.api.core.query.lucene;
 
 import org.exoplatform.services.jcr.api.core.query.AbstractIndexingTest;
-import org.exoplatform.services.jcr.impl.core.query.lucene.IndexingQueue;
-import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.Node;
-import javax.jcr.query.Query;
-
-import java.io.ByteArrayOutputStream;
-import java.io.Writer;
-import java.io.OutputStreamWriter;
 import java.io.ByteArrayInputStream;
-import java.util.Calendar;
-import java.util.List;
+import java.io.ByteArrayOutputStream;
+import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.query.Query;
 
 /**
  * <code>IndexingAggregateTest</code> checks if the nt:file nt:resource
@@ -60,7 +58,6 @@ public class IndexingAggregateTest extends AbstractIndexingTest
       resource.setProperty("jcr:data", new ByteArrayInputStream(out.toByteArray()));
 
       testRootNode.save();
-      waitUntilQueueEmpty();
 
       executeSQLQuery(sqlDog, new Node[]{file});
 
@@ -70,7 +67,6 @@ public class IndexingAggregateTest extends AbstractIndexingTest
       writer.flush();
       resource.setProperty("jcr:data", new ByteArrayInputStream(out.toByteArray()));
       testRootNode.save();
-      waitUntilQueueEmpty();
 
       executeSQLQuery(sqlCat, new Node[]{file});
 
@@ -100,20 +96,6 @@ public class IndexingAggregateTest extends AbstractIndexingTest
       //        waitUntilQueueEmpty();
       //
       //        executeSQLQuery(sqlCat, new Node[]{file});
-   }
-
-   protected void waitUntilQueueEmpty() throws Exception
-   {
-      SearchIndex index = (SearchIndex)getQueryHandler();
-      IndexingQueue queue = index.getIndex().getIndexingQueue();
-      index.getIndex().flush();
-      synchronized (index.getIndex())
-      {
-         while (queue.getNumPendingDocuments() > 0)
-         {
-            index.getIndex().wait(50);
-         }
-      }
    }
 
    public void testContentLastModified() throws RepositoryException

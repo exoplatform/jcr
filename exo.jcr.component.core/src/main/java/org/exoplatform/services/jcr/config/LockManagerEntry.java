@@ -24,29 +24,4 @@ package org.exoplatform.services.jcr.config;
  */
 public class LockManagerEntry extends MappedParametrizedObjectEntry
 {
-
-   private long timeout = -1;
-
-   private LockPersisterEntry persister;
-
-   public long getTimeout()
-   {
-      return timeout;
-   }
-
-   public void setTimeout(long timeout)
-   {
-      this.timeout = timeout;
-   }
-
-   public LockPersisterEntry getPersister()
-   {
-      return persister;
-   }
-
-   public void setPersister(LockPersisterEntry persister)
-   {
-      this.persister = persister;
-   }
-
 }

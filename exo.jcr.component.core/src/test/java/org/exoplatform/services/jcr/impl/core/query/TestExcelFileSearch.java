@@ -17,12 +17,12 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.exoplatform.services.document.DocumentReader;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.impl.MSExcelDocumentReader;
@@ -93,14 +93,14 @@ public class TestExcelFileSearch extends BaseQueryTest
       String word = "eric";
 
       // Check is node indexed
-      Document doc = getDocument(cont.getInternalIdentifier(), false);
+      ScoreDoc doc = getDocument(cont.getInternalIdentifier(), false);
       assertNotNull("Node is not indexed", doc);
 
       IndexReader reader = defaultSearchIndex.getIndexReader();
       IndexSearcher is = new IndexSearcher(reader);
       TermQuery query = new TermQuery(new Term(FieldNames.FULLTEXT, word));
-      Hits result = is.search(query);
-      assertEquals(1, result.length());
+      TopDocs topDocs = is.search(query, null, Integer.MAX_VALUE);
+      assertEquals(1, topDocs.totalHits);
       is.close();
       Util.closeOrRelease(reader);
    }

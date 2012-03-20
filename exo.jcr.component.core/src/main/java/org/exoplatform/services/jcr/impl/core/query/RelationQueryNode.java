@@ -16,14 +16,14 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import java.util.Date;
-
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
+
+import java.util.Date;
+
+import javax.jcr.RepositoryException;
 
 
 
@@ -136,32 +136,6 @@ public class RelationQueryNode extends NAryQueryNode implements QueryConstants {
      */
     public int getValueType() {
         return type;
-    }
-
-    /**
-     * Returns the name of the property in this relation query node. Please
-     * note that this method does not return the full relative path that
-     * reference the property to match, but only the name of the final name
-     * element of the path returned by {@link #getRelativePath()}.
-     *
-     * @return the name of the property in this relation query node.
-     * @deprecated Use {@link #getRelativePath()} instead.
-     */
-    @Deprecated
-    public InternalQName getProperty()
-    {
-       return relPath == null ? null : relPath.getName();
-    }
-    /**
-     * Sets a new property name for this relation query node.
-     *
-     * @param name the new property name.
-     * @deprecated Use {@link #setRelativePath(Path)} instead.
-     */
-    @Deprecated
-    public void setProperty(InternalQName name)
-    {
-       this.relPath = new QPath(new QPathEntry[]{new QPathEntry(name, 0)});
     }
 
     /**

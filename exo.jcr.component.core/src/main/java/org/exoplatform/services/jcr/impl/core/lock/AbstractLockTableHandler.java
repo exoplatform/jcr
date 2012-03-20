@@ -19,10 +19,10 @@
 package org.exoplatform.services.jcr.impl.core.lock;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.LockManagerEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;

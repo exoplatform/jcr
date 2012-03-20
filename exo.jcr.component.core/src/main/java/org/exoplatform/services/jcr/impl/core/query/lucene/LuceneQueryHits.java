@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
@@ -73,11 +74,15 @@ public class LuceneQueryHits implements QueryHits
     */
    public ScoreNode nextScoreNode() throws IOException
    {
-      if (!scorer.next())
+      if (scorer == null)
       {
          return null;
       }
-      int doc = scorer.doc();
+      int doc = scorer.nextDoc();
+      if (doc == DocIdSetIterator.NO_MORE_DOCS)
+      {
+         return null;
+      }
       String uuid = reader.document(doc).get(FieldNames.UUID);
       return new ScoreNode(uuid, scorer.score(), doc);
    }

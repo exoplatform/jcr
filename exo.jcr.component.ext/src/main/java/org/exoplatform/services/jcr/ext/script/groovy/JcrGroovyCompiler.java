@@ -19,9 +19,6 @@
 
 package org.exoplatform.services.jcr.ext.script.groovy;
 
-import groovy.lang.GroovyClassLoader;
-import groovy.lang.GroovyCodeSource;
-
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
 import org.exoplatform.services.jcr.ext.script.groovy.JcrGroovyClassLoaderProvider.JcrGroovyClassLoader;
@@ -32,7 +29,6 @@ import org.exoplatform.services.rest.ext.groovy.SourceFolder;
 import org.picocontainer.Startable;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.security.PrivilegedAction;
@@ -207,50 +203,6 @@ public class JcrGroovyCompiler implements Startable
          Throwable cause = e.getCause();
          throw (IOException)cause;
       }
-   }
-
-   /**
-    * @return get underling groovy class loader
-    */
-   @Deprecated
-   public GroovyClassLoader getGroovyClassLoader()
-   {
-      return classLoaderProvider.getGroovyClassLoader();
-   }
-
-   /**
-    * Set groovy class loader.
-    * 
-    * @param gcl groovy class loader
-    * @throws NullPointerException if <code>gcl == null</code>
-    */
-   @Deprecated
-   public void setGroovyClassLoader(GroovyClassLoader gcl)
-   {
-      LOG.warn("Method setGroovyClassLoader is deprecated.");
-   }
-
-   /**
-    * Create {@link GroovyCodeSource} from given stream and name. Code base
-    * 'file:/groovy/script' (default code base used for all Groovy classes) will
-    * be used.
-    * 
-    * @param in groovy source code stream
-    * @param name code source name
-    * @return GroovyCodeSource
-    */
-   // Override this method if need other behavior.
-   @Deprecated
-   protected GroovyCodeSource createCodeSource(final InputStream in, final String name)
-   {
-      GroovyCodeSource gcs = SecurityHelper.doPrivilegedAction(new PrivilegedAction<GroovyCodeSource>() {
-         public GroovyCodeSource run()
-         {
-            return new GroovyCodeSource(in, name, "/groovy/script");
-         }
-      });
-      gcs.setCachable(false);
-      return gcs;
    }
 
    /**

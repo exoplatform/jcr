@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.usecases;
 
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 
 import java.io.InputStream;
 
@@ -79,11 +80,15 @@ public class TestExcerpt extends BaseUsecasesTest
       {
          ExtendedNodeTypeManager ntManager = (ExtendedNodeTypeManager)session.getWorkspace().getNodeTypeManager();
          InputStream is = TestExcerpt.class.getResourceAsStream("/nodetypes/ext-registry-nodetypes.xml");
-         ntManager.registerNodeTypes(is, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);
+
+         ntManager.registerNodeTypes(is, ExtendedNodeTypeManager.REPLACE_IF_EXISTS, NodeTypeDataManager.TEXT_XML);
          ntManager.registerNodeTypes(TestExcerpt.class
-            .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config.xml"), 0);
+            .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config.xml"), 0,
+            NodeTypeDataManager.TEXT_XML);
          ntManager.registerNodeTypes(TestExcerpt.class
-            .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config-extended.xml"), 0);
+            .getResourceAsStream("/org/exoplatform/services/jcr/api/nodetypes/ecm/nodetypes-config-extended.xml"), 0,
+            NodeTypeDataManager.TEXT_XML);
+
          isInitialized = true;
       }
    }

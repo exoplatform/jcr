@@ -16,11 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
-import java.io.File;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
@@ -36,66 +34,13 @@ import javax.sql.DataSource;
  */
 public class PostgreConnectionFactory extends GenericCQConnectionFactory
 {
-   /**
-    * PostgreConnectionFactory constructor.
-    * 
-    *@param dataSource
-    *          - DataSource
-    * @param dbDriver
-    *          - JDBC Driver
-    * @param dbUrl
-    *          - JDBC URL
-    * @param dbUserName
-    *          - database username
-    * @param dbPassword
-    *          - database user password
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    * @throws RepositoryException
-    *           if error eccurs
-    */
-   public PostgreConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
-   {
-
-      super(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-         swapDirectory, swapCleaner);
-   }
 
    /**
     * PostgreConnectionFactory  constructor.
-    *
-    * @param dataSource
-    *          - DataSource
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
     */
-   public PostgreConnectionFactory(DataSource dbDataSource, String containerName, boolean multiDb,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+   public PostgreConnectionFactory(DataSource dbDataSource, JDBCDataContainerConfig containerConfig)
    {
-
-      super(dbDataSource, containerName, multiDb, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbDataSource, containerConfig);
    }
 
    /**
@@ -106,23 +51,19 @@ public class PostgreConnectionFactory extends GenericCQConnectionFactory
    {
       try
       {
-
-         if (multiDb)
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
-            return new PostgreMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-               valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+            return new PostgreMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }
 
-         return new PostgreSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-            valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-
+         return new PostgreSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
       }
       catch (SQLException e)
       {
          throw new RepositoryException(e);
       }
    }
-   
+
    /**
     * {@inheritDoc}
     */

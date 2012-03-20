@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.ext.action;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.services.command.action.Action;
 import org.exoplatform.services.command.action.ActionCatalog;
@@ -52,7 +53,6 @@ public class SessionActionCatalog extends ActionCatalog
 
    public SessionActionCatalog(RepositoryService repService) throws RepositoryException
    {
-
       RepositoryImpl rep = (RepositoryImpl)repService.getCurrentRepository();
       this.locFactory = rep.getLocationFactory();
       this.typeDataManager = rep.getNodeTypeManager().getNodeTypesHolder();
@@ -67,12 +67,14 @@ public class SessionActionCatalog extends ActionCatalog
          {
             try
             {
-
                SessionEventMatcher matcher =
                   new SessionEventMatcher(getEventTypes(ac.getEventTypes()), getPaths(ac.getPath()), ac.isDeep(),
                      getWorkspaces(ac.getWorkspace()), getNames(ac.getNodeTypes()), typeDataManager);
 
-               Action action = (Action)Class.forName(ac.getActionClassName()).newInstance();
+               Action action =
+                  ac.getAction() != null ? ac.getAction() : (Action)ClassLoading.forName(ac.getActionClassName(), this)
+                     .newInstance();
+
                addAction(matcher, action);
             }
             catch (Exception e)
@@ -86,7 +88,9 @@ public class SessionActionCatalog extends ActionCatalog
    private InternalQName[] getNames(String names) throws RepositoryException
    {
       if (names == null)
+      {
          return null;
+      }
 
       String[] nameList = names.split(",");
       InternalQName[] qnames = new InternalQName[nameList.length];
@@ -100,7 +104,9 @@ public class SessionActionCatalog extends ActionCatalog
    private QPath[] getPaths(String paths) throws RepositoryException
    {
       if (paths == null)
+      {
          return null;
+      }
 
       String[] pathList = paths.split(",");
       QPath[] qpaths = new QPath[pathList.length];
@@ -114,14 +120,18 @@ public class SessionActionCatalog extends ActionCatalog
    private String[] getWorkspaces(String workspaces) throws RepositoryException
    {
       if (workspaces == null)
+      {
          return null;
+      }
       return workspaces.split(",");
    }
 
    private static int getEventTypes(String names)
    {
       if (names == null)
+      {
          return -1;
+      }
 
       String[] nameList = names.split(",");
       int res = 0;

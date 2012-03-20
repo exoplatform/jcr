@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -59,7 +60,7 @@ public class JobRepositoryRestore extends Thread
    /**
     * The apache logger.
     */
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.ext.JobRepositoryRestore");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.JobRepositoryRestore");
 
    /**
     * REPOSITORY_RESTORE_STARTED. The state of start restore.
@@ -221,7 +222,7 @@ public class JobRepositoryRestore extends Thread
       {
          restored = false;
 
-         log.error(
+         LOG.error(
             "Can not restore workspace \"" + currennWorkspaceName + " in repository \"" + repositoryEntry.getName()
                + "\".", e);
 
@@ -233,7 +234,7 @@ public class JobRepositoryRestore extends Thread
       {
          restored = false;
 
-         log.error(
+         LOG.error(
             "Can not restore workspace \"" + currennWorkspaceName + " in repository \"" + repositoryEntry.getName()
                + "\".", t);
 
@@ -251,7 +252,7 @@ public class JobRepositoryRestore extends Thread
             }
             catch (Throwable thr)
             {
-               log.error("The partly restored repository \"" + repositoryEntry.getName() + "\" can not be removed.",
+               LOG.error("The partly restored repository \"" + repositoryEntry.getName() + "\" can not be removed.",
                   thr);
             }
          }
@@ -282,6 +283,10 @@ public class JobRepositoryRestore extends Thread
       catch (RepositoryException e)
       {
          // The repository not exist.
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
       if (mr != null)
@@ -300,11 +305,11 @@ public class JobRepositoryRestore extends Thread
       String fullbackupType = null;
       try
       {
-         if ((Class.forName(systemBackupChainLog.getFullBackupType()).equals(FullBackupJob.class)))
+         if ((ClassLoading.forName(systemBackupChainLog.getFullBackupType(), this).equals(FullBackupJob.class)))
          {
             fullbackupType = systemBackupChainLog.getFullBackupType();
          }
-         else if ((Class.forName(systemBackupChainLog.getFullBackupType())
+         else if ((ClassLoading.forName(systemBackupChainLog.getFullBackupType(), this)
                   .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
          {
             fullbackupType = systemBackupChainLog.getFullBackupType();
@@ -322,7 +327,7 @@ public class JobRepositoryRestore extends Thread
       }
 
       WorkspaceInitializerEntry wiEntry = new WorkspaceInitializerEntry();
-      if ((Class.forName(fullbackupType).equals(FullBackupJob.class)))
+      if ((ClassLoading.forName(fullbackupType, this).equals(FullBackupJob.class)))
       {
          // set the initializer BackupWorkspaceInitializer
          wiEntry.setType(BackupWorkspaceInitializer.class.getCanonicalName());
@@ -333,7 +338,7 @@ public class JobRepositoryRestore extends Thread
 
          wiEntry.setParameters(wieParams);
       }
-      else if ((Class.forName(fullbackupType)
+      else if ((ClassLoading.forName(fullbackupType, this)
                .equals(org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class)))
       {
          // set the initializer RdbmsBackupWorkspaceInitializer
@@ -381,7 +386,7 @@ public class JobRepositoryRestore extends Thread
       }
       catch (Throwable t)
       {
-         log.error("The restore was fail", t);
+         LOG.error("The restore was fail", t);
       }
    }
 

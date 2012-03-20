@@ -19,10 +19,12 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.TokenStream;
 import org.apache.lucene.analysis.standard.StandardAnalyzer;
+import org.apache.lucene.util.Version;
 import org.exoplatform.commons.utils.SecurityHelper;
 
 import java.io.Reader;
 import java.security.PrivilegedAction;
+import java.util.Collections;
 
 /**
  * This is the global jackrabbit lucene analyzer. By default, all
@@ -34,53 +36,59 @@ import java.security.PrivilegedAction;
  * index the text of the property and to parse searchtext for this property.
  */
 
-public class JcrStandartAnalyzer  extends Analyzer {
+public class JcrStandartAnalyzer extends Analyzer
+{
 
-    /**
-     * The default Jackrabbit analyzer if none is configured in <code><SearchIndex></code>
-     * configuration.
-     */
+   /**
+    * The default Jackrabbit analyzer if none is configured in <code><SearchIndex></code>
+    * configuration.
+    */
    private Analyzer defaultAnalyzer = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Analyzer>()
    {
       public Analyzer run()
       {
-         return new StandardAnalyzer(new String[]{});
+         return new StandardAnalyzer(Version.LUCENE_24, Collections.EMPTY_SET);
       }
    });
 
-    /**
-     * The indexing configuration.
-     */
-    private IndexingConfiguration indexingConfig;
+   /**
+    * The indexing configuration.
+    */
+   private IndexingConfiguration indexingConfig;
 
-    /**
-     * A param indexingConfig the indexing configuration.
-     */
-    protected void setIndexingConfig(IndexingConfiguration indexingConfig) {
-        this.indexingConfig = indexingConfig;
-    }
+   /**
+    * A param indexingConfig the indexing configuration.
+    */
+   protected void setIndexingConfig(IndexingConfiguration indexingConfig)
+   {
+      this.indexingConfig = indexingConfig;
+   }
 
-    /**
-     * @param analyzer the default jackrabbit analyzer
-     */
-    protected void setDefaultAnalyzer(Analyzer analyzer) {
-        defaultAnalyzer = analyzer;
-    }
+   /**
+    * @param analyzer the default jackrabbit analyzer
+    */
+   protected void setDefaultAnalyzer(Analyzer analyzer)
+   {
+      defaultAnalyzer = analyzer;
+   }
 
-    /**
-     * Creates a TokenStream which tokenizes all the text in the provided
-     * Reader. If the fieldName (property) is configured to have a different
-     * analyzer than the default, this analyzer is used for tokenization
-     */
-    @Override
-   public TokenStream tokenStream(String fieldName, Reader reader) {
-        if (indexingConfig != null) {
-            Analyzer propertyAnalyzer = indexingConfig.getPropertyAnalyzer(fieldName);
-            if (propertyAnalyzer != null) {
-                return propertyAnalyzer.tokenStream(fieldName, reader);
-            }
-        }
-        return defaultAnalyzer.tokenStream(fieldName, reader);
-    }
+   /**
+    * Creates a TokenStream which tokenizes all the text in the provided
+    * Reader. If the fieldName (property) is configured to have a different
+    * analyzer than the default, this analyzer is used for tokenization
+    */
+   @Override
+   public TokenStream tokenStream(String fieldName, Reader reader)
+   {
+      if (indexingConfig != null)
+      {
+         Analyzer propertyAnalyzer = indexingConfig.getPropertyAnalyzer(fieldName);
+         if (propertyAnalyzer != null)
+         {
+            return propertyAnalyzer.tokenStream(fieldName, reader);
+         }
+      }
+      return defaultAnalyzer.tokenStream(fieldName, reader);
+   }
 
 }

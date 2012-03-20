@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.core.version;
 
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
@@ -47,6 +46,7 @@ import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -490,7 +490,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                         ItemType.PROPERTY);
 
                   AccessControlList acl = new AccessControlList();
-                  acl.removePermissions(SystemIdentity.ANY);
+                  acl.removePermissions(IdentityConstants.ANY);
 
                   for (ValueData value : aclData.getValues())
                   {

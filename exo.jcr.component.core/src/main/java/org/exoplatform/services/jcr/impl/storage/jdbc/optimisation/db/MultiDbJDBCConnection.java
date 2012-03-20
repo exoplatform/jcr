@@ -25,11 +25,9 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCStorageConnection;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -52,47 +50,28 @@ import java.util.List;
 
 public class MultiDbJDBCConnection extends CQJDBCStorageConnection
 {
+   protected String FIND_NODES_BY_PARENTID_CQ_QUERY;
 
-   protected static final String FIND_NODES_BY_PARENTID_CQ_QUERY =
-      "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
-         + " where I.I_CLASS=1 and I.PARENT_ID=? and P.I_CLASS=2 and P.PARENT_ID=I.ID and"
-         + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes'"
-         + " or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
-         + " or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
-         + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+   protected String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
 
-   protected static final String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
-      "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED,"
-         + " V.ORDER_NUM, V.DATA, V.STORAGE_DESC from JCR_MITEM I LEFT OUTER JOIN JCR_MVALUE V ON (V.PROPERTY_ID=I.ID)"
-         + " where I.I_CLASS=2 and I.PARENT_ID=? order by I.NAME";
-   
-   protected static final String FIND_ITEM_QPATH_BY_ID_CQ_QUERY =
-      "select I.ID, I.PARENT_ID, I.NAME, I.I_INDEX"
-         + " from JCR_MITEM I, (SELECT ID, PARENT_ID from JCR_MITEM where ID=?) J"
-         + " where I.ID = J.ID or I.ID = J.PARENT_ID";
-
+   protected String FIND_ITEM_QPATH_BY_ID_CQ_QUERY;
 
    protected String PATTERN_ESCAPE_STRING = "\\"; //valid for HSQL, Sybase, DB2, MSSQL, ORACLE
 
    /**
     * Multidatabase JDBC Connection constructor.
     * 
-    * @param dbConnection JDBC connection, shoudl be opened before
-    * @param readOnly, boolean if true the dbConnection was marked as READ-ONLY. 
-    * @param containerName Workspace Storage Container name (see configuration)
-    * @param valueStorageProvider External Value Storages provider
-    * @param maxBufferSize Maximum buffer size (see configuration)
-    * @param swapDirectory Swap directory (see configuration)
-    * @param swapCleaner Swap cleaner (internal FileCleaner).
-    * @throws SQLException
-    * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
+    * @param dbConnection
+    *          JDBC connection, should be opened before
+    * @param readOnly
+    *          boolean if true the dbConnection was marked as READ-ONLY.
+    * @param containerConfig
+    *          Workspace Storage Container configuration
     */
-   public MultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+   public MultiDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
-
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
 
    /**
@@ -119,41 +98,52 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    @Override
    protected void prepareQueries() throws SQLException
    {
-      JCR_PK_ITEM = "JCR_PK_MITEM";
-      JCR_FK_ITEM_PARENT = "JCR_FK_MITEM_PARENT";
-      JCR_IDX_ITEM_PARENT = "JCR_IDX_MITEM_PARENT";
-      JCR_IDX_ITEM_PARENT_NAME = "JCR_IDX_MITEM_PARENT_NAME";
-      JCR_IDX_ITEM_PARENT_ID = "JCR_IDX_MITEM_PARENT_ID";
-      JCR_PK_VALUE = "JCR_PK_MVALUE";
-      JCR_FK_VALUE_PROPERTY = "JCR_FK_MVALUE_PROPERTY";
-      JCR_IDX_VALUE_PROPERTY = "JCR_IDX_MVALUE_PROPERTY";
-      JCR_PK_REF = "JCR_PK_MREF";
-      JCR_IDX_REF_PROPERTY = "JCR_IDX_MREF_PROPERTY";
+      // ============================================================================
+      FIND_NODES_BY_PARENTID_CQ_QUERY =
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_ITEM + " I, " + JCR_ITEM + " P, "
+            + JCR_VALUE + " V" + " where I.I_CLASS=1 and I.PARENT_ID=? and P.I_CLASS=2 and P.PARENT_ID=I.ID and"
+            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes'"
+            + " or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
+            + " or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
 
-      FIND_ITEM_BY_ID = "select * from JCR_MITEM where ID=?";
+      FIND_PROPERTIES_BY_PARENTID_CQ_QUERY =
+         "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED,"
+            + " V.ORDER_NUM, V.DATA, V.STORAGE_DESC from " + JCR_ITEM + " I LEFT OUTER JOIN " + JCR_VALUE
+            + " V ON (V.PROPERTY_ID=I.ID)" + " where I.I_CLASS=2 and I.PARENT_ID=? order by I.NAME";
+
+      FIND_ITEM_QPATH_BY_ID_CQ_QUERY =
+         "select I.ID, I.PARENT_ID, I.NAME, I.I_INDEX" + " from " + JCR_ITEM + " I, (SELECT ID, PARENT_ID from "
+            + JCR_ITEM + " where ID=?) J" + " where I.ID = J.ID or I.ID = J.PARENT_ID";
+      // ============================================================================
+
+      FIND_ITEM_BY_ID = "select * from " + JCR_ITEM + " where ID=?";
 
       FIND_ITEM_BY_NAME =
-         "select * from JCR_MITEM" + " where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";
+         "select * from " + JCR_ITEM + " where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";
 
       FIND_PROPERTY_BY_NAME =
-         "select V.DATA" + " from JCR_MITEM I, JCR_MVALUE V"
+         "select V.DATA" + " from " + JCR_ITEM + " I, " + JCR_VALUE + " V"
             + " where I.I_CLASS=2 and I.PARENT_ID=? and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
 
       FIND_REFERENCES =
-         "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME" + " from JCR_MREF R, JCR_MITEM P"
-            + " where R.NODE_ID=? and P.ID=R.PROPERTY_ID and P.I_CLASS=2";
+         "select P.ID, P.PARENT_ID, P.VERSION, P.P_TYPE, P.P_MULTIVALUED, P.NAME" + " from " + JCR_REF + " R, "
+            + JCR_ITEM + " P" + " where R.NODE_ID=? and P.ID=R.PROPERTY_ID and P.I_CLASS=2";
 
       FIND_VALUES_BY_PROPERTYID =
-         "select PROPERTY_ID, ORDER_NUM, DATA, STORAGE_DESC from JCR_MVALUE where PROPERTY_ID=? order by ORDER_NUM";
+         "select PROPERTY_ID, ORDER_NUM, DATA, STORAGE_DESC from " + JCR_VALUE
+            + " where PROPERTY_ID=? order by ORDER_NUM";
 
-      FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID = "select distinct STORAGE_DESC from JCR_MVALUE where PROPERTY_ID=?";
+      FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID =
+         "select distinct STORAGE_DESC from " + JCR_VALUE + " where PROPERTY_ID=?";
 
-      FIND_NODES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?" + " order by N_ORDER_NUM";
+      FIND_NODES_BY_PARENTID =
+         "select * from " + JCR_ITEM + " where I_CLASS=1 and PARENT_ID=?" + " order by N_ORDER_NUM";
 
       FIND_NODES_BY_PARENTID_CQ = FIND_NODES_BY_PARENTID_CQ_QUERY;
 
       FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
-         "select I.NAME, V.DATA, V.ORDER_NUM from JCR_MITEM I, JCR_MVALUE V"
+         "select I.NAME, V.DATA, V.ORDER_NUM from " + JCR_ITEM + " I, " + JCR_VALUE + " V"
             + " where I.I_CLASS=2 and I.PARENT_ID=? and (I.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
             + " I.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
             + " I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
@@ -162,70 +152,78 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       FIND_ITEM_QPATH_BY_ID_CQ = FIND_ITEM_QPATH_BY_ID_CQ_QUERY;
 
       FIND_LAST_ORDER_NUMBER_BY_PARENTID =
-         "select count(*), max(N_ORDER_NUM) from JCR_MITEM where I_CLASS=1 and PARENT_ID=?";
+         "select count(*), max(N_ORDER_NUM) from " + JCR_ITEM + " where I_CLASS=1 and PARENT_ID=?";
 
-      FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from JCR_MITEM" + " where I_CLASS=1 and PARENT_ID=?";
+      FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from " + JCR_ITEM + " where I_CLASS=1 and PARENT_ID=?";
 
-      FIND_PROPERTIES_BY_PARENTID = "select * from JCR_MITEM" + " where I_CLASS=2 and PARENT_ID=?" + " order by NAME";
+      FIND_PROPERTIES_BY_PARENTID = "select * from " + JCR_ITEM + " where I_CLASS=2 and PARENT_ID=?" + " order by NAME";
 
       // property may contain no values
       FIND_PROPERTIES_BY_PARENTID_CQ = FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
 
       FIND_PROPERTIES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
          "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_CLASS, I.I_INDEX, I.N_ORDER_NUM, I.P_TYPE, I.P_MULTIVALUED,"
-            + " V.ORDER_NUM, V.DATA, V.STORAGE_DESC from JCR_MITEM I LEFT OUTER JOIN JCR_MVALUE V ON (V.PROPERTY_ID=I.ID)";
+            + " V.ORDER_NUM, V.DATA, V.STORAGE_DESC from " + JCR_ITEM + " I LEFT OUTER JOIN " + JCR_VALUE
+            + " V ON (V.PROPERTY_ID=I.ID)";
 
       FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V";
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_ITEM + " I, " + JCR_ITEM + " P, "
+            + JCR_VALUE + " V";
 
       FIND_MAX_PROPERTY_VERSIONS =
          "select max(VERSION) FROM JCR_MITEM WHERE PARENT_ID=? and NAME=? and I_INDEX=? and I_CLASS=2";
 
       INSERT_NODE =
-         "insert into JCR_MITEM(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,"
+         "insert into " + JCR_ITEM + " (ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,"
             + I_CLASS_NODE + ",?,?)";
       INSERT_PROPERTY =
-         "insert into JCR_MITEM(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,"
+         "insert into " + JCR_ITEM
+            + "(ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, P_TYPE, P_MULTIVALUED) VALUES(?,?,?,?,"
             + I_CLASS_PROPERTY + ",?,?,?)";
 
-      INSERT_VALUE = "insert into JCR_MVALUE(DATA, ORDER_NUM, PROPERTY_ID, STORAGE_DESC) VALUES(?,?,?,?)";
-      INSERT_REF = "insert into JCR_MREF(NODE_ID, PROPERTY_ID, ORDER_NUM) VALUES(?,?,?)";
+      INSERT_VALUE = "insert into " + JCR_VALUE + "(DATA, ORDER_NUM, PROPERTY_ID, STORAGE_DESC) VALUES(?,?,?,?)";
+      INSERT_REF = "insert into " + JCR_REF + "(NODE_ID, PROPERTY_ID, ORDER_NUM) VALUES(?,?,?)";
 
-      RENAME_NODE = "update JCR_MITEM set PARENT_ID=?, NAME =?, VERSION=?, I_INDEX =?, N_ORDER_NUM =? where ID=?";
+      RENAME_NODE =
+         "update " + JCR_ITEM + " set PARENT_ID=?, NAME =?, VERSION=?, I_INDEX =?, N_ORDER_NUM =? where ID=?";
 
-      UPDATE_NODE = "update JCR_MITEM set VERSION=?, I_INDEX=?, N_ORDER_NUM=? where ID=?";
-      UPDATE_PROPERTY = "update JCR_MITEM set VERSION=?, P_TYPE=? where ID=?";
-      //UPDATE_VALUE = "update JCR_MVALUE set DATA=?, STORAGE_DESC=? where PROPERTY_ID=?, ORDER_NUM=?";
+      UPDATE_NODE = "update " + JCR_ITEM + " set VERSION=?, I_INDEX=?, N_ORDER_NUM=? where ID=?";
+      UPDATE_PROPERTY = "update " + JCR_ITEM + " set VERSION=?, P_TYPE=? where ID=?";
+      //UPDATE_VALUE = "update "+JCR_VALUE+" set DATA=?, STORAGE_DESC=? where PROPERTY_ID=?, ORDER_NUM=?";
 
-      DELETE_ITEM = "delete from JCR_MITEM where ID=?";
-      DELETE_VALUE = "delete from JCR_MVALUE where PROPERTY_ID=?";
-      DELETE_REF = "delete from JCR_MREF where PROPERTY_ID=?";
+      DELETE_ITEM = "delete from " + JCR_ITEM + " where ID=?";
+      DELETE_VALUE = "delete from " + JCR_VALUE + " where PROPERTY_ID=?";
+      DELETE_REF = "delete from " + JCR_REF + " where PROPERTY_ID=?";
 
       FIND_NODES_AND_PROPERTIES =
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
-            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I"
+            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from " + JCR_VALUE + " V, " + JCR_ITEM + " P"
+            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from " + JCR_ITEM + " I"
             + " where I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
 
       FIND_PROPERTY_BY_ID =
-         "select I.P_TYPE, V.STORAGE_DESC from JCR_MITEM I, JCR_MVALUE V where I.ID = ? and V.PROPERTY_ID = I.ID";
-      DELETE_VALUE_BY_ORDER_NUM = "delete from JCR_MVALUE where PROPERTY_ID=? and ORDER_NUM >= ?";
-      UPDATE_VALUE = "update JCR_MVALUE set DATA=?, STORAGE_DESC=? where PROPERTY_ID=? and ORDER_NUM=?";
+         "select I.P_TYPE, V.STORAGE_DESC from " + JCR_ITEM + " I, " + JCR_VALUE
+            + " V where I.ID = ? and V.PROPERTY_ID = I.ID";
+      DELETE_VALUE_BY_ORDER_NUM = "delete from " + JCR_VALUE + " where PROPERTY_ID=? and ORDER_NUM >= ?";
+      UPDATE_VALUE = "update " + JCR_VALUE + " set DATA=?, STORAGE_DESC=? where PROPERTY_ID=? and ORDER_NUM=?";
 
       FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_ITEM + " I, " + JCR_ITEM + " P, "
+            + JCR_VALUE + " V"
             + " where I.I_CLASS=1 and I.PARENT_ID=? and I.N_ORDER_NUM >= ? and I.N_ORDER_NUM <= ? and"
             + " P.I_CLASS=2 and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
             + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
             + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
-      
+
       FIND_ACL_HOLDERS =
-         "select I.PARENT_ID, I.P_TYPE "
-            + " from JCR_MITEM I where I.I_CLASS=2 and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
+         "select I.PARENT_ID, I.P_TYPE " + " from " + JCR_ITEM
+            + " I where I.I_CLASS=2 and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
             + " or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')";
+
+      FIND_NODES_COUNT = "select count(*) from " + JCR_ITEM + " I where I.I_CLASS=1";
    }
 
    /**
@@ -244,8 +242,8 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       }
 
       insertNode.setString(1, data.getIdentifier());
-      insertNode.setString(2, data.getParentIdentifier() == null ? Constants.ROOT_PARENT_UUID : data
-         .getParentIdentifier());
+      insertNode.setString(2,
+         data.getParentIdentifier() == null ? Constants.ROOT_PARENT_UUID : data.getParentIdentifier());
       insertNode.setString(3, data.getQPath().getName().getAsString());
       insertNode.setInt(4, data.getPersistedVersion());
       insertNode.setInt(5, data.getQPath().getIndex());
@@ -701,7 +699,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       insertValue.setString(3, cid);
       return insertValue.executeUpdate();
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -755,8 +753,8 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
          renameNode.clearParameters();
       }
 
-      renameNode.setString(1, data.getParentIdentifier() == null ? Constants.ROOT_PARENT_UUID : data
-         .getParentIdentifier());
+      renameNode.setString(1,
+         data.getParentIdentifier() == null ? Constants.ROOT_PARENT_UUID : data.getParentIdentifier());
       renameNode.setString(2, data.getQPath().getName().getAsString());
       renameNode.setInt(3, data.getPersistedVersion());
       renameNode.setInt(4, data.getQPath().getIndex());
@@ -1024,12 +1022,12 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       try
       {
          removeValuesStatement =
-            dbConnection.prepareStatement("DELETE FROM JCR_MVALUE WHERE PROPERTY_ID IN"
-               + " (SELECT ID FROM JCR_MITEM WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+            dbConnection.prepareStatement("DELETE FROM " + JCR_VALUE + " WHERE PROPERTY_ID IN" + " (SELECT ID FROM "
+               + JCR_ITEM + " WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
 
          removeItemsStatement =
-            dbConnection.prepareStatement("DELETE FROM JCR_MITEM WHERE"
+            dbConnection.prepareStatement("DELETE FROM " + JCR_ITEM + " WHERE"
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'");
 
@@ -1067,17 +1065,31 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
+   protected ResultSet findNodesCount() throws SQLException
+   {
+      if (findNodesCount == null)
+      {
+         findNodesCount = dbConnection.prepareStatement(FIND_NODES_COUNT);
+      }
+      return findNodesCount.executeQuery();
+   }
+
+   /** 
+    * {@inheritDoc} 
+    */
    protected ResultSet findMaxPropertyVersion(String parentId, String name, int index) throws SQLException
    {
       if (findMaxPropertyVersions == null)
       {
          findMaxPropertyVersions = dbConnection.prepareStatement(FIND_MAX_PROPERTY_VERSIONS);
       }
-      
+
       findMaxPropertyVersions.setString(1, getInternalId(parentId));
       findMaxPropertyVersions.setString(2, name);
       findMaxPropertyVersions.setInt(3, index);
 
       return findMaxPropertyVersions.executeQuery();
    }
+
 }

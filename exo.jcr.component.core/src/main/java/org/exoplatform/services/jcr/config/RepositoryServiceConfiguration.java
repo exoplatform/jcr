@@ -19,21 +19,12 @@
 package org.exoplatform.services.jcr.config;
 
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.management.annotations.Managed;
-import org.exoplatform.management.annotations.ManagedDescription;
-import org.exoplatform.management.jmx.annotations.NameTemplate;
-import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
-import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.IUnmarshallingContext;
 import org.jibx.runtime.JiBXException;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.LinkedHashMap;
@@ -49,11 +40,9 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov </a>
  * @version $Id: RepositoryServiceConfiguration.java 2038 2005-10-05 16:50:11Z geaz $
  */
-@Managed
-@NameTemplate(@Property(key = "service", value = "RepositoryServiceConfiguration"))
+
 public class RepositoryServiceConfiguration extends AbstractRepositoryServiceConfiguration
 {
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RepositoryServiceConfiguration"); //NOSONAR
 
    public RepositoryServiceConfiguration()
    {
@@ -191,37 +180,4 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
    {
    }
 
-   @Managed
-   @ManagedDescription("The configuration of all the repositories in XML format.")
-   public String getConfigurationXML()
-   {
-      StringWriter sw = new StringWriter();
-      try
-      {
-         IBindingFactory bfact = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
-         IMarshallingContext mctx = bfact.createMarshallingContext();
-         mctx.setIndent(2);
-         mctx.marshalDocument(this, "UTF-8", null, sw);
-      }
-      catch (Exception e)
-      {
-         LOG.warn("Cannot convert the configuration to XML format", e);
-         return null;
-      }
-      finally
-      {
-         try
-         {
-            sw.close();
-         }
-         catch (IOException ignore)
-         {
-            if (LOG.isTraceEnabled())
-            {
-               LOG.trace("An exception occurred: " + ignore.getMessage());
-            }
-         }
-      }
-      return sw.toString();
-   }
 }

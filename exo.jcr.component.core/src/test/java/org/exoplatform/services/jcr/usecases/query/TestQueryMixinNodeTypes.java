@@ -18,6 +18,7 @@
 package org.exoplatform.services.jcr.usecases.query;
 
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 import java.io.ByteArrayInputStream;
@@ -98,32 +99,31 @@ public class TestQueryMixinNodeTypes extends BaseUsecasesTest
 
    private void registerNodetypes() throws Exception
    {
-
       registerNamespace("kfx", "http://www.exoplatform.com/jcr/kfx/1.1/");
       registerNamespace("dc", "http://purl.org/dc/elements/1.1/");
 
       InputStream xml =
          this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/usecases/query/ext-nodetypes-config.xml");
-      repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml,
-         ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+      repositoryService.getCurrentRepository().getNodeTypeManager()
+         .registerNodeTypes(xml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS, NodeTypeDataManager.TEXT_XML);
       InputStream xml1 =
          this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/usecases/query/nodetypes-config.xml");
-      repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml1,
-         ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+      repositoryService.getCurrentRepository().getNodeTypeManager()
+         .registerNodeTypes(xml1, ExtendedNodeTypeManager.IGNORE_IF_EXISTS, NodeTypeDataManager.TEXT_XML);
       InputStream xml2 =
          this.getClass().getResourceAsStream(
             "/org/exoplatform/services/jcr/usecases/query/nodetypes-config-extended.xml");
-      repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml2,
-         ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+      repositoryService.getCurrentRepository().getNodeTypeManager()
+         .registerNodeTypes(xml2, ExtendedNodeTypeManager.IGNORE_IF_EXISTS, NodeTypeDataManager.TEXT_XML);
       InputStream xml3 =
          this.getClass().getResourceAsStream("/org/exoplatform/services/jcr/usecases/query/nodetypes-ecm.xml");
-      repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml3,
-         ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+      repositoryService.getCurrentRepository().getNodeTypeManager()
+         .registerNodeTypes(xml3, ExtendedNodeTypeManager.IGNORE_IF_EXISTS, NodeTypeDataManager.TEXT_XML);
       InputStream xml4 =
          this.getClass().getResourceAsStream(
             "/org/exoplatform/services/jcr/usecases/query/business-process-nodetypes.xml");
-      repositoryService.getCurrentRepository().getNodeTypeManager().registerNodeTypes(xml4,
-         ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+      repositoryService.getCurrentRepository().getNodeTypeManager()
+         .registerNodeTypes(xml4, ExtendedNodeTypeManager.IGNORE_IF_EXISTS, NodeTypeDataManager.TEXT_XML);
    }
 
    public void registerNamespace(String prefix, String uri)

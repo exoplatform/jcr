@@ -17,7 +17,9 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,16 +35,20 @@ import java.sql.Statement;
 public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
 {
 
-   private void setUp(String scriptPath, boolean multiDB) throws Exception
+   private void setUp(String scriptPath, DatabaseStructureType dbStructureType) throws Exception
    {
       super.setUp();
-      new StorageDBInitializer("ws3", getJNDIConnection(), scriptPath, multiDB).init();
+      JDBCDataContainerConfig containerConfig = new JDBCDataContainerConfig();
+      containerConfig.containerName = "ws3";
+      containerConfig.initScriptPath = scriptPath;
+      containerConfig.dbStructureType = dbStructureType;
+      new DBInitializer(getJNDIConnection(), containerConfig).init();
    }
-   
+
    @Override
    public void setUp() throws Exception
    {
-      setUp("/conf/storage/jcr-sjdbc.sql", false);
+      setUp("/conf/storage/jcr-sjdbc.sql", DatabaseStructureType.SINGLE);
       try
       {
          Statement st = getJNDIConnection().createStatement();
@@ -57,7 +63,11 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
          st.executeUpdate("insert into JCR_SREF values" + "('D','A',2)");
          st.executeUpdate("insert into JCR_SREF values" + "('E','B',2)");
          st.close();
-         jdbcConn = new SingleDbJDBCConnection(getJNDIConnection(), false, "ws3", null, 10, null, null);
+         JDBCDataContainerConfig jdbcDataContainerConfig = new JDBCDataContainerConfig();
+         jdbcDataContainerConfig.containerName = "ws3";
+         jdbcDataContainerConfig.maxBufferSize = 10;
+         jdbcDataContainerConfig.dbStructureType = DatabaseStructureType.SINGLE;
+         jdbcConn = new SingleDbJDBCConnection(getJNDIConnection(), false, jdbcDataContainerConfig);
          tableType = "S";
       }
       catch (SQLException se)
@@ -79,7 +89,6 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
          st.executeUpdate("drop table JCR_SREF");
          st.executeUpdate("drop table JCR_SVALUE");
          st.executeUpdate("drop table JCR_SITEM");
-         st.executeUpdate("drop table JCR_SCONTAINER");
          st.close();
       }
       catch (SQLException se)

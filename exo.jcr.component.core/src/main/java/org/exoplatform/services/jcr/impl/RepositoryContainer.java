@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.ComponentPlugin;
@@ -31,7 +32,6 @@ import org.exoplatform.services.jcr.access.AccessControlPolicy;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
@@ -46,7 +46,6 @@ import org.exoplatform.services.jcr.impl.core.SessionFactory;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.access.DefaultAccessManagerImpl;
-import org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
@@ -161,7 +160,8 @@ public class RepositoryContainer extends ExoContainer
             {
                unregisterAllComponents();
                parent.unregisterComponent(name);
-               throw new IllegalStateException("Can not register repository container " + name + " in parent container.", t);
+               throw new IllegalStateException("Can not register repository container " + name
+                  + " in parent container.", t);
             }
             return null;
          }
@@ -282,7 +282,8 @@ public class RepositoryContainer extends ExoContainer
                workspaceContainer.registerComponentImplementation(StandaloneStoragePluginProvider.class);
                try
                {
-                  final Class<?> containerType = Class.forName(wsConfig.getContainer().getType());
+                  final Class<?> containerType =
+                     ClassLoading.forName(wsConfig.getContainer().getType(), RepositoryContainer.class);
                   workspaceContainer.registerComponentImplementation(containerType);
                   if (isSystem)
                   {
@@ -295,13 +296,15 @@ public class RepositoryContainer extends ExoContainer
                   throw new RepositoryConfigurationException("Class not found for workspace data container "
                      + wsConfig.getUniqueName() + " : " + e);
                }
+
                // cache type
                try
                {
                   String className = wsConfig.getCache().getType();
                   if (className != null && className.length() > 0)
                   {
-                     workspaceContainer.registerComponentImplementation(Class.forName(className));
+                     workspaceContainer.registerComponentImplementation(ClassLoading.forName(className,
+                        RepositoryContainer.class));
                   }
                   else
                      workspaceContainer.registerComponentImplementation(LinkedWorkspaceStorageCacheImpl.class);
@@ -309,7 +312,7 @@ public class RepositoryContainer extends ExoContainer
                catch (ClassNotFoundException e)
                {
                   log.warn("Workspace cache class not found " + wsConfig.getCache().getType()
-                     + ", will use default. Error : " + e);
+                     + ", will use default. Error : " + e.getMessage());
                   workspaceContainer.registerComponentImplementation(LinkedWorkspaceStorageCacheImpl.class);
                }
 
@@ -317,27 +320,12 @@ public class RepositoryContainer extends ExoContainer
                workspaceContainer.registerComponentImplementation(LocalWorkspaceDataManagerStub.class);
                workspaceContainer.registerComponentImplementation(ObservationManagerRegistry.class);
 
-               // Lock manager and Lock persister is a optional parameters
-               if (wsConfig.getLockManager() != null && wsConfig.getLockManager().getPersister() != null)
-               {
-                  try
-                  {
-                     final Class<?> lockPersister = Class.forName(wsConfig.getLockManager().getPersister().getType());
-                     workspaceContainer.registerComponentImplementation(lockPersister);
-                  }
-                  catch (ClassNotFoundException e)
-                  {
-                     throw new RepositoryConfigurationException("Class not found for workspace lock persister "
-                        + wsConfig.getLockManager().getPersister().getType() + ", container " + wsConfig.getUniqueName()
-                        + " : " + e);
-                  }
-               }
-
                if (wsConfig.getLockManager() != null && wsConfig.getLockManager().getType() != null)
                {
                   try
                   {
-                     final Class<?> lockManagerType = Class.forName(wsConfig.getLockManager().getType());
+                     final Class<?> lockManagerType =
+                        ClassLoading.forName(wsConfig.getLockManager().getType(), RepositoryContainer.class);
                      workspaceContainer.registerComponentImplementation(lockManagerType);
                   }
                   catch (ClassNotFoundException e)
@@ -348,8 +336,10 @@ public class RepositoryContainer extends ExoContainer
                }
                else
                {
-                  workspaceContainer.registerComponentImplementation(LockManagerImpl.class);
+                  throw new RepositoryConfigurationException(
+                     "The configuration of lock manager is expected in container " + wsConfig.getUniqueName());
                }
+
                // Query handler
                if (wsConfig.getQueryHandler() != null)
                {
@@ -368,7 +358,7 @@ public class RepositoryContainer extends ExoContainer
                {
                   try
                   {
-                     final Class<?> am = Class.forName(wsConfig.getAccessManager().getType());
+                     final Class<?> am = ClassLoading.forName(wsConfig.getAccessManager().getType(), RepositoryContainer.class);
                      workspaceContainer.registerComponentImplementation(am);
                   }
                   catch (ClassNotFoundException e)
@@ -385,7 +375,7 @@ public class RepositoryContainer extends ExoContainer
                   // use user defined
                   try
                   {
-                     initilizerType = Class.forName(wsConfig.getInitializer().getType());
+                     initilizerType = ClassLoading.forName(wsConfig.getInitializer().getType(), RepositoryContainer.class);
                   }
                   catch (ClassNotFoundException e)
                   {
@@ -497,17 +487,6 @@ public class RepositoryContainer extends ExoContainer
    @Override
    public synchronized void stop()
    {
-      RepositoryImpl repository = (RepositoryImpl)getComponentInstanceOfType(RepositoryImpl.class);
-
-      try
-      {
-         repository.setState(ManageableRepository.OFFLINE);
-      }
-      catch (RepositoryException e)
-      {
-         log.error("Can not switch repository to OFFLINE", e);
-      }
-
       super.stop();
       super.unregisterAllComponents();
    }
@@ -647,7 +626,8 @@ public class RepositoryContainer extends ExoContainer
                }
                try
                {
-                  final Class<?> authenticationPolicyClass = Class.forName(config.getAuthenticationPolicy());
+                  final Class<?> authenticationPolicyClass =
+                     ClassLoading.forName(config.getAuthenticationPolicy(), RepositoryContainer.class);
                   registerComponentImplementation(authenticationPolicyClass);
                }
                catch (ClassNotFoundException e)

@@ -18,14 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
-import java.io.File;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
@@ -44,112 +41,10 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
 
    /**
     * GenericConnectionFactory constructor.
-    * 
-    * @param dataSource
-    *          - DataSource
-    * @param dbDriver
-    *          - JDBC Driver
-    * @param dbUrl
-    *          - JDBC URL
-    * @param dbUserName
-    *          - database username
-    * @param dbPassword
-    *          - database user password
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
     */
-   protected GenericCQConnectionFactory(DataSource dataSource, String dbDriver, String dbUrl, String dbUserName,
-      String dbPassword, String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider,
-      int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+   public GenericCQConnectionFactory(DataSource dataSource, JDBCDataContainerConfig containerConfig)
    {
-      super(dataSource, dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider,
-         maxBufferSize, swapDirectory, swapCleaner);
-   }
-
-   /**
-    * GenericConnectionFactory constructor.
-    * 
-    * @param dataSource
-    *          - DataSource
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    */
-   public GenericCQConnectionFactory(DataSource dataSource, String containerName, boolean multiDb,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
-   {
-
-      this(dataSource, null, null, null, null, containerName, multiDb, valueStorageProvider, maxBufferSize,
-         swapDirectory, swapCleaner);
-   }
-
-   /**
-    * GenericConnectionFactory constructor.
-    * 
-    * @param dbDriver
-    *          - JDBC Driver
-    * @param dbUrl
-    *          - JDBC URL
-    * @param dbUserName
-    *          - database username
-    * @param dbPassword
-    *          - database user password
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    */
-   public GenericCQConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
-   {
-
-      this(null, dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-         swapDirectory, swapCleaner);
-
-      try
-      {
-         Class.forName(dbDriver).newInstance();
-      }
-      catch (InstantiationException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (IllegalAccessException e)
-      {
-         throw new RepositoryException(e);
-      }
-      catch (ClassNotFoundException e)
-      {
-         throw new RepositoryException(e);
-      }
+      super(dataSource, containerConfig);
    }
 
    /**
@@ -170,14 +65,12 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
       try
       {
 
-         if (multiDb)
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
-            return new MultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-               valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+            return new MultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }
 
-         return new SingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName, valueStorageProvider,
-            maxBufferSize, swapDirectory, swapCleaner);
+         return new SingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
 
       }
       catch (SQLException e)
@@ -194,10 +87,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    {
       try
       {
-         Connection conn = dbDataSource != null ? dbDataSource.getConnection() : (dbUserName != null ? DriverManager
-            .getConnection(dbUrl, dbUserName, dbPassword) : DriverManager.getConnection(dbUrl));
-
-         return conn;
+         return dbDataSource.getConnection();
       }
       catch (SQLException e)
       {
@@ -216,7 +106,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    {
       return getJdbcConnection(false);
    }
-   
+
    /**
     * {@inheritDoc}
     */

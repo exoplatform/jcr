@@ -16,47 +16,61 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene.hits;
 
-import java.io.IOException;
-
+import org.apache.lucene.search.DocIdSetIterator;
 import org.apache.lucene.search.Scorer;
+
+import java.io.IOException;
 
 /**
  * Wraps a {@link org.apache.lucene.search.Scorer} in a {@link Hits} instance.
  */
-public class ScorerHits implements Hits {
+public class ScorerHits implements Hits
+{
 
-    private final Scorer scorer;
+   private final Scorer scorer;
 
-    public ScorerHits(Scorer scorer) {
-        this.scorer = scorer;
-    }
+   public ScorerHits(Scorer scorer)
+   {
+      this.scorer = scorer;
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public void set(int doc) {
-        throw new UnsupportedOperationException();
-    }
+   /**
+    * {@inheritDoc}
+    */
+   public void set(int doc)
+   {
+      throw new UnsupportedOperationException();
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public int next() throws IOException {
-        if (scorer.next()) {
-            return scorer.doc();
-        } else {
-            return -1;
-        }
-    }
+   /**
+    * {@inheritDoc}
+    */
+   public int next() throws IOException
+   {
+      int docId = scorer.nextDoc();
+      if (docId != DocIdSetIterator.NO_MORE_DOCS)
+      {
+         return docId;
+      }
+      else
+      {
+         return -1;
+      }
+   }
 
-    /**
-     * {@inheritDoc}
-     */
-    public int skipTo(int target) throws IOException {
-        if (scorer.skipTo(target)) {
-            return scorer.doc();
-        } else {
-            return -1;
-        }
-    }
+   /**
+    * {@inheritDoc}
+    */
+   public int skipTo(int target) throws IOException
+   {
+      int docId = scorer.advance(target);
+      if (docId != DocIdSetIterator.NO_MORE_DOCS)
+      {
+         return docId;
+      }
+      else
+      {
+         return -1;
+      }
+   }
 }

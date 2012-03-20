@@ -56,7 +56,7 @@ import java.util.Set;
 public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeListener
 {
 
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheIndexInfos");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheIndexInfos");
 
    private static final String INDEX_NAMES = "$names".intern();
 
@@ -64,17 +64,17 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
 
    private static final String LIST_KEY = "$listOfIndexes".intern();
 
-   private final Cache<Serializable, Object> cache;
+   protected final Cache<Serializable, Object> cache;
 
    /**
     * Flag notifies if this IndexInfos is from system search manager or not.
     */
-   private boolean system;
+   protected boolean system;
 
    /**
     * Used to retrieve the current mode
     */
-   private final IndexerIoModeHandler modeHandler;
+   protected final IndexerIoModeHandler modeHandler;
 
    /**
     * This FQN points to cache node, where list of indexes for this {@link IndexInfos} instance is stored.
@@ -143,7 +143,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
          }
          catch (IOException e)
          {
-            log.error("Cannot read the list of indexe names", e);
+            LOG.error("Cannot read the list of indexe names", e);
          }
       }
       else
@@ -183,7 +183,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
          Map<?, ?> data = event.getData();
          if (data == null)
          {
-            log.warn("The data map is empty");
+            LOG.warn("The data map is empty");
          }
          else
          {
@@ -191,27 +191,40 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
          }
          if (set == null)
          {
-            log.warn("The data cannot be found, we will try to get it from the cache");
+            LOG.warn("The data cannot be found, we will try to get it from the cache");
             // read from cache to update lists
             set = (Set<String>)cache.get(namesFqn, LIST_KEY);
          }
-         if (set != null)
-         {
-            setNames(set);
-            // callback multiIndex to refresh lists
-            try
-            {
-               MultiIndex multiIndex = getMultiIndex();
-               if (multiIndex != null)
-               {
-                  multiIndex.refreshIndexList();
-               }
-            }
-            catch (IOException e)
-            {
-               log.error("Failed to update indexes! " + e.getMessage(), e);
-            }
-         }
+         refreshIndexes(set);
       }
    }
+
+   /**
+    * Update index configuration, when it changes on persistent storage 
+    * 
+    * @param set
+    */
+   protected void refreshIndexes(Set<String> set)
+   {
+      // do nothing if null is passed
+      if (set == null)
+      {
+         return;
+      }
+      setNames(set);
+      // callback multiIndex to refresh lists
+      try
+      {
+         MultiIndex multiIndex = getMultiIndex();
+         if (multiIndex != null)
+         {
+            multiIndex.refreshIndexList();
+         }
+      }
+      catch (IOException e)
+      {
+         LOG.error("Failed to update indexes! " + e.getMessage(), e);
+      }
+   }
+
 }

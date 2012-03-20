@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.core;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
@@ -65,6 +64,7 @@ import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -190,7 +190,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void addMixin(String mixinName) throws NoSuchNodeTypeException, ConstraintViolationException,
       VersionException, LockException, RepositoryException
    {
-
       checkValid();
 
       if (LOG.isDebugEnabled())
@@ -219,13 +218,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          throw new NoSuchNodeTypeException("Nodetype " + mixinName + " not found or not mixin type.");
       }
 
-      // Validate
-      if (session.getWorkspace().getNodeTypesHolder().isNodeType(type.getName(), nodeData().getPrimaryTypeName(),
-         nodeData().getMixinTypeNames()))
-      {
-         throw new ConstraintViolationException("Can not add mixin type " + mixinName + " to " + getPath());
-      }
-
       if (definition.isProtected())
       {
          throw new ConstraintViolationException("Can not add mixin type. Node is protected " + getPath());
@@ -252,7 +244,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Node addNode(String relPath) throws PathNotFoundException, ConstraintViolationException, RepositoryException,
       VersionException, LockException
    {
-
       checkValid();
       if (JCRPath.THIS_RELPATH.equals(relPath))
       {
@@ -310,7 +301,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
       // try to make new node
       return doAddNode(parent, name, primaryTypeName, nodeDef);
-
    }
 
    /**
@@ -319,7 +309,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Node addNode(String relPath, String nodeTypeName) throws ItemExistsException, PathNotFoundException,
       NoSuchNodeTypeException, ConstraintViolationException, RepositoryException, VersionException, LockException
    {
-
       checkValid();
 
       if (JCRPath.THIS_RELPATH.equals(relPath))
@@ -363,7 +352,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public boolean canAddMixin(String mixinName) throws RepositoryException
    {
-
       checkValid();
 
       NodeTypeData type =
@@ -459,7 +447,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Version checkin() throws VersionException, UnsupportedRepositoryOperationException,
       InvalidItemStateException, RepositoryException
    {
-
       checkValid();
 
       if (!session.getAccessManager().hasPermission(getACL(),
@@ -525,7 +512,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public void checkout() throws RepositoryException, UnsupportedRepositoryOperationException
    {
-
       checkValid();
 
       if (!session.getAccessManager().hasPermission(getACL(), new String[]{PermissionType.SET_PROPERTY},
@@ -572,7 +558,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public void checkPermission(String actions) throws AccessControlException, RepositoryException
    {
-
       checkValid();
 
       if (!session.getAccessManager().hasPermission(getACL(), actions, session.getUserState().getIdentity()))
@@ -596,7 +581,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       List<AccessControlEntry> aces = new ArrayList<AccessControlEntry>();
       for (String perm : PermissionType.ALL)
       {
-         AccessControlEntry ace = new AccessControlEntry(SystemIdentity.ANY, perm);
+         AccessControlEntry ace = new AccessControlEntry(IdentityConstants.ANY, perm);
          aces.add(ace);
       }
       AccessControlList acl = new AccessControlList(getACL().getOwner(), aces);
@@ -623,7 +608,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    private void doAddMixin(NodeTypeData type) throws NoSuchNodeTypeException, ConstraintViolationException,
       VersionException, LockException, RepositoryException
    {
-
       // Add both to mixinNodeTypes and to jcr:mixinTypes property
 
       // Prepare mixin values
@@ -704,7 +688,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void doneMerge(Version version) throws VersionException, InvalidItemStateException,
       UnsupportedRepositoryOperationException, RepositoryException
    {
-
       if (!session.getAccessManager().hasPermission(getACL(),
          new String[]{PermissionType.ADD_NODE, PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
       {
@@ -758,7 +741,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public AccessControlList getACL() throws RepositoryException
    {
-
       checkValid();
 
       List<AccessControlEntry> listEntry = new ArrayList<AccessControlEntry>();
@@ -776,7 +758,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public Version getBaseVersion() throws UnsupportedRepositoryOperationException, RepositoryException
    {
-
       checkValid();
 
       if (!this.isNodeType(Constants.MIX_VERSIONABLE))
@@ -814,7 +795,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    protected NodeData getCorrespondingNodeData(SessionImpl corrSession) throws ItemNotFoundException,
       AccessDeniedException, RepositoryException
    {
-
       final QPath myPath = nodeData().getQPath();
       final SessionDataManager corrDataManager = corrSession.getTransientNodesManager();
 
@@ -868,7 +848,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public String getCorrespondingNodePath(String workspaceName) throws ItemNotFoundException, NoSuchWorkspaceException,
       AccessDeniedException, RepositoryException
    {
-
       checkValid();
 
       SessionImpl corrSession =
@@ -882,7 +861,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public NodeDefinition getDefinition() throws RepositoryException
    {
-
       checkValid();
 
       if (nodeDefinition == null)
@@ -941,7 +919,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public int getIndex() throws RepositoryException
    {
-
       checkValid();
 
       return getInternalPath().getIndex();
@@ -953,7 +930,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Lock getLock() throws UnsupportedRepositoryOperationException, LockException, AccessDeniedException,
       RepositoryException
    {
-
       checkValid();
 
       LockImpl lock = session.getLockManager().getLock(this);
@@ -971,7 +947,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public NodeType[] getMixinNodeTypes() throws RepositoryException
    {
-
       checkValid();
 
       // should not be null
@@ -1014,7 +989,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public Node getNode(String relPath) throws PathNotFoundException, RepositoryException
    {
-
       checkValid();
 
       JCRPath itemPath = locationFactory.parseRelPath(relPath);
@@ -1044,7 +1018,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public NodeIterator getNodes() throws RepositoryException
    {
-
       if (SessionImpl.FORCE_USE_GET_NODES_LAZILY)
       {
          if (LOG.isDebugEnabled())
@@ -1124,7 +1097,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public NodeIterator getNodes(String namePattern) throws RepositoryException
    {
-
       long start = 0;
       if (LOG.isDebugEnabled())
       {
@@ -1188,7 +1160,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public Item getPrimaryItem() throws ItemNotFoundException, RepositoryException
    {
-
       checkValid();
 
       NodeTypeDataManager nodeTypeDataManager = session.getWorkspace().getNodeTypesHolder();
@@ -1236,7 +1207,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public PropertyIterator getProperties() throws RepositoryException
    {
-
       long start = 0;
       if (LOG.isDebugEnabled())
       {
@@ -1366,7 +1336,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public Property getProperty(String relPath) throws PathNotFoundException, RepositoryException
    {
-
       checkValid();
 
       JCRPath itemPath = locationFactory.parseRelPath(relPath);
@@ -1390,7 +1359,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public PropertyIterator getReferences() throws RepositoryException
    {
-
       checkValid();
 
       return new EntityCollection(dataManager.getReferences(getInternalIdentifier()));
@@ -1401,7 +1369,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public String getUUID() throws UnsupportedRepositoryOperationException, RepositoryException
    {
-
       checkValid();
 
       if (isNodeType(Constants.MIX_REFERENCEABLE))
@@ -1459,7 +1426,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public VersionHistory getVersionHistory() throws UnsupportedRepositoryOperationException, RepositoryException
    {
-
       checkValid();
 
       return versionHistory(true);
@@ -1470,7 +1436,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public boolean hasNode(String relPath) throws RepositoryException
    {
-
       checkValid();
 
       JCRPath itemPath = locationFactory.parseRelPath(relPath);
@@ -1484,7 +1449,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public boolean hasNodes() throws RepositoryException
    {
-
       checkValid();
 
       return dataManager.getChildNodesCount(nodeData()) > 0;
@@ -1495,7 +1459,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public boolean hasProperties() throws RepositoryException
    {
-
       checkValid();
 
       return dataManager.listChildPropertiesData(nodeData()).size() > 0;
@@ -1506,7 +1469,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public boolean hasProperty(String relPath) throws RepositoryException
    {
-
       checkValid();
 
       JCRPath itemPath = locationFactory.parseRelPath(relPath);
@@ -1520,7 +1482,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public boolean holdsLock() throws RepositoryException
    {
-
       checkValid();
 
       return session.getLockManager().holdsLock((NodeData)getData());
@@ -1542,7 +1503,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public boolean isLocked() throws RepositoryException
    {
-
       checkValid();
       return session.getLockManager().isLocked((NodeData)this.getData());
    }
@@ -1599,7 +1559,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void loadData(ItemData data, NodeData parent) throws RepositoryException, InvalidItemStateException,
       ConstraintViolationException
    {
-
       if (data.isNode())
       {
          NodeData nodeData = (NodeData)data;
@@ -1684,7 +1643,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Lock lock(boolean isDeep, boolean isSessionScoped) throws UnsupportedRepositoryOperationException,
       LockException, AccessDeniedException, RepositoryException
    {
-
       checkValid();
 
       if (!isNodeType(Constants.MIX_LOCKABLE))
@@ -1781,7 +1739,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public NodeIterator merge(String srcWorkspace, boolean bestEffort) throws UnsupportedRepositoryOperationException,
       NoSuchWorkspaceException, AccessDeniedException, MergeException, RepositoryException, InvalidItemStateException
    {
-
       checkValid();
 
       if (!session.getAccessManager().hasPermission(getACL(),
@@ -1823,7 +1780,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void orderBefore(String srcName, String destName) throws UnsupportedRepositoryOperationException,
       ConstraintViolationException, ItemNotFoundException, RepositoryException
    {
-
       checkValid();
 
       if (!getPrimaryNodeType().hasOrderableChildNodes())
@@ -1846,7 +1802,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void removeMixin(String mixinName) throws NoSuchNodeTypeException, ConstraintViolationException,
       RepositoryException
    {
-
       checkValid();
 
       InternalQName[] mixinTypes = nodeData().getMixinTypeNames();
@@ -1973,7 +1928,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public void removePermission(String identity) throws RepositoryException, AccessControlException
    {
-
       checkValid();
 
       if (!isNodeType(Constants.EXO_PRIVILEGEABLE))
@@ -1994,7 +1948,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public void removePermission(String identity, String permission) throws RepositoryException, AccessControlException
    {
-
       checkValid();
 
       if (!isNodeType(Constants.EXO_PRIVILEGEABLE))
@@ -2016,7 +1969,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void restore(String versionName, boolean removeExisting) throws VersionException, ItemExistsException,
       UnsupportedRepositoryOperationException, LockException, RepositoryException, InvalidItemStateException
    {
-
       VersionImpl version = (VersionImpl)versionHistory(false).version(versionName, false);
       restore(version, removeExisting);
    }
@@ -2027,7 +1979,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void restore(Version version, boolean removeExisting) throws VersionException, ItemExistsException,
       UnsupportedRepositoryOperationException, LockException, RepositoryException, InvalidItemStateException
    {
-
       checkValid();
 
       if (!session.getAccessManager().hasPermission(getACL(),
@@ -2074,7 +2025,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       ItemExistsException, UnsupportedRepositoryOperationException, LockException, RepositoryException,
       InvalidItemStateException
    {
-
       if (JCRPath.THIS_RELPATH.equals(relPath))
       {
 
@@ -2169,7 +2119,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       ItemExistsException, UnsupportedRepositoryOperationException, LockException, RepositoryException,
       InvalidItemStateException
    {
-
       checkValid();
 
       VersionImpl version = (VersionImpl)getVersionHistory().getVersionByLabel(versionLabel);
@@ -2182,7 +2131,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public void setPermission(String identity, String[] permission) throws RepositoryException, AccessControlException
    {
-
       checkValid();
 
       if (!isNodeType(Constants.EXO_PRIVILEGEABLE))
@@ -2219,7 +2167,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void setPermissions(Map permissions) throws RepositoryException, AccessDeniedException,
       AccessControlException
    {
-
       checkValid();
 
       if (!isNodeType(Constants.EXO_PRIVILEGEABLE))
@@ -2267,7 +2214,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, boolean value) throws ValueFormatException, VersionException,
       LockException, ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       return doUpdateProperty(this, locationFactory.parseJCRName(name).getInternalName(), valueFactory
@@ -2281,7 +2227,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, Calendar value) throws ValueFormatException, VersionException,
       LockException, ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       return doUpdateProperty(this, locationFactory.parseJCRName(name).getInternalName(), valueFactory
@@ -2308,7 +2253,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, InputStream value) throws ValueFormatException, VersionException,
       LockException, ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       return doUpdateProperty(this, locationFactory.parseJCRName(name).getInternalName(), valueFactory
@@ -2321,7 +2265,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, long value) throws ValueFormatException, VersionException, LockException,
       ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       return doUpdateProperty(this, locationFactory.parseJCRName(name).getInternalName(), valueFactory
@@ -2335,7 +2278,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, Node value) throws ValueFormatException, VersionException, LockException,
       ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       return doUpdateProperty(this, locationFactory.parseJCRName(name).getInternalName(), valueFactory
@@ -2349,7 +2291,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, String value) throws ValueFormatException, VersionException, LockException,
       ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       return doUpdateProperty(this, locationFactory.parseJCRName(name).getInternalName(), valueFactory
@@ -2363,7 +2304,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, String value, int type) throws ValueFormatException, VersionException,
       LockException, ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       return doUpdateProperty(this, locationFactory.parseJCRName(name).getInternalName(), valueFactory.createValue(
@@ -2376,7 +2316,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, String[] values) throws ValueFormatException, VersionException,
       LockException, ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       Value[] val = null;
@@ -2398,7 +2337,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, String[] values, int type) throws ValueFormatException, VersionException,
       LockException, ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       Value[] val = null;
@@ -2420,7 +2358,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, Value value) throws ValueFormatException, VersionException, LockException,
       ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       return doUpdateProperty(this, locationFactory.parseJCRName(name).getInternalName(), value, false,
@@ -2433,7 +2370,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, Value value, int type) throws ValueFormatException, VersionException,
       LockException, ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       return doUpdateProperty(this, locationFactory.parseJCRName(name).getInternalName(), value, false, type);
@@ -2446,7 +2382,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, Value[] values) throws ValueFormatException, VersionException,
       LockException, ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       return doUpdateProperty(this, locationFactory.parseJCRName(name).getInternalName(), values, true,
@@ -2459,7 +2394,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public Property setProperty(String name, Value[] values, int type) throws ValueFormatException, VersionException,
       LockException, ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       return doUpdateProperty(this, locationFactory.parseJCRName(name).getInternalName(), values, true, type);
@@ -2471,7 +2405,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void unlock() throws UnsupportedRepositoryOperationException, LockException, AccessDeniedException,
       RepositoryException
    {
-
       checkValid();
 
       if (!session.getLockManager().holdsLock((NodeData)this.getData()))
@@ -2509,7 +2442,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void update(String srcWorkspaceName) throws NoSuchWorkspaceException, AccessDeniedException,
       InvalidItemStateException, LockException, RepositoryException
    {
-
       checkValid();
 
       // Check pending changes
@@ -2559,7 +2491,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public void validateChildNode(InternalQName name, InternalQName primaryTypeName) throws ItemExistsException,
       RepositoryException, ConstraintViolationException, VersionException, LockException
    {
-
       // Check if nodeType exists and not mixin
       NodeTypeDataManager nodeTypeDataManager = session.getWorkspace().getNodeTypesHolder();
       NodeTypeData nodeType = nodeTypeDataManager.getNodeType(primaryTypeName);
@@ -2630,7 +2561,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    public VersionHistoryImpl versionHistory(boolean pool) throws UnsupportedRepositoryOperationException,
       RepositoryException
    {
-
       if (!this.isNodeType(Constants.MIX_VERSIONABLE))
       {
          throw new UnsupportedRepositoryOperationException("Node is not mix:versionable " + getPath());
@@ -2661,7 +2591,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       //         SystemIdentity.SYSTEM));
 
       return (session.getLockManager().checkLocking(this.nodeData()) || session.getUserID().equals(
-         SystemIdentity.SYSTEM));
+         IdentityConstants.SYSTEM));
 
    }
 
@@ -2853,7 +2783,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    protected void doUnlock() throws RepositoryException
    {
-
       PlainChangesLog changesLog = new PlainChangesLogImpl(new ArrayList<ItemState>(), session, ExtendedEvent.UNLOCK);
 
       ItemData lockOwner =
@@ -2906,7 +2835,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
    protected PropertyData updatePropertyData(InternalQName name, List<ValueData> values) throws RepositoryException
    {
-
       PropertyData existed =
          (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(name, 0), ItemType.PROPERTY);
 
@@ -2930,7 +2858,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
    protected PropertyData updatePropertyData(InternalQName name, ValueData value) throws RepositoryException
    {
-
       PropertyData existed =
          (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(name, 0), ItemType.PROPERTY);
 
@@ -2958,7 +2885,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    private List<PropertyData> childPropertiesData() throws RepositoryException, AccessDeniedException
    {
-
       List<PropertyData> storedProps = new ArrayList<PropertyData>(dataManager.getChildPropertiesData(nodeData()));
 
       Collections.sort(storedProps, new PropertiesDataOrderComparator<PropertyData>());
@@ -2985,7 +2911,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    private EntityCollection createMergeFailed(Map<String, String> failed, SessionChangesLog changes)
       throws RepositoryException
    {
-
       EntityCollection res = new EntityCollection();
       TransientPropertyData mergeFailed =
          (TransientPropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_MERGEFAILED, 0),
@@ -3163,13 +3088,16 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
       catch (RepositoryException e)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return false;
    }
 
    private void removeMergeFailed(Version version, PlainChangesLog changesLog) throws RepositoryException
    {
-
       PropertyData mergeFailed =
          (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_MERGEFAILED, 0),
             ItemType.PROPERTY);
@@ -3384,7 +3312,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             }
             catch (RepositoryException e)
             {
-               LOG.error(e);
+               LOG.error("An exception occured: " + e.getMessage());
                throw new NoSuchElementException(e.toString());
             }
          }
@@ -3448,7 +3376,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          }
          catch (RepositoryException e)
          {
-            LOG.error(e);
+            LOG.error("An exception occured: " + e.getMessage());
             throw new NoSuchElementException(e.toString());
          }
 

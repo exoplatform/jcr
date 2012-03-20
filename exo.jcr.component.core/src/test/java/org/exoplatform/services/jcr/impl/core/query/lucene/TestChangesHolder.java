@@ -20,11 +20,13 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import junit.framework.TestCase;
 
+import org.apache.lucene.document.AbstractField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Field.Index;
 import org.apache.lucene.document.Field.Store;
 import org.apache.lucene.document.Field.TermVector;
+import org.apache.lucene.document.Fieldable;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -46,13 +48,14 @@ public class TestChangesHolder extends TestCase
 
    public void testSerNDeserializeDocs() throws Exception
    {
-      System.out.println("###       testSerNDeserializeDocs    ###");
+      //System.out.println("###       testSerNDeserializeDocs    ###");
       Collection<Document> add = new ArrayList<Document>(3);
       Document doc = new Document();
       doc.setBoost(2.0f);
-      Field fieldFull = new Field("full", "full-value", Store.COMPRESS, Index.ANALYZED_NO_NORMS, TermVector.WITH_POSITIONS_OFFSETS);
+      Field fieldFull =
+         new Field("full", "full-value", Store.YES, Index.ANALYZED_NO_NORMS, TermVector.WITH_POSITIONS_OFFSETS);
       fieldFull.setBoost(2.0f);
-      fieldFull.setOmitTf(true);
+      fieldFull.setOmitTermFreqAndPositions(true);
       doc.add(fieldFull);
       Field fieldEmpty = new Field("empty", "empty-value", Store.NO, Index.NOT_ANALYZED, TermVector.NO);
       doc.add(fieldEmpty);
@@ -63,9 +66,9 @@ public class TestChangesHolder extends TestCase
       doc = new Document();
       doc.add(fieldEmpty);
       add.add(doc);
-      
+
       ByteArrayOutputStream baos = null;
-      
+
       int total = 100000;
       long start;
       Collection<String> remove = Collections.emptyList();
@@ -78,7 +81,7 @@ public class TestChangesHolder extends TestCase
          oos.writeObject(new ChangesHolder(remove, add));
          oos.close();
       }
-      System.out.println("Custom serialization: total time = " + (System.currentTimeMillis() - start) + ", size = " + baos.size());
+      //System.out.println("Custom serialization: total time = " + (System.currentTimeMillis() - start) + ", size = " + baos.size());
 
       start = System.currentTimeMillis();
       for (int i = 0; i < total; i++)
@@ -87,7 +90,7 @@ public class TestChangesHolder extends TestCase
          addResult = ((ChangesHolder)ois.readObject()).getAdd();
          ois.close();
       }
-      System.out.println("Custom deserialization: total time = " + (System.currentTimeMillis() - start));
+      //System.out.println("Custom deserialization: total time = " + (System.currentTimeMillis() - start));
       checkDocs(addResult);
       start = System.currentTimeMillis();
       for (int i = 0; i < total; i++)
@@ -97,7 +100,7 @@ public class TestChangesHolder extends TestCase
          oos.writeObject(add);
          oos.close();
       }
-      System.out.println("Native serialization: total time = " + (System.currentTimeMillis() - start) + ", size = " + baos.size());
+      //System.out.println("Native serialization: total time = " + (System.currentTimeMillis() - start) + ", size = " + baos.size());
       start = System.currentTimeMillis();
       for (int i = 0; i < total; i++)
       {
@@ -105,7 +108,7 @@ public class TestChangesHolder extends TestCase
          addResult = (Collection<Document>)ois.readObject();
          ois.close();
       }
-      System.out.println("Native deserialization: total time = " + (System.currentTimeMillis() - start));
+      //System.out.println("Native deserialization: total time = " + (System.currentTimeMillis() - start));
       checkDocs(addResult);
    }
 
@@ -116,7 +119,7 @@ public class TestChangesHolder extends TestCase
       Iterator<Document> it = addResult.iterator();
       Document doc = it.next();
       assertEquals(2.0f, doc.getBoost());
-      List<Field> fields = doc.getFields();
+      List<Fieldable> fields = doc.getFields();
       assertNotNull(fields);
       assertEquals(2, fields.size());
       checkFieldFull(fields.get(0));
@@ -135,19 +138,21 @@ public class TestChangesHolder extends TestCase
       checkFieldEmpty(fields.get(0));
    }
 
-   private void checkFieldFull(Field field)
+   private void checkFieldFull(Fieldable field)
    {
       assertEquals("full", field.name());
       assertEquals("full-value", field.stringValue());
       assertTrue(field.isStored());
-      assertTrue(field.isCompressed());
       assertTrue(field.isIndexed());
       assertTrue(field.isTokenized());
       assertTrue(field.getOmitNorms());
       assertTrue(field.isTermVectorStored());
       assertTrue(field.isStoreOffsetWithTermVector());
       assertTrue(field.isStorePositionWithTermVector());
-      assertTrue(field.getOmitTf());
+      if (field instanceof AbstractField)
+      {
+         assertTrue(((AbstractField)field).getOmitTermFreqAndPositions());
+      }
       assertFalse(field.isBinary());
       assertFalse(field.isLazy());
       assertEquals(2.0f, field.getBoost());
@@ -155,35 +160,37 @@ public class TestChangesHolder extends TestCase
       assertEquals(0, field.getBinaryOffset());
    }
 
-   private void checkFieldEmpty(Field field)
+   private void checkFieldEmpty(Fieldable field)
    {
       assertEquals("empty", field.name());
       assertEquals("empty-value", field.stringValue());
       assertFalse(field.isStored());
-      assertFalse(field.isCompressed());
       assertTrue(field.isIndexed());
       assertFalse(field.isTokenized());
       assertFalse(field.getOmitNorms());
       assertFalse(field.isTermVectorStored());
       assertFalse(field.isStoreOffsetWithTermVector());
       assertFalse(field.isStorePositionWithTermVector());
-      assertFalse(field.getOmitTf());
+      if (field instanceof AbstractField)
+      {
+         assertFalse(((AbstractField)field).getOmitTermFreqAndPositions());
+      }
       assertFalse(field.isBinary());
       assertFalse(field.isLazy());
       assertEquals(1.0f, field.getBoost());
       assertEquals(0, field.getBinaryLength());
       assertEquals(0, field.getBinaryOffset());
    }
-   
+
    public void testSerNDeserializeIds() throws Exception
    {
-      System.out.println("###       testSerNDeserializeIds    ###");      
+      //System.out.println("###       testSerNDeserializeIds    ###");      
       Collection<String> remove = new ArrayList<String>(3);
       remove.add(UUID.randomUUID().toString());
       remove.add(UUID.randomUUID().toString());
       remove.add(UUID.randomUUID().toString());
       ByteArrayOutputStream baos = null;
-      
+
       int total = 100000;
       long start;
       Collection<Document> add = Collections.emptyList();
@@ -196,7 +203,7 @@ public class TestChangesHolder extends TestCase
          oos.writeObject(new ChangesHolder(remove, add));
          oos.close();
       }
-      System.out.println("Custom serialization: total time = " + (System.currentTimeMillis() - start) + ", size = " + baos.size());
+      //System.out.println("Custom serialization: total time = " + (System.currentTimeMillis() - start) + ", size = " + baos.size());
 
       start = System.currentTimeMillis();
       for (int i = 0; i < total; i++)
@@ -205,7 +212,7 @@ public class TestChangesHolder extends TestCase
          addResult = ((ChangesHolder)ois.readObject()).getRemove();
          ois.close();
       }
-      System.out.println("Custom deserialization: total time = " + (System.currentTimeMillis() - start));
+      //System.out.println("Custom deserialization: total time = " + (System.currentTimeMillis() - start));
       checkIds(remove, addResult);
       start = System.currentTimeMillis();
       for (int i = 0; i < total; i++)
@@ -215,7 +222,7 @@ public class TestChangesHolder extends TestCase
          oos.writeObject(remove);
          oos.close();
       }
-      System.out.println("Native serialization: total time = " + (System.currentTimeMillis() - start) + ", size = " + baos.size());
+      //System.out.println("Native serialization: total time = " + (System.currentTimeMillis() - start) + ", size = " + baos.size());
       start = System.currentTimeMillis();
       for (int i = 0; i < total; i++)
       {
@@ -223,8 +230,8 @@ public class TestChangesHolder extends TestCase
          addResult = (Collection<String>)ois.readObject();
          ois.close();
       }
-      System.out.println("Native deserialization: total time = " + (System.currentTimeMillis() - start));
-      checkIds(remove, addResult);     
+      //System.out.println("Native deserialization: total time = " + (System.currentTimeMillis() - start));
+      checkIds(remove, addResult);
    }
 
    private void checkIds(Collection<String> remove, Collection<String> addResult)

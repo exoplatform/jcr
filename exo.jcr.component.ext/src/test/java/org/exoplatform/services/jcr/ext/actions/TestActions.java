@@ -20,12 +20,8 @@ package org.exoplatform.services.jcr.ext.actions;
 
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 
-import javax.jcr.ItemExistsException;
-import javax.jcr.PathNotFoundException;
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.jcr.lock.LockException;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.version.VersionException;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
@@ -33,33 +29,12 @@ import javax.jcr.version.VersionException;
  */
 public class TestActions extends BaseStandaloneTest
 {
-   public void testReadAction() throws ItemExistsException, PathNotFoundException, VersionException,
-      ConstraintViolationException, LockException, RepositoryException
+
+   public void testAddMyAction() throws RepositoryException
    {
-      // SessionActionCatalog catalog = (SessionActionCatalog)
-      // container.getComponentInstanceOfType(SessionActionCatalog.class);
-      // catalog.clear();
-      //
-      // // test by path
-      //
-      // Node testNode = root.addNode("testNode");
-      // PropertyImpl prop = (PropertyImpl) testNode.setProperty("test", "test");
-      // root.save();
-      //
-      // SessionEventMatcher matcher = new SessionEventMatcher(ExtendedEvent.READ,
-      // new QPath[] { prop.getData().getQPath() },
-      // true,
-      // null,
-      // null,
-      // new InternalQName[] { Constants.NT_UNSTRUCTURED });
-      // DummyAction dAction = new DummyAction();
-      //
-      // catalog.addAction(matcher, dAction);
+      Node test = root.addNode("testPath");
 
-      // ???????????????
-      // assertEquals(0, dAction.getActionExecuterCount());
-      // String val = testNode.getProperty("test").getValue().getString();
-      // assertEquals(1, dAction.getActionExecuterCount());
-
+      assertTrue(test.getNode("myActionNode") != null);
+      assertTrue(test.getNode("myActionNode").getProperty("myProperty") != null);
    }
 }

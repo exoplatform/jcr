@@ -489,7 +489,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
       addItemPersistenceListener(new CacheItemsPersistenceListener());
-
       this.rpcService = rpcService;
       this.txResourceManager = txResourceManager;
       doInitRemoteCommands();
@@ -715,15 +714,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
 
       return childs;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
-   {
-      return getItemData(parentData, name, ItemType.UNKNOWN);
    }
 
    /**
@@ -970,14 +960,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       finally
       {
          workingThreads.decrementAndGet();
-
-         if (isSuspended && workingThreads.get() == 0)
-         {
-            synchronized (workingThreads)
-            {
-               workingThreads.notifyAll();
-            }
-         }
       }
    }
 
@@ -1378,7 +1360,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                            while (patternIterator.hasNext())
                            {
                               QPathEntryFilter pattern = patternIterator.next();
-                              @SuppressWarnings("unchecked")
                               List<NodeData> persistedNodeData = (List<NodeData>)pattern.accept(persistedItemList);
                               if (pattern.isExactName())
                               {
@@ -1677,7 +1658,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                            while (patternIterator.hasNext())
                            {
                               QPathEntryFilter pattern = patternIterator.next();
-                              @SuppressWarnings("unchecked")
                               List<PropertyData> persistedPropData =
                                  (List<PropertyData>)pattern.accept(persistedItemList);
                               if (pattern.isExactName())
@@ -1931,10 +1911,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void suspend() throws SuspendException
    {
+      isResponsibleForResuming = true;
+
       if (rpcService != null)
       {
-         isResponsibleForResuming = true;
-
          try
          {
             rpcService.executeCommandOnAllNodes(suspend, true);
@@ -1973,13 +1953,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          {
             throw new ResumeException(e);
          }
-
-         isResponsibleForResuming = false;
       }
       else
       {
          resumeLocally();
       }
+
+      isResponsibleForResuming = false;
    }
 
    /**
@@ -1992,41 +1972,36 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private void suspendLocally() throws SuspendException
    {
-      if (!isSuspended)
+      if (isSuspended)
       {
-         latcher = new CountDownLatch(1);
-         isSuspended = true;
+         throw new SuspendException("Component already suspended.");
+      }
 
-         if (workingThreads.get() > 0)
+      latcher = new CountDownLatch(1);
+      isSuspended = true;
+
+      while (workingThreads.get() != 0)
+      {
+         try
          {
-            synchronized (workingThreads)
-            {
-               while (workingThreads.get() > 0)
-               {
-                  try
-                  {
-                     workingThreads.wait();
-                  }
-                  catch (InterruptedException e)
-                  {
-                     if (LOG.isTraceEnabled())
-                     {
-                        LOG.trace(e.getMessage(), e);
-                     }
-                  }
-               }
-            }
+            Thread.sleep(50);
+         }
+         catch (InterruptedException e)
+         {
+            throw new SuspendException(e);
          }
       }
    }
 
    private void resumeLocally() throws ResumeException
    {
-      if (isSuspended)
+      if (!isSuspended)
       {
-         latcher.countDown();
-         isSuspended = false;
+         throw new ResumeException("Component is not suspended.");
       }
+
+      latcher.countDown();
+      isSuspended = false;
    }
 
    /**
@@ -2474,10 +2449,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void stop()
    {
-      if (filtersEnabled.get())
-      {
-         cache.removeListener(this);
-      }
    }
 
    /**

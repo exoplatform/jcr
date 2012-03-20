@@ -25,16 +25,13 @@
          <session-max-age>3600000</session-max-age><!-- 60min -->
          <authentication-policy>org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator</authentication-policy>
          <workspaces>
-            <workspace name="ws" auto-init-root-nodetype="nt:unstructured">
+            <workspace name="ws">
                <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="sourceName" value="jdbcjcr" />
-                     <property name="dialect" value="generic" />
-                     <!-- example of direct jdbc connection usage (without JNDI), see docs for details -->
-
-                     <property name="multi-db" value="false" />
-                     <property name="update-storage" value="true" />
+                     <property name="source-name" value="jdbcjcr" />
+                     <property name="dialect" value="auto" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="204800" />
                      <property name="swap-directory" value="target/temp/swap/ws" />
                   </properties>
@@ -50,24 +47,30 @@
                      <property name="indexDir" value="target/temp/index/ws" />
                   </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>900000</time-out><!-- 15min -->
-                  <persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister">
-                     <properties>
-                        <property name="path" value="target/temp/lock/ws" />
-                     </properties>
-                  </persister>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
                </lock-manager>
             </workspace>
-            <workspace name="ws2" auto-init-root-nodetype="nt:unstructured">
+
+            <workspace name="ws2">
                <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="sourceName" value="jdbcjcr" />
-                     <property name="dialect" value="generic" />
-                     <!-- example of direct jdbc connection usage (without JNDI), see docs for details -->
-                     <property name="multi-db" value="false" />
-                     <property name="update-storage" value="true" />
+                     <property name="source-name" value="jdbcjcr" />
+                     <property name="db-structure-type" value="isolated" />
+                     <property name="dialect" value="auto" />
                      <property name="max-buffer-size" value="204800" />
                      <property name="swap-directory" value="target/temp/swap/ws2" />
                   </properties>
@@ -83,13 +86,20 @@
                      <property name="indexDir" value="target/temp/index/ws2" />
                   </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>900000</time-out><!-- 15min -->
-                  <persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister">
-                     <properties>
-                        <property name="path" value="target/temp/lock/ws2" />
-                     </properties>
-                  </persister>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
                </lock-manager>
             </workspace>
          </workspaces>

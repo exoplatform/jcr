@@ -16,12 +16,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
@@ -52,21 +52,21 @@ public class BaseQueryTest extends JcrImplBaseTest
 
    protected SearchIndex defaultSearchIndex;
 
-   protected Document getDocument(String nodeIdentifer, boolean includeSystemIndex) throws IOException,
+   protected ScoreDoc getDocument(String nodeIdentifer, boolean includeSystemIndex) throws IOException,
       RepositoryException
    {
       IndexReader reader = defaultSearchIndex.getIndexReader();
       IndexSearcher is = new IndexSearcher(reader);
       TermQuery query = new TermQuery(new Term(FieldNames.UUID, nodeIdentifer));
 
-      Hits result = is.search(query);
+      TopDocs result = is.search(query, null, Integer.MAX_VALUE);
       try
       {
-         if (result.length() == 1)
+         if (result.totalHits == 1)
          {
-            return result.doc(0);
+            return result.scoreDocs[0];
          }
-         else if (result.length() > 1)
+         else if (result.totalHits > 1)
          {
             throw new RepositoryException("Results more then one");
          }

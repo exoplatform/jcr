@@ -18,23 +18,21 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.jcr.infinispan.CacheKey;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
 import org.infinispan.config.Configuration;
+import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.context.Flag;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.concurrent.NotifyingFuture;
 import org.infinispan.util.concurrent.locks.LockManager;
 
-import java.security.PrivilegedAction;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -44,7 +42,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
+import javax.transaction.HeuristicMixedException;
+import javax.transaction.HeuristicRollbackException;
+import javax.transaction.NotSupportedException;
+import javax.transaction.RollbackException;
 import javax.transaction.Status;
+import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 /**
@@ -54,7 +57,7 @@ import javax.transaction.TransactionManager;
  * @version $Id: BufferedISPNCache.java 3514 2010-11-22 16:14:36Z nzamosenchuk $
  * 
  */
-@SuppressWarnings({"unchecked", "deprecation"})
+@SuppressWarnings("unchecked")
 public class BufferedISPNCache implements Cache<CacheKey, Object>
 {
    /**
@@ -71,7 +74,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     */
    private final Boolean allowLocalChanges;
 
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.BufferedISPNCache");//NOSONAR
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.BufferedISPNCache");
 
    public static enum ChangesType {
       REMOVE, PUT;
@@ -152,9 +155,20 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
 
       protected AdvancedCache<CacheKey, Object> setCacheLocalMode()
       {
-         if (localMode && allowLocalChanges)
+         if (localMode)
          {
-            return cache.withFlags(Flag.CACHE_MODE_LOCAL);
+            if (allowLocalChanges == null)
+            {
+               CacheMode cacheMode = cache.getConfiguration().getCacheMode();
+               if (cacheMode != CacheMode.DIST_ASYNC && cacheMode != CacheMode.DIST_SYNC)
+               {
+                  return cache.withFlags(Flag.CACHE_MODE_LOCAL);
+               }
+            }
+            else if (allowLocalChanges)
+            {
+               return cache.withFlags(Flag.CACHE_MODE_LOCAL);
+            }
          }
          return cache;
       }
@@ -254,7 +268,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             LOG.error("Unexpected object found by key " + key.toString() + ". Expected Set, but found:"
                + existingObject.getClass().getName());
          }
-         else if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL
+            && cache.getCacheManager().getMembers().size() > 1)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
@@ -316,7 +331,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             LOG.error("Unexpected object found by key " + key.toString() + ". Expected Map, but found:"
                + existingObject.getClass().getName());
          }
-         else if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         else if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL
+            && cache.getCacheManager().getMembers().size() > 1)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
@@ -854,15 +870,9 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    /**
     * {@inheritDoc}
     */
-   public Object get(final Object key)
+   public Object get(Object key)
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
-      {
-         public Object run()
-         {
-            return parentCache.get(key);
-         }
-      });
+      return parentCache.get(key);
    }
 
    /**
@@ -886,14 +896,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public Object put(CacheKey key, Object value)
    {
       return put(key, value, false);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public org.infinispan.configuration.cache.Configuration getCacheConfiguration()
-   {
-      return parentCache.getCacheConfiguration();
    }
 
    /**
@@ -1050,7 +1052,11 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                isTxCreated = true;
             }
          }
-         catch (Exception e)//NOSONAR
+         catch (SystemException e)
+         {
+            LOG.warn("Could not create a new tx", e);
+         }
+         catch (NotSupportedException e)
          {
             LOG.warn("Could not create a new tx", e);
          }
@@ -1058,7 +1064,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          {
             cacheChange.apply();
          }
-         catch (RuntimeException e)//NOSONAR
+         catch (RuntimeException e)
          {
             if (isTxCreated)
             {
@@ -1068,7 +1074,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                      LOG.trace("An error occurs the tx will be rollbacked");
                   tm.rollback();
                }
-               catch (Exception e1)//NOSONAR
+               catch (Exception e1)
                {
                   LOG.warn("Could not rollback the tx", e1);
                }
@@ -1080,10 +1086,32 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             try
             {
                if (LOG.isTraceEnabled())
+               {
                   LOG.trace("The tx will be committed");
+               }
                tm.commit();
             }
-            catch (Exception e)//NOSONAR
+            catch (SystemException e)
+            {
+               LOG.warn("Could not commit the tx", e);
+            }
+            catch (SecurityException e)
+            {
+               LOG.warn("Could not commit the tx", e);
+            }
+            catch (IllegalStateException e)
+            {
+               LOG.warn("Could not commit the tx", e);
+            }
+            catch (RollbackException e)
+            {
+               LOG.warn("Could not commit the tx", e);
+            }
+            catch (HeuristicMixedException e)
+            {
+               LOG.warn("Could not commit the tx", e);
+            }
+            catch (HeuristicRollbackException e)
             {
                LOG.warn("Could not commit the tx", e);
             }

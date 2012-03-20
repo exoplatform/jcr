@@ -22,6 +22,8 @@ import org.apache.commons.collections.collection.TransformedCollection;
 import org.apache.commons.collections.iterators.TransformIterator;
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.analysis.Token;
+import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
@@ -29,12 +31,13 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+import org.apache.lucene.search.FieldComparatorSource;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortComparatorSource;
 import org.apache.lucene.search.SortField;
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
@@ -128,16 +131,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public static final int DEFAULT_MAX_FIELD_LENGTH = 10000;
 
    /**
-    * The default value for property {@link #extractorPoolSize}.
-    * 
-    * @deprecated this value is not used anymore. Instead the default value is
-    *             calculated as follows: 2 *
-    *             Runtime.getRuntime().availableProcessors().
-    */
-   @Deprecated
-   public static final int DEFAULT_EXTRACTOR_POOL_SIZE = 0;
-
-   /**
     * The default value for property {@link #extractorBackLog}.
     */
    public static final int DEFAULT_EXTRACTOR_BACK_LOG = Integer.MAX_VALUE;
@@ -202,7 +195,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Default name of the error log file
     */
    private static final String ERROR_LOG = "error.log";
-   
+
    /**
     * The actual index
     */
@@ -452,7 +445,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * The sort comparator source for indexed properties.
     */
-   private SortComparatorSource scs;
+   private FieldComparatorSource scs;
 
    /**
     * Flag that indicates whether the hierarchy cache should be initialized
@@ -643,7 +636,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          }
       }
 
-      scs = new SharedFieldSortComparator(FieldNames.PROPERTIES, context.getItemStateManager(), nsMappings);
+      scs = new SharedFieldComparatorSource(FieldNames.PROPERTIES, context.getItemStateManager(), nsMappings);
       npResolver = new LocationFactory(nsMappings);
 
       indexingConfig = createIndexingConfiguration(nsMappings);
@@ -674,10 +667,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                   }
                   catch (IOException e)
                   {
-                     log
-                        .error(
-                           "Error while reindexing the workspace. Please fix the problem, delete index and restart server.",
-                           e);
+                     log.error(
+                        "Error while reindexing the workspace. Please fix the problem, delete index and restart server.",
+                        e);
                   }
                }
             }, "Reindexing-" + context.getRepositoryName() + "-" + context.getContainer().getWorkspaceName()).start();
@@ -774,8 +766,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             try
             {
                filterClass =
-                  (Class<? extends AbstractRecoveryFilter>)Class.forName(recoveryFilterClassName, true, this.getClass()
-                     .getClassLoader());
+                  (Class<? extends AbstractRecoveryFilter>)ClassLoading.forName(recoveryFilterClassName, this);
                Constructor<? extends AbstractRecoveryFilter> constuctor = filterClass.getConstructor(SearchIndex.class);
                filter = constuctor.newInstance(this);
                recoveryFilters.add(filter);
@@ -1120,8 +1111,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             }
             catch (RepositoryException e)
             {
-               log
-                  .warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString(), e);
+               log.warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString(), e);
             }
             return doc;
          }
@@ -1148,8 +1138,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                }
                catch (RepositoryException e)
                {
-                  log
-                     .warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString());
+                  log.warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString());
                }
                return null;
             }
@@ -1301,9 +1290,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       waitForResuming();
 
       checkOpen();
-
       Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
-
       final IndexReader reader = getIndexReader(queryImpl.needsSystemTree());
       JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
       searcher.setSimilarity(getSimilarity());
@@ -1665,27 +1652,10 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * @return the sort comparator source for this index.
     */
-   protected SortComparatorSource getSortComparatorSource()
+   protected FieldComparatorSource getSortComparatorSource()
    {
       return scs;
    }
-
-   // /**
-   // * Factory method to create the <code>TextExtractor</code> instance.
-   // *
-   // * @return the <code>TextExtractor</code> instance this index should use.
-   // */
-   // protected TextExtractor createTextExtractor()
-   // {
-   // TextExtractor txtExtr = new JackrabbitTextExtractor(textFilterClasses);
-   // if (extractorPoolSize > 0)
-   // {
-   // // wrap with pool
-   // txtExtr = new PooledTextExtractor(txtExtr, extractorPoolSize,
-   // extractorBackLog, extractorTimeout);
-   // }
-   // return txtExtr;
-   // }
 
    /**
     * @param namespaceMappings
@@ -1757,7 +1727,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class clazz = Class.forName(directoryManagerClass);
+         Class<?> clazz = ClassLoading.forName(directoryManagerClass, this);
          if (!DirectoryManager.class.isAssignableFrom(clazz))
          {
             throw new IOException(directoryManagerClass + " is not a DirectoryManager implementation");
@@ -1995,7 +1965,13 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                            Fieldable field = fields[k];
                            // assume properties fields use
                            // SingleTokenStream
-                           t = field.tokenStreamValue().next(t);
+                           //t = field.tokenStreamValue().next(t);
+                           field.tokenStreamValue().incrementToken();
+                           TermAttribute term =
+                              field.tokenStreamValue().getAttribute(TermAttribute.class);
+                           PayloadAttribute payload =
+                              field.tokenStreamValue().getAttribute(PayloadAttribute.class);
+
                            String value = new String(t.termBuffer(), 0, t.termLength());
                            if (value.startsWith(namePrefix))
                            {
@@ -2006,7 +1982,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                               String path = getNamespaceMappings().translatePath(p);
                               value = FieldNames.createNamedValue(path, value);
                               t.setTermBuffer(value);
-                              doc.add(new Field(field.name(), new SingletonTokenStream(t)));
+                              doc.add(new Field(field.name(), new SingletonTokenStream(term.term(), payload
+                                 .getPayload())));
                               doc.add(new Field(FieldNames.AGGREGATED_NODE_UUID, parent.getIdentifier(),
                                  Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
                            }
@@ -2029,8 +2006,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          catch (Exception e)
          {
             // do not fail if aggregate cannot be created
-            log
-               .warn("Exception while building indexing aggregate for" + " node with UUID: " + state.getIdentifier(), e);
+            log.warn("Exception while building indexing aggregate for" + " node with UUID: " + state.getIdentifier(), e);
          }
       }
    }
@@ -2396,18 +2372,18 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class<?> analyzerClass = Class.forName(analyzerClassName);
+         Class<?> analyzerClass = ClassLoading.forName(analyzerClassName, this);
          analyzer.setDefaultAnalyzer((Analyzer)analyzerClass.newInstance());
+      }
+      catch (ClassNotFoundException e)
+      {
+         log.warn("Invalid Analyzer class: " + analyzerClassName, e);
       }
       catch (InstantiationException e)
       {
          log.warn("Invalid Analyzer class: " + analyzerClassName, e);
       }
       catch (IllegalAccessException e)
-      {
-         log.warn("Invalid Analyzer class: " + analyzerClassName, e);
-      }
-      catch (ClassNotFoundException e)
       {
          log.warn("Invalid Analyzer class: " + analyzerClassName, e);
       }
@@ -2753,7 +2729,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class clazz = Class.forName(className);
+         Class clazz = ClassLoading.forName(className, this);
          if (ExcerptProvider.class.isAssignableFrom(clazz))
          {
             excerptProviderClass = clazz;
@@ -2811,7 +2787,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class clazz = Class.forName(className);
+         Class clazz = ClassLoading.forName(className, this);
          if (IndexingConfiguration.class.isAssignableFrom(clazz))
          {
             indexingConfigurationClass = clazz;
@@ -2847,7 +2823,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class clazz = Class.forName(className);
+         Class clazz = ClassLoading.forName(className, this);
          if (SynonymProvider.class.isAssignableFrom(clazz))
          {
             synonymProviderClass = clazz;
@@ -2891,7 +2867,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class clazz = Class.forName(className);
+         Class clazz = ClassLoading.forName(className, this);
          if (SpellChecker.class.isAssignableFrom(clazz))
          {
             spellCheckerClass = clazz;
@@ -2994,7 +2970,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         Class<?> similarityClass = Class.forName(className);
+         Class<?> similarityClass = ClassLoading.forName(className, this);
          similarity = (Similarity)similarityClass.newInstance();
       }
       catch (ClassNotFoundException e)

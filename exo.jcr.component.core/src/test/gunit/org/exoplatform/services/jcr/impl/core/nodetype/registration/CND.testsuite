@@ -1,0 +1,296 @@
+/*
+ * Copyright (C) 2009 eXo Platform SAS.
+ *
+ * This is free software; you can redistribute it and/or modify it
+ * under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation; either version 2.1 of
+ * the License, or (at your option) any later version.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this software; if not, write to the Free
+ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
+ */
+gunit CND;
+
+@header{package org.exoplatform.services.jcr.impl.core.nodetype.registration;}
+//------------------- uri
+uri:
+
+"'http://booblix.net/q.html?q=qw#12'"  -> (URI 'http://booblix.net/q.html?q=qw#12')
+
+"'http://booblix.net'"  -> (URI 'http://booblix.net')
+
+"'http://booblix.net/q.html?qq=w12'" OK
+
+"'http://192.168.0.2/ns?a=qw&p=%20test'" OK
+
+"http://192.168.0.2/ns?a=qw&p=%20test" FAIL
+
+//------------------- namespace
+namespace:
+
+"<ns = 'http://namespace.com/ns?=3'>"  -> (NAMESPACE (PREFIX ns) (URI 'http://namespace.com/ns?=3'))
+
+"<NS2 = http://namespace.com/ns?=3>" FAIL
+
+"< NS2  =   'http://namespace.com/ns?=3' >"  -> (NAMESPACE (PREFIX NS2) (URI 'http://namespace.com/ns?=3'))
+
+"<	NS2_ = 'http://namespace.com/ns?=3'>"  -> (NAMESPACE (PREFIX NS2_) (URI 'http://namespace.com/ns?=3'))
+
+//------------------- supertypes
+supertypes:
+
+"> ns:ParentType1, ns:parentype2"  -> (SUPERTYPES ns:ParentType1 ns:parentype2)
+
+">ns:ParentType1,ns:parentype2"  -> (SUPERTYPES ns:ParentType1 ns:parentype2)
+
+"> NS3:P@ar_entType1, ns:parentype2" FAIL
+
+"> NS3:P@ar entType1, ns:parentype2" FAIL
+
+"> NS3:Par_entType1, ns:parentype2"  -> (SUPERTYPES NS3:Par_entType1 ns:parentype2)
+
+"> 'NS3:Par entType1', ns:parentype2"  -> (SUPERTYPES 'NS3:Par entType1' ns:parentype2)
+
+//------------------- nodetypename
+nodetypename:
+
+"[ns:NodeType]"  -> (NODETYPENAME ns:NodeType)
+
+"[ns_:NodeType]"  -> (NODETYPENAME ns_:NodeType)
+
+//------------------- nodetypeattributes
+nodetypeattributes:
+
+"abstract orderable mixin primaryitem ex:property"  -> (NODETYPEATTRIBUTES ABSTRACT ORDERABLE MIXIN (PRIMARYITEM ex:property))
+
+"abstract ? orderable mixin primaryitem ex:property"  -> (NODETYPEATTRIBUTES (ABSTRACT ?) ORDERABLE MIXIN (PRIMARYITEM ex:property))
+
+"abstract ? orderable mixin ! ex:property"  -> (NODETYPEATTRIBUTES (ABSTRACT ?) ORDERABLE MIXIN (PRIMARYITEM ex:property))
+
+"nq ? orderable mixin ! ex:property"  -> (NODETYPEATTRIBUTES (NOQUERY ?) ORDERABLE MIXIN (PRIMARYITEM ex:property))
+
+"abstract ? orderable m ! ?"  -> (NODETYPEATTRIBUTES (ABSTRACT ?) ORDERABLE MIXIN (PRIMARYITEM ?))
+
+"a ? o m ! ? nq?"  -> (NODETYPEATTRIBUTES (ABSTRACT ?) ORDERABLE MIXIN (PRIMARYITEM ?) (NOQUERY ?))
+
+//------------------- propertyname
+propertyname:
+
+"-  exo:Property"  -> (PROPERTYNAME exo:Property)
+
+"-    exo:Property"  -> (PROPERTYNAME exo:Property)
+
+"- exo : Property" FAIL
+
+//------------------- propertytype
+propertytype:
+
+"(STRING)"  -> (PROPERTYTYPE STRING)
+
+"(sTriNg)"  -> (PROPERTYTYPE sTriNg)
+
+//------------------- opt_orderable
+opt_orderable:
+
+"orderable" OK
+
+"o" OK
+
+"orD" OK
+
+//------------------- opt_mixin
+opt_mixin:
+
+"MixIn" OK
+
+"M" OK
+
+//------------------- opt_abstract
+opt_abstract:
+
+"aBs" OK
+
+//------------------- opt_noquery
+opt_noquery:
+
+"nQ" OK
+
+//------------------- opt_primaryitem
+opt_primaryitem:
+
+"! ns:ItEm"  -> (PRIMARYITEM ns:ItEm)
+
+"pRimAryItem ?" OK
+
+//------------------- atr_autocreated
+atr_autocreated:
+
+"a" OK
+
+"aut" OK
+
+//------------------- atr_mandatory
+atr_mandatory:
+
+"m" OK
+
+"Man" OK
+
+//------------------- atr_protected
+atr_protected:
+
+"prO" OK
+
+"p ?" OK
+
+//------------------- atr_OPV
+atr_OPV:
+
+"OPV ?" OK
+
+"oPV?" OK
+
+"VerSion" OK
+
+"COPy ?" FAIL
+
+//------------------- atr_multiple
+atr_multiple:
+
+"muL" OK
+
+"*" OK
+
+"* ?"  -> (MULTIPLE ?)
+
+//------------------- atr_queryops
+atr_queryops:
+
+"qOp ?" OK
+
+"QueryOpS '<,=, <>, LikE'"  -> (QUERYOPS '<,=, <>, LikE')
+
+//------------------- atr_nofulltext
+atr_nofulltext:
+
+"nOf" OK
+
+"NOF ?" OK
+
+"noFullText" OK
+
+//------------------- atr_noqueryorder
+atr_noqueryorder:
+
+"nQorD" OK
+
+"NoQueryOrder              ?" OK
+
+//------------------- atr_sns
+atr_sns:
+
+"*  ?" OK
+
+"SnS" OK
+
+//------------------- valueconstraints
+valueconstraints:
+
+"< 'constr 121' , ' costr 3 '" OK
+
+"<   'asf'" OK
+
+//------------------- requiredtypes
+requiredtypes:
+
+"(ns:type1,ns:type2)" OK
+
+"(   ns:ty_pe1 , ns:type2 )" OK
+
+"(ns:t@ype1,ns:type2)" FAIL
+
+"(ns:type1 , ns:type2 , )" FAIL
+
+//------------------- cnd
+cnd:
+
+"<ns = 'http://namespace.com/ns'>    [ns:NodeType]    > ns:ParentType1, ns:ParentType2    abstract    orderable    mixin    noquery    primaryitem ex:property    - ex:property (STRING)    = 'default1', 'default2'    mandatory autocreated protected    multiple    VERSION    < 'constraint1', 'constraint2'    queryops '=, <>, <, <=, >, >=, LIKE'    nofulltext    noqueryorder    + ns:node (ns:reqType1, ns:reqType2)    = ns:defaultType    mandatory autocreated protected    sns    VERSION" OK
+
+//------------------- prefix
+prefix:
+
+"prefix" OK
+
+"prefix::" OK
+
+"_pref" OK
+
+"COPY" OK
+
+"MIXIN" OK
+
+"m" OK
+
+//------------------- propertyattributes
+propertyattributes:
+
+"sns" FAIL
+
+"* ?" OK
+
+//------------------- nodename
+nodename:
+
+"+ node"  -> (NODENAME node)
+
+//------------------- defaulttype
+defaulttype:
+
+"= ns:deftype" OK
+
+"= ntype, type" FAIL
+
+"= ns:type"  -> (DEFAULTTYPE ns:type)
+
+//------------------- nodeattributes
+nodeattributes:
+
+"aut" OK
+
+"m" OK
+
+"mul" FAIL
+
+//------------------- name
+name:
+
+"*" FAIL
+
+"copy" OK
+
+"m" OK
+
+"!" FAIL
+
+"undefined" OK
+
+"opv" OK
+
+"opv?" FAIL
+
+//------------------- propertydef
+propertydef:
+
+"- preF:propName (string) = 'string','adfa s as <asf://> ' man aut * version"  -> (PROPERTYDEF (PROPERTYNAME preF:propName) (PROPERTYTYPE string) (DEFAULTVALUES 'string' 'adfa s as <asf://> ') (PROPERTYATTRIBUTE MANDATORY) (PROPERTYATTRIBUTE AUTOCREATED) (PROPERTYATTRIBUTE MULTIPLE) (PROPERTYATTRIBUTE (OPV version)))
+
+//------------------- childnodedef
+childnodedef:
+
+"+ ns:nde ( type1 , string ) = ns:defTypeString mAN aut pro sns opv ?"  -> (CHILDDEF (NODENAME ns:nde) (REQUIREDTYPES type1 string) (DEFAULTTYPE ns:defTypeString) (NODEATTRIBUTE MANDATORY) (NODEATTRIBUTE AUTOCREATED) (NODEATTRIBUTE PROTECTED) (NODEATTRIBUTE SNS) (NODEATTRIBUTE (OPV VARIANT)))

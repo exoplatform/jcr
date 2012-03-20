@@ -150,7 +150,7 @@ final class DocNumberCache
       {
          entry = (Entry)cacheSegment.get(key);
       }
-      if (log.isDebugEnabled())
+      if (log.isInfoEnabled())
       {
          accesses++;
          if (entry == null)
@@ -165,7 +165,7 @@ final class DocNumberCache
             {
                ratio -= misses * 100L / accesses;
             }
-            StringBuilder statistics = new StringBuilder();
+            StringBuffer statistics = new StringBuffer();
             int inUse = 0;
             for (int i = 0; i < docNumbers.length; i++)
             {
@@ -177,7 +177,7 @@ final class DocNumberCache
             statistics.append(", #hits=").append((accesses - misses));
             statistics.append(", #misses=").append(misses);
             statistics.append(", cacheRatio=").append(ratio).append("%");
-            log.debug(statistics.toString());
+            log.info(statistics.toString());
             accesses = 0;
             misses = 0;
             lastLog = System.currentTimeMillis();

@@ -59,4 +59,5 @@ public class JBCShareableLockTableHandler extends JBCLockTableHandler implements
          + workspaceEntry.getUniqueName() + "/" + CacheableLockManagerImpl.LOCKS + "/" + nodeId + "'", new String[]{},
          "", new DummyRepair());
    }
+
 }

@@ -36,12 +36,12 @@
 
     <default>
       <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="false"/>
-      <transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" transactionMode="TRANSACTIONAL"/>
+      <transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true"/>
       <jmxStatistics enabled="true"/>
       <eviction strategy="NONE"/>
 
       <loaders passivation="false" shared="true" preload="true">
-        <loader class="org.infinispan.loaders.jdbc.stringbased.JdbcStringBasedCacheStore" fetchPersistentState="true" ignoreModifications="false" purgeOnStartup="false">
+        <loader class="org.infinispan.loaders.jdbc.stringbased.JdbcStringBasedCacheStore" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">
           <properties>
              <property name="stringsTableNamePrefix" value="${infinispan-cl-cache.jdbc.table.name}"/>
              <property name="idColumnName" value="${infinispan-cl-cache.jdbc.id.column}"/>

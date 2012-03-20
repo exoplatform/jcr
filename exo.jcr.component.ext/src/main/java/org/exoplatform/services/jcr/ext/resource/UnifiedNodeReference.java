@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.resource;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.log.ExoLogger;
@@ -40,6 +41,8 @@ import java.util.StringTokenizer;
 public class UnifiedNodeReference
 {
 
+   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference");
+
    public static final String JCR_SCHEME = "jcr";
 
    private String userInfo;
@@ -53,8 +56,6 @@ public class UnifiedNodeReference
    private String path;
 
    private static URLStreamHandler handler;
-
-   private static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference");
 
    public UnifiedNodeReference(final String spec) throws URISyntaxException, MalformedURLException
    {
@@ -270,29 +271,7 @@ public class UnifiedNodeReference
          try
          {
             String clsName = packagePrefix + "." + JCR_SCHEME + ".Handler";
-            Class<?> cls = null;
-            try
-            {
-               cls = Class.forName(clsName);
-            }
-            catch (ClassNotFoundException e1)
-            {
-               try
-               {
-                  // try do it with context ClassLoader
-                  ClassLoader cl = Thread.currentThread().getContextClassLoader();
-                  cls = cl.loadClass(clsName);
-               }
-               catch (ClassNotFoundException e2)
-               {
-                  // last chance, try use system ClasLoader
-                  ClassLoader cl = ClassLoader.getSystemClassLoader();
-                  if (cl != null)
-                  {
-                     cls = cl.loadClass(clsName);
-                  }
-               }
-            }
+            Class<?> cls = ClassLoading.forName(clsName, UnifiedNodeReference.class);
             if (cls != null)
             {
                handler = (URLStreamHandler)cls.newInstance();
@@ -303,7 +282,7 @@ public class UnifiedNodeReference
             // exceptions can get thrown here if class not be loaded y system ClassLoader
             // or if class can't be instantiated.
             if (LOG.isTraceEnabled())
-                           {
+            {
                LOG.trace("An exception occurred: " + e.getMessage());
             }
          }

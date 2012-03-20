@@ -16,8 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Fieldable;
 import org.apache.lucene.index.IndexReader;
@@ -193,16 +194,16 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
    /**
     * @return the extracted terms from the query.
     */
-   protected final Set getQueryTerms()
+   protected final Set<Term> getQueryTerms()
    {
-      Set extractedTerms = new HashSet();
-      Set relevantTerms = new HashSet();
+      Set<Term> extractedTerms = new HashSet<Term>();
+      Set<Term> relevantTerms = new HashSet<Term>();
       query.extractTerms(extractedTerms);
       // only keep terms for fulltext fields
-      Iterator it = extractedTerms.iterator();
+      Iterator<Term> it = extractedTerms.iterator();
       while (it.hasNext())
       {
-         Term t = (Term)it.next();
+         Term t = it.next();
          if (t.field().equals(FieldNames.FULLTEXT))
          {
             relevantTerms.add(t);
@@ -260,16 +261,17 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
    private TermPositionVector createTermPositionVector(String text)
    {
       // term -> TermVectorOffsetInfo[]
-      final SortedMap termMap = new TreeMap();
+      final SortedMap<String, TermVectorOffsetInfo[]> termMap = new TreeMap<String, TermVectorOffsetInfo[]>();
       Reader r = new StringReader(text);
       TokenStream ts = index.getTextAnalyzer().tokenStream("", r);
-      Token t = new Token();
       try
       {
-         while ((t = ts.next(t)) != null)
+         while (ts.incrementToken())
          {
-            String termText = t.term();
-            TermVectorOffsetInfo[] info = (TermVectorOffsetInfo[])termMap.get(termText);
+            OffsetAttribute offset = (OffsetAttribute)ts.getAttribute(OffsetAttribute.class);
+            TermAttribute term = (TermAttribute)ts.getAttribute(TermAttribute.class);
+            String termText = term.term();
+            TermVectorOffsetInfo[] info = termMap.get(termText);
             if (info == null)
             {
                info = new TermVectorOffsetInfo[1];
@@ -280,22 +282,21 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
                info = new TermVectorOffsetInfo[tmp.length + 1];
                System.arraycopy(tmp, 0, info, 0, tmp.length);
             }
-            info[info.length - 1] = new TermVectorOffsetInfo(t.startOffset(), t.endOffset());
+            info[info.length - 1] = new TermVectorOffsetInfo(offset.startOffset(), offset.endOffset());
             termMap.put(termText, info);
          }
+         ts.end();
+         ts.close();
       }
       catch (IOException e)
       {
-         if (LOG.isTraceEnabled())
-         {
-            LOG.trace("An exception occurred: " + e.getMessage());
-         }
+         // should never happen, we are reading from a string
       }
 
       return new TermPositionVector()
       {
 
-         private String[] terms = (String[])termMap.keySet().toArray(new String[termMap.size()]);
+         private String[] terms = termMap.keySet().toArray(new String[termMap.size()]);
 
          public int[] getTermPositions(int index)
          {
@@ -307,7 +308,7 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
             TermVectorOffsetInfo[] info = TermVectorOffsetInfo.EMPTY_OFFSET_INFO;
             if (index >= 0 && index < terms.length)
             {
-               info = (TermVectorOffsetInfo[])termMap.get(terms[index]);
+               info = termMap.get(terms[index]);
             }
             return info;
          }
@@ -332,7 +333,7 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
             int[] freqs = new int[terms.length];
             for (int i = 0; i < terms.length; i++)
             {
-               freqs[i] = ((TermVectorOffsetInfo[])termMap.get(terms[i])).length;
+               freqs[i] = termMap.get(terms[i]).length;
             }
             return freqs;
          }

@@ -7,244 +7,244 @@
   <title>JDBC Data Container Config</title>
 
   <para>eXo JCR persistent data container can work in two configuration
-  modes:<itemizedlist>
-      <listitem>
-        <para><phrase>Multi-database</phrase>: One database for each workspace
-        (used in standalone eXo JCR service mode)</para>
-      </listitem>
+    modes:<itemizedlist>
+        <listitem>
+          <para><phrase>Multi-database</phrase>: One database for each
+          workspace (used in standalone eXo JCR service mode)</para>
+        </listitem>
 
-      <listitem>
-        <para><phrase>Single-database</phrase>: All workspaces persisted in
-        one database (used in embedded eXo JCR service mode, e.g. in eXo
-        portal)</para>
-      </listitem>
-    </itemizedlist></para>
+        <listitem>
+          <para><phrase>Single-database</phrase>: All workspaces persisted in
+          one database (used in embedded eXo JCR service mode, e.g. in eXo
+          portal)</para>
+        </listitem>
+      </itemizedlist></para>
 
-  <para>The data container uses the JDBC driver to communicate with the actual
-  database software, i.e. any JDBC-enabled data storage can be used with eXo
-  JCR implementation.</para>
+    <para>The data container uses the JDBC driver to communicate with the
+    actual database software, i.e. any JDBC-enabled data storage can be used
+    with eXo JCR implementation.</para>
 
-  <para>Currently the data container is tested with the following
-  configurations:<itemizedlist>
-      <listitem>
-        <para>MySQL 5.0.18 MYSQL Connector/J 5.0.8</para>
-      </listitem>
+    <para>Currently the data container is tested with the following
+    configurations:<itemizedlist>
+        <listitem>
+          <para>MySQL 5.0.18 MYSQL Connector/J 5.0.8</para>
+        </listitem>
 
-      <listitem>
-        <para>MySQL 5.1.36 MYSQL Connector/J 5.1.14</para>
-      </listitem>
+        <listitem>
+          <para>MySQL 5.1.36 MYSQL Connector/J 5.1.14</para>
+        </listitem>
 
-      <listitem>
-        <para>PostgresSQL 8.2.4 JDBC4 Driver, Version 8.2-507</para>
-      </listitem>
+        <listitem>
+          <para>PostgresSQL 8.2.4 JDBC4 Driver, Version 8.2-507</para>
+        </listitem>
 
-      <listitem>
-        <para>PostgresSQL 8.3.7 JDBC4 Driver, Version 8.3-606</para>
-      </listitem>
+        <listitem>
+          <para>PostgresSQL 8.3.7 JDBC4 Driver, Version 8.3-606</para>
+        </listitem>
 
-      <listitem>
-        <para>Oracle DB 10g R2 (10.2.0.4), JDBC Driver Oracle 10g R2
-        (10.2.0.4)</para>
-      </listitem>
+        <listitem>
+          <para>Oracle DB 10g R2 (10.2.0.4), JDBC Driver Oracle 10g R2
+          (10.2.0.4)</para>
+        </listitem>
 
-      <listitem>
-        <para>Oracle DB 11g R1 (11.1.0.6.0), JDBC Driver Oracle 11g R1
-        (11.1.0.6.0)</para>
-      </listitem>
+        <listitem>
+          <para>Oracle DB 11g R1 (11.1.0.6.0), JDBC Driver Oracle 11g R1
+          (11.1.0.6.0)</para>
+        </listitem>
 
-      <listitem>
-        <para>Oracle DB 11g R2 (11.2.0.1.0), JDBC Driver Oracle 11g R2
-        (11.2.0.1.0)</para>
-      </listitem>
+        <listitem>
+          <para>Oracle DB 11g R2 (11.2.0.1.0), JDBC Driver Oracle 11g R2
+          (11.2.0.1.0)</para>
+        </listitem>
 
-      <listitem>
-        <para>DB2 9.7.4 IBM Data Server Driver for JDBC and SQLJ (JCC Driver)
-        v.9.7</para>
-      </listitem>
+        <listitem>
+          <para>DB2 9.7.4 IBM Data Server Driver for JDBC and SQLJ (JCC
+          Driver) v.9.7</para>
+        </listitem>
 
-      <listitem>
-        <para>MS SQL Server 2005 SP3 JDBC Driver 3.0</para>
-      </listitem>
+        <listitem>
+          <para>MS SQL Server 2005 SP3 JDBC Driver 3.0</para>
+        </listitem>
 
-      <listitem>
-        <para>MS SQL Server 2008 JDBC Driver 3.0</para>
-      </listitem>
+        <listitem>
+          <para>MS SQL Server 2008 JDBC Driver 3.0</para>
+        </listitem>
 
-      <listitem>
-        <para>Sybase 15.0.3 ASE Driver: Sybase jConnect JDBC driver v7 (Build
-        26502)</para>
-      </listitem>
+        <listitem>
+          <para>Sybase 15.0.3 ASE Driver: Sybase jConnect JDBC driver v7
+          (Build 26502)</para>
+        </listitem>
 
-      <listitem>
-        <para>HSQLDB (2.0.0)</para>
-      </listitem>
-    </itemizedlist></para>
+        <listitem>
+          <para>HSQLDB (2.0.0)</para>
+        </listitem>
+      </itemizedlist></para>
 
-  <para>Each database software supports ANSI SQL standards but also has its
-  own specifics. So, each database has its own configuration in eXo JCR as a
-  database dialect parameter. If you need a more detailed configuration of the
-  database, it's possible to do that by editing the metadata SQL-script
-  files.</para>
+    <para>Each database software supports ANSI SQL standards but also has its
+    own specifics. So, each database has its own configuration in eXo JCR as a
+    database dialect parameter. If you need a more detailed configuration of
+    the database, it's possible to do that by editing the metadata SQL-script
+    files.</para>
 
-  <para>SQL-scripts you can obtain from jar-file
-  exo.jcr.component.core-XXX.XXX.jar:conf/storage/. They also can be found at
-  SVN <ulink
-  url="https://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk/exo.jcr.component.core/src/main/resources/conf/storage/">here.</ulink></para>
+    <para>SQL-scripts you can obtain from jar-file
+    exo.jcr.component.core-XXX.XXX.jar:conf/storage/. They also can be found
+    at SVN <ulink
+    url="https://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk/exo.jcr.component.core/src/main/resources/conf/storage/">here.</ulink></para>
 
-  <para>In the next two tables correspondence between the scripts and
-  databases is shown.</para>
+    <para>In the next two tables correspondence between the scripts and
+    databases is shown.</para>
 
-  <table border="1">
-    <caption>Single-database</caption>
+    <table border="1">
+      <caption>Single-database</caption>
 
-    <tr>
-      <td>MySQL DB</td>
+      <tr>
+        <td>MySQL DB</td>
 
-      <td>jcr-sjdbc.mysql.sql</td>
-    </tr>
+        <td>jcr-sjdbc.mysql.sql</td>
+      </tr>
 
-    <tr>
-      <td>MySQL DB with utf-8</td>
+      <tr>
+        <td>MySQL DB with utf-8</td>
 
-      <td>jcr-sjdbc.mysql-utf8.sql</td>
-    </tr>
+        <td>jcr-sjdbc.mysql-utf8.sql</td>
+      </tr>
 
-    <tr>
-      <td>MySQL DB with MyISAM*</td>
+      <tr>
+        <td>MySQL DB with MyISAM*</td>
 
-      <td>jcr-sjdbc.mysql-myisam.sql</td>
-    </tr>
+        <td>jcr-sjdbc.mysql-myisam.sql</td>
+      </tr>
 
-    <tr>
-      <td>MySQL DB with MyISAM and utf-8*</td>
+      <tr>
+        <td>MySQL DB with MyISAM and utf-8*</td>
 
-      <td>jcr-sjdbc.mysql-myisam-utf8.sql</td>
-    </tr>
+        <td>jcr-sjdbc.mysql-myisam-utf8.sql</td>
+      </tr>
 
-    <tr>
-      <td>PostgresSQL</td>
+      <tr>
+        <td>PostgresSQL</td>
 
-      <td>jcr-sjdbc.pqsql.sql</td>
-    </tr>
+        <td>jcr-sjdbc.pqsql.sql</td>
+      </tr>
 
-    <tr>
-      <td>Oracle DB</td>
+      <tr>
+        <td>Oracle DB</td>
 
-      <td>jcr-sjdbc.ora.sql</td>
-    </tr>
+        <td>jcr-sjdbc.ora.sql</td>
+      </tr>
 
-    <tr>
-      <td>DB2</td>
+      <tr>
+        <td>DB2</td>
 
-      <td>jcr-sjdbc.db2.sql</td>
-    </tr>
+        <td>jcr-sjdbc.db2.sql</td>
+      </tr>
 
-    <tr>
-      <td>MS SQL Server</td>
+      <tr>
+        <td>MS SQL Server</td>
 
-      <td>jcr-sjdbc.mssql.sql</td>
-    </tr>
+        <td>jcr-sjdbc.mssql.sql</td>
+      </tr>
 
-    <tr>
-      <td>Sybase</td>
+      <tr>
+        <td>Sybase</td>
 
-      <td>jcr-sjdbc.sybase.sql</td>
-    </tr>
+        <td>jcr-sjdbc.sybase.sql</td>
+      </tr>
 
-    <tr>
-      <td>HSQLDB</td>
+      <tr>
+        <td>HSQLDB</td>
 
-      <td>jcr-sjdbc.sql</td>
-    </tr>
-  </table>
+        <td>jcr-sjdbc.sql</td>
+      </tr>
+    </table>
 
-  <table border="1">
-    <caption>Multi-database</caption>
+    <table border="1">
+      <caption>Multi-database</caption>
 
-    <tr>
-      <td>MySQL DB</td>
+      <tr>
+        <td>MySQL DB</td>
 
-      <td>jcr-mjdbc.mysql.sql</td>
-    </tr>
+        <td>jcr-mjdbc.mysql.sql</td>
+      </tr>
 
-    <tr>
-      <td>MySQL DB with utf-8</td>
+      <tr>
+        <td>MySQL DB with utf-8</td>
 
-      <td>jcr-mjdbc.mysql-utf8.sql</td>
-    </tr>
+        <td>jcr-mjdbc.mysql-utf8.sql</td>
+      </tr>
 
-    <tr>
-      <td>MySQL DB with MyISAM*</td>
+      <tr>
+        <td>MySQL DB with MyISAM*</td>
 
-      <td>jcr-mjdbc.mysql-myisam.sql</td>
-    </tr>
+        <td>jcr-mjdbc.mysql-myisam.sql</td>
+      </tr>
 
-    <tr>
-      <td>MySQL DB with MyISAM and utf-8*</td>
+      <tr>
+        <td>MySQL DB with MyISAM and utf-8*</td>
 
-      <td>jcr-mjdbc.mysql-myisam-utf8.sql</td>
-    </tr>
+        <td>jcr-mjdbc.mysql-myisam-utf8.sql</td>
+      </tr>
 
-    <tr>
-      <td>PostgresSQL</td>
+      <tr>
+        <td>PostgresSQL</td>
 
-      <td>jcr-mjdbc.pqsql.sql</td>
-    </tr>
+        <td>jcr-mjdbc.pqsql.sql</td>
+      </tr>
 
-    <tr>
-      <td>Oracle DB</td>
+      <tr>
+        <td>Oracle DB</td>
 
-      <td>jcr-mjdbc.ora.sql</td>
-    </tr>
+        <td>jcr-mjdbc.ora.sql</td>
+      </tr>
 
-    <tr>
-      <td>DB2</td>
+      <tr>
+        <td>DB2</td>
 
-      <td>jcr-mjdbc.db2.sql</td>
-    </tr>
+        <td>jcr-mjdbc.db2.sql</td>
+      </tr>
 
-    <tr>
-      <td>MS SQL Server</td>
+      <tr>
+        <td>MS SQL Server</td>
 
-      <td>jcr-mjdbc.mssql.sql</td>
-    </tr>
+        <td>jcr-mjdbc.mssql.sql</td>
+      </tr>
 
-    <tr>
-      <td>Sybase</td>
+      <tr>
+        <td>Sybase</td>
 
-      <td>jcr-mjdbc.sybase.sql</td>
-    </tr>
+        <td>jcr-mjdbc.sybase.sql</td>
+      </tr>
 
-    <tr>
-      <td>HSQLDB</td>
+      <tr>
+        <td>HSQLDB</td>
 
-      <td>jcr-mjdbc.sql</td>
-    </tr>
-  </table>
+        <td>jcr-mjdbc.sql</td>
+      </tr>
+    </table>
 
-  <para>In case the non-ANSI node name is used, it's necessary to use a
-  database with MultiLanguage support[TODO link to MultiLanguage]. Some JDBC
-  drivers need additional parameters for establishing a Unicode friendly
-  connection. E.g. under mysql it's necessary to add an additional parameter
-  for the JDBC driver at the end of JDBC URL. For instance:
-  <code>jdbc:mysql://exoua.dnsalias.net/portal?characterEncoding=utf8</code></para>
+    <para>In case the non-ANSI node name is used, it's necessary to use a
+    database with MultiLanguage support[TODO link to MultiLanguage]. Some JDBC
+    drivers need additional parameters for establishing a Unicode friendly
+    connection. E.g. under mysql it's necessary to add an additional parameter
+    for the JDBC driver at the end of JDBC URL. For instance:
+    <code>jdbc:mysql://exoua.dnsalias.net/portal?characterEncoding=utf8</code></para>
 
-  <para>There are preconfigured configuration files for HSQLDB. Look for these
-  files in /conf/portal and /conf/standalone folders of the jar-file
-  <package>exo.jcr.component.core-XXX.XXX.jar</package> or source-distribution
-  of eXo JCR implementation.</para>
+    <para>There are preconfigured configuration files for HSQLDB. Look for
+    these files in /conf/portal and /conf/standalone folders of the jar-file
+    <package>exo.jcr.component.core-XXX.XXX.jar</package> or
+    source-distribution of eXo JCR implementation.</para>
 
-  <para>By default, the configuration files are located in service jars
-  <filename>/conf/portal/configuration.xml</filename> (eXo services including
-  JCR Repository Service) and <filename>exo-jcr-config.xml</filename>
-  (repositories configuration). In eXo portal product, JCR is configured in
-  portal web application
-  <filename>portal/WEB-INF/conf/jcr/jcr-configuration.xml</filename> (JCR
-  Repository Service and related serivces) and repository-configuration.xml
-  (repositories configuration).</para>
+    <para>By default, the configuration files are located in service jars
+    <filename>/conf/portal/configuration.xml</filename> (eXo services
+    including JCR Repository Service) and
+    <filename>exo-jcr-config.xml</filename> (repositories configuration). In
+    eXo portal product, JCR is configured in portal web application
+    <filename>portal/WEB-INF/conf/jcr/jcr-configuration.xml</filename> (JCR
+    Repository Service and related serivces) and repository-configuration.xml
+    (repositories configuration).</para>
 
-  <para>Read more about <link linkend="JCR.eXoJCRconfiguration">Repository
-  configuration</link>.</para>
+    <para>Read more about <link linkend="JCR.eXoJCRconfiguration">Repository
+    configuration</link>.</para>
 
   <section>
     <title>General recommendations for database configuration</title>
@@ -292,23 +292,11 @@ $ db2start</programlisting></para>
 
       <itemizedlist>
         <listitem>
-          <para>To prevent any consistency issues please ensure that InnoDB is
-          configured as default MySQL engine (instead of MyISAM by default)
-          before launching your application for the very first time otherwise
-          when the application will create the tables MyISAM will be used as
-          MySQL engine which is a non transactional engine that doesn't not
-          support integrity constraints so even if later you swicth to InnoDB
-          using an alter table all the integrity constraints would be missing
-          as they would have been removed at table creation table by
-          MyISAM.</para>
-        </listitem>
-
-        <listitem>
           <para>MyISAM is not supported due to its lack of transaction support
           and integrity check, so use it only if you don't expect any support
           and if performances in read accesses are more important than the
-          consistency in your use-case. Therefore the dialects mysql-myisam
-          and mysql-myisam-utf8 are only dedicated to the community.</para>
+          consistency in your use-case. This dialect is only dedicated to the
+          community.</para>
         </listitem>
 
         <listitem>
@@ -410,7 +398,6 @@ update statistics JCR_SVALUE</programlisting>
           <programlisting>ANALYZE INDEX JCR_PK_SITEM COMPUTE STATISTICS
 ANALYZE INDEX JCR_IDX_SITEM_PARENT_FK COMPUTE STATISTICS
 ANALYZE INDEX JCR_IDX_SITEM_PARENT COMPUTE STATISTICS
-ANALYZE INDEX JCR_IDX_SITEM_PARENT_NAME COMPUTE STATISTICS
 ANALYZE INDEX JCR_IDX_SITEM_PARENT_ID COMPUTE STATISTICS
 ANALYZE INDEX JCR_PK_SVALUE COMPUTE STATISTICS
 ANALYZE INDEX JCR_IDX_SVALUE_PROPERTY COMPUTE STATISTICS
@@ -559,7 +546,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     <parameter>ws1</parameter> - jdbcjcr1):</para>
 
     <programlisting language="xml">&lt;workspaces&gt;
-  &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
+  &lt;workspace name="ws"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="source-name" value="jdbcjcr"/&gt;
@@ -580,16 +567,24 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
       &lt;property name="index-dir" value="target/temp/index"/&gt;
     &lt;/properties&gt;
     &lt;/query-handler&gt;
-    &lt;lock-manager&gt;
-    &lt;time-out&gt;15m&lt;/time-out&gt;&lt;!-- 15 min --&gt;
-    &lt;persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister"&gt;
-      &lt;properties&gt;
-      &lt;property name="path" value="target/temp/lock/ws"/&gt;
-      &lt;/properties&gt;
-    &lt;/persister&gt;
-    &lt;/lock-manager&gt;
+    &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+       &lt;properties&gt;
+          &lt;property name="time-out" value="15m" /&gt;
+          &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+          &lt;property name="jbosscache-shareable" value="true" /&gt;
+       &lt;/properties&gt;
+     &lt;/lock-manager&gt;
   &lt;/workspace&gt;
-  &lt;workspace name="ws1" auto-init-root-nodetype="nt:unstructured"&gt;
+
+  &lt;workspace name="ws1"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="source-name" value="jdbcjcr1"/&gt;
@@ -610,14 +605,21 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
       &lt;property name="index-dir" value="target/temp/index"/&gt;
     &lt;/properties&gt;
     &lt;/query-handler&gt;
-    &lt;lock-manager&gt;
-    &lt;time-out&gt;15m&lt;/time-out&gt;&lt;!-- 15 min --&gt;
-    &lt;persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister"&gt;
-      &lt;properties&gt;
-      &lt;property name="path" value="target/temp/lock/ws1"/&gt;
-      &lt;/properties&gt;
-    &lt;/persister&gt;
-    &lt;/lock-manager&gt;
+    &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+       &lt;properties&gt;
+          &lt;property name="time-out" value="15m" /&gt;
+          &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+          &lt;property name="jbosscache-shareable" value="true" /&gt;
+       &lt;/properties&gt;
+     &lt;/lock-manager&gt;
   &lt;/workspace&gt;
 &lt;/workspaces&gt;
 </programlisting>
@@ -716,7 +718,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     <parameter>ws1</parameter> - jdbcjcr):</para>
 
     <programlisting language="xml">&lt;workspaces&gt;
-  &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
+  &lt;workspace name="ws"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="source-name" value="jdbcjcr"/&gt;
@@ -737,16 +739,23 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
       &lt;property name="index-dir" value="../temp/index"/&gt;
     &lt;/properties&gt;
     &lt;/query-handler&gt;
-    &lt;lock-manager&gt;
-    &lt;time-out&gt;15m&lt;/time-out&gt;
-    &lt;persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister"&gt;
-      &lt;properties&gt;
-      &lt;property name="path" value="target/temp/lock/ws"/&gt;
-      &lt;/properties&gt;
-    &lt;/persister&gt;
-    &lt;/lock-manager&gt;
+    &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+       &lt;properties&gt;
+          &lt;property name="time-out" value="15m" /&gt;
+          &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+          &lt;property name="jbosscache-shareable" value="true" /&gt;
+       &lt;/properties&gt;
+     &lt;/lock-manager&gt;
   &lt;/workspace&gt;
-  &lt;workspace name="ws1" auto-init-root-nodetype="nt:unstructured"&gt;
+  &lt;workspace name="ws1"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="source-name" value="jdbcjcr"/&gt;
@@ -762,14 +771,21 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
       &lt;property name="live-time" value="5m"/&gt;
     &lt;/properties&gt;
     &lt;/cache&gt;
-    &lt;lock-manager&gt;
-    &lt;time-out&gt;15m&lt;/time-out&gt;
-    &lt;persister class="org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister"&gt;
-      &lt;properties&gt;
-      &lt;property name="path" value="target/temp/lock/ws1"/&gt;
-      &lt;/properties&gt;
-    &lt;/persister&gt;
-    &lt;/lock-manager&gt;
+    &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+       &lt;properties&gt;
+          &lt;property name="time-out" value="15m" /&gt;
+          &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
+          &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+          &lt;property name="jbosscache-shareable" value="true" /&gt;
+       &lt;/properties&gt;
+     &lt;/lock-manager&gt;
   &lt;/workspace&gt;
 &lt;/workspaces&gt;
 </programlisting>
@@ -806,7 +822,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
         use with JCR to prevent a database overload.</para>
       </note>
 
-      <programlisting language="xml">&lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
+      <programlisting language="xml">&lt;workspace name="ws"&gt;
   &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="dialect" value="hsqldb"/&gt;
@@ -851,7 +867,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     <classname>org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer</classname>:</para>
 
     <programlisting language="xml">&lt;workspaces&gt;
-  &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
+  &lt;workspace name="ws"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     ...
   &lt;/workspace&gt;
@@ -862,7 +878,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     <classname>org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer</classname>:</para>
 
     <programlisting language="xml">&lt;workspaces&gt;
-  &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
+  &lt;workspace name="ws"&gt;
     &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
     ...
   &lt;/workspace&gt;
@@ -890,7 +906,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
 
     <para>To enable this option put next configuration property:</para>
 
-    <programlisting language="xml">&lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
+    <programlisting language="xml">&lt;workspace name="ws"&gt;
   &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="dialect" value="oracle"/&gt;

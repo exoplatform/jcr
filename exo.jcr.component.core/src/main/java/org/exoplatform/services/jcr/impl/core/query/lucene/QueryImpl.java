@@ -117,9 +117,9 @@ public class QueryImpl extends AbstractQueryImpl
 
       // build lucene query
       Query query =
-         LuceneQueryBuilder.createQuery(root, session, index.getContext().getItemStateManager(), index
-            .getNamespaceMappings(), index.getTextAnalyzer(), propReg, index.getSynonymProvider(), index
-            .getIndexFormatVersion(), index.getContext().getVirtualTableResolver());
+         LuceneQueryBuilder.createQuery(root, session, index.getContext().getItemStateManager(),
+            index.getNamespaceMappings(), index.getTextAnalyzer(), propReg, index.getSynonymProvider(),
+            index.getIndexFormatVersion(), index.getContext().getVirtualTableResolver());
 
       OrderQueryNode orderNode = root.getOrderNode();
 
@@ -142,7 +142,7 @@ public class QueryImpl extends AbstractQueryImpl
 
       return new SingleColumnQueryResult(index, itemMgr, session, session.getAccessManager(), this, query,
          new SpellSuggestion(index.getSpellChecker(), root), getSelectProperties(), orderProperties, ascSpecs,
-         getRespectDocumentOrder(), offset, limit);
+         orderProperties.length == 0 && getRespectDocumentOrder(), offset, limit);
    }
 
    /**

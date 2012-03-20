@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.CacheEntry;
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.LockManagerEntry;
-import org.exoplatform.services.jcr.config.LockPersisterEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
@@ -34,14 +33,12 @@ import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
@@ -84,7 +81,7 @@ public class TesterConfigurationHelper
          SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
          sessionRegistry.closeSessions(wsName);
       }
-      
+
       service.removeRepository(repositoryName);
    }
 
@@ -121,32 +118,32 @@ public class TesterConfigurationHelper
 
    }
 
-   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, String dsName)
+   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType, String dsName)
       throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, dsName, true);
+      RepositoryEntry repoEntry = createRepositoryEntry(dbStructureType, null, dsName, true);
       service.createRepository(repoEntry);
       service.getConfig().retain();
 
       return service.getRepository(repoEntry.getName());
    }
 
-   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled,
+   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType, boolean cacheEnabled,
       boolean cacheShared) throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryEntry repoEntry = createRepositoryEntry(isMultiDb, null, null, cacheEnabled, cacheShared);
+      RepositoryEntry repoEntry = createRepositoryEntry(dbStructureType, null, null, cacheEnabled, cacheShared);
       service.createRepository(repoEntry);
       service.getConfig().retain();
 
       return service.getRepository(repoEntry.getName());
    }
 
-   public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled)
+   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType, boolean cacheEnabled)
       throws Exception
    {
-      return createRepository(container, isMultiDb, cacheEnabled, false);
+      return createRepository(container, dbStructureType, cacheEnabled, false);
    }
 
    public ManageableRepository createRepository(ExoContainer container, RepositoryEntry repoEntry) throws Exception
@@ -160,22 +157,22 @@ public class TesterConfigurationHelper
    /**
     * Create workspace entry. 
     */
-   public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName,
+   public RepositoryEntry createRepositoryEntry(DatabaseStructureType dbStructureType, String systemWSName, String dsName,
       boolean cacheEnabled) throws Exception
    {
-      return createRepositoryEntry(isMultiDb, systemWSName, dsName, cacheEnabled, false);
+      return createRepositoryEntry(dbStructureType, systemWSName, dsName, cacheEnabled, false);
    }
 
    /**
    * Create workspace entry. 
    */
-   public RepositoryEntry createRepositoryEntry(boolean isMultiDb, String systemWSName, String dsName,
+   public RepositoryEntry createRepositoryEntry(DatabaseStructureType dbStructureType, String systemWSName, String dsName,
       boolean cacheEnabled, boolean cacheShared) throws Exception
    {
       // create system workspace entry
       List<String> ids = new ArrayList<String>();
       ids.add("id");
-      WorkspaceEntry wsEntry = createWorkspaceEntry(isMultiDb, dsName, ids, cacheEnabled, cacheShared);
+      WorkspaceEntry wsEntry = createWorkspaceEntry(dbStructureType, dsName, ids, cacheEnabled, cacheShared);
 
       if (systemWSName != null)
       {
@@ -197,27 +194,27 @@ public class TesterConfigurationHelper
    /**
     * Create workspace entry. 
     */
-   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName) throws Exception
+   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName) throws Exception
    {
       List<String> ids = new ArrayList<String>();
       ids.add("id");
 
-      return createWorkspaceEntry(isMultiDb, dsName, ids, true);
+      return createWorkspaceEntry(dbStructureType, dsName, ids, true);
    }
 
    /**
     * Create workspace entry. 
     */
-   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds,
+   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName, List<String> valueStorageIds,
       boolean cacheEnabled) throws Exception
    {
-      return createWorkspaceEntry(isMultiDb, dsName, valueStorageIds, cacheEnabled, false);
+      return createWorkspaceEntry(dbStructureType, dsName, valueStorageIds, cacheEnabled, false);
    }
 
    /**
     * Create workspace entry. 
     */
-   public WorkspaceEntry createWorkspaceEntry(boolean isMultiDb, String dsName, List<String> valueStorageIds,
+   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName, List<String> valueStorageIds,
       boolean cacheEnabled, boolean cacheShared) throws Exception
    {
       if (dsName == null)
@@ -231,7 +228,7 @@ public class TesterConfigurationHelper
       // container entry
       List params = new ArrayList();
       params.add(new SimpleParameterEntry("source-name", dsName));
-      params.add(new SimpleParameterEntry("multi-db", isMultiDb ? "true" : "false"));
+      params.add(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE, dbStructureType.toString()));
       params.add(new SimpleParameterEntry("max-buffer-size", "204800"));
       params.add(new SimpleParameterEntry("dialect", "auto"));
       params.add(new SimpleParameterEntry("swap-directory", "target/temp/swap/" + wsName));
@@ -275,7 +272,6 @@ public class TesterConfigurationHelper
       QueryHandlerEntry qEntry =
          new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", params);
 
-
       // Cache
       CacheEntry cacheEntry = null;
 
@@ -304,11 +300,14 @@ public class TesterConfigurationHelper
          cacheEntry.setEnabled(cacheEnabled);
       }
 
-      // Lock
       LockManagerEntry lockManagerEntry = new LockManagerEntry();
       lockManagerEntry.putParameterValue("time-out", "15m");
-      if (ispnCacheEnabled())
+
+      // ISPN Lock
+      try
       {
+         Class.forName("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl");
+
          lockManagerEntry
             .setType("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl");
          lockManagerEntry.putParameterValue("infinispan-configuration", "conf/standalone/test-infinispan-lock.xml");
@@ -322,8 +321,9 @@ public class TesterConfigurationHelper
          lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.connectionFactory",
             "org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory");
       }
-      else
+      catch (ClassNotFoundException e)
       {
+         // JBC Lock
          lockManagerEntry.setType("org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl");
          lockManagerEntry.putParameterValue("jbosscache-configuration", "conf/standalone/test-jbosscache-lock.xml");
          lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.name", "jcrlocks");
@@ -347,170 +347,6 @@ public class TesterConfigurationHelper
       workspaceEntry.setUniqueName(wsName);
 
       return workspaceEntry;
-   }
-
-   public boolean ispnCacheEnabled()
-   {
-      try
-      {
-         Class.forName("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl");
-         return true;
-      }
-      catch (ClassNotFoundException e)
-      {
-         return false;
-      }
-
-   }
-
-   public List<String> getValueStorageIds(ArrayList<ValueStorageEntry> entries)
-   {
-      List<String> ids = new ArrayList<String>();
-      if (entries != null)
-      {
-         for (ValueStorageEntry entry : entries)
-         {
-            ids.add(entry.getId());
-         }
-      }
-
-      return ids;
-   }
-
-   @Deprecated
-   public WorkspaceEntry getNewWs(String wsName, boolean isMultiDb, String dsName, String vsPath, ContainerEntry entry,
-      boolean newMultiDbDS) throws Exception
-   {
-
-      String dbDialect = null;
-      if (dsName != null)
-      {
-         DataSource ds = (DataSource)new InitialContext().lookup(dsName);
-         if (ds != null)
-         {
-            Connection jdbcConn = null;
-
-            jdbcConn = ds.getConnection();
-            dbDialect = DialectDetecter.detect(jdbcConn.getMetaData());
-
-         }
-      }
-
-      if (newMultiDbDS && (isMultiDb || dsName == null))
-      {
-         dsName = createDatasource();
-      }
-
-      List params = new ArrayList();
-
-      params.add(new SimpleParameterEntry("source-name", dsName));
-      params.add(new SimpleParameterEntry("db-type", "generic"));
-      params.add(new SimpleParameterEntry("multi-db", isMultiDb ? "true" : "false"));
-      params.add(new SimpleParameterEntry("update-storage", "true"));
-      params.add(new SimpleParameterEntry("max-buffer-size", "204800"));
-
-      if (dbDialect != null)
-      {
-         params.add(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_DIALECT, dbDialect));
-      }
-      else if (entry.getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT) != null)
-      {
-         params.add(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_DIALECT, entry
-            .getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT)));
-      }
-
-      String oldSwap = entry.getParameterValue("swap-directory");
-      String newSwap = oldSwap.substring(0, oldSwap.lastIndexOf('/')) + '/' + wsName;
-
-      params.add(new SimpleParameterEntry("swap-directory", newSwap));
-
-      ContainerEntry containerEntry =
-         new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
-            (ArrayList)params);
-      containerEntry.setParameters(params);
-
-      if (vsPath != null)
-      {
-
-         ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
-         ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
-         filterEntry.setPropertyType("Binary");
-         vsparams.add(filterEntry);
-
-         ValueStorageEntry valueStorageEntry =
-            new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage", vsparams);
-         ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
-         spe.add(new SimpleParameterEntry("path", vsPath));
-         valueStorageEntry.setId(IdGenerator.generate());
-         valueStorageEntry.setParameters(spe);
-         valueStorageEntry.setFilters(vsparams);
-
-         // containerEntry.setValueStorages();
-         containerEntry.setParameters(params);
-         ArrayList list = new ArrayList(1);
-         list.add(valueStorageEntry);
-
-         containerEntry.setValueStorages(list);
-
-      }
-
-      // Indexer
-      ArrayList qParams = new ArrayList();
-      qParams.add(new SimpleParameterEntry("indexDir", "target/temp/index/" + IdGenerator.generate()));
-      QueryHandlerEntry qEntry =
-         new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
-
-      WorkspaceEntry workspaceEntry =
-         new WorkspaceEntry(wsName != null ? wsName : IdGenerator.generate(), "nt:unstructured");
-      workspaceEntry.setContainer(containerEntry);
-
-      ArrayList cacheParams = new ArrayList();
-
-      cacheParams.add(new SimpleParameterEntry("maxSize", "2000"));
-      cacheParams.add(new SimpleParameterEntry("liveTime", "20m"));
-      CacheEntry cacheEntry = new CacheEntry(cacheParams);
-      cacheEntry.setType("org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl");
-
-      workspaceEntry.setCache(cacheEntry);
-
-      workspaceEntry.setQueryHandler(qEntry);
-
-      LockManagerEntry lockManagerEntry = new LockManagerEntry();
-      lockManagerEntry.setTimeout(900000);
-      LockPersisterEntry lockPersisterEntry = new LockPersisterEntry();
-      lockPersisterEntry.setType("org.exoplatform.services.jcr.impl.core.lock.FileSystemLockPersister");
-      ArrayList<SimpleParameterEntry> lockPersisterParameters = new ArrayList<SimpleParameterEntry>();
-      lockPersisterParameters.add(new SimpleParameterEntry("path", "target/temp/lock/" + wsName));
-      lockPersisterEntry.setParameters(lockPersisterParameters);
-      lockManagerEntry.setPersister(lockPersisterEntry);
-
-      workspaceEntry.setLockManager(lockManagerEntry);
-
-      // workspaceEntry
-      return workspaceEntry;
-   }
-
-   @Deprecated
-   public void createWorkspace(WorkspaceEntry workspaceEntry, ExoContainer container)
-      throws RepositoryConfigurationException, RepositoryException
-   {
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      RepositoryImpl defRep;
-
-      defRep = (RepositoryImpl)service.getDefaultRepository();
-      defRep.configWorkspace(workspaceEntry);
-      defRep.createWorkspace(workspaceEntry.getName());
-
-   }
-
-   public static TesterConfigurationHelper getInstance()
-   {
-      if (instance == null)
-      {
-         instance = new TesterConfigurationHelper();
-      }
-
-      return instance;
    }
 
    public RepositoryEntry copyRepositoryEntry(RepositoryEntry configuration)
@@ -594,17 +430,11 @@ public class TesterConfigurationHelper
 
       // Lock
       LockManagerEntry lockManagerEntry = new LockManagerEntry();
-      lockManagerEntry.setTimeout(wsEntry.getLockManager().getTimeout());
-      if (wsEntry.getLockManager().getPersister() != null)
-      {
-         LockPersisterEntry lockPersisterEntry = new LockPersisterEntry();
-         lockPersisterEntry.setType(wsEntry.getLockManager().getPersister().getType());
-         ArrayList<SimpleParameterEntry> lockPersisterParameters = new ArrayList<SimpleParameterEntry>();
-         lockPersisterParameters.addAll(wsEntry.getLockManager().getPersister().getParameters());
-         lockPersisterEntry.setParameters(lockPersisterParameters);
-         lockManagerEntry.setPersister(lockPersisterEntry);
-      }
-
+      lockManagerEntry.setType(wsEntry.getLockManager().getType());
+      ArrayList lockParams = new ArrayList();
+      lockParams.addAll(wsEntry.getLockManager().getParameters());
+      lockManagerEntry.setParameters(lockParams);
+      
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();
       workspaceEntry.setContainer(containerEntry);
       workspaceEntry.setCache(cacheEntry);
@@ -614,5 +444,43 @@ public class TesterConfigurationHelper
       workspaceEntry.setUniqueName(wsEntry.getUniqueName());
 
       return workspaceEntry;
+   }
+
+   public boolean ispnCacheEnabled()
+   {
+      try
+      {
+         Class.forName("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl");
+         return true;
+      }
+      catch (ClassNotFoundException e)
+      {
+         return false;
+      }
+
+   }
+
+   public List<String> getValueStorageIds(ArrayList<ValueStorageEntry> entries)
+   {
+      List<String> ids = new ArrayList<String>();
+      if (entries != null)
+      {
+         for (ValueStorageEntry entry : entries)
+         {
+            ids.add(entry.getId());
+         }
+      }
+
+      return ids;
+   }
+
+   public static TesterConfigurationHelper getInstance()
+   {
+      if (instance == null)
+      {
+         instance = new TesterConfigurationHelper();
+      }
+
+      return instance;
    }
 }

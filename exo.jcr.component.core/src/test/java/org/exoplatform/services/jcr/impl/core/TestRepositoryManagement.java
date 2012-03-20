@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
@@ -54,29 +55,21 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
    public static int BINDED_DS_COUNT = 100;
 
-   private static boolean isBinded = false;
-
-   private final int lastDS = 0;
-
-   private WorkspaceEntry wsEntry;
-
-   private boolean isDefaultWsMultiDb;
-
    private final TesterConfigurationHelper helper;
-   
+
 
    public TestRepositoryManagement()
    {
       super();
       this.helper = TesterConfigurationHelper.getInstance();
    }
-      
+
    public void testAddNewRepository() throws Exception
    {
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          Session session = null;
          try
@@ -107,10 +100,10 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          final long lockManagerTimeOut =
-            repository.getConfiguration().getWorkspaceEntries().get(0).getLockManager().getTimeout();
+            repository.getConfiguration().getWorkspaceEntries().get(0).getLockManager().getParameterLong("time-out");
 
          // 1st marshal configuration
          File tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
@@ -140,7 +133,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
          RepositoryEntry unmarshledRepositoryEntry =
             conf.getRepositoryConfiguration(repository.getConfiguration().getName());
          assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
-            .getTimeout());
+            .getParameterLong("time-out").longValue());
 
          // 2nd marshal configuration
          tempFile = PrivilegedFileHelper.createTempFile("test-config", "xml");
@@ -168,7 +161,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
          // 2nd check
          unmarshledRepositoryEntry = conf.getRepositoryConfiguration(repository.getConfiguration().getName());
          assertEquals(lockManagerTimeOut, unmarshledRepositoryEntry.getWorkspaceEntries().get(0).getLockManager()
-            .getTimeout());
+            .getParameterLong("time-out").longValue());
       }
       finally
       {
@@ -184,11 +177,11 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          try
          {
-            RepositoryEntry rEntry = helper.createRepositoryEntry(false, null, null, true);
+            RepositoryEntry rEntry = helper.createRepositoryEntry(DatabaseStructureType.SINGLE, null, null, true);
             rEntry.setName(repository.getConfiguration().getName());
 
             helper.createRepository(container, rEntry);
@@ -213,7 +206,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
 
@@ -238,7 +231,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          SessionImpl session = null;
          try
@@ -271,7 +264,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         repository = helper.createRepository(container, false, null);
+         repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
          SessionImpl session = null;
          try
@@ -302,7 +295,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
    public void testRemove() throws Exception
    {
-      ManageableRepository repository = helper.createRepository(container, false, null);
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
 
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       service.removeRepository(repository.getConfiguration().getName());
@@ -407,25 +400,24 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       /**
         * {@inheritDoc}
         */
-   
 
-   public void run()
-   {
-   try
-   {
-     latcher.await();
-     tRrepository = helper.createRepository(container, false, null);
-   }
-   catch (Exception e)
-   {
-     e.printStackTrace();
-   }
-   }
+      public void run()
+      {
+         try
+         {
+            latcher.await();
+            tRrepository = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      }
 
-   public ManageableRepository getRepository()
-   {
-   return tRrepository;
-   }
+      public ManageableRepository getRepository()
+      {
+         return tRrepository;
+      }
    }
 
    public void testCreateAterRemoveCheckOldContent() throws Exception
@@ -434,7 +426,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       try
       {
          RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-         RepositoryEntry repoEntry = helper.createRepositoryEntry(false, null, null, true);
+         RepositoryEntry repoEntry = helper.createRepositoryEntry(DatabaseStructureType.SINGLE, null, null, true);
 
          try
          {
@@ -443,10 +435,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
             ArrayList cacheParams = new ArrayList();
             cacheParams.add(new SimpleParameterEntry("infinispan-configuration",
-               "conf/standalone/cluster/test-infinispan-config.xml"));
-            cacheParams.add(new SimpleParameterEntry("jgroups-configuration", "conf/udp-mux-v3.xml"));
-            cacheParams.add(new SimpleParameterEntry("infinispan-cluster-name", "JCR-cluster-Test"));
-            cacheParams.add(new SimpleParameterEntry("use-distributed-cache", "false"));
+               "conf/standalone/test-infinispan-config.xml"));
             CacheEntry cacheEntry = new CacheEntry(cacheParams);
             cacheEntry
                .setType("org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache");
@@ -491,6 +480,20 @@ public class TestRepositoryManagement extends JcrImplBaseTest
                   break;
                }
             }
+            ws.getContainer().setParameters(parameters);
+
+            parameters = ws.getLockManager().getParameters();
+            for (int i = 0; i <= parameters.size(); i++)
+            {
+               SimpleParameterEntry spe = parameters.get(i);
+               if (spe.getName().equals("jbosscache-cl-cache.jdbc.datasource")
+                  || spe.getName().equals("infinispan-cl-cache.jdbc.datasource"))
+               {
+                  parameters.add(i, new SimpleParameterEntry(spe.getName(), newDatasourceName));
+                  break;
+               }
+            }
+            ws.getLockManager().setParameters(parameters);
          }
 
          service.removeRepository(repository.getConfiguration().getName());

@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.jbosscache;
 
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.jboss.cache.config.CacheLoaderConfig;
 import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.loader.AdjListJDBCCacheLoaderConfig;

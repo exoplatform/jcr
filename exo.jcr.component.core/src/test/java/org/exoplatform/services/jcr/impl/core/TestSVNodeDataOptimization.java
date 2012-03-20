@@ -16,6 +16,17 @@
  */
 package org.exoplatform.services.jcr.impl.core;
 
+import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.config.ContainerEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerEntry;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -24,14 +35,6 @@ import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
-
-import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.config.ContainerEntry;
-import org.exoplatform.services.jcr.config.QueryHandlerEntry;
-import org.exoplatform.services.jcr.config.SimpleParameterEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
-import org.exoplatform.services.jcr.datamodel.NodeData;
 
 /**
  * Created by The eXo Platform SAS.
@@ -42,15 +45,14 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id$
  */
-public class TestSVNodeDataOptimization
-   extends JcrImplBaseTest
+public class TestSVNodeDataOptimization extends JcrImplBaseTest
 {
-   
+
    @Override
    public void setUp() throws Exception
    {
       super.setUp();
-      SessionImpl ses = (SessionImpl) repository.login(credentials, "ws1");
+      SessionImpl ses = (SessionImpl)repository.login(credentials, "ws1");
       if (ses != null)
       {
          try
@@ -86,7 +88,7 @@ public class TestSVNodeDataOptimization
    @Override
    protected void tearDown() throws Exception
    {
-      SessionImpl ses = (SessionImpl) repository.login(credentials, "ws1");
+      SessionImpl ses = (SessionImpl)repository.login(credentials, "ws1");
       if (ses != null)
       {
          try
@@ -124,7 +126,7 @@ public class TestSVNodeDataOptimization
    {
 
       //ADD content
-      SessionImpl ses = (SessionImpl) repository.login(credentials, "ws1");
+      SessionImpl ses = (SessionImpl)repository.login(credentials, "ws1");
 
       //Add node with sub name sibling
       Node nodeSNS = ses.getRootNode().addNode("node_with_sns");
@@ -150,12 +152,12 @@ public class TestSVNodeDataOptimization
 
       // restore to ws1_restored
       WorkspaceEntry ws1_restore =
-               makeWorkspaceEntry("ws1_restored", isMultiDB(session) ? "jdbcjcr2export3" : "jdbcjcr", backup, ses);
+         makeWorkspaceEntry("ws1_restored", isMultiDB(session) ? "jdbcjcr2export3" : "jdbcjcr", backup, ses);
       repository.configWorkspace(ws1_restore);
       repository.createWorkspace(ws1_restore.getName());
 
       // check
-      SessionImpl backupSession = (SessionImpl) repository.login(credentials, "ws1_restored");
+      SessionImpl backupSession = (SessionImpl)repository.login(credentials, "ws1_restored");
 
       assertNotNull(backupSession);
 
@@ -164,8 +166,8 @@ public class TestSVNodeDataOptimization
 
    private void checkEquals(SessionImpl expected, SessionImpl actual) throws Exception
    {
-      NodeImpl srcNode = (NodeImpl) expected.getRootNode();
-      NodeImpl destNode = (NodeImpl) actual.getRootNode();
+      NodeImpl srcNode = (NodeImpl)expected.getRootNode();
+      NodeImpl destNode = (NodeImpl)actual.getRootNode();
 
       checkNodeEquals(srcNode, destNode);
    }
@@ -174,7 +176,7 @@ public class TestSVNodeDataOptimization
    {
       assertTrue(dest.equals(src));
       assertEquals(src.getIndex(), dest.getIndex());
-      assertEquals(((NodeData) src.getData()).getOrderNumber(), ((NodeData) dest.getData()).getOrderNumber());
+      assertEquals(((NodeData)src.getData()).getOrderNumber(), ((NodeData)dest.getData()).getOrderNumber());
 
       NodeIterator srcIterator = src.getNodes();
       NodeIterator destIterator = dest.getNodes();
@@ -182,20 +184,20 @@ public class TestSVNodeDataOptimization
       assertEquals(srcIterator.getSize(), destIterator.getSize());
 
       while (srcIterator.hasNext())
-         checkNodeEquals((NodeImpl) srcIterator.nextNode(), (NodeImpl) destIterator.nextNode());
+      {
+         checkNodeEquals((NodeImpl)srcIterator.nextNode(), (NodeImpl)destIterator.nextNode());
+      }
    }
 
    private WorkspaceEntry makeWorkspaceEntry(String name, String sourceName, File sysViewFile, SessionImpl ses)
    {
-      WorkspaceEntry ws1e = (WorkspaceEntry) ses.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+      WorkspaceEntry ws1e = (WorkspaceEntry)ses.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
       WorkspaceEntry ws1back = new WorkspaceEntry();
       ws1back.setName(name);
-      ws1back.setUniqueName(((RepositoryImpl) ses.getRepository()).getName() + "_" + ws1back.getName());
+      ws1back.setUniqueName(((RepositoryImpl)ses.getRepository()).getName() + "_" + ws1back.getName());
 
       ws1back.setAccessManager(ws1e.getAccessManager());
-      ws1back.setAutoInitializedRootNt(ws1e.getAutoInitializedRootNt());
-      ws1back.setAutoInitPermissions(ws1e.getAutoInitPermissions());
       ws1back.setCache(ws1e.getCache());
       ws1back.setContainer(ws1e.getContainer());
       ws1back.setLockManager(ws1e.getLockManager());
@@ -206,7 +208,7 @@ public class TestSVNodeDataOptimization
 
       List<SimpleParameterEntry> wieParams = new ArrayList<SimpleParameterEntry>();
       wieParams
-               .add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, sysViewFile.getPath()));
+         .add(new SimpleParameterEntry(SysViewWorkspaceInitializer.RESTORE_PATH_PARAMETER, sysViewFile.getPath()));
 
       wiEntry.setParameters(wieParams);
 
@@ -216,28 +218,34 @@ public class TestSVNodeDataOptimization
       ArrayList qParams = new ArrayList();
       qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + name));
       QueryHandlerEntry qEntry =
-               new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
+         new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
 
       ws1back.setQueryHandler(qEntry);
 
       ArrayList params = new ArrayList();
       for (Iterator i = ws1back.getContainer().getParameters().iterator(); i.hasNext();)
       {
-         SimpleParameterEntry p = (SimpleParameterEntry) i.next();
+         SimpleParameterEntry p = (SimpleParameterEntry)i.next();
          SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
 
          if (isMultiDB(ses) && newp.getName().equals("source-name"))
+         {
             newp.setValue(sourceName);
+         }
          else if (newp.getName().equals("swap-directory"))
+         {
             newp.setValue("target/temp/swap/" + name);
+         }
          else if (isMultiDB(ses) && newp.getName().equals("dialect"))
+         {
             newp.setValue("hsqldb");
+         }
 
          params.add(newp);
       }
 
       ContainerEntry ce =
-               new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
+         new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
       ws1back.setContainer(ce);
 
       return ws1back;
@@ -245,19 +253,19 @@ public class TestSVNodeDataOptimization
 
    private boolean isMultiDB(SessionImpl session)
    {
-      WorkspaceEntry ws1e = (WorkspaceEntry) session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+      WorkspaceEntry ws1e = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
-      for (Iterator i = ws1e.getContainer().getParameters().iterator(); i.hasNext();)
+      try
       {
-         SimpleParameterEntry p = (SimpleParameterEntry) i.next();
-         SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
-
-         if (newp.getName().equals("multi-db"))
-            return Boolean.valueOf(newp.getValue());
+         DatabaseStructureType databaseType = JDBCWorkspaceDataContainer.getDatabaseType(ws1e);
+         return databaseType.isMultiDatabase();
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new RuntimeException("Can not get property 'multi-db' in configuration on workspace '" + ws1e.getName()
+            + "'");
       }
 
-      throw new RuntimeException("Can not get property 'multi-db' in configuration on workspace '" + ws1e.getName()
-               + "'");
    }
 
 }

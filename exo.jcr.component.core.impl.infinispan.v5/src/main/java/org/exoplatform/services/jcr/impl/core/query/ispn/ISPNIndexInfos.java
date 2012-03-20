@@ -61,7 +61,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
    /**
     * Logger.
     */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNIndexInfos");//NOSONAR
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNIndexInfos");
 
    private static final String INDEX_NAMES = "$names".intern();
 
@@ -70,17 +70,17 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
    /**
     * ISPN cache.
     */
-   private final Cache<Serializable, Object> cache;
+   protected final Cache<Serializable, Object> cache;
 
    /**
     * Used to retrieve the current mode.
     */
-   private final IndexerIoModeHandler modeHandler;
+   protected final IndexerIoModeHandler modeHandler;
 
    /**
     * Cache key for storing index names.
     */
-   private final IndexInfosKey namesKey;
+   protected final IndexInfosKey namesKey;
    
    /**
     * Need to write the index info out of the current transaction 
@@ -98,7 +98,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
          }
 
          @Override
-         protected Void execute(Void arg)
+         protected Void execute(Void arg) throws RuntimeException
          {
             PrivilegedISPNCacheHelper.put(cache, namesKey, getNames());
             return null;
@@ -173,7 +173,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
          }
          catch (IOException e)
          {
-            LOG.error("Cannot read the list of index names", e);
+            log.error("Cannot read the list of index names", e);
          }
       }
       else
@@ -206,31 +206,47 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
     * @param event
     *          CacheEntryModifiedEvent
     */
-   @SuppressWarnings("unchecked")
    @CacheEntryModified
-   public void cacheEntryModified(CacheEntryModifiedEvent<Serializable, Object> event)
+   public void cacheEntryModified(CacheEntryModifiedEvent event)
    {
       if (!event.isPre() && event.getKey().equals(namesKey))
       {
          Set<String> set = (Set<String>)event.getValue();
          if (set != null)
          {
-            setNames(set);
-
-            // callback multiIndex to refresh lists
-            try
-            {
-               MultiIndex multiIndex = getMultiIndex();
-               if (multiIndex != null)
-               {
-                  multiIndex.refreshIndexList();
-               }
-            }
-            catch (IOException e)
-            {
-               LOG.error("Failed to update indexes! " + e.getMessage(), e);
-            }
+            refreshIndexes(set);
          }
       }
    }
+   
+
+
+   /**
+    * Update index configuration, when it changes on persistent storage 
+    * 
+    * @param set
+    */
+  protected void refreshIndexes(Set<String> set)
+  {
+     // do nothing if null is passed
+     if (set == null)
+     {
+        return;
+     }
+     setNames(set);
+     // callback multiIndex to refresh lists
+     try
+     {
+        MultiIndex multiIndex = getMultiIndex();
+        if (multiIndex != null)
+        {
+           multiIndex.refreshIndexList();
+        }
+     }
+     catch (IOException e)
+     {
+        log.error("Failed to update indexes! " + e.getMessage(), e);
+     }
+  }
+   
 }

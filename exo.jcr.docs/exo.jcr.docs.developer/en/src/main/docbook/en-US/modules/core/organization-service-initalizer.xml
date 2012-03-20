@@ -102,6 +102,9 @@
                     &lt;field name="email"&gt;
                       &lt;string&gt;root@localhost&lt;/string&gt;
                     &lt;/field&gt;
+                    &lt;field name="displayName"&gt;
+                      &lt;string&gt;Root&lt;/string&gt;
+                    &lt;/field&gt;
                     &lt;field name="groups"&gt;
                       &lt;string&gt;
                         manager:/platform/administrators
@@ -173,6 +176,10 @@
     <listitem>
       <para>email: The user's email</para>
     </listitem>
+
+    <listitem>
+      <para>displayName: The user's display name</para>
+    </listitem>    
 
     <listitem>
       <para>groups: The user's membership types and groups in which he

@@ -18,11 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
-import java.io.File;
 import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
@@ -40,65 +38,13 @@ public class SybaseConnectionFactory extends GenericCQConnectionFactory
 {
 
    /**
-    * SybaseConnectionFactory constructor.
-    * 
-    * @param dataSource
-    *          - DataSource
-    * @param dbDriver
-    *          - JDBC Driver
-    * @param dbUrl
-    *          - JDBC URL
-    * @param dbUserName
-    *          - database username
-    * @param dbPassword
-    *          - database user password
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    * @throws RepositoryException
-    *           if error eccurs
+    * SybaseConnectionFactory  constructor.
     */
-   public SybaseConnectionFactory(String dbDriver, String dbUrl, String dbUserName, String dbPassword,
-      String containerName, boolean multiDb, ValueStoragePluginProvider valueStorageProvider, int maxBufferSize,
-      File swapDirectory, FileCleaner swapCleaner) throws RepositoryException
+   public SybaseConnectionFactory(DataSource dbDataSource, JDBCDataContainerConfig containerConfig)
    {
-      super(dbDriver, dbUrl, dbUserName, dbPassword, containerName, multiDb, valueStorageProvider, maxBufferSize,
-         swapDirectory, swapCleaner);
+      super(dbDataSource, containerConfig);
    }
 
-   /**
-    * SybaseConnectionFactory  constructor.
-    *
-    * @param dataSource
-    *          - DataSource
-    * @param containerName
-    *          - Container name (see configuration)
-    * @param multiDb
-    *          - multidatabase state flag
-    * @param valueStorageProvider
-    *          - external Value Storages provider
-    * @param maxBufferSize
-    *          - Maximum buffer size (see configuration)
-    * @param swapDirectory
-    *          - Swap directory (see configuration)
-    * @param swapCleaner
-    *          - Swap cleaner (internal FileCleaner).
-    */
-   public SybaseConnectionFactory(DataSource dbDataSource, String containerName, boolean multiDb,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
-   {
-      super(dbDataSource, containerName, multiDb, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
-   }
-      
    /**
     * {@inheritDoc}
     */
@@ -107,15 +53,12 @@ public class SybaseConnectionFactory extends GenericCQConnectionFactory
    {
       try
       {
-
-         if (multiDb)
+         if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
-            return new SybaseMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-               valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+            return new SybaseMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }
 
-         return new SybaseSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerName,
-            valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+         return new SybaseSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
 
       }
       catch (SQLException e)
@@ -131,5 +74,5 @@ public class SybaseConnectionFactory extends GenericCQConnectionFactory
    public boolean isReindexingSupport()
    {
       return true;
-   }    
+   }
 }

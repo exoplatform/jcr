@@ -16,8 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
-import org.exoplatform.services.jcr.infinispan.CacheKey;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -34,8 +32,22 @@ public class CachePatternPropsId extends CacheKey
       super();
    }
 
-   CachePatternPropsId(String ownerId, String parentId)
+   CachePatternPropsId(String parentId)
    {
-      super(ownerId, parentId);
+      super(parentId);
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj instanceof CachePatternPropsId)
+      {
+         CachePatternPropsId cachePatternPropsId = (CachePatternPropsId)obj;
+         return (cachePatternPropsId.hash == hash && cachePatternPropsId.id.equals(id));
+      }
+      else
+      {
+         return false;
+      }
    }
 }

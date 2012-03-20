@@ -129,14 +129,7 @@ public class FileCleaner extends WorkerThread
       }
    }
 
-   /**
-    * @param file
-    */
-   public void removeFile(File file)
-   {
-      files.remove(file);
-   }
-   
+   @Override
    public void halt()
    {
       try

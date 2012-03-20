@@ -26,6 +26,8 @@ import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -114,5 +116,19 @@ public class TestJCRPath extends TestCase
       path = factory.parseAbsPath("/jcr:node/node1[2]/exo:node2");
       assertEquals("/jcr:node", path.makeAncestorPath(2).getAsString(false));
 
+   }
+
+   public void testEqualsJCRPath() throws Exception
+   {
+      JCRPath path = factory.parseAbsPath("/jcr:node/node1[2]/exo:node2");
+      assertFalse(path.equals(null));
+      assertFalse(path.equals(new Object()));
+   }
+
+   public void testEqualsJCRName() throws RepositoryException
+   {
+      JCRName name = factory.parseAbsPath("/jcr:node/node1[2]/exo:node2").getName();
+      assertFalse(name.equals(null));
+      assertFalse(name.equals(new Object()));
    }
 }

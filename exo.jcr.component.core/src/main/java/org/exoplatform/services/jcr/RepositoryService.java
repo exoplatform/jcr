@@ -45,14 +45,6 @@ public interface RepositoryService
    ManageableRepository getDefaultRepository() throws RepositoryException, RepositoryConfigurationException;
 
    /**
-    * Get default repository.
-    * 
-    * @return ManagableRepository
-    * @deprecated use getDefaultRepository() instead
-    */
-   ManageableRepository getRepository() throws RepositoryException, RepositoryConfigurationException;
-
-   /**
     * Get repository by name.
     * 
     * @param name

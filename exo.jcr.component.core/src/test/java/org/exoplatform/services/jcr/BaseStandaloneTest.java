@@ -141,7 +141,7 @@ public abstract class BaseStandaloneTest extends TestCase
 
       String loginConf = BaseStandaloneTest.class.getResource("/login.conf").toString();
 
-      container = StandaloneContainer.getInstance();
+       container = StandaloneContainer.getInstance();
 
       if (System.getProperty("java.security.auth.login.config") == null)
       {
@@ -365,7 +365,9 @@ public abstract class BaseStandaloneTest extends TestCase
             }
 
             if (dread < eread)
+            {
                dbuff = new byte[eread - dread];
+            }
          }
       }
 
@@ -445,7 +447,9 @@ public abstract class BaseStandaloneTest extends TestCase
          for (String nodeMixin : nodeMixins)
          {
             if (mixin.equals(nodeMixin))
+            {
                continue nextMixin;
+            }
          }
 
          fail("Mixin '" + mixin + "' isn't accessible");
@@ -529,6 +533,7 @@ public abstract class BaseStandaloneTest extends TestCase
     */
    public class TestWorkspaceDataContainer implements WorkspaceDataContainer
    {
+
       public String getInfo()
       {
          return null;
@@ -589,12 +594,6 @@ public abstract class BaseStandaloneTest extends TestCase
     */
    public class TestWorkspaceStorageConnection implements WorkspaceStorageConnection
    {
-
-      public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,
-         IllegalStateException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
 
       public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
          IllegalStateException
@@ -694,11 +693,6 @@ public abstract class BaseStandaloneTest extends TestCase
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
       }
 
-      public void prepare() throws IllegalStateException, RepositoryException
-      {
-         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
-      }
-
       public void commit() throws IllegalStateException, RepositoryException
       {
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
@@ -727,10 +721,24 @@ public abstract class BaseStandaloneTest extends TestCase
       /**
        * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getChildNodesDataByPage(org.exoplatform.services.jcr.datamodel.NodeData, int, int, java.util.List)
        */
+
       public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
          throws RepositoryException
       {
          return false;
+      }
+
+      /**
+       * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getNodesCount()
+       */
+      public long getNodesCount() throws RepositoryException
+      {
+         throw new UnsupportedOperationException();
+      }
+
+      public void prepare() throws IllegalStateException, RepositoryException
+      {
+         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
       }
 
    }

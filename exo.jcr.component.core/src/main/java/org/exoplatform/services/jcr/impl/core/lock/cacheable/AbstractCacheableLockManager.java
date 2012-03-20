@@ -18,6 +18,7 @@ package org.exoplatform.services.jcr.impl.core.lock.cacheable;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -67,6 +68,7 @@ import java.io.ObjectOutputStream;
 import java.math.BigInteger;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -134,7 +136,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    /**
     * Logger
     */
-   protected Log LOG = ExoLogger.getLogger("exo.jcr.component.core.AbstractCacheableLockManager");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.AbstractCacheableLockManager");
 
    protected LockActionNonTxAware<Integer, Object> getNumLocks;
 
@@ -171,11 +173,6 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
             long timeOut = config.getLockManager().getParameterTime(TIME_OUT);
             lockTimeOut = timeOut > 0 ? timeOut : DEFAULT_LOCK_TIMEOUT;
          }
-         else
-         {
-            lockTimeOut =
-               config.getLockManager().getTimeout() > 0 ? config.getLockManager().getTimeout() : DEFAULT_LOCK_TIMEOUT;
-         }
       }
       else
       {
@@ -203,7 +200,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return -1;
    }
@@ -219,7 +219,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return true;
    }
@@ -235,7 +238,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return false;
    }
@@ -259,7 +265,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return false;
    }
@@ -275,7 +284,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return null;
    }
@@ -291,7 +303,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
       }
       catch (LockException e)
       {
-         // ignore me will never occur
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return null;
    }
@@ -930,7 +945,15 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
        */
       public void clean() throws BackupException
       {
-         actualLocks.addAll(getLockList());
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               actualLocks.addAll(getLockList());
+               return null;
+            }
+         });
+
          doClean();
       }
 

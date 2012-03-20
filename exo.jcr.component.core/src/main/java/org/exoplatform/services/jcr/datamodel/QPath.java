@@ -400,33 +400,6 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * Makes child path from existed path and child name. Assumed that parent path belongs to node so
-    * it should have some index. If not sets index=1 automatically.
-    * 
-    * @param parent
-    *          path
-    * @param name
-    *          child name
-    * @return new InternalQPath
-    */
-   @Deprecated
-   public static QPath makeChildPath(QPath parent, String name) throws IllegalPathException
-   {
-
-      QPathEntry[] parentEntries = parent.getEntries();
-      QPathEntry[] names = new QPathEntry[parentEntries.length + 1];
-      int index = 0;
-      for (QPathEntry pname : parentEntries)
-      {
-         names[index++] = pname;
-      }
-
-      names[index] = parseEntry(name);
-      QPath path = new QPath(names);
-      return path;
-   }
-
-   /**
     * Make child path using JCR internal QName and index 1. <br/>
     * 
     * @param parent
@@ -549,35 +522,6 @@ public class QPath implements Comparable<QPath>
 
       QPath path = new QPath(names);
       return path;
-   }
-
-   /**
-    * Parse textual path entry.
-    *
-    * @param entry - String text
-    * @return QPathEntry
-    * @throws IllegalPathException if text is not a valid entry
-    */
-   private static QPathEntry parseEntry(final String entry) throws IllegalPathException
-   {
-
-      if (!entry.startsWith("["))
-         throw new IllegalPathException("Invalid QPath Entry '" + entry + "' Should start of '['");
-      final int uriStart = 0;
-      final int uriFinish = entry.indexOf("]", uriStart);
-      if (uriFinish == -1)
-         throw new IllegalPathException("Invalid QPath Entry '" + entry + "' No closed ']'");
-      final String uri = entry.substring(uriStart + 1, uriFinish);
-
-      final String localName = entry.substring(uriFinish + 1, entry.length());
-
-      final int ind = localName.indexOf(PREFIX_DELIMITER);
-      if (ind > 1)
-      {
-         return new QPathEntry(uri, localName.substring(0, ind), Integer.parseInt(localName.substring(ind + 1)));
-      }
-
-      return new QPathEntry(uri, localName, 1);
    }
 
 }

@@ -31,8 +31,7 @@
                   <properties>
                      <property name="source-name" value="jdbcjcr" />
                      <property name="dialect" value="auto" />
-                     <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws" />
                   </properties>
@@ -58,14 +57,29 @@
                      <property name="index-dir" value="target/temp/index/ws" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
+
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr1" />
+                     <property name="source-name" value="jdbcjcr" />
                      <property name="dialect" value="auto" />
-                     <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws1" />
                   </properties>
@@ -81,14 +95,29 @@
                      <property name="index-dir" value="target/temp/index/ws1" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
-            <workspace name="ws2" auto-init-root-nodetype="nt:unstructured">
+
+            <workspace name="ws2">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr2" />
+                     <property name="source-name" value="jdbcjcr" />
                      <property name="dialect" value="auto" />
-                     <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws2" />
                   </properties>
@@ -104,14 +133,29 @@
                      <property name="index-dir" value="target/temp/index/ws2" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
-            <workspace name="ws3" auto-init-root-nodetype="nt:unstructured">
+
+            <workspace name="ws3">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr3" />
+                     <property name="source-name" value="jdbcjcr" />
                      <property name="dialect" value="auto" />
-                     <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws3" />
                   </properties>
@@ -127,14 +171,29 @@
                      <property name="index-dir" value="target/temp/index/ws3" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
-            <workspace name="ws4" auto-init-root-nodetype="nt:unstructured">
+
+            <workspace name="ws4">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr4" />
+                     <property name="source-name" value="jdbcjcr" />
                      <property name="dialect" value="auto" />
-                     <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws4" />
                   </properties>
@@ -150,14 +209,29 @@
                      <property name="index-dir" value="target/temp/index/ws4" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
-            <workspace name="ws5" auto-init-root-nodetype="nt:unstructured">
+
+            <workspace name="ws5">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr5" />
+                     <property name="source-name" value="jdbcjcr" />
                      <property name="dialect" value="auto" />
-                     <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws5" />
                   </properties>
@@ -173,41 +247,25 @@
                      <property name="index-dir" value="target/temp/index/ws5" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
          </workspaces>
-      </repository>
-      <repository name="db2" system-workspace="ws" default-workspace="ws">
-         <security-domain>exo-domain</security-domain>
-         <access-control>optional</access-control>
-         <authentication-policy>org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator</authentication-policy>
-         <workspaces>
-            <workspace name="ws">
-               <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
-                  <properties>
-                     <property name="source-name" value="jdbcjcr19" />
-                     <property name="dialect" value="auto" />
-                     <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
-                     <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db2_ws" />
-                  </properties>
-               </container>
-               <cache enabled="true">
-                  <properties>
-                     <property name="max-size" value="5k" />
-                     <property name="live-time" value="1h" />
-                  </properties>
-               </cache>
-               <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-                  <properties>
-                     <property name="index-dir" value="target/temp/index/db2_ws" />
-                  </properties>
-               </query-handler>
-            </workspace>
-         </workspaces>
-      </repository>
-      
+      </repository>\
+
       <repository name="db3" system-workspace="ws" default-workspace="ws">
          <security-domain>exo-domain</security-domain>
          <access-control>optional</access-control>
@@ -216,9 +274,8 @@
             <workspace name="ws">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr6" />
-                     <property name="multi-db" value="false" />
-                     <property name="update-storage" value="false" />
+                     <property name="source-name" value="jdbcjcr2" />
+                     <property name="db-structure-type" value="single" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db3ws" />
                   </properties>
@@ -249,17 +306,28 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db3ws" />
                   </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>54000</time-out>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr2" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
                </lock-manager>
             </workspace>
 
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr6" />
-                     <property name="multi-db" value="false" />
-                     <property name="update-storage" value="false" />
+                     <property name="source-name" value="jdbcjcr2" />
+                     <property name="db-structure-type" value="single" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db3ws1" />
                   </properties>
@@ -290,9 +358,21 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db3ws1" />
                   </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>54000</time-out>
-               </lock-manager>               
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr2" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
          </workspaces>
       </repository>
@@ -305,9 +385,8 @@
             <workspace name="ws">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr7" />
-                     <property name="multi-db" value="true" />
-                     <property name="update-storage" value="false" />
+                     <property name="source-name" value="jdbcjcr3" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db4ws" />
                   </properties>
@@ -338,17 +417,28 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db4ws" />
                   </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>15m</time-out>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr3" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
                </lock-manager>
             </workspace>
 
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr8" />
-                     <property name="multi-db" value="true" />
-                     <property name="update-storage" value="false" />
+                     <property name="source-name" value="jdbcjcr3" />
+                     <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db4ws1" />
                   </properties>
@@ -379,166 +469,42 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db4ws1" />
                   </properties>
                </query-handler>
-               <lock-manager>
-                  <time-out>15m</time-out>
-               </lock-manager>               
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr3" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
          </workspaces>
       </repository>     
       
-      <repository name="db5" system-workspace="ws" default-workspace="ws">
+      <repository name="db8" system-workspace="ws" default-workspace="ws">
          <security-domain>exo-domain</security-domain>
          <access-control>optional</access-control>
          <authentication-policy>org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator</authentication-policy>
          <workspaces>
             <workspace name="ws">
-               <!-- for system storage -->
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr21" />
-                     <property name="dialect" value="auto" />
-                     <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
+                     <property name="source-name" value="jdbcjcr4" />
+                     <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db5_ws" />
-                  </properties>
-               </container>
-               <cache enabled="true">
-                  <properties>
-                     <property name="max-size" value="5k" />
-                     <property name="live-time" value="1h" />
-                  </properties>
-               </cache>
-               <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-                  <properties>
-                     <property name="index-dir" value="target/temp/index/db5_ws" />
-                  </properties>
-               </query-handler>
-            </workspace>
-            <workspace name="ws1">
-               <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
-                  <properties>
-                     <property name="source-name" value="jdbcjcr23" />
-                     <property name="dialect" value="auto" />
-                     <property name="multi-db" value="true" />
-                     <property name="update-storage" value="true" />
-                     <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db5_ws1" />
-                  </properties>
-               </container>
-               <cache enabled="true">
-                  <properties>
-                     <property name="max-size" value="5k" />
-                     <property name="live-time" value="1h" />
-                  </properties>
-               </cache>
-               <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-                  <properties>
-                     <property name="index-dir" value="target/temp/index/db5_ws1" />
-                  </properties>
-               </query-handler>
-            </workspace>
-         </workspaces>
-      </repository>
-      <repository name="db6" system-workspace="ws" default-workspace="ws">
-         <security-domain>exo-domain</security-domain>
-         <access-control>optional</access-control>
-         <authentication-policy>org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator</authentication-policy>
-         <workspaces>
-            <workspace name="ws">
-               <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
-                  <properties>
-                     <property name="source-name" value="jdbcjcr24" />
-                     <property name="dialect" value="auto" />
-                     <property name="multi-db" value="false" />
-                     <property name="update-storage" value="true" />
-                     <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db6_ws" />
-                  </properties>
-               </container>
-               <cache enabled="true">
-                  <properties>
-                     <property name="max-size" value="5k" />
-                     <property name="live-time" value="1h" />
-                  </properties>
-               </cache>
-               <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-                  <properties>
-                     <property name="index-dir" value="target/temp/index/db6_ws" />
-                  </properties>
-               </query-handler>
-            </workspace>
-            <workspace name="ws1">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
-                  <properties>
-                     <property name="source-name" value="jdbcjcr25" />
-                     <property name="dialect" value="auto" />
-                     <property name="multi-db" value="false" />
-                     <property name="update-storage" value="true" />
-                     <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db6_ws1" />
-                  </properties>
-               </container>
-               <cache enabled="true">
-                  <properties>
-                     <property name="max-size" value="5k" />
-                     <property name="live-time" value="1h" />
-                  </properties>
-               </cache>
-               <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-                  <properties>
-                     <property name="index-dir" value="target/temp/index/db6_ws1" />
-                  </properties>
-               </query-handler>
-            </workspace>
-            <workspace name="ws2">
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
-                  <properties>
-                     <property name="source-name" value="jdbcjcr26" />
-                     <property name="dialect" value="auto" />
-                     <property name="multi-db" value="false" />
-                     <property name="update-storage" value="true" />
-                     <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db6_ws2" />
-                  </properties>
-               </container>
-               <cache enabled="true">
-                  <properties>
-                     <property name="max-size" value="5k" />
-                     <property name="live-time" value="1h" />
-                  </properties>
-               </cache>
-               <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-                  <properties>
-                     <property name="index-dir" value="target/temp/index/db6_ws2" />
-                  </properties>
-               </query-handler>
-            </workspace>
-         </workspaces>
-      </repository>
-      
-      <repository name="db7" system-workspace="ws" default-workspace="ws">
-         <security-domain>exo-domain</security-domain>
-         <access-control>optional</access-control>
-         <authentication-policy>org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator</authentication-policy>
-         <workspaces>
-            <workspace name="ws">
-               <!-- for system storage -->
-               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
-                  <properties>
-                     <property name="source-name" value="jdbcjcr_to_repository_restore_singel_db" />
-                     <property name="dialect" value="auto" />
-                     <property name="multi-db" value="false" />
-                     <property name="update-storage" value="true" />
-                     <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db7_ws" />
+                     <property name="swap-directory" value="target/temp/swap/db4ws" />
                   </properties>
                   <value-storages>
-                     <value-storage id="draft" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                     <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="target/temp/values/db7_ws" />
+                           <property name="path" value="target/temp/values/db8ws" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -546,32 +512,51 @@
                      </value-storage>
                   </value-storages>
                </container>
-               <cache enabled="true">
+               <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
                   <properties>
-                     <property name="max-size" value="5k" />
+                     <property name="root-nodetype" value="nt:unstructured" />
+                  </properties>
+               </initializer>
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+                  <properties>
+                     <property name="max-size" value="10k" />
                      <property name="live-time" value="1h" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="target/temp/index/db7_ws" />
+                     <property name="index-dir" value="target/temp/jcrlucenedb/db8ws" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr4" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
+
             <workspace name="ws1">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcr_to_repository_restore_singel_db" />
-                     <property name="dialect" value="auto" />
-                     <property name="multi-db" value="false" />
-                     <property name="update-storage" value="true" />
+                     <property name="source-name" value="jdbcjcr5" />
+                     <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
-                     <property name="swap-directory" value="target/temp/swap/db7_ws1" />
+                     <property name="swap-directory" value="target/temp/swap/db8ws1" />
                   </properties>
                   <value-storages>
-                     <value-storage id="draft" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
+                     <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
                         <properties>
-                           <property name="path" value="target/temp/values/db7_ws1" />
+                           <property name="path" value="target/temp/values/db8ws1" />
                         </properties>
                         <filters>
                            <filter property-type="Binary" />
@@ -579,19 +564,39 @@
                      </value-storage>
                   </value-storages>
                </container>
-               <cache enabled="true">
+               <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
                   <properties>
-                     <property name="max-size" value="5k" />
+                     <property name="root-nodetype" value="nt:unstructured" />
+                  </properties>
+               </initializer>
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+                  <properties>
+                     <property name="max-size" value="10k" />
                      <property name="live-time" value="1h" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
-                     <property name="index-dir" value="target/temp/index/db7_ws1" />
+                     <property name="index-dir" value="target/temp/jcrlucenedb/db8ws1" />
                   </properties>
                </query-handler>
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+                  <properties>
+                     <property name="time-out" value="15m" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
+                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr5" />
+                     <property name="jbosscache-shareable" value="true" />
+                  </properties>
+               </lock-manager>
             </workspace>
          </workspaces>
-      </repository>
+      </repository>    
    </repositories>
 </repository-service>

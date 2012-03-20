@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.core;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
-import org.exoplatform.services.jcr.impl.ReadOnlySupport;
 import org.exoplatform.services.jcr.impl.WorkspaceContainer;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
@@ -113,21 +112,6 @@ public final class WorkspaceContainerFacade
     */
    public int getState()
    {
-      boolean hasROComponents = false;
-      boolean hasRWComponents = false;
-      List<ReadOnlySupport> readOnlyComponents = getComponentInstancesOfType(ReadOnlySupport.class);
-      for (ReadOnlySupport component : readOnlyComponents)
-      {
-         if (component.isReadOnly())
-         {
-            hasROComponents = true;
-         }
-         else
-         {
-            hasRWComponents = true;
-         }
-      }
-
       boolean hasSuspendedComponents = false;
       boolean hasResumedComponents = false;
       List<Suspendable> suspendableComponents = getComponentInstancesOfType(Suspendable.class);
@@ -143,15 +127,11 @@ public final class WorkspaceContainerFacade
          }
       }
 
-      if (hasSuspendedComponents && !hasResumedComponents && !hasROComponents)
+      if (hasSuspendedComponents && !hasResumedComponents)
       {
          return ManageableRepository.SUSPENDED;
       }
-      else if (hasROComponents && !hasRWComponents && !hasSuspendedComponents)
-      {
-         return ManageableRepository.READONLY;
-      }
-      else if (!hasSuspendedComponents && !hasROComponents)
+      else if (!hasSuspendedComponents)
       {
          return ManageableRepository.ONLINE;
       }
@@ -188,10 +168,6 @@ public final class WorkspaceContainerFacade
                      setOnline();
                      break;
                   case ManageableRepository.OFFLINE :
-                     suspend();
-                     break;
-                  case ManageableRepository.READONLY :
-                     setReadOnly(true);
                      break;
                   case ManageableRepository.SUSPENDED :
                      suspend();
@@ -218,18 +194,6 @@ public final class WorkspaceContainerFacade
    }
 
    /**
-    * Set all components readonly.
-    */
-   private void setReadOnly(boolean readOnly)
-   {
-      List<ReadOnlySupport> components = getComponentInstancesOfType(ReadOnlySupport.class);
-      for (ReadOnlySupport component : components)
-      {
-         component.setReadOnly(readOnly);
-      }
-   }
-
-   /**
     * Suspend all components in workspace.
     * 
     * @throws RepositoryException
@@ -250,10 +214,7 @@ public final class WorkspaceContainerFacade
       {
          try
          {
-            if (!component.isSuspended())
-            {
-               component.suspend();
-            }
+            component.suspend();
          }
          catch (SuspendException e)
          {
@@ -303,7 +264,6 @@ public final class WorkspaceContainerFacade
     */
    private void setOnline() throws RepositoryException
    {
-      setReadOnly(false);
       resume();
    }
 }

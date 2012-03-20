@@ -82,7 +82,7 @@ public class JDBCWDCTest extends TestCase
       ContainerEntry containerEntry = new ContainerEntry();
       List params = new ArrayList();
       params.add(new SimpleParameterEntry("sourceName", sourceName));
-      params.add(new SimpleParameterEntry("multi-db", "true"));
+      params.add(new SimpleParameterEntry("db-structure-type", "multi"));
       containerEntry.setParameters(params);
       config.setContainer(containerEntry);
 

@@ -21,14 +21,10 @@ package org.exoplatform.services.jcr.lab.infinispan;
 import junit.framework.TestCase;
 
 import org.infinispan.Cache;
-import org.infinispan.configuration.cache.Configuration;
-import org.infinispan.configuration.cache.ConfigurationBuilder;
-import org.infinispan.configuration.global.GlobalConfiguration;
-import org.infinispan.configuration.global.GlobalConfigurationBuilder;
+import org.infinispan.config.Configuration;
+import org.infinispan.config.GlobalConfiguration;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.remoting.transport.jgroups.JGroupsAddress;
-import org.infinispan.remoting.transport.jgroups.JGroupsTransport;
 
 import java.util.concurrent.TimeUnit;
 
@@ -66,19 +62,19 @@ public class TestISPNCache extends TestCase
    public void testGetCache() throws Exception
    {
       // Create cache manager
-      GlobalConfiguration myGlobalConfig = new GlobalConfigurationBuilder().build();
+      GlobalConfiguration myGlobalConfig = new GlobalConfiguration();
       EmbeddedCacheManager manager = new DefaultCacheManager(myGlobalConfig);
 
       // Create a cache
-      Configuration config = new ConfigurationBuilder().build();
+      Configuration config = new Configuration();
       manager.defineConfiguration("cache", config);
-      Cache<String, String> cache = manager.getCache("cache");
+      Cache cache = manager.getCache("cache");
 
       cache.put("key", "value");
       assertTrue(cache.size() == 1);
       assertTrue(cache.containsKey("key"));
 
-      String value = cache.remove("key");
+      String value = (String)cache.remove("key");
       assertTrue(value.equals("value"));
       assertTrue(cache.isEmpty());
 
@@ -94,26 +90,6 @@ public class TestISPNCache extends TestCase
       Thread.sleep(2000 + 500);
       assertFalse(cache.containsKey("key"));
    }
-   
-   /**
-    * Infinispan-based RSync concept relies on some JGroups and ISPN interns, used to identify physical address
-    * of coodrinator node. This test used to identify any changed in those libraries to be able quickly update
-    * RSync components. 
-    * 
-    * @throws Exception
-    */
-   public void testJGroupTransportPhysicalAddress() throws Exception
-   {
-      GlobalConfiguration myGlobalConfig = new GlobalConfigurationBuilder().clusteredDefault().build();
-      // Create cache manager
-      EmbeddedCacheManager manager = new DefaultCacheManager(myGlobalConfig);
-
-      // Create a cache
-      Cache<String, String> cache = manager.getCache();
-      
-      assertTrue(manager.getCoordinator() instanceof JGroupsAddress);
-      assertTrue(manager.getTransport() instanceof JGroupsTransport);
-   }
 
    /**
     * Test cluster cache and base operation.
@@ -122,18 +98,17 @@ public class TestISPNCache extends TestCase
     */
    public void testGetClusterCache() throws Exception
    {
-      GlobalConfiguration myGlobalConfig = new GlobalConfigurationBuilder().clusteredDefault().build();
       // Create cache manager
-      EmbeddedCacheManager manager = new DefaultCacheManager(myGlobalConfig);
+      EmbeddedCacheManager manager = new DefaultCacheManager(GlobalConfiguration.getClusteredDefault());
 
       // Create a cache
-      Cache<String, String> cache = manager.getCache();
+      Cache cache = manager.getCache();
 
       cache.put("key", "value");
       assertTrue(cache.size() == 1);
       assertTrue(cache.containsKey("key"));
 
-      String value = cache.remove("key");
+      String value = (String)cache.remove("key");
       assertTrue(value.equals("value"));
       assertTrue(cache.isEmpty());
 

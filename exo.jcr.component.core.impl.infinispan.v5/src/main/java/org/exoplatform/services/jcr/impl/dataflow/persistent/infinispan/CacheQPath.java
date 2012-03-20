@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.infinispan.CacheKey;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -41,14 +40,28 @@ class CacheQPath extends CacheKey
       super();
    }
 
-   CacheQPath(String ownerId, String parentId, QPath path, ItemType itemType)
+   CacheQPath(String parentId, QPath path, ItemType itemType)
    {
-      this(ownerId, parentId, path.getEntries()[path.getEntries().length - 1], itemType);
+      this(parentId, path.getEntries()[path.getEntries().length - 1], itemType);
    }
 
-   CacheQPath(String ownerId, String parentId, QPathEntry name, ItemType itemType)
+   CacheQPath(String parentId, QPathEntry name, ItemType itemType)
    {
-      super(ownerId, new StringBuilder().append(parentId != null ? parentId : Constants.ROOT_PARENT_UUID)
+      super(new StringBuilder().append(parentId != null ? parentId : Constants.ROOT_PARENT_UUID)
          .append(name.getAsString(true)).append(itemType.toString()).toString(), parentId);
+   }
+
+   @Override
+   public boolean equals(Object obj)
+   {
+      if (obj instanceof CacheQPath)
+      {
+         CacheQPath cacheQPath = (CacheQPath)obj;
+         return (cacheQPath.hash == hash && cacheQPath.id.equals(id));
+      }
+      else
+      {
+         return false;
+      }
    }
 }

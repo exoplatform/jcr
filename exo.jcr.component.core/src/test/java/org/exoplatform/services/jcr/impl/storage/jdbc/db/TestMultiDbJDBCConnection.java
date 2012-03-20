@@ -17,7 +17,9 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
-import org.exoplatform.services.jcr.impl.storage.jdbc.init.StorageDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -33,16 +35,20 @@ import java.sql.Statement;
 public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
 {
 
-   private void setUp(String scriptPath, boolean multiDB) throws Exception
+   private void setUp(String scriptPath, DatabaseStructureType dbStructureType) throws Exception
    {
       super.setUp();
-      new StorageDBInitializer("ws3", getJNDIConnection(), scriptPath, multiDB).init();
+      JDBCDataContainerConfig containerConfig = new JDBCDataContainerConfig();
+      containerConfig.containerName = "ws3";
+      containerConfig.initScriptPath = scriptPath;
+      containerConfig.dbStructureType = dbStructureType;
+      new DBInitializer(getJNDIConnection(), containerConfig).init();
    }
-   
+
    @Override
    public void setUp() throws Exception
    {
-      setUp("/conf/storage/jcr-mjdbc.sql", true);
+      setUp("/conf/storage/jcr-mjdbc.sql", DatabaseStructureType.MULTI);
       try
       {
 
@@ -56,7 +62,11 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
             + "('0xce',16,'B','testConn2')");
          st.executeUpdate("insert into JCR_MREF values" + "('D','A',2)");
          st.executeUpdate("insert into JCR_MREF values" + "('E','B',2)");
-         jdbcConn = new MultiDbJDBCConnection(getJNDIConnection(), false, "ws3", null, 10, null, null);
+         JDBCDataContainerConfig jdbcDataContainerConfig = new JDBCDataContainerConfig();
+         jdbcDataContainerConfig.containerName = "ws3";
+         jdbcDataContainerConfig.maxBufferSize = 10;
+         jdbcDataContainerConfig.dbStructureType = DatabaseStructureType.MULTI;
+         jdbcConn = new MultiDbJDBCConnection(getJNDIConnection(), false, jdbcDataContainerConfig);
          tableType = "M";
          st.close();
       }
@@ -81,7 +91,6 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
          st.executeUpdate("drop table JCR_MREF");
          st.executeUpdate("drop table JCR_MVALUE");
          st.executeUpdate("drop table JCR_MITEM");
-         st.executeUpdate("drop table JCR_MCONTAINER");
          st.close();
 
       }

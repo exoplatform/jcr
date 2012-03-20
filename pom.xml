@@ -24,27 +24,27 @@
   <parent>
     <groupId>org.exoplatform</groupId>
     <artifactId>foundation-parent</artifactId>
-    <version>9</version>
+    <version>1.15.0-SNAPSHOT</version>
   </parent>
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.14.8-GA-SNAPSHOT</version>
+  <version>1.15.0-Beta01-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
 
   <scm>
-    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk</connection>
-    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/trunk</developerConnection>
-    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/trunk</url>
+    <connection>scm:svn:http://anonsvn.jboss.org/repos/exo-jcr/jcr/branches/1.15.x</connection>
+    <developerConnection>scm:svn:https://svn.jboss.org/repos/exo-jcr/jcr/branches/1.15.x</developerConnection>
+    <url>http://fisheye.jboss.org/browse/exo-jcr/jcr/branches/1.15.x</url>
   </scm>
 
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.14</exo.product.specification>
-    <org.exoplatform.kernel.version>2.3.8-GA-SNAPSHOT</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>2.4.8-GA-SNAPSHOT</org.exoplatform.core.version>
-    <org.exoplatform.ws.version>2.2.8-GA-SNAPSHOT</org.exoplatform.ws.version>
+    <org.exoplatform.kernel.version>2.4.0-Beta01-SNAPSHOT</org.exoplatform.kernel.version>
+    <org.exoplatform.core.version>2.5.0-Beta01-SNAPSHOT</org.exoplatform.core.version>
+    <org.exoplatform.ws.version>2.3.0-Beta01-SNAPSHOT</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
   </properties>
 
@@ -85,12 +85,7 @@
         <groupId>org.exoplatform.kernel</groupId>
         <artifactId>exo.kernel.component.ext.rpc.impl.jgroups.v3</artifactId>
         <version>${org.exoplatform.kernel.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.exoplatform.kernel</groupId>
-        <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
-        <version>${org.exoplatform.kernel.version}</version>
-      </dependency>                 
+      </dependency>           
       <dependency>
         <groupId>org.exoplatform.core</groupId>
         <artifactId>exo.core.component.database</artifactId>
@@ -239,7 +234,7 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
         <version>1.5.8</version>
-	<scope>test</scope>
+	      <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>javax.jcr</groupId>
@@ -279,18 +274,23 @@
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-core</artifactId>
-        <version>2.9.4</version>
+        <version>3.0.3</version>
       </dependency>
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-spellchecker</artifactId>
-        <version>2.9.4</version>
+        <version>3.0.3</version>
       </dependency>
       <dependency>
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-memory</artifactId>
-        <version>2.9.4</version>
+        <version>3.0.3</version>
       </dependency>
+      <dependency>
+        <groupId>org.apache.lucene</groupId>
+        <artifactId>lucene-wordnet</artifactId>
+        <version>3.0.3</version>
+      </dependency>            
       <dependency>
         <groupId>com.sun.xml.stream</groupId>
         <artifactId>sjsxp</artifactId>
@@ -397,17 +397,60 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-core</artifactId>
-        <version>5.1.2.FINAL</version>
+        <version>5.1.0.CR1</version>
       </dependency>
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-cachestore-jdbc</artifactId>
-        <version>5.1.2.FINAL</version>
+        <version>5.1.0.CR1</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>1.3.2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.antlr</groupId>
+        <artifactId>antlr-runtime</artifactId>
+        <version>3.2</version> 
+      </dependency>
+      <dependency>
+        <groupId>org.antlr</groupId>
+        <artifactId>gunit</artifactId>
+        <version>3.2</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.ow2.spec.ee</groupId>
+        <artifactId>ow2-jta-1.1-spec</artifactId>
+        <version>1.0-M1</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.jboss.javaee</groupId>
+        <artifactId>jboss-transaction-api</artifactId>
+        <version>1.0.1.GA</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>stax</groupId>
+        <artifactId>stax-api</artifactId>
+        <version>1.0.1</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.xml.stream</groupId>
+        <artifactId>stax-api</artifactId>
+        <version>1.0-2</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.geronimo.specs</groupId>
+        <artifactId>geronimo-stax-api_1.0_spec</artifactId>
+        <version>1.0.1</version>
+      </dependency>
+      <dependency>
+         <groupId>org.codehaus.groovy</groupId>
+         <artifactId>groovy-all</artifactId>
+         <version>1.7.6</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
@@ -421,7 +464,7 @@
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-log4j12</artifactId>
       <scope>test</scope>
-    </dependency>  
+    </dependency>
   </dependencies>
   <build>
     <resources>

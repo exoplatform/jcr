@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.ext.action;
 
+import org.exoplatform.services.command.action.Action;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -40,25 +42,38 @@ public class ActionConfiguration
 
    private String workspace;
 
+   private Action action;
+
    public ActionConfiguration()
    {
-      this.actionClassName = null;
-      this.eventTypes = null;
-      this.path = null;
-      this.isDeep = true;
-      this.workspace = null;
-      this.nodeTypes = null;
    }
 
    public ActionConfiguration(String actionClassName, String eventTypes, String path, boolean isDeep, String workspace,
-      String nodeTypes)
+      String nodeTypes, Action action)
    {
       this.actionClassName = actionClassName;
+      this.action = action;
       this.eventTypes = eventTypes;
       this.path = path;
       this.isDeep = isDeep;
       this.workspace = workspace;
       this.nodeTypes = nodeTypes;
+   }
+
+   /**
+    * @return the action
+    */
+   public Action getAction()
+   {
+      return action;
+   }
+
+   /**
+    * @param action the action to set
+    */
+   public void setAction(Action action)
+   {
+      this.action = action;
    }
 
    public String getActionClassName()

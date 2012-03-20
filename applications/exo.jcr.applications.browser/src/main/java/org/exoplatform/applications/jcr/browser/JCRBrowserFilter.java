@@ -175,11 +175,15 @@ public class JCRBrowserFilter extends AbstractFilter
 
                if (jcrBrowser.getRepository() != null)
                {
-
                   if (workspaceName != null && !jcrBrowser.getSession().getWorkspace().getName().equals(workspaceName))
                   {
                      jcrBrowser.setSession(sessionProviderService.getSessionProvider(null).getSession(workspaceName,
                         jcrBrowser.getRepository()));
+                  }
+                  else
+                  {
+                     jcrBrowser.setSession(sessionProviderService.getSessionProvider(null).getSession(
+                        jcrBrowser.getSession().getWorkspace().getName(), jcrBrowser.getRepository()));
                   }
 
                   // Navigation
@@ -192,7 +196,9 @@ public class JCRBrowserFilter extends AbstractFilter
                   {
                      path = (String)httpRequest.getParameter("goNodePath");
                      if (path != null)
+                     {
                         jcrBrowser.setNode((Node)jcrBrowser.getSession().getItem(path));
+                     }
                      // else seems nothing changed in JCR navigation
                   }
 

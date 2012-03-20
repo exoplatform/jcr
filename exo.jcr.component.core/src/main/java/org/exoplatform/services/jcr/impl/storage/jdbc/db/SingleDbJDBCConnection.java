@@ -22,11 +22,9 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
@@ -52,22 +50,18 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    /**
     * Singledatabase JDBC Connection constructor.
     * 
-    * @param dbConnection JDBC connection, shoudl be opened before
-    * @param readOnly, boolean if true the dbConnection was marked as READ-ONLY.
-    * @param containerName Workspace Storage Container name (see configuration)
-    * @param valueStorageProvider External Value Storages provider
-    * @param maxBufferSize Maximum buffer size (see configuration)
-    * @param swapDirectory Swap directory (see configuration)
-    * @param swapCleaner Swap cleaner (internal FileCleaner).
-    * @throws SQLException in case of database error
-    * @see org.exoplatform.services.jcr.impl.util.io.FileCleaner
+    * @param dbConnection
+    *          JDBC connection, should be opened before
+    * @param readOnly
+    *          boolean if true the dbConnection was marked as READ-ONLY.
+    * @param containerConfig
+    *          Workspace Storage Container configuration
     */
-   public SingleDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
+   public SingleDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
 
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
 
    /**
@@ -76,7 +70,7 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    @Override
    protected String getInternalId(final String identifier)
    {
-      return containerName + identifier;
+      return this.containerConfig.containerName + identifier;
    }
 
    /**
@@ -86,10 +80,12 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected String getIdentifier(final String internalId)
    {
 
-      if (internalId == null) // possible for root parent
+      if (internalId == null)
+      {
          return null;
+      }
 
-      return internalId.substring(containerName.length());
+      return internalId.substring(this.containerConfig.containerName.length());
    }
 
    /**
@@ -98,17 +94,6 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    @Override
    protected void prepareQueries() throws SQLException
    {
-
-      JCR_PK_ITEM = "JCR_PK_SITEM";
-      JCR_FK_ITEM_PARENT = "JCR_FK_SITEM_PARENT";
-      JCR_IDX_ITEM_PARENT = "JCR_IDX_SITEM_PARENT";
-      JCR_IDX_ITEM_PARENT_NAME = "JCR_IDX_SITEM_PARENT_NAME";
-      JCR_IDX_ITEM_PARENT_ID = "JCR_IDX_SITEM_PARENT_ID";
-      JCR_PK_VALUE = "JCR_PK_SVALUE";
-      JCR_FK_VALUE_PROPERTY = "JCR_FK_SVALUE_PROPERTY";
-      JCR_IDX_VALUE_PROPERTY = "JCR_IDX_SVALUE_PROPERTY";
-      JCR_PK_REF = "JCR_PK_SREF";
-      JCR_IDX_REF_PROPERTY = "JCR_IDX_SREF_PROPERTY";
 
       FIND_ITEM_BY_ID = "select * from JCR_SITEM where ID=?";
 
@@ -165,6 +150,8 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
       DELETE_ITEM = "delete from JCR_SITEM where ID=?";
       DELETE_VALUE = "delete from JCR_SVALUE where PROPERTY_ID=?";
       DELETE_REF = "delete from JCR_SREF where PROPERTY_ID=?";
+
+      FIND_NODES_COUNT = "select count(*) from JCR_SITEM I where I.I_CLASS=1 and I.CONTAINER_NAME=?";
    }
 
    /**
@@ -174,16 +161,20 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected int addNodeRecord(NodeData data) throws SQLException
    {
       if (insertNode == null)
+      {
          insertNode = dbConnection.prepareStatement(INSERT_NODE);
+      }
       else
+      {
          insertNode.clearParameters();
+      }
 
       insertNode.setString(1, getInternalId(data.getIdentifier()));
       // if root then parent identifier equals space string
       insertNode.setString(2, data.getParentIdentifier() == null ? Constants.ROOT_PARENT_UUID : getInternalId(data
          .getParentIdentifier()));
       insertNode.setString(3, data.getQPath().getName().getAsString());
-      insertNode.setString(4, containerName);
+      insertNode.setString(4, this.containerConfig.containerName);
       insertNode.setInt(5, data.getPersistedVersion());
       insertNode.setInt(6, data.getQPath().getIndex());
       insertNode.setInt(7, data.getOrderNumber());
@@ -197,14 +188,18 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected int addPropertyRecord(PropertyData data) throws SQLException
    {
       if (insertProperty == null)
+      {
          insertProperty = dbConnection.prepareStatement(INSERT_PROPERTY);
+      }
       else
+      {
          insertProperty.clearParameters();
+      }
 
       insertProperty.setString(1, getInternalId(data.getIdentifier()));
       insertProperty.setString(2, getInternalId(data.getParentIdentifier()));
       insertProperty.setString(3, data.getQPath().getName().getAsString());
-      insertProperty.setString(4, containerName);
+      insertProperty.setString(4, this.containerConfig.containerName);
       insertProperty.setInt(5, data.getPersistedVersion());
       insertProperty.setInt(6, data.getQPath().getIndex());
       insertProperty.setInt(7, data.getType());
@@ -220,9 +215,13 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected int addReference(PropertyData data) throws SQLException, IOException
    {
       if (insertReference == null)
+      {
          insertReference = dbConnection.prepareStatement(INSERT_REF);
+      }
       else
+      {
          insertReference.clearParameters();
+      }
 
       List<ValueData> values = data.getValues();
       int added = 0;
@@ -246,9 +245,13 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected int deleteReference(String propertyCid) throws SQLException
    {
       if (deleteReference == null)
+      {
          deleteReference = dbConnection.prepareStatement(DELETE_REF);
+      }
       else
+      {
          deleteReference.clearParameters();
+      }
 
       deleteReference.setString(1, propertyCid);
       return deleteReference.executeUpdate();
@@ -261,9 +264,13 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected int deleteItemByIdentifier(String cid) throws SQLException
    {
       if (deleteItem == null)
+      {
          deleteItem = dbConnection.prepareStatement(DELETE_ITEM);
+      }
       else
+      {
          deleteItem.clearParameters();
+      }
 
       deleteItem.setString(1, cid);
       return deleteItem.executeUpdate();
@@ -276,11 +283,15 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected ResultSet findChildNodesByParentIdentifier(String parentCid) throws SQLException
    {
       if (findNodesByParentId == null)
+      {
          findNodesByParentId = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID);
+      }
       else
+      {
          findNodesByParentId.clearParameters();
+      }
 
-      findNodesByParentId.setString(1, containerName);
+      findNodesByParentId.setString(1, this.containerConfig.containerName);
       findNodesByParentId.setString(2, parentCid);
       return findNodesByParentId.executeQuery();
    }
@@ -292,11 +303,15 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
    {
       if (findLastOrderNumberByParentId == null)
+      {
          findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
+      }
       else
+      {
          findLastOrderNumberByParentId.clearParameters();
+      }
 
-      findLastOrderNumberByParentId.setString(1, containerName);
+      findLastOrderNumberByParentId.setString(1, this.containerConfig.containerName);
       findLastOrderNumberByParentId.setString(2, parentIdentifier);
       return findLastOrderNumberByParentId.executeQuery();
    }
@@ -308,11 +323,15 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected ResultSet findChildNodesCountByParentIdentifier(String parentCid) throws SQLException
    {
       if (findNodesCountByParentId == null)
+      {
          findNodesCountByParentId = dbConnection.prepareStatement(FIND_NODES_COUNT_BY_PARENTID);
+      }
       else
+      {
          findNodesCountByParentId.clearParameters();
+      }
 
-      findNodesCountByParentId.setString(1, containerName);
+      findNodesCountByParentId.setString(1, this.containerConfig.containerName);
       findNodesCountByParentId.setString(2, parentCid);
       return findNodesCountByParentId.executeQuery();
    }
@@ -324,11 +343,15 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected ResultSet findChildPropertiesByParentIdentifier(String parentCid) throws SQLException
    {
       if (findPropertiesByParentId == null)
+      {
          findPropertiesByParentId = dbConnection.prepareStatement(FIND_PROPERTIES_BY_PARENTID);
+      }
       else
+      {
          findPropertiesByParentId.clearParameters();
+      }
 
-      findPropertiesByParentId.setString(1, containerName);
+      findPropertiesByParentId.setString(1, this.containerConfig.containerName);
       findPropertiesByParentId.setString(2, parentCid);
       return findPropertiesByParentId.executeQuery();
    }
@@ -340,11 +363,15 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected ResultSet findItemByName(String parentId, String name, int index) throws SQLException
    {
       if (findItemByName == null)
+      {
          findItemByName = dbConnection.prepareStatement(FIND_ITEM_BY_NAME);
+      }
       else
+      {
          findItemByName.clearParameters();
+      }
 
-      findItemByName.setString(1, containerName);
+      findItemByName.setString(1, this.containerConfig.containerName);
       findItemByName.setString(2, parentId);
       findItemByName.setString(3, name);
       findItemByName.setInt(4, index);
@@ -358,11 +385,15 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected ResultSet findPropertyByName(String parentCid, String name) throws SQLException
    {
       if (findPropertyByName == null)
+      {
          findPropertyByName = dbConnection.prepareStatement(FIND_PROPERTY_BY_NAME);
+      }
       else
+      {
          findPropertyByName.clearParameters();
+      }
 
-      findPropertyByName.setString(1, containerName);
+      findPropertyByName.setString(1, this.containerConfig.containerName);
       findPropertyByName.setString(2, parentCid);
       findPropertyByName.setString(3, name);
       return findPropertyByName.executeQuery();
@@ -375,9 +406,13 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected ResultSet findItemByIdentifier(String cid) throws SQLException
    {
       if (findItemById == null)
+      {
          findItemById = dbConnection.prepareStatement(FIND_ITEM_BY_ID);
+      }
       else
+      {
          findItemById.clearParameters();
+      }
 
       findItemById.setString(1, cid);
       return findItemById.executeQuery();
@@ -390,12 +425,16 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected ResultSet findReferences(String cid) throws SQLException
    {
       if (findReferences == null)
+      {
          findReferences = dbConnection.prepareStatement(FIND_REFERENCES);
+      }
       else
+      {
          findReferences.clearParameters();
+      }
 
       findReferences.setString(1, cid);
-      findReferences.setString(2, containerName);
+      findReferences.setString(2, this.containerConfig.containerName);
       return findReferences.executeQuery();
    }
 
@@ -406,9 +445,13 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected int updateNodeByIdentifier(int version, int index, int orderNumb, String cid) throws SQLException
    {
       if (updateNode == null)
+      {
          updateNode = dbConnection.prepareStatement(UPDATE_NODE);
+      }
       else
+      {
          updateNode.clearParameters();
+      }
 
       updateNode.setInt(1, version);
       updateNode.setInt(2, index);
@@ -424,9 +467,13 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected int updatePropertyByIdentifier(int version, int type, String cid) throws SQLException
    {
       if (updateProperty == null)
+      {
          updateProperty = dbConnection.prepareStatement(UPDATE_PROPERTY);
+      }
       else
+      {
          updateProperty.clearParameters();
+      }
 
       updateProperty.setInt(1, version);
       updateProperty.setInt(2, type);
@@ -454,9 +501,13 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    {
 
       if (insertValue == null)
+      {
          insertValue = dbConnection.prepareStatement(INSERT_VALUE);
+      }
       else
+      {
          insertValue.clearParameters();
+      }
 
       if (stream == null)
       {
@@ -482,9 +533,13 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected int deleteValueData(String cid) throws SQLException
    {
       if (deleteValue == null)
+      {
          deleteValue = dbConnection.prepareStatement(DELETE_VALUE);
+      }
       else
+      {
          deleteValue.clearParameters();
+      }
 
       deleteValue.setString(1, cid);
       return deleteValue.executeUpdate();
@@ -497,9 +552,13 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected ResultSet findValuesByPropertyId(String cid) throws SQLException
    {
       if (findValuesByPropertyId == null)
+      {
          findValuesByPropertyId = dbConnection.prepareStatement(FIND_VALUES_BY_PROPERTYID);
+      }
       else
+      {
          findValuesByPropertyId.clearParameters();
+      }
 
       findValuesByPropertyId.setString(1, cid);
       return findValuesByPropertyId.executeQuery();
@@ -512,10 +571,14 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    protected ResultSet findValuesStorageDescriptorsByPropertyId(String cid) throws SQLException
    {
       if (findValuesStorageDescriptorsByPropertyId == null)
+      {
          findValuesStorageDescriptorsByPropertyId =
             dbConnection.prepareStatement(FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID);
+      }
       else
+      {
          findValuesStorageDescriptorsByPropertyId.clearParameters();
+      }
 
       findValuesStorageDescriptorsByPropertyId.setString(1, cid);
       return findValuesStorageDescriptorsByPropertyId.executeQuery();
@@ -571,12 +634,12 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
                .prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID "
                   + "IN (SELECT ID FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND "
                   + "(NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
-         removeValuesStatement.setString(1, containerName);
+         removeValuesStatement.setString(1, this.containerConfig.containerName);
 
          removeItemsStatement =
             dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND "
                + "(NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
-         removeItemsStatement.setString(1, containerName);
+         removeItemsStatement.setString(1, this.containerConfig.containerName);
 
          removeValuesStatement.executeUpdate();
          removeItemsStatement.executeUpdate();
@@ -612,6 +675,26 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
+   @Override
+   protected ResultSet findNodesCount() throws SQLException
+   {
+      if (findNodesCount == null)
+      {
+         findNodesCount = dbConnection.prepareStatement(FIND_NODES_COUNT);
+      }
+      else
+      {
+         findNodesCount.clearParameters();
+      }
+
+      findNodesCount.setString(1, this.containerConfig.containerName);
+
+      return findNodesCount.executeQuery();
+   }
+
+   /**
+   * {@inheritDoc}
+   */
    protected ResultSet findMaxPropertyVersion(String parentId, String name, int index) throws SQLException
    {
       if (findMaxPropertyVersions == null)
@@ -620,7 +703,7 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
       }
 
       findMaxPropertyVersions.setString(1, getInternalId(parentId));
-      findMaxPropertyVersions.setString(2, containerName);
+      findMaxPropertyVersions.setString(2, containerConfig.containerName);
       findMaxPropertyVersions.setString(3, name);
       findMaxPropertyVersions.setInt(4, index);
 

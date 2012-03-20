@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.log.ExoLogger;
@@ -207,13 +208,11 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
    {
       TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
       WorkspaceEntry wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
-      boolean isDefaultWsMultiDb = false;
-      if ("true".equals(wsEntry.getContainer().getParameterValue("multi-db")))
-      {
-         isDefaultWsMultiDb = true;
-      }
+		DatabaseStructureType dbStructureType = DatabaseStructureType
+				.valueOf(wsEntry.getContainer().getParameterValue(
+						JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE));
       WorkspaceEntry workspaceEntry =
-         helper.createWorkspaceEntry(isDefaultWsMultiDb,
+         helper.createWorkspaceEntry(dbStructureType,
             wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME));
 
       return workspaceEntry.getName();

@@ -16,10 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.SQLException;
 
@@ -35,11 +33,18 @@ public class PostgreMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
    protected String PATTERN_ESCAPE_STRING = "\\\\";
 
-   public PostgreMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
-      ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
-      throws SQLException
+   /**
+    * @param dbConnection
+    *          JDBC connection, should be opened before
+    * @param readOnly
+    *          boolean if true the dbConnection was marked as READ-ONLY.
+    * @param containerConfig
+    *          Workspace Storage Container configuration
+    */
+   public PostgreMultiDbJDBCConnection(Connection dbConnection, boolean readOnly,
+      JDBCDataContainerConfig containerConfig) throws SQLException
    {
-      super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
+      super(dbConnection, readOnly, containerConfig);
    }
 
    /**

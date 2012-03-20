@@ -57,11 +57,6 @@ public interface ManageableRepository extends Repository
    final int ONLINE = 1;
 
    /**
-    * Repository READONLY status.
-    */
-   final int READONLY = 2;
-
-   /**
     * Repository SUSPENDED status.
     */
    final int SUSPENDED = 3;
@@ -76,7 +71,6 @@ public interface ManageableRepository extends Repository
     * 
     * @param workspaceName - name of workspace
     * @param listener Item persistence listener
-    * @deprecated
     */
    void addItemPersistenceListener(String workspaceName, ItemsPersistenceListener listener);
 

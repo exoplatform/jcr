@@ -17,12 +17,12 @@
 
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.Hits;
 import org.apache.lucene.search.IndexSearcher;
+import org.apache.lucene.search.ScoreDoc;
 import org.apache.lucene.search.TermQuery;
+import org.apache.lucene.search.TopDocs;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
@@ -64,22 +64,22 @@ public class TestDateSearch extends BaseQueryTest
       String word = "2005-10-02".toLowerCase();// "ronaldo";//-10-06T00:00:00.000+0300
 
       // Check is node indexed
-      Document doc = getDocument(cont.getInternalIdentifier(), false);
+      ScoreDoc doc = getDocument(cont.getInternalIdentifier(), false);
       assertNotNull("Node is not indexed", doc);
       System.out.println("its doc " + doc);
 
       IndexReader reader = defaultSearchIndex.getIndexReader();
       IndexSearcher is = new IndexSearcher(reader);
       TermQuery query = new TermQuery(new Term(FieldNames.FULLTEXT, word));
-      Hits result = is.search(query);
-      assertEquals(1, result.length());
+      TopDocs topDocs = is.search(query, Integer.MAX_VALUE);
+      assertEquals(1, topDocs.totalHits);
 
       QueryManager qman = this.workspace.getQueryManager();
 
       Query q = qman.createQuery("SELECT * FROM nt:resource " + " WHERE  CONTAINS(., '" + word + "')", Query.SQL);
       QueryResult res = q.execute();
       assertEquals(1, res.getNodes().getSize());
-      
+
       is.close();
       Util.closeOrRelease(reader);
    }

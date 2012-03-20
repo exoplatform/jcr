@@ -19,10 +19,10 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
-import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.BufferedInputStream;
@@ -47,17 +47,10 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
 {
    private final TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
 
-   private WorkspaceEntry wsEntry;
-
-   private boolean isDefaultWsMultiDb;
-
    @Override
    public void setUp() throws Exception
    {
       super.setUp();
-      wsEntry = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
-      
-      isDefaultWsMultiDb = "true".equals(wsEntry.getContainer().getParameterValue("multi-db")); 
    }
 
    public void testRestore() throws RepositoryConfigurationException, Exception
@@ -65,11 +58,9 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         String dsName = helper.createDatasource();
-         repository = helper.createRepository(container, isDefaultWsMultiDb, dsName);
+         repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
 
-         WorkspaceEntry workspaceEntry =
-            helper.createWorkspaceEntry(isDefaultWsMultiDb, isDefaultWsMultiDb ? helper.createDatasource() : dsName);
+         WorkspaceEntry workspaceEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
          helper.addWorkspace(repository, workspaceEntry);
 
          InputStream is = TestWorkspaceManagement.class.getResourceAsStream("/import-export/db1_ws1-20071220_0430.xml");
@@ -89,11 +80,9 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
       ManageableRepository repository = null;
       try
       {
-         String dsName = helper.createDatasource();
-         repository = helper.createRepository(container, isDefaultWsMultiDb, dsName);
+         repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
 
-         WorkspaceEntry workspaceEntry =
-            helper.createWorkspaceEntry(isDefaultWsMultiDb, isDefaultWsMultiDb ? helper.createDatasource() : dsName);
+         WorkspaceEntry workspaceEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
          helper.addWorkspace(repository, workspaceEntry);
 
          Session defSession = repository.login(this.credentials, workspaceEntry.getName());
@@ -130,21 +119,5 @@ public class TestWorkspaceRestore extends JcrImplBaseTest
             helper.removeRepository(container, repository.getConfiguration().getName());
          }
       }
-   }
-
-   private void doTestOnWorkspace(String wsName) throws RepositoryException, RepositoryConfigurationException
-   {
-      RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      Session sess = service.getDefaultRepository().getSystemSession(wsName);
-
-      Node root2 = sess.getRootNode();
-      assertNotNull(root2);
-
-      Node node1 = root2.getNode("node1");
-      assertNotNull(node1);
-
-      assertEquals("2", node1.getProperty("p1").getString());
-
-      sess.logout();
    }
 }

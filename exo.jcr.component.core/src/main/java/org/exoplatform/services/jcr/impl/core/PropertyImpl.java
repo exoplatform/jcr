@@ -144,7 +144,6 @@ public class PropertyImpl extends ItemImpl implements Property
     */
    public Value getValue() throws ValueFormatException, RepositoryException
    {
-
       checkValid();
 
       if (isMultiValued())
@@ -166,7 +165,6 @@ public class PropertyImpl extends ItemImpl implements Property
     */
    public Value[] getValues() throws ValueFormatException, RepositoryException
    {
-
       checkValid();
 
       // Check property definition and life-state flag both
@@ -294,7 +292,6 @@ public class PropertyImpl extends ItemImpl implements Property
     */
    public long getLength() throws ValueFormatException, RepositoryException
    {
-
       return ((BaseValue)getValue()).getLength();
    }
 
@@ -303,7 +300,6 @@ public class PropertyImpl extends ItemImpl implements Property
     */
    public long[] getLengths() throws ValueFormatException, RepositoryException
    {
-
       Value[] thisValues = getValues();
 
       long[] lengths = new long[thisValues.length];
@@ -319,7 +315,6 @@ public class PropertyImpl extends ItemImpl implements Property
     */
    public PropertyDefinition getDefinition() throws RepositoryException
    {
-
       checkValid();
 
       if (propertyDef == null)
@@ -356,7 +351,6 @@ public class PropertyImpl extends ItemImpl implements Property
    private void initDefinitions(boolean multiple, NodeData parent) throws RepositoryException,
       ConstraintViolationException
    {
-
       InternalQName pname = getData().getQPath().getName();
 
       if (parent == null)
@@ -390,7 +384,6 @@ public class PropertyImpl extends ItemImpl implements Property
    public void setValue(Value value) throws ValueFormatException, VersionException, LockException,
       ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       doUpdateProperty(parent(), getInternalName(), value, false, PropertyType.UNDEFINED);
@@ -402,7 +395,6 @@ public class PropertyImpl extends ItemImpl implements Property
    public void setValue(Value[] values) throws ValueFormatException, VersionException, LockException,
       ConstraintViolationException, RepositoryException
    {
-
       checkValid();
 
       doUpdateProperty(parent(), getInternalName(), values, true, PropertyType.UNDEFINED);
@@ -489,7 +481,6 @@ public class PropertyImpl extends ItemImpl implements Property
    public void setValue(String[] values) throws ValueFormatException, VersionException, LockException,
       ConstraintViolationException, RepositoryException
    {
-
       Value[] strValues = null;
       if (values != null)
       {
@@ -560,7 +551,6 @@ public class PropertyImpl extends ItemImpl implements Property
     */
    public Value[] getValueArray() throws RepositoryException
    {
-
       Value[] values = new Value[propertyData.getValues().size()];
       for (int i = 0; i < values.length; i++)
       {

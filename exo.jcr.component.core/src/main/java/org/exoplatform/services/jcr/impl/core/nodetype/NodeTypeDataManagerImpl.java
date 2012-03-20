@@ -40,6 +40,8 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
+import org.exoplatform.services.jcr.impl.core.nodetype.registration.CNDNodeTypeDataPersister;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeDefinitionComparator;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeConverter;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeDataPersister;
@@ -622,7 +624,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       }
       else if (contentType.equalsIgnoreCase(TEXT_X_JCR_CND))
       {
-         throw new RepositoryException("Unsupported content type:" + contentType);
+         serializer = new CNDNodeTypeDataPersister(is, (NamespaceRegistryImpl)namespaceRegistry);
       }
       else
       {
@@ -634,6 +636,15 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       nodeTypeDataValidator.validateNodeType(nodeTypes);
 
       nodeTypeRepository.registerNodeType(nodeTypes, this, accessControlPolicy, alreadyExistsBehaviour);
+
+      for (NodeTypeData nodeType : nodeTypes)
+      {
+         for (NodeTypeManagerListener listener : listeners.values())
+         {
+            listener.nodeTypeRegistered(nodeType.getName());
+         }
+      }
+
       return nodeTypes;
    }
 
@@ -650,6 +661,14 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       nodeTypeDataValidator.validateNodeType(nodeTypes);
 
       nodeTypeRepository.registerNodeType(nodeTypes, this, accessControlPolicy, alreadyExistsBehaviour);
+
+      for (NodeTypeData nodeType : nodeTypes)
+      {
+         for (NodeTypeManagerListener listener : listeners.values())
+         {
+            listener.nodeTypeRegistered(nodeType.getName());
+         }
+      }
 
       return nodeTypes;
    }
@@ -750,8 +769,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
          new PropertyDefinitionComparator(this, dataManager, itemAutocreator, affectedNodes, locationFactory);
       changesLog.addAll(propertyDefinitionComparator.compare(recipientDefinition,
          getAllPropertyDefinitions(ancestorAllNodeTypeNames), getAllPropertyDefinitions(recipienAllNodeTypeNames))
-
-      .getAllStates());
+         .getAllStates());
 
       return changesLog;
    }
@@ -884,6 +902,11 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
          throw new RepositoryException(message.toString());
       }
       this.nodeTypeRepository.unregisterNodeType(nodeType);
+
+      for (NodeTypeManagerListener listener : listeners.values())
+      {
+         listener.nodeTypeUnregistered(nodeType.getName());
+      }
    }
 
    /**
@@ -976,9 +999,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
             affectedNodes, this.locationFactory);
       changesLog.addAll(propertyDefinitionComparator.compare(recipientDefinition,
          getAllPropertyDefinitions(ancestorDefinition.getName()),
-         volatileNodeTypeDataManager.getAllPropertyDefinitions(recipientDefinition.getName()))
-
-      .getAllStates());
+         volatileNodeTypeDataManager.getAllPropertyDefinitions(recipientDefinition.getName())).getAllStates());
 
       // notify listeners about changes
       if (!Arrays.deepEquals(recipientDefinition.getDeclaredSupertypeNames(), ancestorDefinition
@@ -1034,6 +1055,11 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       this.nodeTypeRepository.removeNodeType(ancestorDefinition);
 
       this.nodeTypeRepository.addNodeType(recipientDefinition, volatileNodeTypes);
+
+      for (NodeTypeManagerListener listener : listeners.values())
+      {
+         listener.nodeTypeReRegistered(recipientDefinition.getName());
+      }
 
       return changesLog;
    }

@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.backup.impl;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.ManageableRepository;
@@ -109,7 +110,7 @@ public class BackupChainImpl implements BackupChain
 
       try
       {
-         this.fullBackup = (AbstractFullBackupJob)Class.forName(fullBackupType).newInstance();
+         this.fullBackup = (AbstractFullBackupJob)ClassLoading.forName(fullBackupType, this).newInstance();
       }
       catch (ClassNotFoundException e)
       {
@@ -129,7 +130,8 @@ public class BackupChainImpl implements BackupChain
       {
          try
          {
-            this.incrementalBackup = (AbstractIncrementalBackupJob)Class.forName(incrementalBackupType).newInstance();
+            this.incrementalBackup =
+               (AbstractIncrementalBackupJob)ClassLoading.forName(incrementalBackupType, this).newInstance();
          }
          catch (ClassNotFoundException e)
          {

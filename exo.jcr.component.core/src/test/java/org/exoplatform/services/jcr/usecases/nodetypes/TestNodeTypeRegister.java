@@ -104,7 +104,7 @@ public class TestNodeTypeRegister extends BaseUsecasesTest
       nodeTypeValue.setDeclaredSupertypeNames(superTypeNames);
       nodeTypeValue.setPrimaryItemName("");
 
-      ExtendedNodeTypeManager extNodeTypeManager = repositoryService.getRepository().getNodeTypeManager();
+      ExtendedNodeTypeManager extNodeTypeManager = repositoryService.getDefaultRepository().getNodeTypeManager();
       try
       {
          nodeTypeManager.getNodeType("exo:testNodeType2");

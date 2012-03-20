@@ -19,8 +19,9 @@
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.database.utils.ExceptionManagementHelper;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
+import org.exoplatform.services.database.utils.JDBCUtils;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -49,23 +50,23 @@ public class DBInitializer
 
    static public String SQL_CREATEVIEW = "^(CREATE(\\s)+VIEW(\\s)+(IF(\\s)+NOT(\\s)+EXISTS(\\s)+)*){1}";
 
-   static public String SQL_OBJECTNAME = "((JCR_[A-Z_]+){1}(\\s*?|(\\(\\))*?)+)+?";
+   static public String SQL_OBJECTNAME = "((JCR_[A-Z_0-9]+){1}(\\s*?|(\\(\\))*?)+)+?";
 
    static public String SQL_CREATEINDEX = "^(CREATE(\\s)+(UNIQUE(\\s)+)*INDEX(\\s)+){1}";
 
-   static public String SQL_ONTABLENAME = "(ON(\\s)+(JCR_[A-Z_]+){1}(\\s*?|(\\(\\))*?)+){1}";
+   static public String SQL_ONTABLENAME = "(ON(\\s)+(JCR_[A-Z_0-9]+){1}(\\s*?|(\\(\\))*?)+){1}";
 
    static public String SQL_CREATESEQUENCE = "^(CREATE(\\s)+SEQUENCE(\\s)+){1}";
 
    static public String SQL_CREATETRIGGER = "^(CREATE(\\s)+(OR(\\s){1}REPLACE(\\s)+)*TRIGGER(\\s)+){1}";
 
-   static public String SQL_TRIGGERNAME = "(([A-Z_]+JCR_[A-Z_]+){1}(\\s*?|(\\(\\))*?)+)+?";
+   static public String SQL_TRIGGERNAME = "(([A-Z_]+JCR_[A-Z_0-9]+){1}(\\s*?|(\\(\\))*?)+)+?";
 
-   protected final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBInitializer");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBInitializer");
 
    protected final Connection connection;
 
-   protected final String containerName;
+   protected final JDBCDataContainerConfig containerConfig;
 
    protected final String script;
 
@@ -85,12 +86,11 @@ public class DBInitializer
 
    protected final Pattern dbTriggerNamePattern;
 
-   public DBInitializer(String containerName, Connection connection, String scriptPath) throws IOException
+   public DBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
       this.connection = connection;
-      this.containerName = containerName;
-      this.script = script(scriptPath);
-
+      this.containerConfig = containerConfig;
+      this.script = DBInitializerHelper.prepareScripts(containerConfig);
       this.creatTablePattern = Pattern.compile(SQL_CREATETABLE, Pattern.CASE_INSENSITIVE);
       this.creatViewPattern = Pattern.compile(SQL_CREATEVIEW, Pattern.CASE_INSENSITIVE);
       this.dbObjectNamePattern = Pattern.compile(SQL_OBJECTNAME, Pattern.CASE_INSENSITIVE);
@@ -99,11 +99,6 @@ public class DBInitializer
       this.creatSequencePattern = Pattern.compile(SQL_CREATESEQUENCE, Pattern.CASE_INSENSITIVE);
       this.creatTriggerPattern = Pattern.compile(SQL_CREATETRIGGER, Pattern.CASE_INSENSITIVE);
       this.dbTriggerNamePattern = Pattern.compile(SQL_TRIGGERNAME, Pattern.CASE_INSENSITIVE);
-   }
-
-   protected String script(String scriptPath) throws IOException
-   {
-      return DBInitializerHelper.readScriptResource(scriptPath);
    }
 
    protected boolean isTableExists(final Connection conn, final String tableName) throws SQLException
@@ -250,7 +245,7 @@ public class DBInitializer
 
    public void init() throws DBInitializerException
    {
-      String[] scripts = DBInitializerHelper.scripts(script);
+      String[] scripts = JDBCUtils.splitWithSQLDelimiter(script);
       String sql = null;
       Statement st = null;
       Set<String> existingTables = new HashSet<String>();
@@ -263,7 +258,7 @@ public class DBInitializer
          connection.setAutoCommit(true);
          for (String scr : scripts)
          {
-            String s = DBInitializerHelper.cleanWhitespaces(scr.trim());
+            String s = JDBCUtils.cleanWhitespaces(scr.trim());
             if (s.length() > 0)
             {
                if (isObjectExists(connection, sql = s, existingTables))
@@ -289,7 +284,7 @@ public class DBInitializer
          }
 
          postInit(connection);
-         LOG.info("DB schema of DataSource: '" + containerName + "' initialized succesfully");
+         LOG.info("DB schema of DataSource: '" + containerConfig.containerName + "' initialized succesfully");
       }
       catch (SQLException e)
       {
@@ -297,9 +292,8 @@ public class DBInitializer
          {
             LOG.error("Problem creating database structure.", e);
          }
-         LOG
-            .warn("Some tables were created and not rolled back. Please make sure to drop them manually in datasource : '"
-               + containerName + "'");
+         LOG.warn("Some tables were created and not rolled back. Please make sure to drop them manually in datasource : '"
+            + containerConfig.containerName + "'");
 
          boolean isAlreadyCreated = false;
          try
@@ -313,14 +307,14 @@ public class DBInitializer
 
          if (isAlreadyCreated)
          {
-            LOG.warn("Could not create db schema of DataSource: '" + containerName + "'. Reason: Objects form " + sql
-               + " already exists");
+            LOG.warn("Could not create db schema of DataSource: '" + containerConfig.containerName
+               + "'. Reason: Objects form " + sql + " already exists");
          }
          else
          {
             String msg =
-                     "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
-                              + ExceptionManagementHelper.getFullSQLExceptionMessage(e) + ". Last command: " + sql;
+               "Could not create db schema of DataSource: '" + containerConfig.containerName + "'. Reason: "
+                  + e.getMessage() + "; " + JDBCUtils.getFullMessage(e) + ". Last command: " + sql;
 
             throw new DBInitializerException(msg, e);
          }
@@ -335,7 +329,7 @@ public class DBInitializer
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the Statement: " + e);
+               LOG.error("Can't close the Statement: " + e.getMessage());
             }
          }
 
@@ -351,10 +345,18 @@ public class DBInitializer
    }
 
    /**
-    * Place to perform additional operations in overriden classes.
+    * Init root node parent record.
     */
    protected void postInit(Connection connection) throws SQLException
    {
+      String select =
+         "select * from " + DBInitializerHelper.getItemTableName(containerConfig) + " where ID='"
+            + Constants.ROOT_PARENT_UUID + "' and PARENT_ID='" + Constants.ROOT_PARENT_UUID + "'";
 
+      if (!connection.createStatement().executeQuery(select).next())
+      {
+         String insert = DBInitializerHelper.getRootNodeInitializeScript(containerConfig);
+         connection.createStatement().executeUpdate(insert);
+      }
    }
 }

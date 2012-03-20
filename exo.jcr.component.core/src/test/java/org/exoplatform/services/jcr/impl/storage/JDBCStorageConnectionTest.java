@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.storage;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.PermissionType;
-import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
@@ -38,6 +37,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.security.IdentityConstants;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -177,7 +177,7 @@ public class JDBCStorageConnectionTest extends JcrImplBaseTest
             new TransientValueData(Constants.EXO_PRIVILEGEABLE));
 
       List<ValueData> vd = new ArrayList<ValueData>();
-      vd.add(new TransientValueData(SystemIdentity.ANY + AccessControlEntry.DELIMITER + PermissionType.READ));
+      vd.add(new TransientValueData(IdentityConstants.ANY + AccessControlEntry.DELIMITER + PermissionType.READ));
 
       vd.add(new TransientValueData("managers" + AccessControlEntry.DELIMITER + PermissionType.SET_PROPERTY));
 
@@ -198,9 +198,9 @@ public class JDBCStorageConnectionTest extends JcrImplBaseTest
          (NodeData)dataManager.getItemData(root, new QPathEntry(InternalQName.parse("[]jdbcStorageConnectionTest"), 1),
             ItemType.NODE);
 
-      List<String> iperms = troot.getACL().getPermissions(SystemIdentity.ANY);
-      assertEquals("Wrong permission for " + SystemIdentity.ANY, 1, iperms.size());
-      assertEquals("Wrong permission for " + SystemIdentity.ANY, PermissionType.READ, iperms.get(0));
+      List<String> iperms = troot.getACL().getPermissions(IdentityConstants.ANY);
+      assertEquals("Wrong permission for " + IdentityConstants.ANY, 1, iperms.size());
+      assertEquals("Wrong permission for " + IdentityConstants.ANY, PermissionType.READ, iperms.get(0));
 
       iperms = troot.getACL().getPermissions("managers");
       assertEquals("Wrong permission for managers", 1, iperms.size());
@@ -223,7 +223,7 @@ public class JDBCStorageConnectionTest extends JcrImplBaseTest
          TransientPropertyData.createPropertyData(testRoot, Constants.JCR_MIXINTYPES, PropertyType.NAME, true, mixvd);
 
       List<ValueData> vd = new ArrayList<ValueData>();
-      vd.add(new TransientValueData(SystemIdentity.ANY + AccessControlEntry.DELIMITER + PermissionType.READ));
+      vd.add(new TransientValueData(IdentityConstants.ANY + AccessControlEntry.DELIMITER + PermissionType.READ));
 
       vd.add(new TransientValueData("managers" + AccessControlEntry.DELIMITER + PermissionType.SET_PROPERTY));
 
@@ -251,9 +251,9 @@ public class JDBCStorageConnectionTest extends JcrImplBaseTest
 
       assertEquals("Owner is not valid", "exo", troot.getACL().getOwner());
 
-      List<String> iperms = troot.getACL().getPermissions(SystemIdentity.ANY);
-      assertEquals("Wrong permission for " + SystemIdentity.ANY, 1, iperms.size());
-      assertEquals("Wrong permission for " + SystemIdentity.ANY, PermissionType.READ, iperms.get(0));
+      List<String> iperms = troot.getACL().getPermissions(IdentityConstants.ANY);
+      assertEquals("Wrong permission for " + IdentityConstants.ANY, 1, iperms.size());
+      assertEquals("Wrong permission for " + IdentityConstants.ANY, PermissionType.READ, iperms.get(0));
 
       iperms = troot.getACL().getPermissions("managers");
       assertEquals("Wrong permission for managers", 1, iperms.size());

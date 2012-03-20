@@ -30,9 +30,9 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration;
 import org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin;
+import org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin.ActionsConfig;
 import org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog;
 import org.exoplatform.services.jcr.impl.ext.action.SessionEventMatcher;
-import org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin.ActionsConfig;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
@@ -281,7 +281,7 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
    {
       ActionConfiguration ac =
          new ActionConfiguration("org.exoplatform.services.jcr.usecases.action.DummyAction", "addNode,addProperty",
-            "/test,/exo:test1", true, null, "nt:base");
+            "/test,/exo:test1", true, null, "nt:base", null);
       List actionsList = new ArrayList();
       ActionsConfig actions = new ActionsConfig();
       actions.setActions(actionsList);

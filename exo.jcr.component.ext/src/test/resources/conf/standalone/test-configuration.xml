@@ -51,8 +51,8 @@
             <property name="log4j.appender.file.layout" value="org.apache.log4j.PatternLayout" />
             <property name="log4j.appender.file.layout.ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* [%t] %c{1}: %m (%F, line %L) %n" />
 
-            <!-- property name="log4j.category.ext.BackupScheduler" value="DEBUG"/>
-            <property name="log4j.category.ext.BackupManagerImpl" value="DEBUG"/ -->
+            
+            <!-- property name="log4j.category.ext.BackupManagerImpl" value="DEBUG"/ -->
             <property name="log4j.category.jcr.ext.RestRepositoryService" value="DEBUG"/>
 
             <!-- property name="log4j.category.org.exoplatform.services.jcr.ext.script.groovy.JcrGroovyResourceLoader" value="DEBUG" / -->
@@ -465,6 +465,29 @@
                                  </field>
                               </object>
                            </value>
+                           <value>
+                              <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
+                                 <field name="eventTypes">
+                                    <string>addNode</string>
+                                 </field>
+                                 <field name="path">
+                                    <string>/testPath</string>
+                                 </field>
+                                 <field name="isDeep">
+                                    <boolean>false</boolean>
+                                 </field>
+                                 <field name="action">
+                                    <object type="org.exoplatform.services.jcr.ext.backup.usecase.SetPropertyAction">
+                                    	<field name="addPropertyName">
+                                    		<string>myProperty</string>
+                                    	</field>
+                                    	<field name="addPropertyValue">
+                                    		<string>myValue</string>
+                                    	</field>                                   
+                                    </object>
+                                 </field>
+                              </object>
+                           </value>
                         </collection>
                      </field>
                   </object>
@@ -797,359 +820,6 @@
                <description>ref-addresses</description>
                <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
                <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr5" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr6</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr6" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr7</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr7" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr8</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr8" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
- 
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr19</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr19" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr21</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr21" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr23</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr23" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr24</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr24" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr25</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr25" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr26</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr26" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr27</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcr27" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_to_rest_repo_1</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_to_rest_repo_1" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_to_rest_repo_2</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_to_rest_repo_2" />
-               <property name="username" value="sa" />
-               <property name="password" value="" />
-            </properties-param>
-         </init-params>
-      </component-plugin>
-      <component-plugin>
-         <name>bind.datasource</name>
-         <set-method>addPlugin</set-method>
-         <type>org.exoplatform.services.naming.BindReferencePlugin</type>
-         <init-params>
-            <value-param>
-               <name>bind-name</name>
-               <value>jdbcjcr_to_repository_restore_singel_db</value>
-            </value-param>
-            <value-param>
-               <name>class-name</name>
-               <value>javax.sql.DataSource</value>
-            </value-param>
-            <value-param>
-               <name>factory</name>
-               <value>org.apache.commons.dbcp.BasicDataSourceFactory</value>
-            </value-param>
-            <properties-param>
-               <name>ref-addresses</name>
-               <description>ref-addresses</description>
-               <property name="driverClassName" value="org.hsqldb.jdbcDriver" />
-               <property name="url" value="jdbc:hsqldb:file:target/temp/data/jdbcjcr_to_repository_restore_singel_db" />
                <property name="username" value="sa" />
                <property name="password" value="" />
             </properties-param>

@@ -16,8 +16,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene.spell;
 
-import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.OffsetAttribute;
+import org.apache.lucene.analysis.tokenattributes.PositionIncrementAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.spell.Dictionary;
 import org.apache.lucene.search.spell.LuceneDictionary;
@@ -54,7 +56,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
     * Logger instance for this class.
     */
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.LuceneSpellChecker");
-   
+
    public static final class FiveSecondsRefreshInterval extends LuceneSpellChecker
    {
       public FiveSecondsRefreshInterval()
@@ -256,7 +258,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
             public Object run() throws Exception
             {
                spellIndexDirectory = handler.getDirectoryManager().getDirectory("spellchecker");
-                  
+
                if (IndexReader.indexExists(spellIndexDirectory))
                {
                   lastRefresh = System.currentTimeMillis();
@@ -283,7 +285,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
       {
          // tokenize the statement (field name doesn't matter actually...)
          List<String> words = new ArrayList<String>();
-         List<Token> tokens = new ArrayList<Token>();
+         List<TokenData> tokens = new ArrayList<TokenData>();
          tokenize(statement, words, tokens);
 
          String[] suggestions = check(words.toArray(new String[words.size()]));
@@ -294,11 +296,11 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
             StringBuffer sb = new StringBuffer(statement);
             for (int i = suggestions.length - 1; i >= 0; i--)
             {
-               Token t = tokens.get(i);
+               TokenData t = tokens.get(i);
                // only replace if word acutally changed
-               if (!t.termText().equalsIgnoreCase(suggestions[i]))
+               if (!t.word.equalsIgnoreCase(suggestions[i]))
                {
-                  sb.replace(t.startOffset(), t.endOffset(), suggestions[i]);
+                  sb.replace(t.startOffset, t.endOffset, suggestions[i]);
                }
             }
             // if suggestion is same as a statement return null
@@ -357,39 +359,72 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
        * @throws IOException
        *             if an error occurs while parsing the statement.
        */
-      private void tokenize(String statement, List<String> words, List<Token> tokens) throws IOException
+      private void tokenize(String statement, List<String> words, List<TokenData> tokens) throws IOException
       {
          TokenStream ts = handler.getTextAnalyzer().tokenStream(FieldNames.FULLTEXT, new StringReader(statement));
+         TermAttribute term = (TermAttribute)ts.getAttribute(TermAttribute.class);
+         PositionIncrementAttribute positionIncrement =
+            (PositionIncrementAttribute)ts.getAttribute(PositionIncrementAttribute.class);
+         OffsetAttribute offset = (OffsetAttribute)ts.getAttribute(OffsetAttribute.class);
          try
          {
-            Token t;
-            while ((t = ts.next()) != null)
+            while (ts.incrementToken())
             {
-               String origWord = statement.substring(t.startOffset(), t.endOffset());
-               if (t.getPositionIncrement() > 0)
+
+               String word = term.term();
+               //            while ((t = ts.next()) != null)
+               //            {
+               String origWord = statement.substring(offset.startOffset(), offset.endOffset());
+               if (positionIncrement.getPositionIncrement() > 0)
                {
-                  words.add(t.termText());
-                  tokens.add(t);
+                  words.add(word);
+                  tokens.add(new TokenData(offset.startOffset(), offset.endOffset(), term.term()));
                }
                else
                {
                   // very simple implementation: use termText with length
                   // closer to original word
-                  Token current = tokens.get(tokens.size() - 1);
-                  if (Math.abs(origWord.length() - current.termText().length()) > Math.abs(origWord.length()
-                     - t.termText().length()))
+                  TokenData current = tokens.get(tokens.size() - 1);
+                  if (Math.abs(origWord.length() - current.termLength()) > Math.abs(origWord.length() - word.length()))
                   {
                      // replace current token and word
-                     words.set(words.size() - 1, t.termText());
-                     tokens.set(tokens.size() - 1, t);
+                     words.set(words.size() - 1, word);
+                     tokens
+                        .set(tokens.size() - 1, new TokenData(offset.startOffset(), offset.endOffset(), term.term()));
                   }
                }
             }
          }
          finally
          {
+            ts.end();
             ts.close();
          }
+      }
+
+      class TokenData
+      {
+         int startOffset;
+
+         int endOffset;
+
+         String word;
+
+         public TokenData(int startOffset, int endOffset, String word)
+         {
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.word = word;
+         }
+
+         /**
+          * @return
+          */
+         public int termLength()
+         {
+            return word.length();
+         }
+
       }
 
       /**

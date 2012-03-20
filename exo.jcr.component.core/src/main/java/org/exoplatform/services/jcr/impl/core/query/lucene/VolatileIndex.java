@@ -57,12 +57,11 @@ class VolatileIndex extends AbstractIndex
     *
     * @param analyzer the analyzer to use.
     * @param similarity the similarity implementation.
-    * @param indexingQueue the indexing queue.
     * @throws IOException if an error occurs while opening the index.
     */
-   VolatileIndex(Analyzer analyzer, Similarity similarity, IndexingQueue indexingQueue) throws IOException
+   VolatileIndex(Analyzer analyzer, Similarity similarity) throws IOException
    {
-      super(analyzer, similarity, new RAMDirectory(), null, indexingQueue);
+      super(analyzer, similarity, new RAMDirectory(), null);
    }
 
    /**

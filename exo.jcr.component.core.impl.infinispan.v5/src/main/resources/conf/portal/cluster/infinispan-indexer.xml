@@ -42,12 +42,12 @@
 
     <default>
       <clustering mode="replication">
-        <stateTransfer timeout="20000" fetchInMemoryState="false" />
+        <stateRetrieval timeout="20000" fetchInMemoryState="false" />
         <sync replTimeout="20000"/>
       </clustering>
 
       <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="false"/>
-      <transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" transactionMode="TRANSACTIONAL"/>
+      <transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true"/>
       <jmxStatistics enabled="true"/>
       <eviction strategy="NONE"/>
 

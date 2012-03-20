@@ -82,7 +82,7 @@ import javax.jcr.version.VersionException;
 public class WorkspaceImpl implements ExtendedWorkspace
 {
 
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceImpl");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceImpl");
 
    private final SessionImpl session;
 
@@ -99,7 +99,6 @@ public class WorkspaceImpl implements ExtendedWorkspace
    public WorkspaceImpl(String name, ExoContainer container, SessionImpl session, ObservationManager observationManager)
       throws RepositoryException
    {
-
       this.session = session;
       this.name = name;
       this.observationManager = observationManager;
@@ -326,11 +325,9 @@ public class WorkspaceImpl implements ExtendedWorkspace
       PathNotFoundException, ItemExistsException, ConstraintViolationException, InvalidSerializedDataException,
       RepositoryException
    {
-
       Map<String, Object> context = new HashMap<String, Object>();
       context.put(ContentImporter.RESPECT_PROPERTY_DEFINITIONS_CONSTRAINTS, true);
       importXML(parentAbsPath, in, uuidBehavior, context);
-
    }
 
    /*
@@ -486,7 +483,6 @@ public class WorkspaceImpl implements ExtendedWorkspace
    public void restore(Version[] versions, boolean removeExisting) throws UnsupportedRepositoryOperationException,
       VersionException, RepositoryException, InvalidItemStateException
    {
-
       restoreVersions(versions, removeExisting);
    }
 
@@ -494,7 +490,6 @@ public class WorkspaceImpl implements ExtendedWorkspace
       SessionChangesLog changes) throws NoSuchWorkspaceException, ConstraintViolationException, VersionException,
       AccessDeniedException, PathNotFoundException, ItemExistsException, RepositoryException
    {
-
       if (srcWorkspace.equals(getName()))
       {
          throw new RepositoryException("Source and destination workspace are equals " + name);
@@ -643,7 +638,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
                }
                else
                {
-                  log.warn("Workspace.restore(). Correspondent node is not found " + versionableIdentifier);
+                  LOG.warn("Workspace.restore(). Correspondent node is not found " + versionableIdentifier);
                }
             }
             if (versionableParentIdentifier != null && existedIdentifiers.contains(versionableParentIdentifier))
@@ -737,5 +732,4 @@ public class WorkspaceImpl implements ExtendedWorkspace
       return String.format("Workspace {\n name: %s/%s;\n session-id: %s \n}", repository().getName(), name, session
          .getId());
    }
-
 }

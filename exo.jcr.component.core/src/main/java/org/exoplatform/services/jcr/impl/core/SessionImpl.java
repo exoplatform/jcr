@@ -110,26 +110,26 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    /**
     * Logger.
     */
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.SessionImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SessionImpl");
 
    /**
     * Indicates if it must fail in case we use a closed session.
     */
-   private static final boolean PROHIBIT_CLOSED_SESSION_USAGE =
-      Boolean.valueOf(PropertyManager.getProperty("exo.jcr.prohibit.closed.session.usage"));
+   private static final boolean ALLOW_CLOSED_SESSION_USAGE = Boolean.valueOf(PropertyManager
+      .getProperty("exo.jcr.allow.closed.session.usage"));
 
-   protected static boolean FORCE_USE_GET_NODES_LAZILY =
-      Boolean.valueOf(PropertyManager.getProperty("org.exoplatform.jcr.forceUserGetNodesLazily"));
+   protected static boolean FORCE_USE_GET_NODES_LAZILY = Boolean.valueOf(PropertyManager
+      .getProperty("org.exoplatform.jcr.forceUserGetNodesLazily"));
 
    static
    {
-      if (PROHIBIT_CLOSED_SESSION_USAGE)
+      if (!ALLOW_CLOSED_SESSION_USAGE)
       {
-         log.info("The JCR will throw an exception anytime we will try to use a dead session.");
+         LOG.info("The JCR will throw an exception anytime we will try to use a dead session.");
       }
       if (FORCE_USE_GET_NODES_LAZILY)
       {
-         log.warn("EXPERIMENTAL! The JCR will use ExtendedNode.getNodesLazily() for each Node.getNodes() "
+         LOG.warn("EXPERIMENTAL! The JCR will use ExtendedNode.getNodesLazily() for each Node.getNodes() "
             + "invocation. This is an experimental feauture and should be used with care.");
       }
    }
@@ -301,7 +301,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void exportDocumentView(String absPath, ContentHandler contentHandler, boolean skipBinary, boolean noRecurse)
       throws InvalidSerializedDataException, PathNotFoundException, SAXException, RepositoryException
    {
-
       checkLive();
 
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
@@ -342,7 +341,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void exportDocumentView(String absPath, OutputStream out, boolean skipBinary, boolean noRecurse)
       throws InvalidSerializedDataException, IOException, PathNotFoundException, RepositoryException
    {
-
       checkLive();
 
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
@@ -386,7 +384,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void exportWorkspaceSystemView(OutputStream out, boolean skipBinary, boolean noRecurse) throws IOException,
       PathNotFoundException, RepositoryException
    {
-
       checkLive();
 
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
@@ -428,7 +425,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void exportSystemView(String absPath, ContentHandler contentHandler, boolean skipBinary, boolean noRecurse)
       throws PathNotFoundException, SAXException, RepositoryException
    {
-
       checkLive();
 
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
@@ -930,20 +926,10 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public void checkLive() throws RepositoryException
    {
-      if (!live)
+      if (!live && !ALLOW_CLOSED_SESSION_USAGE)
       {
-         if (PROHIBIT_CLOSED_SESSION_USAGE)
-         {
-            throw new RepositoryException("This kind of operation is forbidden after a session.logout().",
-               closedByCallStack);
-         }
-         // warn in debug mode only
-         else if (PropertyManager.isDevelopping())
-         {
-            log.warn("This kind of operation is forbidden after a session.logout(), "
-               + "please note that an exception will be raised in the next jcr version.", new Exception(
-               closedByCallStack));
-         }
+         throw new RepositoryException("This kind of operation is forbidden after a session.logout().",
+            closedByCallStack);
       }
    }
 
@@ -961,6 +947,10 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       }
       catch (RepositoryException e)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       return false;
    }
@@ -976,7 +966,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       }
       this.sessionRegistry.unregisterSession(getId());
       this.live = false;
-      if (PROHIBIT_CLOSED_SESSION_USAGE || PropertyManager.isDevelopping())
+      if (!ALLOW_CLOSED_SESSION_USAGE && PropertyManager.isDevelopping())
       {
          this.closedByCallStack = new Exception("The session has been closed by the following call stack");
       }
@@ -1017,8 +1007,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
             + destAbsPath);
       }
 
-      destParentNode.validateChildNode(destNodePath.getName().getInternalName(), ((NodeTypeImpl)srcNode
-         .getPrimaryNodeType()).getQName());
+      destParentNode.validateChildNode(destNodePath.getName().getInternalName(),
+         ((NodeTypeImpl)srcNode.getPrimaryNodeType()).getQName());
 
       // Check for node with destAbsPath name in session
       NodeImpl destNode =

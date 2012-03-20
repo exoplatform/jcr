@@ -217,10 +217,6 @@
     <para><emphasis role="bold">name</emphasis>: The name of a
     workspace</para>
 
-    <para><emphasis role="bold">auto-init-root-nodetype</emphasis>: DEPRECATED
-    in JCR 1.9 (use initializer). The node type for root node
-    initialization.</para>
-
     <para><emphasis role="bold">container</emphasis>: Workspace data container
     (physical storage) configuration.</para>
 
@@ -343,9 +339,7 @@
     permissions and other users have only a 'read' permission.</para>
 
     <para>Configurable initializer adds a capability to override workspace
-    initial startup procedure (used for Clustering). Also it replaces
-    workspace element parameters auto-init-root-nodetype and
-    auto-init-permissions with root-nodetype and root-permissions.</para>
+    initial startup procedure (used for Clustering). </para>
   </section>
 
   <section>
@@ -515,22 +509,5 @@
         allow applications to migrate step by step.</para>
       </listitem>
     </orderedlist>
-  </section>
-
-  <section>
-    <title>Getting the effective configuration at Runtime of all the
-    repositories</title>
-
-    <para>The effective configuration of all the repositories and their
-    workspaces can be known thanks to the method
-    <emphasis>getConfigurationXML</emphasis>() that is exposed through JMX at
-    the <emphasis>RepositoryServiceConfiguration</emphasis> level in case of a
-    <emphasis>PortalContainer</emphasis> the name of the related MBean will be
-    of type
-    <emphasis>exo:portal=${portal-container-name},service=RepositoryServiceConfiguration</emphasis>.
-    This method will give you the effective configuration in XML format that
-    has been really interpreted by the the JCR core. This could be helpful to
-    understand how your repositories/workspaces are configured especially if
-    you would like to overwrite the configuration for some reasons.</para>
   </section>
 </chapter>

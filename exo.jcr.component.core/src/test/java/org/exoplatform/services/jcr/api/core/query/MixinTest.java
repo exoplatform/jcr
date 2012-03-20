@@ -18,15 +18,12 @@ package org.exoplatform.services.jcr.api.core.query;
 
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.impl.core.WorkspaceImpl;
-
-import javax.jcr.RepositoryException;
-import javax.jcr.Node;
-
-
 
 import java.io.ByteArrayInputStream;
 import java.util.Calendar;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 /**
  * Tests if mixin types are queried correctly when using element test: element()
@@ -43,7 +40,8 @@ public class MixinTest extends AbstractQueryTest {
               + "<supertypes>" + "     <supertype>mix:referenceable</supertype>" + "</supertypes>" + "</nodeType>"
               + "</nodeTypes>";
 
-        manager.registerNodeTypes(new ByteArrayInputStream(cnd.getBytes()), ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+      manager.registerNodeTypes(new ByteArrayInputStream(cnd.getBytes()), ExtendedNodeTypeManager.IGNORE_IF_EXISTS,
+         NodeTypeDataManager.TEXT_XML);
     }
 
     public void testBuiltInMixin() throws RepositoryException {

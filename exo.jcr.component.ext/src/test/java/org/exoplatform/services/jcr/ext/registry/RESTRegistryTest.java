@@ -93,6 +93,7 @@ public class RESTRegistryTest extends BaseStandaloneTest
       repositoryService.setCurrentRepositoryName("db1");
       DummyContainerResponseWriter wr = new DummyContainerResponseWriter();
       URI reqUri = new URI(baseUri.toString() + "/registry/");
+
       ContainerResponse cres =
          request(handler, wr, "GET", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(200, cres.getStatus());
@@ -160,6 +161,7 @@ public class RESTRegistryTest extends BaseStandaloneTest
       byte[] data = out.toByteArray();
 
       repositoryService.setCurrentRepositoryName("db1");
+
       // check for exo:services/group/test
       // response status should be 404 (NOT_FOUND)
       URI reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/group/test");

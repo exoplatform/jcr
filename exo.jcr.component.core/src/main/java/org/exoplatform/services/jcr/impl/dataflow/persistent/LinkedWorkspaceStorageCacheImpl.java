@@ -829,7 +829,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
          }
          catch (Throwable e)
          {
-            LOG.warn("Show statistic log.info error " + e);
+            LOG.warn("Show statistic log.info error " + e.getMessage());
          }
       }
 
@@ -879,14 +879,6 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
       }
 
       return null;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public ItemData get(String parentIdentifier, QPathEntry name)
-   {
-      return get(parentIdentifier, name, ItemType.UNKNOWN);
    }
 
    /**
@@ -2164,7 +2156,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
          }
          catch (Throwable e)
          {
-            LOG.warn(this.name + " cache, stop error " + e);
+            LOG.warn(this.name + " cache, stop error " + e.getMessage());
          }
       }
 

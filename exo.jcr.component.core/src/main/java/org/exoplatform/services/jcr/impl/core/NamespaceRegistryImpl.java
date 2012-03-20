@@ -51,7 +51,7 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
 
    private final static Set<String> PROTECTED_NAMESPACES = new HashSet<String>();
 
-   protected final static Log log = ExoLogger.getLogger("exo.jcr.component.core.NamespaceRegistryImpl");
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NamespaceRegistryImpl");
 
    private boolean started = false;
    static
@@ -162,21 +162,6 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
    public String getNamespaceURIByPrefix(String prefix) throws NamespaceException
    {
       return getURI(prefix);
-   }
-
-   /**
-    * Return
-    * 
-    * @param nodeType
-    * @return
-    * @throws RepositoryException
-    */
-   @Deprecated
-   public Set<String> getNodes(String uri) throws RepositoryException
-   {
-      validate();
-
-      return indexSearcherHolder.getNodesByUri(uri);
    }
 
    /**
@@ -382,19 +367,6 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
       }
    }
 
-   private void validate() throws RepositoryException
-   {
-      if (dataManager == null)
-      {
-         throw new RepositoryException("Datamanager not initialized");
-      }
-      if (indexSearcherHolder == null)
-      {
-         throw new RepositoryException("RepositoryIndexSearcherHolder not initialized");
-      }
-
-   }
-
    private void addPendingNamespaces()
    {
       for (ComponentPlugin plugin : addNamespacePluginHolder.getAddNamespacesPlugins())
@@ -417,15 +389,15 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
                {
                   registerNamespace(prefix, uri);
                }
-               if (log.isDebugEnabled())
+               if (LOG.isDebugEnabled())
                {
-                  log.debug("Namespace is registered " + prefix + " = " + uri);
+                  LOG.debug("Namespace is registered " + prefix + " = " + uri);
                }
             }
          }
          catch (Exception e)
          {
-            log.error("Error load namespaces ", e);
+            LOG.error("Error load namespaces ", e);
          }
       }
    }

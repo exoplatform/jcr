@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.impl.core;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
+
 import javax.jcr.RepositoryException;
 
 /**
@@ -166,6 +168,44 @@ public class TestLocationFactory extends TestCase
       for (int i = 1; i <= MAX_CREATE_PATH_TIME; i++)
       {
          factory.parseAbsPath("/jcr:namenamename");
+      }
+   }
+
+   public void testFormatPathElement() throws RepositoryException
+   {
+      assertEquals("test", factory.formatPathElement(new QPathEntry("", "test", 0)));
+   }
+
+   public void testParsePathEntryWhenParsNameIsNull()
+   {
+      try
+      {
+         factory.parseJCRName(null);
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+   }
+
+   public void testIsNotLocalName()
+   {
+      try
+      {
+         factory.parseJCRName("");
+         fail();
+      }
+      catch (RepositoryException e)
+      {
+      }
+
+      try
+      {
+         factory.parseJCRName(" ");
+         fail();
+      }
+      catch (RepositoryException e)
+      {
       }
    }
 

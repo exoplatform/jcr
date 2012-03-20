@@ -54,7 +54,7 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
 
    private SessionProviderService providerService;
 
-   private static final Log log = ExoLogger.getLogger("exo.jcr.framework.command.ThreadLocalSessionProviderInitializedFilter");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.ThreadLocalSessionProviderInitializedFilter");
 
    /*
     * (non-Javadoc)
@@ -64,7 +64,6 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
       ServletException
    {
-
       ExoContainer container = getContainer();
 
       providerService = (SessionProviderService)container.getComponentInstanceOfType(SessionProviderService.class);
@@ -81,8 +80,10 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
       HttpSession httpSession = httpRequest.getSession(false);
       if (state == null)
       {
-         if (log.isDebugEnabled())
-            log.debug("Current conversation state is not set");
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Current conversation state is not set");
+         }
 
          if (httpSession != null)
          {
@@ -90,9 +91,13 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
             // initialize thread local SessionProvider
             state = stateRegistry.getState(stateKey);
             if (state != null)
+            {
                provider = new SessionProvider(state);
-            else if (log.isDebugEnabled())
-               log.debug("WARN: Conversation State is null, id  " + httpSession.getId());
+            }
+            else if (LOG.isDebugEnabled())
+            {
+               LOG.debug("WARN: Conversation State is null, id  " + httpSession.getId());
+            }
          }
       }
       else
@@ -102,14 +107,18 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
 
       if (provider == null)
       {
-         if (log.isDebugEnabled())
-            log.debug("Create SessionProvider for anonymous.");
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Create SessionProvider for anonymous.");
+         }
          provider = SessionProvider.createAnonimProvider();
       }
       try
       {
          if (ConversationState.getCurrent() != null)
+         {
             ConversationState.getCurrent().setAttribute(SessionProvider.SESSION_PROVIDER, provider);
+         }
 
          providerService.setSessionProvider(null, provider);
 
@@ -126,7 +135,7 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
             }
             catch (Exception e)
             {
-               log.warn("An error occured while removing the session provider from the conversation state", e);
+               LOG.warn("An error occured while removing the session provider from the conversation state", e);
             }
          }
          if (providerService.getSessionProvider(null) != null)
@@ -138,7 +147,7 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
             }
             catch (Exception e)
             {
-               log.warn("An error occured while cleaning the ThreadLocal", e);
+               LOG.warn("An error occured while cleaning the ThreadLocal", e);
             }
          }
       }

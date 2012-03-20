@@ -42,7 +42,7 @@
 
     <default>
       <clustering mode="replication">
-        <stateTransfer timeout="20000" fetchInMemoryState="false" />
+        <stateRetrieval timeout="20000" fetchInMemoryState="false" />
         <sync replTimeout="20000"/>
       </clustering>
 

@@ -80,6 +80,5 @@ public class TestSessionCleaner extends JcrImplBaseTest
 
       // The weak reference must now be null
       assertNull(ref.get());
-
    }
 }

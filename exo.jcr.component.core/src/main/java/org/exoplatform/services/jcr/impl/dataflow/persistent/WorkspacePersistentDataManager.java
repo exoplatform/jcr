@@ -1116,14 +1116,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   public ItemData getItemData(final NodeData parentData, final QPathEntry name) throws RepositoryException
-   {
-      return getItemData(parentData, name, ItemType.UNKNOWN);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    public ItemData getItemData(final NodeData parentData, final QPathEntry name, ItemType itemType)
       throws RepositoryException
    {
@@ -1136,21 +1128,5 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       {
          con.close();
       }
-   }
-
-   /**
-    * {@inheritDoc}true
-    */
-   public boolean isReadOnly()
-   {
-      return readOnly;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void setReadOnly(boolean status)
-   {
-      this.readOnly = status;
    }
 }

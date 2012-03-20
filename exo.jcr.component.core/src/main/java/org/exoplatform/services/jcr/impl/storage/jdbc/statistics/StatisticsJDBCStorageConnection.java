@@ -185,6 +185,8 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
     */
    private static final String ADD_NODE_DATA_DESCR = "addNodeData";
 
+   private static final String NODES_COUNT = "getNodesCount";
+
    /**
     * The global statistics for all the database accesses
     */
@@ -215,6 +217,8 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
          LIST_CHILD_PROPERTIES_DATA_DESCR));
       ALL_STATISTICS.put(GET_REFERENCES_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, GET_REFERENCES_DATA_DESCR));
       ALL_STATISTICS.put(GET_ACL_HOLDERS, new Statistics(GLOBAL_STATISTICS, GET_ACL_HOLDERS));
+      //Get nodes count 
+      ALL_STATISTICS.put(NODES_COUNT, new Statistics(GLOBAL_STATISTICS, NODES_COUNT));
       // Write Methods
       // Commit
       ALL_STATISTICS.put(COMMIT_DESCR, new Statistics(GLOBAL_STATISTICS, COMMIT_DESCR));
@@ -480,14 +484,6 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * {@inheritDoc}
     */
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException, IllegalStateException
-   {
-      return getItemData(parentData, name, ItemType.UNKNOWN);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
       IllegalStateException
    {
@@ -690,6 +686,23 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       {
          s.begin();
          return wcs.getACLHolders();
+      }
+      finally
+      {
+         s.end();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public long getNodesCount() throws RepositoryException
+   {
+      Statistics s = ALL_STATISTICS.get(NODES_COUNT);
+      try
+      {
+         s.begin();
+         return wcs.getNodesCount();
       }
       finally
       {

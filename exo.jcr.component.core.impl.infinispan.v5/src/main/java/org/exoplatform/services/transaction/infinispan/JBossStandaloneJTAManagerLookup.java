@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.transaction.infinispan;
 
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.TransactionService;
@@ -48,8 +49,8 @@ public class JBossStandaloneJTAManagerLookup implements TransactionManagerLookup
    /**
     * The logger 
     */
-   private static final Log LOG = //NOSONAR
-      ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.JBossStandaloneJTAManagerLookup");//NOSONAR
+   private static final Log LOG =
+      ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.JBossStandaloneJTAManagerLookup");
 
    private Method manager, user;
 
@@ -60,9 +61,9 @@ public class JBossStandaloneJTAManagerLookup implements TransactionManagerLookup
          manager = loadClassStrict("com.arjuna.ats.jta.TransactionManager").getMethod("transactionManager");
          user = loadClassStrict("com.arjuna.ats.jta.UserTransaction").getMethod("userTransaction");
       }
-      catch (Exception e)//NOSONAR
+      catch (Exception e)
       {
-         throw new RuntimeException(e);//NOSONAR
+         throw new RuntimeException(e);
       }
    }
 
@@ -97,9 +98,6 @@ public class JBossStandaloneJTAManagerLookup implements TransactionManagerLookup
     */
    private static Class<?> loadClassStrict(String classname) throws ClassNotFoundException
    {
-      ClassLoader cl = Thread.currentThread().getContextClassLoader();
-      if (cl == null)
-         cl = ClassLoader.getSystemClassLoader();
-      return cl.loadClass(classname);
+      return ClassLoading.loadClass(classname, JBossStandaloneJTAManagerLookup.class);
    }
 }

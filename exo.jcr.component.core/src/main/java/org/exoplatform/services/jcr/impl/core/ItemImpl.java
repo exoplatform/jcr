@@ -156,7 +156,6 @@ public abstract class ItemImpl implements Item
    {
       try
       {
-         // Currently it only warns, but newer jcr versions (1.15+) will throw an exception
          session.checkLive();
       }
       catch (RepositoryException e)
@@ -634,7 +633,6 @@ public abstract class ItemImpl implements Item
    public void save() throws ReferentialIntegrityException, AccessDeniedException, LockException,
       ConstraintViolationException, InvalidItemStateException, ReferentialIntegrityException, RepositoryException
    {
-
       checkValid();
 
       if (isNew())

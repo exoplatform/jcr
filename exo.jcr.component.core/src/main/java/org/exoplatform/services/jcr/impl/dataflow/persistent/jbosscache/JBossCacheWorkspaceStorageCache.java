@@ -52,6 +52,7 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -61,8 +62,8 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
-import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.config.EvictionRegionConfig;
+import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.picocontainer.Startable;
@@ -392,11 +393,17 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                      }
                      catch (IllegalStateException e)
                      {
-                        // Do not nothing.
+                        if (LOG.isTraceEnabled())
+                        {
+                           LOG.trace("An exception occurred: " + e.getMessage());
+                        }
                      }
                      catch (IOException e)
                      {
-                        // Do not nothing.
+                        if (LOG.isTraceEnabled())
+                        {
+                           LOG.trace("An exception occurred: " + e.getMessage());
+                        }
                      }
                   }
                }
@@ -730,6 +737,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          });
       }
 
+      cache.stop();
+
       if (shareable)
       {
          // The cache cannot be stopped since it can be shared so we evict the root node instead
@@ -768,9 +777,12 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          cache.getNode(childPropsByPatternList).setResident(false);
          cache.evict(childPropsByPatternList, true);
          cache.getRegion(childPropsByPatternList, false).processEvictionQueues();
-      }
 
-      cache.stop();
+      }
+      else
+      {
+         PrivilegedJBossCacheHelper.stop(cache);
+      }
    }
 
    /**
@@ -1150,14 +1162,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    public void addChildPropertiesList(NodeData parent, List<PropertyData> childProperties)
    {
 
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public ItemData get(String parentId, QPathEntry name)
-   {
-      return get(parentId, name, ItemType.UNKNOWN);
    }
 
    /**
@@ -1658,11 +1662,17 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
             catch (IllegalStateException e)
             {
-               // Do nothing. Never happens.
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
             catch (IOException e)
             {
-               // Do nothing. Never happens.
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
 
             cache.addToList(makeRefFqn(nodeIdentifier), ITEM_LIST, prop.getIdentifier(),
@@ -1833,7 +1843,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
             catch (IllegalPathException e)
             {
-               // Do nothing. Never happens.
+               if (LOG.isTraceEnabled())
+               {
+                  LOG.trace("An exception occurred: " + e.getMessage());
+               }
             }
 
             // make new path - no matter  node or property

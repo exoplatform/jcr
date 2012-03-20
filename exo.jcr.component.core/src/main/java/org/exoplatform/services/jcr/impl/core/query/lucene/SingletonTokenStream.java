@@ -18,6 +18,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.analysis.Token;
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
+import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.index.Payload;
 import org.exoplatform.services.jcr.impl.Constants;
 
@@ -33,7 +35,6 @@ import java.io.ObjectOutput;
  */
 public final class SingletonTokenStream extends TokenStream implements Externalizable
 {
-
    /**
     * The string value of the token.
     */
@@ -44,26 +45,54 @@ public final class SingletonTokenStream extends TokenStream implements Externali
     */
    private Payload payload;
 
-   private boolean hasNext = true;
+   /**
+    * The term attribute of the current token
+    */
+   private TermAttribute termAttribute;
 
    /**
-    * for serialization 
+    * The payload attribute of the current token
+    */
+   private PayloadAttribute payloadAttribute;
+
+   private boolean consumed = false;
+
+   /**
+    * Default constructor for serialization
     */
    public SingletonTokenStream()
    {
+
+   }
+
+   /**
+    * Creates a new SingleTokenStream with the given value and payload.
+    * 
+    * @param value
+    *            the string value that will be returned with the token.
+    * @param payload
+    *            the payload that will be attached to this token
+    */
+   public SingletonTokenStream(String value, Payload payload)
+   {
+      this.value = value;
+      this.payload = payload;
+      termAttribute = (TermAttribute)addAttribute(TermAttribute.class);
+      payloadAttribute = (PayloadAttribute)addAttribute(PayloadAttribute.class);
    }
 
    /**
     * Creates a new SingleTokenStream with the given value and a property
     * <code>type</code>.
-    *
-    * @param value the string value that will be returned with the token.
-    * @param type the JCR property type.
+    * 
+    * @param value
+    *            the string value that will be returned with the token.
+    * @param type
+    *            the JCR property type.
     */
    public SingletonTokenStream(String value, int type)
    {
-      this.value = value;
-      this.payload = new Payload(new PropertyMetaData(type).toByteArray());
+      this(value, new Payload(new PropertyMetaData(type).toByteArray()));
    }
 
    /**
@@ -71,28 +100,46 @@ public final class SingletonTokenStream extends TokenStream implements Externali
     *
     * @param t the token.
     */
+   @Deprecated
    public SingletonTokenStream(Token t)
    {
-      this.value = t.term();
-      this.payload = t.getPayload();
+      this(t.term(), t.getPayload());
+   }
+
+   @Override
+   public boolean incrementToken() throws IOException
+   {
+      if (consumed)
+      {
+         return false;
+      }
+      clearAttributes();
+      termAttribute.setTermBuffer(value);
+      payloadAttribute.setPayload(payload);
+      consumed = true;
+      return true;
    }
 
    /**
     * {@inheritDoc}
     */
-   public Token next(Token reusableToken) throws IOException
+   @Override
+   public void reset() throws IOException
    {
-      if (hasNext)
-      {
-         reusableToken.clear();
-         reusableToken.setTermBuffer(value);
-         reusableToken.setPayload(payload);
-         reusableToken.setStartOffset(0);
-         reusableToken.setEndOffset(value.length());
-         hasNext = false;
-         return reusableToken;
-      }
-      return null;
+      consumed = false;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void close() throws IOException
+   {
+      consumed = true;
+      value = null;
+      payload = null;
+      payloadAttribute = null;
+      termAttribute = null;
    }
 
    /**

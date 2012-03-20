@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.ext.script.groovy;
 
 import org.exoplatform.services.rest.ext.groovy.BaseResourceId;
+import org.exoplatform.services.rest.ext.groovy.ResourceId;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -27,7 +28,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: NodeScriptKey.java 34445 2009-07-24 07:51:18Z dkatayev $
  */
-public class NodeScriptKey extends BaseResourceId implements ScriptKey
+public class NodeScriptKey extends BaseResourceId implements ResourceId
 {
    private final String repositoryName;
 

@@ -27,6 +27,8 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
+import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
+import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
@@ -54,7 +56,7 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
    /**
     * Logger instance for this class.
     */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNIndexChangesFilter");//NOSONAR
+   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNIndexChangesFilter");
 
    public static final String PARAM_INFINISPAN_CACHESTORE_CLASS = "infinispan-cachestore-classname";
 
@@ -67,6 +69,20 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
     * Unique workspace identifier.
     */
    private final String wsId;
+   
+
+   // RSYNC SERVER CONFIGURATION
+   public static final String PARAM_RSYNC_ENTRY_NAME = "rsync-entry-name";
+
+   public static final String PARAM_RSYNC_ENTRY_PATH = "rsync-entry-path";
+
+   public static final String PARAM_RSYNC_PORT = "rsync-port";
+
+   public static final int PARAM_RSYNC_PORT_DEFAULT = 873;
+
+   public static final String PARAM_RSYNC_USER = "rsync-user";
+
+   public static final String PARAM_RSYNC_PASSWORD = "rsync-password";
 
    /**
     * ISPNIndexChangesFilter constructor.
@@ -96,22 +112,57 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
 
       if (!parentHandler.isInitialized())
       {
-         parentHandler.setIndexInfos(new ISPNIndexInfos(searchManager.getWsId(), cache, true, modeHandler));
+         parentHandler.setIndexInfos(createIndexInfos(true, modeHandler, config, parentHandler));
          parentHandler.setIndexUpdateMonitor(new ISPNIndexUpdateMonitor(searchManager.getWsId(), cache, true,
             modeHandler));
          parentHandler.init();
       }
       if (!handler.isInitialized())
       {
-         handler.setIndexInfos(new ISPNIndexInfos(searchManager.getWsId(), cache, false, modeHandler));
+         handler.setIndexInfos(createIndexInfos(false, modeHandler, config, handler));
          handler.setIndexUpdateMonitor(new ISPNIndexUpdateMonitor(searchManager.getWsId(), cache, false, modeHandler));
          handler.init();
       }
    }
    
+
+   /**
+    * Factory method for creating corresponding IndexInfos class. RSyncIndexInfos created if RSync configured
+    * and JBossCacheIndexInfos otherwise
+    * 
+    * @param system
+    * @param modeHandler
+    * @param config
+    * @param handler
+    * @return
+    * @throws RepositoryConfigurationException
+    */
+   private IndexInfos createIndexInfos(Boolean system, IndexerIoModeHandler modeHandler, QueryHandlerEntry config,
+      QueryHandler handler) throws RepositoryConfigurationException
+   {
+      // read RSYNC configuration
+      String rsyncEntryName = config.getParameterValue(PARAM_RSYNC_ENTRY_NAME, null);
+      String rsyncEntryPath = config.getParameterValue(PARAM_RSYNC_ENTRY_PATH, null);
+      String rsyncUserName = config.getParameterValue(PARAM_RSYNC_USER, null);
+      String rsyncPassword = config.getParameterValue(PARAM_RSYNC_PASSWORD, null);
+      int rsyncPort = config.getParameterInteger(PARAM_RSYNC_PORT, PARAM_RSYNC_PORT_DEFAULT);
+
+      // rsync configured
+      if (rsyncEntryName != null)
+      {
+         return new RsyncIndexInfos(wsId, cache, system, modeHandler, ((SearchIndex)handler).getContext()
+            .getIndexDirectory(), rsyncPort, rsyncEntryName, rsyncEntryPath, rsyncUserName, rsyncPassword);
+      }
+      else
+      {
+         return new ISPNIndexInfos(wsId, cache, true, modeHandler);
+      }
+
+   }
+   
    protected Log getLogger()
    {
-      return LOG;
+      return log;
    }
 
    protected void doUpdateIndex(ChangesFilterListsWrapper changes)

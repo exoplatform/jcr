@@ -21,6 +21,7 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainerContext;
@@ -130,7 +131,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * Logger instance for this class
     */
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.SearchManager");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SearchManager");
 
    /**
     * Used to display date and time for JMX components 
@@ -440,7 +441,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                      }
                      catch (SuspendException e)
                      {
-                        log.error(e.getMessage(), e);
+                        LOG.error(e.getMessage(), e);
                      }
                   }
                }
@@ -611,9 +612,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public void start()
    {
 
-      if (log.isDebugEnabled())
+      if (LOG.isDebugEnabled())
       {
-         log.debug("start");
+         LOG.debug("start");
       }
       try
       {
@@ -642,7 +643,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                   }
                   catch (RepositoryException e)
                   {
-                     log.warn(e.getLocalizedMessage());
+                     LOG.warn(e.getLocalizedMessage());
                   }
                }
             }
@@ -661,7 +662,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                }
                catch (RepositoryException e)
                {
-                  log.warn(e.getLocalizedMessage() + " Indexing root set to " + Constants.ROOT_PATH.getAsString());
+                  LOG.warn(e.getLocalizedMessage() + " Indexing root set to " + Constants.ROOT_PATH.getAsString());
 
                }
 
@@ -674,7 +675,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                }
                catch (RepositoryException e)
                {
-                  log.error("Fail to load root node data");
+                  LOG.error("Fail to load root node data");
                }
             }
 
@@ -684,13 +685,13 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
       catch (RepositoryException e)
       {
-         log.error(e.getLocalizedMessage());
+         LOG.error(e.getLocalizedMessage());
          handler = null;
          throw new RuntimeException(e.getLocalizedMessage(), e.getCause());
       }
       catch (RepositoryConfigurationException e)
       {
-         log.error(e.getLocalizedMessage());
+         LOG.error(e.getLocalizedMessage());
          handler = null;
          throw new RuntimeException(e.getLocalizedMessage(), e.getCause());
       }
@@ -704,7 +705,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          changesFilter.close();
       }
-      log.info("Search manager stopped");
+      LOG.info("Search manager stopped");
    }
 
    /**
@@ -762,19 +763,19 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                         }
                         else
                         {
-                           log.warn("Node not found, but property " + id + ", " + item.getQPath().getAsString()
+                           LOG.warn("Node not found, but property " + id + ", " + item.getQPath().getAsString()
                               + " found. ");
                         }
                      }
                      else
                      {
-                        log.warn("Unable to index node with id " + id + ", node does not exist.");
+                        LOG.warn("Unable to index node with id " + id + ", node does not exist.");
                      }
 
                   }
                   catch (RepositoryException e)
                   {
-                     log.error("Can't read next node data " + id, e);
+                     LOG.error("Can't read next node data " + id, e);
                   }
                }
                while (iter.hasNext()); // get next if error or node not found
@@ -843,7 +844,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          try
          {
-            Class<?> changesFilterClass = Class.forName(changesFilterClassName);
+            Class<?> changesFilterClass = ClassLoading.forName(changesFilterClassName, this);
             // Set recoveryFilterUsed, if changes filter implements LocalIndex strategy 
             if (changesFilterClass != null)
             {
@@ -877,7 +878,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       try
       {
          String queryImplClassName = handler.getQueryClass();
-         Object obj = Class.forName(queryImplClassName).newInstance();
+         Object obj = ClassLoading.forName(queryImplClassName, this).newInstance();
          if (obj instanceof AbstractQueryImpl)
          {
             return (AbstractQueryImpl)obj;
@@ -902,7 +903,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       String dir = config.getParameterValue(QueryHandlerParams.PARAM_INDEX_DIR, null);
       if (dir == null)
       {
-         log.warn(QueryHandlerParams.PARAM_INDEX_DIR + " parameter not found. Using outdated parameter name "
+         LOG.warn(QueryHandlerParams.PARAM_INDEX_DIR + " parameter not found. Using outdated parameter name "
             + QueryHandlerParams.OLD_PARAM_INDEX_DIR);
          dir = config.getParameterValue(QueryHandlerParams.OLD_PARAM_INDEX_DIR);
       }
@@ -945,8 +946,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          if (changesFilterClassName != null)
          {
             changesFilterClass =
-               (Class<? extends IndexerChangesFilter>)Class.forName(changesFilterClassName, true, this.getClass()
-                  .getClassLoader());
+               (Class<? extends IndexerChangesFilter>)ClassLoading.forName(changesFilterClassName, this);
          }
          Constructor<? extends IndexerChangesFilter> constuctor =
             changesFilterClass.getConstructor(SearchManager.class, SearchManager.class, QueryHandlerEntry.class,
@@ -1009,7 +1009,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
       try
       {
-         Class<?> qHandlerClass = Class.forName(className, true, this.getClass().getClassLoader());
+         Class<?> qHandlerClass = ClassLoading.forName(className, this);
          try
          {
             // We first try a constructor with the workspace id
@@ -1116,7 +1116,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             }
             catch (IOException e)
             {
-               log.error("Can not close QueryHits.", e);
+               LOG.error("Can not close QueryHits.", e);
             }
          }
       }
@@ -1200,10 +1200,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void suspend() throws SuspendException
    {
+      isResponsibleForResuming = true;
+
       if (rpcService != null)
       {
-         isResponsibleForResuming = true;
-
          try
          {
             rpcService.executeCommandOnAllNodes(suspend, true);
@@ -1274,13 +1274,13 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          {
             throw new ResumeException(e);
          }
-
-         isResponsibleForResuming = false;
       }
       else
       {
          resumeLocally();
       }
+
+      isResponsibleForResuming = false;
    }
 
    /**
@@ -1309,7 +1309,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             + ((isSuspended) ? "SUSPENDED." : "already OFFLINE (it means that reindexing is in progress).") + ".");
       }
 
-      log.info("Starting hot reindexing on the " + handler.getContext().getRepositoryName() + "/"
+      LOG.info("Starting hot reindexing on the " + handler.getContext().getRepositoryName() + "/"
          + handler.getContext().getContainer().getWorkspaceName() + ", with" + (dropExisting ? "" : "out")
          + " dropping the existing indexes.");
       // starting new thread, releasing JMX call
@@ -1339,24 +1339,24 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                }
                else
                {
-                  log.error("This kind of QuerHandler class doesn't support hot reindxing.");
+                  LOG.error("This kind of QuerHandler class doesn't support hot reindxing.");
                }
             }
             catch (RepositoryException e)
             {
-               log.error("Error while reindexing the workspace", e);
+               LOG.error("Error while reindexing the workspace", e);
             }
             catch (SecurityException e)
             {
-               log.error("Can't change state to offline.", e);
+               LOG.error("Can't change state to offline.", e);
             }
             catch (RPCException e)
             {
-               log.error("Can't change state to offline.", e);
+               LOG.error("Can't change state to offline.", e);
             }
             catch (IOException e)
             {
-               log.error("Erroe while reindexing the workspace", e);
+               LOG.error("Erroe while reindexing the workspace", e);
             }
             // safely change state back
             finally
@@ -1371,11 +1371,11 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                   }
                   catch (SecurityException e)
                   {
-                     log.error("Error setting index back online in a cluster", e);
+                     LOG.error("Error setting index back online in a cluster", e);
                   }
                   catch (RPCException e)
                   {
-                     log.error("Error setting index back online in a cluster", e);
+                     LOG.error("Error setting index back online in a cluster", e);
                   }
                }
                else
@@ -1386,18 +1386,18 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                   }
                   catch (IOException e)
                   {
-                     log.error("Error setting index back online locally");
+                     LOG.error("Error setting index back online locally");
                   }
                }
                if (successful)
                {
                   hotReindexingState = "Finished at " + sdf.format(Calendar.getInstance().getTime());
-                  log.info("Reindexing finished successfully.");
+                  LOG.info("Reindexing finished successfully.");
                }
                else
                {
                   hotReindexingState = "Stopped with errors at " + sdf.format(Calendar.getInstance().getTime());
-                  log.info("Reindexing halted with errors.");
+                  LOG.info("Reindexing halted with errors.");
                }
                isResponsibleForResuming = false;
             }
@@ -1541,29 +1541,32 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          throw new SuspendException("Can't suspend index, while reindexing in progeress.");
       }
-
-      if (!isSuspended)
+      if (isSuspended)
       {
-         if (handler instanceof Suspendable)
-         {
-            ((Suspendable)handler).suspend();
-         }
-
-         isSuspended = true;
+         throw new SuspendException("Component already suspended.");
       }
+
+      if (handler instanceof Suspendable)
+      {
+         ((Suspendable)handler).suspend();
+      }
+
+      isSuspended = true;
    }
 
    protected void resumeLocally() throws ResumeException
    {
-      if (isSuspended)
+      if (!isSuspended)
       {
-         if (handler instanceof Suspendable)
-         {
-            ((Suspendable)handler).resume();
-         }
-
-         isSuspended = false;
+         throw new ResumeException("Component is not suspended.");
       }
+
+      if (handler instanceof Suspendable)
+      {
+         ((Suspendable)handler).resume();
+      }
+
+      isSuspended = false;
    }
 
    /**
@@ -1597,16 +1600,16 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                   }
                   catch (ResumeException e)
                   {
-                     log.error("Can not resume component", e);
+                     LOG.error("Can not resume component", e);
                   }
                }
                catch (SecurityException e1)
                {
-                  log.error("You haven't privileges to execute remote command", e1);
+                  LOG.error("You haven't privileges to execute remote command", e1);
                }
                catch (RPCException e1)
                {
-                  log.error("Exception during command execution", e1);
+                  LOG.error("Exception during command execution", e1);
                }
             }
          }.start();

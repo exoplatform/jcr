@@ -39,11 +39,13 @@ import org.exoplatform.services.jcr.ext.backup.impl.JobExistingWorkspaceSameConf
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
-import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleaner;
+import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.io.File;
 import java.sql.Connection;
@@ -81,6 +83,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       repositoryBackupRestore("db4");
       repositoryBackupRestore("db4");
+      repositoryBackupRestore("db8");
+      repositoryBackupRestore("db8");
    }
 
    public void testBackupRestoreExistingWorkspaceSingleDB() throws Exception
@@ -93,6 +97,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       workspaceBackupRestore("db4");
       workspaceBackupRestore("db4");
+      workspaceBackupRestore("db8");
+      workspaceBackupRestore("db8");
    }
 
    public void testJobExistingRepositorySameConfigRestoreSingleDB() throws Exception
@@ -105,6 +111,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db4");
       repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db4");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db8");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore("db8");
    }
 
    public void testJobExistingRepositoryRestoreSingleDB() throws Exception
@@ -117,6 +125,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db4");
       repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db4");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db8");
+      repositoryBackupRestoreDirectlyOverJobExistingRepositoryRestore("db8");
    }
 
    public void testJobRepositoryRestoreSingleDB() throws Exception
@@ -129,6 +139,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db4");
       repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db4");
+      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db8");
+      repositoryBackupRestoreDirectlyOverJobRepositoryRestore("db8");
    }
 
    public void testJobExistingWorkspaceSameConfigRestoreSingleDB() throws Exception
@@ -141,6 +153,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db4");
       workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db4");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db8");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceSameConfigRestore("db8");
    }
 
    public void testJobExistingWorkspaceRestoreSingleDB() throws Exception
@@ -153,6 +167,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db4");
       workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db4");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db8");
+      workspaceBackupRestoreDirectlyOverJobExistingWorkspaceRestore("db8");
    }
 
    public void testJobWorkspaceRestoreSingleDB() throws Exception
@@ -165,6 +181,8 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
    {
       workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db4");
       workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db4");
+      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db8");
+      workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db8");
    }
 
    protected void repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore(String repositoryName)
@@ -703,28 +721,41 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       Connection conn = ds.getConnection();
       conn.setAutoCommit(false);
 
-      DBCleaner repositoryDBCleaner = DBCleanService.getRepositoryDBCleaner(conn, repository.getConfiguration());
       try
       {
          if (repositoryName.equals("db3"))
          {
+            DBCleanerTool repositoryDBCleaner =
+               DBCleanService.getRepositoryDBCleaner(conn, repository.getConfiguration());
+
             // clean and rollback first
-            repositoryDBCleaner.executeCleanScripts();
+            repositoryDBCleaner.clean();
+
             conn.rollback();
 
-            repositoryDBCleaner.executeRollbackScripts();
+            repositoryDBCleaner.rollback();
+
             conn.commit();
 
             checkConent(repositoryName);
 
             // clean
-            repositoryDBCleaner.executeCleanScripts();
-            repositoryDBCleaner.executeCommitScripts();
+            repositoryDBCleaner.clean();
+            repositoryDBCleaner.commit();
+
             conn.commit();
          }
          else
          {
-            assertNull(repositoryDBCleaner);
+            try
+            {
+               DBCleanerTool repositoryDBCleaner =
+                  DBCleanService.getRepositoryDBCleaner(conn, repository.getConfiguration());
+               fail("Exception should be thrown");
+            }
+            catch (DBCleanException e)
+            {
+            }
          }
       }
       finally
@@ -752,22 +783,25 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          conn = ds.getConnection();
          conn.setAutoCommit(false);
 
-         DBCleaner workspaceDBCleaner = DBCleanService.getWorkspaceDBCleaner(conn, wsEntry);
+         DBCleanerTool workspaceDBCleaner = DBCleanService.getWorkspaceDBCleaner(conn, wsEntry);
 
          try
          {
             // clean and rollback first
-            workspaceDBCleaner.executeCleanScripts();
+            workspaceDBCleaner.clean();
+
             conn.rollback();
 
-            workspaceDBCleaner.executeRollbackScripts();
+            workspaceDBCleaner.rollback();
+
             conn.commit();
 
             checkConent(repositoryName);
 
             // clean
-            workspaceDBCleaner.executeCleanScripts();
-            workspaceDBCleaner.executeCommitScripts();
+            workspaceDBCleaner.clean();
+            workspaceDBCleaner.commit();
+
             conn.commit();
          }
          finally
@@ -866,7 +900,9 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       ManageableRepository repository = repositoryService.getRepository(repositoryName);
       for (WorkspaceEntry wsEntry : repository.getConfiguration().getWorkspaceEntries())
       {
-         String multiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB) ? "M" : "S";
+         String itemTableName = DBInitializerHelper.getItemTableName(wsEntry);
+         String valueTableName = DBInitializerHelper.getValueTableName(wsEntry);
+         String refTableName = DBInitializerHelper.getRefTableName(wsEntry);
 
          DataSource ds =
             (DataSource)new InitialContext().lookup(wsEntry.getContainer().getParameterValue(
@@ -874,7 +910,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          Connection conn = ds.getConnection();
          try
          {
-            ResultSet result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM JCR_" + multiDb + "ITEM");
+            ResultSet result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + itemTableName);
             try
             {
                assertTrue(result.next());
@@ -885,7 +921,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
                result.close();
             }
 
-            result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM JCR_" + multiDb + "VALUE");
+            result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + valueTableName);
             try
             {
                assertTrue(result.next());
@@ -896,7 +932,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
                result.close();
             }
 
-            result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM JCR_" + multiDb + "REF");
+            result = conn.createStatement().executeQuery("SELECT COUNT(*) FROM " + refTableName);
             try
             {
                assertTrue(result.next());

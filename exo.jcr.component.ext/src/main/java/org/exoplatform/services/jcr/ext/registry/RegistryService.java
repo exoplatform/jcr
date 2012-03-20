@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -79,7 +80,7 @@ import javax.xml.transform.TransformerException;
 public class RegistryService extends Registry implements Startable
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.RegistryService");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.RegistryService");
 
    protected final static String EXO_REGISTRY_NT = "exo:registry";
 
@@ -370,8 +371,8 @@ public class RegistryService extends Registry implements Startable
 
                try
                {
-                  repositoryService.getRepository(repName).getNodeTypeManager().registerNodeTypes(xml,
-                     ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+                  repositoryService.getRepository(repName).getNodeTypeManager()
+                     .registerNodeTypes(xml, ExtendedNodeTypeManager.IGNORE_IF_EXISTS, NodeTypeDataManager.TEXT_XML);
                }
                finally
                {
@@ -381,7 +382,10 @@ public class RegistryService extends Registry implements Startable
                   }
                   catch (Exception e)
                   {
-                     //ignore me
+                     if (LOG.isTraceEnabled())
+                     {
+                        LOG.trace("An exception occurred: " + e.getMessage());
+                     }
                   }                  
                }
             }
@@ -391,14 +395,14 @@ public class RegistryService extends Registry implements Startable
          }
          catch (RepositoryConfigurationException e)
          {
-            log.error(e.getLocalizedMessage(), e);
+            LOG.error(e.getLocalizedMessage(), e);
          }
          catch (RepositoryException e)
          {
-            log.error(e.getLocalizedMessage(), e);
+            LOG.error(e.getLocalizedMessage(), e);
          }
-      else if (log.isDebugEnabled())
-         log.warn("Registry service already started");
+      else if (LOG.isDebugEnabled())
+         LOG.warn("Registry service already started");
    }
 
    /**
@@ -467,19 +471,19 @@ public class RegistryService extends Registry implements Startable
                      Throwable cause = pae.getCause();
                      if (cause instanceof ParserConfigurationException)
                      {
-                        log.error(cause.getLocalizedMessage(), cause);
+                        LOG.error(cause.getLocalizedMessage(), cause);
                      }
                      else if (cause instanceof IOException)
                      {
-                        log.error(cause.getLocalizedMessage(), cause);
+                        LOG.error(cause.getLocalizedMessage(), cause);
                      }
                      else if (cause instanceof SAXException)
                      {
-                        log.error(cause.getLocalizedMessage(), cause);
+                        LOG.error(cause.getLocalizedMessage(), cause);
                      }
                      else if (cause instanceof TransformerException)
                      {
-                        log.error(cause.getLocalizedMessage(), cause);
+                        LOG.error(cause.getLocalizedMessage(), cause);
                      }
                      else if (cause instanceof RuntimeException)
                      {
@@ -584,7 +588,7 @@ public class RegistryService extends Registry implements Startable
          }
          else
          {
-            log.info("The RegistryEntry " + relPath + "is already initialized on repository " + repName);
+            LOG.info("The RegistryEntry " + relPath + "is already initialized on repository " + repName);
          }
          sysProvider.close();
       }

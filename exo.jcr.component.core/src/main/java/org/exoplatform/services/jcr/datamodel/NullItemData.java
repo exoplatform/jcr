@@ -17,12 +17,6 @@
 package org.exoplatform.services.jcr.datamodel;
 
 import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
-import org.exoplatform.services.jcr.impl.Constants;
-
-import java.io.Externalizable;
-import java.io.IOException;
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
 
 import javax.jcr.RepositoryException;
 
@@ -34,18 +28,18 @@ import javax.jcr.RepositoryException;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: NullItemData.java 111 2008-11-11 11:11:11Z serg $
  */
-public abstract class NullItemData implements ItemData, Externalizable
+public abstract class NullItemData implements ItemData
 {
 
    public static final String NULL_ID = "_null_id";
 
-   private String id;
+   private final String id;
 
-   private String parentId;
+   private final String parentId;
 
-   private QPathEntry name;
+   private final QPathEntry name;
 
-   private QPath path;
+   private final QPath path;
 
    public NullItemData(NodeData parent, QPathEntry name)
    {
@@ -57,12 +51,18 @@ public abstract class NullItemData implements ItemData, Externalizable
 
    public NullItemData(String id)
    {
+      this.parentId = null;
+      this.path = null;
+      this.name = null;
       this.id = id;
    }
 
    public NullItemData()
    {
-      this(NULL_ID);
+      this.parentId = null;
+      this.path = null;
+      this.name = null;
+      this.id = NULL_ID;
    }
 
    public void accept(ItemDataVisitor visitor) throws RepositoryException
@@ -94,95 +94,5 @@ public abstract class NullItemData implements ItemData, Externalizable
    {
       return name;
    }
-   /**
-    * {@inheritDoc}
-    * 
-    * We need to make it serializable mostly for distributed cache in case we
-    * don't allow local caching
-    */
-   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
-   {
-      byte[] buf = new byte[in.readInt()];
-      in.readFully(buf);
-      id = new String(buf, Constants.DEFAULT_ENCODING);
-      int length = in.readInt();
-      if (length > 0)
-      {
-         buf = new byte[length];
-         in.readFully(buf);
-         parentId = new String(buf, Constants.DEFAULT_ENCODING);
-      }
-      length = in.readInt();
-      if (length > 0)
-      {
-         buf = new byte[length];
-         in.readFully(buf);
-         try
-         {
-            name = QPathEntry.parse(new String(buf, Constants.DEFAULT_ENCODING));
-         }
-         catch (Exception e)
-         {
-            throw new IOException("Deserialization error, could not parse the name. ", e);
-         }
-      }
-      length = in.readInt();
-      if (length > 0)
-      {
-         buf = new byte[length];
-         in.readFully(buf);
-         try
-         {
-            path = QPath.parse(new String(buf, Constants.DEFAULT_ENCODING));
-         }
-         catch (Exception e)
-         {
-            throw new IOException("Deserialization error, could not parse the path. ", e);
-         }
-      }
-   }
 
-   /**
-    * {@inheritDoc}
-    * 
-    * We need to make it serializable mostly for distributed cache in case we
-    * don't allow local caching
-    */
-   public void writeExternal(ObjectOutput out) throws IOException
-   {
-      byte[] buf = id.getBytes(Constants.DEFAULT_ENCODING);
-      out.writeInt(buf.length);
-      out.write(buf);
-      
-      if (parentId == null)
-      {
-         out.writeInt(-1);
-      }
-      else
-      {
-         buf = parentId.getBytes(Constants.DEFAULT_ENCODING);
-         out.writeInt(buf.length);
-         out.write(buf);
-      }
-      if (name == null)
-      {
-         out.writeInt(-1);
-      }
-      else
-      {
-         buf = name.getAsString(true).getBytes(Constants.DEFAULT_ENCODING);
-         out.writeInt(buf.length);
-         out.write(buf);
-      }
-      if (path == null)
-      {
-         out.writeInt(-1);
-      }
-      else
-      {
-         buf = path.getAsString().getBytes(Constants.DEFAULT_ENCODING);
-         out.writeInt(buf.length);
-         out.write(buf);
-      }
-   }
 }

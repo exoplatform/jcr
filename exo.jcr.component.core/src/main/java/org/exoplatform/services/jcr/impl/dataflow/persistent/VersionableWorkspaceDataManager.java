@@ -172,15 +172,6 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
     * {@inheritDoc}
     */
    @Override
-   public ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException
-   {
-      return getItemData(parentData, name, ItemType.UNKNOWN);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
    {
       return getItemData(parentData, name, itemType, true);

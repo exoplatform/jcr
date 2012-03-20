@@ -20,11 +20,11 @@ package org.exoplatform.services.jcr.impl.config;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.PropertiesParam;
+import org.exoplatform.services.database.utils.DialectDetecter;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.ConfigurationPersister;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 

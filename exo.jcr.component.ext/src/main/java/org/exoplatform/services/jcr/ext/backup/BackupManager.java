@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.ext.backup.impl.BackupMessage;
-import org.exoplatform.services.jcr.ext.backup.impl.BackupScheduler;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 
@@ -181,29 +180,6 @@ public interface BackupManager
     *          String, repository name
     * @param workspaceEntry
     *          WorkspaceEntry, the workspace entry
-    * @throws BackupOperationException
-    *           will be generate the exception BackupOperationException 
-    * @throws BackupConfigurationException
-    *           will be generate the exception BackupConfigurationException 
-    * @throws RepositoryException
-    *           will be generate the exception RepositoryException 
-    * @throws RepositoryConfigurationException
-    *           will be generate the exception RepositoryConfigurationException 
-    */
-   @Deprecated
-   void restore(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry)
-      throws BackupOperationException, BackupConfigurationException, RepositoryException,
-      RepositoryConfigurationException;
-
-   /**
-    * Restore from backup.
-    *
-    * @param log
-    *          BackupChainLog, the backup log
-    * @param repositoryName
-    *          String, repository name
-    * @param workspaceEntry
-    *          WorkspaceEntry, the workspace entry
     * @param asynchronous
     *          boolean, in 'true' then asynchronous restore.   
     * @throws BackupOperationException
@@ -218,14 +194,6 @@ public interface BackupManager
    void restore(BackupChainLog log, String repositoryName, WorkspaceEntry workspaceEntry, boolean asynchronous)
       throws BackupOperationException, BackupConfigurationException, RepositoryException,
       RepositoryConfigurationException;
-
-   /**
-    * Getting the scheduler.
-    *
-    * @return BackupScheduler
-    *           return the BackupScheduler 
-    */
-   BackupScheduler getScheduler();
 
    /**
     * Getting the backup messages.
