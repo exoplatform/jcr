@@ -85,7 +85,12 @@
         <groupId>org.exoplatform.kernel</groupId>
         <artifactId>exo.kernel.component.ext.rpc.impl.jgroups.v3</artifactId>
         <version>${org.exoplatform.kernel.version}</version>
-      </dependency>           
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.kernel</groupId>
+        <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
+        <version>${org.exoplatform.kernel.version}</version>
+      </dependency>                 
       <dependency>
         <groupId>org.exoplatform.core</groupId>
         <artifactId>exo.core.component.database</artifactId>
@@ -397,12 +402,12 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-core</artifactId>
-        <version>5.1.0.CR1</version>
+        <version>5.1.0.CR3</version>
       </dependency>
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-cachestore-jdbc</artifactId>
-        <version>5.1.0.CR1</version>
+        <version>5.1.0.CR3</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>

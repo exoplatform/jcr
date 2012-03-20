@@ -39,7 +39,6 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration.CacheMode;
 import org.infinispan.lifecycle.ComponentStatus;
 
 import java.io.Serializable;
@@ -114,7 +113,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       if (config.getLockManager() != null)
       {
          // create cache using custom factory
-         ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm);
+         ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm, transactionManager);
 
          // configure cache loader parameters with correct DB data-types
          configureJDBCCacheLoader(config.getLockManager());
@@ -434,8 +433,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    protected boolean isAloneInCluster()
    {
-      return cache.getConfiguration().getCacheMode() == CacheMode.LOCAL
-         || cache.getCacheManager().getMembers().size() == 1;
+      return cache.getAdvancedCache().getRpcManager() == null || cache.getCacheManager().getMembers().size() == 1;
    }
 
    /**

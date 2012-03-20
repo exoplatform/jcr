@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
+import org.exoplatform.services.jcr.infinispan.CacheKey;
+
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
  * @version $Id: CachePagedNodes.java 34360 2009-07-22 23:58:59Z tolusha $
@@ -30,23 +32,8 @@ public class CacheNodesByPageId extends CacheKey
       super();
    }
 
-   CacheNodesByPageId(String id)
+   CacheNodesByPageId(String ownerId, String id)
    {
-      super(id);
+      super(ownerId, id);
    }
-
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj instanceof CacheNodesByPageId)
-      {
-         CacheNodesByPageId cacheNodesByPageId = (CacheNodesByPageId)obj;
-         return (cacheNodesByPageId.hash == hash && cacheNodesByPageId.id.equals(id));
-      }
-      else
-      {
-         return false;
-      }
-   }
-
 }

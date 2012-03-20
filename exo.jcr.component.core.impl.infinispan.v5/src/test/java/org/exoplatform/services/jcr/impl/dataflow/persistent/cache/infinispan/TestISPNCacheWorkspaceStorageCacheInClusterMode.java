@@ -23,8 +23,8 @@ import org.exoplatform.services.jcr.config.CacheEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.TestWorkspaceStorageCacheInClusterMode;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.TesterISPNCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.TesterISPNCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 
 import java.lang.reflect.Field;

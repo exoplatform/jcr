@@ -215,7 +215,7 @@ public class ISPNIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoMode
     *          CacheEntryModifiedEvent
     */
    @CacheEntryModified
-   public void cacheEntryModified(CacheEntryModifiedEvent event)
+   public void cacheEntryModified(CacheEntryModifiedEvent<Serializable, Object> event)
    {
       if (!event.isPre() && event.getKey().equals(updateKey))
       {

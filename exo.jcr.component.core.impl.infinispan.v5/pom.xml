@@ -34,6 +34,7 @@
       <cache.enabled>true</cache.enabled>
       <value.storage.enabled>true</value.storage.enabled>
       <statistics.enabled>false</statistics.enabled>
+      <use.distributed.cache>false</use.distributed.cache>
       <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <test.cache.all>**/persistent/cache/**</test.cache.all>
@@ -58,7 +59,11 @@
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.component.ext.rpc.impl.jgroups.v3</artifactId>
-      </dependency>     
+      </dependency>
+      <dependency>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
+      </dependency>
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.component.core</artifactId>
@@ -72,7 +77,7 @@
       <dependency>
          <groupId>org.exoplatform.jcr</groupId>
          <artifactId>exo.jcr.component.core</artifactId>
-         <classifier>sources</classifier>
+         <classifier>test-sources</classifier>
          <scope>test</scope>
          <version>${project.version}</version>
          <exclusions>
@@ -111,11 +116,6 @@
         <artifactId>ow2-jta-1.1-spec</artifactId>
       </dependency>
       <dependency>
-        <groupId>org.jgroups</groupId>
-        <artifactId>jgroups</artifactId>
-         <version>3.0.0.Final</version>
-      </dependency>
-      <dependency>
         <groupId>org.exoplatform.kernel</groupId>
         <artifactId>exo.kernel.component.common</artifactId>
       </dependency>
@@ -140,6 +140,10 @@
             <exclusion>
                <groupId>org.jboss.logging</groupId>
                <artifactId>jboss-logging-spi</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>jgroups</groupId>
+               <artifactId>jgroups</artifactId>
             </exclusion>
          </exclusions>
       </dependency>         
@@ -218,7 +222,11 @@
                   <property>
                      <name>value-storage-enabled</name>
                      <value>${value.storage.enabled}</value>
-                  </property>                  
+                  </property>
+                  <property>
+                     <name>use-distributed-cache</name>
+                     <value>${use.distributed.cache}</value>
+                  </property>
                   <property>
                       <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
                       <value>${statistics.enabled}</value>
@@ -398,7 +406,11 @@
                         <property>
                            <name>value-storage-enabled</name>
                            <value>${value.storage.enabled}</value>
-                        </property>                  
+                        </property>
+                        <property>
+                           <name>use-distributed-cache</name>
+                           <value>${use.distributed.cache}</value>
+                        </property>
                          <property>
                            <name>known.issues</name>
                            <value>org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreName
@@ -482,6 +494,10 @@
                             <name>value-storage-enabled</name>
                             <value>${value.storage.enabled}</value>
                         </property>                  
+                        <property>
+                           <name>use-distributed-cache</name>
+                           <value>${use.distributed.cache}</value>
+                        </property>
                         <property>
                            <name>known.issues</name>
                            <value>org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreName

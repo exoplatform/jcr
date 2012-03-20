@@ -1360,6 +1360,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                            while (patternIterator.hasNext())
                            {
                               QPathEntryFilter pattern = patternIterator.next();
+                              @SuppressWarnings("unchecked")
                               List<NodeData> persistedNodeData = (List<NodeData>)pattern.accept(persistedItemList);
                               if (pattern.isExactName())
                               {
@@ -1658,6 +1659,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                            while (patternIterator.hasNext())
                            {
                               QPathEntryFilter pattern = patternIterator.next();
+                              @SuppressWarnings("unchecked")
                               List<PropertyData> persistedPropData =
                                  (List<PropertyData>)pattern.accept(persistedItemList);
                               if (pattern.isExactName())
@@ -2449,6 +2451,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void stop()
    {
+      if (filtersEnabled.get())
+      {
+         cache.removeListener(this);
+      }
    }
 
    /**
