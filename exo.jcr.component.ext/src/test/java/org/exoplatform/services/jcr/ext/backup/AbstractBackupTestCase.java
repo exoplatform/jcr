@@ -20,23 +20,25 @@ package org.exoplatform.services.jcr.ext.backup;
 
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
-import org.exoplatform.services.jcr.config.ContainerEntry;
-import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
-import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
+import org.exoplatform.services.jcr.ext.app.SessionProviderService;
+import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
+import org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgent;
+import org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgentTest;
+import org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfo;
+import org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfo;
+import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
-import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
@@ -45,19 +47,34 @@ import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.rest.ContainerResponseWriter;
+import org.exoplatform.services.rest.RequestHandler;
 import org.exoplatform.services.rest.impl.ContainerResponse;
+import org.exoplatform.services.rest.impl.InputHeadersMap;
+import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 import org.exoplatform.services.rest.tools.ByteArrayContainerResponseWriter;
+import org.exoplatform.services.security.ConversationState;
+import org.exoplatform.services.security.Identity;
+import org.exoplatform.ws.frameworks.json.JsonHandler;
+import org.exoplatform.ws.frameworks.json.JsonParser;
+import org.exoplatform.ws.frameworks.json.impl.BeanBuilder;
+import org.exoplatform.ws.frameworks.json.impl.JsonDefaultHandler;
+import org.exoplatform.ws.frameworks.json.impl.JsonGeneratorImpl;
+import org.exoplatform.ws.frameworks.json.impl.JsonParserImpl;
+import org.exoplatform.ws.frameworks.json.value.JsonValue;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.Iterator;
+import java.util.List;
 
 import javax.jcr.ItemExistsException;
+import javax.jcr.LoginException;
+import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -66,6 +83,7 @@ import javax.jcr.ValueFormatException;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
+import javax.ws.rs.core.MultivaluedMap;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -83,35 +101,9 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
 
    protected ExtendedBackupManager backup;
 
-   protected SessionImpl ws1Session;
+   protected File backupDir;
 
-   protected Node ws1TestRoot;
-
-   protected String repositoryNameToBackup = "db7";
-
-   protected String workspaceNameToBackup = "ws1";
-
-   protected String dataSourceToWorkspaceRestore = "jdbcjcr_workspace_restore";
-
-   protected String dataSourceToRepositoryRestore = "jdbcjcr_to_repository_restore";
-   
-   protected String dataSourceToRepositoryRestoreSingleDB = "jdbcjcr_to_repository_restore_singel_db";
-   
-   protected String repositoryNameToBackupSingleDB = "db7";
-
-   protected String repositoryNameToRestore = "db8backup";
-
-   protected String workspaceNameToRestore = "ws1backup";
-
-   class LogFilter
-      implements FileFilter
-   {
-
-      public boolean accept(File pathname)
-      {
-         return pathname.getName().startsWith("backup-") && pathname.getName().endsWith(".xml");
-      }
-   }
+   protected RequestHandler handler;
 
    /**
     * {@inheritDoc}
@@ -122,6 +114,16 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
 
       backup = getBackupManager();
       blob = createBLOBTempFile(300);
+
+      backupDir = new File("target/temp/backup/" + System.currentTimeMillis());
+      backupDir.mkdirs();
+
+      handler = (RequestHandler)container.getComponentInstanceOfType(RequestHandler.class);
+
+      SessionProviderService sessionProviderService =
+         (SessionProviderService)container.getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
+      assertNotNull(sessionProviderService);
+      sessionProviderService.setSessionProvider(null, new SessionProvider(new ConversationState(new Identity("root"))));
    }
 
    /**
@@ -182,126 +184,6 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       }
 
       return backup;
-   }
-
-   protected RepositoryImpl getReposityToBackup() throws RepositoryException, RepositoryConfigurationException
-   {
-      return (RepositoryImpl) repositoryService.getRepository(repositoryNameToBackup);
-   }
-
-
-   protected WorkspaceEntry makeWorkspaceEntry(String name, String sourceName)
-   {
-      WorkspaceEntry ws1e = (WorkspaceEntry) ws1Session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
-
-      WorkspaceEntry ws1back = new WorkspaceEntry();
-      ws1back.setName(name);
-      // RepositoryContainer rcontainer = (RepositoryContainer)
-      // container.getComponentInstanceOfType(RepositoryContainer.class);
-      ws1back.setUniqueName(((RepositoryImpl) ws1Session.getRepository()).getName() + "_" + ws1back.getName()); // EXOMAN
-
-      ws1back.setAccessManager(ws1e.getAccessManager());
-      ws1back.setCache(ws1e.getCache());
-      //      ws1back.setContainer(ws1e.getContainer());
-      ws1back.setLockManager(ws1e.getLockManager());
-      ws1back.setInitializer(ws1e.getInitializer());
-
-      // Indexer
-      ArrayList qParams = new ArrayList();
-      // qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator+ "temp" +
-      // File.separator +"index" + name));
-      qParams.add(new SimpleParameterEntry(QueryHandlerParams.PARAM_INDEX_DIR, "target/temp/index/" + name
-         + System.currentTimeMillis()));
-      QueryHandlerEntry qEntry =
-               new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
-
-      ws1back.setQueryHandler(qEntry); // EXOMAN
-
-      ArrayList params = new ArrayList();
-      for (Iterator i = ws1e.getContainer().getParameters().iterator(); i.hasNext();)
-      {
-         SimpleParameterEntry p = (SimpleParameterEntry) i.next();
-         SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
-
-         if (newp.getName().equals("source-name"))
-            newp.setValue(sourceName);
-         else if (newp.getName().equals("swap-directory"))
-            newp.setValue("target/temp/swap/" + name + System.currentTimeMillis());
-
-         params.add(newp);
-      }
-
-      ContainerEntry ce =
-               new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
-      
-      ArrayList<ValueStorageEntry> list = new ArrayList<ValueStorageEntry>();
-
-      // value storage
-      ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
-      ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
-      filterEntry.setPropertyType("Binary");
-      vsparams.add(filterEntry);
-
-      ValueStorageEntry valueStorageEntry =
-         new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage", vsparams);
-      ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
-      spe.add(new SimpleParameterEntry("path", "target/temp/values/" + name + "_" + System.currentTimeMillis()));
-      valueStorageEntry.setId("draft");
-      valueStorageEntry.setParameters(spe);
-      valueStorageEntry.setFilters(vsparams);
-
-      // containerEntry.setValueStorages();
-      list.add(valueStorageEntry);
-      ce.setValueStorages(list);
-
-
-      ws1back.setContainer(ce);
-
-      return ws1back;
-   }
-
-   protected void restoreAndCheck(String workspaceName, String datasourceName, String backupLogFilePath, File backDir,
-            int startIndex, int stopIndex) throws RepositoryConfigurationException, RepositoryException,
-            BackupOperationException, BackupConfigurationException
-   {
-      // restore
-      RepositoryEntry re =
-               (RepositoryEntry) ws1Session.getContainer().getComponentInstanceOfType(RepositoryEntry.class);
-      WorkspaceEntry ws1back = makeWorkspaceEntry(workspaceName, datasourceName);
-
-      repository.configWorkspace(ws1back);
-
-      File backLog = new File(backupLogFilePath);
-      if (backLog.exists())
-      {
-         BackupChainLog bchLog = new BackupChainLog(backLog);
-         backup.restore(bchLog, re.getName(), ws1back, false);
-
-         // check
-         SessionImpl back1 = null;
-         try
-         {
-            back1 = (SessionImpl) repository.login(credentials, ws1back.getName());
-            Node ws1backTestRoot = back1.getRootNode().getNode("backupTest");
-            for (int i = startIndex; i < stopIndex; i++)
-            {
-               assertEquals("Restored content should be same", "property-" + i, ws1backTestRoot.getNode("node_" + i)
-                        .getProperty("exo:data").getString());
-            }
-         }
-         catch (Exception e)
-         {
-            e.printStackTrace();
-            fail(e.getMessage());
-         }
-         finally
-         {
-            if (back1 != null)
-               back1.logout();
-         }
-      }
-      else
-         fail("There are no backup files in " + backDir.getAbsolutePath());
    }
 
    protected void addContent(Node node, int startIndex, int stopIndex, long sleepTime) throws ValueFormatException,
@@ -654,6 +536,186 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       public String sysWsName;
 
       public Session session;
+   }
+
+   protected boolean isRepositoryExists(String rName)
+   {
+      return isWorkspaceExists(rName, null);
+   }
+
+   protected boolean isWorkspaceExists(String rName, String wsName)
+   {
+      ManageableRepository repository = null;
+      try
+      {
+         repository = repositoryService.getRepository(rName);
+      }
+      catch (RepositoryException e)
+      {
+         return false;
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         return false;
+      }
+
+      try
+      {
+         repository.login(credentials, wsName);
+      }
+      catch (LoginException e)
+      {
+         return false;
+      }
+      catch (NoSuchWorkspaceException e)
+      {
+         return false;
+      }
+      catch (RepositoryException e)
+      {
+         return false;
+      }
+
+      return true;
+   }
+
+   /**
+    * Will be created the Object from JSON binary data.
+    * 
+    * @param cl
+    *          Class
+    * @param data
+    *          binary data (JSON)
+    * @return Object
+    * @throws Exception
+    *           will be generated Exception
+    */
+   protected Object getObject(Class cl, byte[] data) throws Exception
+   {
+      JsonHandler jsonHandler = new JsonDefaultHandler();
+      JsonParser jsonParser = new JsonParserImpl();
+      InputStream inputStream = new ByteArrayInputStream(data);
+      jsonParser.parse(inputStream, jsonHandler);
+      JsonValue jsonValue = jsonHandler.getJsonObject();
+
+      return new BeanBuilder().createObject(cl, jsonValue);
+   }
+
+   protected void waitWorkspaceRestore(String repoName, String wsName) throws Exception
+   {
+      while (true)
+      {
+         TesterContainerResponce cres =
+            makeGetRequest(new URI(HTTPBackupAgentTest.HTTP_BACKUP_AGENT_PATH
+               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_WS + "/" + repoName + "/" + wsName));
+
+         assertEquals(200, cres.getStatus());
+
+         DetailedInfo info = (DetailedInfo)getObject(DetailedInfo.class, cres.responseWriter.getBody());
+
+         if (info.getState().intValue() == JobWorkspaceRestore.RESTORE_SUCCESSFUL
+            || info.getState().intValue() == JobWorkspaceRestore.RESTORE_FAIL)
+         {
+            break;
+         }
+
+         Thread.sleep(500);
+      }
+   }
+
+   protected void waitRepositoryRestore(String repoName) throws Exception
+   {
+      while (true)
+      {
+         TesterContainerResponce cres =
+            makeGetRequest(new URI(HTTPBackupAgentTest.HTTP_BACKUP_AGENT_PATH
+               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_REPOSITORY + "/" + repoName));
+
+         assertEquals(200, cres.getStatus());
+
+         DetailedInfo info = (DetailedInfo)getObject(DetailedInfo.class, cres.responseWriter.getBody());
+
+         if (info.getState().intValue() == JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
+            || info.getState().intValue() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
+         {
+            break;
+         }
+
+         Thread.sleep(500);
+      }
+   }
+
+   protected ShortInfo getBackupInfo(List<ShortInfo> list, String rName)
+   {
+      for (ShortInfo info : list)
+      {
+         if (info.getRepositoryName().equals(rName))
+         {
+            return info;
+         }
+      }
+
+      return null;
+   }
+
+   protected BackupChain backupWorkspace(RepoInfo rInfo) throws Exception
+   {
+      BackupConfig config = new BackupConfig();
+      config.setRepository(rInfo.rName);
+      config.setWorkspace(rInfo.wsName);
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backupDir);
+
+      BackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+
+      return bch;
+   }
+
+   protected RepositoryBackupChain backupRepository(RepoInfo rInfo) throws Exception
+   {
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(rInfo.rName);
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backupDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+
+      return bch;
+   }
+
+   protected TesterContainerResponce makeGetRequest(URI uri) throws Exception
+   {
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+
+      ContainerRequestUserRole creq =
+         new ContainerRequestUserRole("GET", uri, new URI(""), null, new InputHeadersMap(headers));
+
+      ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+      TesterContainerResponce cres = new TesterContainerResponce(responseWriter);
+      handler.handleRequest(creq, cres);
+
+      return cres;
+   }
+
+   protected TesterContainerResponce makePostRequest(URI uri, Object object) throws Exception
+   {
+      JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
+      JsonValue json = generatorImpl.createJsonObject(object);
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+
+      headers.putSingle("Content-Type", "application/json; charset=UTF-8");
+      ContainerRequestUserRole creq =
+         new ContainerRequestUserRole("POST", uri, new URI(""), new ByteArrayInputStream(json.toString().getBytes(
+            "UTF-8")), new InputHeadersMap(headers));
+
+      ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
+      TesterContainerResponce cres = new TesterContainerResponce(responseWriter);
+      handler.handleRequest(creq, cres);
+
+      return cres;
    }
 
 }

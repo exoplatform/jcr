@@ -18,22 +18,15 @@
  */
 package org.exoplatform.services.jcr.ext.backup.server;
 
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.ext.app.SessionProviderService;
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.backup.AbstractBackupTestCase;
 import org.exoplatform.services.jcr.ext.backup.BackupChain;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
-import org.exoplatform.services.jcr.ext.backup.BackupConfig;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
-import org.exoplatform.services.jcr.ext.backup.ContainerRequestUserRole;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
-import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.ext.backup.server.bean.BackupConfigBean;
@@ -41,35 +34,14 @@ import org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupServic
 import org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfo;
 import org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfo;
 import org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfoList;
-import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
-import org.exoplatform.services.rest.RequestHandler;
-import org.exoplatform.services.rest.impl.InputHeadersMap;
-import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
-import org.exoplatform.services.rest.tools.ByteArrayContainerResponseWriter;
-import org.exoplatform.services.security.ConversationState;
-import org.exoplatform.services.security.Identity;
-import org.exoplatform.ws.frameworks.json.JsonHandler;
-import org.exoplatform.ws.frameworks.json.JsonParser;
-import org.exoplatform.ws.frameworks.json.impl.BeanBuilder;
-import org.exoplatform.ws.frameworks.json.impl.JsonDefaultHandler;
-import org.exoplatform.ws.frameworks.json.impl.JsonGeneratorImpl;
-import org.exoplatform.ws.frameworks.json.impl.JsonParserImpl;
-import org.exoplatform.ws.frameworks.json.value.JsonValue;
 
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.jcr.LoginException;
-import javax.jcr.NoSuchWorkspaceException;
-import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.ws.rs.core.MultivaluedMap;
 
 /**
  * Created by The eXo Platform SAS.
@@ -83,29 +55,7 @@ import javax.ws.rs.core.MultivaluedMap;
 public class HTTPBackupAgentTest extends AbstractBackupTestCase
 {
 
-   private String HTTP_BACKUP_AGENT_PATH = HTTPBackupAgent.Constants.BASE_URL;
-
-   private RequestHandler handler;
-
-   private File backupDir;
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public void setUp() throws Exception
-   {
-      super.setUp();
-
-      handler = (RequestHandler) container.getComponentInstanceOfType(RequestHandler.class);
-      backupDir = new File("target/temp/backup/" + System.currentTimeMillis());
-      backupDir.mkdirs();
-
-      SessionProviderService sessionProviderService =
-         (SessionProviderService)container.getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
-      assertNotNull(sessionProviderService);
-      sessionProviderService.setSessionProvider(null, new SessionProvider(new ConversationState(new Identity("root"))));
-   }
+   public static String HTTP_BACKUP_AGENT_PATH = HTTPBackupAgent.Constants.BASE_URL;
 
    public void testInfo() throws Exception
    {
@@ -1069,193 +1019,12 @@ public class HTTPBackupAgentTest extends AbstractBackupTestCase
       assertNotNull(dInfo.getBackupConfig());
    }
 
-   private boolean isRepositoryExists(String rName)
-   {
-      return isWorkspaceExists(rName, null);
-   }
-
-   
-   private boolean isWorkspaceExists(String rName, String wsName)
-   {
-      ManageableRepository repository = null;
-      try
-      {
-         repository = repositoryService.getRepository(rName);
-      }
-      catch (RepositoryException e)
-      {
-         return false;
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         return false;
-      }
-
-      try
-      {
-         repository.login(credentials, wsName);
-      }
-      catch (LoginException e)
-      {
-         return false;
-      }
-      catch (NoSuchWorkspaceException e)
-      {
-         return false;
-      }
-      catch (RepositoryException e)
-      {
-         return false;
-      }
-
-      return true;
-   }
-
-   
-   /**
-    * Will be created the Object from JSON binary data.
-    * 
-    * @param cl
-    *          Class
-    * @param data
-    *          binary data (JSON)
-    * @return Object
-    * @throws Exception
-    *           will be generated Exception
-    */
-   private Object getObject(Class cl, byte[] data) throws Exception
-   {
-      JsonHandler jsonHandler = new JsonDefaultHandler();
-      JsonParser jsonParser = new JsonParserImpl();
-      InputStream inputStream = new ByteArrayInputStream(data);
-      jsonParser.parse(inputStream, jsonHandler);
-      JsonValue jsonValue = jsonHandler.getJsonObject();
-
-      return new BeanBuilder().createObject(cl, jsonValue);
-   }
-
    /**
     * {@inheritDoc}
     */
+   @Override
    protected ExtendedBackupManager getBackupManager()
    {
-      return (ExtendedBackupManager) container.getComponentInstanceOfType(BackupManager.class);
-   }
-
-   protected void waitWorkspaceRestore(String repoName, String wsName) throws Exception
-   {
-      while (true)
-      {
-         TesterContainerResponce cres =
-            makeGetRequest(new URI(HTTP_BACKUP_AGENT_PATH
-               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_WS + "/" + repoName + "/" + wsName));
-
-         assertEquals(200, cres.getStatus());
-
-         DetailedInfo info = (DetailedInfo)getObject(DetailedInfo.class, cres.responseWriter.getBody());
-
-         if (info.getState().intValue() == JobWorkspaceRestore.RESTORE_SUCCESSFUL
-            || info.getState().intValue() == JobWorkspaceRestore.RESTORE_FAIL)
-         {
-            break;
-         }
-
-         Thread.sleep(500);
-      }
-   }
-
-   protected void waitRepositoryRestore(String repoName) throws Exception
-   {
-      while (true)
-      {
-         TesterContainerResponce cres =
-            makeGetRequest(new URI(HTTP_BACKUP_AGENT_PATH
-               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_REPOSITORY + "/" + repoName));
-
-         assertEquals(200, cres.getStatus());
-
-         DetailedInfo info = (DetailedInfo)getObject(DetailedInfo.class, cres.responseWriter.getBody());
-
-         if (info.getState().intValue() == JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
-            || info.getState().intValue() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
-         {
-            break;
-         }
-
-         Thread.sleep(500);
-      }
-   }
-
-   private ShortInfo getBackupInfo(List<ShortInfo> list, String rName)
-   {
-      for (ShortInfo info : list)
-      {
-         if (info.getRepositoryName().equals(rName))
-         {
-            return info;
-         }
-      }
-
-      return null;
-   }
-
-   private BackupChain backupWorkspace(RepoInfo rInfo) throws Exception
-   {
-      BackupConfig config = new BackupConfig();
-      config.setRepository(rInfo.rName);
-      config.setWorkspace(rInfo.wsName);
-      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
-      config.setBackupDir(backupDir);
-
-      BackupChain bch = backup.startBackup(config);
-      waitEndOfBackup(bch);
-
-      return bch;
-   }
-
-   private RepositoryBackupChain backupRepository(RepoInfo rInfo) throws Exception
-   {
-      RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(rInfo.rName);
-      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
-      config.setBackupDir(backupDir);
-
-      RepositoryBackupChain bch = backup.startBackup(config);
-      waitEndOfBackup(bch);
-
-      return bch;
-   }
-
-   private TesterContainerResponce makeGetRequest(URI uri) throws Exception
-   {
-      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-
-      ContainerRequestUserRole creq =
-         new ContainerRequestUserRole("GET", uri, new URI(""), null, new InputHeadersMap(headers));
-
-      ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
-      TesterContainerResponce cres = new TesterContainerResponce(responseWriter);
-      handler.handleRequest(creq, cres);
-
-      return cres;
-   }
-
-   private TesterContainerResponce makePostRequest(URI uri, Object object) throws Exception
-   {
-      JsonGeneratorImpl generatorImpl = new JsonGeneratorImpl();
-      JsonValue json = generatorImpl.createJsonObject(object);
-
-      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      
-      headers.putSingle("Content-Type", "application/json; charset=UTF-8");
-      ContainerRequestUserRole creq =
-         new ContainerRequestUserRole("POST", uri, new URI(""), new ByteArrayInputStream(json.toString().getBytes(
-            "UTF-8")), new InputHeadersMap(headers));
-
-      ByteArrayContainerResponseWriter responseWriter = new ByteArrayContainerResponseWriter();
-      TesterContainerResponce cres = new TesterContainerResponce(responseWriter);
-      handler.handleRequest(creq, cres);
-
-      return cres;
+      return (ExtendedBackupManager)container.getComponentInstanceOfType(BackupManager.class);
    }
 }
