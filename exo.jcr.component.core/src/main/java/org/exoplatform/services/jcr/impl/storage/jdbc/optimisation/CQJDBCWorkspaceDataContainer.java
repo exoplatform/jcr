@@ -97,14 +97,13 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       {
          LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
          this.connFactory = new DefaultOracleConnectionFactory(getDataSource(), containerConfig);
-
-         // a particular db initializer may be configured here too
          dbInitializer =
             new OracleDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_ORACLE)
       {
          this.connFactory = new DefaultOracleConnectionFactory(getDataSource(), containerConfig);
+         dbInitializer = new OracleDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_PGSQL)
       {
@@ -140,7 +139,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2)
       {
-         new DB2ConnectionFactory(getDataSource(), containerConfig);
+         this.connFactory = new DB2ConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2V8)
