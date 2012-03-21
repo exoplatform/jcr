@@ -1155,8 +1155,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       try
       {
          index =
-            new PersistentIndex(indexName, handler.getTextAnalyzer(), handler.getSimilarity(), cache,
-               directoryManager);
+            new PersistentIndex(indexName, handler.getTextAnalyzer(), handler.getSimilarity(), cache, directoryManager);
       }
       catch (IOException e)
       {
@@ -1861,8 +1860,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
    }
 
-   private long createIndex(NodeData node, ItemDataConsumer stateMgr) throws IOException,
-      RepositoryException
+   private long createIndex(NodeData node, ItemDataConsumer stateMgr) throws IOException, RepositoryException
    {
       MultithreadedIndexing indexing = new MultithreadedIndexing(node, stateMgr);
       return indexing.launch(false);
@@ -2577,8 +2575,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * The maximum length of a AddNode String.
        */
-      private static final int ENTRY_LENGTH =
-         Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
+      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length()
+         + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to add.
@@ -2979,8 +2977,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * The maximum length of a DeleteNode String.
        */
-      private static final int ENTRY_LENGTH =
-         Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
+      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length()
+         + Constants.UUID_FORMATTED_LENGTH + 2;
 
       /**
        * The uuid of the node to remove.
@@ -3261,7 +3259,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          switch (mode)
          {
             case READ_ONLY :
-               setReadOny();
+               setReadOnly();
                break;
             case READ_WRITE :
                setReadWrite();
@@ -3277,7 +3275,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * Sets mode to READ_ONLY, discarding flush task
     */
-   protected void setReadOny()
+   protected void setReadOnly()
    {
       // try to stop merger in safe way
       if (merger != null)
@@ -3286,7 +3284,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          merger = null;
       }
 
-      flushTask.cancel();
+      if (flushTask != null)
+      {
+         flushTask.cancel();
+      }
       FLUSH_TIMER.purge();
       this.redoLog = null;
    }
@@ -3386,8 +3387,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                continue;
             }
             PersistentIndex index =
-               new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache,
-                  directoryManager);
+               new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, directoryManager);
             index.setMaxFieldLength(handler.getMaxFieldLength());
             index.setUseCompoundFile(handler.getUseCompoundFile());
             index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
