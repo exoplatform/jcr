@@ -42,6 +42,12 @@ public class JDBCDataContainerConfig
          {
             return true;
          }
+
+         @Override
+         public boolean isShareSameDatasource()
+         {
+            return false;
+         }
       },
       /**
        * All workspaces from each repositories can be stored in a single database within one set of 
@@ -52,6 +58,12 @@ public class JDBCDataContainerConfig
          public boolean isMultiDatabase()
          {
             return false;
+         }
+
+         @Override
+         public boolean isShareSameDatasource()
+         {
+            return true;
          }
       },
       /**
@@ -65,16 +77,27 @@ public class JDBCDataContainerConfig
          {
             return true;
          }
+
+         @Override
+         public boolean isShareSameDatasource()
+         {
+            return true;
+         }
       };
 
       /**
        * @return true if every workspace stores data in separate table within one repository
        */
       public abstract boolean isMultiDatabase();
+
+      /**
+       * @return true if every workspace should have same datasource name parameter in container
+       */
+      public abstract boolean isShareSameDatasource();
    }
 
    /**
-    * Use additional connection to databse to check same name siblings
+    * Use additional connection to database to check same name siblings
     */
    public boolean checkSNSNewConnection;
 

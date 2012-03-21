@@ -405,7 +405,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
          if (wsSourceName != null && newWsSourceName != null)
          {
-            if (!dbType.isMultiDatabase() || dbType == DatabaseStructureType.ISOLATED)
+            if (dbType.isShareSameDatasource())
             {
                if (!wsSourceName.equals(newWsSourceName))
                {

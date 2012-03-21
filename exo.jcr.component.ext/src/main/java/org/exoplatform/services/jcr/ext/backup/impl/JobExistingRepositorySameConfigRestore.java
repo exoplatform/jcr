@@ -35,6 +35,7 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DummyDBCleanerTool;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 
@@ -91,9 +92,9 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          // define one common database cleaner for all restores for single db case
          DBCleanerTool dbCleaner = null;
          
-         Boolean isMultiDb = JDBCWorkspaceDataContainer.getDatabaseType(wsEntry).isMultiDatabase();
+         DatabaseStructureType dbType = JDBCWorkspaceDataContainer.getDatabaseType(wsEntry);
 
-         if (!isMultiDb)
+         if (dbType.isShareSameDatasource())
          {
             String dsName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
 
@@ -113,7 +114,10 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
             });
             jdbcConn.setAutoCommit(false);
 
-            dbCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
+            if (dbType == DatabaseStructureType.SINGLE)
+            {
+               dbCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
+            }
          }
 
          ManageableRepository repository = repositoryService.getRepository(this.repositoryEntry.getName());
@@ -142,7 +146,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
 
             if (jdbcConn != null)
             {
-               if (!isMultiDb)
+               if (dbType == DatabaseStructureType.SINGLE)
                {
                   context = new DataRestoreContext(
                                  new String[]{
