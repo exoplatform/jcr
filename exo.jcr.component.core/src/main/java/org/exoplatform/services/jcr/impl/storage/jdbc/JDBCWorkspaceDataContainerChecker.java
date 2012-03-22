@@ -31,7 +31,6 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.checker.DummyRepair;
 import org.exoplatform.services.jcr.impl.checker.EarlierVersionsRemover;
 import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
-import org.exoplatform.services.jcr.impl.checker.InspectionQueryFilteredMultivaluedProperties;
 import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.checker.NodeRemover;
 import org.exoplatform.services.jcr.impl.checker.PropertyRemover;
@@ -122,7 +121,7 @@ public class JDBCWorkspaceDataContainerChecker
       try
       {
          jdbcConnection = jdbcDataContainer.getConnectionFactory().getJdbcConnection();
-         preparedStatement = lockInspectionQuery.prepareStatement(jdbcConnection);
+         preparedStatement = jdbcConnection.prepareStatement(lockInspectionQuery.getStatement());
          resultSet = preparedStatement.executeQuery();
 
          Set<String> lockedInJCRITEM = new HashSet<String>();
@@ -236,7 +235,7 @@ public class JDBCWorkspaceDataContainerChecker
             ResultSet resultSet = null;
             try
             {
-               st = query.prepareStatement(jdbcConn);
+               st = jdbcConn.prepareStatement(query.getStatement());
 
                resultSet = st.executeQuery();
                if (resultSet.next())
@@ -300,7 +299,7 @@ public class JDBCWorkspaceDataContainerChecker
       try
       {
          connection = jdbcDataContainer.getConnectionFactory().getJdbcConnection();
-         st = vsInspectionQuery.prepareStatement(connection);
+         st = connection.prepareStatement(vsInspectionQuery.getStatement());
          resultSet = st.executeQuery();
 
          if (resultSet.next())
@@ -505,13 +504,29 @@ public class JDBCWorkspaceDataContainerChecker
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_CLASS},
          "Items that do not have parent nodes", new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory())));
 
-      itemsInspectionQuery.add(new InspectionQueryFilteredMultivaluedProperties(singleDatabase ? "select * from "
-         + itemTable + " P where P.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
-         + "' and P.I_CLASS=2" + " and P.P_MULTIVALUED=? and NOT EXISTS( select * from " + valueTable
-         + " V where V.PROPERTY_ID=P.ID)" : "select * from " + itemTable
-         + " P where P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS( select * from " + valueTable + " V "
-         + "where V.PROPERTY_ID=P.ID)", new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID,
-         DBConstants.COLUMN_NAME},
+      String statement =
+         singleDatabase ? "select * from " + itemTable + " P where P.CONTAINER_NAME='"
+            + jdbcDataContainer.containerConfig.containerName + "' and P.I_CLASS=2"
+            + " and P.P_MULTIVALUED=? and NOT EXISTS( select * from " + valueTable + " V where V.PROPERTY_ID=P.ID)"
+            : "select * from " + itemTable
+               + " P where P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS( select * from " + valueTable + " V "
+               + "where V.PROPERTY_ID=P.ID)";
+
+      if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
+      {
+         statement = statement.replace("?", "'f'");
+      }
+      else if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
+      {
+         statement = statement.replace("?", "FALSE");
+      }
+      else
+      {
+         statement = statement.replace("?", "0");
+      }
+
+      itemsInspectionQuery.add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID,
+         DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
          "A node that has a single valued properties with nothing declared in the VALUE table.", new PropertyRemover(
             jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
 
@@ -535,7 +550,6 @@ public class JDBCWorkspaceDataContainerChecker
             jdbcDataContainer.containerConfig.containerName, jdbcDataContainer.containerConfig.dbStructureType.isMultiDatabase())));
 
       // The differences in the queries by DB dialect.
-      String statement;
       if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
       {
          statement =

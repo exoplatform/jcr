@@ -18,9 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.checker;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 /**
  * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
@@ -77,20 +74,5 @@ public class InspectionQuery
    public InconsistencyRepair getRepair()
    {
       return repair;
-   }
-
-   /**
-    * Creates a PreparedStatement object for sending parameterized SQL statements to the database. 
-    * 
-    * @param connection
-    *          connection to workspace storage
-    * @return
-    *          a new default PreparedStatement object containing the pre-compiled SQL statement 
-    * @throws SQLException
-    *           if a database access error occurs or this method is called on a closed connection
-    */
-   public PreparedStatement prepareStatement(Connection connection) throws SQLException
-   {
-      return connection.prepareStatement(statement);
    }
 }

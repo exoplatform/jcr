@@ -71,7 +71,7 @@ public abstract class AbstractLockTableHandler implements LockTableHandler
       {
          InspectionQuery query = getSelectQuery();
 
-         preparedStatement = query.prepareStatement(jdbcConnection);
+         preparedStatement = jdbcConnection.prepareStatement(query.getStatement());
          resultSet = preparedStatement.executeQuery();
 
          while (resultSet.next())
@@ -103,7 +103,7 @@ public abstract class AbstractLockTableHandler implements LockTableHandler
       {
          InspectionQuery query = getDeleteQuery(nodeId);
 
-         preparedStatement = query.prepareStatement(jdbcConnection);
+         preparedStatement = jdbcConnection.prepareStatement(query.getStatement());
          preparedStatement.executeUpdate();
       }
       finally
