@@ -105,8 +105,8 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    @ManagedDescription("Check repository data consistency. DB data, value storage and lucene index will be checked.")
    public String checkAll()
    {
-      return checkAndRepair(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE,
-         DataStorage.LUCENE_INDEX}, false);
+      return checkAndRepair(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE, DataStorage.LUCENE_INDEX},
+         false);
    }
 
    @Managed
@@ -171,6 +171,14 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       });
    }
 
+   /**
+    * @return absolute path to report or null if it doesn't exist.
+    */
+   public String getLastReportPath()
+   {
+      return lastReport != null ? lastReport.getReportPath() : null;
+   }
+
    protected String checkAndRepairAction(DataStorage[] storages, boolean autoRepair)
    {
       try
@@ -185,7 +193,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       try
       {
          suspendRepository();
-         
+
          return doCheckAndRepair(storages, autoRepair);
       }
       catch (RepositoryException e)
@@ -353,8 +361,9 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
          (ValueStoragePluginProvider)getComponent(ValueStoragePluginProvider.class, wsName);
 
       WorkspaceEntry wsEntry = (WorkspaceEntry)getComponent(WorkspaceEntry.class, wsName);
-      
-      NodeTypeDataManagerImpl nodeTypeManager = (NodeTypeDataManagerImpl)getComponent(NodeTypeDataManagerImpl.class, wsName);
+
+      NodeTypeDataManagerImpl nodeTypeManager =
+         (NodeTypeDataManagerImpl)getComponent(NodeTypeDataManagerImpl.class, wsName);
 
       return new JDBCWorkspaceDataContainerChecker(dataContainer, vsPlugin, wsEntry, nodeTypeManager, lastReport);
    }
