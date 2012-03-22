@@ -31,7 +31,7 @@ import org.exoplatform.services.jcr.infinispan.CacheKey;
 public class IndexUpdateKey extends CacheKey
 {
 
-   IndexUpdateKey()
+   public IndexUpdateKey()
    {
       super();
    }

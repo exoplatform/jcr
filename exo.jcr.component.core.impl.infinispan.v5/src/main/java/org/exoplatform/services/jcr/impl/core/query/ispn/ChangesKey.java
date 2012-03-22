@@ -37,7 +37,7 @@ public class ChangesKey extends CacheKey
 {
    private String wsId;
 
-   ChangesKey()
+   public ChangesKey()
    {
       super();
    }

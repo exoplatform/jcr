@@ -11,3 +11,8 @@ In Windows environment
 
 * "eXo-ispn.bat run" to launch eXo JCR with the configuration for Infinispan
 * "eXo-jbc.bat run" to launch eXo JCR with the configuration for JBoss Cache
+
+Notice!
+JCR Bundles for Infinispan and JBoss Cache differs by their dependencies. 
+In ordrer to run eXo JCR with Infinispan configuration it must be deployed 
+with "ispn" profile.

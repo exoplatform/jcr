@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+	xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
+	<component>
+		<type>org.exoplatform.services.ispn.DistributedCacheManager</type>
+		<init-params>
+			<value-param>
+				<name>infinispan-configuration</name>
+				<value>jar:/conf/distributed-cache-configuration.xml</value>
+			</value-param>
+			<properties-param>
+				<name>parameters</name>
+				<description>The parameters of the configuration</description>
+				<property name="configurationFile" value="udp-mux-v3.xml"></property>
+				<property name="invalidationThreshold" value="0"></property>
+				<property name="numOwners" value="2"></property>
+				<property name="numVirtualNodes" value="1"></property>
+			</properties-param>
+			<properties-param profiles="tcp">
+				<name>parameters</name>
+				<description>The parameters of the configuration</description>
+				<property name="configurationFile" value="tcp-mux-v3.xml"></property>
+				<property name="invalidationThreshold" value="-1"></property>
+				<property name="numOwners" value="2"></property>
+				<property name="numVirtualNodes" value="1"></property>
+			</properties-param>
+		</init-params>
+	</component>
+	<component>
+		<key>org.infinispan.transaction.lookup.TransactionManagerLookup</key>
+		<type>org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup</type>
+	</component>
+
+	<component>
+		<key>org.exoplatform.services.transaction.TransactionService</key>
+		<type>org.exoplatform.services.transaction.infinispan.JBossTransactionsService</type>
+		<init-params>
+			<value-param>
+				<name>timeout</name>
+				<value>3000</value>
+			</value-param>
+		</init-params>
+	</component>	
+	<component>
+		<key>org.exoplatform.services.log.LogConfigurationInitializer</key>
+		<type>org.exoplatform.services.log.LogConfigurationInitializer</type>
+		<init-params>
+			<value-param>
+				<name>logger</name>
+				<value>org.exoplatform.services.log.impl.BufferedLog4JLogger</value>
+			</value-param>
+			<value-param>
+				<name>configurator</name>
+				<value>org.exoplatform.services.log.impl.Log4JConfigurator</value>
+			</value-param>
+			<properties-param>
+				<name>properties</name>
+				<description>Log4J properties</description>
+				<property name="log4j.rootLogger" value="INFO, stdout, file" />
+
+				<property name="log4j.appender.stdout" value="org.apache.log4j.ConsoleAppender" />
+				<property name="log4j.appender.stdout.threshold" value="DEBUG" />
+
+				<property name="log4j.appender.stdout.layout" value="org.apache.log4j.PatternLayout" />
+				<property name="log4j.appender.stdout.layout.ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* [%t] %c{1}: %m (%F, line %L) %n" />
+
+				<property name="log4j.appender.file" value="org.apache.log4j.FileAppender" />
+				<property name="log4j.appender.file.File" value="jcr-cache-server.log" />
+
+				<property name="log4j.appender.file.layout" value="org.apache.log4j.PatternLayout" />
+				<property name="log4j.appender.file.layout.ConversionPattern" value="%d{dd.MM.yyyy HH:mm:ss} *%-5p* [%t] %c{1}: %m (%F, line %L) %n" />
+			</properties-param>
+		</init-params>
+	</component>
+</configuration>

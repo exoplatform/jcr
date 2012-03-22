@@ -1200,10 +1200,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void suspend() throws SuspendException
    {
-      isResponsibleForResuming = true;
-
       if (rpcService != null)
       {
+         isResponsibleForResuming = true;
+
          try
          {
             rpcService.executeCommandOnAllNodes(suspend, true);
@@ -1274,13 +1274,13 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          {
             throw new ResumeException(e);
          }
+
+         isResponsibleForResuming = false;
       }
       else
       {
          resumeLocally();
       }
-
-      isResponsibleForResuming = false;
    }
 
    /**
@@ -1541,32 +1541,29 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          throw new SuspendException("Can't suspend index, while reindexing in progeress.");
       }
-      if (isSuspended)
-      {
-         throw new SuspendException("Component already suspended.");
-      }
 
-      if (handler instanceof Suspendable)
+      if (!isSuspended)
       {
-         ((Suspendable)handler).suspend();
-      }
+         if (handler instanceof Suspendable)
+         {
+            ((Suspendable)handler).suspend();
+         }
 
-      isSuspended = true;
+         isSuspended = true;
+      }
    }
 
    protected void resumeLocally() throws ResumeException
    {
-      if (!isSuspended)
+      if (isSuspended)
       {
-         throw new ResumeException("Component is not suspended.");
-      }
+         if (handler instanceof Suspendable)
+         {
+            ((Suspendable)handler).resume();
+         }
 
-      if (handler instanceof Suspendable)
-      {
-         ((Suspendable)handler).resume();
+         isSuspended = false;
       }
-
-      isSuspended = false;
    }
 
    /**

@@ -415,7 +415,6 @@ public class RepositoryImpl implements ManageableRepository
    public SessionImpl getDynamicSession(String workspaceName, Collection<MembershipEntry> membershipEntries)
             throws RepositoryException
    {
-
       if (getState() == OFFLINE)
       {
          LOG.warn("Repository " + getName() + " is OFFLINE.");
@@ -743,10 +742,18 @@ public class RepositoryImpl implements ManageableRepository
          throw new RepositoryException("First switch repository to ONLINE and then to needed state.\n" + toString());
       }
 
-      // set state for all workspaces
-      for (String workspaceName : getWorkspaceNames())
+      String[] workspaces = getWorkspaceNames();
+      if (workspaces.length > 0)
       {
-         getWorkspaceContainer(workspaceName).setState(state);
+         // set state for all workspaces
+         for (String workspaceName : workspaces)
+         {
+            if (!workspaceName.equals(systemWorkspaceName))
+            {
+               getWorkspaceContainer(workspaceName).setState(state);
+            }
+         }
+         getWorkspaceContainer(systemWorkspaceName).setState(state);
       }
 
       isOffline = state == OFFLINE;
