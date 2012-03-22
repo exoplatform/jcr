@@ -860,6 +860,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       }
    }
 
+   void ensureFlushed() throws IOException
+   {
+      if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+      {
+         index.flush();
+      }
+   }
+
    /**
     * {@inheritDoc}
     */
@@ -956,6 +964,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
       // check relation Persistent Layer -> Index
       // If current workspace is system, then need to invoke reader correspondent to system index
+      ensureFlushed();
+      if (isSystem)
+      {
+         if (getContext().getParentHandler() != null)
+         {
+            ((SearchIndex)getContext().getParentHandler()).ensureFlushed();
+         }
+      }
       IndexReader indexReader = getIndexReader(isSystem);
       try
       {
