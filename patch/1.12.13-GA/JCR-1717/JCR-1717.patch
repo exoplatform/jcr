@@ -1,0 +1,1475 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java	(revision 5937)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java	(working copy)
+@@ -20,6 +20,7 @@
+ 
+ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
+ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListenerFilter;
++import org.exoplatform.services.jcr.impl.ReadOnlySupport;
+ 
+ /**
+  * Created by The eXo Platform SAS.
+@@ -29,7 +30,7 @@
+  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a> 
+  * @version $Id: PersistentDataManager.java 34801 2009-07-31 15:44:50Z dkatayev $
+  */
+-public interface PersistentDataManager extends DataManager
++public interface PersistentDataManager extends DataManager, ReadOnlySupport
+ {
+ 
+    void addItemPersistenceListener(ItemsPersistenceListener listener);
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(revision 5937)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(working copy)
+@@ -39,6 +39,9 @@
+ import org.exoplatform.services.jcr.datamodel.QPath;
+ import org.exoplatform.services.jcr.datamodel.ValueData;
+ import org.exoplatform.services.jcr.impl.Constants;
++import org.exoplatform.services.jcr.impl.backup.ResumeException;
++import org.exoplatform.services.jcr.impl.backup.SuspendException;
++import org.exoplatform.services.jcr.impl.backup.Suspendable;
+ import org.exoplatform.services.jcr.impl.core.LocationFactory;
+ import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
+ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+@@ -86,7 +89,7 @@
+  * @version $Id: SearchManager.java 1008 2009-12-11 15:14:51Z nzamosenchuk $
+  */
+ @NonVolatile
+-public class SearchManager implements Startable, MandatoryItemsPersistenceListener
++public class SearchManager implements Startable, MandatoryItemsPersistenceListener, Suspendable
+ {
+ 
+    /**
+@@ -136,6 +139,11 @@
+ 
+    protected IndexerChangesFilter changesFilter;
+    
++   /**
++    * Indicates if component suspended or not.
++    */
++   protected volatile boolean isSuspended = false;
++
+    private final ExoContainerContext ctx;
+ 
+    /**
+@@ -856,4 +864,62 @@
+       return false;
+    }
+ 
++   /**
++    * {@inheritDoc}
++    */
++   public void suspend() throws SuspendException
++   {
++      suspendLocally();
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public boolean isSuspended()
++   {
++      return isSuspended;
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public void resume() throws ResumeException
++   {
++      resumeLocally();
++   }
++
++   protected void suspendLocally() throws SuspendException
++   {
++      if (!isSuspended)
++      {
++         if (handler instanceof Suspendable)
++         {
++            ((Suspendable)handler).suspend();
++         }
++
++         isSuspended = true;
++      }
++   }
++
++   protected void resumeLocally() throws ResumeException
++   {
++      if (isSuspended)
++      {
++         if (handler instanceof Suspendable)
++         {
++            ((Suspendable)handler).resume();
++         }
++
++         isSuspended = false;
++      }
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public int getPriority()
++   {
++      return PRIORITY_NORMAL;
++   }
++
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 5937)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(working copy)
+@@ -45,6 +45,9 @@
+ import org.exoplatform.services.jcr.datamodel.PropertyData;
+ import org.exoplatform.services.jcr.datamodel.QPath;
+ import org.exoplatform.services.jcr.impl.Constants;
++import org.exoplatform.services.jcr.impl.backup.ResumeException;
++import org.exoplatform.services.jcr.impl.backup.SuspendException;
++import org.exoplatform.services.jcr.impl.backup.Suspendable;
+ import org.exoplatform.services.jcr.impl.core.LocationFactory;
+ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+ import org.exoplatform.services.jcr.impl.core.SessionImpl;
+@@ -78,6 +81,7 @@
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
++import java.util.concurrent.CountDownLatch;
+ 
+ import javax.jcr.RepositoryException;
+ import javax.jcr.query.InvalidQueryException;
+@@ -89,7 +93,7 @@
+  * Implements a {@link org.apache.jackrabbit.core.query.QueryHandler} using
+  * Lucene.
+  */
+-public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener
++public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener, Suspendable
+ {
+ 
+    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
+@@ -448,6 +452,16 @@
+    private final ConfigurationManager cfm;
+ 
+    /**
++    * Waiting query execution until resume. 
++    */
++   protected CountDownLatch latcher = null;
++
++   /**
++    * Indicates if component suspended or not.
++    */
++   protected volatile boolean isSuspended = false;
++
++   /**
+     * Working constructor.
+     * 
+     * @throws RepositoryConfigurationException
+@@ -819,26 +833,29 @@
+     */
+    public void close()
+    {
+-      if (synonymProviderConfigFs != null)
++      if (!closed)
+       {
+-         try
++         if (synonymProviderConfigFs != null)
+          {
+-            synonymProviderConfigFs.close();
++            try
++            {
++               synonymProviderConfigFs.close();
++            }
++            catch (IOException e)
++            {
++               log.warn("Exception while closing FileSystem", e);
++            }
+          }
+-         catch (IOException e)
++         if (spellChecker != null)
+          {
+-            log.warn("Exception while closing FileSystem", e);
++            spellChecker.close();
+          }
++         errorLog.close();
++         index.close();
++         getContext().destroy();
++         closed = true;
++         log.info("Index closed: " + path);
+       }
+-      if (spellChecker != null)
+-      {
+-         spellChecker.close();
+-      }
+-      errorLog.close();
+-      index.close();
+-      getContext().destroy();
+-      closed = true;
+-      log.info("Index closed: " + path);
+    }
+ 
+    /**
+@@ -866,6 +883,8 @@
+    public MultiColumnQueryHits executeQuery(SessionImpl session, AbstractQueryImpl queryImpl, Query query,
+       QPath[] orderProps, boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
+    {
++      waitForResuming();
++
+       checkOpen();
+ 
+       Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
+@@ -914,6 +933,8 @@
+    public MultiColumnQueryHits executeQuery(SessionImpl session, MultiColumnQuery query, QPath[] orderProps,
+       boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
+    {
++      waitForResuming();
++
+       checkOpen();
+ 
+       Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
+@@ -2710,6 +2731,8 @@
+     */
+    public QueryHits executeQuery(Query query) throws IOException
+    {
++      waitForResuming();
++
+       checkOpen();
+ 
+       IndexReader reader = getIndexReader(true);
+@@ -2742,4 +2765,76 @@
+          log.error("Can not recover error log.", e);
+       }
+    }
++
++   /**
++    * {@inheritDoc}
++    */
++   public void suspend() throws SuspendException
++   {
++      latcher = new CountDownLatch(1);
++      close();
++
++      isSuspended = true;
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public void resume() throws ResumeException
++   {
++      try
++      {
++         closed = false;
++         doInit();
++
++         latcher.countDown();
++
++         isSuspended = false;
++      }
++      catch (IOException e)
++      {
++         throw new ResumeException(e);
++      }
++      catch (RepositoryException e)
++      {
++         throw new ResumeException(e);
++      }
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public boolean isSuspended()
++   {
++      return isSuspended;
++   }
++
++   /**
++    * If component is suspended need to wait resuming and not allow
++    * execute query on closed index.
++    * 
++    * @throws IOException
++    */
++   private void waitForResuming() throws IOException
++   {
++      if (isSuspended)
++      {
++         try
++         {
++            latcher.await();
++         }
++         catch (InterruptedException e)
++         {
++            throw new IOException(e);
++         }
++      }
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public int getPriority()
++   {
++      return PRIORITY_NORMAL;
++   }
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(revision 5937)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(working copy)
+@@ -177,7 +177,7 @@
+    /**
+     * The <code>IndexMerger</code> for this <code>MultiIndex</code>.
+     */
+-   private final IndexMerger merger;
++   private IndexMerger merger;
+ 
+    /**
+     * Timer to schedule flushes of this index after some idle time.
+@@ -224,7 +224,7 @@
+     * Flag indicating whether the index is stopped.
+     */
+    private volatile boolean stopped;
+-   
++
+    /**
+     * The index format version of this multi index.
+     */
+@@ -270,12 +270,6 @@
+       // as of 1.5 deletable file is not used anymore
+       removeDeletable();
+ 
+-      // initialize IndexMerger
+-      merger = new IndexMerger(this);
+-      merger.setMaxMergeDocs(handler.getMaxMergeDocs());
+-      merger.setMergeFactor(handler.getMergeFactor());
+-      merger.setMinMergeDocs(handler.getMinMergeDocs());
+-
+       IndexingQueueStore store = new IndexingQueueStore(indexDir);
+ 
+       // initialize indexing queue
+@@ -303,7 +297,6 @@
+          index.setUseCompoundFile(handler.getUseCompoundFile());
+          index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
+          indexes.add(index);
+-         merger.indexAdded(index.getName(), index.getNumDocuments());
+       }
+ 
+       // init volatile index
+@@ -323,6 +316,7 @@
+       indexingQueue.initialize(this);
+       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+       {
++         // will also initialize IndexMerger
+          setReadWrite();
+       }
+       this.indexNames.setMultiIndex(this);
+@@ -926,12 +920,6 @@
+    {
+       if (modeHandler.getMode().equals(IndexerIoMode.READ_WRITE))
+       {
+-
+-         // stop index merger
+-         // when calling this method we must not lock this MultiIndex, otherwise
+-         // a deadlock might occur
+-         merger.dispose();
+-
+          synchronized (this)
+          {
+             // stop timer
+@@ -977,6 +965,14 @@
+             }
+          }
+       }
++      // stop index merger
++      // when calling this method we must not lock this MultiIndex, otherwise
++      // a deadlock might occur
++      if (merger != null)
++      {
++         merger.dispose();
++         merger = null;
++      }
+       this.stopped = true;
+    }
+ 
+@@ -1150,6 +1146,27 @@
+       }
+    }
+ 
++   /**
++    * Initialize IndexMerger.
++    */
++   private void initMerger() throws IOException
++   {
++      if (merger != null)
++      {
++         log.info("IndexMerger initialization called twice.");
++      }
++      merger = new IndexMerger(this);
++      merger.setMaxMergeDocs(handler.getMaxMergeDocs());
++      merger.setMergeFactor(handler.getMergeFactor());
++      merger.setMinMergeDocs(handler.getMinMergeDocs());
++
++      for (Object index : indexes)
++      {
++         merger.indexAdded(((PersistentIndex)index).getName(), ((PersistentIndex)index).getNumDocuments());
++      }
++      merger.start();
++   }
++
+    // -------------------------< internal
+    // >-------------------------------------
+ 
+@@ -1324,13 +1341,12 @@
+     * @throws RepositoryException
+     *             if any other error occurs
+     */
+-   private long createIndex(NodeData node, ItemDataConsumer stateMgr) throws IOException,
+-      RepositoryException
++   private long createIndex(NodeData node, ItemDataConsumer stateMgr) throws IOException, RepositoryException
+    {
+       MultithreadedIndexing indexing = new MultithreadedIndexing(node, stateMgr);
+       return indexing.launch(false);
+    }
+-   
++
+    /**
+     * Recursively creates an index starting with the NodeState
+     * <code>node</code>.
+@@ -1352,8 +1368,8 @@
+     * @throws InterruptedException
+     *             if the task has been interrupted 
+     */
+-   private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr, final AtomicLong count) throws IOException,
+-      RepositoryException, InterruptedException
++   private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
++      final AtomicLong count) throws IOException, RepositoryException, InterruptedException
+    {
+       if (stopped)
+       {
+@@ -1397,7 +1413,7 @@
+          }
+       }
+    }
+-   
++
+    /**
+     * Recursively creates an index starting with the NodeState
+     * <code>node</code>.
+@@ -1421,9 +1437,8 @@
+     * @throws InterruptedException
+     *             if the task has been interrupted 
+     */
+-   private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node,
+-      final ItemDataConsumer stateMgr, final AtomicLong count, final NodeData nodeData)
+-      throws RepositoryException, IOException, InterruptedException
++   private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
++      final AtomicLong count, final NodeData nodeData) throws RepositoryException, IOException, InterruptedException
+    {
+       NodeData childState = (NodeData)stateMgr.getItemData(nodeData.getIdentifier());
+       if (childState == null)
+@@ -1937,8 +1952,8 @@
+       /**
+        * The maximum length of a AddNode String.
+        */
+-      private static final int ENTRY_LENGTH =
+-         Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
++      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length()
++         + Constants.UUID_FORMATTED_LENGTH + 2;
+ 
+       /**
+        * The uuid of the node to add.
+@@ -1952,7 +1967,7 @@
+       private Document doc;
+ 
+       private boolean synch;
+-      
++
+       /**
+        * Creates a new AddNode action.
+        * 
+@@ -2042,12 +2057,12 @@
+             {
+                synchronized (index)
+                {
+-                  index.volatileIndex.addDocuments(new Document[]{doc});               
+-               }               
++                  index.volatileIndex.addDocuments(new Document[]{doc});
++               }
+             }
+             else
+             {
+-               index.volatileIndex.addDocuments(new Document[]{doc});               
++               index.volatileIndex.addDocuments(new Document[]{doc});
+             }
+          }
+       }
+@@ -2305,8 +2320,8 @@
+       /**
+        * The maximum length of a DeleteNode String.
+        */
+-      private static final int ENTRY_LENGTH =
+-         Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
++      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length()
++         + Constants.UUID_FORMATTED_LENGTH + 2;
+ 
+       /**
+        * The uuid of the node to remove.
+@@ -2550,7 +2565,12 @@
+    protected void setReadOny()
+    {
+       // try to stop merger in safe way
+-      merger.dispose();
++      if (merger != null)
++      {
++         merger.dispose();
++         merger = null;
++      }
++
+       flushTask.cancel();
+       FLUSH_TIMER.purge();
+       this.redoLog = null;
+@@ -2582,7 +2602,8 @@
+       attemptDelete();
+ 
+       // now that we are ready, start index merger
+-      merger.start();
++      initMerger();
++
+       if (redoLogApplied)
+       {
+          // wait for the index merge to finish pending jobs
+@@ -2660,7 +2681,7 @@
+          }
+       }
+    }
+-   
++
+    /**
+     * This class is used to index a node and its descendants nodes with several threads 
+     */
+@@ -2670,27 +2691,27 @@
+        * This instance of {@link AtomicReference} will contain the exception meet if any exception has occurred
+        */
+       private final AtomicReference<Exception> exception = new AtomicReference<Exception>();
+-      
++
+       /**
+        * The total amount of threads used for the indexing
+        */
+       private final int nThreads = Runtime.getRuntime().availableProcessors();
+-      
++
+       /**
+        * The {@link CountDownLatch} used to notify that the indexing is over
+        */
+       private final CountDownLatch endSignal = new CountDownLatch(nThreads);
+-      
++
+       /**
+        * The total amount of threads currently working
+        */
+       private final AtomicInteger runningThreads = new AtomicInteger();
+-      
++
+       /**
+        * The total amount of nodes already indexed
+        */
+       private final AtomicLong count = new AtomicLong();
+-      
++
+       /**
+        * The list of indexing tasks left to do
+        */
+@@ -2706,7 +2727,7 @@
+             {
+                if ((task = super.poll()) != null)
+                {
+-                  runningThreads.incrementAndGet();                  
++                  runningThreads.incrementAndGet();
+                }
+             }
+             return task;
+@@ -2714,7 +2735,7 @@
+ 
+          @Override
+          public boolean offer(Callable<Void> o)
+-         {            
++         {
+             if (super.offer(o))
+             {
+                synchronized (runningThreads)
+@@ -2724,9 +2745,9 @@
+                return true;
+             }
+             return false;
+-         }         
++         }
+       };
+-      
++
+       /**
+        * The task that all the indexing threads have to execute
+        */
+@@ -2782,7 +2803,7 @@
+             endSignal.countDown();
+          }
+       };
+-      
++
+       /**
+        * Default constructor
+        * @param node
+@@ -2801,7 +2822,7 @@
+             }
+          });
+       }
+-      
++
+       /**
+        * Launches the indexing
+        * @param asynchronous indicates whether or not the current thread needs to wait until the 
+@@ -2853,7 +2874,7 @@
+        */
+       private void startThreads()
+       {
+-         for (int i=0; i < nThreads; i++)
++         for (int i = 0; i < nThreads; i++)
+          {
+             (new Thread(indexingTask, "Indexing Thread #" + (i + 1))).start();
+          }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(revision 5937)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(working copy)
+@@ -137,6 +137,11 @@
+    private int state = OFFLINE;
+ 
+    /**
++    * Repository state. OFFLINE by default.
++    */
++   private boolean isOffline = true;
++
++   /**
+     * RepositoryImpl constructor.
+     * 
+     * @param container Repository container
+@@ -579,7 +584,26 @@
+     */
+    public int getState()
+    {
+-      return state;
++      if (isOffline)
++      {
++         return OFFLINE;
++      }
++
++      Integer state = null;
++      for (String workspaceName : getWorkspaceNames())
++      {
++         int workspaceState = getWorkspaceContainer(workspaceName).getState();
++         if (state == null)
++         {
++            state = workspaceState;
++         }
++         else if (state != workspaceState)
++         {
++            return UNDEFINED;
++         }
++      }
++
++      return state == null ? ONLINE : state;
+    }
+ 
+    /**
+@@ -587,22 +611,33 @@
+     */
+    public void setState(int state)
+    {
+-      switch (state)
++      if (getState() != ONLINE && !(state == ONLINE || state == OFFLINE))
+       {
+-         case ONLINE :
+-            // set ONLINE all workspaces
+-            setAllWorkspacesReadOnly(false);
+-            break;
+-         case OFFLINE :
+-            // TODO do nothing
+-            break;
+-         case READONLY :
+-            // set READONLY all workspaces
+-            setAllWorkspacesReadOnly(true);
+-            break;
++         throw new IllegalStateException("First switch repository to ONLINE and then to needed state.\n" + toString());
+       }
+ 
+-      this.state = state;
++      String[] workspaces = getWorkspaceNames();
++      if (workspaces.length > 0)
++      {
++         try
++         {
++            // set state for all workspaces
++            for (String workspaceName : workspaces)
++            {
++               if (!workspaceName.equals(systemWorkspaceName))
++               {
++                  getWorkspaceContainer(workspaceName).setState(state);
++               }
++            }
++            getWorkspaceContainer(systemWorkspaceName).setState(state);
++         }
++         catch (RepositoryException e)
++         {
++            throw new IllegalStateException(e);
++         }
++      }
++
++      isOffline = state == OFFLINE;
+    }
+ 
+    /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/ReadOnlySupport.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/ReadOnlySupport.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/ReadOnlySupport.java	(revision 0)
+@@ -0,0 +1,52 @@
++/*
++ * Copyright (C) 2012 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.impl;
++
++/**
++ * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
++ * @version $Id: ReadOnlySupport.java 34360 20.03.2012 andrew.plotnikov $
++ *
++ */
++public interface ReadOnlySupport
++{
++   /**
++    * Status of write-operations restrictions.
++    * 
++    * Read-only status is descriptive within the container, i.e. will not prevent any write
++    * operation.
++    * 
++    * Used in DataManager implementations.
++    * 
++    * @return true - if write-operations allowed, false - otherwise.
++    */
++   boolean isReadOnly();
++
++   /**
++    * Set status of write-operations restrictions.
++    * 
++    * Read-only status is descriptive within the container, i.e. will not prevent any write
++    * operation.
++    * 
++    * Used in DataManager implementations.
++    * 
++    * @param status
++    *          , true - if write-operations allowed, false - otherwise.
++    */
++   void setReadOnly(boolean status);
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 5937)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
+@@ -30,6 +30,9 @@
+ import org.exoplatform.services.jcr.datamodel.QPathEntry;
+ import org.exoplatform.services.jcr.datamodel.ValueData;
+ import org.exoplatform.services.jcr.impl.Constants;
++import org.exoplatform.services.jcr.impl.backup.ResumeException;
++import org.exoplatform.services.jcr.impl.backup.SuspendException;
++import org.exoplatform.services.jcr.impl.backup.Suspendable;
+ import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
+ import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
+ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
+@@ -41,6 +44,7 @@
+ import java.util.concurrent.ConcurrentHashMap;
+ import java.util.concurrent.ConcurrentMap;
+ import java.util.concurrent.CountDownLatch;
++import java.util.concurrent.atomic.AtomicInteger;
+ 
+ import javax.jcr.RepositoryException;
+ import javax.transaction.TransactionManager;
+@@ -54,7 +58,7 @@
+  * 
+  * @version $Id$
+  */
+-public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager
++public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager implements Suspendable
+ {
+ 
+    /**
+@@ -70,6 +74,21 @@
+    private TransactionManager transactionManager;
+ 
+    /**
++    * The amount of current working threads.
++    */
++   protected AtomicInteger workingThreads = new AtomicInteger();
++
++   /**
++    * Indicates if component suspended or not.
++    */
++   protected volatile boolean isSuspended = false;
++
++   /**
++    * Allows to make all threads waiting until resume. 
++    */
++   protected CountDownLatch latcher = null;
++
++   /**
+     * ItemData request, used on get operations.
+     * 
+     */
+@@ -536,6 +555,39 @@
+    @Override
+    public void save(final ItemStateChangesLog changesLog) throws RepositoryException
+    {
++      if (isSuspended)
++      {
++         try
++         {
++            latcher.await();
++         }
++         catch (InterruptedException e)
++         {
++            throw new RepositoryException(e);
++         }
++      }
++
++      workingThreads.incrementAndGet();
++      try
++      {
++         doSave(changesLog);
++      }
++      finally
++      {
++         workingThreads.decrementAndGet();
++
++         if (isSuspended && workingThreads.get() == 0)
++         {
++            synchronized (workingThreads)
++            {
++               workingThreads.notifyAll();
++            }
++         }
++      }
++   }
++
++   private void doSave(final ItemStateChangesLog changesLog) throws RepositoryException
++   {
+       if (isTxAware())
+       {
+          // save in dedicated XA transaction
+@@ -952,4 +1004,75 @@
+          conn.close();
+       }
+    }
+-}
+\ No newline at end of file
++
++   /**
++    * {@inheritDoc}
++    */
++   public void suspend() throws SuspendException
++   {
++      suspendLocally();
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public void resume() throws ResumeException
++   {
++      resumeLocally();
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public boolean isSuspended()
++   {
++      return isSuspended;
++   }
++
++   private void suspendLocally() throws SuspendException
++   {
++      if (!isSuspended)
++      {
++         latcher = new CountDownLatch(1);
++         isSuspended = true;
++
++         if (workingThreads.get() > 0)
++         {
++            synchronized (workingThreads)
++            {
++               while (workingThreads.get() > 0)
++               {
++                  try
++                  {
++                     workingThreads.wait();
++                  }
++                  catch (InterruptedException e)
++                  {
++                     if (LOG.isTraceEnabled())
++                     {
++                        LOG.trace(e.getMessage(), e);
++                     }
++                  }
++               }
++            }
++         }
++      }
++   }
++
++   private void resumeLocally() throws ResumeException
++   {
++      if (isSuspended)
++      {
++         latcher.countDown();
++         isSuspended = false;
++      }
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public int getPriority()
++   {
++      return PRIORITY_HIGH;
++   }
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(revision 5937)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(working copy)
+@@ -29,6 +29,7 @@
+ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+ import org.exoplatform.services.jcr.config.RepositoryEntry;
+ import org.exoplatform.services.jcr.config.WorkspaceEntry;
++import org.exoplatform.services.jcr.core.ManageableRepository;
+ import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+ import org.exoplatform.services.jcr.impl.core.LocationFactory;
+@@ -412,6 +413,26 @@
+    }
+ 
+    /**
++    * {@inheritDoc}
++    */
++   @Override
++   public synchronized void stop()
++   {
++      RepositoryImpl repository = (RepositoryImpl)getComponentInstanceOfType(RepositoryImpl.class);
++
++      try
++      {
++         repository.setState(ManageableRepository.OFFLINE);
++      }
++      catch (IllegalStateException e)
++      {
++         log.error("Can not switch repository to OFFLINE", e);
++      }
++
++      super.stop();
++   }
++
++   /**
+     * Initialize worspaces (root node and jcr:system for system workspace).
+     * <p>
+     * Runs on container start.
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/backup/ResumeException.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/backup/ResumeException.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/backup/ResumeException.java	(revision 0)
+@@ -0,0 +1,62 @@
++/*
++ * Copyright (C) 2012 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.impl.backup;
++
++/**
++ * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
++ * @version $Id: ResumeException.java 34360 19.03.2012 andrew.plotnikov $
++ *
++ */
++public class ResumeException extends Exception
++{
++   /**
++    * Constructor ResumeException.
++    * 
++    * @param cause
++    *          the cause
++    */
++   public ResumeException(Throwable cause)
++   {
++      super(cause);
++   }
++
++   /**
++    * Constructor ResumeException.
++    * 
++    * @param message
++    *          the message
++    */
++   public ResumeException(String message)
++   {
++      super(message);
++   }
++
++   /**
++    * Constructor ResumeException.
++    * 
++    * @param message
++    *          the message
++    * @param cause
++    *          the cause
++    */
++   public ResumeException(String message, Throwable cause)
++   {
++      super(message, cause);
++   }
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/backup/SuspendException.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/backup/SuspendException.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/backup/SuspendException.java	(revision 0)
+@@ -0,0 +1,62 @@
++/*
++ * Copyright (C) 2012 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.impl.backup;
++
++/**
++ * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
++ * @version $Id: SuspendException.java 34360 19.03.2012 andrew.plotnikov $
++ *
++ */
++public class SuspendException extends Exception
++{
++   /**
++    * Constructor SuspendException.
++    * 
++    * @param cause
++    *          the cause
++    */
++   public SuspendException(Throwable cause)
++   {
++      super(cause);
++   }
++
++   /**
++    * Constructor SuspendException.
++    * 
++    * @param message
++    *          the message
++    */
++   public SuspendException(String message)
++   {
++      super(message);
++   }
++
++   /**
++    * Constructor SuspendException.
++    * 
++    * @param message
++    *          the message
++    * @param cause
++    *          the cause
++    */
++   public SuspendException(String message, Throwable cause)
++   {
++      super(message, cause);
++   }
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/backup/Suspendable.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/backup/Suspendable.java	(revision 0)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/backup/Suspendable.java	(revision 0)
+@@ -0,0 +1,74 @@
++/*
++ * Copyright (C) 2012 eXo Platform SAS.
++ *
++ * This is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU Lesser General Public License as
++ * published by the Free Software Foundation; either version 2.1 of
++ * the License, or (at your option) any later version.
++ *
++ * This software is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
++ * Lesser General Public License for more details.
++ *
++ * You should have received a copy of the GNU Lesser General Public
++ * License along with this software; if not, write to the Free
++ * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
++ * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
++ */
++package org.exoplatform.services.jcr.impl.backup;
++
++/**
++ * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
++ * @version $Id: Suspendable.java 34360 19.03.2012 andrew.plotnikov $
++ *
++ */
++public interface Suspendable
++{
++
++   /**
++    * Priority high constant.
++    */
++   public static final int PRIORITY_HIGH = 5;
++
++   /**
++    * Priority normal constant.
++    */
++   public static final int PRIORITY_NORMAL = 0;
++
++   /**
++    * Priority low constant.
++    */
++   public static final int PRIORITY_LOW = -5;
++
++   /**
++    * Suspend component.
++    *  
++    * @throws SuspendException if error occurred 
++    */
++   void suspend() throws SuspendException;
++
++   /**
++    * Resume component.
++    *  
++    * @throws ResumeException if error occurred 
++    */
++   void resume() throws ResumeException;
++
++   /**
++    * Indicates if component is suspended or not.
++    * 
++    * @return
++    */
++   boolean isSuspended();
++
++   /**
++    * Priority of the component.
++    * Uses for suspend/resume comparator order.
++    * The higher number gives higher priority.
++    * 
++    * @return
++    */
++   int getPriority();
++
++}
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(revision 5937)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(working copy)
+@@ -62,6 +62,16 @@
+    final int READONLY = 2;
+ 
+    /**
++    * Repository SUSPENDED status.
++    */
++   final int SUSPENDED = 3;
++
++   /**
++    * Repository UNDEFINED status.
++    */
++   final int UNDEFINED = 4;
++
++   /**
+     * Add the items persistence listener to the named workspace.
+     * 
+     * @param workspaceName - name of workspace
+@@ -170,6 +180,9 @@
+     * Set repository state.
+     * 
+     * @param repository state
++    * @throws IllegalStateException
++    *         when value state incorrect or
++    *         when we can't do suspend or resume operation in the component    
+     */
+    void setState(int state);
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java	(revision 5937)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java	(working copy)
+@@ -18,8 +18,18 @@
+  */
+ package org.exoplatform.services.jcr.core;
+ 
++import org.exoplatform.services.jcr.impl.ReadOnlySupport;
+ import org.exoplatform.services.jcr.impl.WorkspaceContainer;
++import org.exoplatform.services.jcr.impl.backup.ResumeException;
++import org.exoplatform.services.jcr.impl.backup.SuspendException;
++import org.exoplatform.services.jcr.impl.backup.Suspendable;
+ 
++import java.util.Collections;
++import java.util.Comparator;
++import java.util.List;
++
++import javax.jcr.RepositoryException;
++
+ /**
+  * Created by The eXo Platform SAS .<br/> An entry point to the implementation, used for extending
+  * functionality
+@@ -54,6 +64,18 @@
+    }
+ 
+    /**
++    * Returns list of components of specific type.
++    * 
++    * @param componentType
++    *          component type
++    * @return List<Object>
++    */
++   public List getComponentInstancesOfType(Class componentType)
++   {
++      return container.getComponentInstancesOfType(componentType);
++   }
++
++   /**
+     * @param key
+     *          - an internal key of internal component
+     * @return the component
+@@ -78,4 +100,190 @@
+    {
+       container.registerComponentInstance(key, component);
+    }
++
++   /**
++    * Returns current workspace state.
++    * 
++    * @param state
++    * @throws RepositoryException
++    */
++   public int getState()
++   {
++      boolean hasROComponents = false;
++      boolean hasRWComponents = false;
++      List<ReadOnlySupport> readOnlyComponents = getComponentInstancesOfType(ReadOnlySupport.class);
++      for (ReadOnlySupport component : readOnlyComponents)
++      {
++         if (component.isReadOnly())
++         {
++            hasROComponents = true;
++         }
++         else
++         {
++            hasRWComponents = true;
++         }
++      }
++
++      boolean hasSuspendedComponents = false;
++      boolean hasResumedComponents = false;
++      List<Suspendable> suspendableComponents = getComponentInstancesOfType(Suspendable.class);
++      for (Suspendable component : suspendableComponents)
++      {
++         if (component.isSuspended())
++         {
++            hasSuspendedComponents = true;
++         }
++         else
++         {
++            hasResumedComponents = true;
++         }
++      }
++
++      if (hasSuspendedComponents && !hasResumedComponents && !hasROComponents)
++      {
++         return ManageableRepository.SUSPENDED;
++      }
++      else if (hasROComponents && !hasRWComponents && !hasSuspendedComponents)
++      {
++         return ManageableRepository.READONLY;
++      }
++      else if (!hasSuspendedComponents && !hasROComponents)
++      {
++         return ManageableRepository.ONLINE;
++      }
++      else
++      {
++         return ManageableRepository.UNDEFINED;
++      }
++   }
++
++   /**
++    * Set new workspace state.
++    * 
++    * @param state
++    * @throws RepositoryException
++    */
++   public void setState(final int state) throws RepositoryException
++   {
++      try
++      {
++         switch (state)
++         {
++            case ManageableRepository.ONLINE :
++               setOnline();
++               break;
++            case ManageableRepository.OFFLINE :
++               suspend();
++               break;
++            case ManageableRepository.READONLY :
++               setReadOnly(true);
++               break;
++            case ManageableRepository.SUSPENDED :
++               suspend();
++               break;
++         }
++      }
++      catch (Exception e)
++      {
++         Throwable cause = e.getCause();
++         if (cause instanceof RepositoryException)
++         {
++            throw new RepositoryException(cause);
++         }
++         else
++         {
++            throw new RuntimeException(cause);
++         }
++      }
++   }
++
++   /**
++    * Set all components readonly.
++    */
++   private void setReadOnly(boolean readOnly)
++   {
++      List<ReadOnlySupport> components = getComponentInstancesOfType(ReadOnlySupport.class);
++      for (ReadOnlySupport component : components)
++      {
++         component.setReadOnly(readOnly);
++      }
++   }
++
++   /**
++    * Suspend all components in workspace.
++    * 
++    * @throws RepositoryException
++    */
++   private void suspend() throws RepositoryException
++   {
++      List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
++      Comparator<Suspendable> c = new Comparator<Suspendable>()
++      {
++         public int compare(Suspendable s1, Suspendable s2)
++         {
++            return s2.getPriority() - s1.getPriority();
++         };
++      };
++      Collections.sort(components, c);
++
++      for (Suspendable component : components)
++      {
++         try
++         {
++            if (!component.isSuspended())
++            {
++               component.suspend();
++            }
++         }
++         catch (SuspendException e)
++         {
++            throw new RepositoryException("Can't suspend component", e);
++         }
++      }
++   }
++
++   /**
++    * Suspend all components in workspace.
++    * 
++    * @throws RepositoryException
++    */
++   private void resume() throws RepositoryException
++   {
++      // components should be resumed in reverse order
++      List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
++      Comparator<Suspendable> c = new Comparator<Suspendable>()
++      {
++         public int compare(Suspendable s1, Suspendable s2)
++         {
++            return s1.getPriority() - s2.getPriority();
++         };
++      };
++      Collections.sort(components, c);
++
++      for (Suspendable component : components)
++      {
++         try
++         {
++            if (component.isSuspended())
++            {
++               component.resume();
++            }
++         }
++         catch (ResumeException e)
++         {
++            throw new RepositoryException("Can't resume component", e);
++         }
++      }
++   }
++
++   /**
++    * Set all components online.
++    * 
++    * @throws RepositoryException
++    */
++   private void setOnline() throws RepositoryException
++   {
++      setReadOnly(false);
++      resume();
++   }
+ }
