@@ -1,0 +1,180 @@
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/query/TestTwoWayRangeIterator.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/query/TestTwoWayRangeIterator.java	(revision 5937)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/query/TestTwoWayRangeIterator.java	(working copy)
+@@ -17,15 +17,20 @@
+ package org.exoplatform.services.jcr.impl.core.query;
+ 
+ import org.exoplatform.services.jcr.JcrImplBaseTest;
++import org.exoplatform.services.jcr.access.PermissionType;
++import org.exoplatform.services.jcr.core.CredentialsImpl;
++import org.exoplatform.services.jcr.core.ExtendedNode;
+ import org.exoplatform.services.jcr.impl.core.query.lucene.TwoWayRangeIterator;
+ import org.exoplatform.services.log.ExoLogger;
+ import org.exoplatform.services.log.Log;
+ 
++import java.util.HashMap;
+ import java.util.NoSuchElementException;
+ import java.util.Random;
+ 
+ import javax.jcr.Node;
+ import javax.jcr.RepositoryException;
++import javax.jcr.Session;
+ import javax.jcr.query.Query;
+ import javax.jcr.query.QueryManager;
+ import javax.jcr.query.QueryResult;
+@@ -44,6 +49,8 @@
+    private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestScoreNodeIterator");
+ 
+    private Random random = new Random();
++   
++   private Session userSession;
+ 
+    private final int TEST_NODES_COUNT = 100;
+ 
+@@ -57,6 +64,12 @@
+       {
+          Node subnode = testRoot.addNode("TestNode" + String.format("%07d", i));
+          subnode.setProperty("val", i);
++         ExtendedNode subnode2 = (ExtendedNode)testRoot.addNode("TestNode2-" + String.format("%07d", i));
++         subnode2.setProperty("val", i);
++         subnode2.addMixin("exo:privilegeable");
++         HashMap<String, String[]> perm = new HashMap<String, String[]>();
++         perm.put("admin", PermissionType.ALL);
++         subnode2.setPermissions(perm);
+       }
+ 
+    }
+@@ -68,7 +81,15 @@
+       Node testRoot = root.addNode(testRootNodeName);
+       prepareRoot(testRoot);
+       root.save();
++      userSession = repository.login(new CredentialsImpl("john", "exo".toCharArray()), "ws");
+    }
++   
++   @Override
++   protected void tearDown() throws Exception
++   {
++      userSession.logout();
++      super.tearDown();
++   }
+ 
+    // Check random skipping from start of set
+    public void testSkipFromStart() throws Exception
+@@ -259,7 +280,7 @@
+    protected void checkPosition(ScoreNodeTester testAction, long expectedPosition) throws RepositoryException
+    {
+ 
+-      QueryManager qm = workspace.getQueryManager();
++      QueryManager qm = userSession.getWorkspace().getQueryManager();
+ 
+       // Doc order
+       String strDocOrder = "select * from nt:unstructured where jcr:path like '/" + testRootNodeName + "/%'";
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/QueryResultImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/QueryResultImpl.java	(revision 5937)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/QueryResultImpl.java	(working copy)
+@@ -18,6 +18,7 @@
+ 
+ import org.exoplatform.services.jcr.access.AccessManager;
+ import org.exoplatform.services.jcr.access.PermissionType;
++import org.exoplatform.services.jcr.access.SystemIdentity;
+ import org.exoplatform.services.jcr.datamodel.InternalQName;
+ import org.exoplatform.services.jcr.datamodel.NodeData;
+ import org.exoplatform.services.jcr.datamodel.QPath;
+@@ -142,6 +143,11 @@
+    private final long limit;
+ 
+    /**
++    * If <code>true</code>, it means we're using a System session.
++    */
++   private final boolean isSystemSession;
++
++   /**
+     * Creates a new query result. The concrete sub class is responsible for
+     * calling {@link #getResults(long)} after this constructor had been called.
+     *
+@@ -182,6 +188,7 @@
+       this.docOrder = orderProps.length == 0 && documentOrder;
+       this.offset = offset;
+       this.limit = limit;
++      this.isSystemSession = SystemIdentity.SYSTEM.equals(session.getUserID());
+    }
+ 
+    /**
+@@ -376,7 +383,7 @@
+             break;
+          }
+          // check access
+-         if (isAccessGranted(sn))
++         if (!docOrder || isAccessGranted(sn))
+          {
+             collector.add(sn);
+          }
+@@ -398,6 +405,10 @@
+     */
+    private boolean isAccessGranted(ScoreNode[] nodes) throws RepositoryException
+    {
++      if (isSystemSession)
++      {
++         return true;
++      }
+       for (int i = 0; i < nodes.length; i++)
+       {
+          try
+@@ -483,25 +494,16 @@
+          else
+          {
+             // attempt to get enough results
+-            try
++            long expectedPosition = position + skipNum;
++            while (position < expectedPosition)
+             {
+-               getResults(position + invalid + (int)skipNum);
+-               if (resultNodes.size() >= position + skipNum)
++               fetchNext();
++               if (next == null)
+                {
+-                  // skip within already fetched results
+-                  position += skipNum - 1;
+-                  fetchNext();
+-               }
+-               else
+-               {
+                   // not enough results after getResults()
+                   throw new NoSuchElementException();
+                }
+             }
+-            catch (RepositoryException e)
+-            {
+-               throw new NoSuchElementException(e.getMessage());
+-            }
+          }
+       }
+ 
+@@ -648,6 +650,25 @@
+                }
+             }
+             next = (ScoreNode[])resultNodes.get(nextPos);
++            try
++            {
++               if (!isAccessGranted(next))
++               {
++                  next = null;
++                  invalid++;
++                  resultNodes.remove(nextPos);
++                  if (log.isDebugEnabled())
++                  {
++                     log
++                        .debug("The node is invalid since we don't have sufficient rights to access it, it will be removed from the results set");
++                  }
++               }
++            }
++            catch (RepositoryException e)
++            {
++               log.error("Could not check access permission", e);
++               break;
++            }
+          }
+          position++;
+       }
