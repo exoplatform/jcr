@@ -1,0 +1,341 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 5945)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(working copy)
+@@ -81,8 +81,19 @@
+ import java.lang.reflect.Constructor;
+ import java.lang.reflect.InvocationTargetException;
+ import java.security.PrivilegedAction;
+-import java.util.*;
++import java.util.ArrayList;
++import java.util.Arrays;
++import java.util.Collection;
++import java.util.Collections;
++import java.util.HashMap;
++import java.util.HashSet;
++import java.util.Iterator;
++import java.util.LinkedHashSet;
++import java.util.List;
++import java.util.Map;
++import java.util.Set;
+ import java.util.concurrent.CountDownLatch;
++import java.util.concurrent.atomic.AtomicBoolean;
+ 
+ import javax.jcr.RepositoryException;
+ import javax.jcr.query.InvalidQueryException;
+@@ -202,7 +213,7 @@
+     * Default name of the error log file
+     */
+    private static final String ERROR_LOG = "error.log";
+-   
++
+    /**
+     * The actual index
+     */
+@@ -521,7 +532,7 @@
+    /**
+     * Indicates if component suspended or not.
+     */
+-   protected boolean isSuspended = false;
++   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
+ 
+    protected final Set<String> recoveryFilterClasses;
+ 
+@@ -674,10 +685,9 @@
+                   }
+                   catch (IOException e)
+                   {
+-                     log
+-                        .error(
+-                           "Error while reindexing the workspace. Please fix the problem, delete index and restart server.",
+-                           e);
++                     log.error(
++                        "Error while reindexing the workspace. Please fix the problem, delete index and restart server.",
++                        e);
+                   }
+                }
+             }, "Reindexing-" + context.getRepositoryName() + "-" + context.getContainer().getWorkspaceName()).start();
+@@ -1120,8 +1130,7 @@
+             }
+             catch (RepositoryException e)
+             {
+-               log
+-                  .warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString(), e);
++               log.warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString(), e);
+             }
+             return doc;
+          }
+@@ -1148,8 +1157,7 @@
+                }
+                catch (RepositoryException e)
+                {
+-                  log
+-                     .warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString());
++                  log.warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString());
+                }
+                return null;
+             }
+@@ -2029,8 +2037,7 @@
+          catch (Exception e)
+          {
+             // do not fail if aggregate cannot be created
+-            log
+-               .warn("Exception while building indexing aggregate for" + " node with UUID: " + state.getIdentifier(), e);
++            log.warn("Exception while building indexing aggregate for" + " node with UUID: " + state.getIdentifier(), e);
+          }
+       }
+    }
+@@ -3383,7 +3390,7 @@
+       latcher = new CountDownLatch(1);
+       close();
+ 
+-      isSuspended = true;
++      isSuspended.set(true);
+    }
+ 
+    /**
+@@ -3398,7 +3405,7 @@
+ 
+          latcher.countDown();
+ 
+-         isSuspended = false;
++         isSuspended.set(false);
+       }
+       catch (IOException e)
+       {
+@@ -3415,7 +3422,7 @@
+     */
+    public boolean isSuspended()
+    {
+-      return isSuspended;
++      return isSuspended.get();
+    }
+ 
+    /**
+@@ -3426,7 +3433,7 @@
+     */
+    private void waitForResuming() throws IOException
+    {
+-      if (isSuspended)
++      if (isSuspended.get())
+       {
+          try
+          {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(revision 5945)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(working copy)
+@@ -1388,15 +1388,6 @@
+     */
+    void close()
+    {
+-      // stop index merger
+-      // when calling this method we must not lock this MultiIndex, otherwise
+-      // a deadlock might occur
+-      if (merger != null)
+-      {
+-         merger.dispose();
+-         merger = null;
+-      }
+-
+       synchronized (this)
+       {
+          // stop timer
+@@ -1465,6 +1456,14 @@
+             }
+          });
+       }
++      // stop index merger after all possible flushes.
++      // when calling this method we must not lock this MultiIndex, otherwise
++      // a deadlock might occur
++      if (merger != null)
++      {
++         merger.dispose();
++         merger = null;
++      }
+    }
+ 
+    /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(revision 5945)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(working copy)
+@@ -104,6 +104,7 @@
+ import java.util.NoSuchElementException;
+ import java.util.Set;
+ import java.util.StringTokenizer;
++import java.util.concurrent.atomic.AtomicBoolean;
+ 
+ import javax.jcr.Node;
+ import javax.jcr.PropertyType;
+@@ -212,7 +213,7 @@
+    /**
+     * Indicates if component suspended or not.
+     */
+-   protected boolean isSuspended = false;
++   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
+ 
+    /**
+     * Indicates that node keep responsible for resuming.
+@@ -403,7 +404,7 @@
+    public void checkIndex(final InspectionReport report, final boolean isSystem) throws RepositoryException,
+       IOException
+    {
+-      if (isSuspended)
++      if (isSuspended.get())
+       {
+          try
+          {
+@@ -414,7 +415,7 @@
+                   // try resuming the workspace
+                   try
+                   {
+-                     if (isSystem && parentSearchManager != null && parentSearchManager.isSuspended)
++                     if (isSystem && parentSearchManager != null && parentSearchManager.isSuspended.get())
+                      {
+                         parentSearchManager.resume();
+                      }
+@@ -433,7 +434,7 @@
+                      try
+                      {
+                         suspend();
+-                        if (isSystem && parentSearchManager != null && !parentSearchManager.isSuspended)
++                        if (isSystem && parentSearchManager != null && !parentSearchManager.isSuspended.get())
+                         {
+                            parentSearchManager.suspend();
+                         }
+@@ -1228,7 +1229,7 @@
+     */
+    public boolean isSuspended()
+    {
+-      return isSuspended;
++      return isSuspended.get();
+    }
+ 
+    /**
+@@ -1303,10 +1304,10 @@
+          throw new IllegalStateException(
+             "Index is not in READ_WRITE mode and reindexing can't be launched. Please start reindexing on coordinator node.");
+       }
+-      if (isSuspended || !handler.isOnline())
++      if (isSuspended.get() || !handler.isOnline())
+       {
+          throw new IllegalStateException("Can't start reindexing while index is "
+-            + ((isSuspended) ? "SUSPENDED." : "already OFFLINE (it means that reindexing is in progress).") + ".");
++            + ((isSuspended.get()) ? "SUSPENDED." : "already OFFLINE (it means that reindexing is in progress).") + ".");
+       }
+ 
+       log.info("Starting hot reindexing on the " + handler.getContext().getRepositoryName() + "/"
+@@ -1542,27 +1543,27 @@
+          throw new SuspendException("Can't suspend index, while reindexing in progeress.");
+       }
+ 
+-      if (!isSuspended)
++      if (!isSuspended.get())
+       {
+          if (handler instanceof Suspendable)
+          {
+             ((Suspendable)handler).suspend();
+          }
+ 
+-         isSuspended = true;
++         isSuspended.set(true);
+       }
+    }
+ 
+    protected void resumeLocally() throws ResumeException
+    {
+-      if (isSuspended)
++      if (isSuspended.get())
+       {
+          if (handler instanceof Suspendable)
+          {
+             ((Suspendable)handler).resume();
+          }
+ 
+-         isSuspended = false;
++         isSuspended.set(false);
+       }
+    }
+ 
+@@ -1571,7 +1572,7 @@
+     */
+    public void onChange(TopologyChangeEvent event)
+    {
+-      if (isSuspended)
++      if (isSuspended.get())
+       {
+          new Thread()
+          {
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 5945)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
+@@ -141,7 +141,7 @@
+    /**
+     * Indicates if component suspended or not.
+     */
+-   protected boolean isSuspended = false;
++   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
+ 
+    /**
+     * Allows to make all threads waiting until resume. 
+@@ -927,7 +927,7 @@
+     */
+    public void save(final ItemStateChangesLog changesLog) throws RepositoryException
+    {
+-      if (isSuspended)
++      if (isSuspended.get())
+       {
+          try
+          {
+@@ -971,7 +971,7 @@
+       {
+          workingThreads.decrementAndGet();
+ 
+-         if (isSuspended && workingThreads.get() == 0)
++         if (isSuspended.get() && workingThreads.get() == 0)
+          {
+             synchronized (workingThreads)
+             {
+@@ -1987,15 +1987,15 @@
+     */
+    public boolean isSuspended()
+    {
+-      return isSuspended;
++      return isSuspended.get();
+    }
+ 
+    private void suspendLocally() throws SuspendException
+    {
+-      if (!isSuspended)
++      if (!isSuspended.get())
+       {
+          latcher = new CountDownLatch(1);
+-         isSuspended = true;
++         isSuspended.set(true);
+ 
+          if (workingThreads.get() > 0)
+          {
+@@ -2022,10 +2022,10 @@
+ 
+    private void resumeLocally() throws ResumeException
+    {
+-      if (isSuspended)
++      if (isSuspended.get())
+       {
+          latcher.countDown();
+-         isSuspended = false;
++         isSuspended.set(false);
+       }
+    }
+ 
+@@ -2034,7 +2034,7 @@
+     */
+    public void onChange(TopologyChangeEvent event)
+    {
+-      if (isSuspended)
++      if (isSuspended.get())
+       {
+          new Thread()
+          {
