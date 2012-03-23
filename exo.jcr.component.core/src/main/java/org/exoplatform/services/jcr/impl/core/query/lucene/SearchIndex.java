@@ -513,7 +513,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * Indicates if component suspended or not.
     */
-   protected boolean isSuspended = false;
+   protected volatile boolean isSuspended = false;
 
    protected final Set<String> recoveryFilterClasses;
 

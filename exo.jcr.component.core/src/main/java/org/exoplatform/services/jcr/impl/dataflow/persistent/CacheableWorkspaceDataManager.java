@@ -141,7 +141,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Indicates if component suspended or not.
     */
-   protected boolean isSuspended = false;
+   protected volatile boolean isSuspended = false;
 
    /**
     * Allows to make all threads waiting until resume. 

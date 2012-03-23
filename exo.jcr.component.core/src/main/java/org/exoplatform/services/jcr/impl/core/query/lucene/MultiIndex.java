@@ -1420,15 +1420,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void close()
    {
-      // stop index merger
-      // when calling this method we must not lock this MultiIndex, otherwise
-      // a deadlock might occur
-      if (merger != null)
-      {
-         merger.dispose();
-         merger = null;
-      }
-
       synchronized (this)
       {
          // stop timer
@@ -1497,6 +1488,15 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                return null;
             }
          });
+      }
+      
+      // stop index merger
+      // when calling this method we must not lock this MultiIndex, otherwise
+      // a deadlock might occur
+      if (merger != null)
+      {
+         merger.dispose();
+         merger = null;
       }
    }
 
