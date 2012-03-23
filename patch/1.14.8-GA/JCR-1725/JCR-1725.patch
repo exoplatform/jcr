@@ -2,7 +2,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 5945)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(working copy)
-@@ -81,8 +81,19 @@
+@@ -81,8 +81,20 @@
  import java.lang.reflect.Constructor;
  import java.lang.reflect.InvocationTargetException;
  import java.security.PrivilegedAction;
@@ -20,10 +20,11 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +import java.util.Set;
  import java.util.concurrent.CountDownLatch;
 +import java.util.concurrent.atomic.AtomicBoolean;
++import java.util.concurrent.atomic.AtomicReference;
  
  import javax.jcr.RepositoryException;
  import javax.jcr.query.InvalidQueryException;
-@@ -202,7 +213,7 @@
+@@ -202,7 +214,7 @@
      * Default name of the error log file
      */
     private static final String ERROR_LOG = "error.log";
@@ -32,7 +33,13 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     /**
      * The actual index
      */
-@@ -521,7 +532,7 @@
+@@ -516,12 +528,12 @@
+    /**
+     * Waiting query execution until resume. 
+     */
+-   protected CountDownLatch latcher = null;
++   protected AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
+ 
     /**
      * Indicates if component suspended or not.
      */
@@ -41,7 +48,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
     protected final Set<String> recoveryFilterClasses;
  
-@@ -674,10 +685,9 @@
+@@ -674,10 +686,9 @@
                    }
                    catch (IOException e)
                    {
@@ -55,7 +62,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
                    }
                 }
              }, "Reindexing-" + context.getRepositoryName() + "-" + context.getContainer().getWorkspaceName()).start();
-@@ -1120,8 +1130,7 @@
+@@ -1120,8 +1131,7 @@
              }
              catch (RepositoryException e)
              {
@@ -65,7 +72,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
              }
              return doc;
           }
-@@ -1148,8 +1157,7 @@
+@@ -1148,8 +1158,7 @@
                 }
                 catch (RepositoryException e)
                 {
@@ -75,7 +82,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
                 }
                 return null;
              }
-@@ -2029,8 +2037,7 @@
+@@ -2029,8 +2038,7 @@
           catch (Exception e)
           {
              // do not fail if aggregate cannot be created
@@ -85,8 +92,12 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
           }
        }
     }
-@@ -3383,7 +3390,7 @@
-       latcher = new CountDownLatch(1);
+@@ -3380,10 +3388,10 @@
+     */
+    public void suspend() throws SuspendException
+    {
+-      latcher = new CountDownLatch(1);
++      latcher.set(new CountDownLatch(1));
        close();
  
 -      isSuspended = true;
@@ -94,16 +105,19 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     }
  
     /**
-@@ -3398,7 +3405,7 @@
+@@ -3396,9 +3404,9 @@
+          closed = false;
+          doInit();
  
-          latcher.countDown();
+-         latcher.countDown();
++         latcher.get().countDown();
  
 -         isSuspended = false;
 +         isSuspended.set(false);
        }
        catch (IOException e)
        {
-@@ -3415,7 +3422,7 @@
+@@ -3415,7 +3423,7 @@
      */
     public boolean isSuspended()
     {
@@ -112,7 +126,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     }
  
     /**
-@@ -3426,7 +3433,7 @@
+@@ -3426,11 +3434,11 @@
      */
     private void waitForResuming() throws IOException
     {
@@ -120,6 +134,11 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +      if (isSuspended.get())
        {
           try
+          {
+-            latcher.await();
++            latcher.get().await();
+          }
+          catch (InterruptedException e)
           {
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java
 ===================================================================
@@ -271,7 +290,15 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 5945)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
-@@ -141,7 +141,7 @@
+@@ -74,6 +74,7 @@
+ import java.util.concurrent.CountDownLatch;
+ import java.util.concurrent.atomic.AtomicBoolean;
+ import java.util.concurrent.atomic.AtomicInteger;
++import java.util.concurrent.atomic.AtomicReference;
+ 
+ import javax.jcr.RepositoryException;
+ import javax.transaction.Status;
+@@ -141,12 +142,12 @@
     /**
      * Indicates if component suspended or not.
      */
@@ -280,7 +307,13 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
  
     /**
      * Allows to make all threads waiting until resume. 
-@@ -927,7 +927,7 @@
+     */
+-   protected CountDownLatch latcher = null;
++   protected AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
+ 
+    /**
+     * Indicates that node keep responsible for resuming.
+@@ -927,11 +928,11 @@
      */
     public void save(final ItemStateChangesLog changesLog) throws RepositoryException
     {
@@ -289,7 +322,12 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
        {
           try
           {
-@@ -971,7 +971,7 @@
+-            latcher.await();
++            latcher.get().await();
+          }
+          catch (InterruptedException e)
+          {
+@@ -971,7 +972,7 @@
        {
           workingThreads.decrementAndGet();
  
@@ -298,7 +336,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
           {
              synchronized (workingThreads)
              {
-@@ -1987,15 +1987,15 @@
+@@ -1987,15 +1988,15 @@
      */
     public boolean isSuspended()
     {
@@ -311,26 +349,28 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
 -      if (!isSuspended)
 +      if (!isSuspended.get())
        {
-          latcher = new CountDownLatch(1);
+-         latcher = new CountDownLatch(1);
 -         isSuspended = true;
++         latcher.set(new CountDownLatch(1));
 +         isSuspended.set(true);
  
           if (workingThreads.get() > 0)
           {
-@@ -2022,10 +2022,10 @@
+@@ -2022,10 +2023,10 @@
  
     private void resumeLocally() throws ResumeException
     {
 -      if (isSuspended)
 +      if (isSuspended.get())
        {
-          latcher.countDown();
+-         latcher.countDown();
 -         isSuspended = false;
++         latcher.get().countDown();
 +         isSuspended.set(false);
        }
     }
  
-@@ -2034,7 +2034,7 @@
+@@ -2034,7 +2035,7 @@
      */
     public void onChange(TopologyChangeEvent event)
     {
