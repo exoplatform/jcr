@@ -74,6 +74,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.RepositoryException;
 import javax.transaction.Status;
@@ -146,7 +147,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Allows to make all threads waiting until resume. 
     */
-   protected CountDownLatch latcher = null;
+   protected AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
 
    /**
     * Indicates that node keep responsible for resuming.
@@ -920,7 +921,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          try
          {
-            latcher.await();
+            latcher.get().await();
          }
          catch (InterruptedException e)
          {
@@ -1982,7 +1983,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    {
       if (!isSuspended.get())
       {
-         latcher = new CountDownLatch(1);
+         latcher.set(new CountDownLatch(1));
          isSuspended.set(true);
 
          if (workingThreads.get() > 0)
@@ -2012,7 +2013,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    {
       if (isSuspended.get())
       {
-         latcher.countDown();
+         latcher.get().countDown();
          isSuspended.set(false);
       }
    }

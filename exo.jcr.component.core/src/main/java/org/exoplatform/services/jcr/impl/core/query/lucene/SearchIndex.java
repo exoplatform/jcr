@@ -96,6 +96,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.query.InvalidQueryException;
@@ -519,7 +520,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * Waiting query execution until resume. 
     */
-   protected CountDownLatch latcher = null;
+   protected AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
 
    /**
     * Indicates if component suspended or not.
@@ -3358,7 +3359,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void suspend() throws SuspendException
    {
-      latcher = new CountDownLatch(1);
+      latcher.set(new CountDownLatch(1));
       close();
 
       isSuspended.set(true);
@@ -3374,7 +3375,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          closed = false;
          doInit();
 
-         latcher.countDown();
+         latcher.get().countDown();
 
          isSuspended.set(false);
       }
@@ -3408,7 +3409,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          try
          {
-            latcher.await();
+            latcher.get().await();
          }
          catch (InterruptedException e)
          {
