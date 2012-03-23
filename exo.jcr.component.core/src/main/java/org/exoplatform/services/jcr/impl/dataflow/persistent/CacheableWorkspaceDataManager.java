@@ -141,7 +141,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Indicates if component suspended or not.
     */
-   protected volatile boolean isSuspended = false;
+   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);;
 
    /**
     * Allows to make all threads waiting until resume. 
@@ -550,7 +550,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
       return null;
    }
-   
+
    /**
     * Get Items Cache.
     * 
@@ -730,8 +730,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * {@inheritDoc}
     */
    public ItemData getItemData(final NodeData parentData, final QPathEntry name, final ItemType itemType,
-      final boolean createNullItemData)
-      throws RepositoryException
+      final boolean createNullItemData) throws RepositoryException
    {
       if (cache.isEnabled())
       {
@@ -917,7 +916,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void save(final ItemStateChangesLog changesLog) throws RepositoryException
    {
-      if (isSuspended)
+      if (isSuspended.get())
       {
          try
          {
@@ -961,7 +960,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          workingThreads.decrementAndGet();
 
-         if (isSuspended && workingThreads.get() == 0)
+         if (isSuspended.get() && workingThreads.get() == 0)
          {
             synchronized (workingThreads)
             {
@@ -1915,7 +1914,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
-
    /**
     * {@inheritDoc}
     */
@@ -1977,15 +1975,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public boolean isSuspended()
    {
-      return isSuspended;
+      return isSuspended.get();
    }
 
    private void suspendLocally() throws SuspendException
    {
-      if (!isSuspended)
+      if (!isSuspended.get())
       {
          latcher = new CountDownLatch(1);
-         isSuspended = true;
+         isSuspended.set(true);
 
          if (workingThreads.get() > 0)
          {
@@ -2012,10 +2010,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private void resumeLocally() throws ResumeException
    {
-      if (isSuspended)
+      if (isSuspended.get())
       {
          latcher.countDown();
-         isSuspended = false;
+         isSuspended.set(false);
       }
    }
 
@@ -2024,7 +2022,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void onChange(TopologyChangeEvent event)
    {
-      if (isSuspended)
+      if (isSuspended.get())
       {
          new Thread()
          {
@@ -2223,9 +2221,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   : getNearestACAncestorAcl(node, search);
 
             node =
-               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(),
-                  new AccessControlList(acl.getOwner(), ancestorAcl.getPermissionEntries()));
+               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                  node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  node.getParentIdentifier(), new AccessControlList(acl.getOwner(), ancestorAcl.getPermissionEntries()));
          }
          else if (!acl.hasOwner())
          {
@@ -2249,9 +2247,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   : getNearestACAncestorAcl(node, search);
 
             node =
-               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(), node
-                  .getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(), node.getParentIdentifier(),
-                  new AccessControlList(ancestorAcl.getOwner(), acl.getPermissionEntries()));
+               new TransientNodeData(node.getQPath(), node.getIdentifier(), node.getPersistedVersion(),
+                  node.getPrimaryTypeName(), node.getMixinTypeNames(), node.getOrderNumber(),
+                  node.getParentIdentifier(), new AccessControlList(ancestorAcl.getOwner(), acl.getPermissionEntries()));
 
          }
       }
@@ -2453,7 +2451,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   filterPermissions.add(holder.getId());
                }
             }
-         }         
+         }
       }
       filtersEnabled.set(true);
       return true;
@@ -2501,7 +2499,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          }
       }
    }
-   
+
    /**
     * {@inheritDoc}
     */

@@ -83,8 +83,19 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.query.InvalidQueryException;
@@ -513,7 +524,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * Indicates if component suspended or not.
     */
-   protected volatile boolean isSuspended = false;
+   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
 
    protected final Set<String> recoveryFilterClasses;
 
@@ -3350,7 +3361,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       latcher = new CountDownLatch(1);
       close();
 
-      isSuspended = true;
+      isSuspended.set(true);
    }
 
    /**
@@ -3365,7 +3376,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
          latcher.countDown();
 
-         isSuspended = false;
+         isSuspended.set(false);
       }
       catch (IOException e)
       {
@@ -3382,7 +3393,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public boolean isSuspended()
    {
-      return isSuspended;
+      return isSuspended.get();
    }
 
    /**
@@ -3393,7 +3404,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    private void waitForResuming() throws IOException
    {
-      if (isSuspended)
+      if (isSuspended.get())
       {
          try
          {
