@@ -404,7 +404,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -474,7 +474,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -566,7 +566,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -646,7 +646,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -655,7 +655,7 @@
             <workspace name="ws2">
                <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
                   <properties>
-                     <property name="source-name" value="jdbcjcktck" />
+                     <property name="source-name" value="jdbcjcrtck" />
                      <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws2tck" />
@@ -729,7 +729,7 @@
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
