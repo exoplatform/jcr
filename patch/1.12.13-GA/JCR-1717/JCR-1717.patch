@@ -1,6 +1,6 @@
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java	(revision 5951)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java	(revision 5955)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java	(working copy)
 @@ -20,6 +20,7 @@
  
@@ -21,7 +21,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflo
     void addItemPersistenceListener(ItemsPersistenceListener listener);
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(revision 5951)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(revision 5955)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(working copy)
 @@ -39,6 +39,9 @@
  import org.exoplatform.services.jcr.datamodel.QPath;
@@ -64,100 +64,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     private final ExoContainerContext ctx;
  
     /**
-@@ -164,8 +173,8 @@
-     * @throws RepositoryConfigurationException
-     */
- 
--   public SearchManager(ExoContainerContext ctx, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
--      WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
-+   public SearchManager(ExoContainerContext ctx, QueryHandlerEntry config, NamespaceRegistryImpl nsReg,
-+      NodeTypeDataManager ntReg, WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
-       DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
-       throws RepositoryException, RepositoryConfigurationException
-    {
-@@ -276,7 +285,9 @@
-             try
-             {
-                if (reader != null)
-+               {
-                   reader.close();
-+               }
-             }
-             catch (IOException e)
-             {
-@@ -389,7 +400,9 @@
-    {
- 
-       if (log.isDebugEnabled())
-+      {
-          log.debug("start");
-+      }
-       try
-       {
-          if (indexingTree == null)
-@@ -411,7 +424,9 @@
-                   {
-                      ItemData excludeData = itemMgr.getItemData(stringTokenizer.nextToken());
-                      if (excludeData != null)
-+                     {
-                         excludedPath.add(excludeData.getQPath());
-+                     }
-                   }
-                   catch (RepositoryException e)
-                   {
-@@ -428,7 +443,9 @@
-                {
-                   ItemData indexingRootDataItem = itemMgr.getItemData(rootNodeIdentifer);
-                   if (indexingRootDataItem != null && indexingRootDataItem.isNode())
-+                  {
-                      indexingRootData = (NodeData)indexingRootDataItem;
-+                  }
-                }
-                catch (RepositoryException e)
-                {
-@@ -509,14 +526,20 @@
-                         if (item.isNode())
-                         {
-                            if (!indexingTree.isExcluded(item))
-+                           {
-                               return (NodeData)item;
-+                           }
-                         }
-                         else
-+                        {
-                            log.warn("Node not found, but property " + id + ", " + item.getQPath().getAsString()
-                               + " found. ");
-+                        }
-                      }
-                      else
-+                     {
-                         log.warn("Unable to index node with id " + id + ", node does not exist.");
-+                     }
- 
-                   }
-                   catch (RepositoryException e)
-@@ -667,8 +690,8 @@
-          if (parentSearchManager != null)
-          {
-             newChangesFilter =
--               constuctor.newInstance(this, parentSearchManager, config, indexingTree, parentSearchManager
--                  .getIndexingTree(), handler, parentSearchManager.getHandler(), cfm);
-+               constuctor.newInstance(this, parentSearchManager, config, indexingTree,
-+                  parentSearchManager.getIndexingTree(), handler, parentSearchManager.getHandler(), cfm);
-          }
-       }
-       catch (SecurityException e)
-@@ -715,7 +738,9 @@
-       // initialize query handler
-       String className = config.getType();
-       if (className == null)
-+      {
-          throw new RepositoryConfigurationException("Content hanler       configuration fail");
-+      }
- 
-       try
-       {
-@@ -856,4 +881,62 @@
+@@ -856,4 +865,62 @@
        return false;
     }
  
@@ -222,7 +129,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 5951)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 5955)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(working copy)
 @@ -45,6 +45,9 @@
  import org.exoplatform.services.jcr.datamodel.PropertyData;
@@ -259,7 +166,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     /**
 +    * Waiting query execution until resume. 
 +    */
-+   protected AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
++   protected final AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
 +
 +   /**
 +    * Indicates if component suspended or not.
@@ -270,27 +177,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
      * Working constructor.
      * 
      * @throws RepositoryConfigurationException
-@@ -708,8 +724,7 @@
-             }
-             catch (RepositoryException e)
-             {
--               log
--                  .warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString(), e);
-+               log.warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString(), e);
-             }
-             return doc;
-          }
-@@ -736,8 +751,7 @@
-                }
-                catch (RepositoryException e)
-                {
--                  log
--                     .warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString());
-+                  log.warn("Exception while creating document for node: " + state.getIdentifier() + ": " + e.toString());
-                }
-                return null;
-             }
-@@ -819,26 +833,29 @@
+@@ -819,26 +835,29 @@
      */
     public void close()
     {
@@ -334,7 +221,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     }
  
     /**
-@@ -866,6 +883,8 @@
+@@ -866,6 +885,8 @@
     public MultiColumnQueryHits executeQuery(SessionImpl session, AbstractQueryImpl queryImpl, Query query,
        QPath[] orderProps, boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
     {
@@ -343,7 +230,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        checkOpen();
  
        Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
-@@ -914,6 +933,8 @@
+@@ -914,6 +935,8 @@
     public MultiColumnQueryHits executeQuery(SessionImpl session, MultiColumnQuery query, QPath[] orderProps,
        boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
     {
@@ -352,28 +239,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        checkOpen();
  
        Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
-@@ -1330,8 +1351,8 @@
-             {
-                File root = new File(path, synonymProviderConfigPath.substring(0, lastSeparator));
-                fsr =
--                  new BufferedInputStream(new FileInputStream(new File(root, synonymProviderConfigPath
--                     .substring(lastSeparator + 1))));
-+                  new BufferedInputStream(new FileInputStream(new File(root,
-+                     synonymProviderConfigPath.substring(lastSeparator + 1))));
-             }
-             else
-             {
-@@ -1540,8 +1561,7 @@
-          catch (Exception e)
-          {
-             // do not fail if aggregate cannot be created
--            log
--               .warn("Exception while building indexing aggregate for" + " node with UUID: " + state.getIdentifier(), e);
-+            log.warn("Exception while building indexing aggregate for" + " node with UUID: " + state.getIdentifier(), e);
-          }
-       }
-    }
-@@ -2710,6 +2730,8 @@
+@@ -2710,6 +2733,8 @@
      */
     public QueryHits executeQuery(Query query) throws IOException
     {
@@ -382,7 +248,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        checkOpen();
  
        IndexReader reader = getIndexReader(true);
-@@ -2742,4 +2764,76 @@
+@@ -2742,4 +2767,76 @@
           log.error("Can not recover error log.", e);
        }
     }
@@ -461,7 +327,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(revision 5951)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(revision 5955)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(working copy)
 @@ -177,7 +177,7 @@
     /**
@@ -472,15 +338,6 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
     /**
      * Timer to schedule flushes of this index after some idle time.
-@@ -224,7 +224,7 @@
-     * Flag indicating whether the index is stopped.
-     */
-    private volatile boolean stopped;
--   
-+
-    /**
-     * The index format version of this multi index.
-     */
 @@ -270,12 +270,6 @@
        // as of 1.5 deletable file is not used anymore
        removeDeletable();
@@ -566,102 +423,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     // -------------------------< internal
     // >-------------------------------------
  
-@@ -1324,13 +1341,12 @@
-     * @throws RepositoryException
-     *             if any other error occurs
-     */
--   private long createIndex(NodeData node, ItemDataConsumer stateMgr) throws IOException,
--      RepositoryException
-+   private long createIndex(NodeData node, ItemDataConsumer stateMgr) throws IOException, RepositoryException
-    {
-       MultithreadedIndexing indexing = new MultithreadedIndexing(node, stateMgr);
-       return indexing.launch(false);
-    }
--   
-+
-    /**
-     * Recursively creates an index starting with the NodeState
-     * <code>node</code>.
-@@ -1352,8 +1368,8 @@
-     * @throws InterruptedException
-     *             if the task has been interrupted 
-     */
--   private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr, final AtomicLong count) throws IOException,
--      RepositoryException, InterruptedException
-+   private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
-+      final AtomicLong count) throws IOException, RepositoryException, InterruptedException
-    {
-       if (stopped)
-       {
-@@ -1397,7 +1413,7 @@
-          }
-       }
-    }
--   
-+
-    /**
-     * Recursively creates an index starting with the NodeState
-     * <code>node</code>.
-@@ -1421,9 +1437,8 @@
-     * @throws InterruptedException
-     *             if the task has been interrupted 
-     */
--   private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node,
--      final ItemDataConsumer stateMgr, final AtomicLong count, final NodeData nodeData)
--      throws RepositoryException, IOException, InterruptedException
-+   private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
-+      final AtomicLong count, final NodeData nodeData) throws RepositoryException, IOException, InterruptedException
-    {
-       NodeData childState = (NodeData)stateMgr.getItemData(nodeData.getIdentifier());
-       if (childState == null)
-@@ -1937,8 +1952,8 @@
-       /**
-        * The maximum length of a AddNode String.
-        */
--      private static final int ENTRY_LENGTH =
--         Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
-+      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.ADD_NODE.length()
-+         + Constants.UUID_FORMATTED_LENGTH + 2;
- 
-       /**
-        * The uuid of the node to add.
-@@ -1952,7 +1967,7 @@
-       private Document doc;
- 
-       private boolean synch;
--      
-+
-       /**
-        * Creates a new AddNode action.
-        * 
-@@ -2042,12 +2057,12 @@
-             {
-                synchronized (index)
-                {
--                  index.volatileIndex.addDocuments(new Document[]{doc});               
--               }               
-+                  index.volatileIndex.addDocuments(new Document[]{doc});
-+               }
-             }
-             else
-             {
--               index.volatileIndex.addDocuments(new Document[]{doc});               
-+               index.volatileIndex.addDocuments(new Document[]{doc});
-             }
-          }
-       }
-@@ -2305,8 +2320,8 @@
-       /**
-        * The maximum length of a DeleteNode String.
-        */
--      private static final int ENTRY_LENGTH =
--         Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length() + Constants.UUID_FORMATTED_LENGTH + 2;
-+      private static final int ENTRY_LENGTH = Long.toString(Long.MAX_VALUE).length() + Action.DELETE_NODE.length()
-+         + Constants.UUID_FORMATTED_LENGTH + 2;
- 
-       /**
-        * The uuid of the node to remove.
-@@ -2550,7 +2565,12 @@
+@@ -2550,7 +2567,12 @@
     protected void setReadOny()
     {
        // try to stop merger in safe way
@@ -675,7 +437,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        flushTask.cancel();
        FLUSH_TIMER.purge();
        this.redoLog = null;
-@@ -2582,7 +2602,8 @@
+@@ -2582,7 +2604,8 @@
        attemptDelete();
  
        // now that we are ready, start index merger
@@ -685,108 +447,9 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        if (redoLogApplied)
        {
           // wait for the index merge to finish pending jobs
-@@ -2660,7 +2681,7 @@
-          }
-       }
-    }
--   
-+
-    /**
-     * This class is used to index a node and its descendants nodes with several threads 
-     */
-@@ -2670,27 +2691,27 @@
-        * This instance of {@link AtomicReference} will contain the exception meet if any exception has occurred
-        */
-       private final AtomicReference<Exception> exception = new AtomicReference<Exception>();
--      
-+
-       /**
-        * The total amount of threads used for the indexing
-        */
-       private final int nThreads = Runtime.getRuntime().availableProcessors();
--      
-+
-       /**
-        * The {@link CountDownLatch} used to notify that the indexing is over
-        */
-       private final CountDownLatch endSignal = new CountDownLatch(nThreads);
--      
-+
-       /**
-        * The total amount of threads currently working
-        */
-       private final AtomicInteger runningThreads = new AtomicInteger();
--      
-+
-       /**
-        * The total amount of nodes already indexed
-        */
-       private final AtomicLong count = new AtomicLong();
--      
-+
-       /**
-        * The list of indexing tasks left to do
-        */
-@@ -2706,7 +2727,7 @@
-             {
-                if ((task = super.poll()) != null)
-                {
--                  runningThreads.incrementAndGet();                  
-+                  runningThreads.incrementAndGet();
-                }
-             }
-             return task;
-@@ -2714,7 +2735,7 @@
- 
-          @Override
-          public boolean offer(Callable<Void> o)
--         {            
-+         {
-             if (super.offer(o))
-             {
-                synchronized (runningThreads)
-@@ -2724,9 +2745,9 @@
-                return true;
-             }
-             return false;
--         }         
-+         }
-       };
--      
-+
-       /**
-        * The task that all the indexing threads have to execute
-        */
-@@ -2782,7 +2803,7 @@
-             endSignal.countDown();
-          }
-       };
--      
-+
-       /**
-        * Default constructor
-        * @param node
-@@ -2801,7 +2822,7 @@
-             }
-          });
-       }
--      
-+
-       /**
-        * Launches the indexing
-        * @param asynchronous indicates whether or not the current thread needs to wait until the 
-@@ -2853,7 +2874,7 @@
-        */
-       private void startThreads()
-       {
--         for (int i=0; i < nThreads; i++)
-+         for (int i = 0; i < nThreads; i++)
-          {
-             (new Thread(indexingTask, "Indexing Thread #" + (i + 1))).start();
-          }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(revision 5951)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(revision 5955)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(working copy)
 @@ -137,6 +137,11 @@
     private int state = OFFLINE;
@@ -934,7 +597,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/Re
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 5951)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 5955)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
 @@ -30,6 +30,9 @@
  import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -981,7 +644,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
 +   /**
 +    * Allows to make all threads waiting until resume. 
 +    */
-+   protected AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
++   protected final AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
 +
 +   /**
      * ItemData request, used on get operations.
@@ -1107,7 +770,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(revision 5951)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(revision 5955)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(working copy)
 @@ -29,6 +29,7 @@
  import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -1359,7 +1022,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/ba
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(revision 5951)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(revision 5955)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(working copy)
 @@ -62,6 +62,16 @@
     final int READONLY = 2;
@@ -1390,7 +1053,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/Ma
  
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java	(revision 5951)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java	(revision 5955)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java	(working copy)
 @@ -18,8 +18,18 @@
   */
