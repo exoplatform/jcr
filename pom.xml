@@ -402,12 +402,12 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-core</artifactId>
-        <version>5.1.0.CR3</version>
+        <version>5.1.2.FINAL</version>
       </dependency>
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-cachestore-jdbc</artifactId>
-        <version>5.1.0.CR3</version>
+        <version>5.1.2.FINAL</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>

@@ -45,21 +45,21 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
     * the workspace is not distributed the value of this variable will be
     * null to avoid consuming more memory for nothing 
     */
-   protected String ownerId;
+   private String ownerId;
    
-   protected String id;
+   private String id;
 
-   protected int hash;
+   private int hash;
 
    /**
     * The value used in case, the grouping is enabled
     */
-   protected String group;
+   private String group;
    
    /**
     * The full name of the group
     */
-   protected String fullGroupName;
+   private String fullGroupName;
    
    public CacheKey()
    {
@@ -74,7 +74,11 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
    {
       this.ownerId = ownerId;
       this.id = id;
-      this.hash = id.hashCode();
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((id == null) ? 0 : id.hashCode());
+      result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
+      this.hash = result;
       this.group = group;
    }
    
@@ -195,7 +199,11 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
       buf = new byte[in.readInt()];
       in.readFully(buf);
       id = new String(buf, Constants.DEFAULT_ENCODING);
-      hash = id.hashCode();
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((id == null) ? 0 : id.hashCode());
+      result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
+      hash = result;
    }
 
    /**

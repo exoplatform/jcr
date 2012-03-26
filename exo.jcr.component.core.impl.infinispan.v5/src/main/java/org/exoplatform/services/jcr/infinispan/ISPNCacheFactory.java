@@ -35,13 +35,10 @@ import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
 import org.infinispan.configuration.parsing.Parser;
-import org.infinispan.distribution.ch.ConsistentHash;
-import org.infinispan.distribution.ch.DefaultConsistentHash;
 import org.infinispan.jmx.MBeanServerLookup;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
-import org.infinispan.util.Util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,16 +68,16 @@ public class ISPNCacheFactory<K, V>
    public static final String INFINISPAN_CONFIG = "infinispan-configuration";
 
    private final ConfigurationManager configurationManager;
-   
+
    private final TransactionManager transactionManager;
 
    private final TemplateConfigurationHelper configurationHelper;
 
-   private static final Log LOG = ExoLogger
-      .getLogger("exo.jcr.component.core.impl.infinispan.v5.InfinispanCacheFactory");
+   private static final Log LOG = ExoLogger//NOSONAR
+      .getLogger("exo.jcr.component.core.impl.infinispan.v5.InfinispanCacheFactory");//NOSONAR
 
    /**
-    * A Map that contains all the registered CacheManager order by cluster name.    
+    * A Map that contains all the registered CacheManager order by cluster name.
     */
    private static Map<String, EmbeddedCacheManager> CACHE_MANAGERS = new HashMap<String, EmbeddedCacheManager>();
 
@@ -190,9 +187,9 @@ public class ISPNCacheFactory<K, V>
     * has already been registered for the same current container.
     * If no cache manager has been registered, we register the given cache manager otherwise we
     * use the previously registered cache manager and we define a dedicated region for the related cache.
+    * @param regionId the unique id of the cache region to create
     * @param holder the configuration holder of the the cache to create
     * @param tm the transaction manager to put into the configuration of the cache
-    * @param manager the current cache manager of the cache to create
     * @return the given cache manager if it has not been registered otherwise the cache manager of the same
     * type that has already been registered..
     */
@@ -237,17 +234,8 @@ public class ISPNCacheFactory<K, V>
                return tm;
             }
          };
-         confBuilder.transaction().transactionManagerLookup(tml);
+         confBuilder.transaction().transactionManagerLookup(tml);         
       }
-      //TODO remove it once ISPN-1687 will be fixed
-      confBuilder.storeAsBinary().enabled(false);
-      //TODO remove it once ISPN-1689 will be fixed
-      confBuilder
-         .clustering()
-         .hash()
-         .consistentHash(
-            Util.<ConsistentHash> getInstance(DefaultConsistentHash.class.getName(), Thread.currentThread()
-               .getContextClassLoader()));
       Configuration conf = holder.getDefaultConfigurationBuilder().build();
       // Define the configuration of the cache
       manager.defineConfiguration(regionId, conf);
