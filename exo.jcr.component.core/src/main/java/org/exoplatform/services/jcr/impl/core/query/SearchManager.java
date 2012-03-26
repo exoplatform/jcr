@@ -219,7 +219,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * Indicates that node keep responsible for resuming.
     */
-   protected Boolean isResponsibleForResuming = false;
+   protected final AtomicBoolean isResponsibleForResuming = new AtomicBoolean(false);
 
    /**
     * Suspend remote command.
@@ -1203,7 +1203,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
       if (rpcService != null)
       {
-         isResponsibleForResuming = true;
+         isResponsibleForResuming.set(true);
 
          try
          {
@@ -1276,7 +1276,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             throw new ResumeException(e);
          }
 
-         isResponsibleForResuming = false;
+         isResponsibleForResuming.set(false);
       }
       else
       {
@@ -1322,7 +1322,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             hotReindexingState = "Running. Started at " + sdf.format(Calendar.getInstance().getTime());
             try
             {
-               isResponsibleForResuming = true;
+               isResponsibleForResuming.set(true);
                // set offline cluster wide (will make merger disposed and volatile flushed)
                if (rpcService != null && changesFilter.isShared())
                {
@@ -1400,7 +1400,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                   hotReindexingState = "Stopped with errors at " + sdf.format(Calendar.getInstance().getTime());
                   LOG.info("Reindexing halted with errors.");
                }
-               isResponsibleForResuming = false;
+               isResponsibleForResuming.set(false);
             }
          }
       }, "HotReindexing-" + handler.getContext().getRepositoryName() + "-"
@@ -1513,7 +1513,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
          public Serializable execute(Serializable[] args) throws Throwable
          {
-            return isResponsibleForResuming;
+            return isResponsibleForResuming.get();
          }
       });
 

@@ -147,12 +147,12 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Allows to make all threads waiting until resume. 
     */
-   protected AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
+   protected final AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
 
    /**
     * Indicates that node keep responsible for resuming.
     */
-   protected Boolean isResponsibleForResuming = false;
+   protected final AtomicBoolean isResponsibleForResuming = new AtomicBoolean(false);
 
    /**
     * Request to all nodes to check if there is someone who responsible for resuming.
@@ -1922,7 +1922,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    {
       if (rpcService != null)
       {
-         isResponsibleForResuming = true;
+         isResponsibleForResuming.set(true);
 
          try
          {
@@ -1963,7 +1963,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             throw new ResumeException(e);
          }
 
-         isResponsibleForResuming = false;
+         isResponsibleForResuming.set(false);
       }
       else
       {
@@ -2116,7 +2116,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
             public Serializable execute(Serializable[] args) throws Throwable
             {
-               return isResponsibleForResuming;
+               return isResponsibleForResuming.get();
             }
          });
 

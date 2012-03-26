@@ -468,12 +468,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Indicates if this <code>SearchIndex</code> is closed and cannot be used
     * anymore.
     */
-   private boolean closed = false;
+   private final AtomicBoolean closed = new AtomicBoolean(false);
 
    /**
     * Allows or denies queries while index is offline.
     */
-   private boolean allowQuery = true;
+   private final AtomicBoolean allowQuery = new AtomicBoolean(true);
 
    /**
     * Text extractor for extracting text content of binary properties.
@@ -520,7 +520,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * Waiting query execution until resume. 
     */
-   protected AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
+   protected final AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
 
    /**
     * Indicates if component suspended or not.
@@ -1253,7 +1253,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void close()
    {
-      if (!closed)
+      if (!closed.get())
       {
          // cleanup resources obtained by filters
          if (recoveryFilters != null)
@@ -1284,7 +1284,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          errorLog.close();
          index.close();
          getContext().destroy();
-         closed = true;
+         closed.set(true);
          log.info("Index closed: " + path);
       }
    }
@@ -1560,7 +1560,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    protected IndexReader getIndexReader(boolean includeSystemIndex) throws IOException
    {
       // deny query execution if index in offline mode and allowQuery is false
-      if (!index.isOnline() && !allowQuery)
+      if (!index.isOnline() && !allowQuery.get())
       {
          throw new IndexOfflineIOException("Index is offline");
       }
@@ -3181,7 +3181,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    private void checkOpen() throws IOException
    {
-      if (closed)
+      if (closed.get())
       {
          throw new IOException("query handler closed and cannot be used anymore.");
       }
@@ -3337,11 +3337,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       checkOpen();
       if (isOnline)
       {
-         this.allowQuery = true;
+         this.allowQuery.set(true);
       }
       else
       {
-         this.allowQuery = allowQuery;
+         this.allowQuery.set(allowQuery);
       }
       index.setOnline(isOnline, dropStaleIndexes);
    }
@@ -3372,7 +3372,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         closed = false;
+         closed.set(false);
          doInit();
 
          latcher.get().countDown();
