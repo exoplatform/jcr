@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 import java.io.Externalizable;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,7 +33,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
-import java.nio.MappedByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
@@ -55,8 +55,6 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
    private static final long serialVersionUID = -8183328056670315388L;
 
    protected File file;
-
-   protected FileChannel channel;
 
    /**
     *   Empty constructor to serialization.
@@ -111,37 +109,46 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
     */
    public long read(OutputStream stream, long length, long position) throws IOException
    {
-      if (channel == null)
-      {
-         channel = PrivilegedFileHelper.fileInputStream(file).getChannel();
-      }
+      FileInputStream in = PrivilegedFileHelper.fileInputStream(file);
 
-      // validation
-      if (position >= channel.size() && position > 0)
+      try
       {
-         throw new IOException("Position " + position + " out of value size " + channel.size());
-      }
+         FileChannel channel = in.getChannel();
 
-      if (position + length >= channel.size())
+         // validation
+         if (position >= channel.size() && position > 0)
+         {
+            throw new IOException("Position " + position + " out of value size " + channel.size());
+         }
+
+         if (position + length >= channel.size())
+         {
+            length = channel.size() - position;
+         }
+
+         WritableByteChannel ch;
+         if (stream instanceof FileOutputStream)
+         {
+            ch = ((FileOutputStream)stream).getChannel();
+         }
+         else
+         {
+            ch = Channels.newChannel(stream);
+         }
+
+         long size = 0;
+         do
+         {
+            size += channel.transferTo(position, length, ch);
+         }
+         while (size != length);
+
+         return size;
+      }
+      finally
       {
-         length = channel.size() - position;
+         in.close();
       }
-
-      MappedByteBuffer bb = channel.map(FileChannel.MapMode.READ_ONLY, position, length);
-
-      WritableByteChannel ch;
-      if (stream instanceof FileOutputStream)
-      {
-         ch = ((FileOutputStream)stream).getChannel();
-      }
-      else
-      {
-         ch = Channels.newChannel(stream);
-      }
-      ch.write(bb);
-      ch.close();
-
-      return length;
    }
 
    /**

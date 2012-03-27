@@ -191,12 +191,19 @@ public class SystemViewContentExporter extends HandlingContentExporter
             else
             {
                InputStream is = data.getAsStream();
-               byte[] buffer = new byte[3 * 1024 * 3];
-               int len;
-               while ((len = is.read(buffer)) > 0)
+               try
                {
-                  char[] charbuf1 = Base64.encode(buffer, 0, len, 0, "").toCharArray();
-                  contentHandler.characters(charbuf1, 0, charbuf1.length);
+                  byte[] buffer = new byte[3 * 1024 * 3];
+                  int len;
+                  while ((len = is.read(buffer)) > 0)
+                  {
+                     char[] charbuf1 = Base64.encode(buffer, 0, len, 0, "").toCharArray();
+                     contentHandler.characters(charbuf1, 0, charbuf1.length);
+                  }
+               }
+               finally
+               {
+                  is.close();
                }
             }
          }

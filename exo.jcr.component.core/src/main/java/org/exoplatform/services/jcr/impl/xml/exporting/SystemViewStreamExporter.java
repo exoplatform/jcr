@@ -249,10 +249,7 @@ public class SystemViewStreamExporter extends StreamExporter
                }
                finally
                {
-                  if (is != null)
-                  {
-                     is.close();
-                  }
+                  is.close();
                }
             }
          }

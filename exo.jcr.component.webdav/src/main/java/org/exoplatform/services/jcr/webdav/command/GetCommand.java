@@ -39,6 +39,7 @@ import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
 import org.exoplatform.services.rest.impl.header.MediaTypeHelper;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.text.DateFormat;
@@ -110,6 +111,7 @@ public class GetCommand
          }
       }
 
+      InputStream istream = null;
       try
       {
          Node node = (Node)session.getItem(path);
@@ -118,11 +120,9 @@ public class GetCommand
          URI uri = new URI(TextUtil.escape(baseURI + node.getPath(), '%', true));
 
          Resource resource;
-         InputStream istream;
 
          if (ResourceUtil.isFile(node))
          {
-
             HierarchicalProperty lastModifiedProperty; 
             
             if (version != null)
@@ -131,14 +131,12 @@ public class GetCommand
                resource = versionedFile.getVersionHistory().getVersion(version);
                
                lastModifiedProperty = resource.getProperty(FileResource.GETLASTMODIFIED);
-               istream = ((VersionResource)resource).getContentAsStream();
             }
             else
             {
                resource = new FileResource(uri, node, nsContext);
                
                lastModifiedProperty = resource.getProperty(FileResource.GETLASTMODIFIED);
-               istream = ((FileResource)resource).getContentAsStream();
             }
 
             // check before any other reads
@@ -150,8 +148,9 @@ public class GetCommand
                
                dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
                Date ifModifiedSinceDate = dateFormat.parse(ifModifiedSince);
-               
-               if(ifModifiedSinceDate.getTime() >= lastModifiedDate.getTime()){
+
+               if (ifModifiedSinceDate.getTime() >= lastModifiedDate.getTime())
+               {
                   return Response.notModified().entity("Not Modified").build();
                }
             }
@@ -162,6 +161,7 @@ public class GetCommand
             // content length is not present
             if (contentLength == 0)
             {
+               istream = openStream(resource, version != null);
                return Response.ok().header(ExtHttpHeaders.ACCEPT_RANGES, "bytes").entity(istream).build();
             }
 
@@ -171,10 +171,13 @@ public class GetCommand
             // no ranges request
             if (ranges.size() == 0)
             {
-               return Response.ok().header(HttpHeaders.CONTENT_LENGTH, Long.toString(contentLength)).header(
-                  ExtHttpHeaders.ACCEPT_RANGES, "bytes").header(ExtHttpHeaders.LAST_MODIFIED,
-                  lastModifiedProperty.getValue()).header(ExtHttpHeaders.CACHE_CONTROL,
-                  generateCacheControl(cacheControls, contentType)).entity(istream).type(contentType).build();
+               istream = openStream(resource, version != null);
+
+               return Response.ok().header(HttpHeaders.CONTENT_LENGTH, Long.toString(contentLength))
+                  .header(ExtHttpHeaders.ACCEPT_RANGES, "bytes")
+                  .header(ExtHttpHeaders.LAST_MODIFIED, lastModifiedProperty.getValue())
+                  .header(ExtHttpHeaders.CACHE_CONTROL, generateCacheControl(cacheControls, contentType))
+                  .entity(istream).type(contentType).build();
             }
 
             // one range
@@ -182,13 +185,16 @@ public class GetCommand
             {
                Range range = ranges.get(0);
                if (!validateRange(range, contentLength))
-                  return Response.status(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE).header(
-                     ExtHttpHeaders.CONTENTRANGE, "bytes */" + contentLength).build();
+               {
+                  return Response.status(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+                     .header(ExtHttpHeaders.CONTENTRANGE, "bytes */" + contentLength).build();
+               }
 
                long start = range.getStart();
                long end = range.getEnd();
                long returnedContentLength = (end - start + 1);
 
+               istream = openStream(resource, version != null);
                RangedInputStream rangedInputStream = new RangedInputStream(istream, start, end);
 
                return Response.status(HTTPStatus.PARTIAL)
@@ -204,8 +210,10 @@ public class GetCommand
             {
                Range range = ranges.get(i);
                if (!validateRange(range, contentLength))
-                  return Response.status(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE).header(
-                     ExtHttpHeaders.CONTENTRANGE, "bytes */" + contentLength).build();
+               {
+                  return Response.status(HTTPStatus.REQUESTED_RANGE_NOT_SATISFIABLE)
+                     .header(ExtHttpHeaders.CONTENTRANGE, "bytes */" + contentLength).build();
+               }
                ranges.set(i, range);
             }
 
@@ -232,15 +240,20 @@ public class GetCommand
       }
       catch (PathNotFoundException exc)
       {
+         closeStream(istream);
          return Response.status(HTTPStatus.NOT_FOUND).entity(exc.getMessage()).build();
       }
       catch (RepositoryException exc)
       {
+         closeStream(istream);
+
          LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
+         closeStream(istream);
+
          LOG.error(exc.getMessage(), exc);
          return Response.serverError().entity(exc.getMessage()).build();
       }
@@ -325,6 +338,27 @@ public class GetCommand
          }
       }
       return cacheControlValue;
+   }
+
+   private InputStream openStream(Resource resource, boolean isVersionableResource) throws RepositoryException
+   {
+      return isVersionableResource ? ((VersionResource)resource).getContentAsStream() : ((FileResource)resource)
+         .getContentAsStream();
+   }
+
+   private void closeStream(InputStream istream)
+   {
+      if (istream != null)
+      {
+         try
+         {
+            istream.close();
+         }
+         catch (IOException e)
+         {
+            LOG.error("Can't close the stream", e);
+         }
+      }
    }
 
 }

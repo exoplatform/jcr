@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.log.ExoLogger;
@@ -130,15 +131,7 @@ public class EditableValueData extends TransientValueData
          OutputStream sfout = PrivilegedFileHelper.fileOutputStream(sf);
          try
          {
-            byte[] tmpBuff = new byte[2048];
-            int read = 0;
-            int len = 0;
-
-            while ((read = stream.read(tmpBuff)) >= 0)
-            {
-               sfout.write(tmpBuff, 0, read);
-               len += read;
-            }
+            DirectoryHelper.transfer(stream, sfout);
          }
          catch (final IOException e)
          {
@@ -162,6 +155,11 @@ public class EditableValueData extends TransientValueData
                   return e;
                }
             };
+         }
+         finally
+         {
+            sfout.close();
+            stream.close();
          }
 
          this.data = null;
