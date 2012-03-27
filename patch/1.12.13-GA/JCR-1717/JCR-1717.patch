@@ -1,6 +1,6 @@
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java	(revision 5967)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java	(revision 5971)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java	(working copy)
 @@ -20,6 +20,7 @@
  
@@ -21,7 +21,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflo
     void addItemPersistenceListener(ItemsPersistenceListener listener);
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(revision 5967)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(revision 5971)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(working copy)
 @@ -39,6 +39,9 @@
  import org.exoplatform.services.jcr.datamodel.QPath;
@@ -129,7 +129,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 5967)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 5971)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(working copy)
 @@ -45,6 +45,9 @@
  import org.exoplatform.services.jcr.datamodel.PropertyData;
@@ -186,7 +186,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
      * Working constructor.
      * 
      * @throws RepositoryConfigurationException
-@@ -819,26 +835,29 @@
+@@ -819,26 +835,31 @@
      */
     public void close()
     {
@@ -216,6 +216,8 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +         index.close();
 +         getContext().destroy();
 +         closed.set(true);
++         resumeWaitingThreads();
++         
 +         log.info("Index closed: " + path);
        }
 -      if (spellChecker != null)
@@ -230,7 +232,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     }
  
     /**
-@@ -866,6 +885,8 @@
+@@ -866,6 +887,8 @@
     public MultiColumnQueryHits executeQuery(SessionImpl session, AbstractQueryImpl queryImpl, Query query,
        QPath[] orderProps, boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
     {
@@ -239,7 +241,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        checkOpen();
  
        Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
-@@ -914,6 +935,8 @@
+@@ -914,6 +937,8 @@
     public MultiColumnQueryHits executeQuery(SessionImpl session, MultiColumnQuery query, QPath[] orderProps,
        boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
     {
@@ -248,7 +250,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        checkOpen();
  
        Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
-@@ -2606,7 +2629,7 @@
+@@ -2606,7 +2631,7 @@
      */
     private void checkOpen() throws IOException
     {
@@ -257,7 +259,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        {
           throw new IOException("query handler closed and cannot be used anymore.");
        }
-@@ -2710,6 +2733,8 @@
+@@ -2710,6 +2735,8 @@
      */
     public QueryHits executeQuery(Query query) throws IOException
     {
@@ -266,7 +268,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        checkOpen();
  
        IndexReader reader = getIndexReader(true);
-@@ -2742,4 +2767,76 @@
+@@ -2742,4 +2769,88 @@
           log.error("Can not recover error log.", e);
        }
     }
@@ -292,7 +294,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +         closed.set(false);
 +         doInit();
 +
-+         latcher.get().countDown();
++         resumeWaitingThreads();
 +
 +         isSuspended.set(false);
 +      }
@@ -336,6 +338,18 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +   }
 +
 +   /**
++    * Count down latcher which makes for resuming all
++    * waiting threads.
++    */
++   private void resumeWaitingThreads()
++   {
++      if (latcher.get() != null)
++      {
++         latcher.get().countDown();
++      }
++   }
++
++   /**
 +    * {@inheritDoc}
 +    */
 +   public int getPriority()
@@ -345,7 +359,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(revision 5967)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(revision 5971)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(working copy)
 @@ -50,6 +50,7 @@
  import java.util.concurrent.Callable;
@@ -504,7 +518,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
           // wait for the index merge to finish pending jobs
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(revision 5967)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(revision 5971)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(working copy)
 @@ -137,6 +137,11 @@
     private int state = OFFLINE;
@@ -652,9 +666,9 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/Re
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 5967)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 5971)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
-@@ -30,6 +30,9 @@
+@@ -30,17 +30,24 @@
  import org.exoplatform.services.jcr.datamodel.QPathEntry;
  import org.exoplatform.services.jcr.datamodel.ValueData;
  import org.exoplatform.services.jcr.impl.Constants;
@@ -664,7 +678,12 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
  import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
  import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
  import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
-@@ -41,6 +44,9 @@
+ import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+ import org.exoplatform.services.transaction.TransactionService;
++import org.picocontainer.Startable;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
  import java.util.concurrent.ConcurrentHashMap;
  import java.util.concurrent.ConcurrentMap;
  import java.util.concurrent.CountDownLatch;
@@ -674,16 +693,16 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
  
  import javax.jcr.RepositoryException;
  import javax.transaction.TransactionManager;
-@@ -54,7 +60,7 @@
+@@ -54,7 +61,7 @@
   * 
   * @version $Id$
   */
 -public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager
-+public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager implements Suspendable
++public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager implements Suspendable, Startable
  {
  
     /**
-@@ -70,6 +76,21 @@
+@@ -70,6 +77,26 @@
     private TransactionManager transactionManager;
  
     /**
@@ -697,6 +716,11 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
 +   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
 +
 +   /**
++    * Indicates if component stopped or not.
++    */
++   protected final AtomicBoolean isStopped = new AtomicBoolean(false);
++
++   /**
 +    * Allows to make all threads waiting until resume. 
 +    */
 +   protected final AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
@@ -705,7 +729,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
      * ItemData request, used on get operations.
      * 
      */
-@@ -536,6 +557,39 @@
+@@ -536,6 +563,44 @@
     @Override
     public void save(final ItemStateChangesLog changesLog) throws RepositoryException
     {
@@ -742,10 +766,15 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
 +
 +   private void doSave(final ItemStateChangesLog changesLog) throws RepositoryException
 +   {
++      if (isStopped.get())
++      {
++         throw new RepositoryException("Data container is stopped");
++      }
++
        if (isTxAware())
        {
           // save in dedicated XA transaction
-@@ -952,4 +1006,75 @@
+@@ -952,4 +1017,93 @@
           conn.close();
        }
     }
@@ -806,7 +835,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
 +      }
 +   }
 +
-+   private void resumeLocally() throws ResumeException
++   private void resumeLocally()
 +   {
 +      if (isSuspended.get())
 +      {
@@ -822,10 +851,28 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
 +   {
 +      return PRIORITY_HIGH;
 +   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public void start()
++   {
++      isStopped.set(false);
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public void stop()
++   {
++      isStopped.set(true);
++      resumeLocally();
++   }
++
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(revision 5967)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(revision 5971)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(working copy)
 @@ -29,6 +29,7 @@
  import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -1077,7 +1124,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/ba
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(revision 5967)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(revision 5971)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(working copy)
 @@ -62,6 +62,16 @@
     final int READONLY = 2;
@@ -1108,7 +1155,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/Ma
  
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java	(revision 5967)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java	(revision 5971)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java	(working copy)
 @@ -18,8 +18,18 @@
   */
