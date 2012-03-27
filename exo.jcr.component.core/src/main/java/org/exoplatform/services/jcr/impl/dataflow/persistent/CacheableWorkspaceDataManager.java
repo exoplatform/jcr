@@ -142,7 +142,12 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Indicates if component suspended or not.
     */
-   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);;
+   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
+
+   /**
+    * Indicates if component stopped or not.
+    */
+   protected final AtomicBoolean isStopped = new AtomicBoolean(false);
 
    /**
     * Allows to make all threads waiting until resume. 
@@ -973,6 +978,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private void doSave(final ItemStateChangesLog changesLog) throws RepositoryException
    {
+      if (isStopped.get())
+      {
+         throw new RepositoryException("Data container is stopped");
+      }
+      
       ChangesLogWrapper logWrapper = new ChangesLogWrapper(changesLog);
 
       if (isTxAware())
@@ -2009,7 +2019,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
-   private void resumeLocally() throws ResumeException
+   private void resumeLocally()
    {
       if (isSuspended.get())
       {
@@ -2043,14 +2053,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   }
 
                   // node which was responsible for resuming leave the cluster, so resume component
-                  try
-                  {
-                     resumeLocally();
-                  }
-                  catch (ResumeException e)
-                  {
-                     LOG.error("Can not resume component", e);
-                  }
+                  resumeLocally();
                }
                catch (SecurityException e1)
                {
@@ -2366,6 +2369,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void start()
    {
+      isStopped.set(false);
+
       try
       {
          this.cache.addListener(this);
@@ -2467,6 +2472,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          cache.removeListener(this);
       }
+
+      isStopped.set(true);
+      resumeLocally();
    }
 
    /**

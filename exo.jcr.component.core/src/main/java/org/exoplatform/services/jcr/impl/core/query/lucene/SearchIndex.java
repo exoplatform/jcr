@@ -1285,6 +1285,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          index.close();
          getContext().destroy();
          closed.set(true);
+         resumeWaitingThreads();
+         
          log.info("Index closed: " + path);
       }
    }
@@ -3375,7 +3377,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          closed.set(false);
          doInit();
 
-         latcher.get().countDown();
+         resumeWaitingThreads();
 
          isSuspended.set(false);
       }
@@ -3415,6 +3417,18 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          {
             throw new IOException(e);
          }
+      }
+   }
+
+   /**
+    * Count down latcher which makes for resuming all
+    * waiting threads.
+    */
+   private void resumeWaitingThreads()
+   {
+      if (latcher.get() != null)
+      {
+         latcher.get().countDown();
       }
    }
 
