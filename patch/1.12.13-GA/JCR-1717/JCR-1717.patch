@@ -1,6 +1,6 @@
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java	(revision 5955)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java	(revision 5967)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflow/PersistentDataManager.java	(working copy)
 @@ -20,6 +20,7 @@
  
@@ -21,7 +21,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/dataflo
     void addItemPersistenceListener(ItemsPersistenceListener listener);
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(revision 5955)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(revision 5967)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(working copy)
 @@ -39,6 +39,9 @@
  import org.exoplatform.services.jcr.datamodel.QPath;
@@ -129,7 +129,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 5955)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 5967)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(working copy)
 @@ -45,6 +45,9 @@
  import org.exoplatform.services.jcr.datamodel.PropertyData;
@@ -160,6 +160,15 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  {
  
     private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
+@@ -428,7 +434,7 @@
+     * Indicates if this <code>SearchIndex</code> is closed and cannot be used
+     * anymore.
+     */
+-   private boolean closed = false;
++   private final AtomicBoolean closed = new AtomicBoolean(false);
+ 
+    /**
+     * Text extractor for extracting text content of binary properties.
 @@ -448,6 +454,16 @@
     private final ConfigurationManager cfm;
  
@@ -182,7 +191,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     public void close()
     {
 -      if (synonymProviderConfigFs != null)
-+      if (!closed)
++      if (!closed.get())
        {
 -         try
 +         if (synonymProviderConfigFs != null)
@@ -206,7 +215,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +         errorLog.close();
 +         index.close();
 +         getContext().destroy();
-+         closed = true;
++         closed.set(true);
 +         log.info("Index closed: " + path);
        }
 -      if (spellChecker != null)
@@ -239,6 +248,15 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        checkOpen();
  
        Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
+@@ -2606,7 +2629,7 @@
+     */
+    private void checkOpen() throws IOException
+    {
+-      if (closed)
++      if (closed.get())
+       {
+          throw new IOException("query handler closed and cannot be used anymore.");
+       }
 @@ -2710,6 +2733,8 @@
      */
     public QueryHits executeQuery(Query query) throws IOException
@@ -271,7 +289,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +   {
 +      try
 +      {
-+         closed = false;
++         closed.set(false);
 +         doInit();
 +
 +         latcher.get().countDown();
@@ -327,9 +345,17 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(revision 5955)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(revision 5967)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(working copy)
-@@ -177,7 +177,7 @@
+@@ -50,6 +50,7 @@
+ import java.util.concurrent.Callable;
+ import java.util.concurrent.CountDownLatch;
+ import java.util.concurrent.LinkedBlockingQueue;
++import java.util.concurrent.atomic.AtomicBoolean;
+ import java.util.concurrent.atomic.AtomicInteger;
+ import java.util.concurrent.atomic.AtomicLong;
+ import java.util.concurrent.atomic.AtomicReference;
+@@ -177,7 +178,7 @@
     /**
      * The <code>IndexMerger</code> for this <code>MultiIndex</code>.
      */
@@ -338,7 +364,16 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
     /**
      * Timer to schedule flushes of this index after some idle time.
-@@ -270,12 +270,6 @@
+@@ -223,7 +224,7 @@
+    /**
+     * Flag indicating whether the index is stopped.
+     */
+-   private volatile boolean stopped;
++   private final AtomicBoolean stopped = new AtomicBoolean();
+    
+    /**
+     * The index format version of this multi index.
+@@ -270,12 +271,6 @@
        // as of 1.5 deletable file is not used anymore
        removeDeletable();
  
@@ -351,7 +386,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        IndexingQueueStore store = new IndexingQueueStore(indexDir);
  
        // initialize indexing queue
-@@ -303,7 +297,6 @@
+@@ -303,7 +298,6 @@
           index.setUseCompoundFile(handler.getUseCompoundFile());
           index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
           indexes.add(index);
@@ -359,7 +394,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        }
  
        // init volatile index
-@@ -323,6 +316,7 @@
+@@ -323,6 +317,7 @@
        indexingQueue.initialize(this);
        if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
        {
@@ -367,7 +402,16 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
           setReadWrite();
        }
        this.indexNames.setMultiIndex(this);
-@@ -926,12 +920,6 @@
+@@ -331,7 +326,7 @@
+       {
+          public void run()
+          {
+-            stopped = true;
++            stopped.set(true);
+          }
+       });
+    }
+@@ -926,12 +921,6 @@
     {
        if (modeHandler.getMode().equals(IndexerIoMode.READ_WRITE))
        {
@@ -380,10 +424,11 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
           synchronized (this)
           {
              // stop timer
-@@ -977,6 +965,14 @@
+@@ -977,7 +966,15 @@
              }
           }
        }
+-      this.stopped = true;
 +      // stop index merger
 +      // when calling this method we must not lock this MultiIndex, otherwise
 +      // a deadlock might occur
@@ -392,10 +437,11 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +         merger.dispose();
 +         merger = null;
 +      }
-       this.stopped = true;
++      this.stopped.set(true);
     }
  
-@@ -1150,6 +1146,27 @@
+    /**
+@@ -1150,6 +1147,27 @@
        }
     }
  
@@ -423,7 +469,16 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     // -------------------------< internal
     // >-------------------------------------
  
-@@ -2550,7 +2567,12 @@
+@@ -1355,7 +1373,7 @@
+    private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr, final AtomicLong count) throws IOException,
+       RepositoryException, InterruptedException
+    {
+-      if (stopped)
++      if (stopped.get())
+       {
+          throw new InterruptedException();
+       }
+@@ -2550,7 +2568,12 @@
     protected void setReadOny()
     {
        // try to stop merger in safe way
@@ -437,7 +492,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        flushTask.cancel();
        FLUSH_TIMER.purge();
        this.redoLog = null;
-@@ -2582,7 +2604,8 @@
+@@ -2582,7 +2605,8 @@
        attemptDelete();
  
        // now that we are ready, start index merger
@@ -449,7 +504,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
           // wait for the index merge to finish pending jobs
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(revision 5955)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(revision 5967)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/RepositoryImpl.java	(working copy)
 @@ -137,6 +137,11 @@
     private int state = OFFLINE;
@@ -597,7 +652,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/Re
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 5955)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 5967)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
 @@ -30,6 +30,9 @@
  import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -770,7 +825,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/da
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(revision 5955)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(revision 5967)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/RepositoryContainer.java	(working copy)
 @@ -29,6 +29,7 @@
  import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -1022,7 +1077,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/ba
 +}
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(revision 5955)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(revision 5967)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/ManageableRepository.java	(working copy)
 @@ -62,6 +62,16 @@
     final int READONLY = 2;
@@ -1053,7 +1108,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/Ma
  
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java
 ===================================================================
---- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java	(revision 5955)
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java	(revision 5967)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/core/WorkspaceContainerFacade.java	(working copy)
 @@ -18,8 +18,18 @@
   */
