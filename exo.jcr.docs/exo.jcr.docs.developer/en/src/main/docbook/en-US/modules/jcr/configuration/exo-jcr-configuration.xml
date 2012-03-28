@@ -240,61 +240,6 @@
     permissions and other users have only a 'read' permission.</para>
   </section>
 
-  <section>
-    <title>Workspace data container configuration:</title>
-
-    <para><emphasis role="bold">class:</emphasis> A workspace data container
-    class name.</para>
-
-    <para><emphasis role="bold">properties</emphasis>: The list of properties
-    (name-value pairs) for the concrete Workspace data container.</para>
-
-    <table>
-      <tgroup cols="2">
-        <tbody>
-          <row>
-            <entry>trigger_events_for_descendents_on_rename</entry>
-
-            <entry>indicates if need to trigger events for descendents on
-            rename or not. It allows to increase performance on rename
-            operation but in same time Observation'll not notified, has
-            default value true</entry>
-          </row>
-
-          <row>
-            <entry>lazy-node-iterator-page-size</entry>
-
-            <entry>the page size for lazy iterator. Indicates how many nodes
-            can be retrieved from storage per request. The default value is
-            100</entry>
-          </row>
-
-          <row>
-            <entry>acl-bloomfilter-false-positive-probability</entry>
-
-            <entry>ACL Bloom-filter desired false positive probability. Range
-            [0..1]. Default value 0.1d. (See the note below)</entry>
-          </row>
-
-          <row>
-            <entry>acl-bloomfilter-elements-number</entry>
-
-            <entry>Expected number of ACL-elements in the Bloom-filter.
-            Default value 1000000. (See the note below)</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-
-    <note>
-      <para>Bloom filters are not supported by all the cache implementations
-      so far only the inplementation for infinispan supports it.</para>
-    </note>
-
-    <para><emphasis role="bold">value-storages</emphasis>: The list of value
-    storage plugins.</para>
-  </section>
-
   <section id="JCR.ConfigurationPersister.ValueStoragePlugin">
     <title>Value Storage plugin configuration (for data container):</title>
 

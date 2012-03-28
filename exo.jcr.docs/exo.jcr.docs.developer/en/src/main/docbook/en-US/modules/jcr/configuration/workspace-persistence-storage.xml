@@ -26,60 +26,124 @@
     &lt;property name="lazy-node-iterator-page-size" value="50"/&gt;
     &lt;property name="acl-bloomfilter-false-positive-probability" value="0.1d"/&gt;
     &lt;property name="acl-bloomfilter-elements-number" value="1000000"/&gt;
+    &lt;property name="check-sns-new-connection" value="false"/&gt;
   &lt;/properties&gt;</programlisting>
 
-  <para>Properties are Container specific parameters:</para>
+  <para><emphasis role="bold">Workspace Data Container specific
+  parameters:</emphasis></para>
 
-  <para><emphasis role="bold">source-name</emphasis>: JDBC data source name,
-  registered in JDNI by InitialContextInitializer. ( <emphasis
-  role="bold">sourceName</emphasis> prior v.1.9)</para>
+  <itemizedlist>
+    <listitem>
+      <para><emphasis role="bold">max-buffer-size</emphasis>: A threshold in
+      bytes, if a value size is greater, then it will be spooled to a
+      temporary file. Default value is 200k.</para>
+    </listitem>
 
-  <para><emphasis role="bold">dialect</emphasis>: Database dialect, one of
-  "hsqldb", "mysql", "mysql-utf8", "pgsql", "oracle", "oracle-oci", "mssql",
-  "sybase", "derby", "db2", "db2v8"</para>
+    <listitem>
+      <para><emphasis role="bold">swap-directory</emphasis>: A location where
+      the value will be spooled if no value storage is configured but a
+      max-buffer-size is exceeded. Default value is the value of
+      "java.io.tmpdir" system property.</para>
+    </listitem>
 
-  <para><emphasis role="bold">multi-db</emphasis>: Enable multi-database
-  container with this parameter (if "true").</para>
+    <listitem>
+      <para><emphasis role="bold">lazy-node-iterator-page-size</emphasis>:
+      "Lazy" child nodes iterator settings. Defines size of page, the number
+      of nodes that are retrieved from persistent storage at once. Default
+      value is 100.</para>
+    </listitem>
 
-  <para><emphasis role="bold">max-buffer-size</emphasis>: A threshold in
-  bytes, if a value size is greater, then it will be spooled to a temporary
-  file.</para>
+    <listitem>
+      <para><emphasis
+      role="bold">acl-bloomfilter-false-positive-probability</emphasis>: ACL
+      Bloom-filter settings. ACL Bloom-filter desired false positive
+      probability. Range [0..1]. Default value 0.1d.</para>
+    </listitem>
 
-  <para><emphasis role="bold">swap-directory</emphasis>: A location where the
-  value will be spooled if no value storage is configured but a
-  max-buffer-size is exceeded.</para>
+    <listitem>
+      <para><emphasis role="bold">acl-bloomfilter-elements-number</emphasis>:
+      ACL Bloom-filter settings. Expected number of ACL-elements in the
+      Bloom-filter. Default value 1000000.</para>
+    </listitem>
 
-  <para><emphasis role="bold">lazy-node-iterator-page-size</emphasis>: "Lazy"
-  child nodes iterator settings. Defines size of page, the number of nodes
-  that are retrieved from persistent storage at once.</para>
-
-  <para><emphasis
-  role="bold">acl-bloomfilter-false-positive-probability</emphasis>: ACL
-  Bloom-filter settings. ACL Bloom-filter desired false positive probability.
-  Range [0..1]. Default value 0.1d.</para>
-
-  <para><emphasis role="bold">acl-bloomfilter-elements-number</emphasis>: ACL
-  Bloom-filter settings. Expected number of ACL-elements in the Bloom-filter.
-  Default value 1000000.</para>
+    <listitem>
+      <para><emphasis role="bold">check-sns-new-connection:</emphasis> Defines
+      if we need to create new connection for checking if an older same-name
+      sibling exists. Default value is "false".</para>
+    </listitem>
+  </itemizedlist>
 
   <note>
     <para>Bloom filters are not supported by all the cache implementations so
-    far only the inplementation for infinispan supports it.</para>
-
-    <para>Bloom-filter used to avoid read nodes that definitely do not have
-    ACL. <emphasis
+    far only the inplementation for infinispan supports it. They are used to
+    avoid read nodes that definitely do not have ACL. <emphasis
     role="bold">acl-bloomfilter-false-positive-probability</emphasis> and
     <emphasis role="bold">acl-bloomfilter-elements-number</emphasis> used to
-    configure such filters. Bloom filters are not supported by all the cache
-    implementations so far only the inplementation for infinispan supports
-    it.</para>
-
-    <para>More about Bloom filters you can read here <ulink
-    url="http://en.wikipedia.org/wiki/Bloom_filter">http://en.wikipedia.org/wiki/Bloom_filter</ulink>.</para>
+    configure such filters.More about Bloom filters you can read <ulink
+    url="http://en.wikipedia.org/wiki/Bloom_filter&quot; &gt;http://en.wikipedia.org/wiki/Bloom_filter">here</ulink>.</para>
   </note>
 
   <para>eXo JCR has an RDB (JDBC) based, production ready <emphasis
   role="bold">Workspace Data Container</emphasis>.</para>
+
+  <para><emphasis role="bold">JDBC Workspace Data Container specific
+  parameters:</emphasis></para>
+
+  <itemizedlist>
+    <listitem>
+      <para><emphasis role="bold">source-name</emphasis>: JDBC data source
+      name, registered in JDNI by InitialContextInitializer. ( <emphasis
+      role="bold">sourceName</emphasis> prior v.1.9). This property is
+      <emphasis role="bold">mandatory</emphasis>.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis role="bold">dialect</emphasis>: Database dialect, one of
+      "hsqldb", "mysql", "mysql-utf8", "pgsql", "oracle", "oracle-oci",
+      "mssql", "sybase", "derby", "db2", "db2v8". The default value is
+      "auto".</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis role="bold">multi-db</emphasis>: Enable multi-database
+      container with this parameter (if "true"). Otherwise (if "false")
+      configured for single-database container. Please, be aware, that this
+      property is currently <emphasis role="bold">deprecated</emphasis>. It is
+      advised to use <emphasis>db-structure-type</emphasis> instead.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis role="bold">db-structure-type</emphasis>: Can be set to
+      <emphasis>isolated, multi, single</emphasis> to set corresponding
+      configuration for data container. This property is <emphasis
+      role="bold">mandatory.</emphasis></para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis role="bold">db-tablename-suffix:</emphasis> If
+      <emphasis>db-structure-type </emphasis>is set to
+      <emphasis>isolated</emphasis>, tables, used by repository service, have
+      the following format:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>JCR_I${db-tablename-suffix} - for items</para>
+        </listitem>
+
+        <listitem>
+          <para>JCR_V${db-tablename-suffix} - for values</para>
+        </listitem>
+
+        <listitem>
+          <para>JCR_R${db-tablename-suffix} - for references</para>
+
+          <para><emphasis>db-tablename-suffix</emphasis> by default equals to
+          workspace name, but can be set via configuration to any
+          suitable.</para>
+        </listitem>
+      </itemizedlist>
+    </listitem>
+  </itemizedlist>
 
   <para>Workspace Data Container MAY support external storages for
   javax.jcr.Value (which can be the case for BLOB values for example) using
