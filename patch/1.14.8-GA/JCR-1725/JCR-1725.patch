@@ -476,19 +476,20 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
                          {
                             parentSearchManager.suspend();
                          }
-@@ -698,6 +699,11 @@
- 
+@@ -699,6 +700,12 @@
     public void stop()
     {
+       handler.close();
++
 +      if (handler instanceof SearchIndex)
 +      {
 +         ((SearchIndex)handler).resumeWaitingThreads();
 +      }
 +      
-       handler.close();
        // ChangesFiler instance is one for both SearchManagers and close() must be invoked only once,  
        if (parentSearchManager != null)
-@@ -1202,7 +1208,7 @@
+       {
+@@ -1202,7 +1209,7 @@
     {
        if (rpcService != null)
        {
@@ -497,7 +498,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
           try
           {
-@@ -1228,7 +1234,7 @@
+@@ -1228,7 +1235,7 @@
      */
     public boolean isSuspended()
     {
@@ -506,7 +507,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     }
  
     /**
-@@ -1275,7 +1281,7 @@
+@@ -1275,7 +1282,7 @@
              throw new ResumeException(e);
           }
  
@@ -515,7 +516,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        }
        else
        {
-@@ -1303,10 +1309,10 @@
+@@ -1303,10 +1310,10 @@
           throw new IllegalStateException(
              "Index is not in READ_WRITE mode and reindexing can't be launched. Please start reindexing on coordinator node.");
        }
@@ -528,7 +529,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        }
  
        log.info("Starting hot reindexing on the " + handler.getContext().getRepositoryName() + "/"
-@@ -1321,7 +1327,7 @@
+@@ -1321,7 +1328,7 @@
              hotReindexingState = "Running. Started at " + sdf.format(Calendar.getInstance().getTime());
              try
              {
@@ -537,7 +538,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
                 // set offline cluster wide (will make merger disposed and volatile flushed)
                 if (rpcService != null && changesFilter.isShared())
                 {
-@@ -1399,7 +1405,7 @@
+@@ -1399,7 +1406,7 @@
                    hotReindexingState = "Stopped with errors at " + sdf.format(Calendar.getInstance().getTime());
                    log.info("Reindexing halted with errors.");
                 }
@@ -546,7 +547,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
              }
           }
        }, "HotReindexing-" + handler.getContext().getRepositoryName() + "-"
-@@ -1512,7 +1518,7 @@
+@@ -1512,7 +1519,7 @@
  
           public Serializable execute(Serializable[] args) throws Throwable
           {
@@ -555,7 +556,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
           }
        });
  
-@@ -1542,27 +1548,27 @@
+@@ -1542,27 +1549,27 @@
           throw new SuspendException("Can't suspend index, while reindexing in progeress.");
        }
  
@@ -591,7 +592,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        }
     }
  
-@@ -1571,7 +1577,7 @@
+@@ -1571,7 +1578,7 @@
      */
     public void onChange(TopologyChangeEvent event)
     {
