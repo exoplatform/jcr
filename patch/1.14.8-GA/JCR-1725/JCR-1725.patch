@@ -2,15 +2,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 5970)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(working copy)
-@@ -53,7 +53,6 @@
- import org.exoplatform.services.jcr.impl.Constants;
- import org.exoplatform.services.jcr.impl.backup.ResumeException;
- import org.exoplatform.services.jcr.impl.backup.SuspendException;
--import org.exoplatform.services.jcr.impl.backup.Suspendable;
- import org.exoplatform.services.jcr.impl.checker.InspectionReport;
- import org.exoplatform.services.jcr.impl.core.LocationFactory;
- import org.exoplatform.services.jcr.impl.core.SessionDataManager;
-@@ -81,8 +80,20 @@
+@@ -81,8 +81,20 @@
  import java.lang.reflect.Constructor;
  import java.lang.reflect.InvocationTargetException;
  import java.security.PrivilegedAction;
@@ -32,16 +24,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
  import javax.jcr.RepositoryException;
  import javax.jcr.query.InvalidQueryException;
-@@ -94,7 +105,7 @@
-  * Implements a {@link org.apache.jackrabbit.core.query.QueryHandler} using
-  * Lucene.
-  */
--public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener, Suspendable
-+public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener
- {
- 
-    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
-@@ -202,7 +213,7 @@
+@@ -202,7 +214,7 @@
      * Default name of the error log file
      */
     private static final String ERROR_LOG = "error.log";
@@ -50,7 +33,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     /**
      * The actual index
      */
-@@ -464,12 +475,12 @@
+@@ -464,12 +476,12 @@
      * Indicates if this <code>SearchIndex</code> is closed and cannot be used
      * anymore.
      */
@@ -65,7 +48,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
     /**
      * Text extractor for extracting text content of binary properties.
-@@ -516,12 +527,12 @@
+@@ -516,12 +528,12 @@
     /**
      * Waiting query execution until resume. 
      */
@@ -80,16 +63,31 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
     protected final Set<String> recoveryFilterClasses;
  
-@@ -1237,7 +1248,7 @@
+@@ -1233,11 +1245,21 @@
+ 
+    /**
+     * Closes this <code>QueryHandler</code> and frees resources attached to
+-    * this handler.
++    * this handler. Also resume waiting threads.
      */
     public void close()
     {
 -      if (!closed)
++      closeAndKeepWaitingThreads();
++      resumeWaitingThreads();
++   }
++
++   /**
++    * Closes this <code>QueryHandler</code> and frees resources attached to
++    * this handler.
++    */
++   public void closeAndKeepWaitingThreads()
++   {
 +      if (!closed.get())
        {
           // cleanup resources obtained by filters
           if (recoveryFilters != null)
-@@ -1268,7 +1279,7 @@
+@@ -1268,7 +1290,7 @@
           errorLog.close();
           index.close();
           getContext().destroy();
@@ -98,7 +96,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
           log.info("Index closed: " + path);
        }
     }
-@@ -1546,7 +1557,7 @@
+@@ -1546,7 +1568,7 @@
     protected IndexReader getIndexReader(boolean includeSystemIndex) throws IOException
     {
        // deny query execution if index in offline mode and allowQuery is false
@@ -107,7 +105,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        {
           throw new IndexOfflineIOException("Index is offline");
        }
-@@ -3202,7 +3213,7 @@
+@@ -3202,7 +3224,7 @@
      */
     private void checkOpen() throws IOException
     {
@@ -116,7 +114,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        {
           throw new IOException("query handler closed and cannot be used anymore.");
        }
-@@ -3358,11 +3369,11 @@
+@@ -3358,11 +3380,11 @@
        checkOpen();
        if (isOnline)
        {
@@ -130,20 +128,21 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        }
        index.setOnline(isOnline, dropStaleIndexes);
     }
-@@ -3380,10 +3391,10 @@
+@@ -3380,10 +3402,10 @@
      */
     public void suspend() throws SuspendException
     {
 -      latcher = new CountDownLatch(1);
+-      close();
 +      latcher.set(new CountDownLatch(1));
-       close();
++      closeAndKeepWaitingThreads();
  
 -      isSuspended = true;
 +      isSuspended.set(true);
     }
  
     /**
-@@ -3393,12 +3404,12 @@
+@@ -3393,12 +3415,12 @@
     {
        try
        {
@@ -159,7 +158,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        }
        catch (IOException e)
        {
-@@ -3415,7 +3426,7 @@
+@@ -3415,7 +3437,7 @@
      */
     public boolean isSuspended()
     {
@@ -168,7 +167,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     }
  
     /**
-@@ -3426,11 +3437,11 @@
+@@ -3426,11 +3448,11 @@
      */
     private void waitForResuming() throws IOException
     {
@@ -182,7 +181,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
           }
           catch (InterruptedException e)
           {
-@@ -3440,11 +3451,15 @@
+@@ -3440,11 +3462,15 @@
     }
  
     /**
@@ -201,6 +200,19 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     }
  
     /**
+@@ -3462,4 +3488,12 @@
+    {
+       this.indexingThreadPoolSize = indexingThreadPoolSize;
+    }
++
++   /**
++    * {@inheritDoc}
++    */
++   public int getPriority()
++   {
++      return PRIORITY_NORMAL;
++   }
+ }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(revision 5970)
@@ -476,20 +488,15 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
                          {
                             parentSearchManager.suspend();
                          }
-@@ -699,6 +700,12 @@
+@@ -699,6 +700,7 @@
     public void stop()
     {
        handler.close();
 +
-+      if (handler instanceof SearchIndex)
-+      {
-+         ((SearchIndex)handler).resumeWaitingThreads();
-+      }
-+      
        // ChangesFiler instance is one for both SearchManagers and close() must be invoked only once,  
        if (parentSearchManager != null)
        {
-@@ -1202,7 +1209,7 @@
+@@ -1202,7 +1204,7 @@
     {
        if (rpcService != null)
        {
@@ -498,7 +505,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
           try
           {
-@@ -1228,7 +1235,7 @@
+@@ -1228,7 +1230,7 @@
      */
     public boolean isSuspended()
     {
@@ -507,7 +514,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     }
  
     /**
-@@ -1275,7 +1282,7 @@
+@@ -1275,7 +1277,7 @@
              throw new ResumeException(e);
           }
  
@@ -516,7 +523,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        }
        else
        {
-@@ -1303,10 +1310,10 @@
+@@ -1303,10 +1305,10 @@
           throw new IllegalStateException(
              "Index is not in READ_WRITE mode and reindexing can't be launched. Please start reindexing on coordinator node.");
        }
@@ -529,7 +536,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        }
  
        log.info("Starting hot reindexing on the " + handler.getContext().getRepositoryName() + "/"
-@@ -1321,7 +1328,7 @@
+@@ -1321,7 +1323,7 @@
              hotReindexingState = "Running. Started at " + sdf.format(Calendar.getInstance().getTime());
              try
              {
@@ -538,7 +545,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
                 // set offline cluster wide (will make merger disposed and volatile flushed)
                 if (rpcService != null && changesFilter.isShared())
                 {
-@@ -1399,7 +1406,7 @@
+@@ -1399,7 +1401,7 @@
                    hotReindexingState = "Stopped with errors at " + sdf.format(Calendar.getInstance().getTime());
                    log.info("Reindexing halted with errors.");
                 }
@@ -547,7 +554,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
              }
           }
        }, "HotReindexing-" + handler.getContext().getRepositoryName() + "-"
-@@ -1512,7 +1519,7 @@
+@@ -1512,7 +1514,7 @@
  
           public Serializable execute(Serializable[] args) throws Throwable
           {
@@ -556,18 +563,16 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
           }
        });
  
-@@ -1542,27 +1549,27 @@
+@@ -1542,27 +1544,27 @@
           throw new SuspendException("Can't suspend index, while reindexing in progeress.");
        }
  
 -      if (!isSuspended)
 +      if (!isSuspended.get())
        {
--         if (handler instanceof Suspendable)
-+         if (handler instanceof SearchIndex)
+          if (handler instanceof Suspendable)
           {
--            ((Suspendable)handler).suspend();
-+            ((SearchIndex)handler).suspend();
+             ((Suspendable)handler).suspend();
           }
  
 -         isSuspended = true;
@@ -580,11 +585,9 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 -      if (isSuspended)
 +      if (isSuspended.get())
        {
--         if (handler instanceof Suspendable)
-+         if (handler instanceof SearchIndex)
+          if (handler instanceof Suspendable)
           {
--            ((Suspendable)handler).resume();
-+            ((SearchIndex)handler).resume();
+             ((Suspendable)handler).resume();
           }
  
 -         isSuspended = false;
@@ -592,7 +595,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        }
     }
  
-@@ -1571,7 +1578,7 @@
+@@ -1571,7 +1573,7 @@
      */
     public void onChange(TopologyChangeEvent event)
     {
