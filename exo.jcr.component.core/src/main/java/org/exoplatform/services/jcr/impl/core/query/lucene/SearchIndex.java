@@ -55,7 +55,6 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
-import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
@@ -108,7 +107,7 @@ import javax.xml.parsers.ParserConfigurationException;
  * Implements a {@link org.apache.jackrabbit.core.query.QueryHandler} using
  * Lucene.
  */
-public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener, Suspendable
+public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener
 {
 
    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
@@ -1285,7 +1284,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          index.close();
          getContext().destroy();
          closed.set(true);
-         resumeWaitingThreads();
          
          log.info("Index closed: " + path);
       }
@@ -3424,20 +3422,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Count down latcher which makes for resuming all
     * waiting threads.
     */
-   private void resumeWaitingThreads()
+   public void resumeWaitingThreads()
    {
       if (latcher.get() != null)
       {
          latcher.get().countDown();
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public int getPriority()
-   {
-      return PRIORITY_NORMAL;
    }
 
    /**

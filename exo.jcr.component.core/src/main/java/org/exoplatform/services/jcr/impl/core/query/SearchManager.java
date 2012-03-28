@@ -701,6 +701,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public void stop()
    {
       handler.close();
+
+      if (handler instanceof SearchIndex)
+      {
+         ((SearchIndex)handler).resumeWaitingThreads();
+      }
+
       // ChangesFiler instance is one for both SearchManagers and close() must be invoked only once,  
       if (parentSearchManager != null)
       {
@@ -1545,9 +1551,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
       if (!isSuspended.get())
       {
-         if (handler instanceof Suspendable)
+         if (handler instanceof SearchIndex)
          {
-            ((Suspendable)handler).suspend();
+            ((SearchIndex)handler).suspend();
          }
 
          isSuspended.set(true);
@@ -1558,9 +1564,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
       if (isSuspended.get())
       {
-         if (handler instanceof Suspendable)
+         if (handler instanceof SearchIndex)
          {
-            ((Suspendable)handler).resume();
+            ((SearchIndex)handler).resume();
          }
 
          isSuspended.set(false);
