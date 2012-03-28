@@ -64,20 +64,15 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     private final ExoContainerContext ctx;
  
     /**
-@@ -474,6 +483,12 @@
+@@ -474,6 +483,7 @@
     public void stop()
     {
        handler.close();
 +
-+      if (handler instanceof SearchIndex)
-+      {
-+         ((SearchIndex)handler).resumeWaitingThreads();
-+      }
-+
        log.info("Search manager stopped");
     }
  
-@@ -856,4 +871,62 @@
+@@ -856,4 +866,62 @@
        return false;
     }
  
@@ -109,9 +104,9 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +   {
 +      if (!isSuspended.get())
 +      {
-+         if (handler instanceof SearchIndex)
++         if (handler instanceof Suspendable)
 +         {
-+            ((SearchIndex)handler).suspend();
++            ((Suspendable)handler).suspend();
 +         }
 +
 +         isSuspended.set(true);
@@ -122,9 +117,9 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +   {
 +      if (isSuspended.get())
 +      {
-+         if (handler instanceof SearchIndex)
++         if (handler instanceof Suspendable)
 +         {
-+            ((SearchIndex)handler).resume();
++            ((Suspendable)handler).resume();
 +         }
 +
 +         isSuspended.set(false);
@@ -144,16 +139,17 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(revision 5971)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/SearchIndex.java	(working copy)
-@@ -45,6 +45,8 @@
+@@ -45,6 +45,9 @@
  import org.exoplatform.services.jcr.datamodel.PropertyData;
  import org.exoplatform.services.jcr.datamodel.QPath;
  import org.exoplatform.services.jcr.impl.Constants;
 +import org.exoplatform.services.jcr.impl.backup.ResumeException;
 +import org.exoplatform.services.jcr.impl.backup.SuspendException;
++import org.exoplatform.services.jcr.impl.backup.Suspendable;
  import org.exoplatform.services.jcr.impl.core.LocationFactory;
  import org.exoplatform.services.jcr.impl.core.SessionDataManager;
  import org.exoplatform.services.jcr.impl.core.SessionImpl;
-@@ -78,6 +80,9 @@
+@@ -78,6 +81,9 @@
  import java.util.List;
  import java.util.Map;
  import java.util.Set;
@@ -163,7 +159,16 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
  import javax.jcr.RepositoryException;
  import javax.jcr.query.InvalidQueryException;
-@@ -428,7 +433,7 @@
+@@ -89,7 +95,7 @@
+  * Implements a {@link org.apache.jackrabbit.core.query.QueryHandler} using
+  * Lucene.
+  */
+-public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener
++public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener, Suspendable
+ {
+ 
+    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
+@@ -428,7 +434,7 @@
      * Indicates if this <code>SearchIndex</code> is closed and cannot be used
      * anymore.
      */
@@ -172,7 +177,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
     /**
      * Text extractor for extracting text content of binary properties.
-@@ -448,6 +453,16 @@
+@@ -448,6 +454,16 @@
     private final ConfigurationManager cfm;
  
     /**
@@ -189,11 +194,26 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
      * Working constructor.
      * 
      * @throws RepositoryConfigurationException
-@@ -819,26 +834,29 @@
+@@ -815,30 +831,43 @@
+ 
+    /**
+     * Closes this <code>QueryHandler</code> and frees resources attached to
+-    * this handler.
++    * this handler. Also resume waiting threads.
      */
     public void close()
     {
 -      if (synonymProviderConfigFs != null)
++      closeAndKeepWaitingThreads();
++      resumeWaitingThreads();
++   }
++
++   /**
++    * Closes this <code>QueryHandler</code> and frees resources attached to
++    * this handler.
++    */
++   public void closeAndKeepWaitingThreads()
++   {
 +      if (!closed.get())
        {
 -         try
@@ -233,7 +253,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
     }
  
     /**
-@@ -866,6 +884,8 @@
+@@ -866,6 +895,8 @@
     public MultiColumnQueryHits executeQuery(SessionImpl session, AbstractQueryImpl queryImpl, Query query,
        QPath[] orderProps, boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
     {
@@ -242,7 +262,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        checkOpen();
  
        Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
-@@ -914,6 +934,8 @@
+@@ -914,6 +945,8 @@
     public MultiColumnQueryHits executeQuery(SessionImpl session, MultiColumnQuery query, QPath[] orderProps,
        boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
     {
@@ -251,7 +271,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        checkOpen();
  
        Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
-@@ -2606,7 +2628,7 @@
+@@ -2606,7 +2639,7 @@
      */
     private void checkOpen() throws IOException
     {
@@ -260,7 +280,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        {
           throw new IOException("query handler closed and cannot be used anymore.");
        }
-@@ -2710,6 +2732,8 @@
+@@ -2710,6 +2743,8 @@
      */
     public QueryHits executeQuery(Query query) throws IOException
     {
@@ -269,7 +289,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        checkOpen();
  
        IndexReader reader = getIndexReader(true);
-@@ -2742,4 +2766,80 @@
+@@ -2742,4 +2777,88 @@
           log.error("Can not recover error log.", e);
        }
     }
@@ -280,7 +300,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +   public void suspend() throws SuspendException
 +   {
 +      latcher.set(new CountDownLatch(1));
-+      close();
++      closeAndKeepWaitingThreads();
 +
 +      isSuspended.set(true);
 +   }
@@ -348,6 +368,14 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +      {
 +         latcher.get().countDown();
 +      }
++   }
++
++   /**
++    * {@inheritDoc}
++    */
++   public int getPriority()
++   {
++      return PRIORITY_NORMAL;
 +   }
  }
 Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java
