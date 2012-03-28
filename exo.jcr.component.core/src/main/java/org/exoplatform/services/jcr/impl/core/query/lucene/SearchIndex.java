@@ -55,6 +55,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
@@ -107,7 +108,7 @@ import javax.xml.parsers.ParserConfigurationException;
  * Implements a {@link org.apache.jackrabbit.core.query.QueryHandler} using
  * Lucene.
  */
-public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener
+public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener, Suspendable
 {
 
    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
@@ -1248,9 +1249,19 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
    /**
     * Closes this <code>QueryHandler</code> and frees resources attached to
-    * this handler.
+    * this handler. Also resume all waiting threads.
     */
    public void close()
+   {
+      closeAndKeepWaitingThreads();
+      resumeWaitingThreads();
+   }
+
+   /**
+    * Closes this <code>QueryHandler</code> and frees resources attached to
+    * this handler.
+    */
+   private void closeAndKeepWaitingThreads()
    {
       if (!closed.get())
       {
@@ -1284,7 +1295,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          index.close();
          getContext().destroy();
          closed.set(true);
-         
          log.info("Index closed: " + path);
       }
    }
@@ -3360,7 +3370,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void suspend() throws SuspendException
    {
       latcher.set(new CountDownLatch(1));
-      close();
+      closeAndKeepWaitingThreads();
 
       isSuspended.set(true);
    }
@@ -3422,7 +3432,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Count down latcher which makes for resuming all
     * waiting threads.
     */
-   public void resumeWaitingThreads()
+   private void resumeWaitingThreads()
    {
       if (latcher.get() != null)
       {
@@ -3444,5 +3454,13 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void setIndexingThreadPoolSize(Integer indexingThreadPoolSize)
    {
       this.indexingThreadPoolSize = indexingThreadPoolSize;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getPriority()
+   {
+      return PRIORITY_NORMAL;
    }
 }
