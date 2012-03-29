@@ -204,7 +204,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
          modCount = in.getVersion();
 +        this.transientDeletions = transientDeletions;
 +        // no need to initialize Set if transientDeletions = false
-+        this.deletedDocs = transientDeletions? new CopyOnWriteArraySet() : null;
++        this.deletedDocs = transientDeletions? new CopyOnWriteArraySet<Integer>() : null;
      }
  
      //------------------------< FilterIndexReader >-----------------------------
