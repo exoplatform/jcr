@@ -5,6 +5,9 @@
   <?dbhtml filename="part-jcr-with-gatein.html"?>
 
   <title>eXo JCR with GateIn</title>
+  <partintro>
+   <para>Some information about how eXo JCR works with GateIn.</para>
+  </partintro>
 
   <xi:include href="jcr-with-gtn/how-to-extend-my-gatein-instance.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />

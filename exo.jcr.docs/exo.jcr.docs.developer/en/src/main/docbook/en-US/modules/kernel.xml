@@ -6,6 +6,7 @@
 
   <title>eXoKernel</title>
 
+  <partintro>
     <para>eXo Kernel is the basis of all eXo platform products and modules.
     Any component available in eXo Platform is managed by the Exo Container,
     our micro container responsible for gluing the services through dependency
@@ -17,7 +18,8 @@
 
     <para>The Kernel module also contains a set of very low level
     services.</para>
-
+  </partintro>
+  
   <xi:include href="kernel/exo-container.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
