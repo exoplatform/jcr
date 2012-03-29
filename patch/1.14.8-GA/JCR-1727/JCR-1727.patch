@@ -159,7 +159,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/CommittableIndexReader.java	(revision 5969)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/CommittableIndexReader.java	(working copy)
-@@ -17,52 +17,124 @@
+@@ -17,10 +17,13 @@
  package org.exoplatform.services.jcr.impl.core.query.lucene;
  
  import java.io.IOException;
@@ -173,88 +173,38 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
  
  /**
   * Wraps an <code>IndexReader</code> and allows to commit changes without
-  * closing the reader.
-  */
--class CommittableIndexReader extends FilterIndexReader {
-+class CommittableIndexReader extends FilterIndexReader
-+{
+@@ -36,13 +39,26 @@
+     private volatile long modCount;
  
--    /**
--     * A modification count on this index reader. Initialied with
--     * {@link IndexReader#getVersion()} and incremented with every call to
--     * {@link #doDelete(int)}.
--     */
--    private volatile long modCount;
-+   /**
-+    * A modification count on this index reader. Initialied with
-+    * {@link IndexReader#getVersion()} and incremented with every call to
-+    * {@link #doDelete(int)}.
-+    */
-+   private volatile long modCount;
- 
--    /**
--     * Creates a new <code>CommittableIndexReader</code> based on <code>in</code>.
--     *
--     * @param in the <code>IndexReader</code> to wrap.
--     */
--    CommittableIndexReader(IndexReader in) {
--        super(in);
--        modCount = in.getVersion();
--    }
-+   /**
-+    * If reader is created with flag transientDeletions, then reader 
-+    * deleted documents are stored in the memory buffer and not applied to underlying
-+    * index reader.
-+    */
-+   private boolean transientDeletions;
- 
--    //------------------------< FilterIndexReader >-----------------------------
-+   private BitSet deleted;
- 
--    /**
--     * {@inheritDoc}
--     * <p/>
--     * Increments the modification count.
--     */
--    protected void doDelete(int n) throws CorruptIndexException, IOException {
--        super.doDelete(n);
--        modCount++;
--    }
-+   /**
-+    * Creates a new <code>CommittableIndexReader</code> based on <code>in</code>.
-+    *
-+    * @param in the <code>IndexReader</code> to wrap.
-+    * @param transientDeletions If reader is created with flag transientDeletions, then reader 
-+    *        deleted documents are stored in the memory buffer and not applied to underlying
-+    *        index reader.
-+    */
-+   CommittableIndexReader(IndexReader in, boolean transientDeletions)
-+   {
-+      super(in);
-+      modCount = in.getVersion();
-+      this.transientDeletions = transientDeletions;
-+   }
- 
--    //------------------------< additional methods >----------------------------
-+   //------------------------< FilterIndexReader >-----------------------------
- 
--    /**
--     * @return the modification count of this index reader.
--     */
--    long getModificationCount() {
--        return modCount;
--    }
-+   /**
-+    * {@inheritDoc}
-+    * <p/>
-+    * Increments the modification count.
-+    */
-+   protected void doDelete(int n) throws CorruptIndexException, IOException
-+   {
-+      super.doDelete(n);
-+      modCount++;
-+   }
+     /**
++     * If reader is created with flag transientDeletions, then reader 
++     * deleted documents are stored in the memory buffer and not applied to underlying
++     * index reader.
++     */
++    private boolean transientDeletions;
 +
++    private BitSet deleted;
++
++    /**
+      * Creates a new <code>CommittableIndexReader</code> based on <code>in</code>.
+      *
+      * @param in the <code>IndexReader</code> to wrap.
++     * @param transientDeletions If reader is created with flag transientDeletions, then reader 
++     *        deleted documents are stored in the memory buffer and not applied to underlying
++     *        index reader.
+      */
+-    CommittableIndexReader(IndexReader in) {
++    CommittableIndexReader(IndexReader in, boolean transientDeletions) {
+         super(in);
+         modCount = in.getVersion();
++        this.transientDeletions = transientDeletions;
+     }
+ 
+     //------------------------< FilterIndexReader >-----------------------------
+@@ -57,6 +73,30 @@
+         modCount++;
+     }
+ 
 +   /**
 +   * {@inheritDoc}
 +   */
@@ -279,15 +229,13 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +
 +   }
 +
-+   //------------------------< additional methods >----------------------------
-+
-+   /**
-+    * @return the modification count of this index reader.
-+    */
-+   long getModificationCount()
-+   {
-+      return modCount;
-+   }
+     //------------------------< additional methods >----------------------------
+ 
+     /**
+@@ -65,4 +105,32 @@
+     long getModificationCount() {
+         return modCount;
+     }
 +
 +   @Override
 +   public boolean isDeleted(int n)
