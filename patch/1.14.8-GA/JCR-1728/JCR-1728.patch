@@ -1,0 +1,114 @@
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/kernel.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/kernel.xml	(revision 5871)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/kernel.xml	(working copy)
+@@ -6,6 +6,7 @@
+ 
+   <title>eXoKernel</title>
+ 
++  <partintro>
+     <para>eXo Kernel is the basis of all eXo platform products and modules.
+     Any component available in eXo Platform is managed by the Exo Container,
+     our micro container responsible for gluing the services through dependency
+@@ -17,7 +18,8 @@
+ 
+     <para>The Kernel module also contains a set of very low level
+     services.</para>
+-
++  </partintro>
++  
+   <xi:include href="kernel/exo-container.xml"
+               xmlns:xi="http://www.w3.org/2001/XInclude" />
+ 
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/faq.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/faq.xml	(revision 5871)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/faq.xml	(working copy)
+@@ -5,8 +5,9 @@
+   <?dbhtml filename="part-faq.html"?>
+ 
+   <title>Frequently Asked Question</title>
+-  <para>This part provides you all FAQs related to the contents mentioned above.</para>
+-
++  <partintro>
++   <para>This part provides you all FAQs related to the contents mentioned above.</para>
++  </partintro>
+   <xi:include href="faq/jcr-faq.xml"
+               xmlns:xi="http://www.w3.org/2001/XInclude" />
+ </part>
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/core.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/core.xml	(revision 5871)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/core.xml	(working copy)
+@@ -5,12 +5,12 @@
+   <?dbhtml filename="part-core.html"?>
+ 
+   <title>eXoCore</title>
+-
++  <partintro>
+     <para>The eXo Core is a set of common services, such as Authentication and Security, Organization, Database, Logging,
+         JNDI, LDAP, Document reader, and other services, that are used by eXo
+         products and modules. It also can be used in the business logic.
+     </para>
+-
++  </partintro>
+   <xi:include href="core/db-creator-service.xml"
+               xmlns:xi="http://www.w3.org/2001/XInclude" />
+ 
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/ws.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/ws.xml	(revision 5871)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/ws.xml	(working copy)
+@@ -6,12 +6,14 @@
+ 
+   <title>eXoWS</title>
+ 
+-  <para>The Web Services module allows eXo technology to integrate with
+-  external products and services.</para>
+-  
+-  <para>It is implementation of API for RESTful Web Services with extensions,
+-  Servlet and cross-domain AJAX web-frameworks and JavaBean-JSON
+-  transformer.</para>
++  <partintro>
++     <para>The Web Services module allows eXo technology to integrate with
++     external products and services.</para>
++     
++     <para>It is implementation of API for RESTful Web Services with extensions,
++     Servlet and cross-domain AJAX web-frameworks and JavaBean-JSON
++     transformer.</para>
++  </partintro>
+ 
+   <xi:include href="ws/introduction-to-rest.xml"
+               xmlns:xi="http://www.w3.org/2001/XInclude" />
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr-with-gatein.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr-with-gatein.xml	(revision 5871)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr-with-gatein.xml	(working copy)
+@@ -5,6 +5,9 @@
+   <?dbhtml filename="part-jcr-with-gatein.html"?>
+ 
+   <title>eXo JCR with GateIn</title>
++  <partintro>
++   <para>Some information about how eXo JCR works with GateIn.</para>
++  </partintro>
+ 
+   <xi:include href="jcr-with-gtn/how-to-extend-my-gatein-instance.xml"
+               xmlns:xi="http://www.w3.org/2001/XInclude" />
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr.xml	(revision 5871)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr.xml	(working copy)
+@@ -5,9 +5,10 @@
+   <?dbhtml filename="part-jcr.html"?>
+ 
+   <title>eXoJCR</title>
+-  <para>eXo provides JCR implementation called eXo JCR.</para>
+-  <para>This part will show you how to configure and use eXo JCR in GateIn and standalone.</para>
+-  
++  <partintro>
++   <para>eXo provides JCR implementation called eXo JCR.</para>
++   <para>This part will show you how to configure and use eXo JCR in GateIn and standalone.</para>
++  </partintro>
+   <xi:include href="jcr/intro.xml"
+               xmlns:xi="http://www.w3.org/2001/XInclude" />
+ 
