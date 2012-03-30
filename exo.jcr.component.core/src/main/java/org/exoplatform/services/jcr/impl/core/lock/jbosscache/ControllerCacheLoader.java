@@ -53,13 +53,7 @@ public class ControllerCacheLoader implements CacheLoader
    /**
     *  Thread local parameter for allow direct access to the data from cache loader. 
     */
-   private ThreadLocal<Boolean> allowDirectAccess = new ThreadLocal<Boolean>(){
-      @Override
-      protected Boolean initialValue()
-      {
-         return false;
-      }
-   };
+   private final ThreadLocal<Boolean> allowDirectAccess = new ThreadLocal<Boolean>();
 	
    /**
     * The nested cache loader
@@ -115,7 +109,7 @@ public class ControllerCacheLoader implements CacheLoader
             return cl.exists(name);
          }
       }
-      else if (allowDirectAccess.get())
+      else if (allowDirectAccess.get() != null && allowDirectAccess.get())
       {
          return cl.exists(name);
       }
@@ -147,7 +141,7 @@ public class ControllerCacheLoader implements CacheLoader
             return cl.get(name);
          }
       }
-      else if (allowDirectAccess.get())
+      else if (allowDirectAccess.get() != null && allowDirectAccess.get())
       {
          return cl.get(name);
       }
@@ -341,7 +335,7 @@ public class ControllerCacheLoader implements CacheLoader
    */
    protected void disableDirectAccess()
    {
-      allowDirectAccess.set(false);
+      allowDirectAccess.set(null);
    }
   
 }
