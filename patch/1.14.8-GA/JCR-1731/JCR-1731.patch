@@ -1,0 +1,395 @@
+Index: exo.jcr.component.core.impl.infinispan.v5/src/main/java/org/exoplatform/services/jcr/impl/core/lock/infinispan/ISPNCacheableLockManagerImpl.java
+===================================================================
+--- exo.jcr.component.core.impl.infinispan.v5/src/main/java/org/exoplatform/services/jcr/impl/core/lock/infinispan/ISPNCacheableLockManagerImpl.java	(revision 5992)
++++ exo.jcr.component.core.impl.infinispan.v5/src/main/java/org/exoplatform/services/jcr/impl/core/lock/infinispan/ISPNCacheableLockManagerImpl.java	(working copy)
+@@ -119,7 +119,6 @@
+          configureJDBCCacheLoader(config.getLockManager());
+ 
+          cache = factory.createCache("L" + config.getUniqueName().replace("_", ""), config.getLockManager());
+-         PrivilegedISPNCacheHelper.start(cache);
+       }
+       else
+       {
+@@ -350,11 +349,19 @@
+          LOG.warn("CacheLoader DataSource " + INFINISPAN_JDBC_CL_DATASOURCE + " is not configured.");
+       }
+    }
++   
++   /**
++    * {@inheritDoc}
++    */
++   public void start()
++   {
++      PrivilegedISPNCacheHelper.start(cache);
++      super.start();
++   }
+ 
+    /**
+     * {@inheritDoc}
+     */
+-   @Override
+    public void stop()
+    {
+       super.stop();
+Index: exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/lock/TestLockImpl.java
+===================================================================
+--- exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/lock/TestLockImpl.java	(revision 5992)
++++ exo.jcr.component.core/src/test/java/org/exoplatform/services/jcr/impl/core/lock/TestLockImpl.java	(working copy)
+@@ -167,5 +167,37 @@
+       // node should not be locked after removing lock data from lock tables
+       assertFalse(node.isLocked());
+    }
++   
++   public void testLoadLocksAfterStopStart() throws Exception
++   {
++      Node node = session.getRootNode().addNode("testLock");
++      node.addMixin("mix:lockable");
++      node.addMixin("mix:referenceable");
++      session.save();
+ 
++      node.lock(false, false);
++      session.save();
++
++      assertTrue(node.isLocked());
++
++      AbstractCacheableLockManager lockManager =
++         (AbstractCacheableLockManager)repository.getWorkspaceContainer("ws").getComponent(
++            AbstractCacheableLockManager.class);
++      
++      lockManager.stop();
++
++      try
++      {
++         assertFalse(lockManager.lockExist(node.getUUID()));
++      }
++      catch (IllegalStateException e)
++      {
++         // not check for ISPN cache.
++      }
++      
++      lockManager.start();
++      
++      assertTrue(lockManager.lockExist(node.getUUID()));
++   }
++
+ }
+Index: exo.jcr.component.core/src/test/resources/conf/standalone/test-jcr-config-jbc.xml
+===================================================================
+--- exo.jcr.component.core/src/test/resources/conf/standalone/test-jcr-config-jbc.xml	(revision 5992)
++++ exo.jcr.component.core/src/test/resources/conf/standalone/test-jcr-config-jbc.xml	(working copy)
+@@ -77,10 +77,10 @@
+                   <properties>
+                      <property name="time-out" value="15m" />
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws" />
++                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1" />
+                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws_pk" />
++                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_pk" />
+                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+@@ -136,14 +136,14 @@
+                   <properties>
+                      <property name="time-out" value="15m" />
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws1" />
++                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1" />
+                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws1_pk" />
++                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_pk" />
+                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr1" />
++                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
+                   </properties>
+                </lock-manager>
+@@ -195,14 +195,14 @@
+                   <properties>
+                      <property name="time-out" value="15m" />
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws2" />
++                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1" />
+                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws2_pk" />
++                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_pk" />
+                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr2" />
++                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
+                   </properties>
+                </lock-manager>
+@@ -276,14 +276,14 @@
+                   <properties>
+                      <property name="time-out" value="15m" />
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3" />
++                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1" />
+                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws3_pk" />
++                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_pk" />
+                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr3" />
++                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
+                   </properties>
+                </lock-manager>
+@@ -345,10 +345,10 @@
+                   <properties>
+                      <property name="time-out" value="15m" />
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db2_ws" />
++                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db2" />
+                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db2_ws_pk" />
++                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db2_pk" />
+                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+@@ -403,14 +403,14 @@
+                   <properties>
+                      <property name="time-out" value="15m" />
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db2_ws1" />
++                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db2" />
+                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db2_ws1_pk" />
++                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db2_pk" />
+                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr1db2" />
++                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
+                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
+                   </properties>
+                </lock-manager>
+@@ -481,10 +481,10 @@
+                   <properties>
+                      <property name="time-out" value="15m" />
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws" />
++                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck" />
+                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws_pk" />
++                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_pk" />
+                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+@@ -548,14 +548,14 @@
+                   <properties>
+                      <property name="time-out" value="15m" />
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws1" />
++                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck" />
+                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws1_pk" />
++                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_pk" />
+                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr1tck" />
++                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
+                   </properties>
+                </lock-manager>
+@@ -618,14 +618,14 @@
+                   <properties>
+                      <property name="time-out" value="15m" />
+                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws2" />
++                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck" />
+                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
+                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
+-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws2_pk" />
++                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_pk" />
+                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
+                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
+                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
+-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr2tck" />
++                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
+                   </properties>
+                </lock-manager>
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java	(revision 5992)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/CacheableLockManagerImpl.java	(working copy)
+@@ -208,6 +208,7 @@
+                }
+             });
+          }
++         
+          PrivilegedJBossCacheHelper.create(cache);
+          if (cache.getCacheStatus().startAllowed())
+          {
+@@ -215,13 +216,12 @@
+             addCacheLoader();
+             PrivilegedJBossCacheHelper.start(cache);
+          }
+-
+-         createStructuredNode(lockRoot);
+       }
+       else
+       {
+          throw new RepositoryConfigurationException("Cache configuration not found");
+       }
++      
+ 
+       this.getNumLocks = new LockActionNonTxAware<Integer, Object>()
+       {
+@@ -479,6 +479,7 @@
+       }
+ 
+       ControllerCacheLoader ccl = new ControllerCacheLoader(currentCL);
++      
+       List<IndividualCacheLoaderConfig> newConfig = new ArrayList<IndividualCacheLoaderConfig>(1);
+       // create CacheLoaderConfig
+       IndividualCacheLoaderConfig cclConfig = new IndividualCacheLoaderConfig();
+@@ -498,11 +499,62 @@
+          LOG.info("The configured cache loader has been encapsulated successfully");
+       }
+    }
++   
++   private ControllerCacheLoader getControllerCacheLoader()
++   {
++      CacheLoaderConfig config = cache.getConfiguration().getCacheLoaderConfig();
++      List<IndividualCacheLoaderConfig> oldConfigs;
++      if (config == null || (oldConfigs = config.getIndividualCacheLoaderConfigs()) == null || oldConfigs.isEmpty())
++      {
++         if (LOG.isInfoEnabled())
++         {
++            LOG.info("No cache loader has been defined, thus no need to encapsulate any cache loader.");
++         }
++         return null;
++      }
++      CacheLoaderManager clm =
++         ((CacheSPI<Serializable, Object>)cache).getComponentRegistry().getComponent(CacheLoaderManager.class);
++      if (clm == null)
++      {
++         LOG.error("The CacheLoaderManager cannot be found");
++         return null;
++      }
++      CacheLoader currentCL = clm.getCacheLoader();
++      if (currentCL == null)
++      {
++         LOG.error("The CacheLoader cannot be found");
++         return null;
++      }
+ 
++      return (ControllerCacheLoader)currentCL;
++   }
++
+    /**
+     * {@inheritDoc}
+     */
+-   @Override
++   public void start()
++   {
++      ControllerCacheLoader ccl = getControllerCacheLoader();
++      if (ccl != null)
++      {
++         try
++         {
++            ccl.enableDirectAccess();
++            createStructuredNode(lockRoot);
++            getLockList();
++         }
++         finally
++         {
++            ccl.disableDirectAccess();
++         }
++      }
++
++      super.start(); 
++   }
++   
++   /**
++    * {@inheritDoc}
++    */
+    public void stop()
+    {
+       super.stop();
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/ControllerCacheLoader.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/ControllerCacheLoader.java	(revision 5992)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/ControllerCacheLoader.java	(working copy)
+@@ -31,6 +31,7 @@
+ import java.util.List;
+ import java.util.Map;
+ import java.util.Set;
++import java.util.concurrent.atomic.AtomicBoolean;
+ 
+ /**
+  * This {@link CacheLoader} is used to encapsulate the {@link CacheLoader} used to persist the data of the Locks.
+@@ -50,6 +51,11 @@
+ public class ControllerCacheLoader implements CacheLoader
+ {
+    /**
++    *  Thread local parameter for allow direct access to the data from cache loader. 
++    */
++   private final ThreadLocal<Boolean> allowDirectAccess = new ThreadLocal<Boolean>();
++	
++   /**
+     * The nested cache loader
+     */
+    private final CacheLoader cl;
+@@ -103,6 +109,11 @@
+             return cl.exists(name);
+          }
+       }
++      else if (allowDirectAccess.get() != null && allowDirectAccess.get())
++      {
++         return cl.exists(name);
++      }
++      
+       // All the data is loaded at startup, so no need to call the nested cache loader for another
+       // cache status other than CacheStatus.STARTING
+       return false;
+@@ -130,6 +141,11 @@
+             return cl.get(name);
+          }
+       }
++      else if (allowDirectAccess.get() != null && allowDirectAccess.get())
++      {
++         return cl.get(name);
++      }
++      
+       // All the data is loaded at startup, so no need to call the nested cache loader for another
+       // cache status other than CacheStatus.STARTING
+       return null;
+@@ -305,4 +321,21 @@
+       cl.stop();
+    }
+ 
++   
++   /**
++    * Enable direct access to the data from cache loader.
++    */
++   protected void enableDirectAccess()
++   {
++      allowDirectAccess.set(true);
++   }
++  
++   /**
++   * Disable direct access to the data from cache loader.
++   */
++   protected void disableDirectAccess()
++   {
++      allowDirectAccess.set(null);
++   }
++  
+ }
