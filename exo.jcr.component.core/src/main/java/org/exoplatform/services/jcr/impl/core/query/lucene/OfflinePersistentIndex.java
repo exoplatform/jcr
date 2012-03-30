@@ -22,6 +22,7 @@ import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Similarity;
+import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 
 import java.io.IOException;
@@ -55,9 +56,9 @@ public class OfflinePersistentIndex extends PersistentIndex
     *  index.
     */
    OfflinePersistentIndex(Analyzer analyzer, Similarity similarity, DocNumberCache cache,
-      DirectoryManager directoryManager) throws IOException
+      DirectoryManager directoryManager, IndexerIoModeHandler modeHandler) throws IOException
    {
-      super(NAME, analyzer, similarity, cache, directoryManager);
+      super(NAME, analyzer, similarity, cache, directoryManager, modeHandler);
       this.processedIDs = new ArrayList<String>();
    }
 
