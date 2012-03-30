@@ -216,7 +216,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 +     * {@inheritDoc}
 +     */
 +    @Override
-+    public synchronized void deleteDocument(int docNum) throws StaleReaderException, CorruptIndexException,
++    public void deleteDocument(int docNum) throws StaleReaderException, CorruptIndexException,
 +       LockObtainFailedException, IOException {
 +       // skip acquiring write lock
 +       if (transientDeletions)
