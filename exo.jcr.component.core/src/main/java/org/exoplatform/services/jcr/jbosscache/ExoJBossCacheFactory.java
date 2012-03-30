@@ -43,9 +43,9 @@ import java.io.InputStream;
 import java.io.Serializable;
 import java.security.PrivilegedAction;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.ConcurrentHashMap;
 
 import javax.management.ObjectName;
 import javax.transaction.TransactionManager;
@@ -284,7 +284,7 @@ public class ExoJBossCacheFactory<K, V>
       Map<ConfigurationKey, CacheInstance> caches = allCacheTypes.get(cacheType);
       if (caches == null)
       {
-         caches = new ConcurrentHashMap<ConfigurationKey, CacheInstance>();
+         caches = new HashMap<ConfigurationKey, CacheInstance>();
          allCacheTypes.put(cacheType, caches);
       }
       Configuration cfg = cache.getConfiguration();
@@ -334,8 +334,10 @@ public class ExoJBossCacheFactory<K, V>
       Map<CacheType, Map<ConfigurationKey, CacheInstance>> allCacheTypes = CACHES.get(container);
       Map<ConfigurationKey, CacheInstance> caches = allCacheTypes.get(cacheType);
 
-      for (Entry<ConfigurationKey, CacheInstance> entry : caches.entrySet())
+      for (Iterator<Entry<ConfigurationKey, CacheInstance>> it = caches.entrySet().iterator(); it.hasNext();)
       {
+         Entry<ConfigurationKey, CacheInstance> entry = it.next();
+
          CacheInstance cacheInstance = entry.getValue();
          if (cacheInstance.isSame(cache))
          {
@@ -343,7 +345,7 @@ public class ExoJBossCacheFactory<K, V>
 
             if (!cacheInstance.hasReferences())
             {
-               caches.remove(entry.getKey());
+               it.remove();
                PrivilegedJBossCacheHelper.stop((Cache<Serializable, Object>)cache);
             }
          }
