@@ -1,0 +1,13 @@
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/master.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/master.xml	(revision 6003)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/master.xml	(working copy)
+@@ -23,7 +23,7 @@
+ "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+ <!-- adopted from http://anonsvn.jboss.org/repos/gatein/portal/trunk/docs/reference-guide/en/master.xml 
+ and https://svn.jboss.org/repos/richfaces/tags/3.3.2.GA/docs/userguide/en/src/main/docbook/master.xml -->
+-<book lang="en">
++<book lang="en" xml:id="JCRReferenceGuide">
+   <bookinfo>
+     <title>Reference Guide / eXo JCR</title>
+ 
