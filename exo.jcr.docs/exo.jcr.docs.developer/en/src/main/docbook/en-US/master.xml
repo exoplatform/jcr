@@ -40,10 +40,10 @@ and https://svn.jboss.org/repos/richfaces/tags/3.3.2.GA/docs/userguide/en/src/ma
 
     <subtitle>Java Content Repository and Extension services</subtitle>
 
-    <copyright>
+  <!--  <copyright>
       <year>2012</year>
-      <holder>eXoPlatform SAS</holder>
-    </copyright>
+      <holder>eXo Platform SAS</holder>
+    </copyright>  -->
   </bookinfo>
 
   <toc></toc>
