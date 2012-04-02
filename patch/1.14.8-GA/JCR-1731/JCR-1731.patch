@@ -327,15 +327,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
 ===================================================================
 --- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/ControllerCacheLoader.java	(revision 5992)
 +++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/lock/jbosscache/ControllerCacheLoader.java	(working copy)
-@@ -31,6 +31,7 @@
- import java.util.List;
- import java.util.Map;
- import java.util.Set;
-+import java.util.concurrent.atomic.AtomicBoolean;
- 
- /**
-  * This {@link CacheLoader} is used to encapsulate the {@link CacheLoader} used to persist the data of the Locks.
-@@ -50,6 +51,11 @@
+@@ -50,6 +50,11 @@
  public class ControllerCacheLoader implements CacheLoader
  {
     /**
@@ -347,11 +339,11 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
      * The nested cache loader
      */
     private final CacheLoader cl;
-@@ -103,6 +109,11 @@
+@@ -103,6 +108,11 @@
              return cl.exists(name);
           }
        }
-+      else if (allowDirectAccess.get() != null && allowDirectAccess.get())
++      else if (allowDirectAccess.get() != null)
 +      {
 +         return cl.exists(name);
 +      }
@@ -359,11 +351,11 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        // All the data is loaded at startup, so no need to call the nested cache loader for another
        // cache status other than CacheStatus.STARTING
        return false;
-@@ -130,6 +141,11 @@
+@@ -130,6 +140,11 @@
              return cl.get(name);
           }
        }
-+      else if (allowDirectAccess.get() != null && allowDirectAccess.get())
++      else if (allowDirectAccess.get() != null)
 +      {
 +         return cl.get(name);
 +      }
@@ -371,7 +363,7 @@ Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/co
        // All the data is loaded at startup, so no need to call the nested cache loader for another
        // cache status other than CacheStatus.STARTING
        return null;
-@@ -305,4 +321,21 @@
+@@ -305,4 +320,21 @@
        cl.stop();
     }
  
