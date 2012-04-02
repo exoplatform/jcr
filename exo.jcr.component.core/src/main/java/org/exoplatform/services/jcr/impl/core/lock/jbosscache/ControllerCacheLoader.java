@@ -109,7 +109,7 @@ public class ControllerCacheLoader implements CacheLoader
             return cl.exists(name);
          }
       }
-      else if (allowDirectAccess.get() != null && allowDirectAccess.get())
+      else if (allowDirectAccess.get() != null)
       {
          return cl.exists(name);
       }
@@ -141,7 +141,7 @@ public class ControllerCacheLoader implements CacheLoader
             return cl.get(name);
          }
       }
-      else if (allowDirectAccess.get() != null && allowDirectAccess.get())
+      else if (allowDirectAccess.get() != null)
       {
          return cl.get(name);
       }
