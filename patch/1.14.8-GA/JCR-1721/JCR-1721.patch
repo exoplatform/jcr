@@ -1,0 +1,185 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/IndexRecoveryImpl.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/IndexRecoveryImpl.java	(revision 6009)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/IndexRecoveryImpl.java	(working copy)
+@@ -482,4 +482,18 @@
+       }
+    }
+ 
++   /**
++    * {@inheritDoc}
++    */
++   public void close()
++   {
++      rpcService.unregisterCommand(changeIndexMode);
++      rpcService.unregisterCommand(getIndexList);
++      rpcService.unregisterCommand(getIndexFile);
++      rpcService.unregisterCommand(requestForResponsibleToSetIndexOnline);
++      rpcService.unregisterCommand(checkIndexReady);
++
++      rpcService.unregisterTopologyChangeListener(this);
++   }
++
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/IndexRecovery.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/IndexRecovery.java	(revision 6009)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/IndexRecovery.java	(working copy)
+@@ -74,4 +74,9 @@
+     * @throws RepositoryException if error occurs.
+     */
+    public boolean checkIndexReady() throws RepositoryException;
++
++   /**
++    * Frees resources associated with index recovery.
++    */
++   public void close();
+ }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(revision 6009)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/SearchManager.java	(working copy)
+@@ -18,9 +18,9 @@
+ 
+ import org.apache.lucene.index.IndexReader;
+ import org.apache.lucene.index.Term;
+-import org.apache.lucene.search.BooleanClause.Occur;
+ import org.apache.lucene.search.BooleanQuery;
+ import org.apache.lucene.search.WildcardQuery;
++import org.apache.lucene.search.BooleanClause.Occur;
+ import org.exoplatform.commons.utils.PrivilegedFileHelper;
+ import org.exoplatform.commons.utils.SecurityHelper;
+ import org.exoplatform.container.ExoContainerContext;
+@@ -323,11 +323,10 @@
+       }
+       else
+       {
+-         doInitRemoteCommands();
++         initRemoteCommands();
+ 
+          this.indexRecovery = new IndexRecoveryImpl(rpcService, this);
+          rpcService.registerTopologyChangeListener(this);
+-         rpcService.registerTopologyChangeListener((TopologyChangeListener)indexRecovery);
+       }
+    }
+ 
+@@ -698,12 +697,17 @@
+ 
+    public void stop()
+    {
++      indexRecovery.close();
++
+       handler.close();
+       // ChangesFiler instance is one for both SearchManagers and close() must be invoked only once,  
+       if (parentSearchManager != null)
+       {
+          changesFilter.close();
+       }
++
++      unregisterRemoteCommands();
++
+       log.info("Search manager stopped");
+    }
+ 
+@@ -1466,7 +1470,7 @@
+    /**
+     * Register remote commands.
+     */
+-   private void doInitRemoteCommands()
++   private void initRemoteCommands()
+    {
+       // register commands
+       suspend = rpcService.registerCommand(new RemoteCommand()
+@@ -1535,6 +1539,22 @@
+ 
+    }
+ 
++   /**
++    * Unregister remote commands.
++    */
++   private void unregisterRemoteCommands()
++   {
++      if (rpcService != null)
++      {
++         rpcService.unregisterCommand(suspend);
++         rpcService.unregisterCommand(resume);
++         rpcService.unregisterCommand(requestForResponsibleForResuming);
++         rpcService.unregisterCommand(changeIndexState);
++
++         rpcService.unregisterTopologyChangeListener(this);
++      }
++   }
++
+    protected void suspendLocally() throws SuspendException
+    {
+       if (!handler.isOnline())
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(revision 6009)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/dataflow/persistent/CacheableWorkspaceDataManager.java	(working copy)
+@@ -422,7 +422,6 @@
+ 
+       this.rpcService = rpcService;
+       this.txResourceManager = txResourceManager;
+-      doInitRemoteCommands();
+    }
+ 
+    /**
+@@ -492,7 +491,6 @@
+ 
+       this.rpcService = rpcService;
+       this.txResourceManager = txResourceManager;
+-      doInitRemoteCommands();
+    }
+ 
+    /**
+@@ -2079,7 +2077,7 @@
+    /**
+     * Initialization remote commands.
+     */
+-   private void doInitRemoteCommands()
++   private void initRemoteCommands()
+    {
+       if (rpcService != null)
+       {
+@@ -2135,6 +2133,22 @@
+       }
+    }
+ 
++   /**
++    * Unregister remote commands.
++    */
++   private void unregisterRemoteCommands()
++   {
++      if (rpcService != null)
++      {
++         rpcService.unregisterCommand(suspend);
++         rpcService.unregisterCommand(resume);
++         rpcService.unregisterCommand(requestForResponsibleForResuming);
++
++         rpcService.unregisterTopologyChangeListener(this);
++      }
++
++   }
++
+    private <T> T executeAction(PrivilegedExceptionAction<T> action) throws RepositoryException
+    {
+       try
+@@ -2377,6 +2391,8 @@
+     */
+    public void start()
+    {
++      initRemoteCommands();
++
+       try
+       {
+          this.cache.addListener(this);
+@@ -2478,6 +2494,8 @@
+       {
+          cache.removeListener(this);
+       }
++
++      unregisterRemoteCommands();
+    }
+ 
+    /**
