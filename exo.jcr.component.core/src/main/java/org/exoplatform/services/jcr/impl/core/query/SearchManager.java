@@ -325,11 +325,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
       else
       {
-         doInitRemoteCommands();
-
+         initRemoteCommands();
          this.indexRecovery = new IndexRecoveryImpl(rpcService, this);
          rpcService.registerTopologyChangeListener(this);
-         rpcService.registerTopologyChangeListener((TopologyChangeListener)indexRecovery);
       }
    }
 
@@ -700,6 +698,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
    public void stop()
    {
+      indexRecovery.close();
+      
       handler.close();
 
       // ChangesFiler instance is one for both SearchManagers and close() must be invoked only once,  
@@ -707,6 +707,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          changesFilter.close();
       }
+      
+      unregisterRemoteCommands();
+      
       LOG.info("Search manager stopped");
    }
 
@@ -1468,7 +1471,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * Register remote commands.
     */
-   private void doInitRemoteCommands()
+   private void initRemoteCommands()
    {
       // register commands
       suspend = rpcService.registerCommand(new RemoteCommand()
@@ -1535,6 +1538,22 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          }
       });
 
+   }
+   
+   /**
+    * Unregister remote commands.
+    */
+   private void unregisterRemoteCommands()
+   {
+      if (rpcService != null)
+      {
+         rpcService.unregisterCommand(suspend);
+         rpcService.unregisterCommand(resume);
+         rpcService.unregisterCommand(requestForResponsibleForResuming);
+         rpcService.unregisterCommand(changeIndexState);
+         
+         rpcService.unregisterTopologyChangeListener(this);
+      }
    }
 
    protected void suspendLocally() throws SuspendException
