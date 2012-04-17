@@ -57,9 +57,11 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -123,6 +125,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * The transaction manager
     */
    protected final TransactionManager transactionManager;
+
    /**
     * Changes log wrapper adds possibility to replace changes log.
     * Changes log contains transient data on save but listeners should be notifyed
@@ -147,6 +150,61 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
 
       protected ItemStateChangesLog getChangesLog()
       {
+         return log;
+      }
+
+      protected ItemStateChangesLog optimizeAndGetChangesLog()
+      {
+         // get all persisted property states, to avoid iterating by other states
+         LinkedList<ItemState> persistedProperyStates = new LinkedList<ItemState>();
+
+         for (ItemState itemState : log.getAllStates())
+         {
+            if (itemState.isPersisted() && !itemState.isNode())
+            {
+               persistedProperyStates.add(itemState);
+            }
+         }
+         // Perform optimizations while list of property states contains more than one state.
+         while (persistedProperyStates.size() > 1)
+         {
+            // Get last state and remove it, since there is no need to review this items once more
+            ItemState state = persistedProperyStates.removeLast();
+
+            if (state.isUpdated() || state.isAdded() || state.isDeleted())
+            {
+               // iterate from the head to the end
+               Iterator<ItemState> iterator = persistedProperyStates.iterator();
+               while (iterator.hasNext())
+               {
+                  ItemState checkedState = iterator.next();
+                  // if UUIDs or paths are the same 
+                  if (checkedState.getData().getIdentifier().equals(state.getData().getIdentifier())
+                     || checkedState.getData().getQPath().equals(state.getData().getQPath()))
+                  {
+                     // remove updated state, because delete, add or update state 
+                     if (checkedState.isUpdated())
+                     {
+                        checkedState.makeLogical();
+                        iterator.remove();
+                     }
+
+                     else if (state.isDeleted() && !state.isRenamed()
+                        && (checkedState.isAdded() || checkedState.isUpdated()))
+                     {
+                        checkedState.makeLogical();
+                        // Usecase when property was added and removed within the transaction or save. 
+                        // So make all related changes logical 
+                        if (checkedState.isAdded())
+                        {
+                           state.makeLogical();
+                        }
+                     }
+                  }
+               }
+            }
+
+         }
          return log;
       }
 
@@ -200,7 +258,8 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     *          the resource manager used to manage the whole tx
     */
    public WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
-      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager, TransactionManager transactionManager)
+      SystemDataContainerHolder systemDataContainerHolder, TransactionableResourceManager txResourceManager,
+      TransactionManager transactionManager)
    {
       this.dataContainer = dataContainer;
       this.systemDataContainer = systemDataContainerHolder.getContainer();
@@ -217,7 +276,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     */
    public void save(final ChangesLogWrapper logWrapper) throws RepositoryException
    {
-      final ItemStateChangesLog changesLog = logWrapper.getChangesLog();
+      final ItemStateChangesLog changesLog = logWrapper.optimizeAndGetChangesLog();
 
       // check if this workspace container is not read-only
       if (readOnly && !(changesLog instanceof ReadOnlyThroughChanges))
@@ -319,7 +378,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                {
                   switch (status)
                   {
-                     case Status.STATUS_COMMITTED:
+                     case Status.STATUS_COMMITTED :
                         try
                         {
                            persister.commit();
@@ -329,10 +388,10 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                            throw new RuntimeException("Could not commit the transaction", e);
                         }
                         break;
-                     case Status.STATUS_UNKNOWN:
+                     case Status.STATUS_UNKNOWN :
                         LOG.warn("Status UNKNOWN received in afterCompletion method, some data could have been corrupted !!");
-                     case Status.STATUS_MARKED_ROLLBACK:
-                     case Status.STATUS_ROLLEDBACK:
+                     case Status.STATUS_MARKED_ROLLBACK :
+                     case Status.STATUS_ROLLEDBACK :
                         try
                         {
                            persister.rollback();
@@ -343,9 +402,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                         }
                         break;
 
-                     default:
+                     default :
                         throw new IllegalStateException("illegal status: " + status);
-                  }                  
+                  }
                }
             });
          }
@@ -438,10 +497,10 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          return systemConnection == null
          // we need system connection but it's not exist
             ? systemConnection = (systemDataContainer != dataContainer // NOSONAR
-            // if it's different container instances
+               // if it's different container instances
                ? systemDataContainer.equals(dataContainer) && thisConnection != null
                // but container confugrations are same and non-system connnection open
-                  // reuse this connection as system
+               // reuse this connection as system
                   ? systemDataContainer.reuseConnection(thisConnection)
                   // or open one new system
                   : systemDataContainer.openConnection(false)
@@ -460,10 +519,10 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          return thisConnection == null
          // we need this conatiner conection
             ? thisConnection = (systemDataContainer != dataContainer // NOSONAR
-            // if it's different container instances
+               // if it's different container instances
                ? dataContainer.equals(systemDataContainer) && systemConnection != null
                // but container confugrations are same and system connnection open
-                  // reuse system connection as this
+               // reuse system connection as this
                   ? dataContainer.reuseConnection(systemConnection)
                   // or open one new
                   : dataContainer.openConnection(false)
@@ -502,9 +561,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                {
                   NodeData prevData = (NodeData)prevState.getData();
                   newData =
-                     new PersistedNodeData(prevData.getIdentifier(), prevData.getQPath(), prevData
-                        .getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getOrderNumber(), prevData
-                        .getPrimaryTypeName(), prevData.getMixinTypeNames(), prevData.getACL());
+                     new PersistedNodeData(prevData.getIdentifier(), prevData.getQPath(),
+                        prevData.getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getOrderNumber(),
+                        prevData.getPrimaryTypeName(), prevData.getMixinTypeNames(), prevData.getACL());
                }
                else
                {
@@ -562,9 +621,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                      }
 
                      newData =
-                        new PersistedPropertyData(prevData.getIdentifier(), prevData.getQPath(), prevData
-                           .getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getType(), prevData
-                           .isMultiValued(), values);
+                        new PersistedPropertyData(prevData.getIdentifier(), prevData.getQPath(),
+                           prevData.getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getType(),
+                           prevData.isMultiValued(), values);
 
                      if (prevState.isAdded() || prevState.isUpdated())
                      {
@@ -574,9 +633,9 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                   else
                   {
                      newData =
-                        new PersistedPropertyData(prevData.getIdentifier(), prevData.getQPath(), prevData
-                           .getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getType(), prevData
-                           .isMultiValued(), null);
+                        new PersistedPropertyData(prevData.getIdentifier(), prevData.getQPath(),
+                           prevData.getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getType(),
+                           prevData.isMultiValued(), null);
                   }
                }
             }
