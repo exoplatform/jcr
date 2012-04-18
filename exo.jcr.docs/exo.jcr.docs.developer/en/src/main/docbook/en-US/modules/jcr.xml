@@ -27,6 +27,9 @@
               
   <xi:include href="jcr/concepts/jcr-usage.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />            
+
+  <xi:include href="jcr/concepts/session-leak-detected.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
               
   <xi:include href="jcr/concepts/jcr-extensions.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />                            
