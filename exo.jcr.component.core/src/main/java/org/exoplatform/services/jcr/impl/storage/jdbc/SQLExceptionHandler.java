@@ -124,16 +124,16 @@ public class SQLExceptionHandler
             // InvalidItemStateException ! - because it's impossible add new item with existed UUID
             throw new JCRInvalidItemStateException(message.toString(), item.getIdentifier(), ItemState.ADDED, e);
          }
-         else if (umsg.indexOf(conn.JCR_IDX_ITEM_PARENT) >= 0)
-         {
-            message.append("Item already exists. Condition: parent ID, name, index. ").append(itemInfo);
-            throw new ItemExistsException(message.toString(), e);
-         }
          else if (umsg.indexOf(conn.JCR_IDX_ITEM_PARENT_ID) >= 0)
          {
             message.append("Item already exists. Condition: parent ID and ID. ").append(itemInfo);
             throw new ItemExistsException(message.toString(), e);
          }
+         else if (umsg.indexOf(conn.JCR_IDX_ITEM_PARENT) >= 0)
+         {
+            message.append("Item already exists. Condition: parent ID, name, index. ").append(itemInfo);
+            throw new ItemExistsException(message.toString(), e);
+         }        
          else if (umsg.indexOf(conn.JCR_FK_VALUE_PROPERTY) >= 0)
          {
             message.append("Property is not exist but the value is being created. Condition: property ID. ").append(
