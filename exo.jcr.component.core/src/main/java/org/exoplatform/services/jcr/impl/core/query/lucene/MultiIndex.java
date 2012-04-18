@@ -543,6 +543,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
             if (!indexCreated)
             {
+               if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+               {
+                  initMerger();
+               }
 
                // traverse and index workspace
                executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
@@ -1708,20 +1712,19 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private void initMerger() throws IOException
    {
-      if (merger != null)
+      if (merger == null)
       {
-         LOG.info("IndexMerger initialization called twice.");
-      }
-      merger = new IndexMerger(this);
-      merger.setMaxMergeDocs(handler.getMaxMergeDocs());
-      merger.setMergeFactor(handler.getMergeFactor());
-      merger.setMinMergeDocs(handler.getMinMergeDocs());
+         merger = new IndexMerger(this);
+         merger.setMaxMergeDocs(handler.getMaxMergeDocs());
+         merger.setMergeFactor(handler.getMergeFactor());
+         merger.setMinMergeDocs(handler.getMinMergeDocs());
 
-      for (Object index : indexes)
-      {
-         merger.indexAdded(((PersistentIndex)index).getName(), ((PersistentIndex)index).getNumDocuments());
+         for (Object index : indexes)
+         {
+            merger.indexAdded(((PersistentIndex)index).getName(), ((PersistentIndex)index).getNumDocuments());
+         }
+         merger.start();
       }
-      merger.start();
    }
 
    /**

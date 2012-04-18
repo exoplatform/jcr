@@ -359,6 +359,7 @@ abstract class AbstractIndex
             log.error("Can't set \"UseCompoundFile\". Merge policy is not an instance of LogMergePolicy. ");
          }
          indexWriter = new IndexWriter(directory, config);
+         setUseCompoundFile(useCompoundFile);
          indexWriter.setInfoStream(STREAM_LOGGER);
       }
       return indexWriter;
@@ -526,6 +527,7 @@ abstract class AbstractIndex
          if (config.getMergePolicy() instanceof LogMergePolicy)
          {
             ((LogMergePolicy)config.getMergePolicy()).setUseCompoundFile(useCompoundFile);
+            ((LogMergePolicy)config.getMergePolicy()).setNoCFSRatio(1.0);
          }
          else
          {
