@@ -46,6 +46,9 @@
     <org.exoplatform.core.version>2.4.8-GA-SNAPSHOT</org.exoplatform.core.version>
     <org.exoplatform.ws.version>2.2.8-GA-SNAPSHOT</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
+
+    <version.release.plugin>2.2.1</version.release.plugin>
+    <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
   </properties>
 
   <dependencyManagement>
