@@ -1,0 +1,18 @@
+Index: exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/master.xml
+===================================================================
+--- exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/master.xml	(revision 6003)
++++ exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/master.xml	(working copy)
+@@ -40,10 +40,10 @@
+ 
+     <subtitle>Java Content Repository and Extension services</subtitle>
+ 
+-    <copyright>
++  <!--  <copyright>
+       <year>2012</year>
+-      <holder>eXoPlatform SAS</holder>
+-    </copyright>
++      <holder>eXo Platform SAS</holder>
++    </copyright>  -->
+   </bookinfo>
+ 
+   <toc></toc>

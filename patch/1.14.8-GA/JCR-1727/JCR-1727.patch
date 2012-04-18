@@ -1,0 +1,271 @@
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(revision 5969)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/MultiIndex.java	(working copy)
+@@ -334,7 +334,7 @@
+          }
+          PersistentIndex index =
+             new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+-               directoryManager);
++               directoryManager, modeHandler);
+          index.setMaxFieldLength(handler.getMaxFieldLength());
+          index.setUseCompoundFile(handler.getUseCompoundFile());
+          index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
+@@ -692,7 +692,24 @@
+                for (Iterator<String> it = remove.iterator(); it.hasNext();)
+                {
+                   Term idTerm = new Term(FieldNames.UUID, it.next());
+-                  volatileIndex.removeDocument(idTerm);
++                  int num = volatileIndex.removeDocument(idTerm);
++                  if (num == 0)
++                  {
++                     for (int i = indexes.size() - 1; i >= 0; i--)
++                     {
++                        // only look in registered indexes
++                        PersistentIndex idx = indexes.get(i);
++                        if (indexNames.contains(idx.getName()))
++                        {
++                           num = idx.removeDocument(idTerm);
++                           if (num > 0)
++                           {
++                              break;
++                           }
++                        }
++                     }
++                  }
++
+                }
+ 
+                // try to avoid getting index reader for each doc
+@@ -1123,7 +1140,7 @@
+       {
+          index =
+             new PersistentIndex(indexName, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+-               directoryManager);
++               directoryManager, modeHandler);
+       }
+       catch (IOException e)
+       {
+@@ -3426,7 +3443,7 @@
+             }
+             PersistentIndex index =
+                new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+-                  directoryManager);
++                  directoryManager, modeHandler);
+             index.setMaxFieldLength(handler.getMaxFieldLength());
+             index.setUseCompoundFile(handler.getUseCompoundFile());
+             index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
+@@ -3527,7 +3544,7 @@
+             }
+             offlineIndex =
+                new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
+-                  directoryManager);
++                  directoryManager, modeHandler);
+             if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+             {
+                flush();
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/OfflinePersistentIndex.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/OfflinePersistentIndex.java	(revision 5969)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/OfflinePersistentIndex.java	(working copy)
+@@ -22,6 +22,7 @@
+ import org.apache.lucene.document.Document;
+ import org.apache.lucene.index.Term;
+ import org.apache.lucene.search.Similarity;
++import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
+ import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
+ 
+ import java.io.IOException;
+@@ -56,9 +57,9 @@
+     *  index.
+     */
+    OfflinePersistentIndex(Analyzer analyzer, Similarity similarity, DocNumberCache cache, IndexingQueue indexingQueue,
+-      DirectoryManager directoryManager) throws IOException
++      DirectoryManager directoryManager, IndexerIoModeHandler modeHandler) throws IOException
+    {
+-      super(NAME, analyzer, similarity, cache, indexingQueue, directoryManager);
++      super(NAME, analyzer, similarity, cache, indexingQueue, directoryManager, modeHandler);
+       this.processedIDs = new ArrayList<String>();
+    }
+ 
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/AbstractIndex.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/AbstractIndex.java	(revision 5969)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/AbstractIndex.java	(working copy)
+@@ -25,6 +25,8 @@
+ import org.apache.lucene.index.Term;
+ import org.apache.lucene.search.Similarity;
+ import org.apache.lucene.store.Directory;
++import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
++import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
+ import org.slf4j.Logger;
+ import org.slf4j.LoggerFactory;
+ 
+@@ -109,6 +111,8 @@
+     */
+    private boolean isExisting;
+ 
++   protected final IndexerIoModeHandler modeHandler;
++
+    /**
+     * Constructs an index with an <code>analyzer</code> and a
+     * <code>directory</code>.
+@@ -123,13 +127,14 @@
+     * @throws IOException if the index cannot be initialized.
+     */
+    AbstractIndex(final Analyzer analyzer, Similarity similarity, final Directory directory, DocNumberCache cache,
+-      IndexingQueue indexingQueue) throws IOException
++      IndexingQueue indexingQueue, IndexerIoModeHandler modeHandler) throws IOException
+    {
+       this.analyzer = analyzer;
+       this.similarity = similarity;
+       this.directory = directory;
+       this.cache = cache;
+       this.indexingQueue = indexingQueue;
++      this.modeHandler = modeHandler;
+ 
+       AbstractIndex.this.isExisting = IndexReader.indexExists(directory);
+ 
+@@ -246,7 +251,14 @@
+       if (indexReader == null || !indexReader.isCurrent())
+       {
+          IndexReader reader = IndexReader.open(getDirectory(), null, false, termInfosIndexDivisor);
+-         indexReader = new CommittableIndexReader(reader);
++         // if modeHandler != null and mode==READ_ONLY, then reader should be with transient deleteions.
++         // This is used to transiently update reader in clustered environment when some documents have 
++         // been deleted. If index reader not null and already contains some transient deletions, but it
++         // is no more current, it will be re-created loosing deletions. They will already be applied by
++         // coordinator node in the cluster. And there is no need to inject them into the new reader  
++
++         indexReader =
++            new CommittableIndexReader(reader, modeHandler != null && modeHandler.getMode() == IndexerIoMode.READ_ONLY);
+       }
+       return indexReader;
+    }
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/VolatileIndex.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/VolatileIndex.java	(revision 5969)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/VolatileIndex.java	(working copy)
+@@ -62,7 +62,7 @@
+     */
+    VolatileIndex(Analyzer analyzer, Similarity similarity, IndexingQueue indexingQueue) throws IOException
+    {
+-      super(analyzer, similarity, new RAMDirectory(), null, indexingQueue);
++      super(analyzer, similarity, new RAMDirectory(), null, indexingQueue, null);
+    }
+ 
+    /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/CommittableIndexReader.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/CommittableIndexReader.java	(revision 5969)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/CommittableIndexReader.java	(working copy)
+@@ -16,12 +16,16 @@
+  */
+ package org.exoplatform.services.jcr.impl.core.query.lucene;
+ 
+-import java.io.IOException;
+-
+ import org.apache.lucene.index.CorruptIndexException;
+ import org.apache.lucene.index.FilterIndexReader;
+ import org.apache.lucene.index.IndexReader;
++import org.apache.lucene.index.StaleReaderException;
++import org.apache.lucene.store.LockObtainFailedException;
+ 
++import java.io.IOException;
++import java.util.Set;
++import java.util.concurrent.CopyOnWriteArraySet;
++
+ /**
+  * Wraps an <code>IndexReader</code> and allows to commit changes without
+  * closing the reader.
+@@ -36,13 +40,28 @@
+     private volatile long modCount;
+ 
+     /**
++     * If reader is created with flag transientDeletions, then reader 
++     * deleted documents are stored in the memory buffer and not applied to underlying
++     * index reader.
++     */
++    private final boolean transientDeletions;
++
++    private final Set<Integer> deletedDocs;
++
++    /**
+      * Creates a new <code>CommittableIndexReader</code> based on <code>in</code>.
+      *
+      * @param in the <code>IndexReader</code> to wrap.
++     * @param transientDeletions If reader is created with flag transientDeletions, then reader 
++     *        deleted documents are stored in the memory buffer and not applied to underlying
++     *        index reader.
+      */
+-    CommittableIndexReader(IndexReader in) {
++    CommittableIndexReader(IndexReader in, boolean transientDeletions) {
+         super(in);
+         modCount = in.getVersion();
++        this.transientDeletions = transientDeletions;
++        // no need to initialize Set if transientDeletions = false
++        this.deletedDocs = transientDeletions? new CopyOnWriteArraySet<Integer>() : null;
+     }
+ 
+     //------------------------< FilterIndexReader >-----------------------------
+@@ -57,6 +76,36 @@
+         modCount++;
+     }
+ 
++    /**
++     * {@inheritDoc}
++     */
++    @Override
++    public void deleteDocument(int docNum) throws StaleReaderException, CorruptIndexException,
++       LockObtainFailedException, IOException {
++       // skip acquiring write lock
++       if (transientDeletions)
++       {
++           deletedDocs.add(docNum);
++           modCount++; // doDelete won't be executed, so incrementing modCount
++       }
++       else
++       {
++           super.deleteDocument(docNum);
++       }
++    }
++   
++    @Override
++    public boolean isDeleted(int n) {
++       if (transientDeletions)
++       {
++           return deletedDocs.contains(n);
++       }
++       else
++       {
++           return super.isDeleted(n);
++       }
++    }
++
+     //------------------------< additional methods >----------------------------
+ 
+     /**
+Index: exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/PersistentIndex.java
+===================================================================
+--- exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/PersistentIndex.java	(revision 5969)
++++ exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/core/query/lucene/PersistentIndex.java	(working copy)
+@@ -23,6 +23,7 @@
+ import org.apache.lucene.store.Directory;
+ import org.apache.lucene.store.IndexInput;
+ import org.apache.lucene.store.IndexOutput;
++import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
+ import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
+ 
+ import java.io.IOException;
+@@ -56,9 +57,9 @@
+     *  index.
+     */
+    PersistentIndex(String name, Analyzer analyzer, Similarity similarity, DocNumberCache cache,
+-      IndexingQueue indexingQueue, final DirectoryManager directoryManager) throws IOException
++      IndexingQueue indexingQueue, final DirectoryManager directoryManager, IndexerIoModeHandler modeHandler) throws IOException
+    {
+-      super(analyzer, similarity, directoryManager.getDirectory(name), cache, indexingQueue);
++      super(analyzer, similarity, directoryManager.getDirectory(name), cache, indexingQueue, modeHandler);
+       this.name = name;
+       if (isExisting())
+       {
