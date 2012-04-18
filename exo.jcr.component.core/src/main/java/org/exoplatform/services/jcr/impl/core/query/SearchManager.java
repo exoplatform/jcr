@@ -698,8 +698,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
    public void stop()
    {
-      indexRecovery.close();
-      
       handler.close();
 
       // ChangesFiler instance is one for both SearchManagers and close() must be invoked only once,  
@@ -707,7 +705,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          changesFilter.close();
       }
-      
+
+      if (indexRecovery != null)
+      {
+         indexRecovery.close();
+      }
+         
       unregisterRemoteCommands();
       
       LOG.info("Search manager stopped");
