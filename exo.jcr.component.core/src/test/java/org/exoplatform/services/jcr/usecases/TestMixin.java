@@ -16,14 +16,19 @@
  */
 package org.exoplatform.services.jcr.usecases;
 
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+
 import java.io.ByteArrayInputStream;
 
+import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS.
@@ -59,6 +64,57 @@ public class TestMixin extends BaseUsecasesTest
       assertTrue(a2.isNodeType("mix:referenceable"));
       assertTrue(a2.isNodeType("mix:versionable"));
       assertTrue(a2.isNodeType("mix:lockable"));
+   }
+
+   /**
+    * User without ADD_NODE permission should be able to add mixin 
+    * without auto created nodes.
+    */
+   public void testAllowSetMixinWithoutHavingAddNodePermissions() throws Exception
+   {
+      NodeImpl testNode = (NodeImpl)session.getRootNode().addNode("testNode");
+
+      testNode.addMixin("exo:privilegeable");
+      testNode.setPermission("john", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY,
+         PermissionType.REMOVE});
+      testNode.removePermission("any");
+
+      session.save();
+
+      Session johnSession = repository.login(new CredentialsImpl("john", "exo".toCharArray()));
+
+      try
+      {
+         johnSession.getRootNode().getNode("testNode").addMixin("mix:lockable");
+         johnSession.save();
+      }
+      catch (AccessDeniedException e)
+      {
+         fail("Should have ability to set mixin without having ADD_NODE permission");
+      }
+
+      try
+      {
+         johnSession.getRootNode().getNode("testNode").addMixin("mix:versionable");
+         johnSession.save();
+      }
+      catch (AccessDeniedException e)
+      {
+         fail("Should have ability to set mixin without having ADD_NODE permission");
+      }
+
+      try
+      {
+         johnSession.getRootNode().getNode("testNode").addMixin("exo:EXOJCR1812");
+         johnSession.save();
+
+         fail("Should not have ability to set mixin without having ADD_NODE permission");
+      }
+      catch (AccessDeniedException e)
+      {
+      }
+
+      johnSession.logout();
    }
 
    /**

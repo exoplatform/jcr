@@ -87,6 +87,16 @@ public class ItemAutocreator
    public PlainChangesLog makeAutoCreatedItems(final NodeData parent, final InternalQName nodeTypeName,
       final ItemDataConsumer targetDataManager, final String owner) throws RepositoryException
    {
+      return makeAutoCreatedItems(parent, nodeTypeName, targetDataManager, owner, false);
+   }
+
+   /**
+    * Prepares changes log  
+    */
+   private PlainChangesLog makeAutoCreatedItems(final NodeData parent, final InternalQName nodeTypeName,
+      final ItemDataConsumer targetDataManager, final String owner, boolean addedAutoCreatedNodes)
+      throws RepositoryException
+   {
       final PlainChangesLogImpl changes = new PlainChangesLogImpl();
       final NodeTypeData type = nodeTypeDataManager.getNodeType(nodeTypeName);
 
@@ -99,7 +109,6 @@ public class ItemAutocreator
       // versionable
       if (nodeTypeDataManager.isNodeType(Constants.MIX_VERSIONABLE, new InternalQName[]{type.getName()}))
       {
-
          // using VH helper as for one new VH, all changes in changes log
          changes.addAll(makeMixVesionableChanges(parent).getAllStates());
       }
@@ -109,6 +118,13 @@ public class ItemAutocreator
    public PlainChangesLog makeAutoCreatedNodes(final NodeData parent, final InternalQName typeName,
       final NodeDefinitionData[] nodeDefs, final ItemDataConsumer targetDataManager, final String owner)
       throws RepositoryException
+   {
+      return makeAutoCreatedNodes(parent, typeName, nodeDefs, targetDataManager, owner, false);
+   }
+
+   private PlainChangesLog makeAutoCreatedNodes(final NodeData parent, final InternalQName typeName,
+      final NodeDefinitionData[] nodeDefs, final ItemDataConsumer targetDataManager, final String owner,
+      boolean addedAutoCreatedNodes) throws RepositoryException
    {
       final PlainChangesLogImpl changes = new PlainChangesLogImpl();
       final Set<InternalQName> addedNodes = new HashSet<InternalQName>();
@@ -125,9 +141,16 @@ public class ItemAutocreator
                final TransientNodeData childNodeData =
                   TransientNodeData.createNodeData(parent, ndef.getName(), ndef.getDefaultPrimaryType(),
                      IdGenerator.generate());
+
+               if (!addedAutoCreatedNodes)
+               {
+                  addedAutoCreatedNodes = true;
+                  changes.add(ItemState.createAddedAutoCreatedNodes(parent));
+               }
+
                changes.add(ItemState.createAddedState(childNodeData, false));
                changes.addAll(makeAutoCreatedItems(childNodeData, childNodeData.getPrimaryTypeName(),
-                  targetDataManager, owner).getAllStates());
+                  targetDataManager, owner, addedAutoCreatedNodes).getAllStates());
                addedNodes.add(ndef.getName());
             }
             else
@@ -142,7 +165,6 @@ public class ItemAutocreator
          }
       }
       return changes;
-
    }
 
    public PlainChangesLog makeAutoCreatedProperties(final NodeData parent, final InternalQName typeName,

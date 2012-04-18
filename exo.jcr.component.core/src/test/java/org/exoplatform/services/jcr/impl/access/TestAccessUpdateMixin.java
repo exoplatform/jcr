@@ -92,7 +92,7 @@ public class TestAccessUpdateMixin extends BaseStandaloneTest
 
       try
       {
-         subNode.addMixin("mix:referenceable");
+         subNode.addMixin("exo:EXOJCR1812");
          sessMary.save();
          fail();
       }

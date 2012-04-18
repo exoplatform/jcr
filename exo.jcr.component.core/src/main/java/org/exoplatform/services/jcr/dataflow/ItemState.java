@@ -58,6 +58,8 @@ public class ItemState implements Externalizable
 
    public static final int PATH_CHANGED = 64;
 
+   public static final int ADDED_AUTO_CREATED_NODES = 128;
+
    /**
     * underlying item data
     */
@@ -228,6 +230,11 @@ public class ItemState implements Externalizable
       return (state == PATH_CHANGED);
    }
 
+   public boolean isAddedAutoCreatedNodes()
+   {
+      return (state == ADDED_AUTO_CREATED_NODES);
+   }
+
    public boolean isEventFire()
    {
       return eventFire;
@@ -296,6 +303,11 @@ public class ItemState implements Externalizable
    {
       return this.getData().getIdentifier().hashCode() == dstIdentifier.hashCode()
          && this.getData().getQPath().hashCode() == dstPath.hashCode() && this.getState() == dstState;
+   }
+
+   public static ItemState createAddedAutoCreatedNodes(ItemData data)
+   {
+      return new ItemState(data, ADDED_AUTO_CREATED_NODES, false, null, false);
    }
 
    /**
@@ -401,6 +413,8 @@ public class ItemState implements Externalizable
             return "RENAMED";
          case PATH_CHANGED :
             return "PATH_CHANGED";
+         case ADDED_AUTO_CREATED_NODES :
+            return "ADDED_AUTO_CREATED_NODES";
          default :
             return "UNDEFINED STATE";
       }

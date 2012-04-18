@@ -1639,7 +1639,11 @@ public class SessionDataManager implements ItemDataConsumer
     */
    private void validateAccessPermissions(ItemState changedItem) throws RepositoryException, AccessDeniedException
    {
-      if (changedItem.isDeleted())
+      if (changedItem.isAddedAutoCreatedNodes())
+      {
+         validateAddNodePermission(changedItem);
+      }
+      else if (changedItem.isDeleted())
       {
          validateRemoveAccessPermission(changedItem);
       }
@@ -1706,12 +1710,22 @@ public class SessionDataManager implements ItemDataConsumer
       }
    }
 
+   private void validateAddNodePermission(ItemState changedItem) throws AccessDeniedException
+   {
+      if (!accessManager.hasPermission(((NodeData)changedItem.getData()).getACL(),
+         new String[]{PermissionType.ADD_NODE}, session.getUserState().getIdentity()))
+      {
+         throw new AccessDeniedException("Access denied: ADD_NODE" + changedItem.getData().getQPath().getAsString()
+            + " for: " + session.getUserID() + " item owner " + ((NodeData)changedItem.getData()).getACL().getOwner());
+      }
+   }
+
    private void validateMixinChangedPermission(ItemState changedItem) throws AccessDeniedException
    {
-      if (!accessManager.hasPermission(((NodeData)changedItem.getData()).getACL(), new String[]{
-         PermissionType.ADD_NODE, PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
+      if (!accessManager.hasPermission(((NodeData)changedItem.getData()).getACL(),
+         new String[]{PermissionType.SET_PROPERTY}, session.getUserState().getIdentity()))
       {
-         throw new AccessDeniedException("Access denied: ADD_NODE or SET_PROPERTY"
+         throw new AccessDeniedException("Access denied: SET_PROPERTY"
             + changedItem.getData().getQPath().getAsString() + " for: " + session.getUserID() + " item owner "
             + ((NodeData)changedItem.getData()).getACL().getOwner());
       }
