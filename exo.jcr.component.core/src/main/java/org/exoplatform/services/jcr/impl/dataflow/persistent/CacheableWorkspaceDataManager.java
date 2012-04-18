@@ -422,7 +422,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       this.rpcService = rpcService;
       this.txResourceManager = txResourceManager;
-      doInitRemoteCommands();
    }
 
    /**
@@ -492,7 +491,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       this.rpcService = rpcService;
       this.txResourceManager = txResourceManager;
-      doInitRemoteCommands();
    }
 
    /**
@@ -2079,7 +2077,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Initialization remote commands.
     */
-   private void doInitRemoteCommands()
+   private void initRemoteCommands()
    {
       if (rpcService != null)
       {
@@ -2133,6 +2131,22 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
          rpcService.registerTopologyChangeListener(this);
       }
+   }
+
+   /**
+    * Unregister remote commands.
+    */
+   private void unregisterRemoteCommands()
+   {
+      if (rpcService != null)
+      {
+         rpcService.unregisterCommand(suspend);
+         rpcService.unregisterCommand(resume);
+         rpcService.unregisterCommand(requestForResponsibleForResuming);
+
+         rpcService.unregisterTopologyChangeListener(this);
+      }
+
    }
 
    private <T> T executeAction(PrivilegedExceptionAction<T> action) throws RepositoryException
@@ -2377,6 +2391,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void start()
    {
+      initRemoteCommands();
+
       try
       {
          this.cache.addListener(this);
@@ -2478,6 +2494,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          cache.removeListener(this);
       }
+
+      unregisterRemoteCommands();
    }
 
    /**
