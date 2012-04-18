@@ -777,6 +777,13 @@
          </properties>
       </profile>      
       <profile>
+         <id>mjdbc</id>
+         <properties>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-mjdbc-ispn.xml</jcr.test.configuration.file>
+            <properties.url.suffix>.properties</properties.url.suffix>
+         </properties>
+      </profile>
+      <profile>
          <id>ijdbc</id>
          <properties>
             <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-ispn.xml</jcr.test.configuration.file>

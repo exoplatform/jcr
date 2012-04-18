@@ -31,6 +31,8 @@
   <description>eXo JCR Services extension</description>
   <properties>
       <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
+      <properties.url.suffix>.properties</properties.url.suffix>
+      <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
   </properties>
   <dependencies>
     <dependency>
@@ -350,7 +352,7 @@
      <profile>
          <id>oracle-10G-R2</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-oracle.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
@@ -370,7 +372,7 @@
       <profile>
          <id>mysql-5.1</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-mysql.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
@@ -384,7 +386,7 @@
       <profile>
          <id>mssql</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-mssql.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/mssql</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
@@ -398,7 +400,7 @@
       <profile>
          <id>db2</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-db2.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/db2</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
@@ -418,7 +420,7 @@
       <profile>
          <id>sybase</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-sybase.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/sybase</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
@@ -432,7 +434,7 @@
       <profile>
          <id>pgsql-8.3</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-backup-pgsql.xml</jcr.test.configuration.file>
+            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
          </properties>
          <dependencies>
             <dependency>
