@@ -533,6 +533,22 @@ public class TransientValueData implements ValueData
          }
          catch (IOException e)
          {
+            if (sf != null)
+            {
+               try
+               {
+                  sf.release(this);
+                  fileCleaner.addFile(sf);
+               }
+               catch (FileNotFoundException ex)
+               {
+                  if (LOG.isDebugEnabled())
+                  {
+                     LOG.debug("Could not remove temporary file : " + sf.getAbsolutePath());
+                  }
+               }
+            }
+            
             throw new IllegalStateException("Error of spooling to temp file from " + tmpStream
                + ". Check if stream is not consumed or is not closed.", e);
          }
