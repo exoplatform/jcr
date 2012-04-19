@@ -67,6 +67,14 @@ public class TestGetNodesLazily extends JcrImplBaseTest
    }
 
    /**
+    * Children nodes counting checking.
+    */
+   public void testGetNodesCount() throws Exception
+   {
+      assertEquals(nodesCount, testRoot.getNodesCount());
+   }
+
+   /**
     * Simple check, session log empty.
     */
    public void testGetNodesLazilyBasicUsecase() throws Exception

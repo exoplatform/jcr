@@ -121,6 +121,13 @@ public interface ExtendedNode extends Node
       AccessDeniedException, InvalidItemStateException, RepositoryException;
 
    /**
+    * Returns the number of children nodes.
+    * 
+    * @throws RepositoryException If an error occurs.
+    */
+   public long getNodesCount() throws RepositoryException;
+
+   /**
     * Returns a <code>NodeIterator</code> over all child <code>Node</code>s of
     * this <code>Node</code>. Does <i>not</i> include properties of this
     * <code>Node</code>. If this node has no child nodes, then an empty iterator is returned.

@@ -1086,6 +1086,14 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    /**
     * {@inheritDoc}
     */
+   public long getNodesCount() throws RepositoryException
+   {
+      return dataManager.getChildNodesCount(nodeData());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public NodeIterator getNodesLazily(int pageSize) throws RepositoryException
    {
       checkValid();
