@@ -75,8 +75,6 @@ public class GroovyScript2RestUpdateListener implements EventListener
       Session session = null;
       try
       {
-         session = repository.getSystemSession(workspaceName);
-
          while (eventIterator.hasNext())
          {
             Event event = eventIterator.nextEvent();
@@ -91,6 +89,11 @@ public class GroovyScript2RestUpdateListener implements EventListener
                }
                else if (event.getType() == Event.PROPERTY_ADDED || event.getType() == Event.PROPERTY_CHANGED)
                {
+                  if (session == null)
+                  {
+                     session = repository.getSystemSession(workspaceName);
+                  }
+
                   Node node = session.getItem(path).getParent();
                   if (node.getProperty("exo:autoload").getBoolean())
                      loadScript(node);
