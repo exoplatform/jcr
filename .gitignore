@@ -18,6 +18,10 @@
 /exo.jcr.component.ext/.classpath
 /exo.jcr.component.ext/.project
 
+# /exo.jcr.connectors.jca/
+/exo.jcr.connectors.jca/.externalToolBuilders
+/exo.jcr.connectors.jca/maven-eclipse.xml
+
 # /exo.jcr.docs/
 /exo.jcr.docs/.settings
 /exo.jcr.docs/.project
