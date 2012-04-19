@@ -301,11 +301,17 @@ public class GroovyScript2RestLoader implements Startable
                {
                   delayedWorkspacePublishing.add(workspaceName);
                }
+               finally
+               {
+                  session.logout();
+               }
 
-               session.getWorkspace().getObservationManager().addEventListener(
-                  new GroovyScript2RestUpdateListener(repositoryName, workspaceName, this, session),
-                  Event.PROPERTY_ADDED | Event.PROPERTY_CHANGED | Event.PROPERTY_REMOVED, "/", true, null,
-                  new String[]{getNodeType()}, false);
+               session
+                  .getWorkspace()
+                  .getObservationManager()
+                  .addEventListener(new GroovyScript2RestUpdateListener(repository, workspaceName, this),
+                     Event.PROPERTY_ADDED | Event.PROPERTY_CHANGED | Event.PROPERTY_REMOVED, "/", true, null,
+                     new String[]{getNodeType()}, false);
             }
             if (!delayedWorkspacePublishing.isEmpty())
             {
@@ -329,7 +335,15 @@ public class GroovyScript2RestLoader implements Startable
                            try
                            {
                               Session session = repository.getSystemSession(workspaceName);
-                              autoLoadScripts(session);
+                              try
+                              {
+                                 autoLoadScripts(session);
+                              }
+                              finally
+                              {
+                                 session.logout();
+                              }
+
                               // if no exception, then remove item from set
                               iterator.remove();
                            }

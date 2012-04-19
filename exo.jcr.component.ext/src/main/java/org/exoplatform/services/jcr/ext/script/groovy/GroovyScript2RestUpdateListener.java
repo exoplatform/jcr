@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.script.groovy;
 
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ObjectFactory;
@@ -42,30 +43,26 @@ public class GroovyScript2RestUpdateListener implements EventListener
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestUpdateListener");
 
    /** Repository name. */
-   private final String repository;
+   private final ManageableRepository repository;
 
    /** Workspace name. */
-   private final String workspace;
+   private final String workspaceName;
 
    /** See {@link GroovyScript2RestLoader}. */
    private final GroovyScript2RestLoader groovyScript2RestLoader;
 
-   /** See {@link Session}. */
-   private final Session session;
-
    /**
-    * @param repository repository name
+    * @param repository repository
     * @param workspace workspace name
     * @param groovyScript2RestLoader See {@link GroovyScript2RestLoader}
     * @param session JCR session
     */
-   public GroovyScript2RestUpdateListener(String repository, String workspace,
-      GroovyScript2RestLoader groovyScript2RestLoader, Session session)
+   public GroovyScript2RestUpdateListener(ManageableRepository repository, String workspace,
+      GroovyScript2RestLoader groovyScript2RestLoader)
    {
       this.repository = repository;
-      this.workspace = workspace;
+      this.workspaceName = workspace;
       this.groovyScript2RestLoader = groovyScript2RestLoader;
-      this.session = session;
    }
 
    /**
@@ -75,8 +72,11 @@ public class GroovyScript2RestUpdateListener implements EventListener
    {
       // waiting for Event.PROPERTY_ADDED, Event.PROPERTY_REMOVED,
       // Event.PROPERTY_CHANGED
+      Session session = null;
       try
       {
+         session = repository.getSystemSession(workspaceName);
+
          while (eventIterator.hasNext())
          {
             Event event = eventIterator.nextEvent();
@@ -102,6 +102,13 @@ public class GroovyScript2RestUpdateListener implements EventListener
       {
          LOG.error("Process event failed. ", e);
       }
+      finally
+      {
+         if (session != null)
+         {
+            session.logout();
+         }
+      }
    }
 
    /**
@@ -112,7 +119,7 @@ public class GroovyScript2RestUpdateListener implements EventListener
     */
    private void loadScript(Node node) throws Exception
    {
-      ResourceId key = new NodeScriptKey(repository, workspace, node);
+      ResourceId key = new NodeScriptKey(repository.getConfiguration().getName(), workspaceName, node);
       ObjectFactory<AbstractResourceDescriptor> resource =
          groovyScript2RestLoader.groovyPublisher.unpublishResource(key);
       if (resource != null)
@@ -134,7 +141,7 @@ public class GroovyScript2RestUpdateListener implements EventListener
     */
    private void unloadScript(String path) throws Exception
    {
-      ResourceId key = new NodeScriptKey(repository, workspace, path);
+      ResourceId key = new NodeScriptKey(repository.getConfiguration().getName(), workspaceName, path);
       groovyScript2RestLoader.groovyPublisher.unpublishResource(key);
    }
 
