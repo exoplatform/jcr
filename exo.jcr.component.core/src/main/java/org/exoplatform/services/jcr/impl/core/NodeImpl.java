@@ -1088,6 +1088,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
     */
    public long getNodesCount() throws RepositoryException
    {
+      checkValid();
       return dataManager.getChildNodesCount(nodeData());
    }
 
