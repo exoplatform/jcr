@@ -34,8 +34,8 @@
   <name>eXo JCR</name>
 
   <scm>
-    <connection>scm:git:ssh://github.com/exodev/jcr.git</connection>
-    <developerConnection>scm:git:ssh://github.com/exodev/jcr.git</developerConnection>
+    <connection>scm:git:git://github.com/exoplatform/jcr.git</connection>
+    <developerConnection>scm:git:git@github.com/exoplatform/jcr.git</developerConnection>
     <url>http://fisheye.jboss.org/browse/exo-jcr/jcr</url>
   </scm>
 
