@@ -95,10 +95,10 @@ public final class SessionRegistry implements Startable
       else if (timeOut > 0 && sessionCleaner == null)
       {
          // We set a time out greater than 0, so we create new cleaner
-         this.sessionCleaner = new SessionCleaner(repositoryId, DEFAULT_CLEANER_TIMEOUT, timeOut);      
+         this.sessionCleaner = new SessionCleaner(repositoryId, DEFAULT_CLEANER_TIMEOUT, timeOut);
          if (log.isDebugEnabled())
          {
-            log.debug("Start a new session cleaner");            
+            log.debug("Start a new session cleaner");
          }
       }
    }
@@ -155,7 +155,9 @@ public final class SessionRegistry implements Startable
       if (workspaceName == null)
       {
          if (log.isDebugEnabled())
+         {
             log.debug("Session in use " + sessionsMap.size());
+         }
          return sessionsMap.size() > 0;
       }
       for (SessionImpl session : sessionsMap.values())
@@ -163,8 +165,10 @@ public final class SessionRegistry implements Startable
          if (session.getWorkspace().getName().equals(workspaceName))
          {
             if (log.isDebugEnabled())
+            {
                log.debug("Session for workspace " + workspaceName + " in use." + " Session id:" + session.getId()
                   + " user: " + session.getUserID());
+            }
             return true;
          }
       }
@@ -176,13 +180,34 @@ public final class SessionRegistry implements Startable
       sessionsMap.clear();
 
       if (timeOut > 0)
+      {
          sessionCleaner = new SessionCleaner(repositoryId, DEFAULT_CLEANER_TIMEOUT, timeOut);
+      }
    }
 
    public void stop()
    {
       if (timeOut > 0 && sessionCleaner != null)
+      {
          sessionCleaner.halt();
+      }
+
+      // Close all the current sessions to prevent memory leaks
+      for (SessionImpl s : sessionsMap.values())
+      {
+         try
+         {
+            s.logout();
+         }
+         catch (Exception e)
+         {
+            if (log.isDebugEnabled())
+            {
+               log.debug("Could not close the session", e);
+            }
+         }
+      }
+
       sessionsMap.clear();
    }
 
@@ -224,8 +249,10 @@ public final class SessionRegistry implements Startable
          setDaemon(true);
          start();
          if (log.isDebugEnabled())
+         {
             log.debug("SessionCleaner instantiated name= " + getName() + " workTime= " + workTime + " sessionTimeOut="
                + sessionTimeOut);
+         }
       }
 
       @Override
@@ -239,7 +266,7 @@ public final class SessionRegistry implements Startable
             }
          }
       }
-      
+
       /**
        * Checks if the session has a local timeout if so it will use it otherwise it will use the
        * global timeout

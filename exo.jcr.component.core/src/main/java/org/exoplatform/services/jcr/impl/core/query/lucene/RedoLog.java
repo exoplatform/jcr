@@ -175,7 +175,10 @@ class RedoLog
       }
       try
       {
-         dir.deleteFile(REDO_LOG);
+         if (dir.fileExists(REDO_LOG))
+         {
+            dir.deleteFile(REDO_LOG);
+         }
       }
       catch (IOException e)
       {
