@@ -78,8 +78,8 @@ public class ExoJBossCacheFactory<K, V>
     * Keep only one instance of the {@link JChannelFactory} to prevent creating several times the
     * same multiplexer stack
     */
-   private static final JChannelFactory CHANNEL_FACTORY =
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<JChannelFactory>()
+   private static final JChannelFactory CHANNEL_FACTORY = SecurityHelper
+      .doPrivilegedAction(new PrivilegedAction<JChannelFactory>()
       {
          public JChannelFactory run()
          {
@@ -346,6 +346,14 @@ public class ExoJBossCacheFactory<K, V>
             if (!cacheInstance.hasReferences())
             {
                it.remove();
+               if (caches.isEmpty())
+               {
+                  allCacheTypes.remove(cacheType);
+                  if (allCacheTypes.isEmpty())
+                  {
+                     CACHES.remove(container);
+                  }
+               }
                PrivilegedJBossCacheHelper.stop((Cache<Serializable, Object>)cache);
             }
          }
@@ -376,7 +384,7 @@ public class ExoJBossCacheFactory<K, V>
       }
       return null;
    }
-   
+
    /**
     * All the known cache types
     */

@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.jboss.cache.Cache;
+import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 import org.jboss.cache.notifications.annotation.CacheListener;
@@ -164,8 +165,11 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
       {
          // write to FS
          super.write();
-         // write to cache
-         PrivilegedJBossCacheHelper.put(cache, namesFqn, LIST_KEY, getNames());
+         if (cache.getCacheStatus() == CacheStatus.STARTED)
+         {
+            // write to cache
+            PrivilegedJBossCacheHelper.put(cache, namesFqn, LIST_KEY, getNames());
+         }
       }
    }
 

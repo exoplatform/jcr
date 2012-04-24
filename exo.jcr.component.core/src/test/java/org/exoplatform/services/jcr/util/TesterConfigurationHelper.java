@@ -33,9 +33,11 @@ import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.impl.RepositoryContainer;
+import org.exoplatform.services.jcr.impl.RepositoryServiceImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -118,6 +120,13 @@ public class TesterConfigurationHelper
 
    }
 
+   public RepositoryContainer getRepositoryContainer(ExoContainer container, String repositoryName) throws Exception
+   {
+      RepositoryServiceImpl service =
+         (RepositoryServiceImpl)container.getComponentInstanceOfType(RepositoryService.class);
+      return service.getRepositoryContainer(repositoryName);
+   }   
+   
    public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType, String dsName)
       throws Exception
    {
@@ -380,7 +389,7 @@ public class TesterConfigurationHelper
       ArrayList<SimpleParameterEntry> params = new ArrayList();
       params.addAll(wsEntry.getContainer().getParameters());
 
-      ContainerEntry containerEntry = new ContainerEntry(wsEntry.getContainer().getType(), (ArrayList)params);
+      ContainerEntry containerEntry = new ContainerEntry(wsEntry.getContainer().getType(), params);
       containerEntry.setParameters(params);
 
       // value storage

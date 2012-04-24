@@ -28,6 +28,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.ActionNonTxAware;
 import org.infinispan.Cache;
+import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
@@ -81,7 +82,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
     * Cache key for storing index names.
     */
    protected final IndexInfosKey namesKey;
-   
+
    /**
     * Need to write the index info out of the current transaction 
     * due to the fact that even in auto commit mode, changes are now applied 
@@ -104,7 +105,7 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
             return null;
          }
       };
-      
+
    /**
     * ISPNIndexInfos constructor.
     * 
@@ -194,9 +195,11 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
       {
          // write to FS
          super.write();
-
-         // write to cache
-         write.run();
+         if (cache.getStatus() == ComponentStatus.RUNNING)
+         {
+            // write to cache
+            write.run();
+         }
       }
    }
 
@@ -219,35 +222,33 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
          }
       }
    }
-   
-
 
    /**
     * Update index configuration, when it changes on persistent storage 
     * 
     * @param set
     */
-  protected void refreshIndexes(Set<String> set)
-  {
-     // do nothing if null is passed
-     if (set == null)
-     {
-        return;
-     }
-     setNames(set);
-     // callback multiIndex to refresh lists
-     try
-     {
-        MultiIndex multiIndex = getMultiIndex();
-        if (multiIndex != null)
-        {
-           multiIndex.refreshIndexList();
-        }
-     }
-     catch (IOException e)
-     {
-        log.error("Failed to update indexes! " + e.getMessage(), e);
-     }
-  }
-   
+   protected void refreshIndexes(Set<String> set)
+   {
+      // do nothing if null is passed
+      if (set == null)
+      {
+         return;
+      }
+      setNames(set);
+      // callback multiIndex to refresh lists
+      try
+      {
+         MultiIndex multiIndex = getMultiIndex();
+         if (multiIndex != null)
+         {
+            multiIndex.refreshIndexList();
+         }
+      }
+      catch (IOException e)
+      {
+         log.error("Failed to update indexes! " + e.getMessage(), e);
+      }
+   }
+
 }
