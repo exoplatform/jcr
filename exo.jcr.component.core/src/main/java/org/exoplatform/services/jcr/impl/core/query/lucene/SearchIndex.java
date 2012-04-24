@@ -96,6 +96,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.RepositoryException;
@@ -526,6 +527,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Indicates if component suspended or not.
     */
    protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
+   
+   /**
+    * The amount of current working threads.
+    */
+   protected AtomicInteger workingThreads = new AtomicInteger();
 
    protected final Set<String> recoveryFilterClasses;
 
@@ -1327,27 +1333,45 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       waitForResuming();
 
       checkOpen();
-      Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
-      final IndexReader reader = getIndexReader(queryImpl.needsSystemTree());
-      JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
-      searcher.setSimilarity(getSimilarity());
-      return new FilterMultiColumnQueryHits(searcher.execute(query, sort, resultFetchHint,
-         QueryImpl.DEFAULT_SELECTOR_NAME))
+      
+      workingThreads.incrementAndGet();
+      
+      try
       {
-         @Override
-         public void close() throws IOException
+         Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
+         final IndexReader reader = getIndexReader(queryImpl.needsSystemTree());
+         JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
+         searcher.setSimilarity(getSimilarity());
+         return new FilterMultiColumnQueryHits(searcher.execute(query, sort, resultFetchHint,
+            QueryImpl.DEFAULT_SELECTOR_NAME))
          {
-            try
+            @Override
+            public void close() throws IOException
             {
-               super.close();
+               try
+               {
+                  super.close();
+               }
+               finally
+               {
+                  PerQueryCache.getInstance().dispose();
+                  Util.closeOrRelease(reader);
+               }
             }
-            finally
+         };
+      }
+      finally
+      {
+         workingThreads.decrementAndGet();
+         
+         if (isSuspended.get() && workingThreads.get() == 0)
+         {
+            synchronized (workingThreads)
             {
-               PerQueryCache.getInstance().dispose();
-               Util.closeOrRelease(reader);
+               workingThreads.notifyAll();
             }
          }
-      };
+      }
    }
 
    /**
@@ -1377,27 +1401,44 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
       checkOpen();
 
-      Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
+      workingThreads.incrementAndGet();
 
-      final IndexReader reader = getIndexReader();
-      JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
-      searcher.setSimilarity(getSimilarity());
-      return new FilterMultiColumnQueryHits(query.execute(searcher, sort, resultFetchHint))
+      try
       {
-         @Override
-         public void close() throws IOException
+         Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
+
+         final IndexReader reader = getIndexReader();
+         JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
+         searcher.setSimilarity(getSimilarity());
+         return new FilterMultiColumnQueryHits(query.execute(searcher, sort, resultFetchHint))
          {
-            try
+            @Override
+            public void close() throws IOException
             {
-               super.close();
+               try
+               {
+                  super.close();
+               }
+               finally
+               {
+                  PerQueryCache.getInstance().dispose();
+                  Util.closeOrRelease(reader);
+               }
             }
-            finally
+         };
+      }
+      finally
+      {
+         workingThreads.decrementAndGet();
+         
+         if (isSuspended.get() && workingThreads.get() == 0)
+         {
+            synchronized (workingThreads)
             {
-               PerQueryCache.getInstance().dispose();
-               Util.closeOrRelease(reader);
+               workingThreads.notifyAll();
             }
          }
-      };
+      }
    }
 
    /**
@@ -3308,11 +3349,28 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
       checkOpen();
 
-      IndexReader reader = getIndexReader(true);
-      IndexSearcher searcher = new IndexSearcher(reader);
-      searcher.setSimilarity(getSimilarity());
+      workingThreads.incrementAndGet();
 
-      return new LuceneQueryHits(reader, searcher, query, true);
+      try
+      {
+         IndexReader reader = getIndexReader(true);
+         IndexSearcher searcher = new IndexSearcher(reader);
+         searcher.setSimilarity(getSimilarity());
+
+         return new LuceneQueryHits(reader, searcher, query, true);
+      }
+      finally
+      {
+         workingThreads.decrementAndGet();
+         
+         if (isSuspended.get() && workingThreads.get() == 0)
+         {
+            synchronized (workingThreads)
+            {
+               workingThreads.notifyAll();
+            }
+         }
+      }
    }
 
    /**
@@ -3370,9 +3428,30 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void suspend() throws SuspendException
    {
       latcher.set(new CountDownLatch(1));
-      closeAndKeepWaitingThreads();
-
       isSuspended.set(true);
+      
+      if (workingThreads.get() > 0)
+      {
+         synchronized (workingThreads)
+         {
+            while (workingThreads.get() > 0)
+            {
+               try
+               {
+                  workingThreads.wait();
+               }
+               catch (InterruptedException e)
+               {
+                  if (log.isTraceEnabled())
+                  {
+                     log.trace(e.getMessage(), e);
+                  }
+               }
+            }
+         }
+      }
+      
+      closeAndKeepWaitingThreads();
    }
 
    /**

@@ -24,11 +24,18 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.util.IdGenerator;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.query.InvalidQueryException;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryResult;
 
 import java.io.File;
 import java.io.IOException;
@@ -36,6 +43,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by The eXo Platform SAS.
@@ -1721,7 +1729,83 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       log.info("Total time of restore the repository = " + ((System.currentTimeMillis() - timeOfRestore)) + "ms.");
       checkConent(repositoryService.getRepository(newRepoEntry.getName()), wsEntry.getName());
    }
+   
+   public void testRepositoryFullBackupWithQueryInBackgroudOneThread() throws Exception
+   {
+      // prepare
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
+      
+      SessionImpl session = (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+      final Query q = session.getWorkspace().getQueryManager().createQuery(
+                  "select * from nt:unstructured where jcr:path like '/test/%'", Query.SQL);
 
+      QueryResult res = q.execute();
+      assertEquals("Wrong nodes count in result set", 3, res.getNodes().getSize());
+      
+      ThreadQueryExecuter tQueryExecuter = new ThreadQueryExecuter(q);
+      tQueryExecuter.start();
+      
+      // backup
+      File backDir = new File("target/backup/" + IdGenerator.generate());
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      tQueryExecuter.close();
+      assertNull("Can not execute query.", tQueryExecuter.getException());
+   }
+      
+   class ThreadQueryExecuter extends Thread
+   {
+      private AtomicBoolean closed = new AtomicBoolean(false);
+      
+      private Exception exception;
+
+      private Query query;
+
+      public ThreadQueryExecuter(Query q)
+      {
+         setName("QueryExecuter" + getName());
+         this.query = q;
+      }
+
+      public Exception getException()
+      {
+         return exception;
+      }
+      
+      public void close()
+      {
+         closed.set(true);
+      }
+
+      @Override
+      public void run()
+      {
+         while (!closed.get())
+         {
+            try
+            {
+               QueryResult result = query.execute();
+               result.getNodes().getSize();
+            }
+            catch (Exception re)
+            {
+               log.error("Can not execute query.", re);
+               exception = re;
+            }
+         }
+      }
+   }
+   
    /**
     * Set new backup directory in RepositoryBackupChainLog
     * 
