@@ -1236,7 +1236,19 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public static String getDBTableSuffix(WorkspaceEntry wsConfig)
    {
-      return wsConfig.getContainer()
-         .getParameterValue(JDBCWorkspaceDataContainer.DB_TABLENAME_SUFFIX, wsConfig.getName()).toUpperCase();
+      String defaultSuffix = replaceIncorrectChars(wsConfig.getName());
+
+      String suffix =
+         wsConfig.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_TABLENAME_SUFFIX, defaultSuffix);
+      return suffix;
    }
+
+   /**
+    * Tries to fix name of the workspace if it is not corresponding to SQL table name specification.
+    */
+   private static String replaceIncorrectChars(String workspaceName)
+   {
+      return workspaceName.replaceAll("[^A-Za-z_0-9]", "").toUpperCase();
+   }
+
 }

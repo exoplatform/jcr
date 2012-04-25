@@ -66,6 +66,32 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       this.helper = TesterConfigurationHelper.getInstance();
    }
 
+   public void testAddNewIsolatedWorkspaceWithIncorrectName() throws Exception
+   {
+      ManageableRepository repository = null;
+      try
+      {
+         try
+         {
+            repository = helper.createRepository(container, DatabaseStructureType.ISOLATED, null);
+            WorkspaceEntry testWorkspaceEntry = helper.createWorkspaceEntry(DatabaseStructureType.ISOLATED, null);
+            testWorkspaceEntry.setName("6877876m8_alkgfheriu");
+            helper.addWorkspace(repository, testWorkspaceEntry);
+         }
+         catch (Exception e)
+         {
+            fail("WorkspaceEntry is not created");
+         }
+      }
+      finally
+      {
+         if (repository != null)
+         {
+            helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
+   }
+
    public void testAddNewRepository() throws Exception
    {
       ManageableRepository repository = null;
