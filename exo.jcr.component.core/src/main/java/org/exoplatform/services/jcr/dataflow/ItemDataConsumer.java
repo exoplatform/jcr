@@ -42,6 +42,19 @@ import javax.jcr.RepositoryException;
  */
 public interface ItemDataConsumer
 {
+   /**
+    * Checks if Item by parent (id) and name (with path index) of define type exists.
+    * 
+    * @param parent 
+    *          NodeData
+    * @param name 
+    *          item name
+    * @param itemType 
+    *          itemType
+    * @return true if Item exists and false otherwise
+    * @throws RepositoryException
+    */
+   boolean hasItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException;
 
    /**
     * Find Item by parent (id) and name (with path index) of define type.

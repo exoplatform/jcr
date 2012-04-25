@@ -106,6 +106,15 @@ public class ShareableSupportedWorkspaceDataManager implements SharedDataManager
    /**
     * {@inheritDoc}
     */
+   public boolean hasItemData(NodeData parent, QPathEntry name, ItemType itemType)
+      throws RepositoryException
+   {
+      return persistentManager.hasItemData(parent, name, itemType);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
       throws RepositoryException
    {

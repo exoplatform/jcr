@@ -1015,16 +1015,7 @@ public class TestAccess extends BaseStandaloneTest
       try
       {
          testNode.addNode("d");
-         fail();
-      }
-      catch (AccessDeniedException e)
-      {
-         // ok
-      }
-      session1.save();
-      try
-      {
-         testNode.addNode("d");
+         session1.save();
          fail();
       }
       catch (AccessDeniedException e)

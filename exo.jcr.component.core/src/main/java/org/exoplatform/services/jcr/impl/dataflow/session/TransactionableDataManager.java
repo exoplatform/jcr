@@ -371,6 +371,30 @@ public class TransactionableDataManager implements DataManager
    /**
     * {@inheritDoc}
     */
+   public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
+   {
+      ItemData data = null;
+      if (txStarted())
+      {
+         ItemState state = transactionLog.getItemState(parentData, name, itemType);
+         if (state != null)
+         {
+            data = state.getData();
+         }
+      }
+      if (data != null)
+      {
+         return true;
+      }
+      else
+      {
+         return storageDataManager.hasItemData(parentData, name, itemType);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(String identifier) throws RepositoryException
    {
       ItemData data = null;

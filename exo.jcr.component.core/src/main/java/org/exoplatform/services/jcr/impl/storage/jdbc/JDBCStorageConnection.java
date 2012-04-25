@@ -1392,6 +1392,15 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * {@inheritDoc}
     */
+   public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+      IllegalStateException
+   {
+      return hasItemByName(parentData, getInternalId(parentData.getIdentifier()), name, itemType);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
       IllegalStateException
    {
@@ -1518,6 +1527,48 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       catch (IOException e)
       {
          throw new RepositoryException("getItemData() error", e);
+      }
+   }
+
+   protected boolean hasItemByName(NodeData parent, String parentId, QPathEntry name, ItemType itemType)
+      throws RepositoryException, IllegalStateException
+   {
+      checkIfOpened();
+      try
+      {
+         ResultSet item = null;
+         try
+         {
+            item = findItemByName(parentId, name.getAsString(), name.getIndex());
+            while (item.next())
+            {
+               int columnClass = item.getInt(COLUMN_CLASS);
+               if (itemType == ItemType.UNKNOWN || columnClass == itemType.ordinal())
+               {
+                  return true;
+               }
+            }
+
+            return false;
+         }
+         finally
+         {
+            try
+            {
+               if (item != null)
+               {
+                  item.close();
+               }
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
       }
    }
 
@@ -2516,7 +2567,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     *           database error
     * @throws IOException
     *           I/O error
-    * @thorws RepositoryException if Value data large of JDBC accepted (Integer.MAX_VALUE)
+    * @throws RepositoryException if Value data large of JDBC accepted (Integer.MAX_VALUE)
     */
    protected void addValues(String cid, PropertyData data) throws IOException, SQLException, RepositoryException
    {

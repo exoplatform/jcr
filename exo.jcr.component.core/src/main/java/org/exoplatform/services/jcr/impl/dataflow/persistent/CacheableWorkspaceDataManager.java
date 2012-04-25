@@ -797,6 +797,64 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
+   public boolean hasItemData(final NodeData parentData, final QPathEntry name, final ItemType itemType)
+      throws RepositoryException
+   {
+      if (cache.isEnabled())
+      {
+         // 1. Try from cache
+         ItemData data = getCachedItemData(parentData, name, itemType);
+
+         // 2. Try from container
+         if (data == null)
+         {
+            final DataRequest request = new DataRequest(parentData.getIdentifier(), name);
+
+            try
+            {
+               request.start();
+               // Try first to get the value from the cache since a
+               // request could have been launched just before
+               data = getCachedItemData(parentData, name, itemType);
+               if (data == null)
+               {
+                  return executeAction(new PrivilegedExceptionAction<Boolean>()
+                  {
+                     public Boolean run() throws RepositoryException
+                     {
+                        return CacheableWorkspaceDataManager.super.hasItemData(parentData, name, itemType);
+                     }
+                  });
+               }
+            }
+            finally
+            {
+               request.done();
+            }
+         }
+
+         if (data instanceof NullItemData)
+         {
+            return false;
+         }
+
+         return true;
+      }
+      else
+      {
+         return executeAction(new PrivilegedExceptionAction<Boolean>()
+         {
+            public Boolean run() throws RepositoryException
+            {
+               return CacheableWorkspaceDataManager.super.hasItemData(parentData, name, itemType);
+            }
+         });
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    @Override
    public ItemData getItemData(String identifier) throws RepositoryException
    {

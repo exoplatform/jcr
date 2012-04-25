@@ -52,6 +52,25 @@ public interface WorkspaceStorageConnection
 {
 
    /**
+    * Checks if <code>ItemData</code> exists into the storage using item's parent and name relative the parent
+    * location of define type.
+    * 
+    * @param parentData
+    *          - the item's parent NodeData
+    * @param name
+    *          - item's path entry (QName + index)
+    * @param itemType
+    *             item type         
+    * @return - true if ItemData exists and false otherwise
+    * @throws RepositoryException
+    *           if some exception occurred
+    * @throws IllegalStateException
+    *           if connection is closed
+    */
+   boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+      IllegalStateException;
+
+   /**
     * Reads <code>ItemData</code> from the storage using item's parent and name relative the parent
     * location of define type.
     * 

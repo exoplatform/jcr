@@ -267,6 +267,42 @@ public class SessionDataManager implements ItemDataConsumer
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public boolean hasItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException
+   {
+      if (name.getName().equals(JCRPath.PARENT_RELPATH) && name.getNamespace().equals(Constants.NS_DEFAULT_URI))
+      {
+         if (parent.getIdentifier().equals(Constants.ROOT_UUID))
+         {
+            return false;
+         }
+         else
+         {
+            return true;
+         }
+      }
+
+      // 1. Try in transient changes
+      ItemState state = changesLog.getItemState(parent, name, itemType);
+      if (state == null)
+      {
+         // 2. Check if the parent node is a new node
+         if (isNew(parent.getIdentifier()))
+         {
+            // The parent node is a new node so we know that the data doesn't exist in the database
+            return false;
+         }
+
+         return transactionableManager.hasItemData(parent, name, itemType);
+      }
+      else
+      {
+         return !state.isDeleted();
+      }
+   }
+
+   /**
     * Return item data by identifier in this transient storage then in workspace container.
     * 
     * @param identifier

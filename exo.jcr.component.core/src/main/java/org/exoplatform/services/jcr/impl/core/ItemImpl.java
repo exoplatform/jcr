@@ -426,14 +426,16 @@ public abstract class ItemImpl implements Item
       boolean multiValue, int expectedType) throws ValueFormatException, VersionException, LockException,
       ConstraintViolationException, RepositoryException
    {
+      boolean persistedParent = !parentNode.isNew();
+
       // Check if checked-in (versionable)
-      if (!parentNode.checkedOut())
+      if (persistedParent && !parentNode.checkedOut())
       {
          throw new VersionException("Node " + parentNode.getPath() + " or its nearest ancestor is checked-in");
       }
 
       // Check is locked
-      if (!parentNode.checkLocking())
+      if (persistedParent && !parentNode.checkLocking())
       {
          throw new LockException("Node " + parentNode.getPath() + " is locked ");
       }

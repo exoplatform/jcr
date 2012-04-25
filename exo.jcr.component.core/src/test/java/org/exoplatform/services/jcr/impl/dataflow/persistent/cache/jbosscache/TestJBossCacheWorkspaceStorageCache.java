@@ -339,6 +339,13 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          throw new UnsupportedOperationException();
       }
 
+      @Override
+      public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+         IllegalStateException
+      {
+         return getItemData(parentData, name, itemType) != null;
+      }
+
    };
    
    private static class MyWorkspaceDataContainer extends WorkspaceDataContainerBase

@@ -180,6 +180,23 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
    /**
     * {@inheritDoc}
     */
+   public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType)
+      throws RepositoryException
+   {
+      if (parentData != null)
+      {
+         final QPath ipath = QPath.makeChildPath(parentData.getQPath(), name);
+         if (isSystemDescendant(ipath) && !this.equals(versionDataManager))
+         {
+            return versionDataManager.hasItemData(parentData, name, itemType);
+         }
+      }
+      return super.hasItemData(parentData, name, itemType);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType, boolean createNullItemData)
       throws RepositoryException
    {

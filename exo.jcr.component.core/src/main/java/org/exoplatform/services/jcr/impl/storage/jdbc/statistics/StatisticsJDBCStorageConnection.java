@@ -185,7 +185,17 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
     */
    private static final String ADD_NODE_DATA_DESCR = "addNodeData";
 
+   /**
+    * The description of the statistics corresponding to the method
+    * {@link WorkspaceStorageConnection#getNodesCount()}.
+    */
    private static final String NODES_COUNT = "getNodesCount";
+
+   /**
+    * The description of the statistics corresponding to the method
+    * {@link WorkspaceStorageConnection#hasItemData(NodeData, QPathEntry, ItemType)}.
+    */
+   private static final String HAS_ITEM_DATA_DESCR = "hasItemData";
 
    /**
     * The global statistics for all the database accesses
@@ -199,6 +209,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    static
    {
       // Read Methods
+      ALL_STATISTICS.put(HAS_ITEM_DATA_DESCR, new Statistics(GLOBAL_STATISTICS, HAS_ITEM_DATA_DESCR));
       ALL_STATISTICS.put(GET_ITEM_DATA_BY_ID_DESCR, new Statistics(GLOBAL_STATISTICS, GET_ITEM_DATA_BY_ID_DESCR));
       ALL_STATISTICS.put(GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR, new Statistics(GLOBAL_STATISTICS,
          GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR));
@@ -703,6 +714,24 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       {
          s.begin();
          return wcs.getNodesCount();
+      }
+      finally
+      {
+         s.end();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+      IllegalStateException
+   {
+      Statistics s = ALL_STATISTICS.get(HAS_ITEM_DATA_DESCR);
+      try
+      {
+         s.begin();
+         return wcs.hasItemData(parentData, name, itemType);
       }
       finally
       {

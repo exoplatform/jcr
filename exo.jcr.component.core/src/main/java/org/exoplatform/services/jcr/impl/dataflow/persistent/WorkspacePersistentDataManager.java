@@ -61,7 +61,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -1182,6 +1181,23 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       try
       {
          return con.getItemData(parentData, name, itemType);
+      }
+      finally
+      {
+         con.close();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean hasItemData(final NodeData parentData, final QPathEntry name, ItemType itemType)
+      throws RepositoryException
+   {
+      final WorkspaceStorageConnection con = dataContainer.openConnection();
+      try
+      {
+         return con.hasItemData(parentData, name, itemType);
       }
       finally
       {

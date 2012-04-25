@@ -741,6 +741,13 @@ public abstract class BaseStandaloneTest extends TestCase
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
       }
 
+      @Override
+      public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
+         IllegalStateException
+      {
+         throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
+      }
+
    }
 
 }
