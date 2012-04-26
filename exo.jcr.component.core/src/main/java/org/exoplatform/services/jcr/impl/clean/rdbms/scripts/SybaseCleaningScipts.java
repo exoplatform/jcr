@@ -110,6 +110,7 @@ public class SybaseCleaningScipts extends DBCleaningScripts
       Collection<String> scripts = new ArrayList<String>();
 
       scripts.add("DROP INDEX " + itemTableName + ".JCR_IDX_" + itemTableSuffix + "_PARENT");
+      scripts.add("DROP INDEX " + itemTableName + ".JCR_IDX_" + itemTableSuffix + "_PARENT_NAME");
       scripts.add("DROP INDEX " + itemTableName + ".JCR_IDX_" + itemTableSuffix + "_PARENT_ID");
       scripts.add("DROP INDEX " + itemTableName + ".JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM");
       scripts.add("DROP INDEX " + valueTableName + ".JCR_IDX_" + valueTableSuffix + "_PROPERTY");
@@ -128,6 +129,8 @@ public class SybaseCleaningScipts extends DBCleaningScripts
       try
       {
          scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + itemTableSuffix + "_PARENT ON "
+            + itemTableName, multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_NAME ON "
             + itemTableName, multiDb, dialect, wsEntry));
          scripts.add(DBInitializerHelper.getObjectScript("INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_ID ON "
             + itemTableName, multiDb, dialect, wsEntry));

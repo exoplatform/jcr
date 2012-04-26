@@ -42,6 +42,7 @@ import javax.jcr.RepositoryException;
  * 
  * JCR_PK_XITEM - Item already exists with this ID JCR_FK_XITEM_PARENT - Parent not found by ID
  * JCR_IDX_XITEM_PARENT - Item already exists with the parent, name, index, type(N/P), persisted
+ * version JCR_IDX_XITEM_PARENT_NAME - Item already exists with the type(N/P), parent, name, index,
  * version JCR_IDX_XITEM_PARENT_ID - Item already exists with the type(N/P), parent, ID,
  * persisted version
  * 
@@ -123,6 +124,11 @@ public class SQLExceptionHandler
             message.append("Item already exists. Condition: ID. ").append(itemInfo);
             // InvalidItemStateException ! - because it's impossible add new item with existed UUID
             throw new JCRInvalidItemStateException(message.toString(), item.getIdentifier(), ItemState.ADDED, e);
+         }
+         else if (umsg.indexOf(conn.JCR_IDX_ITEM_PARENT_NAME) >= 0)
+         {
+            message.append("Item already exists. Condition: parent ID and ID. ").append(itemInfo);
+            throw new ItemExistsException(message.toString(), e);
          }
          else if (umsg.indexOf(conn.JCR_IDX_ITEM_PARENT_ID) >= 0)
          {

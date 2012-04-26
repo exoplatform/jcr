@@ -237,6 +237,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             JCR_PK_ITEM = "JCR_PK_MITEM";
             JCR_FK_ITEM_PARENT = "JCR_FK_MITEM_PARENT";
             JCR_IDX_ITEM_PARENT = "JCR_IDX_MITEM_PARENT";
+            JCR_IDX_ITEM_PARENT_NAME = "JCR_IDX_MITEM_PARENT_NAME";
             JCR_IDX_ITEM_PARENT_ID = "JCR_IDX_MITEM_PARENT_ID";
             JCR_PK_VALUE = "JCR_PK_MVALUE";
             JCR_FK_VALUE_PROPERTY = "JCR_FK_MVALUE_PROPERTY";
@@ -246,6 +247,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             JCR_IDX_ITEM_N_ORDER_NUM = "JCR_IDX_MITEM_N_ORDER_NUM";
             JCR_IDX_ITEM_PARENT_FK = "JCR_IDX_MITEM_PARENT_FK";
             break;
+
          case SINGLE :
             JCR_ITEM = "JCR_SITEM";
             JCR_VALUE = "JCR_SVALUE";
@@ -253,6 +255,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             JCR_PK_ITEM = "JCR_PK_SITEM";
             JCR_FK_ITEM_PARENT = "JCR_FK_SITEM_PARENT";
             JCR_IDX_ITEM_PARENT = "JCR_IDX_SITEM_PARENT";
+            JCR_IDX_ITEM_PARENT_NAME = "JCR_IDX_SITEM_PARENT_NAME";
             JCR_IDX_ITEM_PARENT_ID = "JCR_IDX_SITEM_PARENT_ID";
             JCR_PK_VALUE = "JCR_PK_SVALUE";
             JCR_FK_VALUE_PROPERTY = "JCR_FK_SVALUE_PROPERTY";
@@ -270,6 +273,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             JCR_PK_ITEM = "JCR_PK_I" + containerConfig.dbTableSuffix;
             JCR_FK_ITEM_PARENT = "JCR_FK_I" + containerConfig.dbTableSuffix + "_PARENT";
             JCR_IDX_ITEM_PARENT = "JCR_IDX_I" + containerConfig.dbTableSuffix + "_PARENT";
+            JCR_IDX_ITEM_PARENT_NAME = "JCR_IDX_I" + containerConfig.dbTableSuffix + "_PARENT_NAME";
             JCR_IDX_ITEM_PARENT_ID = "JCR_IDX_I" + containerConfig.dbTableSuffix + "_PARENT_ID";
             JCR_PK_VALUE = "JCR_PK_V" + containerConfig.dbTableSuffix;
             JCR_FK_VALUE_PROPERTY = "JCR_FK_V" + containerConfig.dbTableSuffix + "_PROPERTY";

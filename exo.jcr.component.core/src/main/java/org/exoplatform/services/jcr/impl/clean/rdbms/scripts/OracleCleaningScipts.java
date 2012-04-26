@@ -117,6 +117,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
 
       scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_FK");
       scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_PARENT");
+      scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_NAME");
       scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_ID");
       scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM");
       scripts.add("DROP INDEX JCR_IDX_" + valueTableSuffix + "_PROPERTY");
@@ -138,6 +139,8 @@ public class OracleCleaningScipts extends DBCleaningScripts
             + itemTableName, multiDb, dialect, wsEntry));
          scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_PARENT ON " + itemTableName,
             multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_PARENT_NAME ON "
+            + itemTableName, multiDb, dialect, wsEntry));
          scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_PARENT_ID ON "
             + itemTableName, multiDb, dialect, wsEntry));
          scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM ON "
@@ -223,6 +226,8 @@ public class OracleCleaningScipts extends DBCleaningScripts
          + "_PARENT_FK_OLD");
       scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_PARENT RENAME TO JCR_IDX_" + itemTableSuffix
          + "_PARENT_OLD");
+      scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_NAME RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_PARENT_NAME_OLD");
       scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_ID RENAME TO JCR_IDX_" + itemTableSuffix
          + "_PARENT_ID_OLD");
       scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM RENAME TO JCR_IDX_" + itemTableSuffix

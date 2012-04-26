@@ -80,6 +80,8 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
       // renaming indexes
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT RENAME TO JCR_IDX_" + itemTableSuffix
          + "_PARENT_OLD");
+      scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT_NAME RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_PARENT_NAME_OLD");
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT_ID RENAME TO JCR_IDX_" + itemTableSuffix
          + "_PARENT_ID_OLD");
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM RENAME TO JCR_IDX_" + itemTableSuffix
@@ -117,6 +119,8 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
       // renaming indexes
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT_OLD RENAME TO JCR_IDX_" + itemTableSuffix
          + "_PARENT");
+      scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT_NAME_OLD RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_PARENT_NAME");
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT_ID_OLD RENAME TO JCR_IDX_" + itemTableSuffix
          + "_PARENT_ID");
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM_OLD RENAME TO JCR_IDX_" + itemTableSuffix

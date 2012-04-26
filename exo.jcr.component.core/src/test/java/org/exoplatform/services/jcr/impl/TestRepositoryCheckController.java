@@ -896,6 +896,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
 
       conn.prepareStatement("DROP INDEX JCR_IDX_" + (isMultiDb ? "M" : "S") + "ITEM_PARENT").execute();
+      conn.prepareStatement("DROP INDEX JCR_IDX_" + (isMultiDb ? "M" : "S") + "ITEM_PARENT_NAME").execute();
 
       conn.prepareStatement("UPDATE " + iTable + " SET PARENT_ID='" + itemId + "' WHERE ID='" + itemId + "'").execute();
 
