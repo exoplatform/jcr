@@ -482,4 +482,18 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public void close()
+   {
+      rpcService.unregisterCommand(changeIndexMode);
+      rpcService.unregisterCommand(getIndexList);
+      rpcService.unregisterCommand(getIndexFile);
+      rpcService.unregisterCommand(requestForResponsibleToSetIndexOnline);
+      rpcService.unregisterCommand(checkIndexReady);
+
+      rpcService.unregisterTopologyChangeListener(this);
+   }
+
 }

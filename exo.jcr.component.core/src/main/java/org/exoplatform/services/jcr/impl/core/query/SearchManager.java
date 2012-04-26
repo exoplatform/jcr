@@ -18,9 +18,9 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
-import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.search.BooleanClause.Occur;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainerContext;
@@ -323,11 +323,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
       else
       {
-         doInitRemoteCommands();
+         initRemoteCommands();
 
          this.indexRecovery = new IndexRecoveryImpl(rpcService, this);
          rpcService.registerTopologyChangeListener(this);
-         rpcService.registerTopologyChangeListener((TopologyChangeListener)indexRecovery);
       }
    }
 
@@ -704,6 +703,14 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          changesFilter.close();
       }
+
+      if (indexRecovery != null)
+      {
+         indexRecovery.close();
+      }
+
+      unregisterRemoteCommands();
+
       log.info("Search manager stopped");
    }
 
@@ -1466,7 +1473,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * Register remote commands.
     */
-   private void doInitRemoteCommands()
+   private void initRemoteCommands()
    {
       // register commands
       suspend = rpcService.registerCommand(new RemoteCommand()
@@ -1533,6 +1540,22 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          }
       });
 
+   }
+
+   /**
+    * Unregister remote commands.
+    */
+   private void unregisterRemoteCommands()
+   {
+      if (rpcService != null)
+      {
+         rpcService.unregisterCommand(suspend);
+         rpcService.unregisterCommand(resume);
+         rpcService.unregisterCommand(requestForResponsibleForResuming);
+         rpcService.unregisterCommand(changeIndexState);
+
+         rpcService.unregisterTopologyChangeListener(this);
+      }
    }
 
    protected void suspendLocally() throws SuspendException
