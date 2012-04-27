@@ -368,8 +368,44 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
    public void testRepositoryFullBackupRestore() throws Exception
    {
+      testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType.MULTI, DatabaseStructureType.MULTI);
+   }
+
+   public void testRepositoryFullBackupRestoreSingleToMulti() throws Exception
+   {
+      testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType.SINGLE, DatabaseStructureType.MULTI);
+   }
+
+   public void testRepositoryFullBackupRestoreSingleToIsolated() throws Exception
+   {
+      testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType.SINGLE, DatabaseStructureType.ISOLATED);
+   }
+
+   public void testRepositoryFullBackupRestoreMultiToIsolated() throws Exception
+   {
+      testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType.MULTI, DatabaseStructureType.ISOLATED);
+   }
+
+   public void testRepositoryFullBackupRestoreMultiToSingle() throws Exception
+   {
+      testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType.MULTI, DatabaseStructureType.SINGLE);
+   }
+
+   public void testRepositoryFullBackupRestoreIsolatedToSingle() throws Exception
+   {
+      testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType.ISOLATED, DatabaseStructureType.SINGLE);
+   }
+
+   public void testRepositoryFullBackupRestoreIsolatedToMulti() throws Exception
+   {
+      testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType.ISOLATED, DatabaseStructureType.MULTI);
+   }
+
+   private void testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType srcDbStructureType,
+      DatabaseStructureType dstDbStructureType) throws Exception
+   {
       // prepare
-      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      ManageableRepository repository = helper.createRepository(container, srcDbStructureType, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
       // backup
@@ -387,7 +423,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       // restore
       RepositoryEntry newRE =
-         helper.createRepositoryEntry(DatabaseStructureType.MULTI, repository.getConfiguration().getSystemWorkspaceName(), null);
+         helper.createRepositoryEntry(dstDbStructureType, repository.getConfiguration()
+            .getSystemWorkspaceName(), null);
 
       File backLog = new File(bch.getLogFilePath());
       assertTrue(backLog.exists());

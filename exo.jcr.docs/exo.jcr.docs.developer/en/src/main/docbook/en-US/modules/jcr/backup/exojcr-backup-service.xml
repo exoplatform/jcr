@@ -449,7 +449,7 @@ repo.removeWorkspace(workspace);</programlisting>
       configurations workspaces of the Repository to restore the Repository
       from backup over initializer.</para>
 
-      <para></para>
+      <para/>
 
       <para>Restoring the repository or workspace requires to shutdown the
       repository.</para>
@@ -475,7 +475,7 @@ repo.removeWorkspace(workspace);</programlisting>
           </listitem>
         </itemizedlist></para>
 
-      <para></para>
+      <para/>
 
       <para>Example of configuration initializer to restore workspace "backup"
       over BackupWorkspaceInitializer:</para>
@@ -862,5 +862,22 @@ repo.removeWorkspace(workspace);</programlisting>
     different locations: backup-dir directory of BackupService to support
     interactive operations via Backup API (e.g. console) and backup set files
     for portability (e.g. on another server).</para>
+  </section>
+
+  <section>
+    <title>DB type migration</title>
+
+    <para>You can use backup/restore mechanism to migrate between different DB
+    types configuration. Currently three DB types supported (single, multi,
+    isolated) and you can migrate between each of them.</para>
+
+    <para>To accomplish migration you simply need to set desired DB type in
+    the repository configuration file of backup set. It is highly recommended
+    to make backup at the DB level before starting the migration process.
+    <note>
+        <para>After migration process, due to different DB structures, there
+        can remain some unnecessary DB tables, which can be removed
+        safetly.</para>
+      </note></para>
   </section>
 </chapter>
