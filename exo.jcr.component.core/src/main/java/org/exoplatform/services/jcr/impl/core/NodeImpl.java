@@ -2558,14 +2558,12 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
 
       // Check if new node's node type is allowed by its parent definition
-
-      if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName, nodeData().getPrimaryTypeName(),
+      if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(name, primaryTypeName, nodeData().getPrimaryTypeName(),
          nodeData().getMixinTypeNames()))
       {
          throw new ConstraintViolationException("Can't add node " + sysLocFactory.createJCRName(name).getAsString()
             + " to " + getPath() + " node type " + sysLocFactory.createJCRName(primaryTypeName).getAsString()
             + " is not allowed as child's node type for parent node type ");
-
       }
 
       if (childNodeDefinition == null)
