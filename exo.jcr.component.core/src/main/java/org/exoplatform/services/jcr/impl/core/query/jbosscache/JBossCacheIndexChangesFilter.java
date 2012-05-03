@@ -159,7 +159,7 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
 
       PrivilegedJBossCacheHelper.create(cache);
       PrivilegedJBossCacheHelper.start(cache);
-      
+
       this.jmxManager =
          ExoJBossCacheFactory.getJmxRegistrationManager(searchManager.getExoContainerContext(), cache,
             CacheType.INDEX_CACHE);
@@ -281,6 +281,11 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       {
          LOG.warn("Not all JBoss Cache MBeans were unregistered.");
       }
+
+      IndexerSingletonStoreCacheLoader issCacheLoader =
+         (IndexerSingletonStoreCacheLoader)((CacheSPI)cache).getCacheLoaderManager().getCacheLoader();
+      IndexerCacheLoader indexerCacheLoader = (IndexerCacheLoader)issCacheLoader.getCacheLoader();
+      indexerCacheLoader.unregister(rootFqn);
 
       try
       {

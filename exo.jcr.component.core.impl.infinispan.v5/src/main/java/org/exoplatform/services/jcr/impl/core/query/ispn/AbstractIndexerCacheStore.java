@@ -96,8 +96,7 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
    public void register(SearchManager searchManager, SearchManager parentSearchManager, QueryHandler handler,
       QueryHandler parentHandler) throws RepositoryConfigurationException
    {
-      indexers.put(searchManager.getWsId(), new Indexer(searchManager, parentSearchManager, handler,
-         parentHandler));
+      indexers.put(searchManager.getWsId(), new Indexer(searchManager, parentSearchManager, handler, parentHandler));
       if (LOG.isDebugEnabled())
       {
          LOG.debug("Register " + searchManager.getWsId() + " " + this + " in " + indexers);
@@ -145,16 +144,27 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
             {
                // remove the data from the cache
                EXECUTOR.submit(new Runnable()
-               {  
+               {
                   public void run()
                   {
-                     cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING, Flag.FORCE_ASYNCHRONOUS,
-                        Flag.SKIP_REMOTE_LOOKUP).removeAsync(key);
+                     cache.getAdvancedCache()
+                        .withFlags(Flag.SKIP_LOCKING, Flag.FORCE_ASYNCHRONOUS, Flag.SKIP_REMOTE_LOOKUP)
+                        .removeAsync(key);
                   }
                });
             }
          }
       }
+   }
+
+   /**
+   * {@inheritDoc}
+   */
+   @Override
+   public void stop() throws CacheLoaderException
+   {
+      indexers.clear();
+      super.stop();
    }
 
    /**
