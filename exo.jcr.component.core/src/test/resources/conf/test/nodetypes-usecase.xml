@@ -282,12 +282,12 @@
   </nodeType>
   
   <nodeType name="exo:myTypeJCR1703" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
-  	<supertypes>
+    <supertypes>
       <supertype>nt:base</supertype>
     </supertypes>
-  	<childNodeDefinitions>
-    	<childNodeDefinition name="exo:myChildNode" defaultPrimaryType="nt:unstructured" autoCreated="true" mandatory="false" onParentVersion="IGNORE" protected="true" sameNameSiblings="false">
-        	<requiredPrimaryTypes>
+    <childNodeDefinitions>
+        <childNodeDefinition name="exo:myChildNode" defaultPrimaryType="nt:unstructured" autoCreated="true" mandatory="false" onParentVersion="IGNORE" protected="true" sameNameSiblings="false">
+            <requiredPrimaryTypes>
                <requiredPrimaryType>nt:base</requiredPrimaryType>
             </requiredPrimaryTypes>
         </childNodeDefinition>
@@ -306,4 +306,44 @@
       </childNodeDefinition>
     </childNodeDefinitions>
   </nodeType>
+
+  <nodeType name="exo:EXOJCR-1866-T1" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+	  <supertype>nt:base</supertype>
+    </supertypes>
+    <childNodeDefinitions>
+	  <childNodeDefinition name="*" defaultPrimaryType="exo:EXOJCR-1866-T2" autoCreated="false" mandatory="false" onParentVersion="IGNORE" protected="false" sameNameSiblings="false">
+        <requiredPrimaryTypes>
+          <requiredPrimaryType>exo:EXOJCR-1866-T2</requiredPrimaryType>
+        </requiredPrimaryTypes>
+      </childNodeDefinition>
+    </childNodeDefinitions>
+  </nodeType>
+
+   <nodeType name="exo:EXOJCR-1866-T2" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+	<supertypes>
+	  <supertype>nt:base</supertype>
+	</supertypes>
+	<childNodeDefinitions>
+	  <childNodeDefinition name="*" defaultPrimaryType="exo:EXOJCR-1866-T3" autoCreated="false" mandatory="false" onParentVersion="IGNORE" protected="false" sameNameSiblings="false">
+		<requiredPrimaryTypes>
+		  <requiredPrimaryType>exo:EXOJCR-1866-T3</requiredPrimaryType>
+		</requiredPrimaryTypes>
+	  </childNodeDefinition>
+	</childNodeDefinitions>
+   </nodeType>
+
+   <nodeType name="exo:EXOJCR-1866-T3" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+	<supertypes>
+	  <supertype>nt:base</supertype>
+	</supertypes>
+	<childNodeDefinitions>
+	  <childNodeDefinition name="*" defaultPrimaryType="exo:EXOJCR-1866-T3" autoCreated="false" mandatory="false" onParentVersion="IGNORE" protected="false" sameNameSiblings="false">
+	    <requiredPrimaryTypes>
+		  <requiredPrimaryType>exo:EXOJCR-1866-T3</requiredPrimaryType>
+		</requiredPrimaryTypes>
+	  </childNodeDefinition>
+    </childNodeDefinitions>
+   </nodeType>
+
 </nodeTypes>

@@ -265,8 +265,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       // find node type
       NodeDefinitionData nodeDef =
-         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(name, nodeData().getPrimaryTypeName(),
-            nodeData().getMixinTypeNames());
+         session.getWorkspace().getNodeTypesHolder().getChildNodeDefinition(name, parent.nodeData().getPrimaryTypeName(),
+            parent.nodeData().getMixinTypeNames());
 
       if (nodeDef == null)
       {
@@ -321,7 +321,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       // find node type
       NodeDefinitionData nodeDef =
          session.getWorkspace().getNodeTypesHolder()
-            .getChildNodeDefinition(name, ptName, nodeData().getPrimaryTypeName(), nodeData().getMixinTypeNames());
+            .getChildNodeDefinition(name, ptName, parent.nodeData().getPrimaryTypeName(), parent.nodeData().getMixinTypeNames());
 
       if (nodeDef == null)
       {
@@ -2535,7 +2535,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             .getChildNodeDefinition(name, primaryTypeName, nodeData().getPrimaryTypeName(),
                nodeData().getMixinTypeNames());
 
-      validateChildNode(null, name, primaryTypeName, childNodeDefinition);
+      validateChildNode(this, name, primaryTypeName, childNodeDefinition);
    }
 
    private void validateChildNode(NodeImpl parentNode, InternalQName name, InternalQName primaryTypeName,
@@ -2559,11 +2559,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       // Check if new node's node type is allowed by its parent definition
 
-      if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName, nodeData().getPrimaryTypeName(),
-         nodeData().getMixinTypeNames()))
+      if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName, parentNode.nodeData().getPrimaryTypeName(),
+         parentNode.nodeData().getMixinTypeNames()))
       {
          throw new ConstraintViolationException("Can't add node " + sysLocFactory.createJCRName(name).getAsString()
-            + " to " + getPath() + " node type " + sysLocFactory.createJCRName(primaryTypeName).getAsString()
+            + " to " + parentNode.getPath() + " node type " + sysLocFactory.createJCRName(primaryTypeName).getAsString()
             + " is not allowed as child's node type for parent node type ");
 
       }
