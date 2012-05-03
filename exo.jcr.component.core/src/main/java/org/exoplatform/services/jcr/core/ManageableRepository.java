@@ -62,6 +62,16 @@ public interface ManageableRepository extends Repository
    final int READONLY = 2;
 
    /**
+    * Repository SUSPENDED status.
+    */
+   final int SUSPENDED = 3;
+
+   /**
+    * Repository UNDEFINED status.
+    */
+   final int UNDEFINED = 4;
+
+   /**
     * Add the items persistence listener to the named workspace.
     * 
     * @param workspaceName - name of workspace
@@ -170,6 +180,9 @@ public interface ManageableRepository extends Repository
     * Set repository state.
     * 
     * @param repository state
+    * @throws IllegalStateException
+    *         when value state incorrect or
+    *         when we can't do suspend or resume operation in the component    
     */
    void setState(int state);
 

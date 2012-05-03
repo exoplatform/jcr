@@ -50,6 +50,7 @@ import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -177,7 +178,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * The <code>IndexMerger</code> for this <code>MultiIndex</code>.
     */
-   private final IndexMerger merger;
+   private IndexMerger merger;
 
    /**
     * Timer to schedule flushes of this index after some idle time.
@@ -223,7 +224,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * Flag indicating whether the index is stopped.
     */
-   private volatile boolean stopped;
+   private final AtomicBoolean stopped = new AtomicBoolean();
    
    /**
     * The index format version of this multi index.
@@ -270,12 +271,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       // as of 1.5 deletable file is not used anymore
       removeDeletable();
 
-      // initialize IndexMerger
-      merger = new IndexMerger(this);
-      merger.setMaxMergeDocs(handler.getMaxMergeDocs());
-      merger.setMergeFactor(handler.getMergeFactor());
-      merger.setMinMergeDocs(handler.getMinMergeDocs());
-
       IndexingQueueStore store = new IndexingQueueStore(indexDir);
 
       // initialize indexing queue
@@ -303,7 +298,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          index.setUseCompoundFile(handler.getUseCompoundFile());
          index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
          indexes.add(index);
-         merger.indexAdded(index.getName(), index.getNumDocuments());
       }
 
       // init volatile index
@@ -323,6 +317,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       indexingQueue.initialize(this);
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
+         // will also initialize IndexMerger
          setReadWrite();
       }
       this.indexNames.setMultiIndex(this);
@@ -331,7 +326,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          public void run()
          {
-            stopped = true;
+            stopped.set(true);
          }
       });
    }
@@ -926,12 +921,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       if (modeHandler.getMode().equals(IndexerIoMode.READ_WRITE))
       {
-
-         // stop index merger
-         // when calling this method we must not lock this MultiIndex, otherwise
-         // a deadlock might occur
-         merger.dispose();
-
          synchronized (this)
          {
             // stop timer
@@ -977,7 +966,15 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
          }
       }
-      this.stopped = true;
+      // stop index merger
+      // when calling this method we must not lock this MultiIndex, otherwise
+      // a deadlock might occur
+      if (merger != null)
+      {
+         merger.dispose();
+         merger = null;
+      }
+      this.stopped.set(true);
    }
 
    /**
@@ -1148,6 +1145,27 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             multiReader = null;
          }
       }
+   }
+
+   /**
+    * Initialize IndexMerger.
+    */
+   private void initMerger() throws IOException
+   {
+      if (merger != null)
+      {
+         log.info("IndexMerger initialization called twice.");
+      }
+      merger = new IndexMerger(this);
+      merger.setMaxMergeDocs(handler.getMaxMergeDocs());
+      merger.setMergeFactor(handler.getMergeFactor());
+      merger.setMinMergeDocs(handler.getMinMergeDocs());
+
+      for (Object index : indexes)
+      {
+         merger.indexAdded(((PersistentIndex)index).getName(), ((PersistentIndex)index).getNumDocuments());
+      }
+      merger.start();
    }
 
    // -------------------------< internal
@@ -1355,7 +1373,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr, final AtomicLong count) throws IOException,
       RepositoryException, InterruptedException
    {
-      if (stopped)
+      if (stopped.get())
       {
          throw new InterruptedException();
       }
@@ -2550,7 +2568,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    protected void setReadOny()
    {
       // try to stop merger in safe way
-      merger.dispose();
+      if (merger != null)
+      {
+         merger.dispose();
+         merger = null;
+      }
+
       flushTask.cancel();
       FLUSH_TIMER.purge();
       this.redoLog = null;
@@ -2582,7 +2605,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       attemptDelete();
 
       // now that we are ready, start index merger
-      merger.start();
+      initMerger();
+
       if (redoLogApplied)
       {
          // wait for the index merge to finish pending jobs

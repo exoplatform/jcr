@@ -30,17 +30,24 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.transaction.TransactionService;
+import org.picocontainer.Startable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.RepositoryException;
 import javax.transaction.TransactionManager;
@@ -54,7 +61,7 @@ import javax.transaction.TransactionManager;
  * 
  * @version $Id$
  */
-public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager
+public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager implements Suspendable, Startable
 {
 
    /**
@@ -68,6 +75,26 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected final ConcurrentMap<Integer, DataRequest> requestCache;
 
    private TransactionManager transactionManager;
+
+   /**
+    * The amount of current working threads.
+    */
+   protected AtomicInteger workingThreads = new AtomicInteger();
+
+   /**
+    * Indicates if component suspended or not.
+    */
+   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
+
+   /**
+    * Indicates if component stopped or not.
+    */
+   protected final AtomicBoolean isStopped = new AtomicBoolean(false);
+
+   /**
+    * Allows to make all threads waiting until resume. 
+    */
+   protected final AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
 
    /**
     * ItemData request, used on get operations.
@@ -536,6 +563,44 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @Override
    public void save(final ItemStateChangesLog changesLog) throws RepositoryException
    {
+      if (isSuspended.get())
+      {
+         try
+         {
+            latcher.get().await();
+         }
+         catch (InterruptedException e)
+         {
+            throw new RepositoryException(e);
+         }
+      }
+
+      workingThreads.incrementAndGet();
+      try
+      {
+         doSave(changesLog);
+      }
+      finally
+      {
+         workingThreads.decrementAndGet();
+
+         if (isSuspended.get() && workingThreads.get() == 0)
+         {
+            synchronized (workingThreads)
+            {
+               workingThreads.notifyAll();
+            }
+         }
+      }
+   }
+
+   private void doSave(final ItemStateChangesLog changesLog) throws RepositoryException
+   {
+      if (isStopped.get())
+      {
+         throw new RepositoryException("Data container is stopped");
+      }
+
       if (isTxAware())
       {
          // save in dedicated XA transaction
@@ -952,4 +1017,93 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          conn.close();
       }
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void suspend() throws SuspendException
+   {
+      suspendLocally();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void resume() throws ResumeException
+   {
+      resumeLocally();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isSuspended()
+   {
+      return isSuspended.get();
+   }
+
+   private void suspendLocally() throws SuspendException
+   {
+      if (!isSuspended.get())
+      {
+         latcher.set(new CountDownLatch(1));
+         isSuspended.set(true);
+
+         if (workingThreads.get() > 0)
+         {
+            synchronized (workingThreads)
+            {
+               while (workingThreads.get() > 0)
+               {
+                  try
+                  {
+                     workingThreads.wait();
+                  }
+                  catch (InterruptedException e)
+                  {
+                     if (LOG.isTraceEnabled())
+                     {
+                        LOG.trace(e.getMessage(), e);
+                     }
+                  }
+               }
+            }
+         }
+      }
+   }
+
+   private void resumeLocally()
+   {
+      if (isSuspended.get())
+      {
+         latcher.get().countDown();
+         isSuspended.set(false);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getPriority()
+   {
+      return PRIORITY_HIGH;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void start()
+   {
+      isStopped.set(false);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void stop()
+   {
+      isStopped.set(true);
+      resumeLocally();
+   }
+
 }

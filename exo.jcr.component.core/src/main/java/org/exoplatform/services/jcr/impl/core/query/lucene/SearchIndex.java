@@ -45,6 +45,9 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -78,6 +81,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.query.InvalidQueryException;
@@ -89,7 +95,7 @@ import javax.xml.parsers.ParserConfigurationException;
  * Implements a {@link org.apache.jackrabbit.core.query.QueryHandler} using
  * Lucene.
  */
-public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener
+public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener, Suspendable
 {
 
    private static final DefaultQueryNodeFactory DEFAULT_QUERY_NODE_FACTORY = new DefaultQueryNodeFactory();
@@ -428,7 +434,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Indicates if this <code>SearchIndex</code> is closed and cannot be used
     * anymore.
     */
-   private boolean closed = false;
+   private final AtomicBoolean closed = new AtomicBoolean(false);
 
    /**
     * Text extractor for extracting text content of binary properties.
@@ -446,6 +452,16 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    private ErrorLog errorLog;
 
    private final ConfigurationManager cfm;
+
+   /**
+    * Waiting query execution until resume. 
+    */
+   protected final AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
+
+   /**
+    * Indicates if component suspended or not.
+    */
+   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
 
    /**
     * Working constructor.
@@ -815,30 +831,43 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
    /**
     * Closes this <code>QueryHandler</code> and frees resources attached to
-    * this handler.
+    * this handler. Also resume waiting threads.
     */
    public void close()
    {
-      if (synonymProviderConfigFs != null)
+      closeAndKeepWaitingThreads();
+      resumeWaitingThreads();
+   }
+
+   /**
+    * Closes this <code>QueryHandler</code> and frees resources attached to
+    * this handler.
+    */
+   public void closeAndKeepWaitingThreads()
+   {
+      if (!closed.get())
       {
-         try
+         if (synonymProviderConfigFs != null)
          {
-            synonymProviderConfigFs.close();
+            try
+            {
+               synonymProviderConfigFs.close();
+            }
+            catch (IOException e)
+            {
+               log.warn("Exception while closing FileSystem", e);
+            }
          }
-         catch (IOException e)
+         if (spellChecker != null)
          {
-            log.warn("Exception while closing FileSystem", e);
+            spellChecker.close();
          }
+         errorLog.close();
+         index.close();
+         getContext().destroy();
+         closed.set(true);
+         log.info("Index closed: " + path);
       }
-      if (spellChecker != null)
-      {
-         spellChecker.close();
-      }
-      errorLog.close();
-      index.close();
-      getContext().destroy();
-      closed = true;
-      log.info("Index closed: " + path);
    }
 
    /**
@@ -866,6 +895,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public MultiColumnQueryHits executeQuery(SessionImpl session, AbstractQueryImpl queryImpl, Query query,
       QPath[] orderProps, boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
    {
+      waitForResuming();
+
       checkOpen();
 
       Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
@@ -914,6 +945,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public MultiColumnQueryHits executeQuery(SessionImpl session, MultiColumnQuery query, QPath[] orderProps,
       boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
    {
+      waitForResuming();
+
       checkOpen();
 
       Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
@@ -2606,7 +2639,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    private void checkOpen() throws IOException
    {
-      if (closed)
+      if (closed.get())
       {
          throw new IOException("query handler closed and cannot be used anymore.");
       }
@@ -2710,6 +2743,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public QueryHits executeQuery(Query query) throws IOException
    {
+      waitForResuming();
+
       checkOpen();
 
       IndexReader reader = getIndexReader(true);
@@ -2741,5 +2776,89 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          log.error("Can not recover error log.", e);
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void suspend() throws SuspendException
+   {
+      latcher.set(new CountDownLatch(1));
+      closeAndKeepWaitingThreads();
+
+      isSuspended.set(true);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void resume() throws ResumeException
+   {
+      try
+      {
+         closed.set(false);
+         doInit();
+
+         resumeWaitingThreads();
+
+         isSuspended.set(false);
+      }
+      catch (IOException e)
+      {
+         throw new ResumeException(e);
+      }
+      catch (RepositoryException e)
+      {
+         throw new ResumeException(e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isSuspended()
+   {
+      return isSuspended.get();
+   }
+
+   /**
+    * If component is suspended need to wait resuming and not allow
+    * execute query on closed index.
+    * 
+    * @throws IOException
+    */
+   private void waitForResuming() throws IOException
+   {
+      if (isSuspended.get())
+      {
+         try
+         {
+            latcher.get().await();
+         }
+         catch (InterruptedException e)
+         {
+            throw new IOException(e);
+         }
+      }
+   }
+
+   /**
+    * Count down latcher which makes for resuming all
+    * waiting threads.
+    */
+   public void resumeWaitingThreads()
+   {
+      if (latcher.get() != null)
+      {
+         latcher.get().countDown();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getPriority()
+   {
+      return PRIORITY_NORMAL;
    }
 }

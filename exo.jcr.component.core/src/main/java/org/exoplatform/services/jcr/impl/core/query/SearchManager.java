@@ -39,6 +39,9 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.ResumeException;
+import org.exoplatform.services.jcr.impl.backup.SuspendException;
+import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
@@ -69,6 +72,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
@@ -86,7 +90,7 @@ import javax.jcr.query.Query;
  * @version $Id: SearchManager.java 1008 2009-12-11 15:14:51Z nzamosenchuk $
  */
 @NonVolatile
-public class SearchManager implements Startable, MandatoryItemsPersistenceListener
+public class SearchManager implements Startable, MandatoryItemsPersistenceListener, Suspendable
 {
 
    /**
@@ -135,7 +139,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected LuceneVirtualTableResolver virtualTableResolver;
 
    protected IndexerChangesFilter changesFilter;
-   
+
+   /**
+    * Indicates if component suspended or not.
+    */
+   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
+
    private final ExoContainerContext ctx;
 
    /**
@@ -474,6 +483,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public void stop()
    {
       handler.close();
+
       log.info("Search manager stopped");
    }
 
@@ -854,6 +864,64 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public boolean isTXAware()
    {
       return false;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void suspend() throws SuspendException
+   {
+      suspendLocally();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isSuspended()
+   {
+      return isSuspended.get();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void resume() throws ResumeException
+   {
+      resumeLocally();
+   }
+
+   protected void suspendLocally() throws SuspendException
+   {
+      if (!isSuspended.get())
+      {
+         if (handler instanceof Suspendable)
+         {
+            ((Suspendable)handler).suspend();
+         }
+
+         isSuspended.set(true);
+      }
+   }
+
+   protected void resumeLocally() throws ResumeException
+   {
+      if (isSuspended.get())
+      {
+         if (handler instanceof Suspendable)
+         {
+            ((Suspendable)handler).resume();
+         }
+
+         isSuspended.set(false);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getPriority()
+   {
+      return PRIORITY_NORMAL;
    }
 
 }

@@ -137,6 +137,11 @@ public class RepositoryImpl implements ManageableRepository
    private int state = OFFLINE;
 
    /**
+    * Repository state. OFFLINE by default.
+    */
+   private boolean isOffline = true;
+
+   /**
     * RepositoryImpl constructor.
     * 
     * @param container Repository container
@@ -579,7 +584,26 @@ public class RepositoryImpl implements ManageableRepository
     */
    public int getState()
    {
-      return state;
+      if (isOffline)
+      {
+         return OFFLINE;
+      }
+
+      Integer state = null;
+      for (String workspaceName : getWorkspaceNames())
+      {
+         int workspaceState = getWorkspaceContainer(workspaceName).getState();
+         if (state == null)
+         {
+            state = workspaceState;
+         }
+         else if (state != workspaceState)
+         {
+            return UNDEFINED;
+         }
+      }
+
+      return state == null ? ONLINE : state;
    }
 
    /**
@@ -587,22 +611,33 @@ public class RepositoryImpl implements ManageableRepository
     */
    public void setState(int state)
    {
-      switch (state)
+      if (getState() != ONLINE && !(state == ONLINE || state == OFFLINE))
       {
-         case ONLINE :
-            // set ONLINE all workspaces
-            setAllWorkspacesReadOnly(false);
-            break;
-         case OFFLINE :
-            // TODO do nothing
-            break;
-         case READONLY :
-            // set READONLY all workspaces
-            setAllWorkspacesReadOnly(true);
-            break;
+         throw new IllegalStateException("First switch repository to ONLINE and then to needed state.\n" + toString());
       }
 
-      this.state = state;
+      String[] workspaces = getWorkspaceNames();
+      if (workspaces.length > 0)
+      {
+         try
+         {
+            // set state for all workspaces
+            for (String workspaceName : workspaces)
+            {
+               if (!workspaceName.equals(systemWorkspaceName))
+               {
+                  getWorkspaceContainer(workspaceName).setState(state);
+               }
+            }
+            getWorkspaceContainer(systemWorkspaceName).setState(state);
+         }
+         catch (RepositoryException e)
+         {
+            throw new IllegalStateException(e);
+         }
+      }
+
+      isOffline = state == OFFLINE;
    }
 
    /**
