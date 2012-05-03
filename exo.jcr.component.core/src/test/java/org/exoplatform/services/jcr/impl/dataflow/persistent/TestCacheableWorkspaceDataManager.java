@@ -412,6 +412,10 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       public void commit() throws IllegalStateException, RepositoryException
       {
       }
+      
+      public void prepare() throws IllegalStateException, RepositoryException
+      {
+      }
 
       public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
@@ -526,7 +530,6 @@ public class TestCacheableWorkspaceDataManager extends TestCase
       {
       }
 
-      @Override
       public int getLastOrderNumber(NodeData parent) throws RepositoryException
       {
          return -1;

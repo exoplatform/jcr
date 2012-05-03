@@ -78,12 +78,28 @@ public interface ValueIOChannel
    String getStorageId();
 
    /**
-    * Commit channel changes.
+    * Prepare channel changes.
+    * 
+    * @throws IOException
+    *           if error occurs
+    */
+   void prepare() throws IOException;
+   
+   /**
+    * Commit channel changes (one phase).
     * 
     * @throws IOException
     *           if error occurs
     */
    void commit() throws IOException;
+   
+   /**
+    * Commit channel changes (two phases).
+    * 
+    * @throws IOException
+    *           if error occurs
+    */
+   void twoPhaseCommit() throws IOException;
 
    /**
     * Rollback channel changes.

@@ -38,7 +38,7 @@ import javax.jcr.RepositoryException;
  * should have "opened" state. The connection becomes "closed" (invalid for using) after calling
  * commit() or rollback() methods. In this case methods calling will cause an IllegalStateException
  * 
- * Connection object intendend to be as "light" as possible i.e. connection creation SHOULD NOT be
+ * Connection object intends to be as "light" as possible i.e. connection creation SHOULD NOT be
  * expensive operation, so better NOT to open/close potentially EXPENSIVE resources using by
  * Connection (WorkspaceDataContainer should be responsible for that). The Connection IS NOT a
  * thread-safe object and normally SHOULD NOT be pooled/cached.
@@ -57,10 +57,10 @@ public interface WorkspaceStorageConnection
     *          - the item's parent NodeData
     * @param name
     *          - item's path entry (QName + index)
-    * @return - stored ItemData wich has exact the same path Entry (name+index) inside the parent; or
+    * @return - stored ItemData which has exact the same path Entry (name+index) inside the parent; or
     *         null if not such an item data found
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -77,10 +77,10 @@ public interface WorkspaceStorageConnection
     *          - item's path entry (QName + index)
     * @param itemType
     *             item type         
-    * @return - stored ItemData wich has exact the same path Entry (name+index) inside the parent; or
+    * @return - stored ItemData which has exact the same path Entry (name+index) inside the parent; or
     *         null if not such an item data found
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -92,12 +92,12 @@ public interface WorkspaceStorageConnection
     * 
     * @param identifier
     *          - Item identifier
-    * @return stored ItemData or null if no item foudn with given id. Basically used for
+    * @return stored ItemData or null if no item found with given id. Basically used for
     *         Session.getNodeByUUID but not necessarily refers to jcr:uuid property (In fact, this
     *         identifier should not necessary be equal of referenceable node's UUID if any) thereby
     *         can return NodeData for not referenceable node data or PropertyData.
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -110,7 +110,7 @@ public interface WorkspaceStorageConnection
     *          NodeData
     * @return child nodes data or empty <code>List</code>
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -142,7 +142,7 @@ public interface WorkspaceStorageConnection
     *          NodeData
     * @return child properties data or empty <code>List</code>
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -153,13 +153,13 @@ public interface WorkspaceStorageConnection
     * storage using item's parent location.
     * 
     * <br/>
-    * This methiod specially dedicated for non-content modification operations (e.g. Items delete).
+    * This method specially dedicated for non-content modification operations (e.g. Items delete).
     * 
     * @param parent
     *          NodeData
     * @return child properties data (with empty data) or empty <code>List</code>
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -178,7 +178,7 @@ public interface WorkspaceStorageConnection
     *          of referenceable Node
     * @return list of referenced property data or empty <code>List</code>
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     * @throws UnsupportedOperationException
@@ -197,7 +197,7 @@ public interface WorkspaceStorageConnection
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -214,7 +214,7 @@ public interface WorkspaceStorageConnection
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -229,12 +229,12 @@ public interface WorkspaceStorageConnection
     * @throws InvalidItemStateException
     *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
     *           of new data's persisted version value (2) if the persisted data is not NodeData (i.e.
-    *           it is PropertyData). It means that some other proccess deleted original data and
+    *           it is PropertyData). It means that some other process deleted original data and
     *           replace it with other type of data.
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -249,12 +249,12 @@ public interface WorkspaceStorageConnection
     * @throws InvalidItemStateException
     *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
     *           of new data's persisted version value (2) if the persisted data is not PropertyData
-    *           (i.e. it is NodeData). It means that some other proccess deleted original data and
+    *           (i.e. it is NodeData). It means that some other process deleted original data and
     *           replace it with other type of data.
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -269,12 +269,12 @@ public interface WorkspaceStorageConnection
     * @throws InvalidItemStateException
     *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
     *           of new data's persisted version value (2) if the persisted data is not PropertyData
-    *           (i.e. it is NodeData). It means that some other proccess deleted original data and
+    *           (i.e. it is NodeData). It means that some other process deleted original data and
     *           replace it with other type of data.
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -292,7 +292,7 @@ public interface WorkspaceStorageConnection
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -310,7 +310,7 @@ public interface WorkspaceStorageConnection
     * @throws UnsupportedOperationException
     *           if operation is not supported (it is container for level 1)
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     * @throws IllegalStateException
     *           if connection is closed
     */
@@ -318,23 +318,33 @@ public interface WorkspaceStorageConnection
       IllegalStateException;
 
    /**
+    * Prepare the commit phase.
+    * 
+    * @throws IllegalStateException
+    *           if connection is already closed
+    * @throws RepositoryException
+    *           if some exception occurred
+    */
+   void prepare() throws IllegalStateException, RepositoryException;
+   
+   /**
     * Persist changes and closes connection. It can be database transaction commit for instance etc.
     * 
     * @throws IllegalStateException
     *           if connection is already closed
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     */
    void commit() throws IllegalStateException, RepositoryException;
 
    /**
-    * Refuses persistent changes and closes connection. It can be database transaction rollback for
+    * Refuses persistent changes and closes connection. It can be database transaction roll back for
     * instance etc.
     * 
     * @throws IllegalStateException
     *           if connection is already closed
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     */
    void rollback() throws IllegalStateException, RepositoryException;
 
@@ -344,7 +354,7 @@ public interface WorkspaceStorageConnection
     * @throws IllegalStateException
     *           if connection is already closed
     * @throws RepositoryException
-    *           if some exception occured
+    *           if some exception occurred
     */
    void close() throws IllegalStateException, RepositoryException;
 

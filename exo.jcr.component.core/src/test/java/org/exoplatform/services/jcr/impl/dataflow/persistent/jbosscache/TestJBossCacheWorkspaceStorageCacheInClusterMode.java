@@ -759,6 +759,10 @@ public class TestJBossCacheWorkspaceStorageCacheInClusterMode extends JcrImplBas
       public void rollback() throws IllegalStateException, RepositoryException
       {
       }
+      
+      public void prepare() throws IllegalStateException, RepositoryException
+      {
+      }
 
       public void update(NodeData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException

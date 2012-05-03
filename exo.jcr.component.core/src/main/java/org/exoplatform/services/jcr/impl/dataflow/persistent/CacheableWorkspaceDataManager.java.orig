@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.RepositoryException;
+import javax.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS. 
@@ -72,6 +73,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * Requests cache.
     */
    protected final ConcurrentMap<Integer, DataRequest> requestCache;
+
+   private TransactionManager transactionManager;
 
    /**
     * The amount of current working threads.
@@ -321,11 +324,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
       SystemDataContainerHolder systemDataContainerHolder, TransactionService transactionService)
    {
-      super(dataContainer, systemDataContainerHolder, transactionService.getTransactionManager());
+      super(dataContainer, systemDataContainerHolder);
       this.cache = cache;
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
       addItemPersistenceListener(cache);
+
+      transactionManager = transactionService.getTransactionManager();
    }
 
    /**
@@ -341,13 +346,20 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    public CacheableWorkspaceDataManager(WorkspaceDataContainer dataContainer, WorkspaceStorageCache cache,
       SystemDataContainerHolder systemDataContainerHolder)
    {
-      super(dataContainer, systemDataContainerHolder, cache instanceof JBossCacheWorkspaceStorageCache
-         ? ((JBossCacheWorkspaceStorageCache)cache).getTransactionManager() : null);
+      super(dataContainer, systemDataContainerHolder);
       this.cache = cache;
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
       addItemPersistenceListener(cache);
 
+      if (cache instanceof JBossCacheWorkspaceStorageCache)
+      {
+         transactionManager = ((JBossCacheWorkspaceStorageCache)cache).getTransactionManager();
+      }
+      else
+      {
+         transactionManager = null;
+      }
    }
 
    /**

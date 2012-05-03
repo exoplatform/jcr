@@ -84,7 +84,7 @@
       <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
 
-   &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
+   &lt;locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
       lockAcquisitionTimeout="20000" /&gt;
 
    &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
@@ -95,11 +95,11 @@
 
    &lt;!-- Eviction configuration --&gt;
    &lt;eviction wakeUpInterval="5000"&gt;
-      &lt;default algorithmClass="org.jboss.cache.eviction.LRUAlgorithm"
+      &lt;default algorithmClass="org.jboss.cache.eviction.ExpirationAlgorithm"
          actionPolicyClass="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.ParentNodeEvictionActionPolicy"
          eventQueueSize="1000000"&gt;
          &lt;property name="maxNodes" value="1000000" /&gt;
-         &lt;property name="timeToLive" value="120000" /&gt;
+         &lt;property name="warnNoExpirationKey" value="false" /&gt;
       &lt;/default&gt;
    &lt;/eviction&gt;
 &lt;/jbosscache&gt;</programlisting>
@@ -133,7 +133,7 @@
       <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
 
-   &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
+   &lt;locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
       lockAcquisitionTimeout="20000" /&gt;
    &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
       &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
@@ -144,7 +144,7 @@
       &lt;preload&gt;
          &lt;node fqn="/" /&gt;
       &lt;/preload&gt;
-      &lt;loader class="org.jboss.cache.loader.JDBCCacheLoader" async="false" fetchPersistentState="false"
+      &lt;loader class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader" async="false" fetchPersistentState="false"
          ignoreModifications="false" purgeOnStartup="false"&gt;
          &lt;properties&gt;
             cache.jdbc.table.name=${jbosscache-cl-cache.jdbc.table.name}
@@ -161,6 +161,13 @@
       &lt;/loader&gt;
    &lt;/loaders&gt;
 &lt;/jbosscache&gt;</programlisting>
+
+      <para><note>
+          <para>To prevent any consistency issue regarding the lock data
+          please ensure that your cache loader is
+          <emphasis>org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader</emphasis>
+          and that your database engine is transactional.</para>
+        </note></para>
 
       <table>
         <title>Template variables</title>
@@ -228,20 +235,13 @@
 
       <programlisting>&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
-   &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
+   &lt;locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
       lockAcquisitionTimeout="20000" /&gt;
    &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
       &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
       &lt;jgroupsConfig multiplexerStack="jcr.stack" /&gt;
       &lt;sync /&gt;
    &lt;/clustering&gt;
-   &lt;!-- Eviction configuration --&gt;
-   &lt;eviction wakeUpInterval="5000"&gt;
-      &lt;default algorithmClass="org.jboss.cache.eviction.FIFOAlgorithm" eventQueueSize="1000000"&gt;
-         &lt;property name="maxNodes" value="10000" /&gt;
-         &lt;property name="minTimeToLive" value="60000" /&gt;
-      &lt;/default&gt;
-   &lt;/eviction&gt;
 &lt;/jbosscache&gt;</programlisting>
 
       <table>

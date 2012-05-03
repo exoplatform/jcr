@@ -95,6 +95,28 @@
   </section>
 
   <section>
+    <title>General recommendations for database configuration</title>
+
+    <section>
+      <title>MySQL configuration</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>To prevent any consistency issues please ensure that InnoDB is
+          configured as default MySQL engine (instead of MyISAM by default)
+          before launching your application for the very first time otherwise
+          when the application will create the tables MyISAM will be used as
+          MySQL engine which is a non transactional engine that doesn't not
+          support integrity constraints so even if later you swicth to InnoDB
+          using an alter table all the integrity constraints would be missing
+          as they would have been removed at table creation table by
+          MyISAM.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+  </section>
+
+  <section>
     <title>Multi-database Configuration</title>
 
     <para>You need to configure each workspace in a repository. You may have

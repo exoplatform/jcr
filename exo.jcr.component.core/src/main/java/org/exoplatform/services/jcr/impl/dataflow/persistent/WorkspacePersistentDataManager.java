@@ -58,6 +58,9 @@ import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
+import javax.transaction.Status;
+import javax.transaction.Synchronization;
+import javax.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS.<br>
@@ -86,10 +89,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    protected final WorkspaceDataContainer systemDataContainer;
 
    /**
-    * Value sorages provider (for dest file suggestion on save).
-    */
-   // TODO protected final ValueStoragePluginProvider valueStorageProvider;
-   /**
     * Persistent level listeners. This listeners can be filtered by filters from
     * <code>liestenerFilters</code> list.
     */
@@ -109,6 +108,11 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * Read-only status.
     */
    protected boolean readOnly = false;
+   
+   /**
+    * The transaction manager
+    */
+   protected final TransactionManager transactionManager;
 
    /**
     * WorkspacePersistentDataManager constructor.
@@ -119,8 +123,23 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     *          holder of system workspace data container
     */
    public WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
-   //ValueStoragePluginProvider valueStorageProvider, 
       SystemDataContainerHolder systemDataContainerHolder)
+   {
+      this(dataContainer, systemDataContainerHolder, null);
+   }
+
+   /**
+    * WorkspacePersistentDataManager constructor.
+    * 
+    * @param dataContainer
+    *          workspace data container
+    * @param systemDataContainerHolder
+    *          holder of system workspace data container
+    * @param tm
+    *          the transaction manager
+    */
+   public WorkspacePersistentDataManager(WorkspaceDataContainer dataContainer,
+      SystemDataContainerHolder systemDataContainerHolder, TransactionManager transactionManager)
    {
       this.dataContainer = dataContainer;
       this.systemDataContainer = systemDataContainerHolder.getContainer();
@@ -129,6 +148,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       this.listeners = new ArrayList<ItemsPersistenceListener>();
       this.mandatoryListeners = new ArrayList<MandatoryItemsPersistenceListener>();
       this.liestenerFilters = new ArrayList<ItemsPersistenceListenerFilter>();
+      this.transactionManager = transactionManager;
    }
 
    /**
@@ -146,7 +166,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
 
       // whole log will be reconstructed with persisted data 
       ItemStateChangesLog persistedLog;
-
+      boolean failed = true;
       try
       {
          if (changesLog instanceof PlainChangesLogImpl)
@@ -172,7 +192,10 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             // we don't support other types now... i.e. add else-if for that type here
             throw new RepositoryException("Unsupported changes log class " + changesLog.getClass());
          }
-         persister.commit();
+         persister.prepare();
+         notifySaveItems(persistedLog, true);
+         onCommit(persister);
+         failed = false;
       }
       catch (IOException e)
       {
@@ -180,12 +203,73 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       }
       finally
       {
-         persister.rollback();
+         persister.clear();
+         if (failed)
+         {
+            persister.rollback();
+         }
       }
 
-      notifySaveItems(persistedLog, true);
    }
+   
+   private void onCommit(final ChangesLogPersister persister) throws RepositoryException
+   {
+      if (transactionManager == null)
+      {
+         persister.commit();
+      }
+      else
+      {
+         try
+         {
+            transactionManager.getTransaction().registerSynchronization(new Synchronization()
+            {
 
+               public void beforeCompletion()
+               {
+               }
+
+               public void afterCompletion(int status)
+               {
+                  switch (status)
+                  {
+                     case Status.STATUS_COMMITTED:
+                        try
+                        {
+                           persister.commit();
+                        }
+                        catch (Exception e)
+                        {
+                           throw new RuntimeException("Could not commit the transaction", e);
+                        }
+                        break;
+                     case Status.STATUS_UNKNOWN:
+                        LOG.warn("Status UNKNOWN received in afterCompletion method, some data could have been corrupted !!");
+                     case Status.STATUS_MARKED_ROLLBACK:
+                     case Status.STATUS_ROLLEDBACK:
+                        try
+                        {
+                           persister.rollback();
+                        }
+                        catch (Exception e)
+                        {
+                           LOG.error("Could not roll back the transaction", e);
+                        }
+                        break;
+
+                     default:
+                        throw new IllegalStateException("illegal status: " + status);
+                  }                  
+               }
+            });
+         }
+         catch (Exception e)
+         {
+            throw new RepositoryException("Cannot register the synchronization for a late commit", e);
+         }
+      }
+   }
+   
    class ChangesLogPersister
    {
 
@@ -207,6 +291,24 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          }
       }
 
+      protected void prepare() throws IllegalStateException, RepositoryException
+      {
+         if (thisConnection != null && thisConnection.isOpened())
+         {
+            thisConnection.prepare();
+         }
+         if (systemConnection != null && !systemConnection.equals(thisConnection) && systemConnection.isOpened())
+         {
+            systemConnection.prepare();
+         }
+      }
+
+      protected void clear()
+      {
+         // help to GC
+         addedNodes.clear();
+      }
+      
       protected void rollback() throws IllegalStateException, RepositoryException
       {
          if (thisConnection != null && thisConnection.isOpened())
@@ -217,9 +319,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          {
             systemConnection.rollback();
          }
-
-         // help to GC
-         addedNodes.clear();
       }
 
       protected WorkspaceStorageConnection getSystemConnection() throws RepositoryException
@@ -475,7 +574,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   @Override
    public int getLastOrderNumber(final NodeData nodeData) throws RepositoryException
    {
       final WorkspaceStorageConnection con = dataContainer.openConnection();

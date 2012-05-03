@@ -86,6 +86,14 @@ public class FileCleaner extends WorkerThread
       }
    }
 
+   /**
+    * @param file
+    */
+   public void removeFile(File file)
+   {
+      files.remove(file);
+   }
+   
    public void halt()
    {
       try

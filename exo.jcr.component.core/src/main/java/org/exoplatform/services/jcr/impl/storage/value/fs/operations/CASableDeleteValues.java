@@ -81,11 +81,11 @@ public class CASableDeleteValues extends DeleteValues
     * {@inheritDoc}
     */
    @Override
-   public void commit() throws IOException
+   public void prepare() throws IOException
    {
       try
       {
-         super.commit();
+         super.prepare();
       }
       finally
       {

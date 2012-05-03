@@ -121,12 +121,37 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
    /**
     * {@inheritDoc}
     */
+   public void prepare() throws IOException
+   {
+      for (ValueOperation vo : changes)
+         vo.prepare();
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
    public void commit() throws IOException
    {
       try
       {
          for (ValueOperation vo : changes)
             vo.commit();
+      }
+      finally
+      {
+         changes.clear();
+      }
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void twoPhaseCommit() throws IOException
+   {
+      try
+      {
+         for (ValueOperation vo : changes)
+            vo.twoPhaseCommit();
       }
       finally
       {
