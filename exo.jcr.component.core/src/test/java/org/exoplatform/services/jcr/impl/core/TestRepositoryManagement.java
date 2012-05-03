@@ -589,7 +589,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
          ManageableRepository repository = null;
          try
          {
-            repository = createRepositoryWithJBCQueryHandler();
+            repository = createRepositoryWithJBCorISPNQueryHandler();
             RepositoryContainer repositoryContainer =
                helper.getRepositoryContainer(container, repository.getConfiguration().getName());
             repositoryContainersInMemory.put(repositoryContainer, null);
@@ -626,7 +626,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       }
    }
 
-   private ManageableRepository createRepositoryWithJBCQueryHandler() throws Exception
+   private ManageableRepository createRepositoryWithJBCorISPNQueryHandler() throws Exception
    {
       RepositoryEntry repoEntry = helper.createRepositoryEntry(DatabaseStructureType.SINGLE, null, null, true);
       // modify configuration
@@ -634,14 +634,29 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       QueryHandlerEntry queryHandler = workspaceEntry.getQueryHandler();
       List<SimpleParameterEntry> parameters = queryHandler.getParameters();
 
-      parameters.add(new SimpleParameterEntry("changesfilter-class",
-         "org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"));
-      parameters.add(new SimpleParameterEntry("jbosscache-configuration",
-         "conf/standalone/cluster/test-jbosscache-indexer.xml"));
-      parameters.add(new SimpleParameterEntry("jgroups-configuration", "cluster/udp-mux.xml"));
-      parameters.add(new SimpleParameterEntry("jgroups-multiplexer-stack", "false"));
-      parameters.add(new SimpleParameterEntry("jbosscache-shareable", "true"));
-      parameters.add(new SimpleParameterEntry("jbosscache-cluster-name", "JCR-cluster-indexer"));
+      if (!helper.ispnCacheEnabled())
+      {
+         // Use JBossCache components for core project
+         parameters.add(new SimpleParameterEntry("changesfilter-class",
+            "org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"));
+         parameters.add(new SimpleParameterEntry("jbosscache-configuration",
+            "conf/standalone/cluster/test-jbosscache-indexer.xml"));
+         parameters.add(new SimpleParameterEntry("jgroups-configuration", "jar:/conf/standalone/cluster/udp-mux.xml"));
+         parameters.add(new SimpleParameterEntry("jgroups-multiplexer-stack", "false"));
+         parameters.add(new SimpleParameterEntry("jbosscache-shareable", "true"));
+         parameters.add(new SimpleParameterEntry("jbosscache-cluster-name", "JCR-cluster-indexer"));
+      }
+      else
+      {
+         // Use Infinispan components for core.ispn project
+         parameters.add(new SimpleParameterEntry("changesfilter-class",
+            "org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter"));
+         parameters.add(new SimpleParameterEntry("infinispan-configuration",
+            "conf/standalone/cluster/test-infinispan-indexer.xml"));
+         parameters
+            .add(new SimpleParameterEntry("jgroups-configuration", "jar:/conf/standalone/cluster/udp-mux-v3.xml"));
+         parameters.add(new SimpleParameterEntry("infinispan-cluster-name", "JCR-cluster"));
+      }
 
       return helper.createRepository(container, repoEntry);
    }

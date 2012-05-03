@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.infinispan.CacheKey;
+import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -179,8 +180,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    {
       private final Object value;
 
-      public PutObjectContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache,
-         int historicalIndex, boolean local, Boolean allowLocalChanges)
+      public PutObjectContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache, int historicalIndex,
+         boolean local, Boolean allowLocalChanges)
       {
          super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
 
@@ -193,7 +194,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, value);
       }
    }
-   
 
    /**
     * Put object if absent container
@@ -215,7 +215,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       {
          setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).putIfAbsent(key, value);
       }
-   }   
+   }
 
    /**
     * It tries to get Set by given key. If it is Set then adds new value and puts new set back. If
@@ -227,8 +227,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
 
       private final boolean forceModify;
 
-      public AddToListContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache,
-         boolean forceModify, int historicalIndex, boolean local, Boolean allowLocalChanges)
+      public AddToListContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache, boolean forceModify,
+         int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
          super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
          this.value = value;
@@ -267,7 +267,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             return;
          }
       }
-      
+
       @Override
       public boolean isTxRequired()
       {
@@ -367,7 +367,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, newSet);
          }
       }
-      
+
       @Override
       public boolean isTxRequired()
       {
@@ -590,8 +590,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Void> putAllAsync(Map<? extends CacheKey, ? extends Object> data, long lifespan,
-      TimeUnit unit)
+   public NotifyingFuture<Void> putAllAsync(Map<? extends CacheKey, ? extends Object> data, long lifespan, TimeUnit unit)
    {
       return parentCache.putAllAsync(data, lifespan, unit);
    }
@@ -674,8 +673,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Object> putIfAbsentAsync(CacheKey key, Object value, long lifespan,
-      TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit)
+   public NotifyingFuture<Object> putIfAbsentAsync(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit,
+      long maxIdle, TimeUnit maxIdleUnit)
    {
       return parentCache.putIfAbsentAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
    }
@@ -803,8 +802,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public Object putIfAbsent(CacheKey key, Object value)
    {
       CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
-      changesContainer.add(new PutObjectIfAbsentContainer(key, value, parentCache, changesContainer.getHistoryIndex(), local
-         .get(), allowLocalChanges));
+      changesContainer.add(new PutObjectIfAbsentContainer(key, value, parentCache, changesContainer.getHistoryIndex(),
+         local.get(), allowLocalChanges));
       return null;
    }
 
@@ -964,6 +963,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public void stop()
    {
       PrivilegedISPNCacheHelper.stop((Cache)parentCache);
+      ISPNCacheFactory.releaseUniqueInstance(parentCache.getCacheManager());
    }
 
    /**
@@ -1050,7 +1050,9 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             {
                // No tx exists so we create a new tx
                if (LOG.isTraceEnabled())
+               {
                   LOG.trace("No Tx is active we then create a new tx");
+               }
                tm.begin();
                isTxCreated = true;
             }
@@ -1074,7 +1076,9 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                try
                {
                   if (LOG.isTraceEnabled())
+                  {
                      LOG.trace("An error occurs the tx will be rollbacked");
+                  }
                   tm.rollback();
                }
                catch (Exception e1)

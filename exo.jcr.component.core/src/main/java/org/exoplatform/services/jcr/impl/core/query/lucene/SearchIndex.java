@@ -527,7 +527,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Indicates if component suspended or not.
     */
    protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
-   
+
    /**
     * The amount of current working threads.
     */
@@ -1302,6 +1302,16 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          getContext().destroy();
          closed.set(true);
          log.info("Index closed: " + path);
+         modeHandler.removeIndexerIoModeListener(this);
+         if (indexInfos instanceof IndexerIoModeListener)
+         {
+            modeHandler.removeIndexerIoModeListener((IndexerIoModeListener)indexInfos);
+         }
+         if (indexUpdateMonitor instanceof IndexerIoModeListener)
+         {
+            modeHandler.removeIndexerIoModeListener((IndexerIoModeListener)indexUpdateMonitor);
+         }
+
       }
    }
 
@@ -1333,9 +1343,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       waitForResuming();
 
       checkOpen();
-      
+
       workingThreads.incrementAndGet();
-      
+
       try
       {
          Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
@@ -1363,7 +1373,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       finally
       {
          workingThreads.decrementAndGet();
-         
+
          if (isSuspended.get() && workingThreads.get() == 0)
          {
             synchronized (workingThreads)
@@ -1430,7 +1440,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       finally
       {
          workingThreads.decrementAndGet();
-         
+
          if (isSuspended.get() && workingThreads.get() == 0)
          {
             synchronized (workingThreads)
@@ -3362,7 +3372,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       finally
       {
          workingThreads.decrementAndGet();
-         
+
          if (isSuspended.get() && workingThreads.get() == 0)
          {
             synchronized (workingThreads)
@@ -3429,7 +3439,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       latcher.set(new CountDownLatch(1));
       isSuspended.set(true);
-      
+
       if (workingThreads.get() > 0)
       {
          synchronized (workingThreads)
@@ -3450,7 +3460,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             }
          }
       }
-      
+
       closeAndKeepWaitingThreads();
    }
 
