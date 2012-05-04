@@ -110,7 +110,7 @@ public class DBRestore implements DataRestore
    /**
     * Restore table rules.
     */
-   protected final Map<String, RestoreTableRule> tables;
+   protected final Map<String, TableTransformationRule> tables;
 
    /**
     * Database cleaner.
@@ -136,7 +136,7 @@ public class DBRestore implements DataRestore
     * @throws SQLException 
     * @throws RepositoryConfigurationException 
     */
-   public DBRestore(File storageDir, Connection jdbcConn, Map<String, RestoreTableRule> tables,
+   public DBRestore(File storageDir, Connection jdbcConn, Map<String, TableTransformationRule> tables,
       WorkspaceEntry wsConfig, FileCleaner fileCleaner, DBCleanerTool dbCleaner) throws NamingException,
       SQLException, RepositoryConfigurationException
    {
@@ -175,10 +175,10 @@ public class DBRestore implements DataRestore
    {
       try
       {
-         for (Entry<String, RestoreTableRule> entry : tables.entrySet())
+         for (Entry<String, TableTransformationRule> entry : tables.entrySet())
          {
             String tableName = entry.getKey();
-            RestoreTableRule restoreRule = entry.getValue();
+            TableTransformationRule restoreRule = entry.getValue();
 
             restoreTable(storageDir, jdbcConn, tableName, restoreRule);
          }
@@ -259,7 +259,7 @@ public class DBRestore implements DataRestore
    /**
     * Restore table.
     */
-   private void restoreTable(File storageDir, Connection jdbcConn, String tableName, RestoreTableRule restoreRule)
+   private void restoreTable(File storageDir, Connection jdbcConn, String tableName, TableTransformationRule restoreRule)
       throws IOException, SQLException
    {
       // Need privileges
@@ -323,11 +323,7 @@ public class DBRestore implements DataRestore
          }
 
          int targetColumnCount = sourceColumnCount;
-         if (restoreRule.getDeleteColumnIndex() != null)
-         {
-            targetColumnCount--;
-         }
-         else if (restoreRule.getNewColumnIndex() != null)
+         if (restoreRule.getNewColumnIndex() != null)
          {
             targetColumnCount++;
 
@@ -397,11 +393,6 @@ public class DBRestore implements DataRestore
                }
 
                if (restoreRule.getSkipColumnIndex() != null && restoreRule.getSkipColumnIndex() == i)
-               {
-                  targetIndex--;
-                  continue;
-               }
-               else if (restoreRule.getDeleteColumnIndex() != null && restoreRule.getDeleteColumnIndex() == i)
                {
                   targetIndex--;
                   continue;

@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
@@ -38,7 +37,8 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.DBBackup;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DBRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
-import org.exoplatform.services.jcr.impl.backup.rdbms.RestoreTableRule;
+import org.exoplatform.services.jcr.impl.backup.rdbms.TableTransformationRule;
+import org.exoplatform.services.jcr.impl.backup.rdbms.TableTransformationRuleGenerator;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
@@ -81,14 +81,11 @@ import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.naming.NamingException;
@@ -900,204 +897,38 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public DataRestore getDataRestorer(DataRestoreContext context) throws BackupException
+   public DataRestore getDataRestorer(DataRestoreContext dataRestoreContext) throws BackupException
    {
-
-      List<DataRestore> restorers = new ArrayList<DataRestore>();
-
-      ObjectReader backupInfo = null;
       try
       {
-         File storageDir = (File)context.getObject(DataRestoreContext.STORAGE_DIR);
-         Connection jdbcConn = null;
+         List<DataRestore> restorers = new ArrayList<DataRestore>();
+         Map<String, TableTransformationRule> tables = new LinkedHashMap<String, TableTransformationRule>();
 
-         if (context.getObject(DataRestoreContext.DB_CONNECTION) == null)
-         {
-            try
-            {
-               jdbcConn = connFactory.getJdbcConnection();
-               jdbcConn.setAutoCommit(false);
-            }
-            catch (SQLException e)
-            {
-               throw new BackupException(e);
-            }
-            catch (RepositoryException e)
-            {
-               throw new BackupException(e);
-            }
+         Connection jdbcConn = getJdbcConnection(dataRestoreContext);
+         DBCleanerTool dbCleaner = getDbCleaner(dataRestoreContext, jdbcConn);
+         File storageDir = getStorageDir(dataRestoreContext);
 
-         }
-         else
-         {
-            jdbcConn = (Connection)context.getObject(DataRestoreContext.DB_CONNECTION);
-         }
+         TableTransformationRuleGenerator tableTransformationRuleGenerator =
+            new TableTransformationRuleGenerator(containerConfig, storageDir);
 
-         backupInfo =
-            new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(storageDir,
-               "JDBCWorkspaceDataContainer.info")));
-
-         String srcContainerName = backupInfo.readString();
-         DatabaseStructureType dbType = DatabaseStructureType.valueOf(backupInfo.readString());
-
-         Map<String, RestoreTableRule> tables = new LinkedHashMap<String, RestoreTableRule>();
-
-         // ITEM table
-         String dstTableName = DBInitializerHelper.getItemTableName(containerConfig);
-         String srcTableName = backupInfo.readString();
-
-         RestoreTableRule restoreTableRule = new RestoreTableRule();
-         restoreTableRule.setSrcContainerName(srcContainerName);
-         restoreTableRule.setSrcMultiDb(dbType.isMultiDatabase());
-         restoreTableRule.setDstContainerName(containerConfig.containerName);
-         restoreTableRule.setDstMultiDb(containerConfig.dbStructureType.isMultiDatabase());
-         restoreTableRule.setSrcTableName(srcTableName);
-
-         if (containerConfig.dbStructureType.isMultiDatabase())
-         {
-            if (!dbType.isMultiDatabase())
-            {
-               // CONTAINER_NAME column index
-               restoreTableRule.setDeleteColumnIndex(4);
-
-               // ID and PARENT_ID column indexes
-               Set<Integer> convertColumnIndex = new HashSet<Integer>();
-               convertColumnIndex.add(0);
-               convertColumnIndex.add(1);
-               restoreTableRule.setConvertColumnIndex(convertColumnIndex);
-            }
-         }
-         else
-         {
-            if (dbType.isMultiDatabase())
-            {
-               // CONTAINER_NAME column index
-               restoreTableRule.setNewColumnIndex(4);
-               restoreTableRule.setNewColumnName("CONTAINER_NAME");
-               restoreTableRule.setNewColumnType(Types.VARCHAR);
-
-               // ID and PARENT_ID column indexes
-               Set<Integer> convertColumnIndex = new HashSet<Integer>();
-               convertColumnIndex.add(0);
-               convertColumnIndex.add(1);
-               restoreTableRule.setConvertColumnIndex(convertColumnIndex);
-            }
-            else
-            {
-               // ID and PARENT_ID and CONTAINER_NAME column indexes
-               Set<Integer> convertColumnIndex = new HashSet<Integer>();
-               convertColumnIndex.add(0);
-               convertColumnIndex.add(1);
-               convertColumnIndex.add(4);
-               restoreTableRule.setConvertColumnIndex(convertColumnIndex);
-            }
-         }
-         tables.put(dstTableName, restoreTableRule);
-
-         // VALUE table
-         dstTableName = DBInitializerHelper.getValueTableName(containerConfig);
-         srcTableName = backupInfo.readString();
-
-         restoreTableRule = new RestoreTableRule();
-         restoreTableRule.setSrcContainerName(srcContainerName);
-         restoreTableRule.setSrcMultiDb(dbType.isMultiDatabase());
-         restoreTableRule.setDstContainerName(containerConfig.containerName);
-         restoreTableRule.setDstMultiDb(containerConfig.dbStructureType.isMultiDatabase());
-         restoreTableRule.setSrcTableName(srcTableName);
-
-         // auto increment ID column
-         restoreTableRule.setSkipColumnIndex(0);
-
-         if (!containerConfig.dbStructureType.isMultiDatabase() || !dbType.isMultiDatabase())
-         {
-            // PROPERTY_ID column index
-            Set<Integer> convertColumnIndex = new HashSet<Integer>();
-            convertColumnIndex.add(3);
-            restoreTableRule.setConvertColumnIndex(convertColumnIndex);
-         }
-         tables.put(dstTableName, restoreTableRule);
-
-         // REF tables
-         dstTableName = DBInitializerHelper.getRefTableName(containerConfig);
-         srcTableName = backupInfo.readString();
-
-         restoreTableRule = new RestoreTableRule();
-         restoreTableRule.setSrcContainerName(srcContainerName);
-         restoreTableRule.setSrcMultiDb(dbType.isMultiDatabase());
-         restoreTableRule.setDstContainerName(containerConfig.containerName);
-         restoreTableRule.setDstMultiDb(containerConfig.dbStructureType.isMultiDatabase());
-         restoreTableRule.setSrcTableName(srcTableName);
-
-         if (!containerConfig.dbStructureType.isMultiDatabase() || !dbType.isMultiDatabase())
-         {
-            // NODE_ID and PROPERTY_ID column indexes
-            Set<Integer> convertColumnIndex = new HashSet<Integer>();
-            convertColumnIndex.add(0);
-            convertColumnIndex.add(1);
-            restoreTableRule.setConvertColumnIndex(convertColumnIndex);
-         }
-         tables.put(dstTableName, restoreTableRule);
-
-         DBCleanerTool dbCleaner;
-         if (context.getObject(DataRestoreContext.DB_CLEANER) != null)
-         {
-            dbCleaner = (DBCleanerTool)context.getObject(DataRestoreContext.DB_CLEANER);
-         }
-         else
-         {
-            try
-            {
-               dbCleaner = DBCleanService.getWorkspaceDBCleaner(jdbcConn, wsConfig);
-            }
-            catch (DBCleanException e)
-            {
-               throw new BackupException(e);
-            }
-         }
+         tables.put(DBInitializerHelper.getItemTableName(containerConfig),
+            tableTransformationRuleGenerator.getItemTableTransformationRule());
+         tables.put(DBInitializerHelper.getValueTableName(containerConfig),
+            tableTransformationRuleGenerator.getValueTableTransformationRule());
+         tables.put(DBInitializerHelper.getRefTableName(containerConfig),
+            tableTransformationRuleGenerator.getRefTableTransformationRule());
 
          restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, containerConfig.swapCleaner, dbCleaner));
 
-         // prepare value storage restorer
          if (wsConfig.getContainer().getValueStorages() != null)
          {
-            List<File> dataDirs = new ArrayList<File>();
-            List<File> backupDirs = new ArrayList<File>();
+            List<File> dataDirsList = initDataDirs();
+            List<File> backupDirsList = initBackupDirs(storageDir);
 
-            List<ValueStorageEntry> valueStorages = wsConfig.getContainer().getValueStorages();
-            for (ValueStorageEntry valueStorage : valueStorages)
-            {
-               File dataDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
-               dataDirs.add(dataDir);
-
-               File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
-               if (PrivilegedFileHelper.exists(zipFile))
-               {
-                  backupDirs.add(zipFile);
-               }
-               else
-               {
-                  // try to check if we have deal with old backup format
-                  zipFile = new File(storageDir, "values/" + valueStorage.getId());
-                  if (PrivilegedFileHelper.exists(zipFile))
-                  {
-                     backupDirs.add(zipFile);
-                  }
-                  else
-                  {
-                     throw new RepositoryConfigurationException("There is no backup data for value storage with id "
-                        + valueStorage.getId());
-                  }
-               }
-            }
-
-            restorers.add(new DirectoryRestore(dataDirs, backupDirs));
+            restorers.add(new DirectoryRestore(dataDirsList, backupDirsList));
          }
 
          return new ComplexDataRestore(restorers);
-      }
-      catch (FileNotFoundException e)
-      {
-         throw new BackupException(e);
       }
       catch (IOException e)
       {
@@ -1115,20 +946,112 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          throw new BackupException(e);
       }
-      finally
+   }
+
+   private List<File> initBackupDirs(File storageDir) throws RepositoryConfigurationException
+   {
+      List<File> backupDirsList = new ArrayList<File>();
+               
+      for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
       {
-         if (backupInfo != null)
+         File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
+         if (PrivilegedFileHelper.exists(zipFile))
          {
-            try
+            backupDirsList.add(zipFile);
+         }
+         else
+         {
+            // try to check if we have deal with old backup format
+            zipFile = new File(storageDir, "values/" + valueStorage.getId());
+            if (PrivilegedFileHelper.exists(zipFile))
             {
-               backupInfo.close();
+               backupDirsList.add(zipFile);
             }
-            catch (IOException e)
+            else
             {
-               LOG.error("Can't close object reader", e);
+               throw new RepositoryConfigurationException("There is no backup data for value storage with id "
+                  + valueStorage.getId());
             }
          }
       }
+      
+      return backupDirsList;
+   }
+
+   private List<File> initDataDirs() throws RepositoryConfigurationException
+   {
+      List<File> dataDirsList = new ArrayList<File>();
+
+      for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
+      {
+         File dataDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+         dataDirsList.add(dataDir);
+      }
+
+      return dataDirsList;
+   }
+
+   private DBCleanerTool getDbCleaner(DataRestoreContext context, Connection jdbcConn)
+      throws BackupException
+   {
+      DBCleanerTool dbCleaner;
+
+      if (context.getObject(DataRestoreContext.DB_CLEANER) != null)
+      {
+         dbCleaner = (DBCleanerTool)context.getObject(DataRestoreContext.DB_CLEANER);
+      }
+      else
+      {
+         try
+         {
+            dbCleaner = DBCleanService.getWorkspaceDBCleaner(jdbcConn, wsConfig);
+         }
+         catch (DBCleanException e)
+         {
+            throw new BackupException(e);
+         }
+      }
+      return dbCleaner;
+   }
+
+   private ObjectReaderImpl getBackupInfoReader(File storageDir) throws FileNotFoundException
+   {
+      return new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(storageDir,
+         "JDBCWorkspaceDataContainer.info")));
+   }
+
+   private File getStorageDir(DataRestoreContext context)
+   {
+      return (File)context.getObject(DataRestoreContext.STORAGE_DIR);
+   }
+
+   private Connection getJdbcConnection(DataRestoreContext context) throws BackupException
+   {
+      Connection jdbcConnection = null;
+
+      if (context.getObject(DataRestoreContext.DB_CONNECTION) == null)
+      {
+         try
+         {
+            jdbcConnection = connFactory.getJdbcConnection();
+            jdbcConnection.setAutoCommit(false);
+         }
+         catch (SQLException e)
+         {
+            throw new BackupException(e);
+         }
+         catch (RepositoryException e)
+         {
+            throw new BackupException(e);
+         }
+
+      }
+      else
+      {
+         jdbcConnection = (Connection)context.getObject(DataRestoreContext.DB_CONNECTION);
+      }
+
+      return jdbcConnection;
    }
 
    /**
