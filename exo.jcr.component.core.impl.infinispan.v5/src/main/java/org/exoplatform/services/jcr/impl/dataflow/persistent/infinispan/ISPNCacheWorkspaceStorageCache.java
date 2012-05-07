@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
@@ -672,6 +673,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       boolean rollback = true;
       try
       {
+         ItemState lastDelete = null;
+
          cache.beginTransaction();
          for (ItemState state : itemStates.getAllStates())
          {
@@ -698,11 +701,14 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             }
             else if (state.isDeleted())
             {
-               removeItem(state.getData());
+               if (state.isPersisted())
+               {
+                  removeItem(state.getData());
+               }
             }
             else if (state.isRenamed())
             {
-               putItem(state.getData());
+               renameItem(state, lastDelete);
             }
             else if (state.isPathChanged())
             {
@@ -715,6 +721,11 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                   // update subtree ACLs
                   updateMixin((NodeData)state.getData());
                }
+            }
+
+            if (state.isDeleted())
+            {
+               lastDelete = state;
             }
          }
 
@@ -1451,6 +1462,51 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    protected void updateTreePath(final QPath prevRootPath, final QPath newRootPath, final AccessControlList acl)
    {
       caller.updateTreePath(prevRootPath, newRootPath, acl);
+   }
+
+   /**
+    * Apply rename operation on cache. Parent node will be re-added into the cache since
+    * parent or name might changing. For other children only item data will be replaced.
+    */
+   protected void renameItem(final ItemState state, final ItemState lastDelete)
+   {
+      ItemData data = state.getData();
+      ItemData prevData = get(data.getIdentifier());
+
+      if (data.isNode())
+      {
+         if (state.isPersisted())
+         {
+            // it is state where name can be changed by rename operation, so re-add node
+            removeItem(lastDelete.getData());
+            putItem(state.getData());
+         }
+         else
+         {
+            // update item data with new name only
+            cache.put(new CacheId(getOwnerId(), data.getIdentifier()), data, false);
+         }
+      }
+      else
+      {
+         PropertyData prop = (PropertyData)data;
+
+         if (prevData != null && !(prevData instanceof NullItemData))
+         {
+            PropertyData newProp =
+               new PersistedPropertyData(prop.getIdentifier(), prop.getQPath(), prop.getParentIdentifier(),
+                  prop.getPersistedVersion(), prop.getType(), prop.isMultiValued(),
+                  ((PropertyData)prevData).getValues());
+
+            // update item data with new name and old values only
+            cache.put(new CacheId(getOwnerId(), newProp.getIdentifier()), newProp, false);
+         }
+         else
+         {
+            // remove item to avoid inconsistency in cluster mode since we have not old values
+            cache.remove(new CacheId(getOwnerId(), data.getIdentifier()));
+         }
+      }
    }
 
    /**

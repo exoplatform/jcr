@@ -55,18 +55,12 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
       Node n2 = subRoot.addNode("child", "nt:unstructured");
       Node n3 = subRoot.addNode("child", "nt:unstructured");
       root.save();
-      // session.save() ;
-      // session.refresh(false) ;
 
       root.getNode("u/child[3]");
       n2 = subRoot.getNode("child[2]");
       log.debug(">>>> SAME NAME start " + n2.getPath() + " " + n2.getIndex());
       n2.remove();
       root.save();
-      // session.save() ;
-
-      log.debug("SIZE >>>" + root.getNode("u").getNodes().getSize()); // /child[2]");
-      log.debug("SIZE >>>" + session.getRootNode().getNode("u").getNodes().getSize()); // /child[2]");
 
       assertEquals(2, subRoot.getNodes().getSize());
       try
@@ -92,17 +86,13 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
 
       root.getNode("u1/child[3]");
       n2 = subRoot.getNode("child[2]");
-      log.debug(">>>> SAME NAME start " + n2.getPath() + " " + n2.getIndex());
       n2.remove();
       root.save(); // reindex child[3] --> child[2]
-
-      log.debug("SIZE >>>" + root.getNode("u1").getNodes().getSize());
-      log.debug("SIZE >>>" + session.getRootNode().getNode("u1").getNodes().getSize());
 
       assertEquals(2, subRoot.getNodes().getSize());
       try
       {
-         root.getNode("u1/child[2]"); // 
+         root.getNode("u1/child[2]");
       }
       catch (PathNotFoundException e)
       {
@@ -250,7 +240,6 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
 
       root.getNode("u1/child[3]");
       n2 = subRoot.getNode("child[2]");
-      log.debug(">>>> SAME NAME start " + n2.getPath() + " " + n2.getIndex());
       n2.remove(); // reindex child[3] --> child[2]
       root.save();
 
@@ -303,7 +292,6 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
       root.getNode("u1/child[3]");
       n2 = subRoot.getNode("child[2]");
       String n2id = ((NodeImpl)n2).getData().getIdentifier();
-      log.debug(">>>> SAME NAME start " + n2.getPath() + " " + n2.getIndex());
       n2.remove(); // reindex child[3] --> child[2]
 
       try
@@ -341,7 +329,6 @@ public class RemoveSameNameSiblingTest extends BaseUsecasesTest
       n3 = root.getNode("u1/child[3]");
       n2 = subRoot.getNode("child[2]");
       String n3id = ((NodeImpl)n3).getData().getIdentifier();
-      log.debug(">>>> SAME NAME start " + n2.getPath() + " " + n2.getIndex());
       n2.remove(); // reindex child[3] --> child[2]
 
       try
