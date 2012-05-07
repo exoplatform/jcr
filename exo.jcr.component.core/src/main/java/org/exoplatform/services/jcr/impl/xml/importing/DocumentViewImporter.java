@@ -232,7 +232,8 @@ public class DocumentViewImporter extends BaseXmlImporter
          {
             InternalQName childName =
                locationFactory.parseJCRName(propertiesMap.get(Constants.JCR_PRIMARYTYPE)).getInternalName();
-            if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(childName, parentNodeData.getPrimaryTypeName(),
+            if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(nodeData.getQName(), childName,
+               parentNodeData.getPrimaryTypeName(),
                parentNodeData.getMixinTypeNames()))
             {
                throw new ConstraintViolationException("Can't add node " + nodeData.getQName().getAsString() + " to "

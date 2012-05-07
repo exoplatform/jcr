@@ -491,8 +491,9 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       return this.nodeTypeRepository.getSupertypes(nodeTypeName);
    }
 
-   public boolean isChildNodePrimaryTypeAllowed(final InternalQName childNodeTypeName,
-      final InternalQName parentNodeType, final InternalQName[] parentMixinNames) throws RepositoryException
+   public boolean isChildNodePrimaryTypeAllowed(final InternalQName childNodeName,
+      final InternalQName childNodeTypeName, final InternalQName parentNodeType, final InternalQName[] parentMixinNames)
+      throws RepositoryException
    {
       final Set<InternalQName> testSuperTypesNames = this.nodeTypeRepository.getSupertypes(childNodeTypeName);
       NodeDefinitionData[] allChildNodeDefinitions = getAllChildNodeDefinitions(parentNodeType);
@@ -500,15 +501,16 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       {
          for (final InternalQName req : cnd.getRequiredPrimaryTypes())
          {
+            String nameNode = cnd.getName().getName();
             if (childNodeTypeName.equals(req))
             {
-               return true;
+               return cnd.isResidualSet() || nameNode.equals(childNodeName.getName());
             }
             for (final InternalQName superName : testSuperTypesNames)
             {
                if (superName.equals(req))
                {
-                  return true;
+                  return cnd.isResidualSet() || nameNode.equals(childNodeName.getName());
                }
             }
          }
@@ -518,15 +520,16 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       {
          for (final InternalQName req : cnd.getRequiredPrimaryTypes())
          {
+            String nameNode = cnd.getName().getName();
             if (childNodeTypeName.equals(req))
             {
-               return true;
+               return cnd.isResidualSet() || nameNode.equals(childNodeName.getName());
             }
             for (final InternalQName superName : testSuperTypesNames)
             {
                if (superName.equals(req))
                {
-                  return true;
+                  return cnd.isResidualSet() || nameNode.equals(childNodeName.getName());
                }
             }
          }

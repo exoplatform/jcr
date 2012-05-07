@@ -43,6 +43,8 @@ public class ItemDefinitionData
    protected final int onParentVersion;
 
    protected final boolean protectedItem;
+   
+   protected final boolean residualSet;
 
    public ItemDefinitionData(InternalQName name, InternalQName declaringNodeType, boolean autoCreated,
       boolean mandatory, int onParentVersion, boolean protectedItem)
@@ -53,11 +55,12 @@ public class ItemDefinitionData
       this.mandatory = mandatory;
       this.onParentVersion = onParentVersion;
       this.protectedItem = protectedItem;
+      this.residualSet = name != null ? name.equals(Constants.JCR_ANY_NAME) : false;
    }
 
    public boolean isResidualSet()
    {
-      return this.getName().equals(Constants.JCR_ANY_NAME);
+      return residualSet;
    }
 
    public InternalQName getName()

@@ -110,6 +110,72 @@
          </childNodeDefinition>
       </childNodeDefinitions>
    </nodeType>
+   
+   <nodeType name="exo:EXOJCR-1869-1" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+      <supertypes>
+         <supertype>nt:base</supertype>
+      </supertypes>
+   </nodeType>
+   
+   <nodeType name="exo:EXOJCR-1869-2" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+      <supertypes>
+         <supertype>nt:base</supertype>
+      </supertypes>
+   </nodeType>
+   
+   <nodeType name="exo:EXOJCR-1869-3" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+      <supertypes>
+         <supertype>nt:base</supertype>
+      </supertypes>
+   </nodeType>
+   
+   <nodeType name="exo:EXOJCR-1869-4" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+      <supertypes>
+         <supertype>nt:base</supertype>
+      </supertypes>
+   </nodeType>
+   
+   <nodeType name="mix:EXOJCR-1869-1" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+      <childNodeDefinitions>
+         <childNodeDefinition name="A1" defaultPrimaryType="" autoCreated="false" mandatory="false" onParentVersion="VERSION" protected="false"
+            sameNameSiblings="true">
+            <requiredPrimaryTypes>
+               <requiredPrimaryType>exo:EXOJCR-1869-3</requiredPrimaryType>
+            </requiredPrimaryTypes>
+         </childNodeDefinition>
+      </childNodeDefinitions>
+   </nodeType>
+   
+   <nodeType name="mix:EXOJCR-1869-2" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+      <childNodeDefinitions>
+         <childNodeDefinition name="A2" defaultPrimaryType="" autoCreated="false" mandatory="false" onParentVersion="VERSION" protected="false"
+            sameNameSiblings="true">
+            <requiredPrimaryTypes>
+               <requiredPrimaryType>exo:EXOJCR-1869-4</requiredPrimaryType>
+            </requiredPrimaryTypes>
+         </childNodeDefinition>
+      </childNodeDefinitions>
+   </nodeType>
+         
+   <nodeType name="exo:EXOJCR-1869" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+      <supertypes>
+         <supertype>nt:base</supertype>
+      </supertypes>
+      <childNodeDefinitions>
+         <childNodeDefinition name="node1" defaultPrimaryType="" autoCreated="false" mandatory="false" onParentVersion="VERSION" protected="false"
+            sameNameSiblings="true">
+            <requiredPrimaryTypes>
+               <requiredPrimaryType>exo:EXOJCR-1869-1</requiredPrimaryType>
+            </requiredPrimaryTypes>
+         </childNodeDefinition>
+         <childNodeDefinition name="node2" defaultPrimaryType="" autoCreated="false" mandatory="false" onParentVersion="VERSION" protected="false"
+            sameNameSiblings="true">
+            <requiredPrimaryTypes>
+               <requiredPrimaryType>exo:EXOJCR-1869-2</requiredPrimaryType>
+            </requiredPrimaryTypes>
+         </childNodeDefinition>
+      </childNodeDefinitions>
+   </nodeType>
 
    <!-- exo:actions property will be used to store all actions that reference to this node -->
    <nodeType name="exo:actionable" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
