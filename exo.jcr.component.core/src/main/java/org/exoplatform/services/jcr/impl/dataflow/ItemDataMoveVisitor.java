@@ -296,7 +296,6 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
             .isMultiValued(), values);
 
       addStates.add(new ItemState(newProperty, ItemState.RENAMED, false, ancestorToSave, false, false));
-
       deleteStates.add(new ItemState(property, ItemState.DELETED, false, ancestorToSave, false, false));
    }
 
