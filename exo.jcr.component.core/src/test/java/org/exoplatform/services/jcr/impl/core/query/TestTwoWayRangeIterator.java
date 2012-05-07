@@ -21,8 +21,6 @@ import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.impl.core.query.lucene.TwoWayRangeIterator;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.util.HashMap;
 import java.util.NoSuchElementException;
@@ -43,11 +41,6 @@ import javax.jcr.query.QueryResult;
  */
 public class TestTwoWayRangeIterator extends JcrImplBaseTest
 {
-   /**
-    * Class logger.
-    */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestScoreNodeIterator");
-
    private Random random = new Random();
    
    private Session userSession;
@@ -99,7 +92,6 @@ public class TestTwoWayRangeIterator extends JcrImplBaseTest
       {
 
          final int skip = random.nextInt(TEST_NODES_COUNT - 2) + 1;
-         log.info("Test skip " + skip);
          ScoreNodeTester tester = new ScoreNodeTester()
          {
 
@@ -154,20 +146,17 @@ public class TestTwoWayRangeIterator extends JcrImplBaseTest
             {
                QueryResult result = query.execute();
                TwoWayRangeIterator iterator = (TwoWayRangeIterator)result.getNodes();
-               log.info("testSkipBeforeFirst" + skip);
                iterator.skip(skip);
                assertEquals(skip, iterator.getPosition());
                try
                {
                   int skip2 = skip + 1 + random.nextInt(TEST_NODES_COUNT);
-                  log.info("testSkipBeforeFirst skip2=" + skip2);
                   iterator.skipBack(skip2);
                   fail();
                }
                catch (NoSuchElementException e)
                {
                   // ok
-
                }
                return iterator;
             }
@@ -258,7 +247,6 @@ public class TestTwoWayRangeIterator extends JcrImplBaseTest
       for (int i = 0; i < ATTEMPTS; i++)
       {
          final int skip = random.nextInt(TEST_NODES_COUNT - 10);
-         log.info("Test skip " + skip);
          ScoreNodeTester tester = new ScoreNodeTester()
          {
 
@@ -306,9 +294,6 @@ public class TestTwoWayRangeIterator extends JcrImplBaseTest
          while (orderIterator.hasNext())
          {
             Node nooode = (Node)orderIterator.next();
-            log.info("node " + nooode.getPath() + " " + nooode.getProperty("val").getLong() + "  "
-               + orderIterator.getPosition());
-
          }
       }
       assertEquals(expectedPosition, nextNode.getProperty("val").getLong());
