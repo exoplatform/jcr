@@ -135,8 +135,9 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
    public ItemState getItemState(String itemIdentifier)
    {
       ItemState state;
-      for (PlainChangesLog changesLog : changesLogs)
+      for (int i = changesLogs.size() - 1; i >= 0; i--)
       {
+         PlainChangesLog changesLog = changesLogs.get(i);
          state = ((PlainChangesLogImpl)changesLog).getItemState(itemIdentifier);
          if (state != null)
          {
@@ -149,8 +150,9 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
    public ItemState getItemState(NodeData parentData, QPathEntry name, ItemType itemType)
    {
       ItemState state;
-      for (PlainChangesLog changesLog : changesLogs)
+      for (int i = changesLogs.size() - 1; i >= 0; i--)
       {
+         PlainChangesLog changesLog = changesLogs.get(i);
          try
          {
             state = ((PlainChangesLogImpl)changesLog).getItemState(parentData, name, itemType);
