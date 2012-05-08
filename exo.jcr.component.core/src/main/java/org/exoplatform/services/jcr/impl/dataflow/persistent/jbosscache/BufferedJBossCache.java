@@ -141,7 +141,9 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             {
                // No tx exists so we create a new tx
                if (LOG.isTraceEnabled())
+               {
                   LOG.trace("No Tx is active we then create a new tx");
+               }
                tm.begin();
                isTxCreated = true;
             }
@@ -161,7 +163,9 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                try
                {
                   if (LOG.isTraceEnabled())
+                  {
                      LOG.trace("An error occurs the tx will be rollbacked");
+                  }
                   tm.rollback();
                }
                catch (Exception e1)
@@ -176,7 +180,9 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             try
             {
                if (LOG.isTraceEnabled())
+               {
                   LOG.trace("The tx will be committed");
+               }
                tm.commit();
             }
             catch (Exception e)
@@ -774,6 +780,16 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          .getHistoryIndex(), local.get(), useExpiration, expirationTimeOut));
    }
 
+   /**
+    * It tries to get Set by given key. If it is Set then adds new item UUID and puts new set back.
+    * If null found, then new Set created (ordinary cache does). It doesn't actually puts an item,
+    * it's UUID is written only.
+    * 
+    * @param fqn
+    * @param patternKey
+    * @param listKey
+    * @param value
+    */
    public void addToPatternList(Fqn fqn, String patternKey, String listKey, ItemData value)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
