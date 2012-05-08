@@ -477,59 +477,68 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    }
 
    /**
-    * @param nodeTypeName
-    * @return
-    * @throws RepositoryException 
+    * {@inheritDoc}
     */
    public Set<InternalQName> getSubtypes(final InternalQName nodeTypeName)
    {
       return this.nodeTypeRepository.getSubtypes(nodeTypeName);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public Set<InternalQName> getSupertypes(final InternalQName nodeTypeName)
    {
       return this.nodeTypeRepository.getSupertypes(nodeTypeName);
    }
 
-   public boolean isChildNodePrimaryTypeAllowed(final InternalQName childNodeName,
-      final InternalQName childNodeTypeName, final InternalQName parentNodeType, final InternalQName[] parentMixinNames)
-      throws RepositoryException
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isChildNodePrimaryTypeAllowed(final InternalQName childName, final InternalQName childNodeType,
+      final InternalQName parentNodeType, final InternalQName[] parentMixinNames) throws RepositoryException
    {
-      final Set<InternalQName> testSuperTypesNames = this.nodeTypeRepository.getSupertypes(childNodeTypeName);
+      final Set<InternalQName> testSuperTypesNames = this.nodeTypeRepository.getSupertypes(childNodeType);
       NodeDefinitionData[] allChildNodeDefinitions = getAllChildNodeDefinitions(parentNodeType);
+      
       for (final NodeDefinitionData cnd : allChildNodeDefinitions)
       {
-         for (final InternalQName req : cnd.getRequiredPrimaryTypes())
+         for (final InternalQName reqNodeType : cnd.getRequiredPrimaryTypes())
          {
-            String nameNode = cnd.getName().getName();
-            if (childNodeTypeName.equals(req))
+            InternalQName reqName = cnd.getName();
+
+            if (isChildAllowed(childName, childNodeType, cnd, reqName, reqNodeType))
             {
-               return cnd.isResidualSet() || nameNode.equals(childNodeName.getName());
+               return true;
             }
+
             for (final InternalQName superName : testSuperTypesNames)
             {
-               if (superName.equals(req))
+               if (isChildAllowed(childName, superName, cnd, reqName, reqNodeType))
                {
-                  return cnd.isResidualSet() || nameNode.equals(childNodeName.getName());
+                  return true;
                }
             }
          }
       }
+
       allChildNodeDefinitions = getAllChildNodeDefinitions(parentMixinNames);
       for (final NodeDefinitionData cnd : allChildNodeDefinitions)
       {
-         for (final InternalQName req : cnd.getRequiredPrimaryTypes())
+         for (final InternalQName reqNodeType : cnd.getRequiredPrimaryTypes())
          {
-            String nameNode = cnd.getName().getName();
-            if (childNodeTypeName.equals(req))
+            InternalQName reqName = cnd.getName();
+
+            if (isChildAllowed(childName, childNodeType, cnd, reqName, reqNodeType))
             {
-               return cnd.isResidualSet() || nameNode.equals(childNodeName.getName());
+               return true;
             }
+
             for (final InternalQName superName : testSuperTypesNames)
             {
-               if (superName.equals(req))
+               if (isChildAllowed(childName, superName, cnd, reqName, reqNodeType))
                {
-                  return cnd.isResidualSet() || nameNode.equals(childNodeName.getName());
+                  return true;
                }
             }
          }
@@ -539,11 +548,20 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    }
 
    /**
+    * Checks if node with <code>childName</code>as name and <code>childNodeType</code> as node type
+    * allowed as child. 
+    */
+   private boolean isChildAllowed(final InternalQName childName, final InternalQName childNodeType,
+      final NodeDefinitionData cnd, InternalQName reqName, final InternalQName reqNodeType)
+   {
+      return childNodeType.equals(reqNodeType) && (cnd.isResidualSet() || reqName.equals(childName));
+   }
+
+   /**
     * {@inheritDoc}
     * @throws RepositoryException 
     */
    public boolean isNodeType(final InternalQName testTypeName, final InternalQName... typesNames)
-
    {
       return this.nodeTypeRepository.isNodeType(testTypeName, typesNames);
    }

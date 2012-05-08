@@ -54,12 +54,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
@@ -170,7 +168,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             // Get last state and remove it, since there is no need to review this items once more
             ItemState state = persistedProperyStates.removeLast();
 
-            if (state.isUpdated() || state.isAdded() || state.isDeleted())
+            if (state.isUpdated() || state.isDeleted())
             {
                // iterate from the head to the end
                Iterator<ItemState> iterator = persistedProperyStates.iterator();
@@ -178,8 +176,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                {
                   ItemState checkedState = iterator.next();
                   // if UUIDs or paths are the same 
-                  if (checkedState.getData().getIdentifier().equals(state.getData().getIdentifier())
-                     || checkedState.getData().getQPath().equals(state.getData().getQPath()))
+                  if (checkedState.getData().getIdentifier().equals(state.getData().getIdentifier()))
                   {
                      // remove updated state, because delete, add or update state 
                      if (checkedState.isUpdated())
@@ -187,9 +184,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                         checkedState.makeLogical();
                         iterator.remove();
                      }
-
-                     else if (state.isDeleted() && !state.isRenamed()
-                        && (checkedState.isAdded() || checkedState.isUpdated()))
+                     else if ((checkedState.isAdded() || checkedState.isUpdated()) && state.isDeleted())
                      {
                         checkedState.makeLogical();
                         // Usecase when property was added and removed within the transaction or save. 
@@ -202,8 +197,8 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                   }
                }
             }
-
          }
+
          return log;
       }
 
@@ -541,8 +536,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          // copy state
          PlainChangesLogImpl newLog = PlainChangesLogImpl.createCopy(new ArrayList<ItemState>(), changesLog);
 
-         Map<String, PropertyData> lastUpdateStates = new HashMap<String, PropertyData>();
-
          for (Iterator<ItemState> iter = changesLog.getAllStates().iterator(); iter.hasNext();)
          {
             ItemState prevState = iter.next();
@@ -568,54 +561,47 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                {
                   PropertyData prevData = (PropertyData)prevState.getData();
 
-                  if (prevData.getValues() != null) // null if it's DELETE state
+                  if (!prevState.isDeleted())
                   {
                      List<ValueData> values = new ArrayList<ValueData>();
 
-                     if (prevState.isRenamed() && lastUpdateStates.containsKey(prevState.getData().getIdentifier()))
+                     for (int i = 0; i < prevData.getValues().size(); i++)
                      {
-                        values = lastUpdateStates.get(prevState.getData().getIdentifier()).getValues();
-                     }
-                     else
-                     {
-                        for (int i = 0; i < prevData.getValues().size(); i++)
+                        ValueData vd = prevData.getValues().get(i);
+
+                        if (vd instanceof TransientValueData)
                         {
-                           ValueData vd = prevData.getValues().get(i);
+                           TransientValueData tvd = (TransientValueData)vd;
+                           ValueData pvd;
 
-                           if (vd instanceof TransientValueData)
+                           if (vd.isByteArray())
                            {
-                              TransientValueData tvd = (TransientValueData)vd;
-                              ValueData pvd;
-
-                              if (vd.isByteArray())
-                              {
-                                 pvd = new ByteArrayPersistedValueData(i, vd.getAsByteArray());
-                                 values.add(pvd);
-                              }
-                              else
-                              {
-                                 File destFile = null;
-
-                                 if (tvd.getSpoolFile() != null)
-                                 {
-                                    // spooled to temp file
-                                    pvd = new StreamPersistedValueData(i, tvd.getSpoolFile(), destFile);
-                                 }
-                                 else
-                                 {
-                                    // with original stream
-                                    pvd = new StreamPersistedValueData(i, tvd.getOriginalStream(), destFile);
-                                 }
-
-                                 values.add(pvd);
-                              }
-
-                              tvd.delegate(pvd);
+                              pvd = new ByteArrayPersistedValueData(i, vd.getAsByteArray());
+                              values.add(pvd);
                            }
                            else
                            {
-                              values.add(vd);
+                              File destFile = null;
+
+                              if (tvd.getSpoolFile() != null)
+                              {
+                                 // spooled to temp file
+                                 pvd = new StreamPersistedValueData(i, tvd.getSpoolFile(), destFile);
+                              }
+                              else
+                              {
+                                 // with original stream
+                                 pvd = new StreamPersistedValueData(i, tvd.getOriginalStream(), destFile);
+                              }
+
+                              values.add(pvd);
                            }
+
+                           tvd.delegate(pvd);
+                        }
+                        else
+                        {
+                           values.add(vd);
                         }
                      }
 
@@ -623,11 +609,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                         new PersistedPropertyData(prevData.getIdentifier(), prevData.getQPath(),
                            prevData.getParentIdentifier(), prevData.getPersistedVersion() + 1, prevData.getType(),
                            prevData.isMultiValued(), values);
-
-                     if (prevState.isAdded() || prevState.isUpdated())
-                     {
-                        lastUpdateStates.put(prevState.getData().getIdentifier(), (PropertyData)newData);
-                     }
                   }
                   else
                   {
@@ -689,8 +670,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                }
             }
          }
-
-         lastUpdateStates.clear(); //help to GC
 
          return newLog;
       }

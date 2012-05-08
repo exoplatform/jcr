@@ -52,8 +52,8 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
-import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
+import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.ActionNonTxAware;
@@ -62,8 +62,8 @@ import org.jboss.cache.Cache;
 import org.jboss.cache.CacheStatus;
 import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
-import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.config.Configuration.CacheMode;
+import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.picocontainer.Startable;
@@ -883,6 +883,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       boolean rollback = true;
       try
       {
+         ItemState lastDelete = null;
+
          cache.beginTransaction();
          for (ItemState state : itemStates.getAllStates())
          {
@@ -910,11 +912,14 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
             else if (state.isDeleted())
             {
-               removeItem(state.getData());
+               if (state.isPersisted())
+               {
+                  removeItem(state.getData());
+               }
             }
             else if (state.isRenamed())
             {
-               putItem(state.getData());
+               renameItem(state, lastDelete);
             }
             else if (state.isPathChanged())
             {
@@ -927,6 +932,11 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                   // update subtree ACLs
                   updateMixin((NodeData)state.getData());
                }
+            }
+
+            if (state.isDeleted())
+            {
+               lastDelete = state;
             }
          }
          cache.commitTransaction();
@@ -1807,6 +1817,51 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       {
          // its a samename reordering
          updateTreePath(prevNode.getQPath(), node.getQPath(), null); // don't change ACL, it's same parent
+      }
+   }
+
+   /**
+    * Apply rename operation on cache. Parent node will be re-added into the cache since
+    * parent or name might changing. For other children only item data will be replaced.
+    */
+   protected void renameItem(final ItemState renamedState, final ItemState deletedState)
+   {
+      ItemData data = renamedState.getData();
+      ItemData prevData = get(data.getIdentifier());
+
+      if (data.isNode())
+      {
+         if (renamedState.isPersisted())
+         {
+            // it is state where name can be changed by rename operation, so re-add node
+            removeItem(deletedState.getData());
+            putItem(renamedState.getData());
+         }
+         else
+         {
+            // update item data with new name only
+            cache.put(makeItemFqn(data.getIdentifier()), ITEM_DATA, data);
+         }
+      }
+      else
+      {
+         PropertyData prop = (PropertyData)data;
+
+         if (prevData != null && !(prevData instanceof NullItemData))
+         {
+            PropertyData newProp =
+               new PersistedPropertyData(prop.getIdentifier(), prop.getQPath(), prop.getParentIdentifier(),
+                  prop.getPersistedVersion(), prop.getType(), prop.isMultiValued(),
+                  ((PropertyData)prevData).getValues());
+
+            // update item data with new name and old values only
+            cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
+         }
+         else
+         {
+            // remove item to avoid inconsistency in cluster mode since we have not old values
+            cache.remove(makeItemFqn(data.getIdentifier()), ITEM_DATA);
+         }
       }
    }
 

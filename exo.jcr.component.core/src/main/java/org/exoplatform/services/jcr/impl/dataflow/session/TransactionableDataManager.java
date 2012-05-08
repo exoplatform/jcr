@@ -60,7 +60,7 @@ public class TransactionableDataManager implements DataManager
    private TransactionChangesLog transactionLog;
 
    private SessionImpl session;
-   
+
    public TransactionableDataManager(LocalWorkspaceDataManagerStub dataManager, SessionImpl session)
       throws RepositoryException
    {
@@ -146,7 +146,8 @@ public class TransactionableDataManager implements DataManager
       return hasNext;
    }
 
-   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters) throws RepositoryException
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters)
+      throws RepositoryException
    {
       List<NodeData> nodes = storageDataManager.getChildNodesData(parent, patternFilters);
 
@@ -349,23 +350,15 @@ public class TransactionableDataManager implements DataManager
    public ItemData getItemData(NodeData parentData, QPathEntry name, ItemType itemType, boolean createNullItemData)
       throws RepositoryException
    {
-      ItemData data = null;
       if (txStarted())
       {
          ItemState state = transactionLog.getItemState(parentData, name, itemType);
          if (state != null)
          {
-            data = state.getData();
+            return state.isDeleted() ? null : state.getData();
          }
       }
-      if (data != null)
-      {
-         return data;
-      }
-      else
-      {
-         return storageDataManager.getItemData(parentData, name, itemType, createNullItemData);
-      }
+      return storageDataManager.getItemData(parentData, name, itemType, createNullItemData);
    }
 
    /**
@@ -373,23 +366,15 @@ public class TransactionableDataManager implements DataManager
     */
    public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException
    {
-      ItemData data = null;
       if (txStarted())
       {
          ItemState state = transactionLog.getItemState(parentData, name, itemType);
          if (state != null)
          {
-            data = state.getData();
+            return state.isDeleted() ? false : true;
          }
       }
-      if (data != null)
-      {
-         return true;
-      }
-      else
-      {
-         return storageDataManager.hasItemData(parentData, name, itemType);
-      }
+      return storageDataManager.hasItemData(parentData, name, itemType);
    }
 
    /**
@@ -397,23 +382,15 @@ public class TransactionableDataManager implements DataManager
     */
    public ItemData getItemData(String identifier) throws RepositoryException
    {
-      ItemData data = null;
       if (txStarted())
       {
          ItemState state = transactionLog.getItemState(identifier);
          if (state != null)
          {
-            data = state.getData();
+            return state.isDeleted() ? null : state.getData();
          }
       }
-      if (data != null)
-      {
-         return data;
-      }
-      else
-      {
-         return storageDataManager.getItemData(identifier);
-      }
+      return storageDataManager.getItemData(identifier);
    }
 
    /**

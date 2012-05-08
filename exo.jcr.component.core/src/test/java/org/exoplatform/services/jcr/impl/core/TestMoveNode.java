@@ -367,4 +367,86 @@ public class TestMoveNode extends JcrImplBaseTest
       assertEquals("/A/B", nodeB.getPath());
       assertEquals("/A", nodeA.getPath());
    }
+
+   public void testMoveAndRemoveTree() throws Exception
+   {
+      Node testRoot = root.addNode("test");
+      testRoot.addMixin("mix:referenceable");
+
+      Node node1_1 = testRoot.addNode("node1");
+      node1_1.addMixin("mix:referenceable");
+
+      Node node1_2 = testRoot.addNode("node1");
+      node1_2.addMixin("mix:referenceable");
+
+      Node node1_3 = testRoot.addNode("node1");
+      node1_3.addMixin("mix:referenceable");
+
+      Node node2_1 = node1_3.addNode("node2_1");
+      node2_1.addMixin("mix:referenceable");
+
+      Node node3_1 = node2_1.addNode("node3_1");
+      node3_1.addMixin("mix:referenceable");
+      session.save();
+
+      // move tree
+      session.move("/test", "/newtest");
+      session.save();
+
+      Node testRootMoved = root.getNode("newtest");
+      Property testRootPRMoved = testRootMoved.getProperty("jcr:primaryType");
+
+      Node node1_1Moved = testRootMoved.getNode("node1[1]");
+      Property node1_1PRMoved = node1_1Moved.getProperty("jcr:primaryType");
+
+      Node node1_2Moved = testRootMoved.getNode("node1[2]");
+      Property node1_2PRMoved = node1_2Moved.getProperty("jcr:primaryType");
+
+      Node node1_3Moved = testRootMoved.getNode("node1[3]");
+      Property node1_3PRMoved = node1_3Moved.getProperty("jcr:primaryType");
+
+      Node node2_1Moved = node1_3Moved.getNode("node2_1");
+      Property node2_1PRMoved = node2_1Moved.getProperty("jcr:primaryType");
+
+      Node node3_1Moved = node2_1Moved.getNode("node3_1");
+      Property node3_1PRMoved = node3_1Moved.getProperty("jcr:primaryType");
+
+      assertEquals("/newtest", testRootMoved.getPath());
+      assertEquals("/newtest/node1", node1_1Moved.getPath());
+      assertEquals("/newtest/node1[2]", node1_2Moved.getPath());
+      assertEquals("/newtest/node1[3]", node1_3Moved.getPath());
+      assertEquals("/newtest/node1[3]/node2_1", node2_1Moved.getPath());
+      assertEquals("/newtest/node1[3]/node2_1/node3_1", node3_1Moved.getPath());
+      assertEquals("/newtest/jcr:primaryType", testRootPRMoved.getPath());
+      assertEquals("/newtest/node1/jcr:primaryType", node1_1PRMoved.getPath());
+      assertEquals("/newtest/node1[2]/jcr:primaryType", node1_2PRMoved.getPath());
+      assertEquals("/newtest/node1[3]/jcr:primaryType", node1_3PRMoved.getPath());
+      assertEquals("/newtest/node1[3]/node2_1/jcr:primaryType", node2_1PRMoved.getPath());
+      assertEquals("/newtest/node1[3]/node2_1/node3_1/jcr:primaryType", node3_1PRMoved.getPath());
+
+      // move sns node newtest/node1[1]
+      session.move("/newtest/node1", "/newtest/node4");
+      session.save();
+
+      node1_2Moved = testRootMoved.getNode("node1[1]");
+      node1_2PRMoved = node1_2Moved.getProperty("jcr:primaryType");
+
+      node1_3Moved = testRootMoved.getNode("node1[2]");
+      node1_3PRMoved = node1_3Moved.getProperty("jcr:primaryType");
+
+      node2_1Moved = node1_3Moved.getNode("node2_1");
+      node2_1PRMoved = node2_1Moved.getProperty("jcr:primaryType");
+
+      node3_1Moved = node2_1Moved.getNode("node3_1");
+      node3_1PRMoved = node3_1Moved.getProperty("jcr:primaryType");
+
+      assertEquals("/newtest/node1", node1_2Moved.getPath());
+      assertEquals("/newtest/node1[2]", node1_3Moved.getPath());
+      assertEquals("/newtest/node1[2]/node2_1", node2_1Moved.getPath());
+      assertEquals("/newtest/node1[2]/node2_1/node3_1", node3_1Moved.getPath());
+      assertEquals("/newtest/node1/jcr:primaryType", node1_2PRMoved.getPath());
+      assertEquals("/newtest/node1[2]/jcr:primaryType", node1_3PRMoved.getPath());
+      assertEquals("/newtest/node1[2]/node2_1/jcr:primaryType", node2_1PRMoved.getPath());
+      assertEquals("/newtest/node1[2]/node2_1/node3_1/jcr:primaryType", node3_1PRMoved.getPath());
+   }
 }

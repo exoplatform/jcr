@@ -19,6 +19,11 @@
 package org.exoplatform.services.jcr.api.xa;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.datamodel.ItemType;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.transaction.TransactionService;
 
@@ -206,6 +211,32 @@ public class TestUserTransaction extends JcrAPIBaseTest
 
    }
 
+   public void testAddRemoveNode() throws Exception
+   {
+      UserTransaction ut = txService.getUserTransaction();
+
+      root.addNode("Node");
+      session.save();
+
+      ut.begin();
+      Node node = root.getNode("Node");
+      String uuid = ((NodeImpl)node).getIdentifier();
+      node.setProperty("name", "value");
+
+      session.save();
+
+      node.remove();
+      session.save();
+
+      ItemData itemData = session.getTransientNodesManager().getItemData(uuid);
+      boolean hasItemData = session.getTransientNodesManager().hasItemData((NodeData)((NodeImpl)root).getData(), QPathEntry.parse("[]Node:1"),
+         ItemType.NODE);
+      ut.commit();
+
+      assertNull(itemData);
+      assertFalse(hasItemData);
+   }
+
    public void testSaveException() throws Exception
    {
       assertNotNull(txService);
@@ -230,9 +261,9 @@ public class TestUserTransaction extends JcrAPIBaseTest
 
       Session s2 =
          repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
-      
+
       Node tx1 = s1.getRootNode().getNode("pretx").addNode("tx1");
-      
+
       Node tx2 = s2.getRootNode().getNode("pretx").addNode("tx2");
 
       // keep this change out of the current Tx, this is necessary since
@@ -243,7 +274,7 @@ public class TestUserTransaction extends JcrAPIBaseTest
 
       s1.save();
       s2.save();
-      
+
       try
       {
          ut.commit();
@@ -256,12 +287,15 @@ public class TestUserTransaction extends JcrAPIBaseTest
       }
 
       s1.logout();
-      s2.logout();      
-      
-      try {
+      s2.logout();
+
+      try
+      {
          session.getItem("/pretx/tx1");
          fail("PathNotFoundException should be thrown");
-      } catch(PathNotFoundException e) {
+      }
+      catch (PathNotFoundException e)
+      {
          // ok
       }
    }
