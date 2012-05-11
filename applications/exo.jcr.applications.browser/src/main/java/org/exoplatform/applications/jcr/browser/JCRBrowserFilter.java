@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
+import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
@@ -36,6 +37,7 @@ import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.Workspace;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.FilterChain;
@@ -46,11 +48,11 @@ import javax.servlet.http.HttpServletRequest;
 
 /**
  * Created by The eXo Platform SAS. <br/>
- * 
+ *
  * Date: 27.05.2008 <br/>
- * 
+ *
  * Inits JCRBrowser instance in HTTP session.
- * 
+ *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: JCRBrowserFilter.java 111 2008-11-11 11:11:11Z peterit $
  */
@@ -131,9 +133,13 @@ public class JCRBrowserFilter extends AbstractFilter
                               }
                            }
                            if (jndiRepo == null)
+                           {
                               jcrBrowser.addError(e);
+                           }
                            else
+                           {
                               jcrBrowser.setRepository(jndiRepo);
+                           }
                         }
                         catch (NamingException jndie)
                         {
@@ -158,7 +164,9 @@ public class JCRBrowserFilter extends AbstractFilter
                                  jcrBrowser.addError(jndie);
                               }
                               else
+                              {
                                  jcrBrowser.setRepository(jndiRepo);
+                              }
                            }
                            catch (NamingException jndie1)
                            {
@@ -175,29 +183,39 @@ public class JCRBrowserFilter extends AbstractFilter
 
                if (jcrBrowser.getRepository() != null)
                {
-                  if (workspaceName != null && !jcrBrowser.getSession().getWorkspace().getName().equals(workspaceName))
+                  if (workspaceChanged(workspaceName, jcrBrowser))
                   {
-                     jcrBrowser.setSession(sessionProviderService.getSessionProvider(null).getSession(workspaceName,
-                        jcrBrowser.getRepository()));
+                     Session currentSession =
+                        sessionProviderService.getSessionProvider(null).getSession(workspaceName,
+                           jcrBrowser.getRepository());
+                     jcrBrowser.setSession(currentSession);
+                     jcrBrowser.setNode(JCRPath.ROOT_PATH);
                   }
                   else
                   {
-                     jcrBrowser.setSession(sessionProviderService.getSessionProvider(null).getSession(
-                        jcrBrowser.getSession().getWorkspace().getName(), jcrBrowser.getRepository()));
+                     Session currentSession =
+                        sessionProviderService.getSessionProvider(null).getSession(
+                           jcrBrowser.getSession().getWorkspace().getName(), jcrBrowser.getRepository());
+                     jcrBrowser.setSession(currentSession);
+                     jcrBrowser.refreshNode();
                   }
 
                   // Navigation
                   String path = (String)httpRequest.getParameter("goParent");
                   if (path != null)
                   {
-                     jcrBrowser.setNode(jcrBrowser.getNode().getNode(path));
+                     if (!jcrBrowser.getNode().getPath().equals(JCRPath.ROOT_PATH))
+                     {
+                        Node parentNode = jcrBrowser.getNode().getNode(path);
+                        jcrBrowser.setNode(parentNode.getPath());
+                     }
                   }
                   else
                   {
                      path = (String)httpRequest.getParameter("goNodePath");
                      if (path != null)
                      {
-                        jcrBrowser.setNode((Node)jcrBrowser.getSession().getItem(path));
+                        jcrBrowser.setNode(path);
                      }
                      // else seems nothing changed in JCR navigation
                   }
@@ -224,11 +242,14 @@ public class JCRBrowserFilter extends AbstractFilter
                if (jcrBrowser == null)
                {
                   jcrBrowser = new JCRBrowser();
+
                   jcrBrowser.setRepositoryService(repositoryService);
                }
 
                jcrBrowser.setRepository(repository);
-               jcrBrowser.setSession(jcrSession); // and set node to a workspace root node
+               jcrBrowser.setSession(jcrSession);
+               jcrBrowser.setNode(JCRPath.ROOT_PATH);
+
             }
 
          } // conversation state check end
@@ -260,6 +281,11 @@ public class JCRBrowserFilter extends AbstractFilter
       }
 
       chain.doFilter(servletRequest, servletResponse);
+   }
+
+   private boolean workspaceChanged(String workspaceName, JCRBrowser jcrBrowser)
+   {
+      return workspaceName != null && !jcrBrowser.getSession().getWorkspace().getName().equals(workspaceName);
    }
 
    public void destroy()

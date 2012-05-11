@@ -20,6 +20,7 @@ package org.exoplatform.applications.jcr.browser;
 
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -32,13 +33,13 @@ import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS. <br/>
- * 
+ *
  * Date: 27.05.2008 <br/>
- * 
+ *
  * JavaBean for JCRBrowser sample application.<br/>
- * 
+ *
  * Since JCR 1.11 Browser supports Ext Repository synchronization.<br/>
- * 
+ *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: JCRBrowser.java 111 2008-11-11 11:11:11Z peterit $
  */
@@ -59,7 +60,7 @@ public class JCRBrowser
 
    /**
     * Get browser repository.
-    * 
+    *
     * @return the repository
     */
    public ManageableRepository getRepository()
@@ -69,7 +70,7 @@ public class JCRBrowser
 
    /**
     * Set browser repository.
-    * 
+    *
     * @param repository
     *          the repository to set
     */
@@ -80,7 +81,7 @@ public class JCRBrowser
 
    /**
     * Get browser JCR session.
-    * 
+    *
     * @return the session
     */
    public Session getSession()
@@ -90,7 +91,7 @@ public class JCRBrowser
 
    /**
     * Set browser JCR session.
-    * 
+    *
     * @param session
     *          the session to set
     * @throws RepositoryException
@@ -98,12 +99,11 @@ public class JCRBrowser
    public void setSession(Session session) throws RepositoryException
    {
       this.session = session;
-      this.node = this.session.getRootNode();
    }
 
    /**
     * Get browser current node.
-    * 
+    *
     * @return the node
     */
    public Node getNode()
@@ -112,14 +112,24 @@ public class JCRBrowser
    }
 
    /**
-    * Set browser current node.
-    * 
-    * @param node
-    *          the node to set
+    * Refreshing current node with node which got with current session.
+    *
+    * @throws RepositoryException
     */
-   public void setNode(Node node)
+   public void refreshNode() throws RepositoryException
    {
-      this.node = node;
+      this.setNode(this.node.getPath());
+   }
+
+   /**
+    * Sets current node used by JCRBrowser.
+    *
+    * @param absPath absolute path only
+    * @throws RepositoryException
+    */
+   public void setNode(String absPath) throws RepositoryException
+   {
+      this.node = (Node)this.session.getItem(absPath);
    }
 
    public void addError(Throwable error)
