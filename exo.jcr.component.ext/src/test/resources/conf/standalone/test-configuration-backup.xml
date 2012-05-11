@@ -258,9 +258,9 @@
                <name>ref-addresses</name>
                <description>ref-addresses</description>               
                <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
-               <property name="url" value="${jdbcjcrdb8.url:jdbc:hsqldb:file:target/temp/data/db8ws;hsqldb.tx=mvcc}"/>
-               <property name="username" value="${jdbcjcrdb8.username:sa}"/>
-               <property name="password" value="${jdbcjcrdb8.password:}"/>
+               <property name="url" value="${jdbcjcr8.url:jdbc:hsqldb:file:target/temp/data/db8ws;hsqldb.tx=mvcc}"/>
+               <property name="username" value="${jdbcjcr8.username:sa}"/>
+               <property name="password" value="${jdbcjcr8.password:}"/>
             </properties-param>
          </init-params>
       </component-plugin>
@@ -285,9 +285,9 @@
                <name>ref-addresses</name>
                <description>ref-addresses</description>               
                <property name="driverClassName" value="${all.driverClassName:org.hsqldb.jdbcDriver}"/>
-               <property name="url" value="${jdbcjcrdb9.url:jdbc:hsqldb:file:target/temp/data/db8ws1;hsqldb.tx=mvcc}"/>
-               <property name="username" value="${jdbcjcrdb9.username:sa}"/>
-               <property name="password" value="${jdbcjcrdb9.password:}"/>
+               <property name="url" value="${jdbcjcr9.url:jdbc:hsqldb:file:target/temp/data/db8ws1;hsqldb.tx=mvcc}"/>
+               <property name="username" value="${jdbcjcr9.username:sa}"/>
+               <property name="password" value="${jdbcjcr9.password:}"/>
             </properties-param>
          </init-params>
       </component-plugin>
