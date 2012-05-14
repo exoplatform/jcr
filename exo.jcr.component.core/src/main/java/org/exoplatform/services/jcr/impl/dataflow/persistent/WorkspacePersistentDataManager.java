@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.PersistentDataManager;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
-import org.exoplatform.services.jcr.dataflow.ReadOnlyThroughChanges;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListenerFilter;
@@ -107,11 +106,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * Persistent level listeners filters.
     */
    protected final List<ItemsPersistenceListenerFilter> listenerFilters;
-
-   /**
-    * Read-only status.
-    */
-   protected boolean readOnly = false;
 
    /**
     * The resource manager
@@ -271,12 +265,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    public void save(final ChangesLogWrapper logWrapper) throws RepositoryException
    {
       final ItemStateChangesLog changesLog = logWrapper.optimizeAndGetChangesLog();
-
-      // check if this workspace container is not read-only
-      if (readOnly && !(changesLog instanceof ReadOnlyThroughChanges))
-      {
-         throw new ReadOnlyWorkspaceException("Workspace container '" + dataContainer.getName() + "' is read-only.");
-      }
 
       final ChangesLogPersister persister = new ChangesLogPersister();
 
