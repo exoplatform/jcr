@@ -123,7 +123,7 @@ public class TransactionableDataManager implements DataManager
             {
                NodeData data = (NodeData)state.getData();
 
-               if ((state.isAdded() || state.isRenamed()) && !hasNext)
+               if ((state.isAdded() || state.isRenamed() || state.isPathChanged()) && !hasNext)
                {
                   childs.add(data);
                }

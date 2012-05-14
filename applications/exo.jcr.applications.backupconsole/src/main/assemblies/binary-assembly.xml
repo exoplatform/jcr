@@ -38,7 +38,6 @@
          <unpack>false</unpack>
          <scope>compile</scope>
          <excludes>
-            <exclude>junit:junit</exclude>
             <exclude>commons-lang:commons-lang</exclude>
             <exclude>xpp3:xpp3</exclude>
             <exclude>org.exoplatform.tool:exo.tool.framework.junit</exclude>
@@ -50,27 +49,13 @@
             <exclude>xstream:xstream</exclude>
             <exclude>commons-beanutils:commons-beanutils</exclude>
             <exclude>commons-collections:commons-collections</exclude>
-            <exclude>bcel:bcel</exclude>
             <exclude>javax.activation:activation</exclude>
-            <exclude>jotm:jotm</exclude>
-            <exclude>jotm:jotm_jrmp_stubs</exclude>
             <exclude>javax.transaction:jta</exclude>
-            <exclude>org.objectweb.carol:carol</exclude>
-            <exclude>howl:howl-logger</exclude>
             <exclude>quartz:quartz</exclude>
             <exclude>javax.mail:mail</exclude>
             <exclude>javax.transaction:jta</exclude>
             <exclude>stax:stax-api</exclude>
          </excludes>
-      </dependencySet>
-      <dependencySet>
-         <outputFileNameMapping>${artifact.artifactId}-${artifact.baseVersion}.${artifact.extension}</outputFileNameMapping>
-         <outputDirectory>lib</outputDirectory>
-         <unpack>false</unpack>
-         <scope>test</scope>
-         <includes>
-             <include>org.slf4j:slf4j-log4j12</include>
-         </includes>
       </dependencySet>
    </dependencySets>
    <fileSets>

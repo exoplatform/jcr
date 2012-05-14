@@ -879,7 +879,7 @@ public class SessionDataManager implements ItemDataConsumer
                // we have only last states, so remove nodes first
                descendants.remove(data.getIdentifier());
 
-               if ((state.isAdded() || state.isRenamed()) && !hasNext)
+               if ((state.isAdded() || state.isRenamed() || state.isPathChanged()) && !hasNext)
                {
                   descendants.put(data.getIdentifier(), data);
                }
