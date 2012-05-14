@@ -18,6 +18,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.exoplatform.services.jcr.access.AccessManager;
 import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -142,6 +143,11 @@ public abstract class QueryResultImpl implements QueryResult
    private final long limit;
 
    /**
+    * If <code>true</code>, it means we're using a System session.
+    */
+   private final boolean isSystemSession;
+
+   /**
     * Creates a new query result. The concrete sub class is responsible for
     * calling {@link #getResults(long)} after this constructor had been called.
     *
@@ -182,6 +188,7 @@ public abstract class QueryResultImpl implements QueryResult
       this.docOrder = orderProps.length == 0 && documentOrder;
       this.offset = offset;
       this.limit = limit;
+      this.isSystemSession = SystemIdentity.SYSTEM.equals(session.getUserID());
    }
 
    /**
@@ -376,7 +383,7 @@ public abstract class QueryResultImpl implements QueryResult
             break;
          }
          // check access
-         if (isAccessGranted(sn))
+         if (!docOrder || isAccessGranted(sn))
          {
             collector.add(sn);
          }
@@ -398,6 +405,10 @@ public abstract class QueryResultImpl implements QueryResult
     */
    private boolean isAccessGranted(ScoreNode[] nodes) throws RepositoryException
    {
+      if (isSystemSession)
+      {
+         return true;
+      }
       for (int i = 0; i < nodes.length; i++)
       {
          try
@@ -483,24 +494,15 @@ public abstract class QueryResultImpl implements QueryResult
          else
          {
             // attempt to get enough results
-            try
+            long expectedPosition = position + skipNum;
+            while (position < expectedPosition)
             {
-               getResults(position + invalid + (int)skipNum);
-               if (resultNodes.size() >= position + skipNum)
-               {
-                  // skip within already fetched results
-                  position += skipNum - 1;
-                  fetchNext();
-               }
-               else
+               fetchNext();
+               if (next == null)
                {
                   // not enough results after getResults()
                   throw new NoSuchElementException();
                }
-            }
-            catch (RepositoryException e)
-            {
-               throw new NoSuchElementException(e.getMessage());
             }
          }
       }
@@ -648,6 +650,25 @@ public abstract class QueryResultImpl implements QueryResult
                }
             }
             next = (ScoreNode[])resultNodes.get(nextPos);
+            try
+            {
+               if (!isAccessGranted(next))
+               {
+                  next = null;
+                  invalid++;
+                  resultNodes.remove(nextPos);
+                  if (log.isDebugEnabled())
+                  {
+                     log
+                        .debug("The node is invalid since we don't have sufficient rights to access it, it will be removed from the results set");
+                  }
+               }
+            }
+            catch (RepositoryException e)
+            {
+               log.error("Could not check access permission", e);
+               break;
+            }
          }
          position++;
       }
