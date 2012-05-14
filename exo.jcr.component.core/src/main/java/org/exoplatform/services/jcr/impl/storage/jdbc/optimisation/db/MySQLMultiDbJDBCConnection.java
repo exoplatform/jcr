@@ -78,14 +78,15 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
    {
       super.prepareQueries();
 
-      FIND_NODES_AND_PROPERTIES =
-         "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
-            + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
-            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I force index(PRIMARY)"
-            + " where I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ? OFFSET ?) J on P.PARENT_ID = J.ID"
-            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
-
       FIND_ITEM_BY_NAME = "select * from JCR_MITEM where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS";
+      
+      FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
+         FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ
+            .replace("from JCR_MITEM I, JCR_MVALUE V",
+               "from JCR_MITEM I force index (JCR_IDX_MITEM_PARENT_NAME), JCR_MVALUE V force index (JCR_IDX_MVALUE_PROPERTY)");
+
+      FIND_NODES_AND_PROPERTIES =
+         FIND_NODES_AND_PROPERTIES.replace("from JCR_MITEM I", "from JCR_MITEM I force index (PRIMARY)");
    }
 
    /**
