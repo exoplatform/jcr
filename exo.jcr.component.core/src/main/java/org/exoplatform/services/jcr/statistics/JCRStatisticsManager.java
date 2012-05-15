@@ -86,8 +86,8 @@ public class JCRStatisticsManager
    /**
     * The length of time in milliseconds after which the snapshot of the statistics is persisted.
     */
-   public static final long PERSISTENCE_TIMEOUT =
-      Long.valueOf(PrivilegedSystemHelper.getProperty("JCRStatisticsManager.persistence.timeout", "5000"));
+   public static final long PERSISTENCE_TIMEOUT = Long.valueOf(PrivilegedSystemHelper.getProperty(
+      "JCRStatisticsManager.persistence.timeout", "15000"));
 
    /**
     * Default constructor.
