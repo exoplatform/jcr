@@ -3,6 +3,7 @@
   exclude-result-prefixes="xlink">
   <xsl:output method="html" encoding="UTF-8" />
   <xsl:param name="folder-icon-path"></xsl:param>
+  <xsl:param name="file-icon-path"></xsl:param>
   <xsl:template match="/sv:node">
     <html>
       <head>
@@ -55,9 +56,18 @@
       <xsl:attribute name="href">
         <xsl:value-of select="./@xlink:href" />
       </xsl:attribute>
-      <xsl:if test="$folder-icon-path!=''">
-        <img src="{$folder-icon-path}" alt="" />
-      </xsl:if>
+      <xsl:choose>
+      <xsl:when test="./@sv:isFile='true'">
+        <xsl:if test="$file-icon-path!=''">
+          <img src="{$file-icon-path}" alt="" />
+        </xsl:if>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:if test="$folder-icon-path!=''">
+          <img src="{$folder-icon-path}" alt="" />
+        </xsl:if>
+      </xsl:otherwise>
+      </xsl:choose>
       <xsl:text> </xsl:text>
       <xsl:value-of select="./@sv:name" />
     </a>

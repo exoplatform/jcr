@@ -7,68 +7,63 @@
 
   <title>WebDAV</title>
 
-    <para>The WebDAV protocol enables you to use the third party tools to
-    communicate with hierarchical content servers via HTTP. It is possible to
-    add and remove documents or a set of documents from a path on the server.
-    DeltaV is an extension of the WebDav protocol that allows managing
-    document versioning. Locking guarantees protection against multiple access
-    when writing resources. The ordering support allows changing the position
-    of the resource in the list and sort the directory to make the directory
-    tree viewed conveniently. The full-text search makes it easy to find the
-    necessary documents. You can search by using two languages: SQL and
-    XPATH.</para>
+  <para>The WebDAV protocol enables you to use the third party tools to
+  communicate with hierarchical content servers via HTTP. It is possible to
+  add and remove documents or a set of documents from a path on the server.
+  DeltaV is an extension of the WebDav protocol that allows managing document
+  versioning. Locking guarantees protection against multiple access when
+  writing resources. The ordering support allows changing the position of the
+  resource in the list and sort the directory to make the directory tree
+  viewed conveniently. The full-text search makes it easy to find the
+  necessary documents. You can search by using two languages: SQL and
+  XPATH.</para>
 
-    <para>In eXo JCR, we plug in the WebDAV layer - based on the code taken
-    from the extension modules of the reference implementation - on the top of
-    our JCR implementation so that it is possible to browse a workspace using
-    the third party tools (it can be Windows folders or Mac ones as well as a
-    Java WebDAV client, such as DAVExplorer or IE using File-&gt;Open as a Web
-    Folder).</para>
+  <para>In eXo JCR, we plug in the WebDAV layer - based on the code taken from
+  the extension modules of the reference implementation - on the top of our
+  JCR implementation so that it is possible to browse a workspace using the
+  third party tools (it can be Windows folders or Mac ones as well as a Java
+  WebDAV client, such as DAVExplorer or IE using File-&gt;Open as a Web
+  Folder).</para>
 
-    <para>Now WebDav is an extension of the REST service. To get the WebDav
-    server ready, you must deploy the REST application. Then, you can access
-    any workspaces of your repository by using the following URL:</para>
+  <para>Now WebDav is an extension of the REST service. To get the WebDav
+  server ready, you must deploy the REST application. Then, you can access any
+  workspaces of your repository by using the following URL:</para>
 
-    <para>Standalone mode:</para>
+  <para>Standalone mode:</para>
 
-    <para><uri>http://host:port/rest/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
+  <para><uri>http://host:port/rest/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
 
-    <para>Portal mode:</para>
+  <para>Portal mode:</para>
 
-    <para><uri>http://host:port/portal/rest/private/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
+  <para><uri>http://host:port/portal/rest/private/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
 
-    <para>When accessing the WebDAV server with the
-    URL<uri>http://localhost:8080/rest/jcr/repository/production</uri>, you
-    might also use "collaboration" (instead of "production") which is the
-    default workspace in eXo products. You will be asked to enter your login
-    and password. Those will then be checked by using the organization service
-    that can be implemented thanks to an InMemory (dummy) module or a DB
-    module or an LDAP one and the JCR user session will be created with the
-    correct JCR Credentials.</para>
+  <para>When accessing the WebDAV server with the
+  URL<uri>http://localhost:8080/rest/jcr/repository/production</uri>, you
+  might also use "collaboration" (instead of "production") which is the
+  default workspace in eXo products. You will be asked to enter your login and
+  password. Those will then be checked by using the organization service that
+  can be implemented thanks to an InMemory (dummy) module or a DB module or an
+  LDAP one and the JCR user session will be created with the correct JCR
+  Credentials.</para>
 
-    <note>
-      <para>If you try the "in ECM" option, add "@ecm" to the user's password.
-      Alternatively, you may modify jaas.conf by adding the <emphasis
-      role="bold">domain=ecm</emphasis> option as follows:</para>
+  <note>
+    <para>If you try the "in ECM" option, add "@ecm" to the user's password.
+    Alternatively, you may modify jaas.conf by adding the <emphasis
+    role="bold">domain=ecm</emphasis> option as follows:</para>
 
-      <programlisting>exo-domain {
+    <programlisting>exo-domain {
      org.exoplatform.services.security.jaas.BasicLoginModule required domain=ecm;
 };</programlisting>
-    </note>
+  </note>
 
-    <para>
-        <emphasis role="bold">Related documents</emphasis>
-    </para>
+  <para><emphasis role="bold">Related documents</emphasis></para>
 
-    <itemizedlist>
-        <listitem>
-            <para>
-                <link linkend="JCR.LinkProducerService">Link
-                    Producer
-                </link>
-            </para>
-        </listitem>
-    </itemizedlist>
+  <itemizedlist>
+    <listitem>
+      <para><link linkend="JCR.LinkProducerService">Link Producer
+      </link></para>
+    </listitem>
+  </itemizedlist>
 
   <section>
     <title>Configuration</title>
@@ -150,6 +145,15 @@
     --&gt;
     &lt;value-param&gt;
       &lt;name&gt;folder-icon-path&lt;/name&gt;
+      &lt;value&gt;/absolute/path/to/file&lt;/value&gt;
+    &lt;/value-param&gt;
+
+    &lt;!--
+        This parameter determines the absolute path to the file icon file, which is shown
+        during WebDAV view of the contents
+    --&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;file-icon-path&lt;/name&gt;
       &lt;value&gt;/absolute/path/to/file&lt;/value&gt;
     &lt;/value-param&gt;
 

@@ -210,6 +210,10 @@
             <value>/absolute/path/to/file</value>
          </value-param>
          
+         <value-param>
+            <name>file-icon-path</name>
+            <value>/absolute/path/to/file</value>
+         </value-param>
          <!-- 
             For testing untrusted-user-agents proper treatment.
             Content-type headers of listed here user agents should be

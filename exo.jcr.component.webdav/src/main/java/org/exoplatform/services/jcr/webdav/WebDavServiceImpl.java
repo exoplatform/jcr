@@ -146,6 +146,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
    public static final String FOLDER_ICON_PATH = "folder-icon-path";
 
+   public static final String FILE_ICON_PATH = "file-icon-path";
+
    public static final String UNTRUSTED_USER_AGENTS = "untrusted-user-agents";
 
    /**
@@ -253,6 +255,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          log.info(FOLDER_ICON_PATH + " = " + pXSLTParam.getValue());
       }
 
+      pXSLTParam = params.getValueParam(FILE_ICON_PATH);
+      if (pXSLTParam != null)
+      {
+         xsltParams.put(FILE_ICON_PATH, pXSLTParam.getValue());
+         log.info(FILE_ICON_PATH + " = " + pXSLTParam.getValue());
+      }
+
       ValueParam pDefFolderNodeType = params.getValueParam(INIT_PARAM_DEF_FOLDER_NODE_TYPE);
       if (pDefFolderNodeType != null)
       {
@@ -317,7 +326,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       ValuesParam pUntrustedUserAgents = params.getValuesParam(UNTRUSTED_USER_AGENTS);
       if (pUntrustedUserAgents != null)
       {
-         untrustedUserAgents.addAll((List<String>)pUntrustedUserAgents.getValues());
+         untrustedUserAgents.addAll(pUntrustedUserAgents.getValues());
       }
 
       this.mimeTypeResolver = new MimeTypeResolver();
@@ -343,6 +352,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          xsltParams.put(FOLDER_ICON_PATH, paramValue);
          log.info(FOLDER_ICON_PATH + " = " + paramValue);
+      }
+
+      paramValue = params.get(FILE_ICON_PATH);
+      if (paramValue != null)
+      {
+         xsltParams.put(FILE_ICON_PATH, paramValue);
+         log.info(FILE_ICON_PATH + " = " + paramValue);
       }
 
       paramValue = params.get(INIT_PARAM_DEF_FOLDER_NODE_TYPE);

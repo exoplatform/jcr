@@ -73,6 +73,11 @@ public class CollectionResource extends GenericResource
    final String XML_NODE = PREFIX + "node";
 
    /**
+    * XML type constant.
+    */
+   final String XML_IS_FILE = PREFIX + "isFile";
+
+   /**
     * XML name constant.
     */
    final String XML_NAME = PREFIX + "name";
@@ -455,6 +460,7 @@ public class CollectionResource extends GenericResource
                writer.writeAttribute(PREFIX_XMLNS, PREFIX_LINK);
                writer.writeAttribute(XLINK_XMLNS, XLINK_LINK);
                writer.writeAttribute(XML_NAME, node.getName());
+               writer.writeAttribute(XML_IS_FILE, checkIfFile(node));
                writer.writeAttribute(XML_HREF, rootHref + TextUtil.escape(node.getPath(), '%', true));
 
 
@@ -486,6 +492,7 @@ public class CollectionResource extends GenericResource
                   Node childNode = ni.nextNode();
                   writer.writeStartElement(XML_NODE);
                   writer.writeAttribute(XML_NAME, childNode.getName());
+                  writer.writeAttribute(XML_IS_FILE, checkIfFile(childNode));
                   String childNodeHref = rootHref + TextUtil.escape(childNode.getPath(), '%', true);
                   writer.writeAttribute(XML_HREF, childNodeHref);
                   writer.writeEndElement();
@@ -518,4 +525,11 @@ public class CollectionResource extends GenericResource
       return pi;
    }
 
+   /**
+    * Checks if node is file or folder.
+    */
+   private String checkIfFile(Node node)
+   {
+      return ResourceUtil.isFile(node) ? Boolean.TRUE.toString() : Boolean.FALSE.toString();
+   }
 }
