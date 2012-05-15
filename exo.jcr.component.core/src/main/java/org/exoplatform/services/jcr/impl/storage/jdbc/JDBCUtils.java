@@ -53,8 +53,18 @@ public class JDBCUtils
       ResultSet trs = null;
       try
       {
+         String dialect = DialectDetecter.detect(con.getMetaData());
+         String query;
+         if (DBConstants.DB_DIALECT_MYSQL.equals(dialect))
+         {
+            query = "SELECT count(*) from (SELECT 1 FROM " + tableName + " LIMIT 1) T";
+         }
+         else
+         {
+            query = "SELECT count(*) FROM " + tableName;
+         }
          stmt = con.createStatement();
-         trs = stmt.executeQuery("SELECT count(*) FROM " + tableName);
+         trs = stmt.executeQuery(query);
          return trs.next();
       }
       catch (SQLException e)

@@ -82,39 +82,12 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
          "select * from JCR_SITEM where CONTAINER_NAME=? and PARENT_ID=? and NAME=? and I_INDEX=?"
             + " order by I_CLASS";
 
-      FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
-         FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE.replace("from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V",
-            "from JCR_SITEM I force index (JCR_IDX_SITEM_N_ORDER_NUM), JCR_SITEM P force index (JCR_IDX_SITEM_PARENT_NAME),"
-               + " JCR_SVALUE V force index (JCR_IDX_SVALUE_PROPERTY)");
-
-      FIND_PROPERTY_BY_NAME =
-         FIND_PROPERTY_BY_NAME.replace("from JCR_SITEM I, JCR_SVALUE V",
-               "from JCR_SITEM I force index (JCR_IDX_SITEM_PARENT_NAME), JCR_SVALUE V force index (JCR_IDX_SVALUE_PROPERTY)");
-
-      FIND_REFERENCES =
-         FIND_REFERENCES.replace("from JCR_SREF R, JCR_SITEM P",
-            "from JCR_SREF R force index (PRIMARY), JCR_SITEM P force index (PRIMARY)");
-
-      FIND_NODES_BY_PARENTID_CQ =
-         FIND_NODES_BY_PARENTID_CQ.replace("from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V",
-            "from JCR_SITEM I force index (JCR_IDX_SITEM_N_ORDER_NUM), JCR_SITEM P force index (JCR_IDX_SITEM_PARENT_NAME),"
-               + " JCR_SVALUE V force index (JCR_IDX_SVALUE_PROPERTY)");
-
       FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
          FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ.replace("from JCR_SITEM I, JCR_SVALUE V",
                "from JCR_SITEM I force index (JCR_IDX_SITEM_PARENT_NAME), JCR_SVALUE V force index (JCR_IDX_SVALUE_PROPERTY)");
 
       FIND_NODES_AND_PROPERTIES =
          FIND_NODES_AND_PROPERTIES.replace("from JCR_SITEM I", "from JCR_SITEM I force index (PRIMARY)");
-
-      FIND_PROPERTY_BY_ID =
-         FIND_PROPERTY_BY_ID.replace("from JCR_SITEM I, JCR_SVALUE V",
-            "from JCR_SITEM I force index (PRIMARY), JCR_SVALUE V force index (JCR_IDX_SVALUE_PROPERTY)");
-      
-      FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V",
-            "from JCR_SITEM I force index (JCR_IDX_SITEM_N_ORDER_NUM), JCR_SITEM P force index (JCR_IDX_SITEM_PARENT_NAME),"
-               + " JCR_SVALUE V force index (JCR_IDX_SVALUE_PROPERTY)");
    }
 
    /**

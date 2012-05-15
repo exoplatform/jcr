@@ -80,25 +80,6 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
 
       FIND_ITEM_BY_NAME = "select * from JCR_MITEM where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS";
       
-      FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE =
-         FIND_NODES_BY_PARENTID_AND_PATTERN_CQ_TEMPLATE.replace("from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V",
-            "from JCR_MITEM I force index (JCR_IDX_MITEM_N_ORDER_NUM), JCR_MITEM P force index (JCR_IDX_MITEM_PARENT_NAME),"
-               + " JCR_MVALUE V force index (JCR_IDX_MVALUE_PROPERTY)");
-
-      FIND_PROPERTY_BY_NAME =
-         FIND_PROPERTY_BY_NAME
-            .replace("from JCR_MITEM I, JCR_MVALUE V",
-               "from JCR_MITEM I force index (JCR_IDX_MITEM_PARENT_NAME), JCR_MVALUE V force index (JCR_IDX_MVALUE_PROPERTY)");
-
-      FIND_REFERENCES =
-         FIND_REFERENCES.replace("from JCR_MREF R, JCR_MITEM P",
-            "from JCR_MREF R force index (PRIMARY), JCR_MITEM P force index (PRIMARY)");
-
-      FIND_NODES_BY_PARENTID_CQ =
-         FIND_NODES_BY_PARENTID_CQ.replace("from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V",
-            "from JCR_MITEM I force index (JCR_IDX_MITEM_N_ORDER_NUM), JCR_MITEM P force index (JCR_IDX_MITEM_PARENT_NAME),"
-               + " JCR_MVALUE V force index (JCR_IDX_MVALUE_PROPERTY)");
-
       FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
          FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ
             .replace("from JCR_MITEM I, JCR_MVALUE V",
@@ -106,15 +87,6 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
 
       FIND_NODES_AND_PROPERTIES =
          FIND_NODES_AND_PROPERTIES.replace("from JCR_MITEM I", "from JCR_MITEM I force index (PRIMARY)");
-
-      FIND_PROPERTY_BY_ID =
-         FIND_PROPERTY_BY_ID.replace("from JCR_MITEM I, JCR_MVALUE V",
-            "from JCR_MITEM I force index (PRIMARY), JCR_MVALUE V force index (JCR_IDX_MVALUE_PROPERTY)");
-      
-      FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V",
-            "from JCR_MITEM I force index (JCR_IDX_MITEM_N_ORDER_NUM), JCR_MITEM P force index (JCR_IDX_MITEM_PARENT_NAME),"
-               + " JCR_MVALUE V force index (JCR_IDX_MVALUE_PROPERTY)");
    }
 
    /**
