@@ -38,7 +38,6 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jdbc.impl.CloseableDataSource;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -61,6 +60,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.io.Serializable;
+import java.security.SecureRandom;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -133,6 +133,8 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
     * Store of reserved repository names. {tokenname, repositoryname}
     */
    private final Map<String, String> pendingRepositories = new ConcurrentHashMap<String, String>();
+   
+   private static final SecureRandom tokenGenerator = new SecureRandom();
 
    private RemoteCommand reserveRepositoryName;
 
@@ -510,7 +512,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       // check does this repository name already reserved, otherwise generate and return token
       if (!pendingRepositories.containsValue(repositoryName))
       {
-         String rToken = repositoryName + IdGenerator.generate();
+         String rToken = repositoryName + tokenGenerator.nextLong();
          pendingRepositories.put(rToken, repositoryName);
          return rToken;
       }
