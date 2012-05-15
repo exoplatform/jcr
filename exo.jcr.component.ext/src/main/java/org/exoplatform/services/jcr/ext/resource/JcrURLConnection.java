@@ -118,7 +118,7 @@ public class JcrURLConnection extends URLConnection
       catch (Exception e)
       {
          //e.printStackTrace();
-         throw new IOException("Connection refused!");
+         throw new IOException("Connection refused!", e);
       }
    }
 
@@ -150,12 +150,12 @@ public class JcrURLConnection extends URLConnection
       catch (IOException e)
       {
          //e.printStackTrace();
-         throw new IOException("can't get input stream");
+         throw new IOException("can't get input stream", e);
       }
       catch (RepositoryException e)
       {
          //e.printStackTrace();
-         throw new IOException("can't get input stream");
+         throw new IOException("can't get input stream", e);
       }
    }
 
