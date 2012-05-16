@@ -1421,7 +1421,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
           <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.AddingDynamicallySettingsDependenciesToPortalContainer.PortalContainerDefinitionChange.AddDependenciesAfter">
             <title><envar>AddDependenciesAfter</envar></title>
 
-            <para>This modification adds a list of dependencies before a given
+            <para>This modification adds a list of dependencies after a given
             target dependency defined into the list of dependencies of the
             <envar>PortalContainerDefinition</envar>. The full qualified name
             is
