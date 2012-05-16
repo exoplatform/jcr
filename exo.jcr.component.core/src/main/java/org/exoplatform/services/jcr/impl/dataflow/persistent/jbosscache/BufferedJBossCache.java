@@ -38,6 +38,7 @@ import org.jboss.cache.Region;
 import org.jboss.cache.config.Configuration;
 import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
+import org.jboss.cache.factories.ComponentRegistry;
 import org.jboss.cache.interceptors.base.CommandInterceptor;
 import org.jgroups.Address;
 
@@ -65,7 +66,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    /**
     * Parent cache.
     */
-   private final Cache<Serializable, Object> parentCache;
+   private final CacheSPI<Serializable, Object> parentCache;
 
    private final ThreadLocal<CompressedChangesBuffer> changesList = new ThreadLocal<CompressedChangesBuffer>();
 
@@ -83,8 +84,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    public BufferedJBossCache(Cache<Serializable, Object> parentCache, boolean useExpiration, long expirationTimeOut)
    {
       super();
-      this.tm = ((CacheSPI<Serializable, Object>)parentCache).getTransactionManager();
-      this.parentCache = parentCache;
+      this.parentCache = (CacheSPI<Serializable, Object>)parentCache;
+      this.tm = this.parentCache.getTransactionManager();
       this.useExpiration = useExpiration;
       this.expirationTimeOut = expirationTimeOut;
    }
@@ -238,7 +239,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
 
    public int getNumberOfNodes()
    {
-      return ((CacheSPI<Serializable, Object>)parentCache).getNumberOfNodes();
+      return parentCache.getNumberOfNodes();
    }
 
    /* (non-Javadoc)
@@ -761,9 +762,19 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       }
    }
 
+   /**
+    * Returns the component registry associated with this cache instance.
+    *
+    * @see org.jboss.cache.factories.ComponentRegistry
+    */
+   public ComponentRegistry getComponentRegistry()
+   {
+      return parentCache.getComponentRegistry();
+   }
+
    public TransactionManager getTransactionManager()
    {
-      return ((CacheSPI<Serializable, Object>)parentCache).getTransactionManager();
+      return parentCache.getTransactionManager();
    }
 
    /**
