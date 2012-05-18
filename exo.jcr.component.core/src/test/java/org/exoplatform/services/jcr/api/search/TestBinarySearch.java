@@ -95,7 +95,7 @@ public class TestBinarySearch extends JcrAPIBaseTest
       iter = queryResult.getNodes();
       
       while(iter.hasNext()){
-         System.out.print(iter.nextNode().getPath());
+         iter.nextNode();
       }
       
       assertEquals("Result nodes count is wrong", 1, iter.getSize());

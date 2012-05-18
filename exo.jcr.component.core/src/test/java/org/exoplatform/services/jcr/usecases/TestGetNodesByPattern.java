@@ -100,12 +100,6 @@ public class TestGetNodesByPattern extends BaseUsecasesTest
       nextExecutionTime = System.currentTimeMillis() - nextExecutionTime;
       assertTrue(iterator.hasNext());
       testNames(iterator, new String[]{"cassiopeia", "cassandra", "libra", "equilibrium"});
-
-      if (nextExecutionTime * 1.1 < executionTime)
-      {
-         log.warn("Fetching data from DataBase takes less time than from cache - " + executionTime + " "
-            + nextExecutionTime);
-      }
    }
 
    public void testNamespaces() throws Exception
