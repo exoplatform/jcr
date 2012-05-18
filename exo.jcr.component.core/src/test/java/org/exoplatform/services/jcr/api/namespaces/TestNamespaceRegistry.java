@@ -66,7 +66,6 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
    @Override
    public void setUp() throws Exception
    {
-      // TODO Auto-generated method stub
       super.setUp();
       WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(session.getWorkspace().getName());
 
@@ -210,12 +209,9 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
       assertEquals("http://dumb.uri/jcr", namespaceRegistry.getURI("newMapping"));
 
       NodeImpl n = (NodeImpl)root.addNode("newMapping:test", "nt:unstructured");
-      System.out.println("Node before save" + n);
       root.save();
-      System.out.println("Node after save" + n);
       n = (NodeImpl)root.getNode("newMapping:test");
       n.remove();
-      System.out.println("Node after remove" + n);
       root.save();
 
       // [PN] Unregisteration of node types its not supported in eXo JCR.

@@ -121,6 +121,5 @@ public class TestDateValueFormat extends JcrImplBaseTest
    public void testArabicProblem() throws ParseException
    {
       SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
-      System.out.println(format.parse("21-02-2008"));
    }
 }

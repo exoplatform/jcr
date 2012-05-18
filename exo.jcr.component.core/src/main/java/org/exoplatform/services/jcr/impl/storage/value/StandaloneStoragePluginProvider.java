@@ -81,6 +81,7 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
       List<ValueStorageEntry> storages = wsConfig.getContainer().getValueStorages();
 
       if (storages != null)
+      {
          for (ValueStorageEntry storageEntry : storages)
          {
             if (storageEntry.getParameterBoolean(VALUE_STORAGE_ENABLED_PARAM, true))
@@ -169,9 +170,9 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
                plugin.setFilters(filters);
 
                add(plugin);
-               log.info("Value Storage Plugin initialized " + plugin);
             }
          }
+      }
    }
 
    /**
@@ -187,7 +188,9 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
          for (ValuePluginFilter filter : filters)
          {
             if (filter.match(property, valueOrderNumer))
+            {
                return plugin.openIOChannel();
+            }
          }
       }
       return null;

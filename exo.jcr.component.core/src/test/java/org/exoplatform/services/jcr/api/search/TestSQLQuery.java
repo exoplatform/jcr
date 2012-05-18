@@ -157,7 +157,6 @@ public class TestSQLQuery extends JcrAPIBaseTest
       }
       catch (InvalidQueryException e)
       {
-         e.printStackTrace();
          fail("The query must be valid, but error found " + e);
       }
    }
@@ -183,7 +182,6 @@ public class TestSQLQuery extends JcrAPIBaseTest
       }
       catch (InvalidQueryException e)
       {
-         e.printStackTrace();
          fail("The query must be valid, but error found " + e);
       }
    }
@@ -207,11 +205,6 @@ public class TestSQLQuery extends JcrAPIBaseTest
 
       QueryResult res = q.execute();
       assertEquals("Wrong nodes count in result set", 3, res.getNodes().getSize());
-
-      for (NodeIterator nodes = res.getNodes(); nodes.hasNext();)
-      {
-         log.info(nodes.nextNode().getPath());
-      }
    }
 
    /**
@@ -233,11 +226,6 @@ public class TestSQLQuery extends JcrAPIBaseTest
 
       QueryResult res = q.execute();
       assertEquals("Wrong nodes count in result set", 3, res.getNodes().getSize());
-
-      for (NodeIterator nodes = res.getNodes(); nodes.hasNext();)
-      {
-         log.info(nodes.nextNode().getPath());
-      }
    }
 
    /**
@@ -263,7 +251,6 @@ public class TestSQLQuery extends JcrAPIBaseTest
       }
       catch (InvalidQueryException e)
       {
-         e.printStackTrace();
          fail("The query must be valid, but error found " + e);
       }
    }
@@ -291,7 +278,6 @@ public class TestSQLQuery extends JcrAPIBaseTest
       }
       catch (InvalidQueryException e)
       {
-         e.printStackTrace();
          fail("The query must be valid, but error found " + e);
       }
    }

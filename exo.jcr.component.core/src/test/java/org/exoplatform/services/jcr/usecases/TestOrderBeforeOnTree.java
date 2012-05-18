@@ -80,8 +80,6 @@ public class TestOrderBeforeOnTree extends BaseUsecasesTest
          session.save();
          currentIndexes[layer] = newIndex;
 
-         System.out.println("was " + prevIndex + "  now " + newIndex);
-
          // check
          // make path
          StringBuilder str = new StringBuilder();

@@ -2485,7 +2485,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       List<ACLHolder> holders = null;
       try
       {
-         LOG.info("Getting all the ACL Holders from the persistence layer");
          holders = getACLHolders();
          fails = false;
       }
@@ -2514,7 +2513,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          }
          else if (holders != null && !holders.isEmpty())
          {
-            LOG.info("Adding all the ACL Holders found into the BloomFilters");
             for (int i = 0, length = holders.size(); i < length; i++)
             {
                ACLHolder holder = holders.get(i);

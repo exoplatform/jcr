@@ -65,7 +65,9 @@ public class TestFileIOChannel extends TestCase
       new File(rootDir, FileValueStorage.TEMP_DIR_NAME).mkdirs();
 
       if (!rootDir.exists())
+      {
          throw new Exception("Folder does not exist " + rootDir.getAbsolutePath());
+      }
 
    }
 
@@ -85,7 +87,9 @@ public class TestFileIOChannel extends TestCase
       File file = new File(rootDir, "testReadFromIOChannel0");
       file.deleteOnExit();
       if (file.exists())
+      {
          file.delete();
+      }
       FileOutputStream out = new FileOutputStream(file);
       out.write(buf);
       out.close();
@@ -94,7 +98,9 @@ public class TestFileIOChannel extends TestCase
 
       file = new File(rootDir, "testReadFromIOChannel1");
       if (file.exists())
+      {
          file.delete();
+      }
       out = new FileOutputStream(file);
       out.write(buf);
       out.close();
@@ -249,7 +255,9 @@ public class TestFileIOChannel extends TestCase
 
       File f = new File(rootDir, "testConcurrentReadFromIOChannel0");
       if (!f.exists())
+      {
          throw new Exception("File does not exist " + f.getAbsolutePath());
+      }
 
       Probe[] p = new Probe[10];
       for (int i = 0; i < 10; i++)
@@ -306,9 +314,10 @@ public class TestFileIOChannel extends TestCase
       //Thread.sleep(3000);
 
       f = new File(rootDir, "testDeleteLockedFileFromIOChannel0");
-      // assertFalse(f.exists());
-      System.out.println(">>>>>>>>>>>>>" + f.canRead() + " " + f.exists() + " " + f.canWrite());
-      System.out.println(">>>>>>>>>>>>>" + new FileInputStream(f).read());
+      assertTrue(f.exists());
+      assertTrue(f.canRead());
+      assertTrue(f.canWrite());
+      assertEquals(48, new FileInputStream(f).read());
 
       // new Probe(f).start();
    }

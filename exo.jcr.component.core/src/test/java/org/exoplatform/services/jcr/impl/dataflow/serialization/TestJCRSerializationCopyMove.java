@@ -61,7 +61,9 @@ public class TestJCRSerializationCopyMove extends JcrImplSerializationBaseTest
       assertEquals(srcLog.size(), destLog.size());
 
       for (int i = 0; i < srcLog.size(); i++)
+      {
          checkIterator(srcLog.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      }
    }
 
    public void testCopy() throws Exception
@@ -86,7 +88,9 @@ public class TestJCRSerializationCopyMove extends JcrImplSerializationBaseTest
       assertEquals(srcLog.size(), destLog.size());
 
       for (int i = 0; i < srcLog.size(); i++)
+      {
          checkIterator(srcLog.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      }
    }
 
    public void testMove() throws Exception
@@ -112,7 +116,9 @@ public class TestJCRSerializationCopyMove extends JcrImplSerializationBaseTest
       assertEquals(srcLog.size(), destLog.size());
 
       for (int i = 0; i < srcLog.size(); i++)
+      {
          checkIterator(srcLog.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      }
    }
 
    public void testBigDataMove() throws Exception
@@ -121,8 +127,6 @@ public class TestJCRSerializationCopyMove extends JcrImplSerializationBaseTest
 
       File tempFile = this.createBLOBTempFile(160);
       tempFile.deleteOnExit();
-
-      log.info("MOVE: file size = " + tempFile.length() + " bytes");
 
       Node file = root.addNode("testMove_", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
@@ -143,7 +147,9 @@ public class TestJCRSerializationCopyMove extends JcrImplSerializationBaseTest
       assertEquals(srcLog.size(), destLog.size());
 
       for (int i = 0; i < srcLog.size(); i++)
+      {
          checkIterator(srcLog.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      }
    }
 
 }

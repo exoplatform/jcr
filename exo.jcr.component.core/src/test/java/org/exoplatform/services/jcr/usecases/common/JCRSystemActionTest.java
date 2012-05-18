@@ -28,35 +28,6 @@ import javax.jcr.Workspace;
 
 public class JCRSystemActionTest extends BaseUsecasesTest
 {
-
-   protected void tearDown() throws Exception
-   {
-
-      // [PN] Clean it!!! As BaseUsecasesTest.tearDown() don't touch jcr:system descendants
-      try
-      {
-         Node jcrSystem = session.getRootNode().getNode("jcr:system");
-         jcrSystem.getNode("cms").remove();
-         session.save();
-      }
-      catch (RepositoryException e)
-      {
-         log.error("Error of tearDown " + e.getMessage());
-      }
-      try
-      {
-         Node jcrSystem = session.getRootNode().getNode("jcr:system");
-         jcrSystem.getNode("ecm").remove();
-         session.save();
-      }
-      catch (RepositoryException e)
-      {
-         log.error("Error of tearDown " + e.getMessage());
-      }
-
-      super.tearDown();
-   }
-
    public void testActionsOnJcrSystem() throws Exception
    {
       String workspaceName = repository.getSystemWorkspaceName();

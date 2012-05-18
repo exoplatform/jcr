@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
@@ -37,26 +36,6 @@ import javax.jcr.SimpleCredentials;
 
 public class JcrSystemTest extends BaseUsecasesTest
 {
-
-   protected void tearDown() throws Exception
-   {
-
-      // [PN] Clean it!!! As BaseUsecasesTest.tearDown() don't touch jcr:system descendants
-      try
-      {
-         session.refresh(false);
-         Node jcrSystem = session.getRootNode().getNode("jcr:system");
-         jcrSystem.getNode("cms").remove();
-         session.save();
-      }
-      catch (RepositoryException e)
-      {
-         log.error("Error of tearDown " + e.getMessage());
-      }
-
-      super.tearDown();
-   }
-
    /**
     * Check If Jcr System is referenceable from any Workspace NOTE: THIS is an implementation feature
     * and NOT specified by JSR-170!
@@ -70,7 +49,9 @@ public class JcrSystemTest extends BaseUsecasesTest
 
       String[] wss = repository.getWorkspaceNames();
       if (wss.length < 2)
+      {
          fail("2 or more workspaces required");
+      }
 
       assertFalse(wss[0].equals(wss[1]));
 

@@ -109,8 +109,6 @@ public abstract class FileValueStorage extends ValueStoragePlugin
       {
          if (rootDir.mkdirs())
          {
-            LOG.info("Directory created: " + rootDir.getAbsolutePath());
-
             // create internal temp dir
             File tempDir = new File(rootDir, TEMP_DIR_NAME);
             tempDir.mkdirs();

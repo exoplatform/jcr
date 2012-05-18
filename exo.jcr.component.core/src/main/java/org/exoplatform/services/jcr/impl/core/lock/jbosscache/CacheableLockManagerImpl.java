@@ -494,9 +494,9 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       newConfig.add(cclConfig);
       config.setIndividualCacheLoaderConfigs(newConfig);
 
-      if (LOG.isInfoEnabled())
+      if (LOG.isDebugEnabled())
       {
-         LOG.info("The configured cache loader has been encapsulated successfully");
+         LOG.debug("The configured cache loader has been encapsulated successfully");
       }
    }
    

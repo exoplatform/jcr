@@ -152,7 +152,10 @@ public class VersionHistoryImporter
       {
          uuid = versionableNode.getUUID();
          path = versionableNode.getVersionHistory().getParent().getPath();
-         LOG.info("Started: Import version history for node with path=" + path + " and UUID=" + uuid);
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Started: Import version history for node with path=" + path + " and UUID=" + uuid);
+         }
 
          NodeData versionable = (NodeData)versionableNode.getData();
          // ----- VERSIONABLE properties -----
@@ -204,7 +207,10 @@ public class VersionHistoryImporter
          userSession.getWorkspace().importXML(path, versionHistoryStream, 0, context);
          userSession.save();
 
-         LOG.info("Completed: Import version history for node with path=" + path + " and UUID=" + uuid);
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Completed: Import version history for node with path=" + path + " and UUID=" + uuid);
+         }
 
          // fetch list of imported child nodes versions
          List<String> versionUuids = (List<String>)context.get(ContentImporter.LIST_OF_IMPORTED_VERSION_HISTORIES);
@@ -335,8 +341,11 @@ public class VersionHistoryImporter
             // remove version history
             dataKeeper.save(changesLog);
             userSession.save();
-            LOG.info("Completed: Import version history for node with path=" + versionedChild.getQPath().getAsString()
-               + " and UUID=" + versionedChild.getIdentifier());
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug("Completed: Import version history for node with path="
+                  + versionedChild.getQPath().getAsString() + " and UUID=" + versionedChild.getIdentifier());
+            }
          }
       }
    }

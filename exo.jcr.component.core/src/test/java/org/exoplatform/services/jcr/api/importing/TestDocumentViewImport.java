@@ -338,7 +338,6 @@ public class TestDocumentViewImport extends AbstractImportTest
       try
       {
          File file = createBLOBTempFile(25);// 2.5M
-         log.info("=== File has created, size " + file.length());
          contentTestPdfNode.setProperty("jcr:data", new FileInputStream(file));
          contentTestPdfNode.setProperty("jcr:mimeType", "application/octet-stream");
       }

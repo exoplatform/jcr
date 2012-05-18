@@ -42,7 +42,9 @@ public class ErrorsRelateToRestoreVersionTest extends BaseUsecasesTest
 
       runTest = false;
       if (!runTest)
+      {
          return;
+      }
 
       Node node1 = root.addNode("Node1", "nt:unstructured");
       node1.addMixin("mix:versionable");
@@ -68,7 +70,6 @@ public class ErrorsRelateToRestoreVersionTest extends BaseUsecasesTest
       Version node1newver = node1.checkin();
       node1.checkout();
 
-      System.out.println("node1 BaseVersionNode Name:" + node1.getBaseVersion().getName());
       // Resore Node1 to version 2
       Version node1ver2 = node1.getVersionHistory().getVersion("2");
       // Error
@@ -80,10 +81,11 @@ public class ErrorsRelateToRestoreVersionTest extends BaseUsecasesTest
 
    public void testCase9() throws Exception
    {
-      System.out.println("////Case 9"); // Not JCR Bugs
       runTest = true;
       if (!runTest)
+      {
          return;
+      }
 
       Node testNode = root.addNode("Test", "nt:unstructured");
       root.save();
@@ -144,7 +146,9 @@ public class ErrorsRelateToRestoreVersionTest extends BaseUsecasesTest
       // http://jira.exoplatform.org/browse/ECM-1160
       runTest = false;
       if (!runTest)
+      {
          return;
+      }
 
       Node testNode = root.addNode("Test", "nt:unstructured");
       root.save();
@@ -235,7 +239,9 @@ public class ErrorsRelateToRestoreVersionTest extends BaseUsecasesTest
       // http://jira.exoplatform.org/browse/ECM-1160
       runTest = false;
       if (!runTest)
+      {
          return;
+      }
 
       Node testNode = root.addNode("Test", "nt:unstructured");
       root.save();
@@ -296,7 +302,9 @@ public class ErrorsRelateToRestoreVersionTest extends BaseUsecasesTest
 
       runTest = false;
       if (!runTest)
+      {
          return;
+      }
 
       Node node1 = root.addNode("Node1", "nt:unstructured");
       // Active vesrion to node

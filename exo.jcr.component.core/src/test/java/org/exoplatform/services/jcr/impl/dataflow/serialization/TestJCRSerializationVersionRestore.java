@@ -119,10 +119,6 @@ public class TestJCRSerializationVersionRestore extends JcrImplSerializationBase
       fos2.close();
       fos3.close();
 
-      log.info("FILE for VERVION #1 : file size = " + tempFile.length() + " bytes");
-      log.info("FILE for VERVION #2 : file size = " + tempFile2.length() + " bytes");
-      log.info("FILE for VERVION #3 : file size = " + tempFile3.length() + " bytes");
-
       Node srcVersionNode = root.addNode("nt_file_node", "nt:file");
       Node contentNode = srcVersionNode.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", new FileInputStream(tempFile));

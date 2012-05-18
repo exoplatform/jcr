@@ -69,10 +69,6 @@ public class FileRestoreTest extends BaseUsecasesTest
       fos2.close();
       fos3.close();
 
-      log.info("FILE for VERSION #1 : file size = " + tempFile.length() + " bytes");
-      log.info("FILE for VERSION #2 : file size = " + tempFile2.length() + " bytes");
-      log.info("FILE for VERSION #3 : file size = " + tempFile3.length() + " bytes");
-
       Node file = root.addNode("nt_file_node", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", new FileInputStream(tempFile));
@@ -81,15 +77,12 @@ public class FileRestoreTest extends BaseUsecasesTest
       file.addMixin("mix:versionable");
       session.save();
 
-      log.info("SAVED");
 
       file.checkin(); // v1
       file.checkout(); // file.getNode("jcr:content").getProperty("jcr:data").getStream()
       file.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile2));
       session.save();
 
-      log
-         .info("ADD VERSION #2 : file size = " + contentNode.getProperty("jcr:data").getStream().available() + " bytes");
       compareStream(new FileInputStream(tempFile2), contentNode.getProperty("jcr:data").getStream());
 
       file.checkin(); // v2
@@ -97,8 +90,6 @@ public class FileRestoreTest extends BaseUsecasesTest
       file.getNode("jcr:content").setProperty("jcr:data", new FileInputStream(tempFile3));
       session.save();
 
-      log
-         .info("ADD VERSION #3 : file size = " + contentNode.getProperty("jcr:data").getStream().available() + " bytes");
       compareStream(new FileInputStream(tempFile3), contentNode.getProperty("jcr:data").getStream());
 
       // restore version v2

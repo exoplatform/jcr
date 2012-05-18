@@ -58,7 +58,6 @@ public class TestQueryReferenceNode extends JcrAPIBaseTest
       // before make reference
       queryResult = query.execute();
       iter = queryResult.getNodes();
-      System.out.println("SIZE: " + iter.getSize());
 
       assertTrue(iter.getSize() == 3);
 
@@ -76,8 +75,6 @@ public class TestQueryReferenceNode extends JcrAPIBaseTest
 
       queryResult = query.execute();
       iter = queryResult.getNodes();
-
-      System.out.println(" " + iter.nextNode().getPath());
 
       assertEquals(3, iter.getSize());
       // clean database

@@ -64,10 +64,10 @@ public class TestFrozenNodeInitializer extends BaseVersionImplTest
       next : for (ItemState state : versionableChanges)
       {
          if (versionable.equals(state.getData()))
+          {
             continue next; // we have no interest for this item
+         }
 
-         log.info("versionable change " + state.getData().getQPath().getAsString() + ", "
-            + state.getData().getIdentifier() + "... ");
          for (ItemState result : testChanges)
          {
             ItemData resultData = result.getData();
@@ -76,7 +76,6 @@ public class TestFrozenNodeInitializer extends BaseVersionImplTest
             if (resultData.getQPath().getName().equals(state.getData().getQPath().getName()))
             {
                // if (resultData.isNode() && resultData.getUUID().equals(state.getData().getUUID()))
-               log.info("...found in frozen changes " + result.getData().getQPath().getAsString());
                continue next;
             }
          }
@@ -98,10 +97,10 @@ public class TestFrozenNodeInitializer extends BaseVersionImplTest
       next : for (ItemState state : versionableChanges)
       {
          if (versionable.equals(state.getData()))
+          {
             continue next; // we have no interest for this item
+         }
 
-         log.info("versionable change " + state.getData().getQPath().getAsString() + ", "
-            + state.getData().getIdentifier() + "... ");
          for (ItemState result : testChanges)
          {
             ItemData resultData = result.getData();
@@ -110,7 +109,6 @@ public class TestFrozenNodeInitializer extends BaseVersionImplTest
             if (resultData.getQPath().getName().equals(state.getData().getQPath().getName()))
             {
                // if (resultData.isNode() && resultData.getUUID().equals(state.getData().getUUID()))
-               log.info("...found in frozen changes " + result.getData().getQPath().getAsString());
                continue next;
             }
          }
@@ -147,10 +145,10 @@ public class TestFrozenNodeInitializer extends BaseVersionImplTest
       next : for (ItemState state : versionableChanges)
       {
          if (versionable.equals(state.getData()))
+          {
             continue next; // we have no interest for this item
+         }
 
-         log.info("versionable change " + state.getData().getQPath().getAsString() + ", "
-            + state.getData().getIdentifier() + "... ");
          for (ItemState result : testChanges)
          {
             ItemData resultData = result.getData();
@@ -159,16 +157,21 @@ public class TestFrozenNodeInitializer extends BaseVersionImplTest
             if (resultData.getQPath().getName().equals(state.getData().getQPath().getName()))
             {
                if (resultData.getQPath().getName().equals(PROPERTY_IGNORED))
+               {
                   fail("Ignored property can't be stored in frozen state: " + resultData.getQPath().getAsString());
+               }
                if (resultData.getQPath().getName().equals(NODE_IGNORED))
+               {
                   fail("Ignored node can't be stored in frozen state: " + resultData.getQPath().getAsString());
-               log.info("...found in frozen changes " + resultData.getQPath().getAsString());
+               }
                continue next;
             }
          }
          if (!(state.getData().getQPath().getName().equals(PROPERTY_IGNORED) || state.getData().getQPath().getName()
             .equals(NODE_IGNORED)))
+         {
             fail("Change is not stored in frozen state: " + state.getData().getQPath().getAsString());
+         }
       }
    }
 
@@ -185,14 +188,16 @@ public class TestFrozenNodeInitializer extends BaseVersionImplTest
       next : for (ItemState state : versionableChanges)
       {
          if (versionable.equals(state.getData()))
+          {
             continue next; // we have no interest for this item
+         }
 
          if (state.getData().getQPath().getName().equals(Constants.JCR_VERSIONHISTORY))
+          {
             continue next; // we have no interest for jcr:versionHistory on versionable (as it will be
          // saved as jcr:childVersionHistory)
+         }
 
-         log.info("versionable change " + state.getData().getQPath().getAsString() + ", "
-            + state.getData().getIdentifier() + "... ");
          for (ItemState result : testChanges)
          {
             ItemData resultData = result.getData();
@@ -243,7 +248,6 @@ public class TestFrozenNodeInitializer extends BaseVersionImplTest
                {
                   // behaviour of COPY...
                }
-               log.info("...found in frozen changes " + resultData.getQPath().getAsString());
                continue next;
             }
          }

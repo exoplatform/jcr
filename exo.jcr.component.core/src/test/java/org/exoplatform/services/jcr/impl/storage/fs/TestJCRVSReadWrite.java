@@ -121,7 +121,10 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
          root.save();
       }
 
-      log.info("Tear down of " + getName() + ",\t" + (System.currentTimeMillis() - time));
+      if (log.isDebugEnabled())
+      {
+         log.debug("Tear down of " + getName() + ",\t" + (System.currentTimeMillis() - time));
+      }
 
       super.tearDown();
    }

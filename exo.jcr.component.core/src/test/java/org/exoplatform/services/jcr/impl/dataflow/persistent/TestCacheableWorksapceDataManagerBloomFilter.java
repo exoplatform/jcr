@@ -289,7 +289,7 @@ public class TestCacheableWorksapceDataManagerBloomFilter extends JcrImplBaseTes
    {
       public MyWorkspaceStorageCache() throws RepositoryConfigurationException
       {
-         super("", false, 0, 0, 0, 0, false, false, 0, false);
+         super("", false, 0, 0, 30000, 30000, false, false, 0, false);
       }
 
       public boolean isEnabled()

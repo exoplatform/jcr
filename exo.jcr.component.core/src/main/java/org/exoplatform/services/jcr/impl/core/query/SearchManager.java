@@ -712,8 +712,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
          
       unregisterRemoteCommands();
-      
-      LOG.info("Search manager stopped");
    }
 
    /**

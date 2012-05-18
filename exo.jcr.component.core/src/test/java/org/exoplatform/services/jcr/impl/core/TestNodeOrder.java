@@ -76,7 +76,6 @@ public class TestNodeOrder extends JcrImplBaseTest
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
-         log.info(orderNumb + ": " + n.getPath());
 
          assertEquals(order++, orderNumb);
       }
@@ -101,7 +100,6 @@ public class TestNodeOrder extends JcrImplBaseTest
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
-         log.info(orderNumb + ": " + n.getPath());
 
          assertEquals(order++, orderNumb);
       }
@@ -135,7 +133,6 @@ public class TestNodeOrder extends JcrImplBaseTest
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
-         log.info(orderNumb + ": " + n.getPath());
 
          assertEquals(order++, orderNumb);
       }
@@ -169,7 +166,6 @@ public class TestNodeOrder extends JcrImplBaseTest
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
-         log.info(orderNumb + ": " + n.getPath());
 
          assertEquals(order++, orderNumb);
       }
@@ -222,7 +218,6 @@ public class TestNodeOrder extends JcrImplBaseTest
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
-         log.info(orderNumb + ": " + n.getPath());
 
          assertEquals(order++, orderNumb);
       }
@@ -262,7 +257,6 @@ public class TestNodeOrder extends JcrImplBaseTest
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
-         log.info(orderNumb + ": " + n.getPath());
 
          assertEquals(order++, orderNumb);
       }

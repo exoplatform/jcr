@@ -25,6 +25,7 @@ import org.exoplatform.services.database.utils.DialectDetecter;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
@@ -271,8 +272,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          this.containerConfig.dbDialect = pDbDialect;
       }
-      LOG.info("Using a dialect '" + this.containerConfig.dbDialect + "'");
-
       // check is there DB_FORCE_QUERY_HINTS parameter - by default its enabled
       containerConfig.useQueryHints = wsConfig.getContainer().getParameterBoolean(DB_FORCE_QUERY_HINTS, true);
 
@@ -316,9 +315,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       this.containerConfig.initScriptPath =
          DBInitializerHelper.scriptPath(containerConfig.dbDialect, containerConfig.dbStructureType.isMultiDatabase());
 
-      initDatabase();
-
       LOG.info(getInfo());
+
+      initDatabase();
    }
 
    /**
@@ -380,8 +379,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          if (!getDatabaseType(wsEntry).equals(dbType))
          {
             throw new RepositoryConfigurationException("All workspaces must be of same DB type. But "
-               + wsEntry.getName() + "=" + getDatabaseType(wsEntry) + " and " + wsConfig.getName()
-               + "=" + dbType);
+               + wsEntry.getName() + "=" + getDatabaseType(wsEntry) + " and " + wsConfig.getName() + "=" + dbType);
          }
 
          // source name
@@ -605,14 +603,33 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public String getInfo()
    {
+      StringBuilder builder = new StringBuilder();
+
+      builder.append("dialect:");
+      builder.append(this.containerConfig.dbDialect);
+      builder.append(", ");
+
+      for (SimpleParameterEntry element : wsConfig.getContainer().getParameters())
+      {
+         if (!element.getName().equals("dialect"))
+         {
+            builder.append(element.getName());
+            builder.append(":");
+            builder.append(element.getValue());
+            builder.append(", ");
+         }
+      }
+      builder.append("value storage provider: ");
+      builder.append(containerConfig.valueStorageProvider);
+
       String str =
          "JDBC based JCR Workspace Data container \n" + "container name: " + containerConfig.containerName + " \n"
             + (containerConfig.isManaged ? "managed " : "") + "data source JNDI name: " + containerConfig.dbSourceName
-            + "\n" + "is multi database: " + containerConfig.dbStructureType.isMultiDatabase() + "\n" + "storage version: "
-            + containerConfig.storageVersion + "\n" + "value storage provider: " + containerConfig.valueStorageProvider
-            + "\n" + "max buffer size (bytes): " + containerConfig.maxBufferSize + "\n" + "swap directory path: "
-            + PrivilegedFileHelper.getAbsolutePath(containerConfig.swapDirectory);
-      return str;
+            + "\n" + "is multi database: " + containerConfig.dbStructureType.isMultiDatabase() + "\n"
+            + "storage version: " + containerConfig.storageVersion + "\n" + "value storage provider: "
+            + containerConfig.valueStorageProvider + "\n" + "max buffer size (bytes): " + containerConfig.maxBufferSize
+            + "\n" + "swap directory path: " + PrivilegedFileHelper.getAbsolutePath(containerConfig.swapDirectory);
+      return builder.toString();
    }
 
    /**
@@ -951,7 +968,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    private List<File> initBackupDirs(File storageDir) throws RepositoryConfigurationException
    {
       List<File> backupDirsList = new ArrayList<File>();
-               
+
       for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
       {
          File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
@@ -974,7 +991,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             }
          }
       }
-      
+
       return backupDirsList;
    }
 
@@ -991,8 +1008,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       return dataDirsList;
    }
 
-   private DBCleanerTool getDbCleaner(DataRestoreContext context, Connection jdbcConn)
-      throws BackupException
+   private DBCleanerTool getDbCleaner(DataRestoreContext context, Connection jdbcConn) throws BackupException
    {
       DBCleanerTool dbCleaner;
 
@@ -1136,22 +1152,22 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public static DatabaseStructureType getDatabaseType(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
    {
-	   try
-	   {
-	      if (wsConfig.getContainer().getParameterBoolean("multi-db"))
-	      {
-	         return JDBCDataContainerConfig.DatabaseStructureType.MULTI;
-	      }
-	      else
-	      {
-	         return JDBCDataContainerConfig.DatabaseStructureType.SINGLE;
-	      }
-	   }
-	   catch (Exception e)
-	   {
-	      String dbStructureType = wsConfig.getContainer().getParameterValue(DB_STRUCTURE_TYPE).toUpperCase();
-	      return JDBCDataContainerConfig.DatabaseStructureType.valueOf(dbStructureType);
-	   }
+      try
+      {
+         if (wsConfig.getContainer().getParameterBoolean("multi-db"))
+         {
+            return JDBCDataContainerConfig.DatabaseStructureType.MULTI;
+         }
+         else
+         {
+            return JDBCDataContainerConfig.DatabaseStructureType.SINGLE;
+         }
+      }
+      catch (Exception e)
+      {
+         String dbStructureType = wsConfig.getContainer().getParameterValue(DB_STRUCTURE_TYPE).toUpperCase();
+         return JDBCDataContainerConfig.DatabaseStructureType.valueOf(dbStructureType);
+      }
    }
 
    /**

@@ -43,7 +43,6 @@ public class TestJCRSerislizationLock extends JcrImplSerializationBaseTest
 
       for (int i = 0; i < 10; i++)
       {
-         log.info("Lock node #" + i + " ...");
          String lockName = "Node Locked";
 
          Node nodeLocked = root.addNode(lockName + i);
@@ -51,11 +50,9 @@ public class TestJCRSerislizationLock extends JcrImplSerializationBaseTest
          nodeLocked.addMixin("mix:lockable");
          session.save();
 
-         log.info("Set lock");
          Lock lock = nodeLocked.lock(false, false);
          session.save();
 
-         log.info("Set unlock");
          nodeLocked.unlock();
       }
 
@@ -68,6 +65,8 @@ public class TestJCRSerislizationLock extends JcrImplSerializationBaseTest
       assertEquals(srcLog.size(), destLog.size());
 
       for (int i = 0; i < srcLog.size(); i++)
+      {
          checkIterator(srcLog.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
+      }
    }
 }

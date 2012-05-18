@@ -66,7 +66,6 @@ public class TestDateSearch extends BaseQueryTest
       // Check is node indexed
       ScoreDoc doc = getDocument(cont.getInternalIdentifier(), false);
       assertNotNull("Node is not indexed", doc);
-      System.out.println("its doc " + doc);
 
       IndexReader reader = defaultSearchIndex.getIndexReader();
       IndexSearcher is = new IndexSearcher(reader);

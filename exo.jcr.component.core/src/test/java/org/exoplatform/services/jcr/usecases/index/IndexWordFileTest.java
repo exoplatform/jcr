@@ -81,19 +81,13 @@ public class IndexWordFileTest extends BaseUsecasesTest
 
       Query q;
       String xpath = "//*[jcr:contains(., 'word file content')]";
-      System.out.println("------------------ QUERY START -----------------------");
-      System.out.println(xpath);
-      System.out.println("------------------ QUERY END-----------------------");
       q = session.getWorkspace().getQueryManager().createQuery(xpath, Query.XPATH);
       assertNotNull("Can not create a query for indexing", q);
       QueryResult result = q.execute();
-      System.out.println("Information for query");
 
       for (NodeIterator it = result.getNodes(); it.hasNext();)
       {
          Node next = it.nextNode();
-         System.out.println("Node name: " + next.getName());
-         System.out.println("Node type: " + next.getPrimaryNodeType().getName());
          if (next.getPrimaryNodeType().getName().equals("nt:resource"))
          {
             if (next.hasProperty("jcr:data"))
@@ -111,9 +105,6 @@ public class IndexWordFileTest extends BaseUsecasesTest
                String found_text = service_.getContentAsText(mimeType, is);
                assertNotNull("Can not create found_text for indexing", world);
                is.close();
-               System.out.println("------------------ SEARCH TEXT RESULTS START-----------------------");
-               System.out.println(found_text);
-               System.out.println("------------------ SEARCH TEXT RESULTS END-----------------------");
             }
          }
       }

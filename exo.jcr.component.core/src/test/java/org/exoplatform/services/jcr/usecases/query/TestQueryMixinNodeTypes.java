@@ -82,8 +82,7 @@ public class TestQueryMixinNodeTypes extends BaseUsecasesTest
       while (resNodes.hasNext())
       {
          nodesFound++;
-         log
-            .info("The query '" + datetimeStatement + "' found node: " + resNodes.nextNode() + ", total: " + nodesFound);
+         resNodes.nextNode();
       }
       assertEquals("The search should find one node. Result size = " + resNodes.getSize() + ", actual = " + nodesFound,
          1, nodesFound);

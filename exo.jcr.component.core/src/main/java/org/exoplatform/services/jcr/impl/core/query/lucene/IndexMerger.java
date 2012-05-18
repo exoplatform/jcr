@@ -344,7 +344,10 @@ class IndexMerger extends Thread implements IndexListener
                   {
                      docCount += readers[i].numDocs();
                   }
-                  log.info("merged " + docCount + " documents in " + time + " ms into " + index.getName() + ".");
+                  if (log.isDebugEnabled())
+                  {
+                     log.debug("merged " + docCount + " documents in " + time + " ms into " + index.getName() + ".");
+                  }
                }
                finally
                {
@@ -398,7 +401,10 @@ class IndexMerger extends Thread implements IndexListener
             log.error("Error while merging indexes: ", e);
          }
       }
-      log.info("IndexMerger terminated");
+      if (log.isDebugEnabled())
+      {
+         log.debug("IndexMerger terminated");
+      }
    }
 
    //-----------------------< merge properties >-------------------------------

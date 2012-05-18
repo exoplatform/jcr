@@ -41,7 +41,6 @@ public class TestMultiValueSearch extends BaseQueryTest
       // Check is node indexed
       ScoreDoc doc = getDocument(node.getInternalIdentifier(), false);
       assertNotNull("Node is not indexed", doc);
-      System.out.println("its doc " + doc);
 
       QueryManager qman = this.workspace.getQueryManager();
 
@@ -67,7 +66,6 @@ public class TestMultiValueSearch extends BaseQueryTest
       // Check is node indexed
       ScoreDoc doc = getDocument(node.getInternalIdentifier(), false);
       assertNotNull("Node is not indexed", doc);
-      System.out.println("its doc " + doc);
 
       QueryManager qman = this.workspace.getQueryManager();
 

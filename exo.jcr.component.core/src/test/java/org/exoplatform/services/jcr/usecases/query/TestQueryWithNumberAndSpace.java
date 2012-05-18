@@ -41,7 +41,6 @@ public class TestQueryWithNumberAndSpace extends BaseUsecasesTest
     */
    public void testQuery1() throws Exception
    {
-      System.out.println("\n\n----------Test query contains number\n\n");
       Node document = root.addNode("Document", "nt:unstructured");
       Node testNode1 = document.addNode("Test1", "nt:unstructured");
       Node testNode11 = testNode1.addNode("Test11", "nt:file");
@@ -96,7 +95,6 @@ public class TestQueryWithNumberAndSpace extends BaseUsecasesTest
     */
    public void testQuery2() throws Exception
    {
-      System.out.println("\n\n----------Test Query contains space\n\n");
       Node document = root.addNode("Document", "nt:unstructured");
       Node testNode3 = document.addNode("test A", "nt:unstructured");
       Node testNode31 = testNode3.addNode("Test31", "nt:file");

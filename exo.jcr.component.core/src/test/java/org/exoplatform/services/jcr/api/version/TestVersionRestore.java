@@ -77,9 +77,6 @@ public class TestVersionRestore extends BaseVersionTest
          Version ver2 = versionableNode.checkin();
          versionableNode.checkout();
 
-         log.info("VH1 " + versionableNode.getVersionHistory().getUUID());
-         log.info("VH2 " + doc.getVersionHistory().getUUID());
-
          doc = versionableNode.addNode("doc3", "nt:file");
          doc.addNode("jcr:content", "nt:base");
          // makeVersionable(doc);

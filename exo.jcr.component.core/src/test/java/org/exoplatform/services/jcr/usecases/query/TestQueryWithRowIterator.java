@@ -27,7 +27,6 @@ public class TestQueryWithRowIterator extends BaseUsecasesTest
 
    public void testExcerpt() throws Exception
    {
-      System.out.println("\n\n----------Test Search with Row Iterator");
       String name = "\u043f\u00bb\u0457\u0413\u0491ng";
       Node node1 = root.addNode(name);//, "exo:article"
       node1.setProperty("exo:title", "abc");

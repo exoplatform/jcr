@@ -41,9 +41,13 @@ public class TestCutPasteOnJCRSystem extends BaseStandaloneTest
    {
       // super.tearDown();
       if (adminSession_ != null)
+      {
          adminSession_.logout();
+      }
       if (systemSession_ != null)
+      {
          systemSession_.logout();
+      }
 
    }
 
@@ -88,7 +92,6 @@ public class TestCutPasteOnJCRSystem extends BaseStandaloneTest
       assertNotNull(calendarNode2cut);
       String cutPath = calendarNode2cut.getPath();
       String pastedPath = sportsTaxonomy.getPath() + cutPath.substring(cutPath.lastIndexOf("/"));
-      System.out.println("Move from " + cutPath + "to " + pastedPath);
       workspace.move(cutPath, pastedPath);
       // use other admin session to check
       Session otherAdminSession =
@@ -114,8 +117,6 @@ public class TestCutPasteOnJCRSystem extends BaseStandaloneTest
       // cut "cms/news" node and paste to "/cms/sports"
       String newsSrcPath = newsTaxonomy.getPath();
       String destPath2Paste = sportsTaxonomy.getPath() + newsSrcPath.substring(newsSrcPath.lastIndexOf("/"));
-      System.out.println("Move from " + newsSrcPath + " to " + destPath2Paste + " "
-         + newsSrcPath.substring(newsSrcPath.lastIndexOf("/")));
       // otherAdminSession.getItem(destPath2Paste) ;
 
       otherAdminSession.refresh(false);
@@ -128,7 +129,6 @@ public class TestCutPasteOnJCRSystem extends BaseStandaloneTest
       }
       catch (Exception e)
       {
-         System.out.println("\n=============>Node is cut:" + newsSrcPath);
       }
 
       otherAdminSession.getItem(destPath2Paste);
@@ -146,7 +146,6 @@ public class TestCutPasteOnJCRSystem extends BaseStandaloneTest
 
       String srcPath = testTaxonomy.getPath();
       String destPath = sportsTaxonomy.getPath() + srcPath.substring(srcPath.lastIndexOf("/"));
-      System.out.println("Move from " + srcPath + " to " + destPath);
 
       workspace.move(srcPath, destPath);
       try
@@ -155,7 +154,7 @@ public class TestCutPasteOnJCRSystem extends BaseStandaloneTest
       }
       catch (Exception e)
       {
-         fail("\n!!!!!!!!======>Node isn't moved(pasted) successfully:" + destPath);
+         fail("Node wasn't moved(pasted) successfully:" + destPath);
       }
 
       adminTaxonomyHome.remove();

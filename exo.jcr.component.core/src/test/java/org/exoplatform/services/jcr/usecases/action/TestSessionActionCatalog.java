@@ -63,7 +63,6 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       SessionEventMatcher matcher =
          new SessionEventMatcher(Event.NODE_ADDED, paths, true, null, new InternalQName[]{Constants.NT_BASE,
             Constants.NT_UNSTRUCTURED, Constants.NT_QUERY}, ntHolder);
-      System.out.println(matcher.dump());
    }
 
    @Override
@@ -79,13 +78,6 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
          (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
 
       assertNotNull("No SessionActionCatalog configured!", catalog);
-      Iterator<ActionMatcher> matchers = catalog.getAllEntries().keySet().iterator();
-      System.out.println(">>testIfServicePresent");
-      while (matchers.hasNext())
-      {
-         System.out.println(((SessionEventMatcher)matchers.next()).dump());
-      }
-
    }
 
    public void testLockActions() throws Exception
@@ -105,7 +97,9 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
 
       Node lockedNode = root.addNode("locked node");
       if (lockedNode.canAddMixin("mix:lockable"))
+      {
          lockedNode.addMixin("mix:lockable");
+      }
       root.save();
 
       assertEquals(0, dAction.getActionExecuterCount());
@@ -308,13 +302,6 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       cond.put(SessionEventMatcher.EVENTTYPE_KEY, Event.NODE_ADDED);
 
       assertEquals(1, catalog.getActions(cond).size());
-
-      Iterator<ActionMatcher> matchers = catalog.getAllEntries().keySet().iterator();
-
-      while (matchers.hasNext())
-      {
-         System.out.println(((SessionEventMatcher)matchers.next()).dump());
-      }
    }
 
    public void testReadAction() throws ItemExistsException, PathNotFoundException, VersionException,

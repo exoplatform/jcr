@@ -21,32 +21,11 @@ package org.exoplatform.services.jcr.usecases.common;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
 public class JCRSystemSessionTest extends BaseUsecasesTest
 {
-
-   protected void tearDown() throws Exception
-   {
-
-      // [PN] BaseUsecasesTest.tearDown() don't touch jcr:system descendants
-      try
-      {
-         session.refresh(false);
-         Node jcrSystem = session.getRootNode().getNode("jcr:system");
-         jcrSystem.getNode("Node1").remove();
-         session.save();
-      }
-      catch (RepositoryException e)
-      {
-         log.error("Error of tearDown " + e.getMessage());
-      }
-
-      super.tearDown();
-   }
-
    public void testActionsOnJcrSystem() throws Exception
    {
       String workspaceName = repository.getSystemWorkspaceName();

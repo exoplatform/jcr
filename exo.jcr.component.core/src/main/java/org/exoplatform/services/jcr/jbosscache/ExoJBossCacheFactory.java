@@ -312,16 +312,16 @@ public class ExoJBossCacheFactory<K, V>
 
          caches.put(key, cacheInstance);
 
-         if (LOG.isInfoEnabled())
+         if (LOG.isDebugEnabled())
          {
-            LOG.info("A new JBoss Cache instance has been registered for the region " + rootFqn + ", a cache of type "
+            LOG.debug("A new JBoss Cache instance has been registered for the region " + rootFqn + ", a cache of type "
                + cacheType + " and the container " + container.getContext().getName());
          }
       }
       addEvictionRegion(rootFqn, cache, cfg);
-      if (LOG.isInfoEnabled())
+      if (LOG.isDebugEnabled())
       {
-         LOG.info("The region " + rootFqn + " has been registered for a cache of type " + cacheType
+         LOG.debug("The region " + rootFqn + " has been registered for a cache of type " + cacheType
             + " and the container " + container.getContext().getName());
       }
       return cache;

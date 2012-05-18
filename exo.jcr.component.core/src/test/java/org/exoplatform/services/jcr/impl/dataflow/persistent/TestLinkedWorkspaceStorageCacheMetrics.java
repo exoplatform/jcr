@@ -50,7 +50,7 @@ public class TestLinkedWorkspaceStorageCacheMetrics extends JcrImplBaseTest
       final int cacheSize = 500;
       final int liveTime = 10; // sec
       WorkspaceStorageCache cache =
-         new LinkedWorkspaceStorageCacheImpl("testLiveTime_cache", true, cacheSize, liveTime, 60 * 1000, 20 * 1000,
+         new LinkedWorkspaceStorageCacheImpl("testLiveTime_cache", true, cacheSize, liveTime, 60 * 1000, 30 * 1000,
             false, true, 0, true);
 
       NodeData parent =
@@ -93,7 +93,7 @@ public class TestLinkedWorkspaceStorageCacheMetrics extends JcrImplBaseTest
       final int liveTime = 30; // sec
       WorkspaceStorageCache cache =
          new LinkedWorkspaceStorageCacheImpl("testExpiredScheduler_cache", true, cacheSize, liveTime,
-            liveTime * 1000 + 10000, 10 * 1000, false, true, 0, true); // (*)
+            liveTime * 1000 + 10000, 30 * 1000, false, true, 0, true); // (*)
 
       NodeData parent =
          new TransientNodeData(QPath.parse("[]:1[]parent:1"), IdGenerator.generate(), 1, Constants.NT_UNSTRUCTURED,
@@ -133,7 +133,7 @@ public class TestLinkedWorkspaceStorageCacheMetrics extends JcrImplBaseTest
    {
       final int cacheSize = 500;
       WorkspaceStorageCache cache =
-         new LinkedWorkspaceStorageCacheImpl("testSize_cache", true, cacheSize, 120, 60 * 1000, 20 * 1000, false, true,
+         new LinkedWorkspaceStorageCacheImpl("testSize_cache", true, cacheSize, 120, 60 * 1000, 30 * 1000, false, true,
             0, true);
 
       NodeData parent =

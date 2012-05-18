@@ -47,7 +47,6 @@ public class Probe extends Thread
 
    public void run()
    {
-      System.out.println("Thread started " + this.getName());
       try
       {
          FileInputStream is = new FileInputStream(file);
@@ -61,7 +60,6 @@ public class Probe extends Thread
       {
          e.printStackTrace();
       }
-      System.out.println("Thread finished " + this.getName() + " read: " + len);
    }
 
    public int getLen()

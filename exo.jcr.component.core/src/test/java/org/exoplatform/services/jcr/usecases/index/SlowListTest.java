@@ -68,7 +68,6 @@ public class SlowListTest extends BaseUsecasesTest
          assertNotNull("Can not create a contentNode node for indexing", contentNode);
       }
       end = System.currentTimeMillis();
-      System.out.println("The time of the adding of 111 nodes: " + ((end - start) / 1000) + " sec");
       session.save();
       session.save();
       start = System.currentTimeMillis();
@@ -80,28 +79,19 @@ public class SlowListTest extends BaseUsecasesTest
       QueryResult result = q.execute();
       end = System.currentTimeMillis();
 
-      System.out.println(xpath);
-      System.out.println("The time of query execution : " + ((end - start) / 1000) + " sec");
-
-      System.out.println("----------- Information for query");
+      start = System.currentTimeMillis();
+      for (NodeIterator it = result.getNodes(); it.hasNext();)
+      {
+         Node next = it.nextNode();
+      }
+      end = System.currentTimeMillis();
 
       start = System.currentTimeMillis();
       for (NodeIterator it = result.getNodes(); it.hasNext();)
       {
          Node next = it.nextNode();
-         // System.out.println("Node name: "+next.getName());
       }
       end = System.currentTimeMillis();
-      System.out.println("The time of getNodes() call 1 : " + ((end - start) / 1000) + " sec");
-
-      start = System.currentTimeMillis();
-      for (NodeIterator it = result.getNodes(); it.hasNext();)
-      {
-         Node next = it.nextNode();
-         // System.out.println("Node name: "+next.getName());
-      }
-      end = System.currentTimeMillis();
-      System.out.println("The time of getNodes() call 2 : " + ((end - start) / 1000) + " sec");
 
       // -------------------------------------------------------------------------------------
       Node n2 = test.addNode("fff");
@@ -111,19 +101,15 @@ public class SlowListTest extends BaseUsecasesTest
       for (NodeIterator it = result.getNodes(); it.hasNext();)
       {
          Node next = it.nextNode();
-         // System.out.println("Node name: "+next.getName());
       }
       end = System.currentTimeMillis();
-      System.out.println("The time of getNodes() call 3 : " + ((end - start) / 1000) + " sec");
 
       start = System.currentTimeMillis();
       for (NodeIterator it = result.getNodes(); it.hasNext();)
       {
          Node next = it.nextNode();
-         // System.out.println("Node name: "+next.getName());
       }
       end = System.currentTimeMillis();
-      System.out.println("The time of getNodes() call 4 : " + ((end - start) / 1000) + " sec");
 
       // [PN] 21.07.06 hasn't fails that no fail
       // fail("QUERY TEST"); // Only for the view of intermediate results

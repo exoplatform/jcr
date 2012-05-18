@@ -63,9 +63,6 @@ public class TestDateBetween extends JcrAPIBaseTest
       session.save();
 
       date = rootNode.getNode("nnn1").getNode("jcr:content").getProperty("jcr:lastModified").getString();
-
-      log.info("Date : " + date);
-
    }
 
    public void testDateXPath() throws Exception
@@ -73,23 +70,12 @@ public class TestDateBetween extends JcrAPIBaseTest
 
       String xParhQuery = "//element(*,nt:resource)[@jcr:lastModified >= xs:dateTime('2006-08-19T10:11:38.281+02:00')]";
 
-      log.info("QUERY : " + xParhQuery);
-
       QueryManager manager = session.getWorkspace().getQueryManager();
       Query query = manager.createQuery(xParhQuery, Query.XPATH);
       QueryResult queryResult = query.execute();
       NodeIterator iter = queryResult.getNodes();
 
-      log.info("RESULT: " + iter.getSize());
-
       assertEquals(1, iter.getSize());
-
-      while (iter.hasNext())
-      {
-         Node nd = iter.nextNode();
-         log.info(" " + nd.getPath() + " " + nd.getProperty("jcr:lastModified").getString());
-      }
-
    }
 
    public void testDateSQL() throws Exception
@@ -105,23 +91,13 @@ public class TestDateBetween extends JcrAPIBaseTest
       sb.append("' )");
 
       String sqlQuery = sb.toString();
-      log.info("QUERY : " + sqlQuery);
 
       QueryManager manager = session.getWorkspace().getQueryManager();
       Query query = manager.createQuery(sqlQuery, Query.SQL);
       QueryResult queryResult = query.execute();
       NodeIterator iter = queryResult.getNodes();
 
-      log.info("RESULT: " + iter.getSize());
-
       assertEquals(1, iter.getSize());
-
-      while (iter.hasNext())
-      {
-         Node nd = iter.nextNode();
-         log.info(" " + nd.getPath() + " " + nd.getProperty("jcr:lastModified").getString());
-      }
-
    }
 
    public void testDateBETWEEN_SQL() throws Exception
@@ -137,23 +113,13 @@ public class TestDateBetween extends JcrAPIBaseTest
       sb.append("'");
 
       String sqlQuery = sb.toString();
-      log.info("QUERY : " + sqlQuery);
 
       QueryManager manager = session.getWorkspace().getQueryManager();
       Query query = manager.createQuery(sqlQuery, Query.SQL);
       QueryResult queryResult = query.execute();
       NodeIterator iter = queryResult.getNodes();
 
-      log.info("RESULT: " + iter.getSize());
-
       assertEquals(1, iter.getSize());
-
-      while (iter.hasNext())
-      {
-         Node nd = iter.nextNode();
-         log.info(" " + nd.getPath() + " " + nd.getProperty("jcr:lastModified").getString());
-      }
-
    }
 
    public void testDate_equals() throws Exception
@@ -166,23 +132,13 @@ public class TestDateBetween extends JcrAPIBaseTest
       sb.append("'");
 
       String sqlQuery = sb.toString();
-      log.info("QUERY : " + sqlQuery);
 
       QueryManager manager = session.getWorkspace().getQueryManager();
       Query query = manager.createQuery(sqlQuery, Query.SQL);
       QueryResult queryResult = query.execute();
       NodeIterator iter = queryResult.getNodes();
 
-      log.info("RESULT: " + iter.getSize());
-
       assertEquals(1, iter.getSize());
-
-      while (iter.hasNext())
-      {
-         Node nd = iter.nextNode();
-         log.info(" " + nd.getPath() + " " + nd.getProperty("jcr:lastModified").getString());
-      }
-
    }
 
 }

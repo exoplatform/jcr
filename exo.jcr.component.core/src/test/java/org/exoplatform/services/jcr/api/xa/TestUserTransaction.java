@@ -66,14 +66,12 @@ public class TestUserTransaction extends JcrAPIBaseTest
       rootS1.addNode("someNode1");
       rootS1.save();
       someSessions.add(s1);
-      log.info("s1: " + s1);
       Session s2 =
          repository.login(new SimpleCredentials("exo", "exo".toCharArray()), session.getWorkspace().getName());
       Node rootS2 = s2.getRootNode();
       rootS2.addNode("someNode2");
       rootS2.save();
       someSessions.add(s2);
-      log.info("s2: " + s2);
       Session s3 =
          repository.login(new SimpleCredentials("exo", "exo".toCharArray()), session.getWorkspace().getName());
       Node rootS3 = s3.getRootNode();
@@ -81,7 +79,6 @@ public class TestUserTransaction extends JcrAPIBaseTest
       rootS3.getNode("someNode2").remove();
       rootS3.save();
       someSessions.add(s3);
-      log.info("s3: " + s3);
       Session s4 =
          repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
       Node rootS4 = s4.getRootNode();
@@ -90,17 +87,14 @@ public class TestUserTransaction extends JcrAPIBaseTest
       rootS4.getNode("someNode1").remove();
       rootS4.save();
       someSessions.add(s4);
-      log.info("s4: " + s4);
 
       // some logouts
       session.logout();
       someSessions.add(session);
-      log.info("session: " + session);
       s1.logout();
 
       // ...from setUp()
       session = (SessionImpl)repository.login(credentials, "ws");
-      log.info("session (new): " + session);
       someSessions.add(session);
 
       workspace = session.getWorkspace();
@@ -114,11 +108,8 @@ public class TestUserTransaction extends JcrAPIBaseTest
    {
       assertNotNull(txService);
       List<Session> someSessions = openSomeSessions();
-      log.info("before user transaction");
       UserTransaction ut = txService.getUserTransaction();
-      log.info("before begin");
       ut.begin();
-      log.info("after begin");
       // we need to create the session within the transaction to ensure that it will be enlisted
       Session session = repository.login(credentials, "ws");
       session.getRootNode().addNode("txcommit");
@@ -133,7 +124,7 @@ public class TestUserTransaction extends JcrAPIBaseTest
       }
       catch (PathNotFoundException e)
       {
-         log.info("Ok: " + e.getMessage());
+         //ok
       }
       ut.commit();
       assertNotNull(s1.getItem("/txcommit"));

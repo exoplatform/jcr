@@ -57,9 +57,5 @@ public class SimpleGetDataTest extends BaseUsecasesTest
       session.save();
       assertNotNull(session.getRootNode().getNode("testLocalSmallFiles").getNode("smallFile").getNode("jcr:content")
          .getProperty("jcr:data").getValue());
-
-      System.out.println("value === "
-         + session.getRootNode().getNode("testLocalSmallFiles").getNode("smallFile").getNode("jcr:content")
-            .getProperty("jcr:data").getString());
    }
 }

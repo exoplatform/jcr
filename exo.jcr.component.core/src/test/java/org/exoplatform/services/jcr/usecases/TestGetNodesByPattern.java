@@ -27,7 +27,7 @@ import javax.jcr.NodeIterator;
  * <br/>Date: 
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
- * @version $Id: TestGetNodesByPattern.java 111 11 трав. 2011 serg $
+ * @version $Id: TestGetNodesByPattern.java 111 11 пїЅпїЅпїЅпїЅ. 2011 serg $
  */
 public class TestGetNodesByPattern extends BaseUsecasesTest
 {
@@ -138,11 +138,6 @@ public class TestGetNodesByPattern extends BaseUsecasesTest
       nextExecutionTime = System.currentTimeMillis() - nextExecutionTime;
       assertTrue(iterator.hasNext());
       testNames(iterator, new String[]{"exo:cassiopeia", "nt:cassandra", "exo:libra", "jcr:equilibrium"});
-      if (nextExecutionTime * 1.1 < executionTime)
-      {
-         log.warn("Fetching data from DataBase takes less time than from cache - " + executionTime + " "
-            + nextExecutionTime);
-      }
    }
 
    public void testCacheUpdate() throws Exception

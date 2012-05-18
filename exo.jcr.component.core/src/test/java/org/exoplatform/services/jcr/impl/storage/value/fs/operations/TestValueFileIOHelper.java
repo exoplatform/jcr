@@ -136,8 +136,9 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
 
    public void testCopySerialization() throws Exception
    {
-
-      System.out.println("=== test Serialization, file size:  " + srcSerialization.length());
+      if (log.isDebugEnabled()){
+         log.debug("=== test Serialization, file size:  " + srcSerialization.length());
+      }
 
       // copy via InputStream
       long start = System.currentTimeMillis();
@@ -166,8 +167,10 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       out.flush();
       out.close();
 
-      // print time
-      System.out.println("\t=== IO time  " + (System.currentTimeMillis() - start));
+      if (log.isDebugEnabled()){
+         // print time
+         log.debug("\t=== IO time  " + (System.currentTimeMillis() - start));
+      }
 
       // clean and recreate file
       dest.delete();
@@ -197,8 +200,10 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       in.close();
       out.close();
 
-      System.out.println("\t=== NIO  (inFile=" + inFile + " outFile=" + outFile + ") time "
+      if (log.isDebugEnabled()){
+         log.debug("\t=== NIO  (inFile=" + inFile + " outFile=" + outFile + ") time "
          + (System.currentTimeMillis() - start));
+      }
 
       // check length
       assertEquals(srcSerialization.length(), dest.length());
@@ -226,7 +231,9 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
    public void testCopyBytesToFile() throws Exception
    {
 
-      System.out.println("=== test copyBytesToFile, file size:  " + src.length());
+      if (log.isDebugEnabled()){
+         log.debug("=== test copyBytesToFile, file size:  " + src.length());
+      }
 
       // copy via InputStream
       long start = System.currentTimeMillis();
@@ -249,8 +256,10 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
          in.close();
          out.close();
       }
-      // print time
-      System.out.println("\t=== IO time  " + (System.currentTimeMillis() - start));
+      if (log.isDebugEnabled()){
+         // print time
+         log.debug("\t=== IO time  " + (System.currentTimeMillis() - start));
+      }
 
       // clean and recreate file
       dest.delete();
@@ -261,7 +270,9 @@ public class TestValueFileIOHelper extends JcrImplBaseTest
       io.copyClose(new BufferedInputStream(new FileInputStream(src)), new FileOutputStream(dest));
       // io.copyClose(new URL("http://jboss1.exoua-int:8089/browser/02.zip").openStream(), new
       // FileOutputStream(dest));
-      System.out.println("\t=== NIO time " + (System.currentTimeMillis() - start));
+      if (log.isDebugEnabled()){
+         log.debug("\t=== NIO time " + (System.currentTimeMillis() - start));
+      }
 
       // check length
       assertEquals(src.length(), dest.length());

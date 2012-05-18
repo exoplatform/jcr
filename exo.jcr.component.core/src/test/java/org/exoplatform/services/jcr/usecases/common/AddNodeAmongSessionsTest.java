@@ -20,40 +20,15 @@ package org.exoplatform.services.jcr.usecases.common;
 
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.util.List;
 
 import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
 
 public class AddNodeAmongSessionsTest extends BaseUsecasesTest
 {
-
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.AddNodeAmongSessionsTest");
-
-   protected void tearDown() throws Exception
-   {
-
-      // [PN] BaseUsecasesTest.tearDown() don't touch jcr:system descendants
-      try
-      {
-         session.refresh(false);
-         Node jcrSystem = session.getRootNode().getNode("jcr:system");
-         jcrSystem.getNode("Node1").remove();
-         session.save();
-      }
-      catch (RepositoryException e)
-      {
-         log.error("Error of tearDown " + e.getMessage());
-      }
-
-      super.tearDown();
-   }
-
    public void testAddNodeAmongSession() throws Exception
    {
       String workspaceName = repository.getSystemWorkspaceName();
@@ -99,10 +74,6 @@ public class AddNodeAmongSessionsTest extends BaseUsecasesTest
       // but we can't get it via its parent
       Node parentNode = jcrSystemNode.getNode("Node1");
       List perms = ((NodeImpl)parentNode).getACL().getPermissionEntries();
-      for (int i = 0; i < perms.size(); i++)
-      {
-         log.debug("PERM >>>> " + perms.get(i));
-      }
 
       assertTrue(parentNode.getNodes().getSize() > 0);
       assertTrue(parentNode.hasNode("testNode"));

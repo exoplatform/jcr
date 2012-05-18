@@ -68,8 +68,6 @@ public class TestExcelFileSearch extends BaseQueryTest
       DocumentReader dreader = extr.getDocumentReader("application/excel");
       assertNotNull(dreader);
 
-      System.out.println(dreader);
-
       if (dreader instanceof MSExcelDocumentReader)
       {
          // OK

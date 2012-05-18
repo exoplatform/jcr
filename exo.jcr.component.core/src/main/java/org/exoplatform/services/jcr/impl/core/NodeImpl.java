@@ -205,7 +205,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          if (name.equals(mixin))
          {
             // we already have this mixin type
-            LOG.warn("Node already of mixin type " + mixinName + " " + getPath());
             return;
          }
       }

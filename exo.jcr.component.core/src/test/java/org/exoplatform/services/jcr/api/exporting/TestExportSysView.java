@@ -134,7 +134,6 @@ public class TestExportSysView extends ExportBase
       try
       {
          File file = createBLOBTempFile(2500);// 2.5M
-         log.info("=== File has created, size " + file.length());
          contentTestPdfNode.setProperty("jcr:data", new FileInputStream(file));
          contentTestPdfNode.setProperty("jcr:mimeType", "application/octet-stream");
       }
@@ -146,9 +145,7 @@ public class TestExportSysView extends ExportBase
       session.save();
       try
       {
-         log.info("===Starting export...");
          session.exportDocumentView("/testPdf", out, false, false);
-         log.info("===Export has finished successfully");
       }
       catch (Exception e)
       {
@@ -263,7 +260,6 @@ public class TestExportSysView extends ExportBase
       long startTime = System.currentTimeMillis();
       session.exportSystemView(testNode.getPath(), handler, false, false);
       outputStream2.close();
-      log.info("Export with handler done " + (System.currentTimeMillis() - startTime) / 1000 + " sec");
 
       Document doc = builder.parse(new FileInputStream(destFile));
 

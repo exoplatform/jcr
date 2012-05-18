@@ -115,8 +115,6 @@ public class TestInitRepository extends JcrImplBaseTest
       // Session sysSess = defRep.getSystemSession(sysWs);
       Session sess = defRep.getSystemSession(wsName);
       // assertEquals(sysSess, sess);
-      // log.info("sys>>"+sysWs+" "+sysSess);
-      log.info("reg>>" + wsName + " " + sess);
 
       Node root = sess.getRootNode();
       assertNotNull(root);

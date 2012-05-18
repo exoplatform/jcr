@@ -617,7 +617,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          throw new IOException("SearchIndex requires 'path' parameter in configuration!");
       }
-      log.info("path=" + path);
 
       // Set excludedIDs = new HashSet();
       // if (context.getExcludedNodeId() != null)
