@@ -1466,7 +1466,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
                ItemType.NODE);
       }
 
-      return parent == null ? false : dataManager.hasItemData(parent, name, ItemType.NODE);
+      return parent == null ? false : dataManager.getItemData(parent, name, ItemType.NODE) != null;
    }
 
    /**
@@ -1511,7 +1511,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
                ItemType.NODE);
       }
 
-      return parent == null ? false : dataManager.hasItemData(parent, name, ItemType.PROPERTY);
+      return parent == null ? false : dataManager.getItemData(parent, name, ItemType.PROPERTY) != null;
    }
 
    /**
