@@ -47,7 +47,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -100,7 +99,7 @@ public class GetCommand
     * @return the instance of javax.ws.rs.core.Response
     */
    public Response get(Session session, String path, String version, String baseURI, List<Range> ranges,
-      String ifModifiedSince, HashMap<MediaType, String> cacheControls)
+      String ifModifiedSince, Map<MediaType, String> cacheControls)
    {
       if (version == null)
       {
@@ -312,7 +311,7 @@ public class GetCommand
     * @param contentType content type
     * @return Cache-Control value
     */
-   private String generateCacheControl(HashMap<MediaType, String> cacheControlMap, String contentType)
+   private String generateCacheControl(Map<MediaType, String> cacheControlMap, String contentType)
    {
 
       ArrayList<MediaType> mediaTypesList = new ArrayList<MediaType>(cacheControlMap.keySet());

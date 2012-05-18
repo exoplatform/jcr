@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.webdav.xml;
 
 import org.exoplatform.common.util.HierarchicalProperty;
 
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -149,7 +148,7 @@ public class PropertyWriteUtil
    public static void writeAttributes(XMLStreamWriter xmlStreamWriter, HierarchicalProperty property)
       throws XMLStreamException
    {
-      HashMap<String, String> attributes = property.getAttributes();
+      Map<String, String> attributes = property.getAttributes();
       Iterator<String> keyIter = attributes.keySet().iterator();
       while (keyIter.hasNext())
       {

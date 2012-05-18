@@ -167,6 +167,26 @@
       &lt;value&gt;Microsoft Office Core Storage Infrastructure/1.0&lt;/value&gt;
     &lt;/values-param&gt;
 
+    &lt;--
+        Allows to define which node type can be used to
+        create files via WebDAV.
+        Default value: nt:file
+    --&gt;
+    &lt;values-param&gt;
+      &lt;name&gt;allowed-file-node-types&lt;/name&gt;
+      &lt;value&gt;nt:file&lt;/value&gt;
+    &lt;/values-param&gt;
+
+    &lt;--
+        Allows to define which node type can be used to
+        create folders via WebDAV.
+        Default value: nt:folder
+    --&gt;
+    &lt;values-param&gt;
+      &lt;name&gt;allowed-folder-node-types&lt;/name&gt;
+      &lt;value&gt;nt:folder&lt;/value&gt;
+    &lt;/values-param&gt;
+
   &lt;/init-params&gt;
 &lt;/component&gt;</programlisting>
   </section>
@@ -187,7 +207,7 @@
 
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/protocols/webdav_explorer.jpg" />
+          <imagedata fileref="images/protocols/webdav_explorer.jpg"/>
         </imageobject>
       </mediaobject>
     </section>
@@ -197,7 +217,7 @@
 
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/protocols/webdav_davexplorer.jpg" />
+          <imagedata fileref="images/protocols/webdav_davexplorer.jpg"/>
         </imageobject>
       </mediaobject>
     </section>
@@ -207,7 +227,7 @@
 
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/protocols/webdav_xythosdrive.jpg" />
+          <imagedata fileref="images/protocols/webdav_xythosdrive.jpg"/>
         </imageobject>
       </mediaobject>
     </section>
@@ -220,7 +240,7 @@
 
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/protocols/webdav_msoffice2003.jpg" />
+          <imagedata fileref="images/protocols/webdav_msoffice2003.jpg"/>
         </imageobject>
       </mediaobject>
     </section>
@@ -230,7 +250,7 @@
 
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/protocols/webdav_ubuntulinux.jpg" />
+          <imagedata fileref="images/protocols/webdav_ubuntulinux.jpg"/>
         </imageobject>
       </mediaobject>
     </section>
@@ -240,7 +260,7 @@
     <title>Comparison table of WebDav and JCR commands</title>
 
     <table>
-      <title></title>
+      <title/>
 
       <tgroup cols="2">
         <thead>

@@ -26,10 +26,12 @@ import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.impl.ContainerResponse;
+import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 
 import java.io.ByteArrayInputStream;
 
 import javax.jcr.Node;
+import javax.ws.rs.core.MultivaluedMap;
 
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
@@ -58,6 +60,21 @@ public class TestMkCol extends BaseStandaloneTest
       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(folder)));
       Node folderNode = session.getRootNode().getNode(TextUtil.relativizePath(folder));
       assertTrue(folderNode.hasNode(TextUtil.relativizePath(file)));
+   }
+
+   public void testFolderNodeTypeHeader() throws Exception
+   {
+      String folder = TestUtils.getFolderName();
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+
+      headers.add(ExtHttpHeaders.FOLDER_NODETYPE, "nt:file");
+      ContainerResponse response = service(WebDAVMethods.MKCOL, getPathWS() + folder, "", headers, null);
+      assertEquals(HTTPStatus.UNSUPPORTED_TYPE, response.getStatus());
+
+      headers.clear();
+      headers.add(ExtHttpHeaders.FILE_NODETYPE, "nt:folder");
+      response = service(WebDAVMethods.MKCOL, getPathWS() + folder, "", headers, null);
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
    }
 
    /**

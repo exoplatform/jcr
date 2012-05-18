@@ -22,8 +22,6 @@ import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.commons.utils.MimeTypeResolver;
 import org.exoplatform.container.xml.InitParams;
-import org.exoplatform.container.xml.ValueParam;
-import org.exoplatform.container.xml.ValuesParam;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
@@ -48,6 +46,7 @@ import org.exoplatform.services.jcr.webdav.command.deltav.ReportCommand;
 import org.exoplatform.services.jcr.webdav.command.deltav.UnCheckOutCommand;
 import org.exoplatform.services.jcr.webdav.command.deltav.VersionControlCommand;
 import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
+import org.exoplatform.services.jcr.webdav.util.InitParamsDefaults;
 import org.exoplatform.services.jcr.webdav.util.NodeTypeUtil;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.log.ExoLogger;
@@ -78,11 +77,8 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.PathNotFoundException;
@@ -114,47 +110,10 @@ import javax.ws.rs.core.UriInfo;
 @Path("/jcr")
 public class WebDavServiceImpl implements WebDavService, ResourceContainer
 {
-
-   /**
-    * Default folder initialization node type.
-    */
-   public static final String INIT_PARAM_DEF_FOLDER_NODE_TYPE = "def-folder-node-type";
-
-   /**
-    * Default file initialization node type.
-    */
-   public static final String INIT_PARAM_DEF_FILE_NODE_TYPE = "def-file-node-type";
-
-   /**
-    * Default file initialization mime type.
-    */
-   public static final String INIT_PARAM_DEF_FILE_MIME_TYPE = "def-file-mimetype";
-
-   /**
-    * Initialization initialization "update-policy"-parameter value.
-    */
-   public static final String INIT_PARAM_UPDATE_POLICY = "update-policy";
-
-   /**
-    * Initialization "auto-version"-parameter value.
-    */
-   public static final String INIT_PARAM_AUTO_VERSION = "auto-version";
-
-   public static final String INIT_PARAM_CACHE_CONTROL = "cache-control";
-
-   private HashMap<MediaType, String> cacheControlMap = new HashMap<MediaType, String>();
-
-   public static final String FOLDER_ICON_PATH = "folder-icon-path";
-
-   public static final String FILE_ICON_PATH = "file-icon-path";
-
-   public static final String UNTRUSTED_USER_AGENTS = "untrusted-user-agents";
-
    /**
     * Logger.
     */
    private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.WebDavServiceImpl");
-
    /**
     * Local Thread SessionProvider.
     */
@@ -171,39 +130,9 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    private final NullResourceLocksHolder nullResourceLocks;
 
    /**
-    * Default folder node type.
+    * Encapsulates WebDAV service initial parameters.
     */
-   private String defaultFolderNodeType = "nt:folder";
-
-   /**
-    * Default file node type.
-    */
-   private String defaultFileNodeType = "nt:file";
-
-   /**
-    * Default file mime type.
-    */
-   private String defaultFileMimeType = "application/octet-stream";
-
-   /**
-    * Update policy.
-    */
-   private String updatePolicyType = "create-version";
-
-   /**
-    * Auto-version default value.
-    */
-   private String autoVersionType = "checkout-checkin";
-
-   /**
-    * XSLT parameters.
-    */
-   private Map<String, String> xsltParams = new HashMap<String, String>();
-
-   /**
-    * Set of untrusted user agents. Special rules are applied for listed agents.
-    */
-   private Set<String> untrustedUserAgents = new HashSet<String>();
+   private WebDavServiceInitParams webDavServiceInitParams;
 
    /**
     * The list of allowed methods.
@@ -244,93 +173,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    public WebDavServiceImpl(InitParams params, RepositoryService repositoryService,
       ThreadLocalSessionProviderService sessionProviderService) throws Exception
    {
-      this.sessionProviderService = sessionProviderService;
-      this.repositoryService = repositoryService;
-      this.nullResourceLocks = new NullResourceLocksHolder();
-
-      ValueParam pXSLTParam = params.getValueParam(FOLDER_ICON_PATH);
-      if (pXSLTParam != null)
-      {
-         xsltParams.put(FOLDER_ICON_PATH, pXSLTParam.getValue());
-         log.info(FOLDER_ICON_PATH + " = " + pXSLTParam.getValue());
-      }
-
-      pXSLTParam = params.getValueParam(FILE_ICON_PATH);
-      if (pXSLTParam != null)
-      {
-         xsltParams.put(FILE_ICON_PATH, pXSLTParam.getValue());
-         log.info(FILE_ICON_PATH + " = " + pXSLTParam.getValue());
-      }
-
-      ValueParam pDefFolderNodeType = params.getValueParam(INIT_PARAM_DEF_FOLDER_NODE_TYPE);
-      if (pDefFolderNodeType != null)
-      {
-         defaultFolderNodeType = pDefFolderNodeType.getValue();
-         log.info(INIT_PARAM_DEF_FOLDER_NODE_TYPE + " = " + defaultFolderNodeType);
-      }
-
-      ValueParam pDefFileNodeType = params.getValueParam(INIT_PARAM_DEF_FILE_NODE_TYPE);
-      if (pDefFileNodeType != null)
-      {
-         defaultFileNodeType = pDefFileNodeType.getValue();
-         log.info(INIT_PARAM_DEF_FILE_NODE_TYPE + " = " + defaultFileNodeType);
-      }
-
-      ValueParam pDefFileMimeType = params.getValueParam(INIT_PARAM_DEF_FILE_MIME_TYPE);
-      if (pDefFileMimeType != null)
-      {
-         defaultFileMimeType = pDefFileMimeType.getValue();
-         log.info(INIT_PARAM_DEF_FILE_MIME_TYPE + " = " + defaultFileMimeType);
-      }
-
-      ValueParam pUpdatePolicy = params.getValueParam(INIT_PARAM_UPDATE_POLICY);
-      if (pUpdatePolicy != null)
-      {
-         updatePolicyType = pUpdatePolicy.getValue();
-         log.info(INIT_PARAM_UPDATE_POLICY + " = " + updatePolicyType);
-      }
-
-      ValueParam pAutoVersion = params.getValueParam(INIT_PARAM_AUTO_VERSION);
-      if (pAutoVersion != null)
-      {
-         autoVersionType = pAutoVersion.getValue();
-         log.info(INIT_PARAM_AUTO_VERSION + " = " + autoVersionType);
-      }
-
-      ValueParam pCacheControl = params.getValueParam(INIT_PARAM_CACHE_CONTROL);
-      if (pCacheControl != null)
-      {
-         String cacheControlConfigValue = pCacheControl.getValue();
-
-         try
-         {
-            String[] elements = cacheControlConfigValue.split(";");
-            for (String element : elements)
-            {
-               String cacheValue = element.split(":")[1];
-               String keys = element.split(":")[0];
-               for (String key : keys.split(","))
-               {
-                  MediaType mediaType = new MediaType(key.split("/")[0], key.split("/")[1]);
-                  cacheControlMap.put(mediaType, cacheValue);
-               }
-            }
-         }
-         catch (Exception e)
-         {
-            log.warn("Invalid " + INIT_PARAM_CACHE_CONTROL + " parameter");
-         }
-
-      }
-
-      ValuesParam pUntrustedUserAgents = params.getValuesParam(UNTRUSTED_USER_AGENTS);
-      if (pUntrustedUserAgents != null)
-      {
-         untrustedUserAgents.addAll(pUntrustedUserAgents.getValues());
-      }
-
-      this.mimeTypeResolver = new MimeTypeResolver();
-      this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
+      this(repositoryService, sessionProviderService);
+      this.webDavServiceInitParams = new WebDavServiceInitParams(params);
    }
 
    /**
@@ -343,102 +187,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    protected WebDavServiceImpl(Map<String, String> params, RepositoryService repositoryService,
       ThreadLocalSessionProviderService sessionProviderService) throws Exception
    {
-      this.sessionProviderService = sessionProviderService;
-      this.repositoryService = repositoryService;
-      this.nullResourceLocks = new NullResourceLocksHolder();
-
-      String paramValue = params.get(FOLDER_ICON_PATH);
-      if (paramValue != null)
-      {
-         xsltParams.put(FOLDER_ICON_PATH, paramValue);
-         log.info(FOLDER_ICON_PATH + " = " + paramValue);
-      }
-
-      paramValue = params.get(FILE_ICON_PATH);
-      if (paramValue != null)
-      {
-         xsltParams.put(FILE_ICON_PATH, paramValue);
-         log.info(FILE_ICON_PATH + " = " + paramValue);
-      }
-
-      paramValue = params.get(INIT_PARAM_DEF_FOLDER_NODE_TYPE);
-      if (paramValue != null)
-      {
-         defaultFolderNodeType = paramValue;
-         log.info(INIT_PARAM_DEF_FOLDER_NODE_TYPE + " = " + defaultFolderNodeType);
-      }
-
-      paramValue = params.get(INIT_PARAM_DEF_FILE_NODE_TYPE);
-      if (paramValue != null)
-      {
-         defaultFileNodeType = paramValue;
-         log.info(INIT_PARAM_DEF_FILE_NODE_TYPE + " = " + defaultFileNodeType);
-      }
-
-      paramValue = params.get(INIT_PARAM_DEF_FILE_MIME_TYPE);
-      if (paramValue != null)
-      {
-         defaultFileMimeType = paramValue;
-         log.info(INIT_PARAM_DEF_FILE_MIME_TYPE + " = " + defaultFileMimeType);
-      }
-
-      paramValue = params.get(INIT_PARAM_UPDATE_POLICY);
-      if (paramValue != null)
-      {
-         updatePolicyType = paramValue;
-         log.info(INIT_PARAM_UPDATE_POLICY + " = " + updatePolicyType);
-      }
-
-      paramValue = params.get(INIT_PARAM_AUTO_VERSION);
-      if (paramValue != null)
-      {
-         autoVersionType = paramValue;
-         log.info(INIT_PARAM_AUTO_VERSION + " = " + autoVersionType);
-      }
-
-      paramValue = params.get(INIT_PARAM_CACHE_CONTROL);
-      if (paramValue != null)
-      {
-         try
-         {
-            String[] elements = paramValue.split(";");
-            for (String element : elements)
-            {
-               String cacheValue = element.split(":")[1];
-               String keys = element.split(":")[0];
-               for (String key : keys.split(","))
-               {
-                  MediaType mediaType = new MediaType(key.split("/")[0], key.split("/")[1]);
-                  cacheControlMap.put(mediaType, cacheValue);
-               }
-            }
-         }
-         catch (Exception e)
-         {
-            log.warn("Invalid " + INIT_PARAM_CACHE_CONTROL + " parameter");
-         }
-
-      }
-
-      /*
-       * As this constructor receives Map<String, String> instead of InitParams
-       * we cannot pass multi-valued parameters in the form of 
-       * String -> Collection  
-       * We pass a set of 'untrusted-user-agents' as a single String
-       * with mime types separated by comma (",")
-       * i.e. "agent1, agent2, agent3"
-       */
-      paramValue = params.get(UNTRUSTED_USER_AGENTS);
-      if (paramValue != null)
-      {
-         for (String mimeType : paramValue.split(","))
-         {
-            untrustedUserAgents.add(mimeType.trim());
-         }
-      }
-
-      this.mimeTypeResolver = new MimeTypeResolver();
-      this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
+      this(repositoryService, sessionProviderService);
+      this.webDavServiceInitParams = new WebDavServiceInitParams(params);
    }
 
    /**
@@ -454,7 +204,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       this.repositoryService = repositoryService;
       this.nullResourceLocks = new NullResourceLocksHolder();
       this.mimeTypeResolver = new MimeTypeResolver();
-      this.mimeTypeResolver.setDefaultMimeType(defaultFileMimeType);
+      this.mimeTypeResolver.setDefaultMimeType(InitParamsDefaults.FILE_MIME_TYPE);
+      this.webDavServiceInitParams = new WebDavServiceInitParams();
    }
 
    /**
@@ -612,7 +363,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             Session session = session(repoName, destWorkspace, lockTokens);
 
             return new MkColCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName))
-               .mkCol(session, destNodePath + "/" + nodeName, defaultFolderNodeType, null, lockTokens);
+               .mkCol(session, destNodePath + "/" + nodeName, webDavServiceInitParams.getDefaultFolderNodeType(), null,
+                  lockTokens);
 
          }
          else
@@ -743,8 +495,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String uri =
             uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
                .toString();
-         return new GetCommand(xsltParams).get(session, path(repoPath), version, uri, ranges, ifModifiedSince,
-            cacheControlMap);
+         return new GetCommand(webDavServiceInitParams.getXsltParams()).get(session, path(repoPath), version, uri,
+            ranges, ifModifiedSince, webDavServiceInitParams.getCacheControlMap());
 
       }
       catch (PathNotFoundException exc)
@@ -880,7 +632,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    @Path("/{repoName}/{repoPath:.*}/")
    public Response mkcol(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
       @HeaderParam(ExtHttpHeaders.LOCKTOKEN) String lockTokenHeader, @HeaderParam(ExtHttpHeaders.IF) String ifHeader,
-      @HeaderParam(ExtHttpHeaders.CONTENT_NODETYPE) String nodeTypeHeader,
+      @HeaderParam(ExtHttpHeaders.FOLDER_NODETYPE) String folderNodeTypeHeader,
       @HeaderParam(ExtHttpHeaders.CONTENT_MIXINTYPES) String mixinTypesHeader, @Context UriInfo uriInfo)
    {
       if (log.isDebugEnabled())
@@ -894,19 +646,31 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          List<String> tokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), tokens);
-         String nodeType = NodeTypeUtil.getFileNodeType(nodeTypeHeader);
-         if (nodeType == null)
+         String folderNodeType = webDavServiceInitParams.getDefaultFolderNodeType();
+         if (folderNodeTypeHeader != null)
          {
-            nodeType = defaultFolderNodeType;
+            if (webDavServiceInitParams.getAllowedFolderNodeTypes().contains(folderNodeTypeHeader))
+            {
+               folderNodeType = folderNodeTypeHeader;
+            }
+            else
+            {
+               throw new NoSuchNodeTypeException("Unsupported folder node type: " + folderNodeType);
+            }
          }
 
          return new MkColCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).mkCol(
-            session, path(repoPath), nodeType, NodeTypeUtil.getMixinTypes(mixinTypesHeader), tokens);
+            session, path(repoPath), folderNodeType, NodeTypeUtil.getMixinTypes(mixinTypesHeader), tokens);
       }
       catch (NoSuchWorkspaceException exc)
       {
          log.error("NoSuchWorkspaceException " + exc.getMessage(), exc);
          return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
+      }
+      catch (NoSuchNodeTypeException exc)
+      {
+         log.error("NoSuchNodeTypeException " + exc.getMessage(), exc);
+         return Response.status(HTTPStatus.UNSUPPORTED_TYPE).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
@@ -1179,7 +943,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String mimeType = null;
          String encoding = null;
 
-         if (mediaType == null || untrustedUserAgents.contains(userAgent))
+         if (mediaType == null || webDavServiceInitParams.getUntrustedUserAgents().contains(userAgent))
          {
             mimeType = mimeTypeResolver.getMimeType(TextUtil.nameOnly(repoPath));
          }
@@ -1192,10 +956,17 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          List<String> tokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), tokens);
 
-         String fileNodeType = NodeTypeUtil.getFileNodeType(fileNodeTypeHeader);
-         if (fileNodeType == null)
+         String fileNodeType = webDavServiceInitParams.getDefaultFileNodeType();
+         if (fileNodeTypeHeader != null)
          {
-            fileNodeType = defaultFileNodeType;
+            if (webDavServiceInitParams.getAllowedFileNodeTypes().contains(fileNodeTypeHeader))
+            {
+               fileNodeType = fileNodeTypeHeader;
+            }
+            else
+            {
+               throw new NoSuchNodeTypeException("Unsupported file node type: " + fileNodeTypeHeader);
+            }
          }
 
          String contentNodeType = NodeTypeUtil.getContentNodeType(contentNodeTypeHeader);
@@ -1205,7 +976,9 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
          return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).put(
             session, path(repoPath), inputStream, fileNodeType, contentNodeType,
-            NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType, autoVersionType, tokens);
+            NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding,
+            webDavServiceInitParams.getDefaultUpdatePolicyType(), webDavServiceInitParams.getDefaultAutoVersionType(),
+            tokens);
 
       }
       catch (NoSuchWorkspaceException exc)
