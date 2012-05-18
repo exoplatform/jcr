@@ -69,14 +69,18 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
       {
          return result;
       }
+      Fqn parentFqn = fqn.getParent();
       try
       {
-         Fqn parentFqn = fqn.getParent();
          if (parentFqn.get(1).equals(JBossCacheWorkspaceStorageCache.CHILD_NODES)
-            || parentFqn.get(1).equals(JBossCacheWorkspaceStorageCache.CHILD_PROPS))
+            || parentFqn.get(1).equals(JBossCacheWorkspaceStorageCache.CHILD_PROPS)
+            || parentFqn.get(1).equals(JBossCacheWorkspaceStorageCache.CHILD_NODES_BY_PATTERN_LIST)
+            || parentFqn.get(1).equals(JBossCacheWorkspaceStorageCache.CHILD_PROPS_BY_PATTERN_LIST))
          {
             // The expected data structure is of type ${ws-id}/$CHILD_NODES/${node-id}/${sub-node-name} or
-            // ${ws-id}/$CHILD_PROPS/${node-id}/${sub-property-name}
+            // ${ws-id}/$CHILD_PROPS/${node-id}/${sub-property-name} or
+            // ${ws-id}/$CHILD_NODES_BY_PATTERN_LIST/${node-id}/${pattern-QPathEntry} or
+            // ${ws-id}/$CHILD_PROPS_BY_PATTERN_LIST/${node-id}/${pattern-QPathEntry}
 
             // We use the method hasChildrenDirect to avoid going through 
             // the intercepter chain (EXOJCR-460)
@@ -86,17 +90,17 @@ public class ParentNodeEvictionActionPolicy implements EvictionActionPolicy
             {
                if (LOG.isTraceEnabled())
                {
-                  LOG.trace("Evicting Fqn " + fqn);
+                  LOG.trace("Evicting Fqn " + parentFqn);
                }
                cache.evict(parentFqn);
             }
          }
       }
-      catch (IllegalStateException e)
+      catch (Exception e)
       {
          if (LOG.isDebugEnabled())
          {
-            LOG.debug("Unable to evict " + fqn, e);
+            LOG.debug("Unable to evict " + parentFqn, e);
          }
       }
       return result;

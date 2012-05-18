@@ -60,11 +60,15 @@ import org.exoplatform.services.transaction.ActionNonTxAware;
 import org.exoplatform.services.transaction.TransactionService;
 import org.jboss.cache.Cache;
 import org.jboss.cache.CacheStatus;
+import org.jboss.cache.DataContainer;
 import org.jboss.cache.Fqn;
+import org.jboss.cache.InternalNode;
 import org.jboss.cache.Node;
 import org.jboss.cache.config.Configuration.CacheMode;
+import org.jboss.cache.config.EvictionAlgorithmConfig;
 import org.jboss.cache.config.EvictionRegionConfig;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
+import org.jboss.cache.eviction.FIFOAlgorithmConfig;
 import org.jboss.cache.jmx.JmxRegistrationManager;
 import org.picocontainer.Startable;
 
@@ -418,11 +422,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
    private final CacheActionNonTxAware<Long, Void> getSize = new CacheActionNonTxAware<Long, Void>()
    {
+      @SuppressWarnings("unchecked")
       @Override
       protected Long execute(Void arg) throws RuntimeException
       {
-         // Total number of JBC nodes in the cache - the total amount of resident nodes
-         return numNodes(cache.getNode(rootFqn)) - 10;
+         DataContainer container = cache.getComponentRegistry().getComponent(DataContainer.class);
+         // Total number of JBC leaf nodes in the cache
+         return numNodes(container.peekInternalNode(rootFqn, false));
       }
    };
       
@@ -599,12 +605,22 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       // looking over all eviction configurations till the end or till some expiration algorithm subclass not found.
       for (EvictionRegionConfig evictionRegionConfig : evictionConfigurations)
       {
-         if (evictionRegionConfig.getEvictionAlgorithmConfig() instanceof ExpirationAlgorithmConfig)
+         EvictionAlgorithmConfig config = evictionRegionConfig.getEvictionAlgorithmConfig();
+         if (config instanceof ExpirationAlgorithmConfig)
          {
             // force set expiration key to default value in all Expiration configurations (if any)
             ((ExpirationAlgorithmConfig)evictionRegionConfig.getEvictionAlgorithmConfig())
                .setExpirationKeyName(ExpirationAlgorithmConfig.EXPIRATION_KEY);
             useExpiration = true;
+         }
+         else if (config instanceof FIFOAlgorithmConfig)
+         {
+            FIFOAlgorithmConfig fifoConfig = (FIFOAlgorithmConfig)config;
+            if (fifoConfig.getMinTimeToLive() > 0)
+            {
+               LOG.warn("The FIFO algorithm with a minTimeToLive greater than 0 can cause a memory leak, " +
+               		"please use another eviction algorithm or set the minTimeToLive to 0.");
+            }
          }
       }
 
@@ -1395,16 +1411,42 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    }
 
    /**
-    * Evaluates the total amount of sub-nodes that the given node contains 
+    * Evaluates the total amount of leaf nodes that the given node contains 
     */
-   private static long numNodes(Node<Serializable, Object> n)
+   private static long numNodes(InternalNode<Serializable, Object> n)
    {
-      long count = 1;// for n
+      long count = 0;
       if (n != null)
       {
-         for (Node<Serializable, Object> child : n.getChildren())
+         Set<InternalNode<Serializable, Object>> children = n.getChildren();
+         if (children.isEmpty())
          {
-            count += numNodes(child);
+            Fqn<?> fqn = n.getFqn();
+            int size = fqn.size();
+            if (size < 3)
+            {
+               return 0;
+            }
+            else if (size > 3)
+            {
+               return 1;
+            }
+            else
+            {
+               if (fqn.get(1).equals(CHILD_NODES) || fqn.get(1).equals(CHILD_PROPS)
+                  || fqn.get(1).equals(CHILD_NODES_BY_PATTERN_LIST) || fqn.get(1).equals(CHILD_PROPS_BY_PATTERN_LIST))
+               {
+                  return 0;
+               }
+               return 1;
+            }
+         }
+         else
+         {
+            for (InternalNode<Serializable, Object> child : children)
+            {
+               count += numNodes(child);
+            }
          }
       }
       return count;
