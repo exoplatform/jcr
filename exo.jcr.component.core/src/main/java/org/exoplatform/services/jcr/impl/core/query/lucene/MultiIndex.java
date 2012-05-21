@@ -1839,12 +1839,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private boolean checkVolatileCommit() throws IOException
    {
-      //      if (volatileIndex.getRamSizeInBytes() >= handler.getMaxVolatileIndexSize())
+      if (volatileIndex.getRamSizeInBytes() >= handler.getMaxVolatileIndexSize())
       {
          commitVolatileIndex();
          return true;
       }
-      //      return false;
+      return false;
    }
 
    /**
