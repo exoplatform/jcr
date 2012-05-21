@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
-import org.exoplatform.services.jcr.ext.distribution.DataDistributionMode;
 import org.exoplatform.services.jcr.ext.repository.creation.DBCreationProperties;
 import org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationException;
 import org.exoplatform.services.jcr.ext.repository.creation.RepositoryCreationService;
@@ -49,7 +48,6 @@ public class TestRepositoryCreationServiceInClusterNode1 extends AbstractBackupT
 {
    public void testCreateRepositorySingleDBWithSpecificCreationProps() throws Exception
    {
-      log.info("Node1: Waits the second node");
       Thread.sleep(60000);
       
       Map<String, String> connProps = new HashMap<String, String>();
@@ -110,7 +108,6 @@ public class TestRepositoryCreationServiceInClusterNode1 extends AbstractBackupT
       RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
       assertNotNull(repoService.getConfig().getRepositoryConfiguration(tenantName));
 
-      log.info("Node1: Repository has been created");
       Thread.sleep(60000);
       
       // remove repository
@@ -136,8 +133,6 @@ public class TestRepositoryCreationServiceInClusterNode1 extends AbstractBackupT
       {
          // expected behavior, repository should be missing 
       }
-      
-      log.info("Node1: Repository removed");
    }
 
    @Override

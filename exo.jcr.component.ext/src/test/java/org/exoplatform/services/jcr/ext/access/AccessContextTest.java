@@ -76,7 +76,6 @@ public class AccessContextTest extends BaseStandaloneTest
       }
       // Next code is waiting for shutting down of all the threads
       boolean isNeedWait = true;
-      int totalErrors = 0;
       while (isNeedWait)
       {
          isNeedWait = false;
@@ -90,14 +89,7 @@ public class AccessContextTest extends BaseStandaloneTest
             }
          }
          Thread.sleep(100);
-
       }
-      for (JCRClient4AccessContext client4AccessContextTest : clients)
-      {
-
-         totalErrors += client4AccessContextTest.errorsCount;
-      }
-      log.info("Total rezult try=" + MULTI_THIARD_OPERATIONS * THREAD_COUNT + " errors=" + totalErrors);
    }
 
    protected class JCRClient4AccessContext extends Thread
@@ -107,8 +99,6 @@ public class AccessContextTest extends BaseStandaloneTest
       private SessionImpl adminSession;
 
       private SessionImpl userSession;
-
-      private int errorsCount;
 
       private Log log = ExoLogger.getLogger("exo.jcr.component.ext.JCRClient4AccessContextTest");
 
@@ -120,7 +110,6 @@ public class AccessContextTest extends BaseStandaloneTest
             systemSession = repository.getSystemSession();
             adminSession = repository.getSystemSession();
             userSession = (SessionImpl)repository.login(credentials, "ws");
-            log.debug("Thread created");
          }
          catch (Exception e)
          {
@@ -134,22 +123,9 @@ public class AccessContextTest extends BaseStandaloneTest
          Node adminNode = adminSession.getRootNode().getNode("testMultiACT");
          Node userNode = userSession.getRootNode().getNode("testMultiACT");
 
-         if (sysNode.getProperties().getSize() != MULTI_THIARD_OPERATIONS + 1)
-         {
-            errorsCount++;
-         }
-         if (adminNode.getProperties().getSize() != MULTI_THIARD_OPERATIONS + 1)
-         {
-            errorsCount++;
-         }
-
          for (PropertyIterator i = userNode.getProperties(); i.hasNext();)
          {
-            Property prop = i.nextProperty();
-            if (prop.getName().indexOf("deny") > -1)
-            {
-               errorsCount++;
-            }
+            i.nextProperty();
          }
       }
 
@@ -161,19 +137,17 @@ public class AccessContextTest extends BaseStandaloneTest
 
          for (NodeIterator i = sysNode.getNodes(); i.hasNext();)
          {
-            Node prop = i.nextNode();
-
+            i.nextNode();
          }
          for (PropertyIterator i = adminNode.getProperties(); i.hasNext();)
          {
             Property prop = i.nextProperty();
             try
             {
-               log.info(prop.getValue().getString());
+               prop.getValue().getString();
             }
             catch (RepositoryException e)
             {
-               errorsCount++;
                log.error("Exception must not to throw");
             }
          }
@@ -182,10 +156,9 @@ public class AccessContextTest extends BaseStandaloneTest
             Property prop = i.nextProperty();
             try
             {
-               log.info(prop.getValue().getString());
+               prop.getValue().getString();
                if (prop.getName().indexOf("deny") > -1)
                {
-                  errorsCount++;
                   log.error("Exception must throw");
                }
             }
@@ -218,10 +191,6 @@ public class AccessContextTest extends BaseStandaloneTest
          {
             e.printStackTrace();
             log.error("Error");
-         }
-         if (errorsCount > 0)
-         {
-            log.info("errorsCount = " + errorsCount);
          }
       }
 
