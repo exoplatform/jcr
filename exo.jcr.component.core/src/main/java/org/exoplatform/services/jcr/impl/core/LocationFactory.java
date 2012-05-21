@@ -276,7 +276,7 @@ public class LocationFactory
    {
       if (ch == '|')
       {
-         log.debug("Path entry: \"" + str + "\" contains illegal char: \"" + ch + "\"");
+         log.info("Path entry: \"" + str + "\" contains illegal char: \"" + ch + "\"");
       }
 
       return !((ch == '\t') || (ch == '\n') || (ch == '\f') || (ch == '\r') || (ch == ' ') || (ch == '/')

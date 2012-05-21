@@ -769,16 +769,31 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
       if (blockingUsers <= 0)
       {
          // full access cache
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug(this.name + " Create unblocking cache map.");
+         }
+
          return new CacheMap<CacheKey, CacheValue>(maxSize, LOAD_FACTOR);
       }
       else if (blockingUsers == 1)
       {
          // per user locked cache (get-lock)
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug(this.name + " Create per-user blocking cache map.");
+         }
+
          return new BlockingCacheMap<CacheKey, CacheValue>(maxSize, LOAD_FACTOR);
       }
       else
       {
          // per users (count) locked cache (get-locks)
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug(this.name + " Create per-users-group blocking cache map.");
+         }
+
          return new GroupBlockingCacheMap<CacheKey, CacheValue>(maxSize, LOAD_FACTOR, blockingUsers);
       }
    }
@@ -810,20 +825,23 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
          {
             double rel =
                st.getMiss() > 0 && st.getHits() > 0 ? (Math.round((10000d * st.getHits()) / st.getMiss())) / 10000d : 0;
-               // LinkedWorkspaceStorageCacheImpl is going to be marked as deprecated. Disable logging.
-//            LOG.info("Cache "
-//               + name
-//               + ": relevancy "
-//               + rel
-//               + " (hits:"
-//               + st.getHits()
-//               + ", miss:"
-//               + st.getMiss()
-//               + "), get:"
-//               + Math.round((st.getHits() + st.getMiss())
-//                  / (st.getTotalGetTime() > 0 ? st.getTotalGetTime() / 1000d : 1)) + "oper/sec ("
-//               + (st.getTotalGetTime() / 1000d) + "sec)" + ", size:" + st.getSize() + " (max " + st.getMaxSize() + ")"
-//               + ", childs(nodes:" + st.getNodesSize() + ", properties:" + st.getPropertiesSize() + ")");
+
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug("Cache "
+                  + name
+                  + ": relevancy "
+                  + rel
+                  + " (hits:"
+                  + st.getHits()
+                  + ", miss:"
+                  + st.getMiss()
+                  + "), get:"
+                  + Math.round((st.getHits() + st.getMiss())
+                     / (st.getTotalGetTime() > 0 ? st.getTotalGetTime() / 1000d : 1)) + "oper/sec ("
+                  + (st.getTotalGetTime() / 1000d) + "sec)" + ", size:" + st.getSize() + " (max " + st.getMaxSize()
+                  + ")" + ", childs(nodes:" + st.getNodesSize() + ", properties:" + st.getPropertiesSize() + ")");
+            }
          }
          catch (Throwable e)
          {
