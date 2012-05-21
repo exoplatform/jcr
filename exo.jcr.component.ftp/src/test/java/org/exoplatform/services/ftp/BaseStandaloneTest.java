@@ -111,8 +111,6 @@ public abstract class BaseStandaloneTest extends TestCase
 
    protected void tearDown() throws Exception
    {
-
-      log.info("tearDown() BEGIN " + getClass().getName() + "." + getName());
       if (session != null)
       {
          try
@@ -339,7 +337,7 @@ public abstract class BaseStandaloneTest extends TestCase
       }
       tempOut.close();
       testFile.deleteOnExit(); // delete on test exit
-      log.info("Temp file created: " + testFile.getAbsolutePath() + " size: " + testFile.length());
+
       return testFile;
    }
 

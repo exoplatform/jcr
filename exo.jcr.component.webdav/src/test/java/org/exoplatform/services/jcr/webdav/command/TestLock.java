@@ -84,11 +84,6 @@ public class TestLock extends BaseStandaloneTest
       LockResultResponseEntity entity = (LockResultResponseEntity)containerResponse.getEntity();
       entity.write(outputStream);
 
-      System.out.println("\n=Lock method response body (add lock)=====");
-      System.out.println("==========================================");
-      System.out.println(outputStream.toString());
-      System.out.println("==========================================\n");
-
       containerResponse = service("DELETE", getPathWS() + path, "", null, null);
 
       assertEquals(HTTPStatus.LOCKED, containerResponse.getStatus());
@@ -143,11 +138,6 @@ public class TestLock extends BaseStandaloneTest
       outputStream = new ByteArrayOutputStream();
       entity = (LockResultResponseEntity)containerResponse.getEntity();
       entity.write(outputStream);
-
-      System.out.println("\n=Lock method response body (refresh lock)=");
-      System.out.println("==========================================");
-      System.out.println(outputStream.toString());
-      System.out.println("==========================================\n");
 
       // add lock-token to current session and unlock the node 
       session.addLockToken(lockToken);
