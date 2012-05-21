@@ -1640,7 +1640,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          public Void run() throws Exception
          {
-            synchronized (this)
+            synchronized (MultiIndex.this)
             {
                // commit volatile index
                executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
