@@ -2144,11 +2144,7 @@ public class TestImport extends AbstractImportTest
       
       versionableNode.deleteOnExit();
       versionHistory.deleteOnExit();
-      
-      System.out.println("VersionNode export size : " + versionableNode.length());
-      System.out.println("VersionHistory export size : " + versionHistory.length());
-      
-      
+
       // restore node content
       Node restoreRoot = testRoot.addNode("restRoot");
       testRoot.save();

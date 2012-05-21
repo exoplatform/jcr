@@ -463,7 +463,6 @@ public class TestDataDistributionManager extends BaseStandaloneTest
    
    public void testMultiThreading(final DataDistributionType type, final String dataIdPrefix) throws Exception
    {
-      long time = System.currentTimeMillis();
       final int totalElement = 50;
       final int totalTimes = 3;
       int reader = 20;
@@ -618,7 +617,6 @@ public class TestDataDistributionManager extends BaseStandaloneTest
          }
          throw errors.get(0);
       }
-      System.out.println("Total Time for '" + type.getClass().getSimpleName() + "' = " + (System.currentTimeMillis() - time));
    }
 
    public void testMigration() throws Exception

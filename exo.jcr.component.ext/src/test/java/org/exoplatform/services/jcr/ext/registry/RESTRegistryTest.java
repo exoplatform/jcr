@@ -88,8 +88,6 @@ public class RESTRegistryTest extends BaseStandaloneTest
       // assertEquals(1, list.size());
       // assertEquals(3, list.get(0).getResourceMethods().size());
 
-      log.info("-----REST-----");
-
       repositoryService.setCurrentRepositoryName("db1");
       DummyContainerResponseWriter wr = new DummyContainerResponseWriter();
       URI reqUri = new URI(baseUri.toString() + "/registry/");
@@ -97,7 +95,6 @@ public class RESTRegistryTest extends BaseStandaloneTest
       ContainerResponse cres =
          request(handler, wr, "GET", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(200, cres.getStatus());
-      log.info(new String(wr.getBody()));
 
       // request to exo:services/exo_service
       // response status should be 404 (NOT_FOUND)
@@ -121,7 +118,6 @@ public class RESTRegistryTest extends BaseStandaloneTest
       reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/exo_service");
       cres = request(handler, wr, "GET", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(200, cres.getStatus());
-      log.info(new String(wr.getBody()));
 
       // recreate exo:services/exo_service
       wr.reset();
@@ -181,7 +177,6 @@ public class RESTRegistryTest extends BaseStandaloneTest
       reqUri = new URI(baseUri.toString() + "/registry/" + RegistryService.EXO_SERVICES + "/group/test");
       cres = request(handler, wr, "GET", reqUri, baseUri, null, new InputHeadersMap(new MultivaluedMapImpl()));
       assertEquals(200, cres.getStatus());
-      log.info(new String(wr.getBody()));
 
       // remove
       wr.reset();

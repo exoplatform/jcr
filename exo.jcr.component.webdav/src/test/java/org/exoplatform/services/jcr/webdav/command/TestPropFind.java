@@ -123,7 +123,6 @@ public class TestPropFind extends BaseStandaloneTest
 
       ByteArrayOutputStream bas = new ByteArrayOutputStream();
       ((PropFindResponseEntity)resp.getEntity()).write(bas);
-      System.out.println(">>>>>>>>>>RESSSSSSSSSSSP>>>>>>>>>>>>>>> " + new String(bas.toByteArray()));
 
    }
 
@@ -161,12 +160,6 @@ public class TestPropFind extends BaseStandaloneTest
       PropFindResponseEntity entity = (PropFindResponseEntity)response.getEntity();
       entity.write(outputStream);
       String resp = outputStream.toString("UTF-8");
-
-      System.out.println("=======PropFind response==========");
-      System.out.println(resp);
-      System.out.println("=======Decoded file name==========");
-      System.out.println(decodedfileName);
-      System.out.println("==================================");
 
       assertTrue(resp.contains(encodedfileName));
       assertTrue(resp.contains(decodedfileName));
@@ -322,7 +315,7 @@ public class TestPropFind extends BaseStandaloneTest
       PropFindResponseEntity entity = (PropFindResponseEntity)responseFind.getEntity();
       entity.write(outputStream);
       String find = outputStream.toString();
-      System.out.println("\n" + find);
+
       assertTrue(find.contains("D:lockdiscovery"));
       assertTrue(find.contains("D:supported-method-set"));
 

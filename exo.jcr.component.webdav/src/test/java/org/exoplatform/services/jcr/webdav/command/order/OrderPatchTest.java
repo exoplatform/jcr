@@ -56,11 +56,6 @@ public class OrderPatchTest extends BaseStandaloneTest
          String requiredName = nodes[pos++];
          String nodeName = iterator.nextNode().getName();
 
-         if (!requiredName.equals(nodeName))
-         {
-            System.out.println("Node [" + requiredName + "] not in then same position with [" + nodeName + "]");
-         }
-
          assertEquals(requiredName, nodeName);
       }
    }

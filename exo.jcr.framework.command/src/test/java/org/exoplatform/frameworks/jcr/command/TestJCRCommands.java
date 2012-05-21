@@ -86,29 +86,21 @@ public class TestJCRCommands extends TestCase
    {
       Iterator cs = cservice.getCatalog().getNames();
       assertTrue(cs.hasNext());
-      while (cs.hasNext())
-      {
-         System.out.println(cs.next());
-      }
    }
 
    public void testAddNode() throws Exception
    {
 
       AddNodeCommand addNode = (AddNodeCommand)cservice.getCatalog().getCommand("addNode");
-      System.out.println(" " + addNode);
+
       ctx.put("currentNode", "/");
       ctx.put(addNode.getPathKey(), "test");
       addNode.execute(ctx);
-
-      System.out.println(">>> " + ctx.get(addNode.getResultKey()));
 
       SaveCommand save = (SaveCommand)cservice.getCatalog().getCommand("save");
       // ctx.remove(save.getPathKey());
       ctx.put(addNode.getPathKey(), "/");
       save.execute(ctx);
-
-      System.out.println(">>> SAVE >>> ");
    }
 
    public void testSetProperty() throws Exception
@@ -122,8 +114,6 @@ public class TestJCRCommands extends TestCase
       ctx.put("multiValued", Boolean.FALSE);
 
       c.execute(ctx);
-
-      System.out.println("> set property>> " + ctx.get("result"));
 
       Command save = cservice.getCatalog().getCommand("save");
       save.execute(ctx);
@@ -156,8 +146,6 @@ public class TestJCRCommands extends TestCase
 
       c.execute(ctx);
 
-      System.out.println(">>> Resource >>> " + ctx.get("result"));
-
       Command save = cservice.getCatalog().getCommand("save");
       ctx.put("path", "/");
       save.execute(ctx);
@@ -170,8 +158,5 @@ public class TestJCRCommands extends TestCase
       ctx.put("currentNode", "/");
       ctx.put("path", "test");
       cmd.execute(ctx);
-
-      System.out.println("RESULT >>>>>> " + ctx.get("result"));
-
    }
 }

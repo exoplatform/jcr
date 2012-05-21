@@ -92,7 +92,6 @@ public class JcrURLConnectionTest extends BaseStandaloneTest
       byte[] b = new byte[0x2000];
       in.read(b);
       in.close();
-      log.info(new String(b));
    }
 
    public void testNtFileNodeRepresentation() throws Exception
@@ -103,9 +102,7 @@ public class JcrURLConnectionTest extends BaseStandaloneTest
       conn.setDoOutput(false);
 
       assertEquals("text/plain", conn.getContentType());
-      log.info(conn.getLastModified());
       compareStream(conn.getInputStream(), new ByteArrayInputStream(data.getBytes()));
-
    }
 
 }

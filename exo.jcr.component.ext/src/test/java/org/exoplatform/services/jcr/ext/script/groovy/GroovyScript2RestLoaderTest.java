@@ -322,7 +322,6 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       ContainerResponse cres =
          launcher.service("POST", "/script/groovy/validate/%5Bno-name%5D", "", headers, script.getBytes(), null);
       assertEquals(400, cres.getStatus());
-      System.out.println(cres.getEntity());
 
       script = "public class Test { def a = 0\ndef b = 1\n }\n";
       cres = launcher.service("POST", "/script/groovy/validate/%5Bno-name%5D", "", headers, script.getBytes(), null);
@@ -338,7 +337,6 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       ContainerResponse cres =
          launcher.service("POST", "/script/groovy/validate/", "", headers, script.getBytes(), null);
       assertEquals(400, cres.getStatus());
-      System.out.println(cres.getEntity());
 
       script = "public class Test { def a = 0\ndef b = 1\n }\n";
       cres = launcher.service("POST", "/script/groovy/validate/", "", headers, script.getBytes(), null);
@@ -357,7 +355,6 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       ContainerResponse cres =
          launcher.service("POST", "/script/groovy/validate/Test", "", headers, script.getBytes(), null);
       assertEquals(400, cres.getStatus());
-      System.out.println(cres.getEntity());
    }
 
    public void testValidateExtClassPath_File() throws Exception

@@ -225,7 +225,6 @@ public abstract class BaseFtpTest extends BaseStandaloneTest
       {
          outputCommand.write(command + "\r\n");
          outputCommand.flush();
-         System.out.println("> " + command);
       }
       catch (IOException e)
       {
@@ -253,7 +252,7 @@ public abstract class BaseFtpTest extends BaseStandaloneTest
       }
 
       String response = buff.toString();
-      System.out.println("< " + response);
+
       return response;
    }
 
