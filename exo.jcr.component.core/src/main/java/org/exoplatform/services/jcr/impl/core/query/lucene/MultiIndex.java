@@ -1640,7 +1640,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          public Void run() throws Exception
          {
-            synchronized (this)
+            synchronized (MultiIndex.this)
             {
                // commit volatile index
                executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
@@ -1839,12 +1839,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    private boolean checkVolatileCommit() throws IOException
    {
-      if (volatileIndex.getRamSizeInBytes() >= handler.getMaxVolatileIndexSize())
+      //      if (volatileIndex.getRamSizeInBytes() >= handler.getMaxVolatileIndexSize())
       {
          commitVolatileIndex();
          return true;
       }
-      return false;
+      //      return false;
    }
 
    /**
