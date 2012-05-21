@@ -78,7 +78,7 @@ public class TestPut extends BaseStandaloneTest
 
    }
 
-   public void testPutFileContentTypeHeader() throws Exception
+   public void testPutFileNodeTypeHeader() throws Exception
    {
       String content = TestUtils.getFileContent();
 

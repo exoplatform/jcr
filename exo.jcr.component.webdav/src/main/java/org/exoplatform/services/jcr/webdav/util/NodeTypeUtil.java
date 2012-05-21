@@ -35,23 +35,6 @@ import javax.jcr.nodetype.NodeType;
 
 public class NodeTypeUtil
 {
-
-   /**
-    * Returns the NodeType of node according to the File-NodeType header.
-    * 
-    * @param fileNodeTypeHeader File-NodeType header
-    * @return Nodetype
-    * @throws NoSuchNodeTypeException {@link NoSuchNodeTypeException}
-    */
-   public static String getFileNodeType(String fileNodeTypeHeader) throws NoSuchNodeTypeException
-   {
-      if (fileNodeTypeHeader != null && !fileNodeTypeHeader.equals(WebDavConst.NodeTypes.NT_FILE))
-         throw new NoSuchNodeTypeException("Unsupported file node type: " + fileNodeTypeHeader);
-      else
-         // Default nodetype for the file.
-         return null;
-   }
-
    /**
     * Returns the NodeType of content node according to the Content-NodeType
     * header.
