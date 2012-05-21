@@ -196,12 +196,6 @@ public class TestPropPatch extends BaseStandaloneTest
       entity.write(outputStream);
       String resp = outputStream.toString();
 
-      System.out.println("=======PropPatch response=========");
-      System.out.println(resp);
-      System.out.println("=======Decoded file name==========");
-      System.out.println(decodedfileName);
-      System.out.println("==================================");
-
       assertTrue(resp.contains(encodedfileName));
       assertFalse(resp.contains(decodedfileName));
    }

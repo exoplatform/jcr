@@ -33,7 +33,6 @@ public class DummyAction implements Action
 
    public boolean execute(Context ctx) throws Exception
    {
-      System.out.println("EXECUTE !!! ");
       return false;
    }
 

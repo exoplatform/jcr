@@ -36,7 +36,6 @@ public class TestRepositoryCreationServiceInClusterNode2 extends AbstractBackupT
 {
    public void testCreateRepositorySingleDBWithSpecificCreationProps() throws Exception
    {
-      log.info("Node2: Waits for the repository creation");
       Thread.sleep(60000);
       
       String tenantName = "tenant_4";
@@ -50,7 +49,6 @@ public class TestRepositoryCreationServiceInClusterNode2 extends AbstractBackupT
             .getSystemWorkspaceName());
       session.getRootNode();
 
-      log.info("Node2: test passed. I have root node");
       Thread.sleep(120000);
 
       RepositoryService repoService = (RepositoryService)this.container.getComponentInstance(RepositoryService.class);
@@ -64,8 +62,6 @@ public class TestRepositoryCreationServiceInClusterNode2 extends AbstractBackupT
       {
          // expected behavior, repository should be missing 
       }
-
-      log.info("Node2: Repository removed");
    }
 
    @Override

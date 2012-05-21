@@ -203,7 +203,6 @@ public class TestUtils
    {
       Query query = session.getWorkspace().getQueryManager().createQuery(queryString, "sql");
       QueryResult queryResult = query.execute();
-      System.out.println("TestUtils.find()" + queryResult.getNodes().getSize());
    }
 
    public static String getFileNodeType(Session session, String path) throws PathNotFoundException, RepositoryException

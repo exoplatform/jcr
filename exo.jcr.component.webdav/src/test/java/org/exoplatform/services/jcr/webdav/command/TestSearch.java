@@ -102,9 +102,7 @@ public class TestSearch extends BaseStandaloneTest
       entity.write(outputStream);
       outputStream.toByteArray();
       List<String> found = parseNodeNames(outputStream.toByteArray());
-      System.out.println(found);
       assertEquals(1, found.size());
-      
    }
 
    /**
@@ -130,12 +128,6 @@ public class TestSearch extends BaseStandaloneTest
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       entity.write(outputStream);
       String resp = outputStream.toString("UTF-8");
-
-      System.out.println("=======Search response============");
-      System.out.println(resp);
-      System.out.println("=======Decoded file name==========");
-      System.out.println(decodedfileName);
-      System.out.println("==================================");
 
       assertTrue(resp.contains(encodedfileName));
       assertTrue(resp.contains(decodedfileName));

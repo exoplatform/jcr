@@ -265,8 +265,6 @@ public class TestAclCommand extends BaseStandaloneTest
       testNode.setPermissions(defaultPermissions);
       session.save();
 
-      System.out.println("Node before: " + testNode);
-
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.putSingle("Depth", "0");
       headers.putSingle(HttpHeaders.CONTENT_TYPE, "text/xml; charset=\"utf-8\"");
@@ -302,8 +300,6 @@ public class TestAclCommand extends BaseStandaloneTest
 
       session.refresh(false);
       testNode = (NodeImpl)root.getNode(TEST_NODE_NAME);
-
-      System.out.println("Node after: " + testNode);
 
       checkPermissionSet(testNode, IdentityConstants.ANY, PermissionType.ADD_NODE);
       checkPermissionSet(testNode, IdentityConstants.ANY, PermissionType.SET_PROPERTY);

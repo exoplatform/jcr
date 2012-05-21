@@ -124,7 +124,7 @@ public class TestJCRClientCommands extends TestCase
       params.add("ws");
       ctx.put(PARAMETERS_KEY, params);
       loginCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertEquals(ctx.getCurrentItem(), ctx.getSession().getRootNode());
       assertEquals("ws", ctx.getSession().getWorkspace().getName());
    }
@@ -137,7 +137,7 @@ public class TestJCRClientCommands extends TestCase
       params.add("/testJCRClientCommands");
       ctx.put(PARAMETERS_KEY, params);
       getItemCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertEquals(ctx.getCurrentItem().getName(), "testJCRClientCommands");
    }
 
@@ -148,7 +148,7 @@ public class TestJCRClientCommands extends TestCase
       params.add("childOftestJCRClientCommands");
       ctx.put(PARAMETERS_KEY, params);
       getNodeCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertEquals(ctx.getCurrentItem().getName(), "childOftestJCRClientCommands");
    }
 
@@ -159,13 +159,12 @@ public class TestJCRClientCommands extends TestCase
       params.add("testProperty");
       ctx.put(PARAMETERS_KEY, params);
       getPropertyCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertEquals(((Property)ctx.getCurrentItem()).getValue().getString(), "test");
    }
 
    public void testGetCtxNodes() throws Exception
    {
-      System.out.println("=== ls ===");
       params.clear();
       // current item is Property, need to go to Node
       GetItemCommand getItemCommand = (GetItemCommand)cservice.getCatalog("CLI").getCommand("getitem");
@@ -175,7 +174,7 @@ public class TestJCRClientCommands extends TestCase
       // ok, now currentItem is Node "/testJCRClientCommands"
       GetNodesCommand getNodesCommand = (GetNodesCommand)cservice.getCatalog("CLI").getCommand("getnodes");
       getNodesCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertTrue(ctx.getOutput().contains("childOftestJCRClientCommands"));
    }
 
@@ -184,7 +183,7 @@ public class TestJCRClientCommands extends TestCase
       GetPropertiesCommand getPropertiesCommand =
          (GetPropertiesCommand)cservice.getCatalog("CLI").getCommand("getproperties");
       getPropertiesCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertTrue(ctx.getOutput().contains("jcr:primaryType"));
    }
 
@@ -195,7 +194,7 @@ public class TestJCRClientCommands extends TestCase
       params.add("childOftestJCRClientCommands1");
       ctx.put(PARAMETERS_KEY, params);
       addNodeCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertEquals(ctx.getCurrentItem().getName(), "childOftestJCRClientCommands1");
    }
 
@@ -207,7 +206,7 @@ public class TestJCRClientCommands extends TestCase
       params.add("nt:unstructured");
       ctx.put(PARAMETERS_KEY, params);
       addNodeCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertEquals(((Node)ctx.getCurrentItem()).getPrimaryNodeType().getName(), "nt:unstructured");
    }
 
@@ -219,7 +218,7 @@ public class TestJCRClientCommands extends TestCase
       params.add("propertyValue1");
       ctx.put(PARAMETERS_KEY, params);
       setPropertyCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertEquals(((Property)ctx.getCurrentItem()).getName(), "propertyName1");
       assertEquals(((Property)ctx.getCurrentItem()).getValue().getString(), "propertyValue1");
    }
@@ -240,7 +239,7 @@ public class TestJCRClientCommands extends TestCase
       params.add((new Integer(PropertyType.LONG)).toString());
       ctx.put(PARAMETERS_KEY, params);
       setPropertyCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertEquals(((Property)ctx.getCurrentItem()).getName(), "propertyName2");
       assertEquals(((Property)ctx.getCurrentItem()).getValue().getLong(), 12345);
    }
@@ -250,7 +249,7 @@ public class TestJCRClientCommands extends TestCase
       GetContextInfoCommand getContextInfoCommand =
          (GetContextInfoCommand)cservice.getCatalog("CLI").getCommand("getcontextinfo");
       getContextInfoCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertTrue(ctx.getOutput().contains("root"));
       assertTrue(ctx.getOutput().contains("ws"));
    }
@@ -259,7 +258,7 @@ public class TestJCRClientCommands extends TestCase
    {
       RemoveItemCommand removeItemCommand = (RemoveItemCommand)cservice.getCatalog("CLI").getCommand("remove");
       removeItemCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertEquals(((Node)ctx.getCurrentItem()).getName(), "childOftestJCRClientCommands2");
    }
 
@@ -271,7 +270,7 @@ public class TestJCRClientCommands extends TestCase
       params.add("/copyOftestJCRClientCommands");
       ctx.put(PARAMETERS_KEY, params);
       copyNodeCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertNotNull(ctx.getSession().getRootNode().getNode("copyOftestJCRClientCommands"));
    }
 
@@ -283,7 +282,7 @@ public class TestJCRClientCommands extends TestCase
       params.add("/newCopyOftestJCRClientCommands");
       ctx.put(PARAMETERS_KEY, params);
       moveNodeCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertNotNull(ctx.getSession().getRootNode().getNode("newCopyOftestJCRClientCommands"));
    }
 
@@ -294,7 +293,7 @@ public class TestJCRClientCommands extends TestCase
       // params.add("addnode");
       ctx.put(PARAMETERS_KEY, params);
       helpCommand.execute(ctx);
-      System.out.println("[out]:" + ctx.getOutput());
+
       assertTrue(ctx.getOutput().contains("addnode"));
    }
 

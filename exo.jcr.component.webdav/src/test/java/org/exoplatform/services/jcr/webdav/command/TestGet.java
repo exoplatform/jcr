@@ -188,8 +188,6 @@ public class TestGet extends BaseStandaloneTest
       ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
       XSLTout.write(byteOut);
 
-      System.out.println("\n" + byteOut.toString() + "\n");
-
       assertTrue(byteOut.toString().contains(strToTest));
 
    }
