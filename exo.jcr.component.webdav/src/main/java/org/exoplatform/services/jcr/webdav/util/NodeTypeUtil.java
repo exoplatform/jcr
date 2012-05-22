@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.webdav.WebDavConst;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Set;
 
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
@@ -35,6 +36,30 @@ import javax.jcr.nodetype.NodeType;
 
 public class NodeTypeUtil
 {
+   /**
+    * Returns parsed nodeType obtained from node-type header.
+    * This method is unified for files and folders.
+    * 
+    * @param nodeTypeHeader 
+    * @param defaultNodeType
+    * @param allowedNodeTypes
+    * @return
+    * @throws NoSuchNodeTypeException is thrown if node-type header contains not allowed node type
+    */
+   public static String getNodeType(String nodeTypeHeader, String defaultNodeType, Set<String> allowedNodeTypes)
+      throws NoSuchNodeTypeException
+   {
+      if (nodeTypeHeader == null)
+      {
+         return defaultNodeType;
+      }
+      if (allowedNodeTypes.contains(nodeTypeHeader))
+      {
+         return nodeTypeHeader;
+      }
+
+      throw new NoSuchNodeTypeException("Unsupported node type: " + nodeTypeHeader);
+   }
    /**
     * Returns the NodeType of content node according to the Content-NodeType
     * header.
