@@ -646,18 +646,9 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          List<String> tokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), tokens);
-         String folderNodeType = webDavServiceInitParams.getDefaultFolderNodeType();
-         if (folderNodeTypeHeader != null)
-         {
-            if (webDavServiceInitParams.getAllowedFolderNodeTypes().contains(folderNodeTypeHeader))
-            {
-               folderNodeType = folderNodeTypeHeader;
-            }
-            else
-            {
-               throw new NoSuchNodeTypeException("Unsupported folder node type: " + folderNodeType);
-            }
-         }
+         String folderNodeType =
+            NodeTypeUtil.getNodeType(folderNodeTypeHeader, webDavServiceInitParams.getDefaultFolderNodeType(),
+               webDavServiceInitParams.getAllowedFolderNodeTypes());
 
          return new MkColCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).mkCol(
             session, path(repoPath), folderNodeType, NodeTypeUtil.getMixinTypes(mixinTypesHeader), tokens);
@@ -956,18 +947,9 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          List<String> tokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), tokens);
 
-         String fileNodeType = webDavServiceInitParams.getDefaultFileNodeType();
-         if (fileNodeTypeHeader != null)
-         {
-            if (webDavServiceInitParams.getAllowedFileNodeTypes().contains(fileNodeTypeHeader))
-            {
-               fileNodeType = fileNodeTypeHeader;
-            }
-            else
-            {
-               throw new NoSuchNodeTypeException("Unsupported file node type: " + fileNodeTypeHeader);
-            }
-         }
+         String fileNodeType =
+            NodeTypeUtil.getNodeType(fileNodeTypeHeader, webDavServiceInitParams.getDefaultFileNodeType(),
+               webDavServiceInitParams.getAllowedFileNodeTypes());
 
          String contentNodeType = NodeTypeUtil.getContentNodeType(contentNodeTypeHeader);
          NodeTypeManager ntm = session.getWorkspace().getNodeTypeManager();
