@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Core.DBSchemacreatorserviceJDBCimplementation">
+<section id="Core.DBSchemacreatorserviceJDBCimplementation">
   <?dbhtml filename="ch-db-schema-creator-service.html"?>
 
   <title>DB Schema creator service (JDBC implementation)</title>
@@ -47,4 +47,4 @@
         PATH VARCHAR(1024) NOT NULL
         );
 CREATE INDEX JCR_IDX_MITEM_PATH ON JCR_MITEM(PATH);</programlisting>
-</chapter>
+</section>
