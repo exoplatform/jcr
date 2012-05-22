@@ -284,6 +284,7 @@ public class DBInitializer
          }
 
          postInit(connection);
+         LOG.info("DB schema of DataSource: '" + containerConfig.containerName + "' initialized succesfully");
       }
       catch (SQLException e)
       {

@@ -617,15 +617,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          throw new IOException("SearchIndex requires 'path' parameter in configuration!");
       }
-
-      // Set excludedIDs = new HashSet();
-      // if (context.getExcludedNodeId() != null)
-      // {
-      // excludedIDs.add(context.getExcludedNodeId());
-      // }
+      log.info("//" + context.getRepositoryName() + "//" + context.getWorkspaceName() + " configured index directory: "
+         + path);
 
       extractor = context.getExtractor();
-      synProvider = createSynonymProvider();//queryHandlerConfig.createSynonymProvider(cfm);
+      synProvider = createSynonymProvider();
       directoryManager = createDirectoryManager();
 
       if (context.getParentHandler() instanceof SearchIndex)
