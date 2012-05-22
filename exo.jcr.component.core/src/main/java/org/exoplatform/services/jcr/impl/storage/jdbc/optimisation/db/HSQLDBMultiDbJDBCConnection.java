@@ -17,6 +17,8 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -29,6 +31,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS
@@ -106,7 +109,16 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
    {
       return traverseQPathSQ(cpid);
    }
-
+   
+   /**
+    * {@inheritDoc}
+    */
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> itemDataFilters) throws RepositoryException,
+      IllegalStateException
+   {
+      return getDirectChildNodesData(parent, itemDataFilters);
+   }
+   
    /**
     * {@inheritDoc}
     */
@@ -145,6 +157,15 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
          return findNodesByParentIdAndComplexPatternCQ.executeQuery(query.toString());
       }
 
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException, IllegalStateException
+   {
+      return getDirectChildPropertiesData(parent, itemDataFilters);
    }
 
    /**
