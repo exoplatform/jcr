@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.IllegalACLException;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -60,6 +61,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -312,9 +314,50 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    }
 
    /**
+    * This method is similar to {@link CQJDBCStorageConnection#getChildNodesData(NodeData, List)} except that if the
+    * QPathEntryFilter is an exact name the method {@link JDBCStorageConnection#getItemData(NodeData, QPathEntry, ItemType)}
+    * will be called instead.
+    */
+   protected List<NodeData> getDirectChildNodesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException, IllegalStateException
+   {
+      checkIfOpened();
+      if (itemDataFilters.isEmpty())
+      {
+         return new ArrayList<NodeData>();
+      }
+      
+      List<NodeData> children = new ArrayList<NodeData>();
+      for (Iterator<QPathEntryFilter> it = itemDataFilters.iterator() ; it.hasNext(); )
+      {
+         QPathEntryFilter filter = it.next();
+         if (filter.isExactName())
+         {
+            NodeData data = (NodeData)getItemData(parent, filter.getQPathEntry(), ItemType.NODE);
+            if (data != null)
+            {
+               children.add(data);
+            }
+            it.remove();
+         }
+      }
+      if (!itemDataFilters.isEmpty())
+      {
+         children.addAll(getChildNodesDataInternal(parent, itemDataFilters));
+      }
+      return children;
+   }
+   
+   /**
     * {@inheritDoc}
     */
    public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+      IllegalStateException
+   {
+      return getChildNodesDataInternal(parent, pattern);
+   }
+   
+   private List<NodeData> getChildNodesDataInternal(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
       IllegalStateException
    {
       checkIfOpened();
@@ -750,10 +793,46 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    }
 
    /**
+    * This method is similar to {@link CQJDBCStorageConnection#getChildPropertiesData(NodeData, List)} except that if the
+    * QPathEntryFilter is an exact name the method {@link JDBCStorageConnection#getItemData(NodeData, QPathEntry, ItemType)}
+    * will be called instead.
+    */
+   protected List<PropertyData> getDirectChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException, IllegalStateException
+   {
+      checkIfOpened();
+      List<PropertyData> children = new ArrayList<PropertyData>();
+      for (Iterator<QPathEntryFilter> it = itemDataFilters.iterator() ; it.hasNext(); )
+      {
+         QPathEntryFilter filter = it.next();
+         if (filter.isExactName())
+         {
+            PropertyData data = (PropertyData)getItemData(parent, filter.getQPathEntry(), ItemType.PROPERTY);
+            if (data != null)
+            {
+               children.add(data);
+            }
+            it.remove();
+         }
+      }
+      if (!itemDataFilters.isEmpty())
+      {
+         children.addAll(getChildPropertiesDataInternal(parent, itemDataFilters));
+      }
+      return children;
+   }
+
+   /**
     * {@inheritDoc}
     */
    public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
       throws RepositoryException, IllegalStateException
+   {
+      return getChildPropertiesDataInternal(parent, itemDataFilters);
+   }
+      
+   private List<PropertyData> getChildPropertiesDataInternal(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+            throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
       ResultSet resultSet = null;
