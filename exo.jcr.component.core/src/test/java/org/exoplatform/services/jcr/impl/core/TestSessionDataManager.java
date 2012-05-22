@@ -66,9 +66,6 @@ public class TestSessionDataManager extends JcrImplBaseTest
       modificationManager = session.getTransientNodesManager();
       NodeImpl root = (NodeImpl)session.getRootNode();
 
-      // init some test items
-      // testRoot = (NodeImpl)root.createChildNode(TEST_ROOT, "nt:unstructured",
-      // true, true);
       TransientNodeData data =
          TransientNodeData.createNodeData(root.nodeData(), new InternalQName(null, TEST_ROOT), new InternalQName(
             Constants.NS_NT_URI, "unstructured"));
@@ -78,15 +75,10 @@ public class TestSessionDataManager extends JcrImplBaseTest
             PropertyType.NAME, false, new TransientValueData(new InternalQName(Constants.NS_NT_URI, "unstructured")));
       PropertyImpl prop1 = (PropertyImpl)modificationManager.update(ItemState.createAddedState(prop), false);
 
-      // System.out.println("Test root >>>>>> "+testRoot+" "+prop1);
-
       assertEquals(2, modificationManager.getChangesLog().getSize());
 
       modificationManager.commit(data.getQPath());
       assertEquals(0, modificationManager.getChangesLog().getSize());
-
-      // session.save();
-      // modificationManager.getTransactManager().saveItem(testRoot);
    }
 
    public void testItemReferencePool() throws Exception
@@ -95,9 +87,7 @@ public class TestSessionDataManager extends JcrImplBaseTest
       SessionDataManager.ItemReferencePool pool = modificationManager.getItemsPool();
       System.gc();
       Thread.sleep(1000);
-      // log.info(" >after commit> "+modificationManager.dump());
 
-      // root node
       assertEquals(1, pool.size()); // contains root node only
 
       NodeData parent = (NodeData)testRoot.getData();
@@ -112,7 +102,6 @@ public class TestSessionDataManager extends JcrImplBaseTest
       NodeImpl node1 = (NodeImpl)modificationManager.update(ItemState.createAddedState(data), true);
       assertEquals(2, pool.size());
       assertEquals(uuid, node1.getInternalIdentifier());
-      System.out.println("item >" + node1.getPath());
       assertTrue(pool.contains(uuid));
       // return the same value
       assertEquals(node1, pool.get(node1.getData()));
@@ -240,9 +229,6 @@ public class TestSessionDataManager extends JcrImplBaseTest
       assertNotNull(changesLog.getItemState(node1.getInternalPath()));
       assertTrue(changesLog.getItemState(node1.getInternalIdentifier()).isAdded());
 
-      // System.out.println(" > !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! after
-      // testSessionChangesLog> "+modificationManager.dump());
-
       // delete this node ... state should be DELETED
       modificationManager.delete(data);
       assertEquals(2, changesLog.getAllStates().size());
@@ -250,18 +236,12 @@ public class TestSessionDataManager extends JcrImplBaseTest
       assertEquals(2, lst.size());
       assertTrue(changesLog.getItemState(data.getIdentifier()).isDeleted());
 
-      // System.out.println(" > 2 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! after
-      // testSessionChangesLog> "+modificationManager.dump());
-
       // add the same node ... state should be ADDED again
       node1 = (NodeImpl)modificationManager.update(ItemState.createAddedState(data), true);
       assertEquals(3, changesLog.getItemStates(data.getIdentifier()).size());
       assertTrue(changesLog.getItemState(data.getIdentifier()).isAdded());
 
       assertEquals(3, changesLog.getAllStates().size());
-
-      // System.out.println(" > 3 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!! after
-      // testSessionChangesLog> "+modificationManager.dump());
 
       // ... add property to the node1
       TransientPropertyData prop =
@@ -286,9 +266,6 @@ public class TestSessionDataManager extends JcrImplBaseTest
       TransientNodeData someData =
          TransientNodeData.createNodeData(parent, new InternalQName(null, "testReadMethodsN1"), new InternalQName(
             Constants.NS_NT_URI, "unstructured"));
-      // NodeImpl node1 =
-      // (NodeImpl)modificationManager.update(ItemState.createAddedState(data),
-      // true);
 
       // add one more node
       TransientNodeData data =
@@ -324,14 +301,7 @@ public class TestSessionDataManager extends JcrImplBaseTest
       assertEquals(2, modificationManager.getChildPropertiesData(parent).size());
 
       assertEquals(1, modificationManager.getChildNodesData(parent).size());
-      // List <PropertyImpl> props =
-      // modificationManager.getChildProperties(parent, true);
-      // for(PropertyImpl p: props)
-      // System.out.println(">>>>>>>>>>>>>>>> "+p.getPath());
       assertEquals(2, modificationManager.getChildPropertiesData(parent).size());
-
-      // Collections.copy(dest, src);
-
    }
 
    public void testCommitAndRefresh() throws Exception
