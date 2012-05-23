@@ -622,13 +622,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       builder.append("value storage provider: ");
       builder.append(containerConfig.valueStorageProvider);
 
-      String str =
-         "JDBC based JCR Workspace Data container \n" + "container name: " + containerConfig.containerName + " \n"
-            + (containerConfig.isManaged ? "managed " : "") + "data source JNDI name: " + containerConfig.dbSourceName
-            + "\n" + "is multi database: " + containerConfig.dbStructureType.isMultiDatabase() + "\n"
-            + "storage version: " + containerConfig.storageVersion + "\n" + "value storage provider: "
-            + containerConfig.valueStorageProvider + "\n" + "max buffer size (bytes): " + containerConfig.maxBufferSize
-            + "\n" + "swap directory path: " + PrivilegedFileHelper.getAbsolutePath(containerConfig.swapDirectory);
       return builder.toString();
    }
 

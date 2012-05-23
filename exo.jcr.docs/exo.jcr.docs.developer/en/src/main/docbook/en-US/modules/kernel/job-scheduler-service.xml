@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
-<chapter id="Kernel.JobSchedulerService">
+<section id="Kernel.JobSchedulerService">
 <?dbhtml filename="ch-job-scheduler-service.html"?>  <title>Job Scheduler Service</title>
   <para><emphasis role="bold">Job scheduler</emphasis>  defines a job to execute a given number of times during a given period. It is a service that is in charge of unattended background executions, commonly known for historical reasons as batch processing. It is used to create and run jobs automatically and continuously, to schedule event-driven jobs and reports.</para>
   <section>
@@ -327,4 +327,4 @@ public class DumbJob implements Job {
       </listitem>
     </itemizedlist>
   </section>
-</chapter>
+</section>

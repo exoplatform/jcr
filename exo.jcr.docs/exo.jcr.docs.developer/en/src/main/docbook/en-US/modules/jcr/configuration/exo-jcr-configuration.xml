@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.eXoJCRconfiguration">
+<section id="JCR.eXoJCRconfiguration">
   <?dbhtml filename="ch-exo-jcr-configuration.html"?>
 
   <title>eXo JCR configuration</title>
 
-  <para>This chapter provides you the knowledge about eXo JCR configuration in details, including the basic and advanced configuration.</para>
+  <para>This section provides you the knowledge about eXo JCR configuration in details, including the basic and advanced configuration.</para>
 
   <section>
     <title>Related documents</title>
@@ -471,4 +471,4 @@
     understand how your repositories/workspaces are configured especially if
     you would like to overwrite the configuration for some reasons.</para>
   </section>
-</chapter>
+</section>

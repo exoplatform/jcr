@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.UsingJCR">
+<section id="JCR.UsingJCR">
   <?dbhtml filename="ch-jcr-usage.html"?>
 
   <title>Using JCR</title>
@@ -246,4 +246,4 @@ Session session = sessionProvider.getSession("workspaceName", repository);
       </itemizedlist>
     </section>
   </section>
-</chapter>
+</section>
