@@ -26,6 +26,8 @@ import org.exoplatform.services.jcr.impl.xml.XMLChar;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.lang.ref.WeakReference;
+
 import javax.jcr.RepositoryException;
 
 /**
@@ -41,13 +43,37 @@ public class LocationFactory
 
    protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.LocationFactory");
 
-   private NamespaceAccessor namespaces;
+   private final NamespaceAccessor namespaces;
+
+   private final WeakReference<? extends NamespaceAccessor> weakAccessor;
 
    public LocationFactory(NamespaceAccessor namespaces)
    {
       this.namespaces = namespaces;
+      this.weakAccessor = null;
    }
 
+   public LocationFactory(WeakReference<? extends NamespaceAccessor> weakAccessor)
+   {
+      this.namespaces = null;
+      this.weakAccessor = weakAccessor;
+   }
+
+   private NamespaceAccessor getNamespaceAccessor()
+   {
+      if (namespaces != null)
+      {
+         return namespaces;
+      }
+      NamespaceAccessor na = weakAccessor.get();
+      if (na == null)
+      {
+         throw new IllegalStateException("The namespace accessor cannot be found probably because" +
+                  " the corresponding eXo container has been removed");
+      }
+      return na;
+   }
+   
    public JCRPath createRootLocation() throws RepositoryException
    {
       return parseNames(JCRPath.ROOT_PATH, true);
@@ -114,18 +140,18 @@ public class LocationFactory
     */
    public JCRPath createJCRPath(QPath qPath) throws RepositoryException
    {
-      return JCRPath.createJCRPath(namespaces, qPath);
+      return JCRPath.createJCRPath(getNamespaceAccessor(), qPath);
    }
 
    public JCRName createJCRName(InternalQName qname) throws RepositoryException
    {
-      String prefix = namespaces.getNamespacePrefixByURI(qname.getNamespace());
+      String prefix = getNamespaceAccessor().getNamespacePrefixByURI(qname.getNamespace());
       return new JCRName(qname, prefix);
    }
 
    public String formatPathElement(QPathEntry qe) throws RepositoryException
    {
-      String prefix = namespaces.getNamespacePrefixByURI(qe.getNamespace());
+      String prefix = getNamespaceAccessor().getNamespacePrefixByURI(qe.getNamespace());
       JCRPath p = JCRPath.createJCRPath();
       p = p.addEntry(qe.getNamespace(), qe.getName(), prefix, qe.getIndex());
       return p.getEntry(0).getAsString(false);
@@ -147,7 +173,7 @@ public class LocationFactory
 
    public JCRPath.PathElement[] createRelPath(QPathEntry[] relPath) throws RepositoryException
    {
-      return JCRPath.createJCRPath(namespaces, relPath).getEntries();
+      return JCRPath.createJCRPath(getNamespaceAccessor(), relPath).getEntries();
    }
 
    private JCRPath parsePathEntry(JCRPath path, String name) throws RepositoryException
@@ -204,7 +230,7 @@ public class LocationFactory
             throw new RepositoryException("Illegal path entry: \"" + name + "\"");
          }
 
-         path = path.addEntry(namespaces.getNamespaceURIByPrefix(prefix), someName, prefix, index);
+         path = path.addEntry(getNamespaceAccessor().getNamespaceURIByPrefix(prefix), someName, prefix, index);
          return path;
 
       }
@@ -234,7 +260,7 @@ public class LocationFactory
          {
             throw new RepositoryException("Illegal relPath: \"" + path + "\"");
          }
-         jcrPath = jcrPath.addEntry(namespaces.getNamespaceURIByPrefix(""), "", "", -1);
+         jcrPath = jcrPath.addEntry(getNamespaceAccessor().getNamespaceURIByPrefix(""), "", "", -1);
       }
       else
       {
@@ -256,7 +282,7 @@ public class LocationFactory
          }
          else
          {
-            // jcrPath.addEntry(namespaces.getNamespaceURIByPrefix(""), "", "", -1);
+            // jcrPath.addEntry(getNamespaceAccessor().getNamespaceURIByPrefix(""), "", "", -1);
             return jcrPath;
          }
 

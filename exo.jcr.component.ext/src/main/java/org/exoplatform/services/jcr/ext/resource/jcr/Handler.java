@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.ext.resource.jcr;
 
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.container.ExoContainer;
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.ManageableRepository;
@@ -50,8 +52,6 @@ public class Handler extends URLStreamHandler implements Startable
    /*
     * This is implements as Startable to be independent from other services. It
     * should be guaranty created, and set special system property.
-    * Static fields repositoryService, nodeRepresentationService should be
-    * initialized once when Handler created by container.
     */
 
    /**
@@ -64,14 +64,14 @@ public class Handler extends URLStreamHandler implements Startable
    /**
     * Repository service.
     */
-   private static RepositoryService repositoryService;
+   private final RepositoryService repositoryService;
 
    /**
     * See {@link NodeRepresentationService}.
     */
-   private static NodeRepresentationService nodeRepresentationService;
+   private final NodeRepresentationService nodeRepresentationService;
 
-   private static ThreadLocalSessionProviderService threadLocalSessionProviderService;
+   private final ThreadLocalSessionProviderService threadLocalSessionProviderService;
 
    public Handler(RepositoryService rs, NodeRepresentationService nrs, ThreadLocalSessionProviderService tsps)
    {
@@ -92,6 +92,10 @@ public class Handler extends URLStreamHandler implements Startable
     */
    public Handler()
    {
+      ExoContainer container = ExoContainerContext.getCurrentContainer();
+      repositoryService = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
+      nodeRepresentationService = (NodeRepresentationService)container.getComponentInstanceOfType(NodeRepresentationService.class);
+      threadLocalSessionProviderService = (ThreadLocalSessionProviderService)container.getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
    }
 
    // URLStreamHandler

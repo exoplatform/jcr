@@ -50,10 +50,6 @@ import javax.servlet.http.HttpSession;
 public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
 {
 
-   private ConversationRegistry stateRegistry;
-
-   private SessionProviderService providerService;
-
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.framework.command.ThreadLocalSessionProviderInitializedFilter");
 
    /*
@@ -66,8 +62,8 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
    {
       ExoContainer container = getContainer();
 
-      providerService = (SessionProviderService)container.getComponentInstanceOfType(SessionProviderService.class);
-      stateRegistry = (ConversationRegistry)container.getComponentInstanceOfType(ConversationRegistry.class);
+      SessionProviderService providerService = (SessionProviderService)container.getComponentInstanceOfType(SessionProviderService.class);
+      ConversationRegistry stateRegistry = (ConversationRegistry)container.getComponentInstanceOfType(ConversationRegistry.class);
 
       HttpServletRequest httpRequest = (HttpServletRequest)request;
 
