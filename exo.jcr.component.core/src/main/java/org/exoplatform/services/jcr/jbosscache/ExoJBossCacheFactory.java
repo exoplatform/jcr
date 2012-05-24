@@ -331,6 +331,24 @@ public class ExoJBossCacheFactory<K, V>
       throws RepositoryConfigurationException
    {
       ExoContainer container = ExoContainerContext.getCurrentContainer();
+      if (CACHES.containsKey(container))
+      {
+         releaseUniqueInstance(container, cacheType, cache);
+      }
+      else
+      {
+         for (ExoContainer c : CACHES.keySet())
+         {
+            if (releaseUniqueInstance(c, cacheType, cache))
+            {
+               return;
+            }
+         }
+      }
+   }
+
+   private static <K, V>  boolean releaseUniqueInstance(ExoContainer container, CacheType cacheType, Cache<K, V> cache)
+   {
       Map<CacheType, Map<ConfigurationKey, CacheInstance>> allCacheTypes = CACHES.get(container);
       Map<ConfigurationKey, CacheInstance> caches = allCacheTypes.get(cacheType);
 
@@ -356,8 +374,10 @@ public class ExoJBossCacheFactory<K, V>
                }
                PrivilegedJBossCacheHelper.stop((Cache<Serializable, Object>)cache);
             }
+            return true;
          }
       }
+      return false;
    }
 
    /**

@@ -1655,6 +1655,90 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
   </section>
 
   <section>
+    <title>eXo Container hot reloading</title>
+
+    <para>In developing mode (that you can enable by setting the system
+    property <emphasis>exo.product.developing</emphasis> to
+    <emphasis>true</emphasis>) when you are in portal mode, it is possible to
+    hot reload all the eXo containers, one given portal container or a set of
+    portal containers.</para>
+
+    <section>
+      <title>Manual hot reloading</title>
+
+      <para>You can manually hot reload your eXo containers using the JMX
+      console and accessing to the MBean
+      <emphasis>exo:container=root</emphasis>. This MBean provides 2
+      operations related to the hot reloading which are:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis>reload()</emphasis>: This method allows to reload
+          all the containers (RootContainer included)</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis>reload(String portalContainerName)</emphasis>: This
+          method allows to reload only one given portal container</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Automatic hot reloading</title>
+
+      <para>In developing mode if for some reason a web application is
+      redeployed, the eXo kernel will detect it and if this webapp has been
+      defined as a dependency of one or several portal containers, it will
+      first check if the configuration of the RootContainer has changed if so
+      it will automatically reload everything otherwise it will reload only
+      the affected portal containers.</para>
+    </section>
+  </section>
+
+  <section>
+    <title>eXo Container hot reloading</title>
+
+    <para>In developing mode (that you can enable by setting the system
+    property <emphasis>exo.product.developing</emphasis> to
+    <emphasis>true</emphasis>) when you are in portal mode, it is possible to
+    hot reload all the eXo containers, one given portal container or a set of
+    portal containers.</para>
+
+    <section>
+      <title>Manual hot reloading</title>
+
+      <para>You can manually hot reload your eXo containers using the JMX
+      console and accessing to the MBean
+      <emphasis>exo:container=root</emphasis>. This MBean provides 2
+      operations related to the hot reloading which are:</para>
+
+      <itemizedlist>
+        <listitem>
+          <para><emphasis>reload()</emphasis>: This method allows to reload
+          all the containers (RootContainer included)</para>
+        </listitem>
+
+        <listitem>
+          <para><emphasis>reload(String portalContainerName)</emphasis>: This
+          method allows to reload only one given portal container</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>Automatic hot reloading</title>
+
+      <para>In developing mode if for some reason a web application is
+      redeployed, the eXo kernel will detect it and if this webapp has been
+      defined as a dependency of one or several portal containers, it will
+      first check if the configuration of the RootContainer has changed if so
+      it will automatically reload everything otherwise it will reload only
+      the affected portal containers.</para>
+    </section>
+  </section>
+
+  <section>
     <title>System property configuration</title>
 
     <para>A new property configurator service has been developed for taking
