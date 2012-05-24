@@ -272,11 +272,14 @@ public class OracleCleaningScipts extends DBCleaningScripts
          + itemTableSuffix);
       scripts.add("ALTER TABLE " + itemTableName + " RENAME CONSTRAINT JCR_FK_" + itemTableSuffix
          + "_PARENT_OLD TO JCR_FK_" + itemTableSuffix + "_PARENT");
+
       scripts.add("ALTER INDEX JCR_PK_" + itemTableSuffix + "_OLD RENAME TO JCR_PK_" + itemTableSuffix);
       scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_FK_OLD RENAME TO JCR_IDX_" + itemTableSuffix
          + "_PARENT_FK");
       scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_OLD RENAME TO JCR_IDX_" + itemTableSuffix
          + "_PARENT");
+      scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_NAME_OLD RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_PARENT_NAME");
       scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_ID_OLD RENAME TO JCR_IDX_" + itemTableSuffix
          + "_PARENT_ID");
       scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM_OLD RENAME TO JCR_IDX_" + itemTableSuffix
