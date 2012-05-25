@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.ExternalValueStorages">
+<section id="JCR.ExternalValueStorages">
   <?dbhtml filename="ch-external-value-storages.html"?>
 
   <title>External Value Storages</title>
@@ -223,4 +223,4 @@
 
     <para>Be careful, all stored values will be unaccessible.</para>
   </section>
-</chapter>
+</section>

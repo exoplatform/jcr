@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.JDBCDataContainerConfig">
+<section id="JCR.JDBCDataContainerConfig">
   <?dbhtml filename="ch-jdbc-data-container-config.html"?>
 
   <title>JDBC Data Container Config</title>
@@ -941,4 +941,4 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
 "MaxUserPort"=dword:00001b58
 "TcpTimedWaitDelay"=dword:0000001e</programlisting>
   </section>
-</chapter>
+</section>

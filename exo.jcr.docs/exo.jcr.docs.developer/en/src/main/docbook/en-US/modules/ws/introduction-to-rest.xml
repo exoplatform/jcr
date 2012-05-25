@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id = "WS.Introduction">
+<section id = "WS.Introduction">
   <?dbhtml filename="ch-introduction-to-rest.html"?>
 
   <title>Introduction to the Representational State Transfer (REST)</title>
@@ -205,4 +205,4 @@
     <para>As a result, neither the client nor the server needs to remember any
     communication-state between messages. Any state retained by the server
     must be modeled as a resource.</para>
-</chapter>
+</section>

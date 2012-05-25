@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="WS.GroovyScripts">
+<section id="WS.GroovyScripts">
   <?dbhtml filename="ch-groovy-scripts-as-rest-services.html"?>
 
   <title>Groovy Scripts as REST Services</title>
 
-    <para>This chapter describes how to use Groovy scripts as REST services.
+    <para>This section describes how to use Groovy scripts as REST services.
     Consider these operations:</para>
 
     <itemizedlist>
@@ -32,7 +32,7 @@
       </listitem>
     </itemizedlist>
 
-    <para>In this chapter, we consider RESTful service to be compatible with JSR-311
+    <para>In this section, we consider RESTful service to be compatible with JSR-311
     specification. The last feature is currently available in version 1.11-SNAPSHOT.</para>
 
   <section>
@@ -378,4 +378,4 @@ http://localhost:8080/rest/script/groovy/delete/repository/production/script/gro
 
     <para>That is all.</para>
   </section>
-</chapter>
+</section>

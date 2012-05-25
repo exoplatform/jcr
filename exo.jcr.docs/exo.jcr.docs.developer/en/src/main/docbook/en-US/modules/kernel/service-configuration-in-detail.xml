@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.ServiceConfigurationinDetail">
+<section id="Kernel.ServiceConfigurationinDetail">
   <?dbhtml filename="ch-service-configuration-in-detail.html"?>
 
   <title>Service Configuration in Detail</title>
   
-    <para>This chapter shows you how to set up a sample service with some
+    <para>This section shows you how to set up a sample service with some
     configurations and how to access the configuration parameters. The
     later sections describe all details of the configuration file (parameters,
     object-params, plugins, imports, and more). It also shows how to access the
@@ -752,4 +752,4 @@ public class LDAPConnectionConfig {
       Retrieval</emphasis>.</para>
     </note>
   </section>
-</chapter>
+</section>

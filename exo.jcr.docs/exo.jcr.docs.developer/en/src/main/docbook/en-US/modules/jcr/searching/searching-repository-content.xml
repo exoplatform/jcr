@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.SearchingRepositoryContent">
+<section id="JCR.SearchingRepositoryContent">
   <?dbhtml filename="ch-jcr-searching-repository-conten.html"?>
 
   <title>Searching Repository Content</title>
@@ -366,4 +366,4 @@ if (v == null) {
     <para>Finds nt:resource nodes, which are similar to node by path
     /parentnode/node.txt/jcr:content.</para>
   </section>
-</chapter>
+</section>

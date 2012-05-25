@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.FAQ">
+<section id="JCR.FAQ">
   <?dbhtml filename="ch-jcr-faq.html"?>
 
   <title>JCR FAQ</title>
@@ -725,4 +725,4 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
       </section>
     </section>
   </section>
-</chapter>
+</section>

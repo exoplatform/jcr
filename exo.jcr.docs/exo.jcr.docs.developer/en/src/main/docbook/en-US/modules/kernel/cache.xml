@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.Cache">
+<section id="Kernel.Cache">
   <?dbhtml filename="ch-cache.html"?>
 
   <title>eXo Cache</title>
 
   <para>
-    This chapter will provide you all the basic knowledge about eXo Cache, from basic concepts to advanced concepts, sample codes, and more.
+    This section will provide you all the basic knowledge about eXo Cache, from basic concepts to advanced concepts, sample codes, and more.
   </para>
   <section id="Kernel.Cache.Basic_concepts">
     <title>Basic concepts</title>
@@ -1996,4 +1996,4 @@ public interface ExoCacheCreator {
       </section>
     </section>
   </section>
-</chapter>
+</section>
