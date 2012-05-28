@@ -152,6 +152,9 @@ class PersistentIndex extends AbstractIndex
     */
    synchronized ReadOnlyIndexReader getReadOnlyIndexReader(IndexListener listener) throws IOException
    {
+      // Ensure all in-memory changes are persisted before returning reader to merger
+      releaseWriterAndReaders();
+
       ReadOnlyIndexReader reader = getReadOnlyIndexReader();
       this.listener = listener;
       return reader;
