@@ -30,6 +30,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.RepositoryException;
 
@@ -49,6 +50,11 @@ public final class WorkspaceContainerFacade
    private final WorkspaceContainer container;
 
    /**
+    * Indicates that node keep responsible for resuming.
+    */
+   public final AtomicBoolean responsibleForResuming = new AtomicBoolean(false);
+
+   /**
     * @param workspaceName
     * @param container
     */
@@ -56,6 +62,19 @@ public final class WorkspaceContainerFacade
    {
       this.workspaceName = workspaceName;
       this.container = container;
+   }
+
+   /**
+    * @return the responsibleForResuming
+    */
+   public boolean getResponsibleForResuming()
+   {
+      return responsibleForResuming.get();
+   }
+
+   public void setResponsibleForResuming(boolean rep)
+   {
+      responsibleForResuming.set(rep);
    }
 
    /**
@@ -202,6 +221,7 @@ public final class WorkspaceContainerFacade
    private void suspend() throws RepositoryException
    {
       List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
+      setResponsibleForResuming(true);
       Comparator<Suspendable> c = new Comparator<Suspendable>()
       {
          public int compare(Suspendable s1, Suspendable s2)
@@ -259,6 +279,7 @@ public final class WorkspaceContainerFacade
             throw new RepositoryException("Can't resume component", e);
          }
       }
+      setResponsibleForResuming(false);
    }
 
    /**

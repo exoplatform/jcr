@@ -53,8 +53,6 @@ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.rpc.RPCException;
 import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
-import org.exoplatform.services.rpc.TopologyChangeEvent;
-import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.exoplatform.services.transaction.TransactionService;
 import org.picocontainer.Startable;
 
@@ -91,8 +89,8 @@ import javax.transaction.TransactionManager;
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "DataManager"))
-public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager implements Suspendable,
-   TopologyChangeListener, Startable, WorkspaceStorageCacheListener
+public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManager implements Suspendable, Startable,
+   WorkspaceStorageCacheListener
 {
 
    private final static double ACL_BF_FALSE_PROPBABILITY_DEFAULT = 0.1d;
@@ -2085,46 +2083,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    }
 
    /**
-    * {@inheritDoc}
-    */
-   public void onChange(TopologyChangeEvent event)
-   {
-      if (isSuspended.get())
-      {
-         new Thread()
-         {
-            @Override
-            public synchronized void run()
-            {
-               try
-               {
-                  List<Object> results = rpcService.executeCommandOnAllNodes(requestForResponsibleForResuming, true);
-
-                  for (Object result : results)
-                  {
-                     if ((Boolean)result)
-                     {
-                        return;
-                     }
-                  }
-
-                  // node which was responsible for resuming leave the cluster, so resume component
-                  resumeLocally();
-               }
-               catch (SecurityException e1)
-               {
-                  LOG.error("You haven't privileges to execute remote command", e1);
-               }
-               catch (RPCException e1)
-               {
-                  LOG.error("Exception during command execution", e1);
-               }
-            }
-         }.start();
-      }
-   }
-
-   /**
     * Initialization remote commands.
     */
    private void initRemoteCommands()
@@ -2178,8 +2136,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                return isResponsibleForResuming.get();
             }
          });
-
-         rpcService.registerTopologyChangeListener(this);
       }
    }
    
@@ -2193,8 +2149,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          rpcService.unregisterCommand(suspend);
          rpcService.unregisterCommand(resume);
          rpcService.unregisterCommand(requestForResponsibleForResuming);
-         
-         rpcService.unregisterTopologyChangeListener(this);
       }
       
    }

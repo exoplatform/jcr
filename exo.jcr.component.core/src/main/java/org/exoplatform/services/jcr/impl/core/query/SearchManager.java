@@ -82,8 +82,6 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCException;
 import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
-import org.exoplatform.services.rpc.TopologyChangeEvent;
-import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.jboss.cache.factories.annotations.NonVolatile;
 import org.picocontainer.Startable;
 
@@ -125,8 +123,7 @@ import javax.jcr.query.Query;
 @NonVolatile
 @Managed
 @NameTemplate(@Property(key = "service", value = "SearchManager"))
-public class SearchManager implements Startable, MandatoryItemsPersistenceListener, Suspendable, Backupable,
-   TopologyChangeListener
+public class SearchManager implements Startable, MandatoryItemsPersistenceListener, Suspendable, Backupable
 {
 
    /**
@@ -327,7 +324,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          initRemoteCommands();
          this.indexRecovery = new IndexRecoveryImpl(rpcService, this);
-         rpcService.registerTopologyChangeListener(this);
       }
    }
 
@@ -1557,8 +1553,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          rpcService.unregisterCommand(resume);
          rpcService.unregisterCommand(requestForResponsibleForResuming);
          rpcService.unregisterCommand(changeIndexState);
-         
-         rpcService.unregisterTopologyChangeListener(this);
       }
    }
 
@@ -1590,53 +1584,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          }
 
          isSuspended.set(false);
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void onChange(TopologyChangeEvent event)
-   {
-      if (isSuspended.get())
-      {
-         new Thread()
-         {
-            @Override
-            public synchronized void run()
-            {
-               try
-               {
-                  List<Object> results = rpcService.executeCommandOnAllNodes(requestForResponsibleForResuming, true);
-
-                  for (Object result : results)
-                  {
-                     if ((Boolean)result)
-                     {
-                        return;
-                     }
-                  }
-
-                  // node which was responsible for resuming leave the cluster, so resume component
-                  try
-                  {
-                     resumeLocally();
-                  }
-                  catch (ResumeException e)
-                  {
-                     LOG.error("Can not resume component", e);
-                  }
-               }
-               catch (SecurityException e1)
-               {
-                  LOG.error("You haven't privileges to execute remote command", e1);
-               }
-               catch (RPCException e1)
-               {
-                  LOG.error("Exception during command execution", e1);
-               }
-            }
-         }.start();
       }
    }
 
