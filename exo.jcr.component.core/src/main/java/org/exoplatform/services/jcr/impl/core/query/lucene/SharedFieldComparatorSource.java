@@ -54,27 +54,27 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
    /**
     * The logger 
     */
-   private static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SharedFieldSortComparator");
+   protected static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SharedFieldSortComparator");
 
    /**
     * The name of the shared field in the lucene index.
     */
-   private final String field;
+   protected final String field;
 
    /**
     * The item state manager.
     */
-   private final ItemDataConsumer ism;
+   protected final ItemDataConsumer ism;
 
    /**
     * LocationFactory.
     */
-   private final LocationFactory locationFactory;
+   protected final LocationFactory locationFactory;
 
    /**
     * The index internal namespace mappings.
     */
-   private final NamespaceMappings nsMappings;
+   protected final NamespaceMappings nsMappings;
 
    /**
     * Creates a new <code>SharedFieldSortComparator</code> for a given shared
@@ -110,15 +110,14 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
       try
       {
          QPath path = locationFactory.parseJCRPath(propertyName).getInternalPath();
-         SimpleFieldComparator simple = new SimpleFieldComparator(nsMappings.translatePath(path), field, numHits);
+         SimpleFieldComparator simple = (SimpleFieldComparator)createSimpleComparator(numHits, path);
          if (path.getEntries().length == 1)
          {
             return simple;
          }
          else
          {
-            return new CompoundScoreFieldComparator(new FieldComparator[]{simple,
-               new RelPathFieldComparator(path, numHits)}, numHits);
+            return createCompoundComparator(numHits, path, simple);
          }
       }
       catch (IllegalNameException e)
@@ -129,55 +128,18 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
       {
          throw Util.createIOException(e);
       }
-      //
-      //       PathFactory factory = PathFactoryImpl.getInstance();
-      //       Path path = factory.create(propertyName);
-      //
-      //       try {
-      //           SimpleFieldComparator simple = new SimpleFieldComparator(nsMappings.translatePath(path), field, numHits);
-      //
-      //           return path.getLength() == 1
-      //               ? simple
-      //               : new CompoundScoreFieldComparator(
-      //                       new FieldComparator[] { simple, new RelPathFieldComparator(path, numHits) }, numHits);
-      //
-      //       }
-      //       catch (IllegalNameException e) {
-      //           throw Util.createIOException(e);
-      //       }
    }
 
-   //   /**
-   //    * Creates a new <code>ScoreDocComparator</code> for an embedded
-   //    * <code>propertyName</code> and a <code>reader</code>.
-   //    *
-   //    */
-   //   public ScoreDocComparator newComparator(IndexReader reader, String relPath) throws IOException
-   //   {
-   //
-   //      try
-   //      {
-   //         QPath p = locationFactory.parseJCRPath(relPath).getInternalPath();
-   //         ScoreDocComparator simple = new SimpleScoreDocComparator(reader, nsMappings.translatePath(p));
-   //         if (p.getEntries().length == 1)
-   //         {
-   //            return simple;
-   //         }
-   //         else
-   //         {
-   //            return new CompoundScoreDocComparator(reader, new ScoreDocComparator[]{simple,
-   //               new RelPathScoreDocComparator(reader, p)});
-   //         }
-   //      }
-   //      catch (IllegalNameException e)
-   //      {
-   //         throw Util.createIOException(e);
-   //      }
-   //      catch (RepositoryException e)
-   //      {
-   //         throw Util.createIOException(e);
-   //      }
-   //   }
+   protected FieldComparator createCompoundComparator(int numHits, QPath path, SimpleFieldComparator simple)
+   {
+      return new CompoundScoreFieldComparator(new FieldComparator[]{simple, new RelPathFieldComparator(path, numHits)},
+         numHits);
+   }
+
+   protected FieldComparator createSimpleComparator(int numHits, QPath path) throws IllegalNameException
+   {
+      return new SimpleFieldComparator(nsMappings.translatePath(path), field, numHits);
+   }
 
    private ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException
    {
@@ -229,10 +191,9 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
          }
       }
       return item;
-
    }
 
-   static final class SimpleFieldComparator extends AbstractFieldComparator
+   static class SimpleFieldComparator extends AbstractFieldComparator
    {
 
       /**
@@ -292,7 +253,7 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
     * other comparators. The comparators are asked for a sort value in the
     * sequence they are passed to the constructor.
     */
-   private static final class CompoundScoreFieldComparator extends AbstractFieldComparator
+   static class CompoundScoreFieldComparator extends AbstractFieldComparator
    {
       private final FieldComparator[] fieldComparators;
 
@@ -340,7 +301,7 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
     * A <code>FieldComparator</code> which works with order by clauses that use a
     * relative path to a property to sort on.
     */
-   private final class RelPathFieldComparator extends AbstractFieldComparator
+   final class RelPathFieldComparator extends AbstractFieldComparator
    {
 
       /**
@@ -397,7 +358,6 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
 
          return null;
       }
-
    }
 
 }

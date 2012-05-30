@@ -460,6 +460,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    private FieldComparatorSource scs;
 
    /**
+    * The insensitive sort comparator source for indexed properties.
+    */
+   private FieldComparatorSource sics;
+
+   /**
     * Flag that indicates whether the hierarchy cache should be initialized
     * immediately on startup.
     */
@@ -648,6 +653,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       }
 
       scs = new SharedFieldComparatorSource(FieldNames.PROPERTIES, context.getItemStateManager(), nsMappings);
+      sics =
+         new SharedFieldInsensitiveComparatorSource(FieldNames.PROPERTIES, context.getItemStateManager(), nsMappings);
+      
       npResolver = new LocationFactory(nsMappings);
 
       indexingConfig = createIndexingConfiguration(nsMappings);
@@ -1212,32 +1220,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       return query;
    }
 
-   // /**
-   // * Creates a new query by specifying the query object model. If the query
-   // * object model is considered invalid for the implementing class, an
-   // * InvalidQueryException is thrown.
-   // *
-   // * @param session the session of the current user creating the query
-   // * object.
-   // * @param itemMgr the item manager of the current user.
-   // * @param qomTree query query object model tree.
-   // * @return A <code>Query</code> object.
-   // * @throws javax.jcr.query.InvalidQueryException
-   // * if the query object model tree is invalid.
-   // * @see QueryHandler#createExecutableQuery(SessionImpl, ItemManager,
-   // QueryObjectModelTree)
-   // */
-   // public ExecutableQuery createExecutableQuery(SessionImpl session,
-   // SessionDataManager itemMgr, QueryObjectModelTree qomTree)
-   // throws InvalidQueryException
-   // {
-   // QueryObjectModelImpl query =
-   // new QueryObjectModelImpl(session, itemMgr, this,
-   // getContext().getPropertyTypeRegistry(), qomTree);
-   // query.setRespectDocumentOrder(documentOrder);
-   // return query;
-   // }
-
    /**
     * This method returns the QueryNodeFactory used to parse Queries. This
     * method may be overridden to provide a customized QueryNodeFactory
@@ -1342,79 +1324,13 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
       try
       {
-         Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
+         FieldComparatorSource scs = queryImpl.isCaseInsensitiveOrder() ? this.sics : this.scs;
+         Sort sort = new Sort(createSortFields(orderProps, orderSpecs, scs));
          final IndexReader reader = getIndexReader(queryImpl.needsSystemTree());
          JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
          searcher.setSimilarity(getSimilarity());
          return new FilterMultiColumnQueryHits(searcher.execute(query, sort, resultFetchHint,
             QueryImpl.DEFAULT_SELECTOR_NAME))
-         {
-            @Override
-            public void close() throws IOException
-            {
-               try
-               {
-                  super.close();
-               }
-               finally
-               {
-                  PerQueryCache.getInstance().dispose();
-                  Util.closeOrRelease(reader);
-               }
-            }
-         };
-      }
-      finally
-      {
-         workingThreads.decrementAndGet();
-
-         if (isSuspended.get() && workingThreads.get() == 0)
-         {
-            synchronized (workingThreads)
-            {
-               workingThreads.notifyAll();
-            }
-         }
-      }
-   }
-
-   /**
-    * Executes the query on the search index.
-    * 
-    * @param session
-    *            the session that executes the query.
-    * @param query
-    *            the query.
-    * @param orderProps
-    *            name of the properties for sort order.
-    * @param orderSpecs
-    *            the order specs for the sort order properties.
-    *            <code>true</code> indicates ascending order,
-    *            <code>false</code> indicates descending.
-    * @param resultFetchHint
-    *            a hint on how many results should be fetched.
-    * @return the query hits.
-    * @throws IOException
-    *             if an error occurs while searching the index.
-    * @throws RepositoryException
-    */
-   public MultiColumnQueryHits executeQuery(SessionImpl session, MultiColumnQuery query, QPath[] orderProps,
-      boolean[] orderSpecs, long resultFetchHint) throws IOException, RepositoryException
-   {
-      waitForResuming();
-
-      checkOpen();
-
-      workingThreads.incrementAndGet();
-
-      try
-      {
-         Sort sort = new Sort(createSortFields(orderProps, orderSpecs));
-
-         final IndexReader reader = getIndexReader();
-         JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
-         searcher.setSimilarity(getSimilarity());
-         return new FilterMultiColumnQueryHits(query.execute(searcher, sort, resultFetchHint))
          {
             @Override
             public void close() throws IOException
@@ -1478,16 +1394,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       return analyzer;
    }
-
-   // /**
-   // * Returns the text extractor in use for indexing.
-   // *
-   // * @return the text extractor in use for indexing.
-   // */
-   // public TextExtractor getTextExtractor()
-   // {
-   // return extractor;
-   // }
 
    /**
     * Returns the namespace mappings for the internal representation.
@@ -1646,10 +1552,13 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *            the order properties.
     * @param orderSpecs
     *            the order specs for the properties.
+    * @param scs 
+    *            {@link FieldComparatorSource} case sensitive or case insensitive comparator           
     * @return an array of sort fields
     * @throws RepositoryException
     */
-   protected SortField[] createSortFields(QPath[] orderProps, boolean[] orderSpecs) throws RepositoryException
+   protected SortField[] createSortFields(QPath[] orderProps, boolean[] orderSpecs, FieldComparatorSource scs)
+      throws RepositoryException
    {
       List<SortField> sortFields = new ArrayList<SortField>();
       for (int i = 0; i < orderProps.length; i++)
@@ -1729,14 +1638,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public MultiIndex getIndex()
    {
       return index;
-   }
-
-   /**
-    * @return the sort comparator source for this index.
-    */
-   protected FieldComparatorSource getSortComparatorSource()
-   {
-      return scs;
    }
 
    /**
