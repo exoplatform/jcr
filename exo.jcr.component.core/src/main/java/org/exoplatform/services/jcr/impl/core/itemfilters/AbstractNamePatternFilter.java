@@ -26,7 +26,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -77,9 +79,18 @@ public abstract class AbstractNamePatternFilter implements ItemDataFilter
       List<QPathEntry> exactNamesList = new ArrayList<QPathEntry>();
       List<String> wildcardExpressionsList = new ArrayList<String>();
 
+      Set<String> existedTokens = new HashSet<String>();
+
       while (parser.hasMoreTokens())
       {
          String token = parser.nextToken().trim();
+
+         if (existedTokens.contains(token))
+         {
+            continue;
+         }
+         existedTokens.add(token);
+
          if (token.equals("*") || token.equals("*:*") || token.equals("*:*[*]"))
          {
             getAll = true;
