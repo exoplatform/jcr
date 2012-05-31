@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 
 import java.util.List;
+import java.util.Set;
 
 import javax.jcr.RepositoryException;
 
@@ -130,7 +131,7 @@ public interface ItemDataConsumer
     * @param patternFilters
     * @return List of children Nodes
     */
-   List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters) throws RepositoryException;
+   List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> patternFilters) throws RepositoryException;
 
    /**
     * Get children nodes count of the parent node. 
@@ -165,7 +166,8 @@ public interface ItemDataConsumer
     * 
     * @return List of children Properties
     */
-   List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters) throws RepositoryException;
+   List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException;
 
    /**
     * List child Properties, returned list will contains Properties without actual Values.

@@ -35,7 +35,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Single database connection implementation.
@@ -515,7 +517,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier, List<QPathEntryFilter> pattern)
+   protected ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier, Set<QPathEntryFilter> pattern)
       throws SQLException
    {
       if (pattern.isEmpty())
@@ -534,12 +536,16 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
          query.append(" where I.I_CLASS=1 and I.PARENT_ID='");
          query.append(parentIdentifier);
          query.append("' and ( ");
-         appendPattern(query, pattern.get(0).getQPathEntry(), true);
-         for (int i = 1; i < pattern.size(); i++)
+
+         Iterator<QPathEntryFilter> iter = pattern.iterator();
+         appendPattern(query, iter.next().getQPathEntry(), true);
+
+         while (iter.hasNext())
          {
             query.append(" or ");
-            appendPattern(query, pattern.get(i).getQPathEntry(), true);
+            appendPattern(query, iter.next().getQPathEntry(), true);
          }
+
          query.append(" ) and P.I_CLASS=2 and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType'");
          query.append(" or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes'");
          query.append(" or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'");
@@ -611,7 +617,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentCid, List<QPathEntryFilter> pattern)
+   protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentCid, Set<QPathEntryFilter> pattern)
       throws SQLException
    {
       if (pattern.isEmpty())
@@ -630,12 +636,16 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
          query.append(" where I.I_CLASS=2 and I.PARENT_ID='");
          query.append(parentCid);
          query.append("' and ( ");
-         appendPattern(query, pattern.get(0).getQPathEntry(), false);
-         for (int i = 1; i < pattern.size(); i++)
+
+         Iterator<QPathEntryFilter> iter = pattern.iterator();
+         appendPattern(query, iter.next().getQPathEntry(), false);
+
+         while (iter.hasNext())
          {
             query.append(" or ");
-            appendPattern(query, pattern.get(i).getQPathEntry(), false);
+            appendPattern(query, iter.next().getQPathEntry(), false);
          }
+
          query.append(" ) order by I.NAME");
 
          return findPropertiesByParentIdAndComplexPatternCQ.executeQuery(query.toString());

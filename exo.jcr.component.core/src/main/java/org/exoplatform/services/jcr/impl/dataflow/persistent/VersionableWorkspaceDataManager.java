@@ -40,6 +40,7 @@ import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -105,7 +106,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
     * {@inheritDoc}
     */
    @Override
-   public List<NodeData> getChildNodesData(final NodeData nodeData, final List<QPathEntryFilter> patternFilters)
+   public List<NodeData> getChildNodesData(final NodeData nodeData, final Set<QPathEntryFilter> patternFilters)
       throws RepositoryException
    {
       if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
@@ -145,8 +146,8 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
     * {@inheritDoc}
     */
    @Override
-   public List<PropertyData> getChildPropertiesData(final NodeData nodeData,
-      final List<QPathEntryFilter> itemDataFilters) throws RepositoryException
+   public List<PropertyData> getChildPropertiesData(final NodeData nodeData, final Set<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException
    {
       if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
       {

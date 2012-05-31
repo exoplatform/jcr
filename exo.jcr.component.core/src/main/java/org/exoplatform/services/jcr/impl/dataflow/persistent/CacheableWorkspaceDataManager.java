@@ -683,7 +683,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * {@inheritDoc}
     */
    @Override
-   public List<NodeData> getChildNodesData(NodeData parentData, List<QPathEntryFilter> patternFilters)
+   public List<NodeData> getChildNodesData(NodeData parentData, Set<QPathEntryFilter> patternFilters)
       throws RepositoryException
    {
       return getChildNodesDataByPattern(parentData, patternFilters);
@@ -708,7 +708,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * {@inheritDoc}
     */
    @Override
-   public List<PropertyData> getChildPropertiesData(NodeData nodeData, List<QPathEntryFilter> itemDataFilters)
+   public List<PropertyData> getChildPropertiesData(NodeData nodeData, Set<QPathEntryFilter> itemDataFilters)
       throws RepositoryException
    {
       List<PropertyData> childs = getChildPropertiesDataByPattern(nodeData, itemDataFilters);
@@ -1285,7 +1285,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    }
 
    protected List<NodeData> getChildNodesDataByPattern(final NodeData parentData,
-      final List<QPathEntryFilter> patternFilters) throws RepositoryException
+      final Set<QPathEntryFilter> patternFilters) throws RepositoryException
    {
       if (!cache.isEnabled())
       {
@@ -1323,11 +1323,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       final Map<String, NodeData> childNodesMap = new HashMap<String, NodeData>();
 
       final Set<QPathEntryFilter> uncachedPatterns = new HashSet<QPathEntryFilter>();
-      for (int i = 0; i < patternFilters.size(); i++)
+      for (QPathEntryFilter pattern : patternFilters)
       {
-         if (patternFilters.get(i).isExactName())
+         if (pattern.isExactName())
          {
-            ItemData data = getCachedItemData(parentData, patternFilters.get(i).getQPathEntry(), ItemType.NODE);
+            ItemData data = getCachedItemData(parentData, pattern.getQPathEntry(), ItemType.NODE);
             if (data != null)
             {
                if (!(data instanceof NullItemData))
@@ -1337,13 +1337,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             }
             else
             {
-               uncachedPatterns.add(patternFilters.get(i));
+               uncachedPatterns.add(pattern);
             }
          }
          else
          {
             // get nodes list by pattern
-            List<NodeData> cachedItemList = cache.getChildNodes(parentData, patternFilters.get(i));
+            List<NodeData> cachedItemList = cache.getChildNodes(parentData, pattern);
             if (cachedItemList != null)
             {
                //merge results
@@ -1354,7 +1354,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             }
             else
             {
-               uncachedPatterns.add(patternFilters.get(i));
+               uncachedPatterns.add(pattern);
             }
          }
       }
@@ -1421,8 +1421,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   public Void run() throws RepositoryException
                   {
                      List<NodeData> persistedItemList =
-                        CacheableWorkspaceDataManager.super.getChildNodesData(parentData,
-                           new ArrayList<QPathEntryFilter>(uncachedPatterns));
+                        CacheableWorkspaceDataManager.super.getChildNodesData(parentData, uncachedPatterns);
 
                      if (persistedItemList.size() > 0)
                      {
@@ -1591,7 +1590,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    }
 
    protected List<PropertyData> getChildPropertiesDataByPattern(final NodeData nodeData,
-      final List<QPathEntryFilter> patternFilters) throws RepositoryException
+      final Set<QPathEntryFilter> patternFilters) throws RepositoryException
    {
       if (!cache.isEnabled())
       {
@@ -1619,11 +1618,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       final Map<String, PropertyData> childPropsMap = new HashMap<String, PropertyData>();
 
       final Set<QPathEntryFilter> uncachedPatterns = new HashSet<QPathEntryFilter>();
-      for (int i = 0; i < patternFilters.size(); i++)
+      for (QPathEntryFilter pattern : patternFilters)
       {
-         if (patternFilters.get(i).isExactName())
+         if (pattern.isExactName())
          {
-            ItemData data = getCachedItemData(nodeData, patternFilters.get(i).getQPathEntry(), ItemType.PROPERTY);
+            ItemData data = getCachedItemData(nodeData, pattern.getQPathEntry(), ItemType.PROPERTY);
             if (data != null)
             {
                if (!(data instanceof NullPropertyData))
@@ -1633,14 +1632,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             }
             else
             {
-               uncachedPatterns.add(patternFilters.get(i));
+               uncachedPatterns.add(pattern);
             }
          }
          else
          {
 
             // get property list by pattern
-            List<PropertyData> cachedItemList = cache.getChildProperties(nodeData, patternFilters.get(i));
+            List<PropertyData> cachedItemList = cache.getChildProperties(nodeData, pattern);
             if (cachedItemList != null)
             {
                //merge results
@@ -1651,7 +1650,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             }
             else
             {
-               uncachedPatterns.add(patternFilters.get(i));
+               uncachedPatterns.add(pattern);
             }
          }
       }
@@ -1720,8 +1719,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   public Void run() throws RepositoryException
                   {
                      List<PropertyData> persistedItemList =
-                        CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData,
-                           new ArrayList<QPathEntryFilter>(uncachedPatterns));
+                        CacheableWorkspaceDataManager.super.getChildPropertiesData(nodeData, uncachedPatterns);
 
                      if (persistedItemList.size() > 0)
                      {

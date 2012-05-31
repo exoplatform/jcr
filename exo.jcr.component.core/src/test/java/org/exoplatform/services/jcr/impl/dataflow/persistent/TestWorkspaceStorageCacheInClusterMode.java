@@ -51,6 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -254,9 +255,9 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          assertEquals(2, cwdmNode2.getItemData(parentNode, qpe, ItemType.PROPERTY).getPersistedVersion());
          
          // Test getChildNodesData by patterns
-         final List<QPathEntryFilter> nodePatterns =
-            Collections.singletonList((QPathEntryFilter)new PatternQPathEntryFilter(new PatternQPathEntry("",
-               "my-node", -1)));
+         final Set<QPathEntryFilter> nodePatterns =
+            Collections.singleton((QPathEntryFilter)new PatternQPathEntryFilter(
+               new PatternQPathEntry("", "my-node", -1)));
          readAction = new Action(cwdmNode2)
          {
             public void execute(NodeData parentNode) throws Exception
@@ -291,10 +292,10 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          assertEquals(2, cwdmNode1.getChildNodesData(parentNode, nodePatterns).size());
          assertNotNull(cwdmNode2.getChildNodesData(parentNode, nodePatterns));
          assertEquals(2, cwdmNode2.getChildNodesData(parentNode, nodePatterns).size());
-         
+
          // Test getChildPropertiesData by patterns
-         final List<QPathEntryFilter> propPatterns =
-            Collections.singletonList((QPathEntryFilter)new PatternQPathEntryFilter(new PatternQPathEntry("",
+         final Set<QPathEntryFilter> propPatterns =
+            Collections.singleton((QPathEntryFilter)new PatternQPathEntryFilter(new PatternQPathEntry("",
                "my-property*", -1)));
          readAction = new Action(cwdmNode2)
          {
@@ -422,8 +423,9 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          assertEquals(0, cwdmNode2.getReferencesData(parentNode.getIdentifier(), false).size());
          
          // Test getChildNodesData by patterns
-         final List<QPathEntryFilter> patterns =
-            Collections.singletonList((QPathEntryFilter)new PatternQPathEntryFilter(new PatternQPathEntry("",
+         final Set<QPathEntryFilter> patterns =
+            Collections.singleton((QPathEntryFilter)new PatternQPathEntryFilter(
+               new PatternQPathEntry("",
                "my-node", -1)));
          parentNode = new PersistedNodeData("parent2-id11", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node11")), Constants.ROOT_UUID, 1, 0,
             Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
@@ -454,8 +456,8 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          
          
          // Test getChildPropertiesData by patterns
-         final List<QPathEntryFilter> propPattern2s =
-            Collections.singletonList((QPathEntryFilter)new PatternQPathEntryFilter(new PatternQPathEntry("",
+         final Set<QPathEntryFilter> propPattern2s =
+            Collections.singleton((QPathEntryFilter)new PatternQPathEntryFilter(new PatternQPathEntry("",
                "my-property*", -1)));
          parentNode = new PersistedNodeData("parent2-id13", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null, "parent2-node13")), Constants.ROOT_UUID, 1, 0,
             Constants.NT_UNSTRUCTURED, new InternalQName[0], null);
@@ -748,7 +750,8 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          return children;
       }
 
-      public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+      public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> pattern)
+         throws RepositoryException,
          IllegalStateException
       {
          if (wait.get() != null && wait.get())
@@ -923,8 +926,8 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          return 0;
       }
 
-      public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
-         IllegalStateException
+      public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> pattern)
+         throws RepositoryException, IllegalStateException
       {
          if (wait.get() != null && wait.get())
          {

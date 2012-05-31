@@ -26,7 +26,9 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -98,7 +100,8 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
       return traverseQPathSQ(cpid);
    }
 
-   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> itemDataFilters) throws RepositoryException,
+   public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
+      throws RepositoryException,
       IllegalStateException
    {
       return getDirectChildNodesData(parent, itemDataFilters);
@@ -108,7 +111,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier, List<QPathEntryFilter> pattern)
+   protected ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier, Set<QPathEntryFilter> pattern)
       throws SQLException
    {
       if (pattern.isEmpty())
@@ -127,12 +130,15 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
          query.append(" where I.PARENT_ID='");
          query.append(parentIdentifier);
          query.append("' and I.I_CLASS=1 and ( ");
-         appendPattern(query, pattern.get(0).getQPathEntry(), true);
-         for (int i = 1; i < pattern.size(); i++)
+
+         Iterator<QPathEntryFilter> iter = pattern.iterator();
+         appendPattern(query, iter.next().getQPathEntry(), true);
+         while (iter.hasNext())
          {
             query.append(" or ");
-            appendPattern(query, pattern.get(i).getQPathEntry(), true);
+            appendPattern(query, iter.next().getQPathEntry(), true);
          }
+
          query.append(" ) and (P.PARENT_ID=I.ID and P.I_CLASS=2 and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType'");
          query.append(" or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes'");
          query.append(" or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'");
@@ -144,7 +150,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
 
    }
 
-   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+   public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
       throws RepositoryException, IllegalStateException
    {
       return getDirectChildPropertiesData(parent, itemDataFilters);
@@ -154,7 +160,7 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentCid, List<QPathEntryFilter> pattern)
+   protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentCid, Set<QPathEntryFilter> pattern)
       throws SQLException
    {
       if (pattern.isEmpty())
@@ -173,12 +179,15 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
          query.append(" where I.PARENT_ID='");
          query.append(parentCid);
          query.append("' and I.I_CLASS=2 and ( ");
-         appendPattern(query, pattern.get(0).getQPathEntry(), false);
-         for (int i = 1; i < pattern.size(); i++)
+
+         Iterator<QPathEntryFilter> iter = pattern.iterator();
+         appendPattern(query, iter.next().getQPathEntry(), false);
+         while (iter.hasNext())
          {
             query.append(" or ");
-            appendPattern(query, pattern.get(i).getQPathEntry(), false);
+            appendPattern(query, iter.next().getQPathEntry(), false);
          }
+
          query.append(" ) order by I.NAME");
 
          return findPropertiesByParentIdAndComplexPatternCQ.executeQuery(query.toString());

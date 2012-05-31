@@ -60,6 +60,7 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.WeakHashMap;
 
 import javax.jcr.AccessDeniedException;
@@ -937,7 +938,7 @@ public class SessionDataManager implements ItemDataConsumer
    /**
     * {@inheritDoc}
     */
-   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters)
+   public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> patternFilters)
       throws RepositoryException
    {
       long start = 0;
@@ -1023,7 +1024,7 @@ public class SessionDataManager implements ItemDataConsumer
    /**
     * {@inheritDoc}
     */
-   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
+   public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
       throws RepositoryException
    {
       long start = 0;

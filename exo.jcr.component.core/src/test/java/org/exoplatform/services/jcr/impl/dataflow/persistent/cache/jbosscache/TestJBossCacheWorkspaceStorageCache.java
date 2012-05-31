@@ -47,6 +47,7 @@ import org.exoplatform.services.transaction.TransactionService;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -236,7 +237,7 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          return null;
       }
 
-      public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern)
+      public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> pattern)
          throws RepositoryException, IllegalStateException
       {
          return null;
@@ -309,7 +310,8 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          return -1;
       }
 
-      public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+      public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> pattern)
+         throws RepositoryException,
          IllegalStateException
       {
          return getChildNodesData(parent);

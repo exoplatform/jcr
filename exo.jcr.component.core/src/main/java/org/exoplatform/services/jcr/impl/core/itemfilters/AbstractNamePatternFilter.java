@@ -26,7 +26,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
@@ -49,7 +51,7 @@ public abstract class AbstractNamePatternFilter implements ItemDataFilter
 
    private final boolean getAllItems;
 
-   private final List<QPathEntryFilter> subFilters;
+   private final Set<QPathEntryFilter> subFilters;
 
    /**
     * Exact names.
@@ -73,9 +75,9 @@ public abstract class AbstractNamePatternFilter implements ItemDataFilter
       StringTokenizer parser = new StringTokenizer(namePattern, "|");
       boolean getAll = false;
 
-      List<QPathEntryFilter> filters = new ArrayList<QPathEntryFilter>();
-      List<QPathEntry> exactNamesList = new ArrayList<QPathEntry>();
-      List<String> wildcardExpressionsList = new ArrayList<String>();
+      Set<QPathEntryFilter> filters = new HashSet<QPathEntryFilter>();
+      Set<QPathEntry> exactNamesSet = new HashSet<QPathEntry>();
+      Set<String> wildcardExpressionsSet = new HashSet<String>();
 
       while (parser.hasMoreTokens())
       {
@@ -99,13 +101,13 @@ public abstract class AbstractNamePatternFilter implements ItemDataFilter
                JCRPath path = session.getLocationFactory().parseRelPath(token);
                QPathEntry[] entries = path.getInternalPath().getEntries();
                entry = entries[entries.length - 1];
-               exactNamesList.add(entry);
+               exactNamesSet.add(entry);
                filters.add(new ExactQPathEntryFilter(entry));
             }
             else
             {
                entry = parsePatternQPathEntry(token, session);
-               wildcardExpressionsList.add(token);
+               wildcardExpressionsSet.add(token);
                filters.add(new PatternQPathEntryFilter(entry));
             }
          }
@@ -121,10 +123,10 @@ public abstract class AbstractNamePatternFilter implements ItemDataFilter
       else
       {
          subFilters = filters;
-         exactNames = new QPathEntry[exactNamesList.size()];
-         exactNamesList.toArray(exactNames);
-         wildcardExpressions = new String[wildcardExpressionsList.size()];
-         wildcardExpressionsList.toArray(wildcardExpressions);
+         exactNames = new QPathEntry[exactNamesSet.size()];
+         exactNamesSet.toArray(exactNames);
+         wildcardExpressions = new String[wildcardExpressionsSet.size()];
+         wildcardExpressionsSet.toArray(wildcardExpressions);
       }
    }
 
@@ -217,7 +219,7 @@ public abstract class AbstractNamePatternFilter implements ItemDataFilter
     * Get sub filters. Each Pattern name stored in own subfilter.
     * @return
     */
-   public List<QPathEntryFilter> getQPathEntryFilters()
+   public Set<QPathEntryFilter> getQPathEntryFilters()
    {
       return subFilters;
    }
