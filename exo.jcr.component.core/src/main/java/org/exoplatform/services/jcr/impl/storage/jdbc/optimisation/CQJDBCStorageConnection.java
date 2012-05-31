@@ -305,7 +305,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> pattern) throws RepositoryException,
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
       IllegalStateException
    {
       return getChildNodesDataInternal(parent, pattern);
@@ -316,7 +316,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * QPathEntryFilter is an exact name the method {@link JDBCStorageConnection#getItemData(NodeData, QPathEntry, ItemType)}
     * will be called instead.
     */
-   protected List<NodeData> getDirectChildNodesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
+   protected List<NodeData> getDirectChildNodesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
       throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
@@ -346,8 +346,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       return children;
    }
 
-   private List<NodeData> getChildNodesDataInternal(NodeData parent, Set<QPathEntryFilter> pattern)
-      throws RepositoryException,
+   private List<NodeData> getChildNodesDataInternal(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
       IllegalStateException
    {
       checkIfOpened();
@@ -788,7 +787,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * QPathEntryFilter is an exact name the method {@link JDBCStorageConnection#getItemData(NodeData, QPathEntry, ItemType)}
     * will be called instead.
     */
-   protected List<PropertyData> getDirectChildPropertiesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
+   protected List<PropertyData> getDirectChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
       throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
@@ -816,13 +815,13 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
       throws RepositoryException, IllegalStateException
    {
       return getChildPropertiesDataInternal(parent, itemDataFilters);
    }
 
-   private List<PropertyData> getChildPropertiesDataInternal(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
+   private List<PropertyData> getChildPropertiesDataInternal(NodeData parent, List<QPathEntryFilter> itemDataFilters)
       throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
@@ -1368,12 +1367,12 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected abstract ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier,
-      Set<QPathEntryFilter> patternList) throws SQLException;
+      List<QPathEntryFilter> patternList) throws SQLException;
 
    protected abstract ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findChildPropertiesByParentIdentifierCQ(String parentIdentifier,
-      Set<QPathEntryFilter> patternList) throws SQLException;
+      List<QPathEntryFilter> patternList) throws SQLException;
 
    protected abstract ResultSet findNodeMainPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
 

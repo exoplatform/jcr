@@ -26,7 +26,6 @@ import org.exoplatform.services.log.Log;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.jcr.RepositoryException;
 
@@ -60,8 +59,7 @@ public class LocalWorkspaceDataManagerStub extends VersionableWorkspaceDataManag
     * {@inheritDoc}
     */
    @Override
-   public List<NodeData> getChildNodesData(NodeData nodeData, Set<QPathEntryFilter> patternFilters)
-      throws RepositoryException
+   public List<NodeData> getChildNodesData(NodeData nodeData, List<QPathEntryFilter> patternFilters) throws RepositoryException
    {
       return Collections.unmodifiableList(super.getChildNodesData(nodeData, patternFilters));
    }
@@ -79,7 +77,7 @@ public class LocalWorkspaceDataManagerStub extends VersionableWorkspaceDataManag
     * {@inheritDoc}
     */
    @Override
-   public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
       throws RepositoryException
    {
       return Collections.unmodifiableList(super.getChildPropertiesData(parent, itemDataFilters));

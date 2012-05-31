@@ -26,9 +26,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -262,8 +260,8 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       return findNodesByParentIdCQ.executeQuery();
    }
 
-   public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
-      throws RepositoryException, IllegalStateException
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> itemDataFilters) throws RepositoryException,
+      IllegalStateException
    {
       return getDirectChildNodesData(parent, itemDataFilters);
    }
@@ -272,7 +270,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier, Set<QPathEntryFilter> pattern)
+   protected ResultSet findChildNodesByParentIdentifierCQ(String parentIdentifier, List<QPathEntryFilter> pattern)
       throws SQLException
    {
       if (pattern.isEmpty())
@@ -293,15 +291,12 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
          query.append("' and I.I_CLASS=1 and I.CONTAINER_NAME='");
          query.append(this.containerConfig.containerName);
          query.append("' and ( ");
-
-         Iterator<QPathEntryFilter> iter = pattern.iterator();
-         appendPattern(query, iter.next().getQPathEntry(), true);
-         while (iter.hasNext())
+         appendPattern(query, pattern.get(0).getQPathEntry(), true);
+         for (int i = 1; i < pattern.size(); i++)
          {
             query.append(" or ");
-            appendPattern(query, iter.next().getQPathEntry(), true);
+            appendPattern(query, pattern.get(i).getQPathEntry(), true);
          }
-
          query.append(" ) and P.PARENT_ID=I.ID and P.I_CLASS=2 and P.CONTAINER_NAME='");
          query.append(this.containerConfig.containerName);
          query.append("' and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType'");
@@ -335,7 +330,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
        return findPropertiesByParentIdCQ.executeQuery();
    }
 
-   public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
       throws RepositoryException, IllegalStateException
    {
       return getDirectChildPropertiesData(parent, itemDataFilters);
@@ -345,7 +340,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentCid, Set<QPathEntryFilter> pattern)
+   protected ResultSet findChildPropertiesByParentIdentifierCQ(String parentCid, List<QPathEntryFilter> pattern)
       throws SQLException
    {
       if (pattern.isEmpty())
@@ -366,15 +361,12 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
          query.append("' and I.I_CLASS=2 and I.CONTAINER_NAME='");
          query.append(this.containerConfig.containerName);
          query.append("' and ( ");
-
-         Iterator<QPathEntryFilter> iter = pattern.iterator();
-         appendPattern(query, iter.next().getQPathEntry(), false);
-         while (iter.hasNext())
+         appendPattern(query, pattern.get(0).getQPathEntry(), false);
+         for (int i = 1; i < pattern.size(); i++)
          {
             query.append(" or ");
-            appendPattern(query, iter.next().getQPathEntry(), false);
+            appendPattern(query, pattern.get(i).getQPathEntry(), false);
          }
-
          query.append(" ) order by I.NAME");
 
          return findPropertiesByParentIdAndComplexPatternCQ.executeQuery(query.toString());

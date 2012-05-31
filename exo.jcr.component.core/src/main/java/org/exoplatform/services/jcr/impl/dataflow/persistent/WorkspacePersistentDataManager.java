@@ -750,7 +750,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   public List<NodeData> getChildNodesData(final NodeData nodeData, Set<QPathEntryFilter> patternFilters)
+   public List<NodeData> getChildNodesData(final NodeData nodeData, List<QPathEntryFilter> patternFilters)
       throws RepositoryException
    {
 
@@ -816,8 +816,8 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   public List<PropertyData> getChildPropertiesData(final NodeData nodeData, final Set<QPathEntryFilter> itemDataFilters)
-      throws RepositoryException
+   public List<PropertyData> getChildPropertiesData(final NodeData nodeData,
+      final List<QPathEntryFilter> itemDataFilters) throws RepositoryException
    {
       final WorkspaceStorageConnection con = dataContainer.openConnection();
       try

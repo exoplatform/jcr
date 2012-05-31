@@ -55,7 +55,6 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
-import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.Node;
@@ -612,7 +611,7 @@ public abstract class BaseStandaloneTest extends TestCase
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
       }
 
-      public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> pattern)
+      public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern)
          throws RepositoryException, IllegalStateException
       {
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
@@ -634,7 +633,7 @@ public abstract class BaseStandaloneTest extends TestCase
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
       }
 
-      public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> pattern)
+      public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern)
          throws RepositoryException, IllegalStateException
       {
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");

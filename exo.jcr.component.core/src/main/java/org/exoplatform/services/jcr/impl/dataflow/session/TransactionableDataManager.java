@@ -38,7 +38,6 @@ import org.exoplatform.services.log.Log;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -147,7 +146,7 @@ public class TransactionableDataManager implements DataManager
       return hasNext;
    }
 
-   public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> patternFilters)
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters)
       throws RepositoryException
    {
       List<NodeData> nodes = storageDataManager.getChildNodesData(parent, patternFilters);
@@ -279,7 +278,7 @@ public class TransactionableDataManager implements DataManager
    /**
     * {@inheritDoc}
     */
-   public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
       throws RepositoryException
    {
       List<PropertyData> props = storageDataManager.getChildPropertiesData(parent, itemDataFilters);

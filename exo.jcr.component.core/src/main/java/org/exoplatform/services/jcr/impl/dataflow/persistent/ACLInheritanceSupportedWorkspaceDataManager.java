@@ -31,7 +31,6 @@ import org.exoplatform.services.log.Log;
 
 import java.util.Calendar;
 import java.util.List;
-import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -66,8 +65,7 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
    /**
     * {@inheritDoc}
     */
-   public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> patternFilters)
-      throws RepositoryException
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> patternFilters) throws RepositoryException
    {
       return persistentManager.getChildNodesData(parent, patternFilters);
    }
@@ -142,7 +140,7 @@ public class ACLInheritanceSupportedWorkspaceDataManager implements SharedDataMa
    /**
     * {@inheritDoc}
     */
-   public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> itemDataFilters)
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilters)
       throws RepositoryException
    {
       return persistentManager.getChildPropertiesData(parent, itemDataFilters);

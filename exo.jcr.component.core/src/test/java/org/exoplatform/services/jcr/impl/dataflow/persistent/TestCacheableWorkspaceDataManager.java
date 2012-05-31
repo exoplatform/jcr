@@ -41,7 +41,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -516,7 +515,7 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
                Arrays.asList((ValueData)new ByteArrayPersistedValueData(1, "foo".getBytes()))));
       }
 
-      public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> pattern)
+      public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern)
          throws RepositoryException, IllegalStateException
       {
          getChildPropertiesDataCalls.incrementAndGet();
@@ -600,8 +599,7 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
          return -1;
       }
 
-      public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> pattern)
-         throws RepositoryException,
+      public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
          IllegalStateException
       {
          return null;

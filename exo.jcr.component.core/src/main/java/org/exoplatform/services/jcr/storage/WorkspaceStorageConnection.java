@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 
 import java.util.List;
-import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -132,7 +131,7 @@ public interface WorkspaceStorageConnection
     * @throws IllegalStateException
     *           if connection is closed
     */
-   List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> pattern) throws RepositoryException,
+   List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
       IllegalStateException;
 
    /**
@@ -181,8 +180,8 @@ public interface WorkspaceStorageConnection
     * @throws IllegalStateException
     *           if connection is closed
     */
-   List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> pattern)
-      throws RepositoryException, IllegalStateException;
+   List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
+      IllegalStateException;
 
    /**
     * Reads <code>List</code> of <code>PropertyData</code> with empty <code>ValueData</code> from the

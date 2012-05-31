@@ -31,7 +31,6 @@ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -443,7 +442,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * {@inheritDoc}
     */
-   public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> pattern) throws RepositoryException,
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
       IllegalStateException
    {
       Statistics s = ALL_STATISTICS.get(GET_CHILD_NODES_DATA_PATTERN_DESCR);
@@ -478,7 +477,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * {@inheritDoc}
     */
-   public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> pattern)
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> pattern)
       throws RepositoryException, IllegalStateException
    {
       Statistics s = ALL_STATISTICS.get(GET_CHILD_PROPERTIES_DATA_PATTERN_DESCR);

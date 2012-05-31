@@ -1052,7 +1052,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * {@inheritDoc}
     */
-   public List<NodeData> getChildNodesData(NodeData parent, Set<QPathEntryFilter> pattern) throws RepositoryException,
+   public List<NodeData> getChildNodesData(NodeData parent, List<QPathEntryFilter> pattern) throws RepositoryException,
       IllegalStateException
    {
       //return all child nodes by default
@@ -1218,7 +1218,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * {@inheritDoc}
     */
-   public List<PropertyData> getChildPropertiesData(NodeData parent, Set<QPathEntryFilter> itemDataFilter)
+   public List<PropertyData> getChildPropertiesData(NodeData parent, List<QPathEntryFilter> itemDataFilter)
       throws RepositoryException, IllegalStateException
    {
       //return all child properties by default
