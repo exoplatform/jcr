@@ -262,12 +262,18 @@ public class OracleCleaningScipts extends DBCleaningScripts
 
       // TRIGGER and SEQ
       scripts.add("RENAME " + valueTableName + "_SEQ_OLD TO " + valueTableName + "_SEQ");
-      scripts.add("CREATE OR REPLACE trigger BI_" + valueTableName +
-        " before insert on " + valueTableName + " " +
-        " for each row " +
-        " begin " +
-        "   SELECT " + valueTableName + "_SEQ.nextval INTO :NEW.ID FROM dual; " +
-        " end; ");
+      try
+      {
+         scripts.add(DBInitializerHelper.getObjectScript("CREATE OR REPLACE trigger", multiDb, dialect, wsEntry));
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new RuntimeException("Cannot get sql script for creating the trigger.", e);
+      }
+      catch (IOException e)
+      {
+         throw new RuntimeException("Cannot get sql script for creating the trigger.", e);
+      }
 
       // ITEM
       scripts.add("ALTER TABLE " + itemTableName + "_OLD RENAME TO " + itemTableName + "");
