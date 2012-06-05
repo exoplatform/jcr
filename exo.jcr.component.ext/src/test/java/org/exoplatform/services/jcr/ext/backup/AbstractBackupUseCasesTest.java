@@ -397,6 +397,47 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    {
       testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType.ISOLATED, DatabaseStructureType.MULTI);
    }
+   
+   public void testRepositoryFullBackupRestoreBackupSingleToIsolatedOnIsolated() throws Exception
+   {
+      // prepare
+      ManageableRepository repositorySourceBackup = helper.createRepository(container, DatabaseStructureType.SINGLE, null);
+      addConent(repositorySourceBackup, repositorySourceBackup.getConfiguration().getSystemWorkspaceName());
+
+      // backup
+      File backDir = new File("target/backup/" + IdGenerator.generate());
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repositorySourceBackup.getConfiguration().getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+      
+      
+      RepositoryEntry re = helper.createRepositoryEntry(DatabaseStructureType.ISOLATED, repositorySourceBackup.getWorkspaceNames()[0], null);
+      repositoryService.createRepository(re);  
+      ManageableRepository repository = repositoryService.getRepository(re.getName());
+      addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
+
+      // restore
+      RepositoryEntry newRE =
+         helper.copyRepositoryEntry(repository.getConfiguration());
+
+      File backLog = new File(bch.getLogFilePath());
+      assertTrue(backLog.exists());
+
+      RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+
+      assertNotNull(bchLog.getStartedTime());
+      assertNotNull(bchLog.getFinishedTime());
+
+      backup.restoreExistingRepository(bchLog, newRE, false);
+      checkConent(repositoryService.getRepository(newRE.getName()), newRE.getSystemWorkspaceName());
+   }
 
    private void testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType srcDbStructureType,
       DatabaseStructureType dstDbStructureType) throws Exception

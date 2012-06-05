@@ -169,7 +169,6 @@ public class OracleCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TRIGGER BI_" + valueTableName + "");
       scripts.add("DROP SEQUENCE " + valueTableName + "_SEQ");
 
       scripts.addAll(super.getTablesDroppingScripts());
@@ -184,7 +183,6 @@ public class OracleCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TRIGGER BI_" + valueTableName + "_OLD");
       scripts.add("DROP SEQUENCE " + valueTableName + "_SEQ_OLD");
 
       scripts.addAll(super.getOldTablesDroppingScripts());
@@ -212,7 +210,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
 
       // TRIGGER and SEQ
       scripts.add("RENAME " + valueTableName + "_SEQ TO " + valueTableName + "_SEQ_OLD");
-      scripts.add("ALTER TRIGGER BI_" + valueTableName + " RENAME TO BI_" + valueTableName + "_OLD");
+      scripts.add("DROP TRIGGER BI_" + valueTableName);
 
       // JCR_ITEM
       scripts.add("ALTER TABLE " + itemTableName + " RENAME TO " + itemTableName + "_OLD");
@@ -264,7 +262,12 @@ public class OracleCleaningScipts extends DBCleaningScripts
 
       // TRIGGER and SEQ
       scripts.add("RENAME " + valueTableName + "_SEQ_OLD TO " + valueTableName + "_SEQ");
-      scripts.add("ALTER TRIGGER BI_" + valueTableName + "_OLD RENAME TO BI_" + valueTableName + "");
+      scripts.add("CREATE OR REPLACE trigger BI_" + valueTableName +
+        " before insert on " + valueTableName + " " +
+        " for each row " +
+        " begin " +
+        "   SELECT " + valueTableName + "_SEQ.nextval INTO :NEW.ID FROM dual; " +
+        " end; ");
 
       // ITEM
       scripts.add("ALTER TABLE " + itemTableName + "_OLD RENAME TO " + itemTableName + "");

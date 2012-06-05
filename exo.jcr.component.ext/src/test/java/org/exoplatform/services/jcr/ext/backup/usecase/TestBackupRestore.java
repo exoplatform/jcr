@@ -19,6 +19,8 @@ package org.exoplatform.services.jcr.ext.backup.usecase;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
@@ -45,7 +47,10 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
+import org.exoplatform.services.jcr.util.IdGenerator;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.File;
 import java.sql.Connection;
@@ -183,6 +188,108 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db4");
       workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db8");
       workspaceBackupRestoreDirectlyOverJobWorkspaceRestore("db8");
+   }
+   
+   public void testRepositoryFullBackupRestoreBackupSingleDBToIsolatedOnIsolated() throws Exception
+   {
+      repositoryFullBackupRestoreBackupSingleToIsolatedOnIsolated("db3");
+      repositoryFullBackupRestoreBackupSingleToIsolatedOnIsolated("db3");
+   }
+   
+   protected void repositoryFullBackupRestoreBackupSingleToIsolatedOnIsolated(String repositoryName) throws Exception
+   {
+      // prepare
+      addConent(repositoryName);
+      
+      BackupManagerImpl backupManagerImpl = (BackupManagerImpl)getBackupManager();
+      backupManagerImpl.start();
+
+      // backup
+      File backDir = new File("target/backup/" + IdGenerator.generate());
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repositoryName);
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backupManagerImpl.startBackup(config);
+      
+      // wait till full backup will stop
+      while (bch.getState() != BackupJob.FINISHED)
+      {
+         Thread.yield();
+         Thread.sleep(30);
+      }
+
+      if (bch != null)
+      {
+         backupManagerImpl.stopBackup(bch);
+      }
+      
+      TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
+      RepositoryEntry repositoryEntryIsolated = helper.copyRepositoryEntry(repositoryService.getRepository(repositoryName).getConfiguration());
+      
+      for (WorkspaceEntry we : repositoryEntryIsolated.getWorkspaceEntries())
+      {
+         List<SimpleParameterEntry> props = we.getContainer().getParameters();
+         
+         for (int i = 0; i < props.size(); i++)
+         {
+            SimpleParameterEntry spe = props.get(i);
+            
+            if (spe.getName().equals(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE))
+            {
+              props.set(i, new SimpleParameterEntry(spe.getName(), DatabaseStructureType.ISOLATED.toString()));
+              break;
+            }
+         }
+      }
+      
+      // restore single backup on structure single to isolated
+      {
+         RepositoryEntry newRE = helper.copyRepositoryEntry(repositoryEntryIsolated);
+   
+         File backLog = new File(bch.getLogFilePath());
+         assertTrue(backLog.exists());
+         RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+         
+         backupManagerImpl.restoreExistingRepository(bchLog, newRE, false);
+         checkConent(newRE.getName());
+         
+         String dbStructureType = repositoryService.getRepository(repositoryName).getConfiguration().getWorkspaceEntries().get(0).getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE);
+         assertTrue(DatabaseStructureType.ISOLATED.toString().equalsIgnoreCase(dbStructureType));
+      }
+      
+      
+      // restore  single backup on structure isolated to isolated
+      {
+         RepositoryEntry newRE = helper.copyRepositoryEntry(repositoryEntryIsolated);
+   
+         File backLog = new File(bch.getLogFilePath());
+         assertTrue(backLog.exists());
+   
+         RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+   
+         backupManagerImpl.restoreExistingRepository(bchLog, newRE, false);
+         checkConent(newRE.getName());
+         
+         String dbStructureType = repositoryService.getRepository(repositoryName).getConfiguration().getWorkspaceEntries().get(0).getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE);
+         assertTrue(DatabaseStructureType.ISOLATED.toString().equalsIgnoreCase(dbStructureType));
+      }
+      
+      // revert the single structure in repository
+      {
+         File backLog = new File(bch.getLogFilePath());
+         assertTrue(backLog.exists());
+   
+         RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+   
+         backupManagerImpl.restoreExistingRepository(bchLog.getBackupId(), false);
+         checkConent(repositoryName);
+         String dbStructureType = repositoryService.getRepository(repositoryName).getConfiguration().getWorkspaceEntries().get(0).getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE);
+         assertTrue(DatabaseStructureType.SINGLE.toString().equalsIgnoreCase(dbStructureType));
+      }
    }
 
    protected void repositoryBackupRestoreDirectlyOverJobExistingRepositorySameConfigRestore(String repositoryName)
