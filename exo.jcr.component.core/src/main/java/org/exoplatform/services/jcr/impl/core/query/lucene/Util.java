@@ -34,8 +34,6 @@ import java.util.Iterator;
 import java.util.regex.Pattern;
 
 import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
 /**
@@ -173,39 +171,6 @@ public class Util
    }
 
    /**
-    * Returns a comparable for the internal <code>value</code>.
-    *
-    * @param value an internal value.
-    * @return a comparable for the given <code>value</code>.
-    * @throws ValueFormatException if the given <code>value</code> cannot be
-    *                              converted into a comparable (i.e.
-    *                              unsupported type).
-    * @throws RepositoryException  if an error occurs while converting the
-    *                              value.
-    */
-   public static Comparable getComparable(Value value) throws ValueFormatException, RepositoryException
-   {
-      switch (value.getType())
-      {
-         case PropertyType.BOOLEAN :
-            return ComparableBoolean.valueOf(value.getBoolean());
-         case PropertyType.DATE :
-            return new Long(value.getDate().getTimeInMillis());
-         case PropertyType.DOUBLE :
-            return new Double(value.getDouble());
-         case PropertyType.LONG :
-            return new Long(value.getLong());
-         case PropertyType.NAME :
-         case PropertyType.PATH :
-         case PropertyType.REFERENCE :
-         case PropertyType.STRING :
-            return value.getString();
-         default :
-            throw new RepositoryException("Unsupported type: " + PropertyType.nameFromValue(value.getType()));
-      }
-   }
-
-   /**
     * Compares values <code>c1</code> and <code>c2</code>. If the
     * values have differing types, then the order is defined on
     * the type itself by calling <code>compareTo()</code> on the respective
@@ -243,53 +208,6 @@ public class Util
          String name2 = c2.getClass().getName();
          return name1.compareTo(name2);
       }
-   }
-
-   /**
-    * Compares the two values. If the values have differing types, then an
-    * attempt is made to convert the second value into the type of the first
-    * value.
-    * <p/>
-    * Comparison of binary values is not supported.
-    *
-    * @param v1 the first value.
-    * @param v2 the second value.
-    * @return result of the comparison as specified in
-    *         {@link Comparable#compareTo(Object)}.
-    * @throws ValueFormatException if the given <code>value</code> cannot be
-    *                              converted into a comparable (i.e.
-    *                              unsupported type).
-    * @throws RepositoryException  if an error occurs while converting the
-    *                              value.
-    */
-   public static int compare(Value v1, Value v2) throws ValueFormatException, RepositoryException
-   {
-      Comparable c1 = getComparable(v1);
-      Comparable c2;
-      switch (v1.getType())
-      {
-         case PropertyType.BOOLEAN :
-            c2 = ComparableBoolean.valueOf(v2.getBoolean());
-            break;
-         case PropertyType.DATE :
-            c2 = new Long(v2.getDate().getTimeInMillis());
-            break;
-         case PropertyType.DOUBLE :
-            c2 = new Double(v2.getDouble());
-            break;
-         case PropertyType.LONG :
-            c2 = new Long(v2.getLong());
-            break;
-         case PropertyType.NAME :
-         case PropertyType.PATH :
-         case PropertyType.REFERENCE :
-         case PropertyType.STRING :
-            c2 = v2.getString();
-            break;
-         default :
-            throw new RepositoryException("Unsupported type: " + PropertyType.nameFromValue(v2.getType()));
-      }
-      return compare(c1, c2);
    }
 
    /**

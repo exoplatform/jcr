@@ -23,6 +23,7 @@ import java.util.Calendar;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PropertyType;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
@@ -45,10 +46,6 @@ public class TestOrderByCaseSensitive extends BaseQueryTest
    {
       super.setUp();
 
-   }
-
-   public void testLowerCase() throws Exception
-   {
       Calendar c1 = Calendar.getInstance();
       c1.set(2001, 4, 20, 14, 35, 14);
       Calendar c2 = Calendar.getInstance();
@@ -57,13 +54,33 @@ public class TestOrderByCaseSensitive extends BaseQueryTest
       c3.set(2003, 4, 20, 14, 35, 13);
 
       Node testRoot = root.addNode("testRoot");
+
       Node node1 = testRoot.addNode("node1");
       node1.setProperty("date", c1);
+      node1.setProperty("exo:desc", "CCC");
+      node1.setProperty("exo:title", "AAA");
+      node1.setProperty("exo:name", "exo:AAA", PropertyType.NAME);
+      node1.setProperty("exo:path", "/A/A/A", PropertyType.PATH);
+
       Node node2 = testRoot.addNode("node2");
       node2.setProperty("date", c2);
+      node2.setProperty("exo:desc", "AAA");
+      node2.setProperty("exo:title", "XXX");
+      node2.setProperty("exo:name", "exo:XXX", PropertyType.NAME);
+      node2.setProperty("exo:path", "/X/X/X", PropertyType.PATH);
+
       Node node3 = testRoot.addNode("node3");
       node3.setProperty("date", c3);
+      node3.setProperty("exo:desc", "AAA");
+      node3.setProperty("exo:title", "bbb");
+      node3.setProperty("exo:name", "exo:bbb", PropertyType.NAME);
+      node3.setProperty("exo:path", "/b/b/b", PropertyType.PATH);
+
       root.save();
+   }
+
+   public void testLowerCase() throws Exception
+   {
       String sql = "select * from nt:unstructured where jcr:path like '/testRoot/%' order by date desc";
       QueryManager qm = workspace.getQueryManager();
       Query query = qm.createQuery(sql, Query.SQL);
@@ -78,50 +95,20 @@ public class TestOrderByCaseSensitive extends BaseQueryTest
 
    public void testOrderByUpperCase() throws Exception
    {
-      Calendar c1 = Calendar.getInstance();
-      c1.set(2001, 4, 20, 14, 35, 14);
-      Calendar c2 = Calendar.getInstance();
-      c2.set(2002, 5, 20, 14, 35, 14);
-      Calendar c3 = Calendar.getInstance();
-      c3.set(2003, 4, 20, 14, 35, 13);
-
-      Node testRoot = root.addNode("testRoot");
-      Node node1 = testRoot.addNode("node1");
-      node1.setProperty("date", c1);
-      Node node2 = testRoot.addNode("node2");
-      node2.setProperty("date", c2);
-      Node node3 = testRoot.addNode("node3");
-      node3.setProperty("date", c3);
-      root.save();
       String sql = "select * from nt:unstructured where jcr:path like '/testRoot/%' ORDER BY date desc";
       QueryManager qm = workspace.getQueryManager();
       Query query = qm.createQuery(sql, Query.SQL);
       QueryResult result = query.execute();
       NodeIterator nodes = result.getNodes();
+
       assertEquals(3, nodes.getSize());
       assertEquals("node3", nodes.nextNode().getName());
       assertEquals("node2", nodes.nextNode().getName());
       assertEquals("node1", nodes.nextNode().getName());
-
    }
 
    public void testDESCUpperCase() throws Exception
    {
-      Calendar c1 = Calendar.getInstance();
-      c1.set(2001, 4, 20, 14, 35, 14);
-      Calendar c2 = Calendar.getInstance();
-      c2.set(2002, 5, 20, 14, 35, 14);
-      Calendar c3 = Calendar.getInstance();
-      c3.set(2003, 4, 20, 14, 35, 13);
-
-      Node testRoot = root.addNode("testRoot");
-      Node node1 = testRoot.addNode("node1");
-      node1.setProperty("date", c1);
-      Node node2 = testRoot.addNode("node2");
-      node2.setProperty("date", c2);
-      Node node3 = testRoot.addNode("node3");
-      node3.setProperty("date", c3);
-      root.save();
       String sql = "select * from nt:unstructured where jcr:path like '/testRoot/%' order by date DESC";
       QueryManager qm = workspace.getQueryManager();
       Query query = qm.createQuery(sql, Query.SQL);
@@ -132,6 +119,186 @@ public class TestOrderByCaseSensitive extends BaseQueryTest
       assertEquals("node3", nodes.nextNode().getName());
       assertEquals("node2", nodes.nextNode().getName());
       assertEquals("node1", nodes.nextNode().getName());
-
    }
+
+   public void testCaseInsensitiveAscOrder() throws Exception
+   {
+      String sql = "select * from nt:unstructured where jcr:path like '/testRoot/%' order by exo:title asc";
+      QueryManager qm = workspace.getQueryManager();
+      QueryImpl query = (QueryImpl)qm.createQuery(sql, Query.SQL);
+      query.setCaseInsensitiveOrder(true);
+
+      QueryResult result = query.execute();
+      NodeIterator nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+      assertEquals("AAA", nodes.nextNode().getProperty("exo:title").getString());
+      assertEquals("bbb", nodes.nextNode().getProperty("exo:title").getString());
+      assertEquals("XXX", nodes.nextNode().getProperty("exo:title").getString());
+
+      query.setCaseInsensitiveOrder(false);
+
+      result = query.execute();
+      nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+      assertEquals("AAA", nodes.nextNode().getProperty("exo:title").getString());
+      assertEquals("XXX", nodes.nextNode().getProperty("exo:title").getString());
+      assertEquals("bbb", nodes.nextNode().getProperty("exo:title").getString());
+   }
+
+   public void testCaseInsensitiveDescOrder() throws Exception
+   {
+      String sql = "select * from nt:unstructured where jcr:path like '/testRoot/%' order by exo:title desc";
+      QueryManager qm = workspace.getQueryManager();
+      QueryImpl query = (QueryImpl)qm.createQuery(sql, Query.SQL);
+      query.setCaseInsensitiveOrder(true);
+
+      QueryResult result = query.execute();
+      NodeIterator nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+      assertEquals("XXX", nodes.nextNode().getProperty("exo:title").getString());
+      assertEquals("bbb", nodes.nextNode().getProperty("exo:title").getString());
+      assertEquals("AAA", nodes.nextNode().getProperty("exo:title").getString());
+
+      query.setCaseInsensitiveOrder(false);
+
+      result = query.execute();
+      nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+      assertEquals("bbb", nodes.nextNode().getProperty("exo:title").getString());
+      assertEquals("XXX", nodes.nextNode().getProperty("exo:title").getString());
+      assertEquals("AAA", nodes.nextNode().getProperty("exo:title").getString());
+   }
+
+   public void testCaseInsensitiveAscOrder2Props() throws Exception
+   {
+      String sql = "select * from nt:unstructured where jcr:path like '/testRoot/%' order by exo:desc, exo:title asc";
+      QueryManager qm = workspace.getQueryManager();
+      QueryImpl query = (QueryImpl)qm.createQuery(sql, Query.SQL);
+      query.setCaseInsensitiveOrder(true);
+
+      QueryResult result = query.execute();
+      NodeIterator nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+
+      Node node = nodes.nextNode();
+      assertEquals("AAA", node.getProperty("exo:desc").getString());
+      assertEquals("bbb", node.getProperty("exo:title").getString());
+
+      node = nodes.nextNode();
+      assertEquals("AAA", node.getProperty("exo:desc").getString());
+      assertEquals("XXX", node.getProperty("exo:title").getString());
+
+      node = nodes.nextNode();
+      assertEquals("CCC", node.getProperty("exo:desc").getString());
+      assertEquals("AAA", node.getProperty("exo:title").getString());
+
+      query.setCaseInsensitiveOrder(false);
+
+      result = query.execute();
+      nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+
+      node = nodes.nextNode();
+      assertEquals("AAA", node.getProperty("exo:desc").getString());
+      assertEquals("XXX", node.getProperty("exo:title").getString());
+
+      node = nodes.nextNode();
+      assertEquals("AAA", node.getProperty("exo:desc").getString());
+      assertEquals("bbb", node.getProperty("exo:title").getString());
+
+      node = nodes.nextNode();
+      assertEquals("CCC", node.getProperty("exo:desc").getString());
+      assertEquals("AAA", node.getProperty("exo:title").getString());
+   }
+
+   public void testCaseInsensitiveAscOrderNameProperty() throws Exception
+   {
+      String sql = "select * from nt:unstructured where jcr:path like '/testRoot/%' order by exo:name asc";
+      QueryManager qm = workspace.getQueryManager();
+      QueryImpl query = (QueryImpl)qm.createQuery(sql, Query.SQL);
+      query.setCaseInsensitiveOrder(true);
+
+      QueryResult result = query.execute();
+      NodeIterator nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+      assertEquals("exo:AAA", nodes.nextNode().getProperty("exo:name").getString());
+      assertEquals("exo:bbb", nodes.nextNode().getProperty("exo:name").getString());
+      assertEquals("exo:XXX", nodes.nextNode().getProperty("exo:name").getString());
+
+      query.setCaseInsensitiveOrder(false);
+
+      result = query.execute();
+      nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+      assertEquals("exo:AAA", nodes.nextNode().getProperty("exo:name").getString());
+      assertEquals("exo:XXX", nodes.nextNode().getProperty("exo:name").getString());
+      assertEquals("exo:bbb", nodes.nextNode().getProperty("exo:name").getString());
+   }
+
+   public void testCaseInsensitiveAscOrderPathProperty() throws Exception
+   {
+      String sql = "select * from nt:unstructured where jcr:path like '/testRoot/%' order by exo:path asc";
+      QueryManager qm = workspace.getQueryManager();
+      QueryImpl query = (QueryImpl)qm.createQuery(sql, Query.SQL);
+      query.setCaseInsensitiveOrder(true);
+
+      QueryResult result = query.execute();
+      NodeIterator nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+      assertEquals("/A/A/A", nodes.nextNode().getProperty("exo:path").getString());
+      assertEquals("/b/b/b", nodes.nextNode().getProperty("exo:path").getString());
+      assertEquals("/X/X/X", nodes.nextNode().getProperty("exo:path").getString());
+
+      query.setCaseInsensitiveOrder(false);
+
+      result = query.execute();
+      nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+      assertEquals("/A/A/A", nodes.nextNode().getProperty("exo:path").getString());
+      assertEquals("/X/X/X", nodes.nextNode().getProperty("exo:path").getString());
+      assertEquals("/b/b/b", nodes.nextNode().getProperty("exo:path").getString());
+   }
+
+   public void testCaseInsensitiveAscCompoundOrder() throws Exception
+   {
+      Node test = root.getNode("testRoot");
+      test.getNode("node1").addNode("child").setProperty("exo:name", "AAA", PropertyType.NAME);
+      test.getNode("node2").addNode("child").setProperty("exo:name", "XXX", PropertyType.NAME);
+      test.getNode("node3").addNode("child").setProperty("exo:name", "bbb", PropertyType.NAME);
+      root.save();
+
+      String sql = "testRoot/* order by child/@exo:name";
+      QueryManager qm = workspace.getQueryManager();
+      QueryImpl query = (QueryImpl)qm.createQuery(sql, Query.XPATH);
+      query.setCaseInsensitiveOrder(true);
+
+      QueryResult result = query.execute();
+      NodeIterator nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+      assertEquals("AAA", nodes.nextNode().getNode("child").getProperty("exo:name").getString());
+      assertEquals("bbb", nodes.nextNode().getNode("child").getProperty("exo:name").getString());
+      assertEquals("XXX", nodes.nextNode().getNode("child").getProperty("exo:name").getString());
+
+      query.setCaseInsensitiveOrder(false);
+
+      result = query.execute();
+      nodes = result.getNodes();
+
+      assertEquals(3, nodes.getSize());
+      assertEquals("AAA", nodes.nextNode().getNode("child").getProperty("exo:name").getString());
+      assertEquals("XXX", nodes.nextNode().getNode("child").getProperty("exo:name").getString());
+      assertEquals("bbb", nodes.nextNode().getNode("child").getProperty("exo:name").getString());
+   }
+
 }

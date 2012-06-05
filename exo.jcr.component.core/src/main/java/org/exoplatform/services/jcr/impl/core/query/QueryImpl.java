@@ -112,14 +112,19 @@ public class QueryImpl extends AbstractQueryImpl
    private boolean initialized = false;
 
    /**
-    * The maximum result size
+    * The maximum result size.
     */
    private long limit;
 
    /**
-    * The offset in the total result set
+    * The offset in the total result set.
     */
    private long offset;
+
+   /**
+    * Indicates does we should use case insensitive sorting by field in order by clause or not.
+    */
+   private boolean caseInsensitiveOrder;
 
    /**
     * @inheritDoc
@@ -157,20 +162,6 @@ public class QueryImpl extends AbstractQueryImpl
       setInitialized();
    }
 
-   //    /**
-   //     * @inheritDoc
-   //     * <p/>
-   //     * Throws an {@link UnsupportedOperationException}.
-   //     */
-   //    public void init(SessionImpl session,
-   //                     Sess itemMgr,
-   //                     QueryHandler handler,
-   //                     QueryObjectModelTree qomTree,
-   //                     String language)
-   //            throws InvalidQueryException, RepositoryException {
-   //        throw new UnsupportedOperationException("not a prepared query");
-   //    }
-
    /**
     * This method simply forwards the <code>execute</code> call to the
     * {@link ExecutableQuery} object returned by
@@ -185,7 +176,9 @@ public class QueryImpl extends AbstractQueryImpl
       {
          time = System.currentTimeMillis();
       }
-      QueryResult result = query.execute(offset, limit);
+
+      QueryResult result = query.execute(offset, limit, caseInsensitiveOrder);
+
       if (log.isDebugEnabled())
       {
          time = System.currentTimeMillis() - time;
@@ -317,6 +310,14 @@ public class QueryImpl extends AbstractQueryImpl
    public void setOffset(long offset)
    {
       this.offset = offset;
+   }
+
+   /**
+    * Setter for {@link #caseInsensitiveOrder} field.
+    */
+   public void setCaseInsensitiveOrder(boolean caseInsensitiveOrder)
+   {
+      this.caseInsensitiveOrder = caseInsensitiveOrder;
    }
 
    //-----------------------------< internal >---------------------------------

@@ -16,6 +16,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.query.ExecutableQuery;
+import org.exoplatform.services.jcr.impl.core.query.PropertyTypeRegistry;
+
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,12 +30,6 @@ import java.util.Set;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
-
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.core.SessionDataManager;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.core.query.ExecutableQuery;
-import org.exoplatform.services.jcr.impl.core.query.PropertyTypeRegistry;
 
 /**
  * <code>AbstractQueryImpl</code> provides a base class for executable queries
@@ -63,6 +63,11 @@ public abstract class AbstractQueryImpl implements ExecutableQuery
     * document order.
     */
    private boolean documentOrder = true;
+
+   /**
+    * Indicates does we should use case insensitive sorting by field in order by clause or not.
+    */
+   private boolean caseInsensitiveOrder;
 
    /**
     * Set&lt;Name>, where Name is a variable name in the query statement.
@@ -117,6 +122,22 @@ public abstract class AbstractQueryImpl implements ExecutableQuery
    public void setRespectDocumentOrder(boolean documentOrder)
    {
       this.documentOrder = documentOrder;
+   }
+
+   /**
+    * Setter for {@link #caseInsensitiveOrder} field.
+    */
+   public void setCaseInsensitiveOrder(boolean caseInsensitiveOrder)
+   {
+      this.caseInsensitiveOrder = caseInsensitiveOrder;
+   }
+
+   /**
+    * Getter for {@link #caseInsensitiveOrder} field.
+    */
+   public boolean isCaseInsensitiveOrder()
+   {
+      return caseInsensitiveOrder;
    }
 
    /**

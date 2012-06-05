@@ -86,18 +86,6 @@ abstract public class FieldComparatorBase extends FieldComparator
     */
    protected int compare(Comparable val1, Comparable val2)
    {
-      if (val1 == null)
-      {
-         if (val2 == null)
-         {
-            return 0;
-         }
-         return -1;
-      }
-      else if (val2 == null)
-      {
-         return 1;
-      }
       return Util.compare(val1, val2);
    }
 

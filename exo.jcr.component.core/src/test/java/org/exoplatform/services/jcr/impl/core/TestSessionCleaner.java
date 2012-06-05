@@ -67,7 +67,6 @@ public class TestSessionCleaner extends JcrImplBaseTest
 
       Thread.sleep(5000);
 
-      System.out.println(session2.getLastAccessTime());
       sessionRegistry.runCleanup();
 
       assertFalse(session2.isLive());

@@ -98,22 +98,16 @@ public class QueryImpl extends AbstractQueryImpl
    }
 
    /**
-    * Executes this query and returns a <code>{@link QueryResult}</code>.
-    * 
-    * @param offset
-    *            the offset in the total result set
-    * @param limit
-    *            the maximum result size
-    * @return a <code>QueryResult</code>
-    * @throws RepositoryException
-    *             if an error occurs
+    * {@inheritDoc}
     */
-   public QueryResult execute(long offset, long limit) throws RepositoryException
+   public QueryResult execute(long offset, long limit, boolean caseInsensitiveOrder) throws RepositoryException
    {
       if (log.isDebugEnabled())
       {
          log.debug("Executing query: \n" + root.dump());
       }
+      
+      setCaseInsensitiveOrder(caseInsensitiveOrder);
 
       // build lucene query
       Query query =

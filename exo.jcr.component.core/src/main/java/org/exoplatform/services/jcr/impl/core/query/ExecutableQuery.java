@@ -16,11 +16,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.query.QueryResult;
-
-import org.exoplatform.services.jcr.datamodel.InternalQName;
 
 
 
@@ -32,15 +32,16 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  */
 public interface ExecutableQuery {
 
-    /**
-     * Executes this query and returns a <code>{@link QueryResult}</code>.
-     * @param offset the offset in the total result set
-     * @param limit the maximum result size
-     *
-     * @return a <code>QueryResult</code>
-     * @throws RepositoryException if an error occurs
-     */
-    QueryResult execute(long offset, long limit) throws RepositoryException;
+   /**
+    * Executes this query and returns a <code>{@link QueryResult}</code>.
+    * @param offset the offset in the total result set
+    * @param limit the maximum result size
+    * @param caseSensitiveOrder indicates case insensitive sorting
+    *
+    * @return a <code>QueryResult</code>
+    * @throws RepositoryException if an error occurs
+    */
+   QueryResult execute(long offset, long limit, boolean caseSensitiveOrder) throws RepositoryException;
 
     /**
      * Binds the given <code>value</code> to the variable named
