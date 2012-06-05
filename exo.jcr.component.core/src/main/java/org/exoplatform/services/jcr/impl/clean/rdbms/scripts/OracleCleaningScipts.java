@@ -246,7 +246,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
    /**
     * {@inheritDoc}
     */
-   protected Collection<String> getOldTablesRenamingScripts()
+   protected Collection<String> getOldTablesRenamingScripts() throws DBCleanException
    {
       Collection<String> scripts = new ArrayList<String>();
 
@@ -268,11 +268,11 @@ public class OracleCleaningScipts extends DBCleaningScripts
       }
       catch (RepositoryConfigurationException e)
       {
-         throw new RuntimeException("Cannot get sql script for creating the trigger.", e);
+         throw new DBCleanException(e);
       }
       catch (IOException e)
       {
-         throw new RuntimeException("Cannot get sql script for creating the trigger.", e);
+         throw new DBCleanException(e);
       }
 
       // ITEM
