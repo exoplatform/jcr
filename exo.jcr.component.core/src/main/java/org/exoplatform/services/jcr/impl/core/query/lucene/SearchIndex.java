@@ -81,8 +81,20 @@ import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.query.InvalidQueryException;
@@ -202,7 +214,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Default name of the error log file
     */
    private static final String ERROR_LOG = "error.log";
-   
+
    /**
     * The actual index
     */
@@ -464,12 +476,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Indicates if this <code>SearchIndex</code> is closed and cannot be used
     * anymore.
     */
-   private boolean closed = false;
+   private final AtomicBoolean closed = new AtomicBoolean(false);
 
    /**
     * Allows or denies queries while index is offline.
     */
-   private boolean allowQuery = true;
+   private final AtomicBoolean allowQuery = new AtomicBoolean(true);
 
    /**
     * Text extractor for extracting text content of binary properties.
@@ -516,12 +528,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * Waiting query execution until resume. 
     */
-   protected CountDownLatch latcher = null;
+   protected final AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
 
    /**
     * Indicates if component suspended or not.
     */
-   protected boolean isSuspended = false;
+   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
 
    protected final Set<String> recoveryFilterClasses;
 
@@ -1233,11 +1245,21 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
    /**
     * Closes this <code>QueryHandler</code> and frees resources attached to
-    * this handler.
+    * this handler. Also resume waiting threads.
     */
    public void close()
    {
-      if (!closed)
+      closeAndKeepWaitingThreads();
+      resumeWaitingThreads();
+   }
+
+   /**
+    * Closes this <code>QueryHandler</code> and frees resources attached to
+    * this handler.
+    */
+   public void closeAndKeepWaitingThreads()
+   {
+      if (!closed.get())
       {
          // cleanup resources obtained by filters
          if (recoveryFilters != null)
@@ -1268,7 +1290,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          errorLog.close();
          index.close();
          getContext().destroy();
-         closed = true;
+         closed.set(true);
          log.info("Index closed: " + path);
       }
    }
@@ -1546,7 +1568,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    protected IndexReader getIndexReader(boolean includeSystemIndex) throws IOException
    {
       // deny query execution if index in offline mode and allowQuery is false
-      if (!index.isOnline() && !allowQuery)
+      if (!index.isOnline() && !allowQuery.get())
       {
          throw new IndexOfflineIOException("Index is offline");
       }
@@ -3202,7 +3224,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    private void checkOpen() throws IOException
    {
-      if (closed)
+      if (closed.get())
       {
          throw new IOException("query handler closed and cannot be used anymore.");
       }
@@ -3358,11 +3380,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       checkOpen();
       if (isOnline)
       {
-         this.allowQuery = true;
+         this.allowQuery.set(true);
       }
       else
       {
-         this.allowQuery = allowQuery;
+         this.allowQuery.set(allowQuery);
       }
       index.setOnline(isOnline, dropStaleIndexes);
    }
@@ -3380,10 +3402,10 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void suspend() throws SuspendException
    {
-      latcher = new CountDownLatch(1);
-      close();
+      latcher.set(new CountDownLatch(1));
+      closeAndKeepWaitingThreads();
 
-      isSuspended = true;
+      isSuspended.set(true);
    }
 
    /**
@@ -3393,12 +3415,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       try
       {
-         closed = false;
+         closed.set(false);
          doInit();
 
-         latcher.countDown();
+         resumeWaitingThreads();
 
-         isSuspended = false;
+         isSuspended.set(false);
       }
       catch (IOException e)
       {
@@ -3415,7 +3437,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public boolean isSuspended()
    {
-      return isSuspended;
+      return isSuspended.get();
    }
 
    /**
@@ -3426,11 +3448,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    private void waitForResuming() throws IOException
    {
-      if (isSuspended)
+      if (isSuspended.get())
       {
          try
          {
-            latcher.await();
+            latcher.get().await();
          }
          catch (InterruptedException e)
          {
@@ -3440,11 +3462,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    }
 
    /**
-    * {@inheritDoc}
+    * Count down latcher which makes for resuming all
+    * waiting threads.
     */
-   public int getPriority()
+   public void resumeWaitingThreads()
    {
-      return PRIORITY_NORMAL;
+      if (latcher.get() != null)
+      {
+         latcher.get().countDown();
+      }
    }
 
    /**
@@ -3461,5 +3487,13 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void setIndexingThreadPoolSize(Integer indexingThreadPoolSize)
    {
       this.indexingThreadPoolSize = indexingThreadPoolSize;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int getPriority()
+   {
+      return PRIORITY_NORMAL;
    }
 }

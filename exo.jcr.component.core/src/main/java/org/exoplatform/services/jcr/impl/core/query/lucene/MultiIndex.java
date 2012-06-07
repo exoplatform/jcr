@@ -65,6 +65,7 @@ import java.util.TimerTask;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
@@ -242,12 +243,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * Or for any other reason it should be switched
     * to offline mode.
     */
-   private boolean online = true;
+   private final AtomicBoolean online = new AtomicBoolean(true);
 
    /**
     * Flag indicating whether the index is stopped.
     */
-   private volatile boolean stopped;
+   private final AtomicBoolean stopped = new AtomicBoolean();
 
    /**
     * The index format version of this multi index.
@@ -267,7 +268,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       @Override
       public void run()
       {
-         stopped = true;
+         stopped.set(true);
       }
    };
 
@@ -592,12 +593,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    public void reindex(ItemDataConsumer stateMgr) throws IOException, RepositoryException
    {
-      if (stopped)
+      if (stopped.get())
       {
          throw new IllegalStateException("Can't invoke reindexing on closed index.");
       }
 
-      if (online)
+      if (online.get())
       {
          throw new IllegalStateException("Can't invoke reindexing while index still online.");
       }
@@ -645,7 +646,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    synchronized void update(final Collection<String> remove, final Collection<Document> add) throws IOException
    {
-      if (!online)
+      if (!online.get())
       {
          doUpdateOffline(remove, add);
       }
@@ -1215,7 +1216,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          try
          {
             // if we are reindexing there is already an active transaction
-            if (online)
+            if (online.get())
             {
                executeAndLog(new Start(Action.INTERNAL_TRANS_REPL_INDEXES));
             }
@@ -1246,7 +1247,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             index.commit();
 
-            if (online)
+            if (online.get())
             {
                // only commit if we are not reindexing
                // when reindexing the final commit is done at the very end
@@ -1271,7 +1272,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
          }
       }
-      if (!online)
+      if (!online.get())
       {
          // do some cleanup right away when reindexing
          attemptDelete();
@@ -1335,7 +1336,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   // if index in offline mode, due to hot async reindexing,
                   // need to return the reader containing only stale indexes (old),
                   // without newly created.
-                  List<PersistentIndex> persistedIndexesList = online ? indexes : staleIndexes;
+                  List<PersistentIndex> persistedIndexesList = online.get() ? indexes : staleIndexes;
                   List<ReadOnlyIndexReader> readerList = new ArrayList<ReadOnlyIndexReader>();
                   for (int i = 0; i < persistedIndexesList.size(); i++)
                   {
@@ -1388,15 +1389,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    void close()
    {
-      // stop index merger
-      // when calling this method we must not lock this MultiIndex, otherwise
-      // a deadlock might occur
-      if (merger != null)
-      {
-         merger.dispose();
-         merger = null;
-      }
-
       synchronized (this)
       {
          // stop timer
@@ -1445,7 +1437,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          modeHandler.removeIndexerIoModeListener(this);
          indexUpdateMonitor.removeIndexUpdateMonitorListener(this);
-         this.stopped = true;
+         this.stopped.set(true);
          // Remove the hook that will stop the threads if they are still running
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
          {
@@ -1464,6 +1456,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                return null;
             }
          });
+      }
+      // stop index merger after all possible flushes.
+      // when calling this method we must not lock this MultiIndex, otherwise
+      // a deadlock might occur
+      if (merger != null)
+      {
+         merger.dispose();
+         merger = null;
       }
    }
 
@@ -1869,7 +1869,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
       final AtomicLong count) throws IOException, RepositoryException, InterruptedException
    {
-      if (stopped)
+      if (stopped.get())
       {
          throw new InterruptedException();
       }
@@ -2016,7 +2016,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       for (NodeDataIndexing node : iterator.next())
       {
-         if (stopped)
+         if (stopped.get())
          {
             throw new InterruptedException();
          }
@@ -2142,7 +2142,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private synchronized void checkFlush()
    {
       // avoid frequent flushes during reindexing;
-      long idleTime = online ? System.currentTimeMillis() - lastFlushTime : 0;
+      long idleTime = online.get() ? System.currentTimeMillis() - lastFlushTime : 0;
       long volatileTime = System.currentTimeMillis() - lastFileSystemFlushTime;
       // do not flush if volatileIdleTime is zero or negative
       if ((handler.getVolatileIdleTime() > 0 && idleTime > handler.getVolatileIdleTime() * 1000)
@@ -3470,7 +3470,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    public boolean isOnline()
    {
-      return online;
+      return online.get();
    }
 
    /**
@@ -3478,7 +3478,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    public boolean isStopped()
    {
-      return stopped;
+      return stopped.get();
    }
 
    /**
@@ -3490,7 +3490,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    public synchronized void setOnline(boolean isOnline, boolean dropStaleIndexes) throws IOException
    {
       // if mode really changed
-      if (online != isOnline)
+      if (online.get() != isOnline)
       {
          // switching to ONLINE
          if (isOnline)
@@ -3499,7 +3499,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
             {
                offlineIndex.commit(true);
-               online = true;
+               online.set(true);
                // cleaning stale indexes
                for (PersistentIndex staleIndex : staleIndexes)
                {
@@ -3512,7 +3512,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             else
             {
-               online = true;
+               online.set(true);
                staleIndexes.clear();
             }
          }
@@ -3538,10 +3538,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                staleIndexes.addAll(indexes);
             }
 
-            online = false;
+            online.set(false);
          }
       }
-      else if (!online)
+      else if (!online.get())
       {
          throw new IOException("Index is already in OFFLINE mode.");
       }

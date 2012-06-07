@@ -104,6 +104,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.StringTokenizer;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
@@ -212,12 +213,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * Indicates if component suspended or not.
     */
-   protected boolean isSuspended = false;
+   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
 
    /**
     * Indicates that node keep responsible for resuming.
     */
-   protected Boolean isResponsibleForResuming = false;
+   protected final AtomicBoolean isResponsibleForResuming = new AtomicBoolean(false);
 
    /**
     * Suspend remote command.
@@ -403,7 +404,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public void checkIndex(final InspectionReport report, final boolean isSystem) throws RepositoryException,
       IOException
    {
-      if (isSuspended)
+      if (isSuspended.get())
       {
          try
          {
@@ -414,7 +415,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                   // try resuming the workspace
                   try
                   {
-                     if (isSystem && parentSearchManager != null && parentSearchManager.isSuspended)
+                     if (isSystem && parentSearchManager != null && parentSearchManager.isSuspended.get())
                      {
                         parentSearchManager.resume();
                      }
@@ -433,7 +434,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                      try
                      {
                         suspend();
-                        if (isSystem && parentSearchManager != null && !parentSearchManager.isSuspended)
+                        if (isSystem && parentSearchManager != null && !parentSearchManager.isSuspended.get())
                         {
                            parentSearchManager.suspend();
                         }
@@ -699,6 +700,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public void stop()
    {
       handler.close();
+
       // ChangesFiler instance is one for both SearchManagers and close() must be invoked only once,  
       if (parentSearchManager != null)
       {
@@ -1202,7 +1204,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    {
       if (rpcService != null)
       {
-         isResponsibleForResuming = true;
+         isResponsibleForResuming.set(true);
 
          try
          {
@@ -1228,7 +1230,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public boolean isSuspended()
    {
-      return isSuspended;
+      return isSuspended.get();
    }
 
    /**
@@ -1275,7 +1277,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             throw new ResumeException(e);
          }
 
-         isResponsibleForResuming = false;
+         isResponsibleForResuming.set(false);
       }
       else
       {
@@ -1303,10 +1305,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          throw new IllegalStateException(
             "Index is not in READ_WRITE mode and reindexing can't be launched. Please start reindexing on coordinator node.");
       }
-      if (isSuspended || !handler.isOnline())
+      if (isSuspended.get() || !handler.isOnline())
       {
          throw new IllegalStateException("Can't start reindexing while index is "
-            + ((isSuspended) ? "SUSPENDED." : "already OFFLINE (it means that reindexing is in progress).") + ".");
+            + ((isSuspended.get()) ? "SUSPENDED." : "already OFFLINE (it means that reindexing is in progress).") + ".");
       }
 
       log.info("Starting hot reindexing on the " + handler.getContext().getRepositoryName() + "/"
@@ -1321,7 +1323,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             hotReindexingState = "Running. Started at " + sdf.format(Calendar.getInstance().getTime());
             try
             {
-               isResponsibleForResuming = true;
+               isResponsibleForResuming.set(true);
                // set offline cluster wide (will make merger disposed and volatile flushed)
                if (rpcService != null && changesFilter.isShared())
                {
@@ -1399,7 +1401,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                   hotReindexingState = "Stopped with errors at " + sdf.format(Calendar.getInstance().getTime());
                   log.info("Reindexing halted with errors.");
                }
-               isResponsibleForResuming = false;
+               isResponsibleForResuming.set(false);
             }
          }
       }, "HotReindexing-" + handler.getContext().getRepositoryName() + "-"
@@ -1512,7 +1514,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
          public Serializable execute(Serializable[] args) throws Throwable
          {
-            return isResponsibleForResuming;
+            return isResponsibleForResuming.get();
          }
       });
 
@@ -1542,27 +1544,27 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          throw new SuspendException("Can't suspend index, while reindexing in progeress.");
       }
 
-      if (!isSuspended)
+      if (!isSuspended.get())
       {
          if (handler instanceof Suspendable)
          {
             ((Suspendable)handler).suspend();
          }
 
-         isSuspended = true;
+         isSuspended.set(true);
       }
    }
 
    protected void resumeLocally() throws ResumeException
    {
-      if (isSuspended)
+      if (isSuspended.get())
       {
          if (handler instanceof Suspendable)
          {
             ((Suspendable)handler).resume();
          }
 
-         isSuspended = false;
+         isSuspended.set(false);
       }
    }
 
@@ -1571,7 +1573,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void onChange(TopologyChangeEvent event)
    {
-      if (isSuspended)
+      if (isSuspended.get())
       {
          new Thread()
          {

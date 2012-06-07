@@ -74,6 +74,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.RepositoryException;
 import javax.transaction.Status;
@@ -141,17 +142,22 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Indicates if component suspended or not.
     */
-   protected boolean isSuspended = false;
+   protected final AtomicBoolean isSuspended = new AtomicBoolean(false);
+
+   /**
+    * Indicates if component stopped or not.
+    */
+   protected final AtomicBoolean isStopped = new AtomicBoolean(false);
 
    /**
     * Allows to make all threads waiting until resume. 
     */
-   protected CountDownLatch latcher = null;
+   protected final AtomicReference<CountDownLatch> latcher = new AtomicReference<CountDownLatch>();
 
    /**
     * Indicates that node keep responsible for resuming.
     */
-   protected Boolean isResponsibleForResuming = false;
+   protected final AtomicBoolean isResponsibleForResuming = new AtomicBoolean(false);
 
    /**
     * Request to all nodes to check if there is someone who responsible for resuming.
@@ -927,11 +933,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void save(final ItemStateChangesLog changesLog) throws RepositoryException
    {
-      if (isSuspended)
+      if (isSuspended.get())
       {
          try
          {
-            latcher.await();
+            latcher.get().await();
          }
          catch (InterruptedException e)
          {
@@ -971,7 +977,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          workingThreads.decrementAndGet();
 
-         if (isSuspended && workingThreads.get() == 0)
+         if (isSuspended.get() && workingThreads.get() == 0)
          {
             synchronized (workingThreads)
             {
@@ -983,6 +989,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private void doSave(final ItemStateChangesLog changesLog) throws RepositoryException
    {
+      if (isStopped.get())
+      {
+         throw new RepositoryException("Data container is stopped");
+      }
+      
       ChangesLogWrapper logWrapper = new ChangesLogWrapper(changesLog);
 
       if (isTxAware())
@@ -1933,7 +1944,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    {
       if (rpcService != null)
       {
-         isResponsibleForResuming = true;
+         isResponsibleForResuming.set(true);
 
          try
          {
@@ -1974,7 +1985,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             throw new ResumeException(e);
          }
 
-         isResponsibleForResuming = false;
+         isResponsibleForResuming.set(false);
       }
       else
       {
@@ -1987,15 +1998,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public boolean isSuspended()
    {
-      return isSuspended;
+      return isSuspended.get();
    }
 
    private void suspendLocally() throws SuspendException
    {
-      if (!isSuspended)
+      if (!isSuspended.get())
       {
-         latcher = new CountDownLatch(1);
-         isSuspended = true;
+         latcher.set(new CountDownLatch(1));
+         isSuspended.set(true);
 
          if (workingThreads.get() > 0)
          {
@@ -2020,12 +2031,12 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
 
-   private void resumeLocally() throws ResumeException
+   private void resumeLocally()
    {
-      if (isSuspended)
+      if (isSuspended.get())
       {
-         latcher.countDown();
-         isSuspended = false;
+         latcher.get().countDown();
+         isSuspended.set(false);
       }
    }
 
@@ -2034,7 +2045,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void onChange(TopologyChangeEvent event)
    {
-      if (isSuspended)
+      if (isSuspended.get())
       {
          new Thread()
          {
@@ -2054,14 +2065,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   }
 
                   // node which was responsible for resuming leave the cluster, so resume component
-                  try
-                  {
-                     resumeLocally();
-                  }
-                  catch (ResumeException e)
-                  {
-                     LOG.error("Can not resume component", e);
-                  }
+                  resumeLocally();
                }
                catch (SecurityException e1)
                {
@@ -2127,7 +2131,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
             public Serializable execute(Serializable[] args) throws Throwable
             {
-               return isResponsibleForResuming;
+               return isResponsibleForResuming.get();
             }
          });
 
@@ -2377,6 +2381,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void start()
    {
+      isStopped.set(false);
+
       try
       {
          this.cache.addListener(this);
@@ -2478,6 +2484,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          cache.removeListener(this);
       }
+
+      isStopped.set(true);
+      resumeLocally();
    }
 
    /**
