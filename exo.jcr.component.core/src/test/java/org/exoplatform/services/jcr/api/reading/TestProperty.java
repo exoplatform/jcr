@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.api.reading;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.PropertyInfo;
 
 import java.io.ByteArrayInputStream;
@@ -147,7 +148,8 @@ public class TestProperty extends JcrAPIBaseTest
    public void testGetBinaryAsStream() throws RepositoryException, IOException
    {
 
-      node.setProperty("stream", new BinaryValue("inputStream"));
+      node.setProperty("stream",
+         new BinaryValue(new ByteArrayInputStream("inputStream".getBytes()), SpoolConfig.getDefaultSpoolConfig()));
       Value value = node.getProperty("stream").getValue();
       InputStream iS = value.getStream();
       byte[] bytes = new byte[iS.available()];
@@ -292,7 +294,8 @@ public class TestProperty extends JcrAPIBaseTest
 
       // System.out.println("STREAM>>>>>>");
 
-      node.setProperty("stream", new BinaryValue("inputStream"));
+      node.setProperty("stream",
+         new BinaryValue(new ByteArrayInputStream("inputStream".getBytes()), SpoolConfig.getDefaultSpoolConfig()));
       // System.out.println("STREAM>>>>>>");
 
       // log.debug("STREAM>>>>>>");

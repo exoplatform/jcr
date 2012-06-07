@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
@@ -28,8 +27,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -212,15 +209,6 @@ public class StreamPersistedValueData extends FilePersistedValueData
             return -1;
          }
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public TransientValueData createTransientCopy() throws RepositoryException
-   {
-      return new TransientValueData(this);
    }
 
    /**

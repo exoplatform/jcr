@@ -26,9 +26,11 @@ import org.exoplatform.services.jcr.impl.core.value.BooleanValue;
 import org.exoplatform.services.jcr.impl.core.value.DoubleValue;
 import org.exoplatform.services.jcr.impl.core.value.LongValue;
 import org.exoplatform.services.jcr.impl.core.value.StringValue;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -63,7 +65,7 @@ public class TestValueImpl extends TestCase
          out.close();
 
          FileInputStream fs1 = new FileInputStream(file);
-         BinaryValue val = new BinaryValue(fs1, testFileCleaner, tempDirectory, maxFufferSize);
+         BinaryValue val = new BinaryValue(fs1, SpoolConfig.getDefaultSpoolConfig());
          InputStream str1 = val.getStream();
          assertNotNull(str1);
 
@@ -74,7 +76,7 @@ public class TestValueImpl extends TestCase
          assertEquals(str1, val.getStream());
 
          // another one value using the same string
-         BinaryValue val2 = new BinaryValue(fs1, testFileCleaner, tempDirectory, maxFufferSize);
+         BinaryValue val2 = new BinaryValue(fs1, SpoolConfig.getDefaultSpoolConfig());
          InputStream str2 = val2.getStream();
 
          // are not the same although created from same Stream
@@ -100,7 +102,8 @@ public class TestValueImpl extends TestCase
    public void testNewBinaryValueFromString() throws Exception
    {
 
-      BinaryValue val = new BinaryValue("string");
+      BinaryValue val =
+         new BinaryValue(new ByteArrayInputStream("string".getBytes()), SpoolConfig.getDefaultSpoolConfig());
       InputStream str1 = val.getStream();
       assertNotNull(str1);
       // stream already consumed
@@ -113,7 +116,8 @@ public class TestValueImpl extends TestCase
       {
       }
 
-      BinaryValue val2 = new BinaryValue("stream");
+      BinaryValue val2 =
+         new BinaryValue(new ByteArrayInputStream("stream".getBytes()), SpoolConfig.getDefaultSpoolConfig());
       String str2 = val2.getString();
       assertNotNull(str2);
       // string already consumed

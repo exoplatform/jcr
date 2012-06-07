@@ -69,7 +69,8 @@ public abstract class AbstractItemDataCopyVisitor extends ItemDataTraversingVisi
             }
             else
             {
-               copy.add(new TransientValueData(vd.getOrderNumber(), vd.getAsStream()));
+               copy.add(new TransientValueData(vd.getOrderNumber(), vd.getAsStream(), SpoolConfig
+                  .getDefaultSpoolConfig()));
             }
          }
       }

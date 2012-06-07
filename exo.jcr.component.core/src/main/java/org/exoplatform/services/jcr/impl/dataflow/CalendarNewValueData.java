@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+ * Copyright (C) 2012 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,28 +16,37 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.storage.value.fs;
+package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
+import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 
-import java.io.IOException;
+import java.util.Calendar;
 
 /**
- * Created by The eXo Platform SAS.
- * 
- * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
- * @version $Id: SimpleFileValueStorage.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
+ * @version $Id: CalendarNewValueData.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-
-public class SimpleFileValueStorage extends FileValueStorage
+public class CalendarNewValueData extends AbstractNewValueData
 {
+   /**
+    * The value.
+    */
+   private final Calendar value;
 
    /**
-    * @see org.exoplatform.services.jcr.storage.value.ValueStoragePlugin#openIOChannel()
+    * CalendarNewValueData constructor.
     */
-   public ValueIOChannel openIOChannel() throws IOException
+   protected CalendarNewValueData(int orderNumber, Calendar value)
    {
-      return new SimpleFileIOChannel(rootDir, cleaner, getId(), resources);
+      super(orderNumber);
+      this.value = value;
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   protected byte[] spoolInternalValue()
+   {
+      return new JCRDateFormat().serialize(value);
+   }
 }

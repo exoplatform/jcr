@@ -37,8 +37,6 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 
-import javax.jcr.RepositoryException;
-
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -184,15 +182,6 @@ public class FilePersistedValueData extends AbstractPersistedValueData implement
          }
       }
       return false;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public TransientValueData createTransientCopy() throws RepositoryException
-   {
-      return new TransientValueData(this);
    }
 
    /**

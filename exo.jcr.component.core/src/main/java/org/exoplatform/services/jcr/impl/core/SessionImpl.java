@@ -45,7 +45,6 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataM
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog;
 import org.exoplatform.services.jcr.impl.ext.action.SessionActionInterceptor;
-import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.xml.ExportImportFactory;
 import org.exoplatform.services.jcr.impl.xml.ItemDataKeeperAdapter;
 import org.exoplatform.services.jcr.impl.xml.XmlMapping;
@@ -218,11 +217,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.lazyReadThreshold =
          wsConfig.getLazyReadThreshold() > 0 ? wsConfig.getLazyReadThreshold() : DEFAULT_LAZY_READ_THRESHOLD;
 
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
-
       this.locationFactory = new LocationFactory(this);
-      this.valueFactory = new ValueFactoryImpl(locationFactory, wsConfig, cleanerHolder);
+      this.valueFactory = new ValueFactoryImpl(locationFactory, wsConfig);
 
       this.namespaces = new LinkedHashMap<String, String>();
       this.prefixes = new LinkedHashMap<String, String>();
@@ -307,10 +303,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
-
-      ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
+      ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig);
 
       try
       {
@@ -347,10 +340,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
-
-      ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
+      ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig);
 
       try
       {
@@ -390,10 +380,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
-
-      ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
+      ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig);
 
       try
       {
@@ -431,10 +418,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
-
-      ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
+      ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig);
       try
       {
          BaseXmlExporter exporter =
@@ -469,10 +453,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
-
-      ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
+      ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig);
       try
       {
          BaseXmlExporter exporter =

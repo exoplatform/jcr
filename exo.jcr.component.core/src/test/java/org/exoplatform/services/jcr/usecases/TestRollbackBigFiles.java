@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
@@ -82,8 +83,9 @@ public class TestRollbackBigFiles extends JcrImplBaseTest
 
       File f = this.createBLOBTempFile(1024);
       TransientPropertyData newProperty =
-         new TransientPropertyData(propPath.getInternalPath(), IdGenerator.generate(), -1, PropertyType.BINARY, newNode
-            .getIdentifier(), false, new TransientValueData(new FileInputStream(f)));
+         new TransientPropertyData(propPath.getInternalPath(), IdGenerator.generate(), -1, PropertyType.BINARY,
+            newNode.getIdentifier(), false, new TransientValueData(new FileInputStream(f),
+               SpoolConfig.getDefaultSpoolConfig()));
 
       list.add(new ItemState(newProperty, ItemState.ADDED, false, parent.getQPath()));
 

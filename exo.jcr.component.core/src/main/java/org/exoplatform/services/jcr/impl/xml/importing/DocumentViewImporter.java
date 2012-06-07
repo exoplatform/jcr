@@ -511,9 +511,8 @@ public class DocumentViewImporter extends BaseXmlImporter
       try
       {
          InputStream vStream = new ByteArrayInputStream(Base64.decode(propertiesMap.get(propName)));
-         TransientValueData binaryValue =
-            new TransientValueData(0, vStream, valueFactory.getFileCleaner(), valueFactory.getMaxBufferSize(), null,
-               true);
+         TransientValueData binaryValue = new TransientValueData(0, vStream, null, valueFactory.getSpoolConfig(), true);
+
          binaryValue.getAsStream().close();
 
          newProperty =

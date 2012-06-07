@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -78,8 +79,11 @@ public class TestTransientValueData extends TestCase
          out.close();
 
          FileInputStream fs1 = new FileInputStream(file);
-         TransientValueData vd =
-            new TransientValueData(0, null, fs1, null, testFileCleaner, 5, new File("target"), true);
+
+         SpoolConfig spoolConfig = SpoolConfig.getDefaultSpoolConfig();
+         spoolConfig.maxBufferSize = 5;
+
+         TransientValueData vd = new TransientValueData(0, fs1, null, spoolConfig, true);
 
          // spool to file
          InputStream fs2 = vd.getAsStream();

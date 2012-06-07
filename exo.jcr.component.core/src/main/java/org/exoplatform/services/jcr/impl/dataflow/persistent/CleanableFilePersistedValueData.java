@@ -19,15 +19,12 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.FileNotFoundException;
-
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS. Implementation of FileStream ValueData secures deleting file in
@@ -99,14 +96,5 @@ public class CleanableFilePersistedValueData extends FilePersistedValueData
       {
          super.finalize();
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public TransientValueData createTransientCopy() throws RepositoryException
-   {
-      return new TransientValueData(this);
    }
 }

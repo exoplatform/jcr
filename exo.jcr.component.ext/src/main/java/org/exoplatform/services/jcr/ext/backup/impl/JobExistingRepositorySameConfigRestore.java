@@ -37,7 +37,6 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DummyDBCleanerTool;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 
 import java.io.File;
 import java.security.PrivilegedExceptionAction;
@@ -215,14 +214,10 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
                (WorkspacePersistentDataManager)repositoryService.getRepository(this.repositoryEntry.getName())
                   .getWorkspaceContainer(wEntry.getName()).getComponent(WorkspacePersistentDataManager.class);
 
-            FileCleanerHolder fileCleanHolder =
-               (FileCleanerHolder)repositoryService.getRepository(this.repositoryEntry.getName())
-                  .getWorkspaceContainer(wEntry.getName()).getComponent(FileCleanerHolder.class);
-
             File storageDir =
                JCRRestore.getFullBackupFile(workspacesMapping.get(wEntry.getName()).getBackupConfig().getBackupDir());
 
-            JCRRestore restorer = new JCRRestore(dataManager, fileCleanHolder.getFileCleaner());
+            JCRRestore restorer = new JCRRestore(dataManager);
             for (File incrBackupFile : JCRRestore.getIncrementalFiles(storageDir))
             {
                restorer.incrementalRestore(incrBackupFile);

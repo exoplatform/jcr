@@ -35,7 +35,6 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MSSQLConne
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.PostgreConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.SybaseConnectionFactory;
-import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
@@ -73,10 +72,10 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
     */
    public CQJDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
       InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
-      FileCleanerHolder fileCleanerHolder, DataSourceProvider dsProvider) throws RepositoryConfigurationException,
-      NamingException, RepositoryException, IOException
+      DataSourceProvider dsProvider) throws RepositoryConfigurationException, NamingException, RepositoryException,
+      IOException
    {
-      super(wsConfig, repConfig, contextInit, valueStorageProvider, fileCleanerHolder, dsProvider);
+      super(wsConfig, repConfig, contextInit, valueStorageProvider, dsProvider);
    }
 
    /**

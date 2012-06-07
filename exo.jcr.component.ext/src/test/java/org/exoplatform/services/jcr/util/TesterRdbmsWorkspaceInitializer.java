@@ -29,7 +29,6 @@ import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
-import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -50,12 +49,11 @@ public class TesterRdbmsWorkspaceInitializer extends RdbmsWorkspaceInitializer
    public TesterRdbmsWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-            AccessManager accessManager, RepositoryService repositoryService, FileCleanerHolder cleanerHolder)
-            throws RepositoryConfigurationException,
+      AccessManager accessManager, RepositoryService repositoryService) throws RepositoryConfigurationException,
       PathNotFoundException, RepositoryException
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
-               accessManager, repositoryService, cleanerHolder);
+         accessManager, repositoryService);
    }
 
    @Override

@@ -175,8 +175,8 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       System.gc();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
-      TransientValueData trvd = cleanableValueData.createTransientCopy();
-      assertTrue(testFile.exists());
+      TransientValueData trvd = new TransientValueData(false);
+      trvd.delegate(cleanableValueData);
 
       trvd = null; // TransientVD dies
 
@@ -197,7 +197,9 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       System.gc();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
-      TransientValueData trvd = cleanableValueData.createTransientCopy();
+      TransientValueData trvd = new TransientValueData(false);
+      trvd.delegate(cleanableValueData);
+      
       assertTrue(testFile.exists());
 
       cleanableValueData = null; // CleanableVD dies but TransientVD still uses swapped file
@@ -230,7 +232,8 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
       // file shared with TransientVD
-      TransientValueData trvd = cleanableValueData.createTransientCopy();
+      TransientValueData trvd = new TransientValueData(false);
+      trvd.delegate(cleanableValueData);
 
       assertTrue(testFile.exists());
 

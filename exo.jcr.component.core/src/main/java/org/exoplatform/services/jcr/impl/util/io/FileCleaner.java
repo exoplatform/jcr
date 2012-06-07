@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.util.io;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.impl.proccess.WorkerThread;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -41,6 +40,8 @@ public class FileCleaner extends WorkerThread
 {
 
    protected static final long DEFAULT_TIMEOUT = 30000;
+
+   protected static String THREAD_NAME = "File cleaner";
 
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.FileCleaner");
 
@@ -67,19 +68,9 @@ public class FileCleaner extends WorkerThread
       this(DEFAULT_TIMEOUT);
    }
 
-   public FileCleaner(ExoContainerContext ctx)
-   {
-      this(null, ctx, DEFAULT_TIMEOUT);
-   }
-
    public FileCleaner(long timeout)
    {
       this(timeout, true);
-   }
-
-   public FileCleaner(String prefix, ExoContainerContext ctx, long timeout)
-   {
-      this(ctx == null ? prefix : (prefix == null ? "" : prefix + " ") + ctx.getName(), timeout, true);
    }
 
    public FileCleaner(boolean start)
@@ -89,13 +80,8 @@ public class FileCleaner extends WorkerThread
 
    public FileCleaner(long timeout, boolean start)
    {
-      this(null, timeout, start);
-   }
-   
-   public FileCleaner(String id, long timeout, boolean start)
-   {
       super(timeout);
-      setName("File Cleaner " + (id == null ? getId() : id));
+      setName(THREAD_NAME);
       setDaemon(true);
       setPriority(Thread.MIN_PRIORITY);
 

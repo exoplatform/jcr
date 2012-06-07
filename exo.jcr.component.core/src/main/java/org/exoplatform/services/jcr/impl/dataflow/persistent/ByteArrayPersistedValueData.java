@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 import java.io.ByteArrayInputStream;
 import java.io.Externalizable;
@@ -30,8 +29,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.OutputStream;
 import java.util.Arrays;
-
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -150,15 +147,6 @@ public class ByteArrayPersistedValueData extends AbstractPersistedValueData impl
       }
 
       return false;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public TransientValueData createTransientCopy() throws RepositoryException
-   {
-      return new TransientValueData(orderNumber, data);
    }
 
    /**

@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePlugin;
 import org.exoplatform.services.log.ExoLogger;
@@ -59,9 +60,9 @@ public abstract class FileValueStorage extends ValueStoragePlugin
     * FileValueStorage constructor.
     * 
     */
-   public FileValueStorage(FileCleaner cleaner)
+   public FileValueStorage()
    {
-      this.cleaner = cleaner;
+      this.cleaner = FileCleanerHolder.getFileCleaner();
    }
 
    /**

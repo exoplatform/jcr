@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 
 import java.io.IOException;
@@ -31,11 +30,6 @@ import java.io.IOException;
  */
 public class TreeFileValueStorage extends FileValueStorage
 {
-
-   public TreeFileValueStorage(FileCleaner cleaner)
-   {
-      super(cleaner);
-   }
 
    @Override
    public ValueIOChannel openIOChannel() throws IOException

@@ -139,7 +139,7 @@ public class TestFileValueIO extends TestCase
       if (file.exists())
          file.delete();
 
-      TransientValueData vd = new TransientValueData(0, buf, null, null, null, 1024, null, false);
+      TransientValueData vd = new TransientValueData(buf);
 
       FileValueIOUtil.testWriteValue(file, vd);
 

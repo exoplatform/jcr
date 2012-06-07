@@ -22,8 +22,6 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import javax.jcr.RepositoryException;
-
 /**
  * @author <a href="mailto:peter.nedonosko@exoplatform.com">Peter Nedonosko</a>
  * @version $Id$
@@ -68,13 +66,4 @@ public abstract class AbstractPersistedValueData implements ValueData
 
       return false;
    }
-
-   /**
-    * Create transient copy of persisted data. Used for LocalWorkspaceStorageDataManagerProxy only.
-    * 
-    * @return TransientValueData
-    * @throws RepositoryException if error ocurs
-    */
-   public abstract TransientValueData createTransientCopy() throws RepositoryException;
-
 }

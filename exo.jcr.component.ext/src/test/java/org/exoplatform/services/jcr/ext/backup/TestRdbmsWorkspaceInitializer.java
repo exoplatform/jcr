@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
-import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.jcr.util.TesterRdbmsWorkspaceInitializer;
 
@@ -147,7 +146,7 @@ public class TestRdbmsWorkspaceInitializer extends BaseRDBMSBackupTest
 
             TesterRdbmsWorkspaceInitializer initializer =
                new TesterRdbmsWorkspaceInitializer(newEntry, repositoryService.getRepository("db3").getConfiguration(),
-                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService, new FileCleanerHolder());
+                  cacheableDataManager, null, null, null, (ValueFactoryImpl)valueFactory, null, repositoryService);
 
             // restore single -> multi
             helper.addWorkspace(repositoryService.getRepository("db1"), newEntry);

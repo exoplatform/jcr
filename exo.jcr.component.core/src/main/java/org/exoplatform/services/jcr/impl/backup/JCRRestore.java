@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValu
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
@@ -80,10 +81,10 @@ public class JCRRestore
 
    private final File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
 
-   public JCRRestore(DataManager dataManager, FileCleaner fileCleaner)
+   public JCRRestore(DataManager dataManager)
    {
       this.dataManager = dataManager;
-      this.fileCleaner = fileCleaner;
+      this.fileCleaner = FileCleanerHolder.getFileCleaner();
    }
 
    /**

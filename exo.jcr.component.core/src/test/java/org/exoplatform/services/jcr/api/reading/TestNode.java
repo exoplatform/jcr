@@ -26,7 +26,9 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeImpl;
 import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
 import org.exoplatform.services.jcr.impl.core.value.StringValue;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 
+import java.io.ByteArrayInputStream;
 import java.security.AccessControlException;
 import java.util.Calendar;
 import java.util.HashMap;
@@ -125,7 +127,9 @@ public class TestNode extends JcrAPIBaseTest
       property = root.getNode("childNode/childNode2/jcr:content").getProperty("jcr:data");
 
       assertEquals("this is the content", property.getString());
-      Value val = new BinaryValue("this is the NEW content");
+      Value val =
+         new BinaryValue(new ByteArrayInputStream("this is the NEW content".getBytes()),
+            SpoolConfig.getDefaultSpoolConfig());
       node = root.getNode("childNode/childNode2/jcr:content");
       node.setProperty("jcr:data", val);
       // property.setValue(val);
@@ -151,7 +155,8 @@ public class TestNode extends JcrAPIBaseTest
       Session session2 = repository.login(credentials, WORKSPACE);
       Node root2 = session2.getRootNode();
       Node node2 = root2.getNode("childNode/childNode2/jcr:content");
-      node2.setProperty("jcr:data", new BinaryValue("Temp"));
+      node2.setProperty("jcr:data",
+         new BinaryValue(new ByteArrayInputStream("Temp".getBytes()), SpoolConfig.getDefaultSpoolConfig()));
       session2.save();
 
       session.refresh(false);

@@ -196,8 +196,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public JDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
       InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
-      FileCleanerHolder fileCleanerHolder, DataSourceProvider dsProvider) throws RepositoryConfigurationException,
-      NamingException, RepositoryException, IOException
+      DataSourceProvider dsProvider) throws RepositoryConfigurationException, NamingException, RepositoryException,
+      IOException
    {
       checkIntegrity(wsConfig, repConfig);
       this.wsConfig = wsConfig;
@@ -310,7 +310,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          PrivilegedFileHelper.mkdirs(containerConfig.swapDirectory);
       }
 
-      this.containerConfig.swapCleaner = fileCleanerHolder.getFileCleaner();
+      this.containerConfig.swapCleaner = FileCleanerHolder.getFileCleaner();
 
       this.containerConfig.initScriptPath =
          DBInitializerHelper.scriptPath(containerConfig.dbDialect, containerConfig.dbStructureType.isMultiDatabase());

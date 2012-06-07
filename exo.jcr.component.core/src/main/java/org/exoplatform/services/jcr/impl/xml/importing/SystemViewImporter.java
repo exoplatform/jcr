@@ -680,10 +680,9 @@ public class SystemViewImporter extends BaseXmlImporter
             {
                InputStream vStream = propertyInfo.getValues().get(k).getInputStream();
 
-               // TransientValueData binaryValue = new TransientValueData(vStream);
                TransientValueData binaryValue =
-                  new TransientValueData(k, null, vStream, null, valueFactory.getFileCleaner(),
-                     valueFactory.getMaxBufferSize(), null, true);
+                  new TransientValueData(k, vStream, null, valueFactory.getSpoolConfig(), true);
+
                // Call to spool file into tmp
                binaryValue.getAsStream().close();
                vStream.close();

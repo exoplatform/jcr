@@ -18,49 +18,32 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+
+import java.io.File;
 
 /**
- * Created by The eXo Platform SAS .
+ * Simple class wrapper. Contains all needed variables for spooling input stream.
  * 
- * @author Gennady Azarenkov
- * @version $Id:AbstractValueData.java 12534 2007-02-02 15:30:52Z peterit $
+ * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
+ * @version $Id: SpoolConfig.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public abstract class AbstractSessionValueData implements ValueData
+public class SpoolConfig
 {
+   public FileCleaner fileCleaner = FileCleanerHolder.getFileCleaner();
+
+   public File tempDirectory = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+
+   public int maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;
 
    /**
-    * Logger.
+    * Returns default config.
     */
-   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NewValueData");
-
-   protected int orderNumber;
-
-   protected AbstractSessionValueData(int orderNumber)
+   public static SpoolConfig getDefaultSpoolConfig()
    {
-      this.orderNumber = orderNumber;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public final int getOrderNumber()
-   {
-      return orderNumber;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public boolean equals(Object obj)
-   {
-      if (obj instanceof ValueData)
-      {
-         return this.equals((ValueData)obj);
-      }
-
-      return false;
+      return new SpoolConfig();
    }
 }
