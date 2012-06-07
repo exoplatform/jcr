@@ -18,10 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.clean.rdbms.scripts;
 
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -67,8 +70,21 @@ public class DB2CleaningScipts extends DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      String constraintName = "JCR_FK_" + itemTableSuffix + "_PAREN";
+      String constraintName = "JCR_FK_" + valueTableSuffix + "_PROP";
+      scripts.add("ALTER TABLE " + valueTableName + " DROP CONSTRAINT " + constraintName);
+
+      constraintName = "JCR_FK_" + itemTableSuffix + "_PAREN";
       scripts.add("ALTER TABLE " + itemTableName + " DROP CONSTRAINT " + constraintName);
+
+      constraintName = "JCR_PK_" + valueTableSuffix;
+      scripts.add("ALTER TABLE " + valueTableName + " DROP CONSTRAINT " + constraintName);
+
+      constraintName = "JCR_PK_" + itemTableSuffix;
+      scripts.add("ALTER TABLE " + itemTableName + " DROP CONSTRAINT " + constraintName);
+
+      constraintName = "JCR_PK_" + refTableSuffix;
+      scripts.add("ALTER TABLE " + refTableName + " DROP CONSTRAINT " + constraintName);
+
 
       return scripts;
    }
@@ -80,9 +96,73 @@ public class DB2CleaningScipts extends DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      String constraintName =
+      String constraintName = "JCR_PK_" + valueTableSuffix + " PRIMARY KEY(ID)";
+      scripts.add("ALTER TABLE " + valueTableName + " ADD CONSTRAINT " + constraintName);
+
+      constraintName = "JCR_PK_" + itemTableSuffix + " PRIMARY KEY(ID)";
+      scripts.add("ALTER TABLE " + itemTableName + " ADD CONSTRAINT " + constraintName);
+
+      constraintName = "JCR_PK_" + refTableSuffix + " PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)";
+      scripts.add("ALTER TABLE " + refTableName + " ADD CONSTRAINT " + constraintName);
+
+      constraintName =
+         "JCR_FK_" + valueTableSuffix + "_PROP FOREIGN KEY(PROPERTY_ID) REFERENCES " + itemTableName + "(ID)";
+      scripts.add("ALTER TABLE " + valueTableName + " ADD CONSTRAINT " + constraintName);
+
+      constraintName =
          "JCR_FK_" + itemTableSuffix + "_PAREN FOREIGN KEY(PARENT_ID) REFERENCES " + itemTableName + "(ID)";
       scripts.add("ALTER TABLE " + itemTableName + " ADD CONSTRAINT " + constraintName);
+
+      return scripts;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getIndexesDroppingScripts()
+   {
+      Collection<String> scripts = new ArrayList<String>();
+
+      scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_PARENT");
+      scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_NAME");
+      scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_ID");
+      scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM");
+      scripts.add("DROP INDEX JCR_IDX_" + valueTableSuffix + "_PROPERTY");
+      scripts.add("DROP INDEX JCR_IDX_" + refTableSuffix + "_PROPERTY");
+
+      return scripts;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getIndexesAddingScripts() throws DBCleanException
+   {
+      Collection<String> scripts = new ArrayList<String>();
+
+      try
+      {
+         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_PARENT ON " + itemTableName,
+            multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_PARENT_NAME ON "
+            + itemTableName, multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_PARENT_ID ON "
+            + itemTableName, multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM ON "
+            + itemTableName, multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + valueTableSuffix + "_PROPERTY ON "
+            + valueTableName, multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + refTableSuffix + "_PROPERTY ON " + refTableName,
+            multiDb, dialect, wsEntry));
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new DBCleanException(e);
+      }
+      catch (IOException e)
+      {
+         throw new DBCleanException(e);
+      }
 
       return scripts;
    }
