@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.datamodel.ValueData;
+
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -42,9 +44,29 @@ public class DoubleNewValueData extends AbstractNewValueData
    /**
     * {@inheritDoc}
     */
-   protected byte[] spoolInternalValue()
+   protected boolean internalEquals(ValueData another)
    {
-      return Double.valueOf(value).toString().getBytes();
+      if (another instanceof DoubleNewValueData)
+      {
+         return ((DoubleNewValueData)another).value == value;
+      }
+
+      return false;
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   protected byte[] spoolInternalValue()
+   {
+      return Double.toString(value).getBytes();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String toString()
+   {
+      return Double.toString(value);
+   }
 }

@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.Constants;
+
+import java.io.UnsupportedEncodingException;
+
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -43,8 +48,36 @@ public class StringNewValueData extends AbstractNewValueData
    /**
     * {@inheritDoc}
     */
+   protected boolean internalEquals(ValueData another)
+   {
+      if (another instanceof StringNewValueData)
+      {
+         return ((StringNewValueData)another).value.equals(value);
+      }
+
+      return false;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    protected byte[] spoolInternalValue()
    {
-      return stringToBytes(value);
+      try
+      {
+         return value.getBytes(Constants.DEFAULT_ENCODING);
+      }
+      catch (UnsupportedEncodingException e)
+      {
+         throw new RuntimeException("FATAL ERROR Charset " + Constants.DEFAULT_ENCODING + " is not supported!");
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String toString()
+   {
+      return value;
    }
 }

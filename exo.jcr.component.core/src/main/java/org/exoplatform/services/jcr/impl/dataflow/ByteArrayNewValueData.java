@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.datamodel.ValueData;
+
+import java.util.Arrays;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -26,12 +29,30 @@ package org.exoplatform.services.jcr.impl.dataflow;
 public class ByteArrayNewValueData extends AbstractNewValueData
 {
    /**
+    * The value.
+    */
+   protected byte[] value;
+
+   /**
     * ByteArrayNewValueData constructor.
     */
    protected ByteArrayNewValueData(int orderNumber, byte[] value)
    {
       super(orderNumber);
-      this.data = value;
+      this.value = value;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected boolean internalEquals(ValueData another)
+   {
+      if (another instanceof ByteArrayNewValueData)
+      {
+         return Arrays.equals(((ByteArrayNewValueData)another).value, value);
+      }
+
+      return false;
    }
 
    /**
@@ -39,6 +60,6 @@ public class ByteArrayNewValueData extends AbstractNewValueData
     */
    protected byte[] spoolInternalValue()
    {
-      return data;
+      return value;
    }
 }

@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-
+import org.exoplatform.services.jcr.datamodel.ValueData;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -44,8 +44,29 @@ public class BooleanNewValueData extends AbstractNewValueData
    /**
     * {@inheritDoc}
     */
+   protected boolean internalEquals(ValueData another)
+   {
+      if (another instanceof BooleanNewValueData)
+      {
+         return ((BooleanNewValueData)another).value == value;
+      }
+
+      return false;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    protected byte[] spoolInternalValue()
    {
-      return Boolean.valueOf(value).toString().getBytes();
+      return Boolean.toString(value).getBytes();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String toString()
+   {
+      return Boolean.toString(value);
    }
 }

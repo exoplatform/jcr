@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 
 import java.util.Calendar;
@@ -45,8 +46,29 @@ public class CalendarNewValueData extends AbstractNewValueData
    /**
     * {@inheritDoc}
     */
+   protected boolean internalEquals(ValueData another)
+   {
+      if (another instanceof CalendarNewValueData)
+      {
+         return ((CalendarNewValueData)another).value.equals(value);
+      }
+
+      return false;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    protected byte[] spoolInternalValue()
    {
       return new JCRDateFormat().serialize(value);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public String toString()
+   {
+      return value.toString();
    }
 }

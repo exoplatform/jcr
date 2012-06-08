@@ -19,13 +19,13 @@
 package org.exoplatform.services.jcr.impl.dataflow;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
 
 /**
@@ -34,11 +34,6 @@ import java.util.Arrays;
  */
 public abstract class AbstractNewValueData extends AbstractSessionValueData
 {
-
-   /**
-    * Internal value is represented as array of bytes.
-    */
-   protected byte data[];
 
    /**
     * Constructor AbstractNewValueData.
@@ -59,11 +54,9 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
    /**
     * {@inheritDoc}
     */
-   public byte[] getAsByteArray() throws IllegalStateException, IOException
+   public byte[] getAsByteArray() throws IOException
    {
-      spoolToByteArray();
-
-      return data;
+      return spoolInternalValue();
    }
 
    /**
@@ -71,9 +64,7 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
     */
    public InputStream getAsStream() throws IOException
    {
-      spoolToByteArray();
-
-      return new ByteArrayInputStream(data);
+      return new ByteArrayInputStream(getAsByteArray());
    }
 
    /**
@@ -81,9 +72,14 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
     */
    public long getLength()
    {
-      spoolToByteArray();
-
-      return data.length;
+      try
+      {
+         return getAsByteArray().length;
+      }
+      catch (IOException e)
+      {
+         throw new IllegalStateException("Can't calculate the length of value", e);
+      }
    }
 
    /**
@@ -91,10 +87,10 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
     */
    public long read(OutputStream stream, long length, long position) throws IOException
    {
-      spoolToByteArray();
+      byte[] data = getAsByteArray();
 
       validate(length, position, data.length);
-      length = adjustLength(length, position, data.length);
+      length = adjustReadLength(length, position, data.length);
 
       stream.write(data, (int)position, (int)length);
 
@@ -104,7 +100,7 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
    /**
     *  Adjusts length of byte to read. Should not be possible to exceed array border. 
     */
-   protected long adjustLength(long length, long position, long dataLength)
+   protected long adjustReadLength(long length, long position, long dataLength)
    {
       if (position + length >= dataLength)
       {
@@ -114,6 +110,10 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
       return length;
    }
 
+   /**
+    * Validate parameters. <code>Length</code> and <code>position</code> should not be negative and 
+    * <code>length</code> should not be greater than <code>dataLength</code>
+    */
    protected void validate(long length, long position, long dataLength) throws IOException
    {
       if (position < 0)
@@ -132,6 +132,9 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
       }
    }
 
+   /**
+    * Validate <code>size</code> parameter, should not be negative.
+    */
    protected void validate(long size) throws IOException
    {
       if (size < 0)
@@ -141,50 +144,51 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
    }
 
    /**
-    * Convert String into bytes array using default encoding.
-    */
-   protected byte[] stringToBytes(final String value)
-   {
-      try
-      {
-         return value.getBytes(Constants.DEFAULT_ENCODING);
-      }
-      catch (UnsupportedEncodingException e)
-      {
-         throw new RuntimeException("FATAL ERROR Charset " + Constants.DEFAULT_ENCODING + " is not supported!");
-      }
-   }
-
-   /**
-    * Spools data to array.
-    */
-   private void spoolToByteArray()
-   {
-      if (data == null)
-      {
-         data = spoolInternalValue();
-      }
-   }
-
-   /**
     * {@inheritDoc}
     */
    public boolean equals(ValueData another)
    {
-      try
+      ValueData valueData = another;
+      if (another instanceof TransientValueData)
       {
-         return Arrays.equals(getAsByteArray(), another.getAsByteArray());
+         valueData = ((TransientValueData)another).delegate;
       }
-      catch (IOException e)
+
+      if (valueData instanceof AbstractNewValueData)
       {
-         LOG.error("Read error", e);
-         return false;
+         return this == valueData || internalEquals(valueData);
       }
+      else if (valueData instanceof StreamPersistedValueData)
+      {
+         return internalEquals(valueData);
+      }
+      else if (valueData instanceof ByteArrayPersistedValueData)
+      {
+         try
+         {
+            return Arrays.equals(valueData.getAsByteArray(), getAsByteArray());
+         }
+         catch (IllegalStateException e)
+         {
+            LOG.error("Error in comparing values", e);
+         }
+         catch (IOException e)
+         {
+            LOG.error("Error in comparing values", e);
+         }
+      }
+
+      return false;
    }
 
    /**
     * Represents internal value as array of bytes.
     */
    protected abstract byte[] spoolInternalValue();
+
+   /**
+    * Equals internal value. 
+    */
+   protected abstract boolean internalEquals(ValueData another);
 
 }

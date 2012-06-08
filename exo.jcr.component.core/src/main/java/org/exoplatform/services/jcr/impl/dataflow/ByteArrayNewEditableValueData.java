@@ -47,13 +47,13 @@ public class ByteArrayNewEditableValueData extends ByteArrayNewValueData impleme
    {
       validate(length, position, Integer.MAX_VALUE);
 
-      long newSize = Math.max(length + position, data.length);
+      long newSize = Math.max(length + position, value.length);
       byte[] newBytes = new byte[(int)newSize];
 
       if (position > 0)
       {
          // begin from the existed bytes
-         System.arraycopy(data, 0, newBytes, 0, (int)(position < data.length ? position : data.length));
+         System.arraycopy(value, 0, newBytes, 0, (int)(position < value.length ? position : value.length));
       }
 
       // write new data
@@ -73,13 +73,13 @@ public class ByteArrayNewEditableValueData extends ByteArrayNewValueData impleme
          position += read;
       }
 
-      if (position < data.length)
+      if (position < value.length)
       {
          // write the rest of existed data
-         System.arraycopy(data, (int)position, newBytes, (int)position, (int)(data.length - position));
+         System.arraycopy(value, (int)position, newBytes, (int)position, (int)(value.length - position));
       }
 
-      data = newBytes;
+      value = newBytes;
    }
 
    /**
@@ -90,8 +90,8 @@ public class ByteArrayNewEditableValueData extends ByteArrayNewValueData impleme
       validate(size);
 
       byte[] newBytes = new byte[(int)size];
-      System.arraycopy(data, 0, newBytes, 0, Math.min(data.length, newBytes.length));
+      System.arraycopy(value, 0, newBytes, 0, Math.min(value.length, newBytes.length));
 
-      data = newBytes;
+      value = newBytes;
    }
 }

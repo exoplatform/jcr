@@ -34,6 +34,7 @@ import java.nio.MappedByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
+import java.util.Arrays;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -56,6 +57,8 @@ public class StreamNewValueData extends AbstractNewValueData
    protected FileChannel spoolChannel;
 
    protected boolean spooled = false;
+
+   protected byte[] data;
 
    /**
     * StreamNewValueData constructor.
@@ -166,7 +169,7 @@ public class StreamNewValueData extends AbstractNewValueData
          }
 
          validate(length, position, spoolChannel.size());
-         length = adjustLength(length, position, spoolChannel.size());
+         length = adjustReadLength(length, position, spoolChannel.size());
 
          MappedByteBuffer bb = spoolChannel.map(FileChannel.MapMode.READ_ONLY, position, length);
 
@@ -185,73 +188,6 @@ public class StreamNewValueData extends AbstractNewValueData
    protected void finalize() throws Throwable
    {
       removeSpoolFile();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public boolean equals(ValueData another)
-   {
-      if (this == another)
-      {
-         return true;
-      }
-
-      if (isByteArray() == another.isByteArray())
-      {
-         // by content
-         if (isByteArray())
-         {
-            return super.equals(another);
-         }
-         else
-         {
-            // it's comparison of BLOB values 
-            // they can be equal in theory, but we will not check BLOB files content due to performance
-            // check only if it's not a same file or stream (not real) backed both
-
-            File dataFile;
-            if (another instanceof TransientValueData)
-            {
-               // if both transient... or stream of file can be equal
-               TransientValueData transnt = (TransientValueData)another;
-
-               if (transnt.delegate instanceof StreamNewValueData)
-               {
-                  // if both are transient... check stream or file
-                  StreamNewValueData otherVd = (StreamNewValueData)transnt.delegate;
-                  if (this.tmpStream == otherVd.tmpStream)
-                  {
-                     return true;
-                  }
-                  dataFile = otherVd.spoolFile;
-               }
-               else if (transnt.delegate instanceof FilePersistedValueData)
-               {
-                  // if other persistent as delegated - check file
-                  dataFile = ((FilePersistedValueData)transnt.delegate).getFile();
-               }
-               else
-               {
-                  return false;
-               }
-            }
-            else if (another instanceof FilePersistedValueData)
-            {
-               FilePersistedValueData persisted = (FilePersistedValueData)another;
-
-               // if other persistent - check file
-               dataFile = persisted.getFile();
-            }
-            else
-            {
-               return false;
-            }
-
-            return spoolFile != null ? spoolFile.equals(dataFile) : false;
-         }
-      }
-      return false;
    }
 
    /**
@@ -469,6 +405,41 @@ public class StreamNewValueData extends AbstractNewValueData
    protected byte[] spoolInternalValue()
    {
       throw new UnsupportedOperationException("Method is not supported");
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected boolean internalEquals(ValueData another)
+   {
+      if (another instanceof StreamNewValueData)
+      {
+         StreamNewValueData streamValue = (StreamNewValueData)another;
+
+         if (isByteArray() == another.isByteArray())
+         {
+            if (isByteArray())
+            {
+               return Arrays.equals(streamValue.data, data);
+            }
+            else
+            {
+               if (streamValue.tmpStream == tmpStream)
+               {
+                  return true;
+               }
+
+               return spoolFile != null ? spoolFile.equals(streamValue.spoolFile) : false;
+            }
+         }
+      }
+      else if (another instanceof FilePersistedValueData)
+      {
+         File dataFile = ((FilePersistedValueData)another).getFile();
+         return spoolFile != null ? spoolFile.equals(dataFile) : false;
+      }
+
+      return false;
    }
 }
 

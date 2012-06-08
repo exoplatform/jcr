@@ -117,8 +117,8 @@ public class TestTransientValueData extends TestCase
    {
       TransientValueData vd = new TransientValueData("0123456789");
 
-      // same bytes object
-      assertSame(vd.getAsByteArray(), vd.getAsByteArray());
+      // not same bytes object
+      assertNotSame(vd.getAsByteArray(), vd.getAsByteArray());
 
       // but not same stream
       assertNotSame(vd.getAsStream(), vd.getAsStream());
