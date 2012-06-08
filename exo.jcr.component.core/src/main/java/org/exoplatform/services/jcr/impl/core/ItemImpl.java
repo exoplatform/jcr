@@ -942,7 +942,16 @@ public abstract class ItemImpl implements Item
          case PropertyType.STRING :
             return new TransientValueData(value.getString());
          case PropertyType.BINARY :
-            return ((BaseValue)getSession().getValueFactory().createValue(value.getStream())).getInternalData();
+            if (value instanceof BaseValue)
+            {
+               return ((BaseValue)getSession().getValueFactory().createValue(value.getStream())).getInternalData();
+            }
+            else
+            {
+               // third part value impl, convert via String
+               return ((BaseValue)getSession().getValueFactory().createValue(value.getString(), PropertyType.BINARY))
+                  .getInternalData();
+            }
          case PropertyType.BOOLEAN :
             return new TransientValueData(value.getBoolean());
          case PropertyType.LONG :
