@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
-import org.exoplatform.services.jcr.core.value.ExtendedValue;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -41,10 +40,10 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
-import org.exoplatform.services.jcr.impl.core.value.PathValue;
 import org.exoplatform.services.jcr.impl.core.value.PermissionValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueConstraintsMatcher;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.dataflow.EditableValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
@@ -925,10 +924,17 @@ public abstract class ItemImpl implements Item
 
    private ValueData valueData(Value value, int type) throws RepositoryException, ValueFormatException
    {
-
       if (value == null)
       {
          return null;
+      }
+      else if (value.getType() == type)
+      {
+         ValueData internalData = ((BaseValue)value).getInternalData();
+         if (!(internalData instanceof EditableValueData))
+         {
+            return internalData;
+         }
       }
 
       switch (type)
@@ -936,20 +942,7 @@ public abstract class ItemImpl implements Item
          case PropertyType.STRING :
             return new TransientValueData(value.getString());
          case PropertyType.BINARY :
-            ValueData vd;
-            if (value instanceof BaseValue || value instanceof ExtendedValue)
-            {
-               // create Transient copy
-               vd = ((BaseValue)getSession().getValueFactory().createValue(value.getStream())).getInternalData();
-            }
-            else
-            {
-               // third part value impl, convert via String
-               vd =
-                  ((BaseValue)getSession().getValueFactory().createValue(value.getString(), PropertyType.BINARY))
-                     .getInternalData();
-            }
-            return vd;
+            return ((BaseValue)getSession().getValueFactory().createValue(value.getStream())).getInternalData();
          case PropertyType.BOOLEAN :
             return new TransientValueData(value.getBoolean());
          case PropertyType.LONG :
@@ -959,17 +952,8 @@ public abstract class ItemImpl implements Item
          case PropertyType.DATE :
             return new TransientValueData(value.getDate());
          case PropertyType.PATH :
-            ValueData pvd;
-            if (value instanceof PathValue)
-            {
-               pvd = ((PathValue)value).getInternalData();
-            }
-            else
-            {
-               QPath pathValue = locationFactory.parseJCRPath(value.getString()).getInternalPath();
-               pvd = new TransientValueData(pathValue);
-            }
-            return pvd;
+            QPath pathValue = locationFactory.parseJCRPath(value.getString()).getInternalPath();
+            return new TransientValueData(pathValue);
          case PropertyType.NAME :
             InternalQName nameValue = locationFactory.parseJCRName(value.getString()).getInternalName();
             return new TransientValueData(nameValue);
