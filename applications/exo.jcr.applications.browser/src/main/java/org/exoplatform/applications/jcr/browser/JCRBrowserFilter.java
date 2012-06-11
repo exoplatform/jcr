@@ -37,7 +37,6 @@ import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.Workspace;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.servlet.FilterChain;

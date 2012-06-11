@@ -618,8 +618,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             FIFOAlgorithmConfig fifoConfig = (FIFOAlgorithmConfig)config;
             if (fifoConfig.getMinTimeToLive() > 0)
             {
-               LOG.warn("The FIFO algorithm with a minTimeToLive greater than 0 can cause a memory leak, " +
-               		"please use another eviction algorithm or set the minTimeToLive to 0.");
+               LOG.warn("The FIFO algorithm with a minTimeToLive greater than 0 can cause a memory leak, "
+                  + "please use another eviction algorithm or set the minTimeToLive to 0.");
             }
          }
       }

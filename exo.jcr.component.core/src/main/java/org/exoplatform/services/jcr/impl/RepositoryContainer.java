@@ -295,7 +295,7 @@ public class RepositoryContainer extends ExoContainer
                catch (ClassNotFoundException e)
                {
                   throw new RepositoryConfigurationException("Class not found for workspace data container "
-                     + wsConfig.getUniqueName() + " : " + e);
+                     + wsConfig.getUniqueName() + " : " + e, e);
                }
 
                // cache type
@@ -332,7 +332,8 @@ public class RepositoryContainer extends ExoContainer
                   catch (ClassNotFoundException e)
                   {
                      throw new RepositoryConfigurationException("Class not found for workspace lock manager "
-                        + wsConfig.getLockManager().getType() + ", container " + wsConfig.getUniqueName() + " : " + e);
+                        + wsConfig.getLockManager().getType() + ", container " + wsConfig.getUniqueName() + " : " + e,
+                        e);
                   }
                }
                else
@@ -364,8 +365,9 @@ public class RepositoryContainer extends ExoContainer
                   }
                   catch (ClassNotFoundException e)
                   {
-                     throw new RepositoryConfigurationException("Class not found for workspace access manager "
-                        + wsConfig.getAccessManager().getType() + ", container " + wsConfig.getUniqueName() + " : " + e);
+                     throw new RepositoryConfigurationException(
+                        "Class not found for workspace access manager " + wsConfig.getAccessManager().getType()
+                           + ", container " + wsConfig.getUniqueName() + " : " + e, e);
                   }
                }
 
@@ -381,7 +383,8 @@ public class RepositoryContainer extends ExoContainer
                   catch (ClassNotFoundException e)
                   {
                      throw new RepositoryConfigurationException("Class not found for workspace initializer "
-                        + wsConfig.getInitializer().getType() + ", container " + wsConfig.getUniqueName() + " : " + e);
+                        + wsConfig.getInitializer().getType() + ", container " + wsConfig.getUniqueName() + " : " + e,
+                        e);
                   }
                }
                else
@@ -644,7 +647,8 @@ public class RepositoryContainer extends ExoContainer
                }
                catch (ClassNotFoundException e)
                {
-                  throw new RepositoryConfigurationException("Class not found for repository authentication policy: " + e);
+                  throw new RepositoryConfigurationException("Class not found for repository authentication policy: "
+                     + e, e);
                }
 
                // Repository

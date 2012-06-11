@@ -274,7 +274,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
          }
          catch (NoSuchElementException e)
          {
-            throw new IllegalArgumentException("Invalid combination of jcr:path clauses");
+            throw new IllegalArgumentException("Invalid combination of jcr:path clauses", e);
          }
          MergingPathQueryNode path = (MergingPathQueryNode)pathConstraints.get(0);
          LocationStepQueryNode[] steps = path.getPathSteps();
@@ -527,7 +527,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
       }
       catch (ArrayIndexOutOfBoundsException e)
       {
-         throw new IllegalArgumentException("Too few arguments in predicate");
+         throw new IllegalArgumentException("Too few arguments in predicate", e);
       }
 
       if (predicateNode != null)
@@ -764,11 +764,11 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
       }
       catch (java.text.ParseException e)
       {
-         throw new IllegalArgumentException(e.toString());
+         throw new IllegalArgumentException(e.toString(), e);
       }
       catch (NumberFormatException e)
       {
-         throw new IllegalArgumentException(e.toString());
+         throw new IllegalArgumentException(e.toString(), e);
       }
 
       if (node == null)
@@ -873,11 +873,11 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
                }
                catch (NamespaceException e)
                {
-                  throw new IllegalArgumentException("Illegal name: " + name);
+                  throw new IllegalArgumentException("Illegal name: " + name, e);
                }
                catch (RepositoryException e)
                {
-                  throw new IllegalArgumentException("Illegal name: " + name);
+                  throw new IllegalArgumentException("Illegal name: " + name, e);
                }
 
             }

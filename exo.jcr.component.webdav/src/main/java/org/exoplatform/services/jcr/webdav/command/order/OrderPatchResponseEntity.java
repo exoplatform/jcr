@@ -128,7 +128,7 @@ public class OrderPatchResponseEntity implements StreamingOutput
       catch (Exception exc)
       {
          LOG.error(exc.getMessage(), exc);
-         throw new IOException();
+         throw new IOException(exc);
       }
 
    }

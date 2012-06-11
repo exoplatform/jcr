@@ -1067,7 +1067,7 @@ public class TransientValueData implements ValueData
       }
       catch (UnsupportedEncodingException e)
       {
-         throw new RuntimeException("FATAL ERROR Charset " + Constants.DEFAULT_ENCODING + " is not supported!");
+         throw new RuntimeException("FATAL ERROR Charset " + Constants.DEFAULT_ENCODING + " is not supported!", e);
       }
    }
 

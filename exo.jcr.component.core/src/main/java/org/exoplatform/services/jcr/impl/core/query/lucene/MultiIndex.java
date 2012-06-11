@@ -2457,7 +2457,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          catch (NumberFormatException e)
          {
-            throw new IllegalArgumentException(line);
+            throw new IllegalArgumentException(line, e);
          }
          int endActionIdx = line.indexOf(' ', endTransIdx + 1);
          if (endActionIdx == -1)

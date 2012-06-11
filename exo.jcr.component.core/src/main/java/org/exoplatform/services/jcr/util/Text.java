@@ -504,7 +504,7 @@ public class Text
             }
             catch (NumberFormatException e)
             {
-               throw new IllegalArgumentException();
+               throw new IllegalArgumentException(e);
             }
             i += 2;
          }

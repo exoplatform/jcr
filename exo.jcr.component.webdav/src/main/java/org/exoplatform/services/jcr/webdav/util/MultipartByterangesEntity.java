@@ -124,12 +124,12 @@ public class MultipartByterangesEntity implements StreamingOutput
       catch (IOException exc)
       {
          LOG.error(exc.getMessage(), exc);
-         throw new IOException("Can't write to stream, caused " + exc);
+         throw new IOException("Can't write to stream, caused " + exc, exc);
       }
       catch (RepositoryException exc)
       {
          LOG.error(exc.getMessage(), exc);
-         throw new IOException("Can't write to stream, caused " + exc);
+         throw new IOException("Can't write to stream, caused " + exc, exc);
       }
    }
 

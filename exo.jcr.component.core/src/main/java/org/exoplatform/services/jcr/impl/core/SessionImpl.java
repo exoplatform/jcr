@@ -370,11 +370,11 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       }
       catch (XMLStreamException e)
       {
-         throw new IOException(e.getLocalizedMessage());
+         throw new IOException(e.getLocalizedMessage(), e);
       }
       catch (SAXException e)
       {
-         throw new IOException(e.getLocalizedMessage());
+         throw new IOException(e.getLocalizedMessage(), e);
       }
    }
 
@@ -411,11 +411,11 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       }
       catch (XMLStreamException e)
       {
-         throw new IOException(e.getLocalizedMessage());
+         throw new IOException(e.getLocalizedMessage(), e);
       }
       catch (SAXException e)
       {
-         throw new IOException(e.getLocalizedMessage());
+         throw new IOException(e.getLocalizedMessage(), e);
       }
    }
 
@@ -492,11 +492,11 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       }
       catch (XMLStreamException e)
       {
-         throw new IOException(e.getLocalizedMessage());
+         throw new IOException(e.getLocalizedMessage(), e);
       }
       catch (SAXException e)
       {
-         throw new IOException(e.getLocalizedMessage());
+         throw new IOException(e.getLocalizedMessage(), e);
       }
 
    }

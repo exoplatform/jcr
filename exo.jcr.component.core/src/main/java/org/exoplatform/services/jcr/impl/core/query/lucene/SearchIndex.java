@@ -1776,7 +1776,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             }
             catch (Exception e)
             {
-               throw new IOException(e.getLocalizedMessage());
+               throw new IOException(e.getLocalizedMessage(), e);
             }
          }
          return fsr;

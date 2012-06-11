@@ -132,12 +132,12 @@ public class VersionTreeResponseEntity implements StreamingOutput
       catch (XMLStreamException exc)
       {
          log.error(exc.getMessage(), exc);
-         throw new IOException(exc.getMessage());
+         throw new IOException(exc.getMessage(), exc);
       }
       catch (RepositoryException exc)
       {
          log.error(exc.getMessage(), exc);
-         throw new IOException(exc.getMessage());
+         throw new IOException(exc.getMessage(), exc);
       }
    }
 

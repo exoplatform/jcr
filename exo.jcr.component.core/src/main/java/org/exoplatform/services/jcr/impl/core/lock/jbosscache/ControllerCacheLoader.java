@@ -31,7 +31,6 @@ import java.io.ObjectOutputStream;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * This {@link CacheLoader} is used to encapsulate the {@link CacheLoader} used to persist the data of the Locks.
@@ -54,7 +53,7 @@ public class ControllerCacheLoader implements CacheLoader
     *  Thread local parameter for allow direct access to the data from cache loader. 
     */
    private final ThreadLocal<Boolean> allowDirectAccess = new ThreadLocal<Boolean>();
-	
+
    /**
     * The nested cache loader
     */

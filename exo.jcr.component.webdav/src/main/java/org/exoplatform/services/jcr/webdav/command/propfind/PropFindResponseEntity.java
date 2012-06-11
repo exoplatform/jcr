@@ -150,22 +150,22 @@ public class PropFindResponseEntity implements StreamingOutput
       catch (XMLStreamException exc)
       {
          LOG.error(exc.getMessage(), exc);
-         throw new IOException(exc.getMessage());
+         throw new IOException(exc.getMessage(), exc);
       }
       catch (RepositoryException exc)
       {
          LOG.error(exc.getMessage(), exc);
-         throw new IOException(exc.getMessage());
+         throw new IOException(exc.getMessage(), exc);
       }
       catch (IllegalResourceTypeException exc)
       {
          LOG.error(exc.getMessage(), exc);
-         throw new IOException(exc.getMessage());
+         throw new IOException(exc.getMessage(), exc);
       }
       catch (URISyntaxException exc)
       {
          LOG.error(exc.getMessage(), exc);
-         throw new IOException(exc.getMessage());
+         throw new IOException(exc.getMessage(), exc);
       }
    }
 
