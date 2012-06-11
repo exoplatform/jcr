@@ -268,6 +268,10 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
       catch (IOException e)
       {
          // should never happen, we are reading from a string
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
 
       return new TermPositionVector()

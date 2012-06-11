@@ -154,7 +154,7 @@ public class JobWorkspaceRestore extends Thread
       {
          restore();
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          LOG.error("The restore was fail", t);
       }
@@ -178,7 +178,7 @@ public class JobWorkspaceRestore extends Thread
          stateRestore = RESTORE_SUCCESSFUL;
          endTime = Calendar.getInstance();
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          stateRestore = RESTORE_FAIL;
          restoreException = t;
@@ -209,7 +209,7 @@ public class JobWorkspaceRestore extends Thread
             + "' can not be restored! There was database error!", e);
 
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          restored = false;
          throw new WorkspaceRestoreExeption("Workspace '" + "/" + repositoryName + "/" + wEntry.getName()
@@ -224,7 +224,7 @@ public class JobWorkspaceRestore extends Thread
             {
                removeWorkspace(repository, wEntry.getName());
             }
-            catch (Throwable thr)
+            catch (Throwable thr) //NOSONAR
             {
                throw new WorkspaceRestoreExeption("Workspace '" + "/" + repositoryName + "/"
                   + wEntry.getName() + "' can not be restored!", thr);

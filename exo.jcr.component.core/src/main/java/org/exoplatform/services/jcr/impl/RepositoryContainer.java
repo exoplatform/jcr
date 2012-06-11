@@ -157,7 +157,7 @@ public class RepositoryContainer extends ExoContainer
                parent.registerComponentInstance(name, RepositoryContainer.this);
                registerComponents();
             }
-            catch (Throwable t)
+            catch (Throwable t) //NOSONAR
             {
                unregisterAllComponents();
                parent.unregisterComponent(name);

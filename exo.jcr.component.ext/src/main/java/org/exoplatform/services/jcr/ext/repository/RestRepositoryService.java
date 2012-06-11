@@ -229,7 +229,7 @@ public class RestRepositoryService implements ResourceContainer
          errorMessage = e.getMessage();
          status = Status.NOT_FOUND;
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          if (log.isDebugEnabled())
          {
@@ -285,7 +285,7 @@ public class RestRepositoryService implements ResourceContainer
          errorMessage = e.getMessage();
          status = Status.BAD_REQUEST;
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          if (log.isDebugEnabled())
          {
@@ -346,7 +346,7 @@ public class RestRepositoryService implements ResourceContainer
          errorMessage = e.getMessage();
          status = Status.BAD_REQUEST;
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          if (log.isDebugEnabled())
          {
@@ -407,7 +407,7 @@ public class RestRepositoryService implements ResourceContainer
          errorMessage = e.getMessage();
          status = Status.NOT_FOUND;
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          if (log.isDebugEnabled())
          {
@@ -479,7 +479,7 @@ public class RestRepositoryService implements ResourceContainer
          errorMessage = e.getMessage();
          status = Status.NOT_FOUND;
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          if (log.isDebugEnabled())
          {
@@ -549,7 +549,7 @@ public class RestRepositoryService implements ResourceContainer
          errorMessage = e.getMessage();
          status = Status.NOT_FOUND;
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          if (log.isDebugEnabled())
          {

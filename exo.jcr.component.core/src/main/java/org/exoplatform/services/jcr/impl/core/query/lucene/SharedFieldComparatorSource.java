@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.FieldComparator;
 import org.apache.lucene.search.FieldComparatorSource;
@@ -351,7 +352,23 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
             }
             return null;
          }
-         catch (Exception ignore)
+         catch (RepositoryException ignore)
+         {
+            LOG.error(ignore.getLocalizedMessage(), ignore);
+         }
+         catch (CorruptIndexException ignore)
+         {
+            LOG.error(ignore.getLocalizedMessage(), ignore);
+         }
+         catch (IOException ignore)
+         {
+            LOG.error(ignore.getLocalizedMessage(), ignore);
+         }
+         catch (IllegalStateException ignore)
+         {
+            LOG.error(ignore.getLocalizedMessage(), ignore);
+         }
+         catch (IllegalNameException ignore)
          {
             LOG.error(ignore.getLocalizedMessage(), ignore);
          }

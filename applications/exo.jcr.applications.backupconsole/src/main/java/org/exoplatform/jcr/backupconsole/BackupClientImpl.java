@@ -488,7 +488,7 @@ public class BackupClientImpl
             {
                wEntry = getWorkspaceEntry(config, repositoryName, workspaceName);
             }
-            catch (Throwable e)
+            catch (Throwable e) //NOSONAR
             {
                throw new BackupExecuteException("Can not get WorkspaceEntry for workspace '" + workspaceName
                         + "' from config.", e);
@@ -533,7 +533,7 @@ public class BackupClientImpl
             {
                wEntry = getRepositoryEntry(config, repositoryName);
             }
-            catch (Throwable e)
+            catch (Throwable e) //NOSONAR
             {
                throw new BackupExecuteException("Can not get RepositoryEntry for repository '" + repositoryName
                         + "' from config.", e);

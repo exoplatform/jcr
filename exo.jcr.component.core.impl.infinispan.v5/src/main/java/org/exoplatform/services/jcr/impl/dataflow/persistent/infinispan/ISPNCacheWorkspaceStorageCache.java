@@ -1740,6 +1740,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          catch (IllegalPathException e)
          {
             // Do nothing. Never happens.
+            if (LOG.isTraceEnabled())
+            {
+               LOG.trace("An exception occurred: " + e.getMessage());
+            }
          }
 
          // make new path - no matter  node or property

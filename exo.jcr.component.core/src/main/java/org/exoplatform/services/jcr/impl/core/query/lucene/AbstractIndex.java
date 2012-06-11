@@ -179,7 +179,7 @@ abstract class AbstractIndex
             {
                writer.addDocument(doc);
             }
-            catch (Throwable e)
+            catch (Throwable e) //NOSONAR
             {
                if (ioExc == null)
                {

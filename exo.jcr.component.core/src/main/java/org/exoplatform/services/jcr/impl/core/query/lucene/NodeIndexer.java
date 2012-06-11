@@ -398,7 +398,7 @@ public class NodeIndexer
                            {
                               is.close();
                            }
-                           catch (Throwable e)
+                           catch (Throwable e) //NOSONAR
                            {
                               if (LOG.isTraceEnabled())
                               {

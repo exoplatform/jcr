@@ -524,7 +524,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       {
          doRestore();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          throw new RepositoryException(e);
       }

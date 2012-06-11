@@ -489,7 +489,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
                      + lockUsers.toString() + "], error " + e, e);
                } // else it's not matter for work, the task will try next time
             }
-            catch (Throwable e)
+            catch (Throwable e) //NOSONAR
             {
                if (log.isDebugEnabled())
                {
@@ -843,7 +843,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
                   + ")" + ", childs(nodes:" + st.getNodesSize() + ", properties:" + st.getPropertiesSize() + ")");
             }
          }
-         catch (Throwable e)
+         catch (Throwable e) //NOSONAR
          {
             LOG.warn("Show statistic log.info error " + e.getMessage());
          }
@@ -2170,7 +2170,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
          {
             workerTimer.cancel();
          }
-         catch (Throwable e)
+         catch (Throwable e) //NOSONAR
          {
             LOG.warn(this.name + " cache, stop error " + e.getMessage());
          }

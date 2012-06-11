@@ -167,7 +167,7 @@ public abstract class AbstractIncrementalBackupJob extends AbstractBackupJob imp
             state = FINISHED;
          }
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          log.error("Incremental backup: resume failed ", e);
          notifyError("Incremental backup: resume failed ", e);

@@ -174,7 +174,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
       {
          throw new InvalidQueryException(e.getMessage());
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          log.error(t.getLocalizedMessage(), t);
          // javacc parser may also throw an error in some cases

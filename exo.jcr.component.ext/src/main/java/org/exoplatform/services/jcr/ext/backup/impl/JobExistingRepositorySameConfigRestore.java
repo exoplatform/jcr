@@ -229,7 +229,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
             }
          }
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          // rollback
          for (DataRestore restorer : dataRestorer)
