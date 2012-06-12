@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="Kernel.ComponentPluginPriority">
+<chapter id="Kernel.ComponentPluginPriority">
   <?dbhtml filename="ch-component-plugin-priority.html"?>
 
   <title>Component Plugin Priority</title>
@@ -58,4 +58,4 @@
   <para>In the above example plugin 'Plugin3' will be loaded first because it
   has the default priority '0'. Then, plugin 'Plugin1' will be loaded and last
   one is plugin 'Plugin2'.</para>
-</section>
+</chapter>

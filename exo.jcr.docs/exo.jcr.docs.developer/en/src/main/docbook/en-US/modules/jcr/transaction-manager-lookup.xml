@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id = "JCR.TransactionManagerLookup">
+<chapter id = "JCR.TransactionManagerLookup">
   <?dbhtml filename="ch-transaction-manager-lookup.html"?>
 
   <title>TransactionManagerLookup</title>
@@ -18,4 +18,4 @@
     <emphasis>GenericTransactionManagerLookup</emphasis> is used in the Application Server environment.
     </para>
 
-</section>
+</chapter>

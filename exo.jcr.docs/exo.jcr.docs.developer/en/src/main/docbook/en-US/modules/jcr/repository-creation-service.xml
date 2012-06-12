@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="JCR.RepositoryCreationService">
+<chapter id="JCR.RepositoryCreationService">
   <?dbhtml filename="ch-repository-creation-service.html"?>
 
   <title>RepositoryCreationService</title>
@@ -253,4 +253,4 @@
       </listitem>
     </itemizedlist>
   </section>
-</section>
+</chapter>

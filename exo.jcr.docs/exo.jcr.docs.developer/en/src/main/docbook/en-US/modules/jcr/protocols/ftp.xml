@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="JCR.FTP">
+<chapter id="JCR.FTP">
   <?dbhtml filename="ch-ftp.html"?>
 
   <title>FTP</title>
@@ -164,4 +164,4 @@
       <para>Defines the value of a timeout.</para>
     </section>
   </section>
-</section>
+</chapter>

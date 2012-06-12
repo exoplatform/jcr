@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="Core.LDAPConfiguration">
+<chapter id="Core.LDAPConfiguration">
   <?dbhtml filename="ch-ldap-configuration.html"?>
 
   <title>LDAP Configuration</title>
@@ -80,7 +80,7 @@
     certainly be configured to meet your requirements.</para>
 
     <para>The configuration is done in <emphasis
-    role="bold">ldap-configuration.xml</emphasis> file, and this section will
+    role="bold">ldap-configuration.xml</emphasis> file, and this chapter will
     explain the numerous parameters it contains.</para>
 
     <section>
@@ -860,4 +860,4 @@ cn: manager</programlisting>
       role="bold">manager:/testgroup</emphasis> to any user.</para>
     </section>
   </section>
-</section>
+</chapter>

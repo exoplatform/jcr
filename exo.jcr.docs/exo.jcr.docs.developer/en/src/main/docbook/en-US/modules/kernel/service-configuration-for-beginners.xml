@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="Kernel.ServiceConfigurationforBeginners">
+<chapter id="Kernel.ServiceConfigurationforBeginners">
   <?dbhtml filename="ch-service-configuration-for-beginners.html"?>
 
   <title>Service Configuration for Beginners</title>
-    <para>This section provides you the basic knowledge
+    <para>This chapter provides you the basic knowledge
     about modes, services and containers. You will find out where the service
     configuration files should be placed, and you will also see the overriding
     mechanism of configurations. </para>
@@ -448,7 +448,7 @@
       standalone containers can be initialized using an URL. This URL contains
       a link to an external configuration. As you probably never need a
       standalone configuration you can safely jump over the remaining
-      confusing words of this section.</para>
+      confusing words of this chapter.</para>
 
       <para>After taking over RootContainer's configuration, there are three
       cases which depend on the URL initialization, :</para>
@@ -762,4 +762,4 @@ import jndi:/localhost/portal/WEB-INF/conf/jcr/jcr-configuration.xml
     some eXo's core services. Finally you might wish to read more about <ulink
     url="http://www.picocontainer.org/">PicoContainer</ulink>.</para>
   </section>
-</section>
+</chapter>

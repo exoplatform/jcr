@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="JCRWithGateIn.HowToExtendMyGateInInstance">
+<chapter id="JCRWithGateIn.HowToExtendMyGateInInstance">
   <?dbhtml filename="ch-how-to-extend-my-gatein-instance.html"?>
 
   <title>How to extend my GateIn instance?</title>
@@ -2459,4 +2459,4 @@ exo-domain-sample-portal {
       dedicated workspace or repository per extension.</para>
     </section>
   </section>
-</section>
+</chapter>

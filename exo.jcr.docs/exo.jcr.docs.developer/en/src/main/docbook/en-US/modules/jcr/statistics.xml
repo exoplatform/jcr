@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="JCR.Statistics">
+<chapter id="JCR.Statistics">
   <?dbhtml filename="ch-statistics.html"?>
 
   <title>eXo JCR statistics</title>
-  <para>This section will show you how to get and manage all statistics provided by eXo JCR.</para>
+  <para>This chapter will show you how to get and manage all statistics provided by eXo JCR.</para>
   
   <section id="JCR.Statistics.Database_access_layer">
     <title>Statistics on the Database Access Layer</title>
@@ -475,4 +475,4 @@
       </table>The full name of the related MBean is
     <emphasis>exo:service=statistic, view=jcr</emphasis>.</para>
   </section>
-</section>
+</chapter>

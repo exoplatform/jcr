@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="Kernel.DataSourceProvider">
+<chapter id="Kernel.DataSourceProvider">
   <?dbhtml filename="ch-data-source-provider.html"?>
 
   <title>The data source provider</title>
@@ -126,4 +126,4 @@
       </tgroup>
     </table>
   </section>
-</section>
+</chapter>

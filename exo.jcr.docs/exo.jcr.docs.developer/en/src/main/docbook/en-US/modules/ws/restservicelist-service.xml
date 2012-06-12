@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="WS.RestServicesList">
+<chapter id="WS.RestServicesList">
   <?dbhtml filename="ch-ws-restserviceslist-service.html"?>
 
   <title>RestServicesList Service</title>
@@ -55,7 +55,8 @@ public byte[] listHTML()
        HTML code:
      </para>
 
-      <programlisting language="xml">
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
    &lt;head&gt;
       &lt;title&gt;eXo JAXRS Implementation&lt;/title&gt;
    &lt;/head&gt;
@@ -208,4 +209,4 @@ public RootResourcesList listJSON()
       <para></para>
     </section>
   </section>
-</section>
+</chapter>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section>
+<chapter>
   <title>Digest Authentication</title>
 
     <para>Digest access authentication is one of the agreed methods a web
@@ -159,4 +159,4 @@
     It can be used to calculate md5 digest of original password to compare it
     with recieved from clientside.</para>
   </section>
-</section>
+</chapter>

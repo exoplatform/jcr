@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="JCR.QueryHandlerConfiguration">
+<chapter id="JCR.QueryHandlerConfiguration">
   <?dbhtml filename="ch-query-handler-config.html"?>
 
   <title>QueryHandler configuration</title>
 
-  <para>This section shows you how to configure
+  <para>This chapter shows you how to configure
   <emphasis>QueryHandler</emphasis>: <link
   linkend="JCR.QueryHandlerConfiguration.Indexing_in_clustered_environment">Indexing
   in clustered environment</link>.</para>
@@ -574,4 +574,4 @@
       doesn't guarantee it's stability and functionality.</para>
     </section>
   </section>
-</section>
+</chapter>

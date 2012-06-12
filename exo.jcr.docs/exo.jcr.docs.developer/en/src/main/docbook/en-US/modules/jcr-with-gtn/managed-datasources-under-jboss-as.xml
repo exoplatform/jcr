@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="JCRWithGateIn.HowToUseDataSourceUnderJBoss">
+<chapter id="JCRWithGateIn.HowToUseDataSourceUnderJBoss">
   <title>How to use AS Managed DataSource under JBoss AS</title>
 
   <?dbhtml filename="ch-how-to-use-managed-datasource-under-jboss.html"?>
 
-    <para>This section will show you how to use AS Managed DataSource under JBoss AS.
+    <para>This chapter will show you how to use AS Managed DataSource under JBoss AS.
     </para>
 
     <important>
@@ -99,4 +99,4 @@
 
       <para>Running eXo after these configurations goes well.</para>
     </section>
-</section>
+</chapter>

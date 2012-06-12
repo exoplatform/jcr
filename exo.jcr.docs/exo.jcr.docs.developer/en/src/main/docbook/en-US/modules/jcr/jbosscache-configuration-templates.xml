@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="JCR.JBossCacheConfigurationTemplates">
+<chapter id="JCR.JBossCacheConfigurationTemplates">
   <?dbhtml filename="ch-jbosscache-configuration-templates.html"?>
 
   <title>JBoss Cache configuration</title>
 
-  <para>This section will show you how to use and configure Jboss Cache in the clustered environment.
+  <para>This chapter will show you how to use and configure Jboss Cache in the clustered environment.
   Also, you will know how to use a template-based configuration offered by eXo JCR for JBoss Cache instances.</para>
 
   <section id="JCR.JBossCacheConfigurationTemplates.JBoss_Cache_Config_for_Indexer">
@@ -302,4 +302,4 @@
       </table>
     </section>
   </section>
-</section>
+</chapter>

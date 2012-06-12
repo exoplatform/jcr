@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "hp://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="Core.OrganizationListener">
+<chapter id="Core.OrganizationListener">
   <?dbhtml filename="ch-organization-service-listener.html"?>
 
   <title>Organization Listener</title>
@@ -183,4 +183,4 @@
         <programlisting>permission java.lang.RuntimePermission "manageListeners"</programlisting>
       </note></para>
   </section>
-</section>
+</chapter>

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section>
+<chapter>
   <?dbhtml filename="organization-service-tests-config.html"?>
 
   <title>Organization Service TCK tests configuration</title>
@@ -416,4 +416,4 @@
     at <ulink
     url="http://svn.exoplatform.org/projects/jcr-services/trunk/src/test/java/conf/standalone/test-configuration.xml">svn</ulink></para>
   </section>
-</section>
+</chapter>

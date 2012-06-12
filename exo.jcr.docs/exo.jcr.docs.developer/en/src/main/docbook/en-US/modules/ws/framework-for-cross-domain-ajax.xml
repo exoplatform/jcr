@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="WS.CrossDomainAJAX">
+<chapter id="WS.CrossDomainAJAX">
   <?dbhtml filename="ch-framework-for-cross-domain-ajax.html"?>
 
   <title>Framework for cross-domain AJAX</title>
-  <para>eXo Webservice provides a framework to cross-domain AJAX. This section shows you how to use this framework.</para>
+  <para>eXo Webservice provides a framework to cross-domain AJAX. This chapter shows you how to use this framework.</para>
 
   <para>You can checkout the source code at <ulink
   url="https://anonsvn.jboss.org/repos/exo-jcr/ws/trunk/exo.ws.frameworks.javascript.cross-domain-ajax">https://anonsvn.jboss.org/repos/exo-jcr/ws/trunk/exo.ws.frameworks.javascript.cross-domain-ajax</ulink>.</para>
@@ -118,4 +118,4 @@
 
     <programlisting language="html">&lt;button onclick='test()'&gt;test cross-domain&lt;/button&gt;</programlisting>
   </section>
-</section>
+</chapter>

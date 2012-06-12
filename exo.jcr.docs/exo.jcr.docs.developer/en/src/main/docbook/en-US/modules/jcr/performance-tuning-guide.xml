@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="JCR.PerformanceTuningGuide">
+<chapter id="JCR.PerformanceTuningGuide">
   <?dbhtml filename="ch-jcr-performance-tuning.html"?>
 
   <title>JCR Performance Tuning Guide</title>
 
-    <para>This section will show you possible ways of improving JCR</para>
+    <para>This chapter will show you possible ways of improving JCR</para>
 
     <para>It is intended to GateIn Administrators and those who wants to use
     JCR features.</para>
@@ -333,4 +333,4 @@
       size.</para>
     </section>
   </section>
-</section>
+</chapter>

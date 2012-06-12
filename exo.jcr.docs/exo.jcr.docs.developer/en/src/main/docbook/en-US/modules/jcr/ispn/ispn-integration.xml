@@ -2,7 +2,7 @@
 <!-- This document was created with Syntext Serna Free. -->
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="ISPN.integration">
+<chapter id="ISPN.integration">
   <?dbhtml filename="ispn-integration.html"?>
 
   <title>Infinispan integration</title>
@@ -431,4 +431,4 @@
       </table>
     </section>
   </section>
-</section>
+</chapter>

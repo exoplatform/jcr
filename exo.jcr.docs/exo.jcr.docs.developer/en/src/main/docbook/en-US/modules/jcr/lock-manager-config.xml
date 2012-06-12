@@ -2,7 +2,7 @@
 <!-- This document was created with Syntext Serna Free. -->
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="JCR.LockManagerConfiguration">
+<chapter id="JCR.LockManagerConfiguration">
   <?dbhtml filename="ch-lock-manager-config.html"?>
 
   <title>LockManager configuration</title>
@@ -377,4 +377,4 @@
       </itemizedlist>
     </section>
   </section>
-</section>
+</chapter>

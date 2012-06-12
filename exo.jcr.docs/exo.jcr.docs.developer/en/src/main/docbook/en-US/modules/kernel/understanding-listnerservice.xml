@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="Kernel.UnderstandingtheListenerService">
+<chapter id="Kernel.UnderstandingtheListenerService">
   <?dbhtml filename="ch-understanding-listeners-service.html"?>
 
   <title>Understanding the ListenerService</title>
-  <para>This section will first describe how the ListenerService works and
+  <para>This chapter will first describe how the ListenerService works and
     then it will show you how to configure the ListenerService.</para>
 
   <para><emphasis role="bold">Related documents</emphasis></para>
@@ -211,4 +211,4 @@ public &lt;T extends Event&gt; void broadcast(T event) throws Exception {
 &lt;/configuration&gt;
 ...</programlisting>
   </section>
-</section>
+</chapter>
