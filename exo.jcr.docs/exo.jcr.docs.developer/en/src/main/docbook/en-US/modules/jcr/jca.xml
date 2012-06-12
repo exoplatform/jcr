@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.JCA">
+<section id="JCR.JCA">
   <?dbhtml filename="ch-jca.html"?>
 
   <title>The <emphasis>JCA</emphasis> Resource Adapter</title>
@@ -130,4 +130,4 @@
   &lt;/tx-connection-factory&gt;
 &lt;/connection-factories&gt;</programlisting>
   </section>
-</chapter>
+</section>

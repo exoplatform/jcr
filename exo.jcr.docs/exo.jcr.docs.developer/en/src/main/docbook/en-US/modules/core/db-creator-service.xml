@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Core.DBCreatorService">
+<section id="Core.DBCreatorService">
   <?dbhtml filename="ch-db-creator-service.html"?>
 
   <title>Database Creator</title>
@@ -202,4 +202,4 @@ GRANT UNLIMITED TABLESPACE TO "${username}";
 GRANT "CONNECT" TO "${username}";
 GRANT "RESOURCE" TO "${username}";</programlisting>
   </section>
-</chapter>
+</section>

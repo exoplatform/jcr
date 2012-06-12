@@ -2,7 +2,7 @@
 <!-- This document was created with Syntext Serna Free. -->
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.JTA">
+<section id="JCR.JTA">
   <?dbhtml filename="ch-jta.html"?>
 
   <title>JTA</title>
@@ -15,4 +15,4 @@
   managed data source, you will have to configure the service
   <emphasis>DataSourceProvider</emphasis> (for more details please refer to
   the corresponding chapter).</para>
-</chapter>
+</section>
