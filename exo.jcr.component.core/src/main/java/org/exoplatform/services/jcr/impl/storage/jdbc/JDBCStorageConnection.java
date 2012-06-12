@@ -1105,7 +1105,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
-         ResultSet count = findMaxPropertyVersion(data.getParentIdentifier(), data.getQPath().getName().getAsString(), data.getQPath().getIndex());
+         ResultSet count =
+            findMaxPropertyVersion(data.getParentIdentifier(), data.getQPath().getName().getAsString(), data.getQPath()
+               .getIndex());
          try
          {
             if (count.next())
@@ -1125,7 +1127,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the ResultSet: " + e);
+               LOG.error("Can't close the ResultSet: " + e, e);
             }
          }
       }

@@ -121,7 +121,8 @@ public class SharedFieldCache
 
       private boolean isSparse(Comparable[] values, int setValues)
       {
-         // some really simple test to test whether the array is sparse. Currently, when less then 1% is set, the array is already sparse 
+         // some really simple test to test whether the array is sparse.  
+         // Currently, when less then 1% is set, the array is already sparse 
          // for this typical cache to avoid memory issues
          if (setValues * SPARSE_FACTOR < values.length)
          {

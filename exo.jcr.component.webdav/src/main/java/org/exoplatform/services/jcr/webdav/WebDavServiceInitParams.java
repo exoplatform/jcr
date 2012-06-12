@@ -334,10 +334,6 @@ public class WebDavServiceInitParams
             {
                log.warn("Invalid " + InitParamsNames.CACHE_CONTROL + " parameter");
             }
-            catch (NullPointerException e)
-            {
-               log.warn("Invalid " + InitParamsNames.CACHE_CONTROL + " parameter");
-            }
             catch (IllegalArgumentException e)
             {
                log.warn("Invalid " + InitParamsNames.CACHE_CONTROL + " parameter");

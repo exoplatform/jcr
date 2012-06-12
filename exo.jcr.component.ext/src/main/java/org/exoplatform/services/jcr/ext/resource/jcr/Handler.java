@@ -94,8 +94,11 @@ public class Handler extends URLStreamHandler implements Startable
    {
       ExoContainer container = ExoContainerContext.getCurrentContainer();
       repositoryService = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      nodeRepresentationService = (NodeRepresentationService)container.getComponentInstanceOfType(NodeRepresentationService.class);
-      threadLocalSessionProviderService = (ThreadLocalSessionProviderService)container.getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
+      nodeRepresentationService =
+         (NodeRepresentationService)container.getComponentInstanceOfType(NodeRepresentationService.class);
+      threadLocalSessionProviderService =
+         (ThreadLocalSessionProviderService)container
+            .getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
    }
 
    // URLStreamHandler

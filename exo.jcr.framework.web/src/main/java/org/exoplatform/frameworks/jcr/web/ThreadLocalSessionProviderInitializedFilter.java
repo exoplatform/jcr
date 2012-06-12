@@ -62,7 +62,8 @@ public class ThreadLocalSessionProviderInitializedFilter extends AbstractFilter
    {
       ExoContainer container = getContainer();
 
-      SessionProviderService providerService = (SessionProviderService)container.getComponentInstanceOfType(SessionProviderService.class);
+      SessionProviderService providerService =
+         (SessionProviderService)container.getComponentInstanceOfType(SessionProviderService.class);
       ConversationRegistry stateRegistry = (ConversationRegistry)container.getComponentInstanceOfType(ConversationRegistry.class);
 
       HttpServletRequest httpRequest = (HttpServletRequest)request;

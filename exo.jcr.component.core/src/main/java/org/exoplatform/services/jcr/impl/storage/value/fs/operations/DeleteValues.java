@@ -101,7 +101,8 @@ public class DeleteValues extends ValueFileOperation
             File file = files[i];
             if (file.exists())
             {
-               bckFiles[i] = new File(file.getAbsolutePath() + "." + System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet());
+               bckFiles[i] =
+                  new File(file.getAbsolutePath() + "." + System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet());
                DirectoryHelper.renameFile(file, bckFiles[i]);
             }           
          }
