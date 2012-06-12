@@ -1,19 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.InitialContextBinderservice">
-  <?dbhtml filename="ch-initialcontext-binder-service.html"?>
-
+<section id="Kernel.InitialContextBinderservice">
   <title>Initial Context Binder</title>
-
   <para>Initial Context Binder is responsible for binding references at
   runtime, persisting in file and automatically rebinding. Java temp directory
   is used to persist references in bind-references.xml file by default. In
   case when need to definde special file it can be done by add parameter to
   <link linkend="Kernel.JNDINaming">InitialContextInitializer</link>
   configuration.</para>
-
-  <section>
+  <section id="Kernel.InitialContextBinderservice.API">
     <title>API</title>
 
     <para>Service provide methods for binding reference:</para>
@@ -54,4 +50,4 @@
 
     <programlisting language="java">public void unbind(String bindName) throws NamingException, FileNotFoundException, XMLStreamException</programlisting>
   </section>
-</chapter>
+</section>

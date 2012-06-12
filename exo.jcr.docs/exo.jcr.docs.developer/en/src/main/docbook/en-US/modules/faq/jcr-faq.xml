@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.FAQ">
-  <?dbhtml filename="ch-jcr-faq.html"?>
-
+<section id="JCR.FAQ">
   <title>JCR FAQ</title>
 
   <para>It's the draft for a future FAQ of JCR usage.</para>
 
-  <section>
+  <section id="JCR.FAQ.Kernel">
     <title>Kernel</title>
 
-    <section>
+    <section id="JCR.FAQ.Kernel.BestAndStandardizedWayToGetInstanceOfService">
       <title>What is the best, standardized way to get the instance of a
       service ?</title>
 
@@ -19,13 +17,13 @@
     </section>
   </section>
 
-  <section>
+  <section id="JCR.FAQ.JCR">
     <title>JCR</title>
 
-    <section>
+    <section id="JCR.FAQ.JCR.Core">
       <title>JCR core</title>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.Session.getNodeByUUIDOrSession.getItem">
         <title>Is it better to use Session.getNodeByUUID or
         Session.getItem?</title>
 
@@ -37,7 +35,7 @@
         url="http://tests.exoplatform.org/JCR/1.12.2-GA/rev.2442/daily-performance-testing-results/jcr.core./index.html">http://tests.exoplatform.org/JCR/1.12.2-GA/rev.2442/daily-performance-testing-results/jcr.core./index.html</ulink></para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.UsegetNodeByUUID">
         <title>Does it make sense to have all the node referencable to use
         getNodeByUUID all the time?</title>
 
@@ -47,7 +45,7 @@
         preferable.</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.CheckIfItemExistsBeforeGettingValue">
         <title>What should I use to check if an Item exists before getting the
         Value?</title>
 
@@ -56,7 +54,7 @@
         to check Node.hasNodes() and Node.hasProprties().</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.HowToUseObservationProperly">
         <title>How to use Observation properly?</title>
 
         <para>JCR Observation's a way to listen on persistence changes of a
@@ -74,7 +72,7 @@
         ObservationManager.addEventListener() method.</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.UseQueriesToAccessDataByJCRAPI">
         <title>Is it better to use queries that to access the data by the JCR
         API?</title>
 
@@ -83,14 +81,14 @@
         return the items.</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.WhatDefaultQueryOrdering">
         <title>What is default query ordering?</title>
 
         <para>By default (if query do not contains any ordering statements)
         result nodes is sorted by document order.</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.OrderingByjcr:path_ItemNameSupported">
         <title>Is ordering by jcr:path or Item name supported?</title>
 
         <para>No, it does not supported. There is two ways to ordering
@@ -140,7 +138,7 @@
         </itemizedlist>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.eXoJCRIndexerUsesContentEncoding">
         <title>How eXo JCR indexer uses content encoding?</title>
 
         <para>1. Indexer uses jcr:encoding property of nt:resource node (used
@@ -150,7 +148,7 @@
         encoding will be used</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.WhichDatabaseServerBetterForeXoJCR">
         <title>Which database server is better for eXo JCR?</title>
 
         <para>If the question is a performance, it's difficult question, as
@@ -171,7 +169,7 @@
         url.</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.HowToSetUpeXoJCRForMutilingialContentOnMySQL">
         <title>How to setup eXo JCR for mutilingial content on MySQL?</title>
 
         <para>To allow multiple character sets to be sent from the client, the
@@ -193,7 +191,7 @@
         be set explicitly in configuration.</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.LimitationMySQLAffectingOneXoJCRFeatures">
         <title>Does MySQL have limitation affecting on eXo JCR
         features?</title>
 
@@ -201,7 +199,7 @@
         dialect is reduced to 765 bytes (or 255 chars).</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.SybaseDatabaseNeedSpecialOptionsIneXoJCRconfiguration">
         <title>Does use of Sybase database need special options in eXo JCR
         configuration?</title>
 
@@ -222,7 +220,7 @@
   &lt;/properties&gt;</programlisting>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.AvoidMemoryLeaks">
         <title>How to open and close a session properly to avoid memory
         leaks?</title>
 
@@ -237,7 +235,7 @@ session.logout();
 }</programlisting>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.UseSessionAfterLogingOut">
         <title>Can I use Session after loging out?</title>
 
         <para>No. Any instance of Session or Node (acquired through session)
@@ -245,7 +243,7 @@ session.logout();
         recommended not to use.</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.HowToConfigureJcrForCluster">
         <title>How to configure jcr for cluster ?</title>
 
         <para>So we have configured JCR in standalone mode and want to
@@ -468,7 +466,7 @@ session.logout();
         <para>That's all. JCR is ready for running in a cluster.</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.HowToUseLuceneSpellchecker">
         <title>How to use lucene spellchecker?</title>
 
         <para>There is few steps:</para>
@@ -512,7 +510,7 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
         words like the checked word.</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Core.AffectSpellcheckerResults">
         <title>How can I affect to spellchecker results?</title>
 
         <para>There is two parameters in jcr QueryHandler
@@ -568,10 +566,10 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="JCR.FAQ.JCR.Extensions">
       <title>JCR extensions</title>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Extensions.HowToRestoreRepository">
         <title>How to restore repository to existing repository ?</title>
 
         <orderedlist>
@@ -589,7 +587,7 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
         </orderedlist>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Extensions.HowToRestoreWorkspace">
         <title>How to restore workspace to existing worksapce?</title>
 
         <orderedlist>
@@ -607,7 +605,7 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
         </orderedlist>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.Extensions.JCRSupportHotBackup">
         <title>Does JCR support hot backup?</title>
 
         <para>Yes, JCR is support hot backup. Will use
@@ -615,10 +613,10 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="JCR.FAQ.JCR.WebDAV">
       <title>WebDAV</title>
 
-      <section>
+      <section id="JCR.FAQ.JCR.WebDAV.UploadFileToWebDAVServer">
         <title>I uploaded a file to WebDAV server using Mac OS Finder, but the
         file size is '0', what is wrong ?</title>
 
@@ -630,7 +628,7 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
         Disscussion thread.</ulink></para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.WebDAV.ManageCacheControlValue">
         <title>Can I manage 'cache-control' value for different media-types
         from server configuration ?</title>
 
@@ -655,7 +653,7 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
 </programlisting>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.WebDAV.PerformWebDAVRequestsUsingCurl">
         <title>How to perform WebDAV requests using curl ?</title>
 
         <para>Simple Requests</para>
@@ -707,7 +705,7 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
         for Distributed Authoring</ulink> specification.</para>
       </section>
 
-      <section>
+      <section id="JCR.FAQ.JCR.WebDAV.eXoJCRWebDAVServerTreatsContentEncoding">
         <title>How eXo JCR WebDAV server treats content encoding?</title>
 
         <para>OS client (Windows, Linux etc) doesn't set an encoding in a
@@ -725,4 +723,4 @@ Value v = r.getValue("rep:spellcheck()");</programlisting>
       </section>
     </section>
   </section>
-</chapter>
+</section>

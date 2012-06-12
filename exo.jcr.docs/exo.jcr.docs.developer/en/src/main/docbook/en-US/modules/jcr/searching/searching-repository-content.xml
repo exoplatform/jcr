@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.SearchingRepositoryContent">
-  <?dbhtml filename="ch-jcr-searching-repository-conten.html"?>
-
+<section id="JCR.SearchingRepositoryContent">
   <title>Searching Repository Content</title>
 
     <para>You can find the JCR configuration file at
@@ -11,7 +9,7 @@
     <link linkend="JCR.SearchConfiguration">Search Configuration</link> for
     more information about index configuration.</para>
 
-  <section>
+  <section id="JCR.SearchingRepositoryContent.Bi-directionalRangeIterator">
     <title>Bi-directional RangeIterator (since 1.9)</title>
 
     <para>QueryResult.getNodes() will return bi-directional NodeIterator
@@ -57,7 +55,7 @@ while (iter.hasNext()) {
 }</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.SearchingRepositoryContent.FuzzySearches">
     <title>Fuzzy Searches (since 1.0)</title>
 
     <para>JCR supports such features as Lucene Fuzzy Searches <ulink
@@ -144,7 +142,7 @@ public interface SynonymProvider {
 
     <programlisting language="xml">&lt;param name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.DefaultXMLExcerpt"/&gt;</programlisting>
 
-    <section>
+    <section id="JCR.SearchingRepositoryContent.Highlighting.DefaultXMLExcerpt">
       <title>DefaultXMLExcerpt</title>
 
       <para>This excerpt provider creates an XML fragment of the following
@@ -162,7 +160,7 @@ public interface SynonymProvider {
 &lt;/excerpt&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.SearchingRepositoryContent.Highlighting.DefaultHTMLExcerpt">
       <title>DefaultHTMLExcerpt</title>
 
       <para>This excerpt provider creates an HTML fragment of the following
@@ -180,7 +178,7 @@ public interface SynonymProvider {
 &lt;/div&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.SearchingRepositoryContent.Highlighting.HowToUseIt">
       <title>How to use it</title>
 
       <para>If you are using XPath, you must use the rep:excerpt() function in
@@ -278,7 +276,7 @@ for (RowIterator it = result.getRows(); it.hasNext(); ) {
     dictionary refresh is also done in a background thread to not block
     regular queries.</para>
 
-    <section>
+    <section id="JCR.SearchingRepositoryContent.SpellChecker.HowToUseIt">
       <title>How do I use it?</title>
 
       <para>You can spell check a fulltext statement either with an XPath or a
@@ -366,4 +364,4 @@ if (v == null) {
     <para>Finds nt:resource nodes, which are similar to node by path
     /parentnode/node.txt/jcr:content.</para>
   </section>
-</chapter>
+</section>

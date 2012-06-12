@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.ComponentPluginPriority">
-  <?dbhtml filename="ch-component-plugin-priority.html"?>
-
+<section id="Kernel.ComponentPluginPriority">
   <title>Component Plugin Priority</title>
 
   <para>Since kernel version 2.0.6 it is possible to setup order of loading
@@ -58,4 +56,4 @@
   <para>In the above example plugin 'Plugin3' will be loaded first because it
   has the default priority '0'. Then, plugin 'Plugin1' will be loaded and last
   one is plugin 'Plugin2'.</para>
-</chapter>
+</section>

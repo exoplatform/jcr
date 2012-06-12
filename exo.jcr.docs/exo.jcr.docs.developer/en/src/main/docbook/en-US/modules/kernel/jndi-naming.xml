@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.JNDINaming">
-  <?dbhtml filename="ch-jndi-naming.html"?>
-
+<section id="Kernel.JNDINaming">
   <title>JNDI naming</title>
-  <para>This chapter provides you the basic knowledge about JNDI naming, such as, what it is, how it works and how it is used.</para>
+  <para>This section provides you the basic knowledge about JNDI naming, such as, what it is, how it works and how it is used.</para>
 
   <section id="Kernel.JNDINaming.Prerequisites">
     <title>Prerequisites</title>
@@ -38,7 +36,7 @@
     and Directory InterfaceTM (JNDI)</ulink> concepts before using this
     service.</para>
 
-    <section>
+    <section id="Kernel.JNDINaming.How_it_works.JNDI_System_property_initialization">
       <title>JNDI System property initialization</title>
 
       <para>After the start time the Context Initializer
@@ -264,4 +262,4 @@
       // try to get just bound DataSource
       DataSource ds = (DataSource)new InitialContext().lookup("jdbcexo");</programlisting>
   </section>
-</chapter>
+</section>

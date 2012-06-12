@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.Manageability">
-  <?dbhtml filename="ch-kernel-menegeability.html"?>
-
+<section id="Kernel.Manageability">
   <title>Manageability</title>
 
     <para>The kernel has a framework for exposing a management view of the
@@ -18,7 +16,7 @@
     as it is less tested and less efficient. It will be removed by
     sanitization in the future.</para>
 
-  <section>
+  <section id="Kernel.Manageability.ManagedFrameworkAPI">
     <title>Managed framework API</title>
 
     <para>The managed frameworks defines an API for exposing a management view
@@ -26,10 +24,10 @@
     The framework leverages Java 5 annotations to describe the management view
     from an object.</para>
 
-    <section>
+    <section id="Kernel.Manageability.ManagedFrameworkAPI.Annotations">
       <title>Annotations</title>
 
-      <section>
+      <section id="Kernel.Manageability.ManagedFrameworkAPI.Annotations.org.exoplatform.management.annotations.ManagedAnnotation">
         <title>@org.exoplatform.management.annotations.Managed
         annotation</title>
 
@@ -53,7 +51,7 @@
         <para>Defines a managed operation.</para>
       </section>
 
-      <section>
+      <section id="Kernel.Manageability.ManagedFrameworkAPI.Annotations.org.exoplatform.management.annotations.ManagedDescription">
         <title>@org.exoplatform.management.annotations.ManagedDescription</title>
 
         <para>The @ManagedDescription annotation provides a description of a
@@ -61,7 +59,7 @@
         as sole argument a string that is the description value.</para>
       </section>
 
-      <section>
+      <section id="Kernel.Manageability.ManagedFrameworkAPI.Annotations.org.exoplatform.management.annotations.ManagedName">
         <title>@org.exoplatform.management.annotations.ManagedName</title>
 
         <para>The @ManagedName annotation provides an alternative name for
@@ -70,7 +68,7 @@
         argument a string that is the name value.</para>
       </section>
 
-      <section>
+      <section id="Kernel.Manageability.ManagedFrameworkAPI.Annotations.org.exoplatform.management.annotations.ManagedBy">
         <title>@org.exoplatform.management.annotations.ManagedBy</title>
 
         <para>The @ManagedBy annotation defines a delegate class for exposing
@@ -81,13 +79,13 @@
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.Manageability.JMXManagementView">
     <title>JMX Management View</title>
 
-    <section>
+    <section id="Kernel.Manageability.JMXManagementView.JMXAnnotations">
       <title>JMX Annotations</title>
 
-      <section>
+      <section id="Kernel.Manageability.JMXManagementView.JMXAnnotations.org.exoplatform.management.jmx.annotations.PropertyAnnotation">
         <title>@org.exoplatform.management.jmx.annotations.Property
         annotation</title>
 
@@ -99,7 +97,7 @@
         is resolved against the instance of the object at runtime.</para>
       </section>
 
-      <section>
+      <section id="Kernel.Manageability.JMXManagementView.JMXAnnotations.org.exoplatform.management.jmx.annotations.NameTemplateAnnotation">
         <title>@org.exoplatform.management.jmx.annotations.NameTemplate
         annotation</title>
 
@@ -112,7 +110,7 @@
   @Property(key="name", value="{Name}")})</programlisting>
       </section>
 
-      <section>
+      <section id="Kernel.Manageability.JMXManagementView.JMXAnnotations.org.exoplatform.management.jmx.annotations.NamingContextAnnotation">
         <title>@org.exoplatform.management.jmx.annotations.NamingContext
         annotation</title>
 
@@ -128,10 +126,10 @@
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.Manageability.Example">
     <title>Example</title>
 
-    <section>
+    <section id="Kernel.Manageability.Example.CacheService">
       <title>CacheService example</title>
 
       <para>The cache service delegates most of the work to the
@@ -216,4 +214,4 @@ public class CacheServiceManaged implements ManagementAware {
 }</programlisting>
     </section>
   </section>
-</chapter>
+</section>

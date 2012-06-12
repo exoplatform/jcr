@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.RepositoryCheckController">
-  <?dbhtml filename="ch-repo-check-controller.html"?>
-
+<section id="JCR.RepositoryCheckController">
   <title>Checking repository integrity and consistency</title>
 
     <para>Production and any other system may have faults some day. They may
@@ -134,7 +132,7 @@
     directory by name <code>report-&lt;repository
     name&gt;-dd-MMM-yy-HH-mm.txt</code>.</para>
 
-  <section>
+  <section id="JCR.RepositoryCheckController.RecommendationsOnHowToFixCorruptedJCR">
     <title>Recommendations on how to fix corrupted JCR</title>
 
     <para>Please, before applying the next recommendations, don't forget to
@@ -615,4 +613,4 @@ delete from JCR_SITEM where ID = '${ID}'</programlisting>
       </listitem>
     </orderedlist>
   </section>
-</chapter>
+</section>

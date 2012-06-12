@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Core.LDAPConfiguration">
-  <?dbhtml filename="ch-ldap-configuration.html"?>
-
+<section id="Core.LDAPConfiguration">
   <title>LDAP Configuration</title>
 
     <para>You may decide to make eXo users to be mapped to an existing
@@ -12,7 +10,7 @@
     directory and even Active Directory. This page will guide you how to
     configure eXo Platform to work with your directory.</para>
     
-  <section>
+  <section id="Core.LDAPConfiguration.Quickstart">
     <title>Quickstart</title>
 
     <para>If you just want to have a look at how eXo works with ldap. eXo
@@ -71,7 +69,7 @@
     management portlet and see what it changes in your directory tree.</para>
   </section>
 
-  <section>
+  <section id="Core.LDAPConfiguration.Configuration">
     <title>Configuration</title>
 
     <para>If you have an existing LDAP server, the eXo predefined settings
@@ -80,10 +78,10 @@
     certainly be configured to meet your requirements.</para>
 
     <para>The configuration is done in <emphasis
-    role="bold">ldap-configuration.xml</emphasis> file, and this chapter will
+    role="bold">ldap-configuration.xml</emphasis> file, and this section will
     explain the numerous parameters it contains.</para>
 
-    <section>
+    <section id="Core.LDAPConfiguration.Configuration.ConnectionSettings">
       <title>Connection Settings</title>
 
       <para>Firstly, start by connection settings which will tell eXo how to
@@ -183,7 +181,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="Core.LDAPConfiguration.Configuration.OrganizationServiceConfiguration">
       <title>Organization Service Configuration</title>
 
       <para>Next, you need to configure the eXo <emphasis
@@ -242,10 +240,10 @@
 
       <para>Other parameters are discussed in the following sections.</para>
 
-      <section>
+      <section id="Core.LDAPConfiguration.Configuration.OrganizationServiceConfiguration.Users">
         <title>Users</title>
 
-        <section>
+        <section id="Core.LDAPConfiguration.Configuration.OrganizationServiceConfiguration.Users.MainParameters">
           <title>Main parameters</title>
 
           <para>Here are the main parameters to map eXo users to your
@@ -321,7 +319,7 @@ ou=EMEA,cn=People,o=MyCompany,c=com
   …</programlisting>
         </section>
 
-        <section>
+        <section id="Core.LDAPConfiguration.Configuration.OrganizationServiceConfiguration.Users.UserMapping">
           <title>User mapping</title>
 
           <para>The following parameters maps ldap attributes to eXo User java
@@ -379,7 +377,7 @@ ou=EMEA,cn=People,o=MyCompany,c=com
         </section>
       </section>
 
-      <section>
+      <section id="Core.LDAPConfiguration.Configuration.OrganizationServiceConfiguration.Groups">
         <title>Groups</title>
 
         <para>eXo groups can be mapped to organizational or applicative groups
@@ -460,7 +458,7 @@ l=London,dc=sites,dc=mycompany,dc=com
   …</programlisting>
       </section>
 
-      <section>
+      <section id="Core.LDAPConfiguration.Configuration.OrganizationServiceConfiguration.MembershipTypes">
         <title>Membership Types</title>
 
         <para>Membership types are the possible roles that can be assigned to
@@ -530,7 +528,7 @@ l=London,dc=sites,dc=mycompany,dc=com
         <programlisting>cn=manager,ou=roles,ou=portal,dc=exoplatform,dc=org &lt;/pre&gt;</programlisting>
       </section>
 
-      <section>
+      <section id="Core.LDAPConfiguration.Configuration.OrganizationServiceConfiguration.Memberships">
         <title>Memberships</title>
 
         <para>Memberships are used to assign a role within a group. They are
@@ -632,7 +630,7 @@ l=London,dc=sites,dc=mycompany,dc=com
         operator</para>
       </section>
 
-      <section>
+      <section id="Core.LDAPConfiguration.Configuration.OrganizationServiceConfiguration.UserProfiles">
         <title>User Profiles</title>
 
         <para>eXo User profiles also have entries in the ldap but the actual
@@ -657,10 +655,10 @@ l=London,dc=sites,dc=mycompany,dc=com
     </section>
   </section>
 
-  <section>
+  <section id="Core.LDAPConfiguration.AdvancedTopics">
     <title>Advanced topics</title>
 
-    <section>
+    <section id="Core.LDAPConfiguration.AdvancedTopics.AutomaticDirectoryPopulation">
       <title>Automatic directory population</title>
 
       <para>At startup, eXo can populate the organization model based
@@ -722,7 +720,7 @@ l=London,dc=sites,dc=mycompany,dc=com
           …</programlisting>
     </section>
 
-    <section>
+    <section id="Core.LDAPConfiguration.AdvancedTopics.ActiveDirectorySampleConfiguration">
       <title>Active Directory sample configuration</title>
 
       <para>Here is an alternative configuration for active directory that you
@@ -791,7 +789,7 @@ l=London,dc=sites,dc=mycompany,dc=com
 &lt;/component&gt;  </programlisting>
     </section>
 
-    <section>
+    <section id="Core.LDAPConfiguration.AdvancedTopics.OpenLDAPDynlistOverlays">
       <title>OpenLDAP dynlist overlays</title>
 
       <para>If you use OpenLDAP, you may want to use the <ulink
@@ -860,4 +858,4 @@ cn: manager</programlisting>
       role="bold">manager:/testgroup</emphasis> to any user.</para>
     </section>
   </section>
-</chapter>
+</section>

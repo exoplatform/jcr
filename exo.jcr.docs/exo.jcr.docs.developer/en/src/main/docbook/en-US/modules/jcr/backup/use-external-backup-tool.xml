@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.SearchIndexBackup">
-  <?dbhtml filename="ch-search-index-backup.html"?>
-
+<section id="JCR.SearchIndexBackup">
   <section id="JCR.SearchIndexBackup.Repository_suspending">
     <title>Repository suspending</title>
 
@@ -67,4 +65,4 @@
       </imageobject>
     </mediaobject>
   </section>
-</chapter>
+</section>

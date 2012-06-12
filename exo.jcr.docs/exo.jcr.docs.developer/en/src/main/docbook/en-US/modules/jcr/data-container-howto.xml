@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.HowToImplementWorkspaceDataContainer">
-  <title>How-to implement Workspace Data Container</title>
-
-  <?dbhtml filename="ch-data-container-howto.html"?>
-
+<section id="JCR.HowToImplementWorkspaceDataContainer">
+  <title>How to implement Workspace Data Container</title>
     <para>To implement Workspace data container, you need to do the following:
     </para>
 
@@ -153,4 +150,4 @@ ValueData vdata = channel.read(propertyData.getIdentifier(),  orderNumber,  maxB
       methods are used in JDBC container.</para>
     </important>
   </section>
-</chapter>
+</section>

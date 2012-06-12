@@ -2,11 +2,8 @@
 <!-- This document was created with Syntext Serna Free. -->
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.LockManagerConfiguration">
-  <?dbhtml filename="ch-lock-manager-config.html"?>
-
+<section id="JCR.LockManagerConfiguration">
   <title>LockManager configuration</title>
-
     <para>What LockManager does?</para>
 
     <para>In general, LockManager stores Lock objects, so it can give a Lock
@@ -46,7 +43,7 @@
    ...
 &lt;/workspace&gt;</programlisting>
 
-  <section>
+  <section id="JCR.LockManagerConfiguration.LockManagerImpl">
     <title>LockManagerImpl</title>
 
     <para>LockManagerImpl is a simple implementation of LockManager, and also
@@ -58,7 +55,7 @@
     linkend="JCR.eXoJCRconfiguration">here</link>.</para>
   </section>
 
-  <section>
+  <section id="JCR.LockManagerConfiguration.CacheableLockManagerImpl">
     <title>CacheableLockManagerImpl</title>
 
     <para>CacheableLockManagerImpl stores Lock objects in JBoss-cache, so
@@ -76,7 +73,7 @@
    ...
 &lt;/properties&gt;</programlisting>
 
-    <section>
+    <section id="JCR.LockManagerConfiguration.CacheableLockManagerImpl.Configuration">
       <title>Configuration</title>
 
       <para>Replication requirements are the same for Cache.</para>
@@ -111,7 +108,7 @@
       url="http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader">http://community.jboss.org/wiki/JBossCacheJDBCCacheLoader</ulink></para>
     </section>
 
-    <section>
+    <section id="JCR.LockManagerConfiguration.CacheableLockManagerImpl.SimpleJbossCacheConfiguration">
       <title>Simple JbossCache Configuration</title>
 
       <para>The first one is putting JbossCache configuraion file path to
@@ -200,7 +197,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCR.LockManagerConfiguration.CacheableLockManagerImpl.TemplateJBossCacheConfiguration">
       <title>Template JBossCache Configuration</title>
 
       <para>The second one is using the template JBoss-cache configuration for
@@ -454,7 +451,7 @@
       </table>
     </section>
 
-    <section>
+    <section id="LockMigrationFrom1.12.x">
       <title>Lock migration from 1.12.x</title>
 
       <para>There are 3 choices:</para>
@@ -519,4 +516,4 @@
       </itemizedlist>
     </section>
   </section>
-</chapter>
+</section>

@@ -8,7 +8,7 @@
   the session has READ permission. See also <link
   linkend="JCR.AccessControl">Access Control</link>.</para>
 
-  <section>
+  <section id="JCR.FindAllNodes.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>Repository contains many different nodes.</para>
@@ -46,7 +46,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.FindAllNodes.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -70,7 +70,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.FindAllNodes.FetchingResult">
     <title>Fetching result</title>
 
     <para>Let's get nodes:</para>

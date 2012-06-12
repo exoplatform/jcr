@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.WhyuseJCR">
-  <?dbhtml filename="ch-why-jcr.html"?>
-
+<section id="JCR.WhyuseJCR">
   <title>Why use JCR?</title>
 
-  <section>
+  <section id="JCR.WhyuseJCR.WhatJCR">
     <title>What is JCR?</title>
 
     <para>JCR (Java Content Repository) is a java interface used to access
@@ -22,7 +20,7 @@
     traditional data repositories."</para>
   </section>
 
-  <section>
+  <section id="JCR.WhyuseJCR.Why">
     <title>Why use JCR?</title>
 
     <para>How do you know the data of your website are stored? The images are
@@ -56,7 +54,7 @@
     a switch to a different vendor is always possible.</para>
   </section>
 
-  <section>
+  <section id="JCR.WhyuseJCR.WhateXodo">
     <title>What does eXo do?</title>
 
     <para>eXo fully complies a JCR standard <ulink
@@ -70,7 +68,7 @@
     Management).</para>
   </section>
 
-  <section>
+  <section id="JCR.WhyuseJCR.FurtherReading">
     <title>Further Reading</title>
 
     <para>In order to further understand the theory of JCR and the API, please
@@ -93,4 +91,4 @@
       </listitem>
     </itemizedlist>
   </section>
-</chapter>
+</section>

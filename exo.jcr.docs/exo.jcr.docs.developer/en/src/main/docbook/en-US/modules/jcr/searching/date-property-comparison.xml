@@ -7,7 +7,7 @@
   <para>Find all nodes of primary type "nt:resource" whose jcr:lastModified
   property value is greater than 2006-06-04 and less than 2008-06-04.</para>
 
-  <section>
+  <section id="JCR.DatePropertyComparison.RepositoryStructure">
     <title>Repository Structure</title>
 
     <para>Repository contains nt:resource nodes with different values of
@@ -55,7 +55,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.DatePropertyComparison.QueryExecution">
     <title>Query Execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -112,7 +112,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.DatePropertyComparison.FetchingResult">
     <title>Fetching the result</title>
 
     <para>Let's get nodes:</para>

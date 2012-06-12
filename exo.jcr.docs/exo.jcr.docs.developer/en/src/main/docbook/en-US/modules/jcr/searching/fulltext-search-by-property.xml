@@ -7,7 +7,7 @@
   <para>Find all nodes containing a mixin type 'mix:title' and whose
   'jcr:description' contains "forest" string.</para>
 
-  <section>
+  <section id="JCR.FulltextSearchByProperty.RepositoryStructure">
     <title>Repository Structure</title>
 
     <para>The repository is filled with nodes of the mixin type 'mix:title'
@@ -43,7 +43,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.FulltextSearchByProperty.QueryExecution">
     <title>Query Execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -69,7 +69,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.FulltextSearchByProperty.FetchingResult">
     <title>Fetching the Result</title>
 
     <para>Let's get nodes:</para>

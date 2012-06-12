@@ -12,7 +12,7 @@
   <para>The goal of this query is to find words "eXo" and "implementation"
   with fulltext search and high-light this words in result value.</para>
 
-  <section>
+  <section id="JCR.HiglightResultofFulltextSearch.BaseInfo">
     <title>Base info</title>
 
     <para>High-lighting is not default feature so we must set it in
@@ -42,7 +42,7 @@
 &lt;/index-rule&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.HiglightResultofFulltextSearch.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>We have single node with primary type 'nt:unstructured'</para>
@@ -68,7 +68,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.HiglightResultofFulltextSearch.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -92,7 +92,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.HiglightResultofFulltextSearch.FetchingResult">
     <title>Fetching result</title>
 
     <para>Now let's see on the result table:</para>

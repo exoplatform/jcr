@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Core.DBCreatorService">
-  <?dbhtml filename="ch-db-creator-service.html"?>
-
+<section id="Core.DBCreatorService">
   <title>Database Creator</title>
 
     <para>Database creator<envar> DBCreator</envar> is responsible for
@@ -27,7 +25,7 @@
       </listitem>
     </itemizedlist>
 
-  <section>
+  <section id="Core.DBCreatorService.API">
     <title>API</title>
 
     <para>Service provide method for execute script for new database creation.
@@ -52,7 +50,7 @@
     creation.</para>
   </section>
 
-  <section>
+  <section id="Core.DBCreatorService.ConfigurationExamples">
     <title>A configuration examples</title>
 
     <para>Service's configuration.</para>
@@ -160,7 +158,7 @@
 &lt;property name="password" value="admin" /&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="Core.DBCreatorService.ExamplesOfDDLScript">
     <title>An examples of a DDL script</title>
 
     <para>MySQL:</para>
@@ -202,4 +200,4 @@ GRANT UNLIMITED TABLESPACE TO "${username}";
 GRANT "CONNECT" TO "${username}";
 GRANT "RESOURCE" TO "${username}";</programlisting>
   </section>
-</chapter>
+</section>

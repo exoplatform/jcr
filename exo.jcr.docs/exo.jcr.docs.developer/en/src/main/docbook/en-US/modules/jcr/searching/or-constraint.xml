@@ -11,7 +11,7 @@
   'mix:title' whose property 'jcr:title' equals "Cinderella" or whose
   "jcr:description" property value is "novel".</para>
 
-  <section>
+  <section id="JCR.ORConstraint.RepositoryStructure">
     <title>Repository Structure</title>
 
     <para>The repository contains mix:title nodes, where jcr:title and
@@ -41,7 +41,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.ORConstraint.QueryExecution">
     <title>Query Execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -65,7 +65,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.ORConstraint.FetchingResult">
     <title>Fetching the Result</title>
 
     <para>Let's get nodes:</para>

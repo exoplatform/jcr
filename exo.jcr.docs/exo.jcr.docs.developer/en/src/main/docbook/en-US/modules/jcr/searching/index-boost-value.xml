@@ -17,7 +17,7 @@
     linkend="JCR.SearchConfiguration">Search Configuration</link></para>
   </note>
 
-  <section>
+  <section id="JCR.IndexBoostRule.IndexingConfiguration">
     <title>Indexing configuration</title>
 
     <para>In next configuration, we will set boost values for nt:ustructured
@@ -50,7 +50,7 @@ Set boost value as 3.0 for 'text' property in nt:unstructured nodes where proper
 &lt;/index-rule&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.IndexBoostRule.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>Repository contains many nodes with primary type nt:unstructured.
@@ -81,7 +81,7 @@ Set boost value as 3.0 for 'text' property in nt:unstructured nodes where proper
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.IndexBoostRule.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -105,7 +105,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.IndexBoostRule.FetchingResult">
     <title>Fetching result</title>
 
     <para>Let's get nodes:</para>

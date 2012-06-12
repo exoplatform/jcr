@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.ServiceConfigurationforBeginners">
-  <?dbhtml filename="ch-service-configuration-for-beginners.html"?>
-
+<section id="Kernel.ServiceConfigurationforBeginners">
   <title>Service Configuration for Beginners</title>
-    <para>This chapter provides you the basic knowledge
+    <para>This section provides you the basic knowledge
     about modes, services and containers. You will find out where the service
     configuration files should be placed, and you will also see the overriding
     mechanism of configurations. </para>
@@ -32,7 +30,7 @@
     </listitem>
   </itemizedlist>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationforBeginners.Requirements">
     <title>Requirements</title>
 
     <para>By reading this article you are already glancing at the heart of eXo
@@ -58,7 +56,7 @@
     to do so.</para>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationforBeginners.Services">
     <title>Services</title>
 
     <para>Nearly everything could be considered a service! To get a better
@@ -134,7 +132,7 @@
     the same thing</emphasis>.</para>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationforBeginners.ConfigurationFile">
     <title>Configuration File</title>
 
     <para>The jar file of a service should contain a default configuration,
@@ -202,7 +200,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationforBeginners.Containers">
     <title>Containers</title>
 
     <para>In order to access to a service you need to use a Container. Just
@@ -257,7 +255,7 @@
     adds all services to a list or more exactly a java HashTable. It's
     completely correct to suppose that the configuration.xml you already saw
     plays an important role. But there are more places where a configuration
-    for a service can be defined as you see in the next chapter.</para>
+    for a service can be defined as you see in the next section.</para>
 
     <note>
       <para>"In your java code you have to use</para>
@@ -274,7 +272,7 @@
     </note>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationforBeginners.ConfigurationRetrieval">
     <title>Configuration Retrieval</title>
 
     <para>The configuration you find inside the jar file is considered as the
@@ -353,7 +351,7 @@
       type.</para>
     </section>
 
-    <section>
+    <section id="PortalContainer">
       <title>PortalContainer</title>
 
       <para>The PortalContainer takes the hashtable filled by the
@@ -439,7 +437,7 @@
       </note>
     </section>
 
-    <section>
+    <section id="StandaloneContainer">
       <title>StandaloneContainer</title>
 
       <para>In the same way as the PortalContainer the StandaloneContainer
@@ -448,7 +446,7 @@
       standalone containers can be initialized using an URL. This URL contains
       a link to an external configuration. As you probably never need a
       standalone configuration you can safely jump over the remaining
-      confusing words of this chapter.</para>
+      confusing words of this section.</para>
 
       <para>After taking over RootContainer's configuration, there are three
       cases which depend on the URL initialization, :</para>
@@ -536,7 +534,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationforBeginners.ServiceInstantiation">
     <title>Service instantiation</title>
 
     <para>As you have already learned the services are all singletons, so that
@@ -578,7 +576,7 @@
     </note>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationforBeginners.Miscellaneous">
     <title>Miscellaneous</title>
 
     <section id="Startableinterface">
@@ -592,7 +590,7 @@
       container.</para>
     </section>
 
-    <section>
+    <section id="InversionOfControl">
       <title>Inversion of Control</title>
 
       <para><emphasis role="bold">Retrospection</emphasis>. Do you remember
@@ -666,7 +664,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="MoreContainers">
       <title>More Containers</title>
 
       <para>There are two more Containers called
@@ -675,7 +673,7 @@
       eXo JCR, for the sake of simplicity. You don't need them.</para>
     </section>
 
-    <section>
+    <section id="SingleImplementationServices">
       <title>Single Implementation Services</title>
 
       <para>In some case the developer of a service does not expect that there
@@ -690,7 +688,7 @@
       name.</para>
     </section>
 
-    <section>
+    <section id="ConfigurationProperties">
       <title>Configuration properties</title>
 
       <para>Since kernel 2.0.7 and 2.1, it is possible to use system
@@ -723,7 +721,7 @@
 &lt;/component&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="ConfigurationLogging">
       <title>Configuration Logging</title>
 
       <para>In case you need to solve problems with your service
@@ -748,7 +746,7 @@ import jndi:/localhost/portal/WEB-INF/conf/jcr/jcr-configuration.xml
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationforBeginners.FurtherReading">
     <title>Further Reading</title>
 
     <para>Do you feel yourself to be an expert now? Not yet? Get a deeper look and read this
@@ -762,4 +760,4 @@ import jndi:/localhost/portal/WEB-INF/conf/jcr/jcr-configuration.xml
     some eXo's core services. Finally you might wish to read more about <ulink
     url="http://www.picocontainer.org/">PicoContainer</ulink>.</para>
   </section>
-</chapter>
+</section>
