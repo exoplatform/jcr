@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.ServiceConfigurationinDetail">
-  <?dbhtml filename="ch-service-configuration-in-detail.html"?>
-
+<section id="Kernel.ServiceConfigurationinDetail">
   <title>Service Configuration in Detail</title>
   
-    <para>This chapter shows you how to set up a sample service with some
+    <para>This section shows you how to set up a sample service with some
     configurations and how to access the configuration parameters. The
     later sections describe all details of the configuration file (parameters,
     object-params, plugins, imports, and more). It also shows how to access the
@@ -35,7 +33,7 @@
     </listitem>
   </itemizedlist>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationinDetail.Requirements">
     <title>Requirements</title>
 
     <para>You should have read and understood <link
@@ -47,7 +45,7 @@
     interchangeable in eXo Products.</para>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationinDetail.SampleService">
     <title>Sample Service</title>
 
     <section id="JavaClass">
@@ -85,7 +83,7 @@ public interface ArticleStatsService {
       com/laverdad/services/ArticleStatsService subfolder.</para>
     </section>
 
-    <section>
+    <section id="FirstConfigurationFile">
       <title>First configuration file</title>
 
       <para>When creating a service, you also should declare its existence to
@@ -120,7 +118,7 @@ public interface ArticleStatsService {
       </note>
     </section>
 
-    <section>
+    <section id="InitParameters">
       <title>Init Parameters</title>
 
       <para>You see your service has a configuration file, but you wonder how
@@ -202,7 +200,7 @@ public interface ArticleStatsService {
       of init-param.</para>
     </section>
 
-    <section>
+    <section id="ServiceAccess">
       <title>Service Access</title>
 
       <para>As you want to follow the principle of <emphasis
@@ -277,10 +275,10 @@ public class Statistics {
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationinDetail.Parameters">
     <title>Parameters</title>
 
-    <section>
+    <section id="Kernel.ServiceConfigurationinDetail.Parameters.ValueParam">
       <title>Value-Param</title>
 
       <para>There is an value-param example:</para>
@@ -311,7 +309,7 @@ public class UserACL {
 ...</programlisting>
     </section>
 
-    <section>
+    <section id="Kernel.ServiceConfigurationinDetail.Parameters.PropertiesParam">
       <title>Properties-Param</title>
 
       <para>Properties are name-value pairs. Both the name and the value are
@@ -348,7 +346,7 @@ public class HibernateServiceImpl implements HibernateService, ComponentRequestL
 }</programlisting>
     </section>
 
-    <section>
+    <section id="Kernel.ServiceConfigurationinDetail.Parameters.ObjectParam">
       <title>Object-Param</title>
 
       <para>Let's have a look at the configuration of the LDAPService. It's
@@ -430,7 +428,7 @@ public class LDAPConnectionConfig {
       url="https://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk/exo.kernel.container/src/test/resources/object.xml">object.xml</ulink>.</para>
     </section>
 
-    <section>
+    <section id="Kernel.ServiceConfigurationinDetail.Parameters.Collection">
       <title>Collection</title>
 
       <para>You also can use java collections to configure your service. In
@@ -513,7 +511,7 @@ public class LDAPConnectionConfig {
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationinDetail.ExternalPlugin">
     <title>External Plugin</title>
 
     <para>The External Plugin allows you to add configuration on the
@@ -601,7 +599,7 @@ public class LDAPConnectionConfig {
     </note>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationinDetail.Import">
     <title>Import</title>
 
     <para>The import tag allows to import other configuration files using URLs
@@ -620,7 +618,7 @@ public class LDAPConnectionConfig {
 ... </programlisting>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationinDetail.SystemProperties">
     <title>System properties</title>
 
     <para>Since kernel 2.0.7 and 2.1, it is possible to use system properties
@@ -659,7 +657,7 @@ public class LDAPConnectionConfig {
     -DdriverClass=org.hsqldb.jdbcDriver"</emphasis></para>
   </section>
 
-  <section>
+  <section id="Kernel.ServiceConfigurationinDetail.UnderstandingPrefixesSupportedByConfigurationManager">
     <title>Understanding the prefixes supported by the configuration
     manager</title>
 
@@ -748,8 +746,8 @@ public class LDAPConnectionConfig {
 
     <note>
       <para>For more details about the exo configuration directory please
-      refer to the chapter <emphasis>Configuration
-      Retrieval</emphasis>.</para>
+      refer to the <emphasis>Configuration
+      Retrieval</emphasis> section.</para>
     </note>
   </section>
-</chapter>
+</section>

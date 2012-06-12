@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.ExternalValueStorages">
-  <?dbhtml filename="ch-external-value-storages.html"?>
-
+<section id="JCR.ExternalValueStorages">
   <title>External Value Storages</title>
 
     <para>By default JCR Values are stored in the Workspace Data container
@@ -21,7 +19,7 @@
     architecture. Simple 'flat' storage is good in speed of creation/deletion
     of values, it might be a compromise for a small storages.</para>
 
-  <section>
+  <section id="JCR.ExternalValueStorages.TreeFileValueStorage">
     <title>Tree File Value Storage</title>
 
     <para>Holds Values in tree-like FileSystem files.
@@ -89,7 +87,7 @@
 &lt;value-storages&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.ExternalValueStorages.SimpleFileValueStorage">
     <title>Simple File Value Storage</title>
 
     <note>
@@ -112,7 +110,7 @@
      &lt;/filters&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.ExternalValueStorages.ContentAddressableValueStorageSupport">
     <title>Content Addressable Value storage (CAS) support</title>
 
     <para>eXo JCR supports <phrase>Content-addressable storage</phrase>
@@ -212,7 +210,7 @@
       </simplelist></para>
   </section>
 
-  <section>
+  <section id="JCR.ExternalValueStorages.DisablingValueStorage">
     <title>Disabling value storage</title>
 
     <para>JCR allows to disable value storage by adding property into
@@ -222,4 +220,4 @@
 
     <para>Be careful, all stored values will be unaccessible.</para>
   </section>
-</chapter>
+</section>

@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.UnderstandingtheListenerService">
-  <?dbhtml filename="ch-understanding-listeners-service.html"?>
-
+<section id="Kernel.UnderstandingtheListenerService">
   <title>Understanding the ListenerService</title>
-  <para>This chapter will first describe how the ListenerService works and
+  <para>This section will first describe how the ListenerService works and
     then it will show you how to configure the ListenerService.</para>
 
   <para><emphasis role="bold">Related documents</emphasis></para>
@@ -27,7 +25,7 @@
     </listitem>
   </itemizedlist>
 
-  <section>
+  <section id="Kernel.UnderstandingtheListenerService.WhatIsListenerService">
     <title>What is the ListenerService ?</title>
 
     <para>Inside eXo, an event mechanism allows to trigger and listen to
@@ -35,14 +33,14 @@
     in eXo such as login/logout time.</para>
   </section>
 
-  <section>
+  <section id="Kernel.UnderstandingtheListenerService.HowItWorks">
     <title>How does it work?</title>
 
     <para>Listeners must be subclasses of
     org.exoplatform.services.listener.Listener registered by the
     ListenerService.</para>
 
-    <section>
+    <section id="Kernel.UnderstandingtheListenerService.HowItWorks.RegisteringListener">
       <title>Registering a listener</title>
 
       <para>To register a listener, you need to call the addListener()
@@ -64,7 +62,7 @@ public void addListener(Listener listener) {
       to listen to.</para>
     </section>
 
-    <section>
+    <section id="Kernel.UnderstandingtheListenerService.HowItWorks.TriggeringEvent">
       <title>Triggering an event</title>
 
       <para>To trigger an event, an application can call one of the
@@ -144,7 +142,7 @@ public &lt;T extends Event&gt; void broadcast(T event) throws Exception {
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.UnderstandingtheListenerService.HowToConfigureListener">
     <title>How to configure a listener?</title>
 
     <para>All listeners are in fact a ComponentPlugin so it must be configured
@@ -170,7 +168,7 @@ public &lt;T extends Event&gt; void broadcast(T event) throws Exception {
 &lt;/configuration&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="Kernel.UnderstandingtheListenerService.ConcreteExample">
     <title>Concrete Example</title>
 
     <para>The org.exoplatform.services.security.ConversationRegistry uses the
@@ -211,4 +209,4 @@ public &lt;T extends Event&gt; void broadcast(T event) throws Exception {
 &lt;/configuration&gt;
 ...</programlisting>
   </section>
-</chapter>
+</section>

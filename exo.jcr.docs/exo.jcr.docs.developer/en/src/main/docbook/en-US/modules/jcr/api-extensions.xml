@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.APIExtensions">
-  <?dbhtml filename="ch-api-extensions.html"?>
-
+<section id="JCR.APIExtensions">
   <title>JCR API Extensions</title>
 
       <para>eXo JCR implementation offers new extended feature beyond JCR
@@ -95,4 +93,4 @@
       numerous conditions and should not be used as a feature, it more likely
       implementation specific issue typical for "lazy-pattern".</para>
     </section>
-</chapter>
+</section>

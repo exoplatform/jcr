@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "hp://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Core.OrganizationListener">
-  <?dbhtml filename="ch-organization-service-listener.html"?>
-
+<section id="Core.OrganizationListener">
   <title>Organization Listener</title>
 
     <para>The <link linkend="Core.OrganizationService">Organization
@@ -42,14 +40,14 @@
       </listitem>
     </itemizedlist>
   
-  <section>
+  <section id="Core.OrganizationListener.WritingOwnListeners">
     <title>Writing your own listeners</title>
 
     <para>To implement your own listener, you just need to write extend some
     existing listener classes. These classes define hooks that are invoked
     before or after operations are performed on organization model.</para>
 
-    <section>
+    <section id="Core.OrganizationListener.WritingOwnListeners.UserEventListener">
       <title>UserEventListener</title>
 
       <para>To listen to user changes, you need to extend
@@ -77,7 +75,7 @@
 }</programlisting>
     </section>
 
-    <section>
+    <section id="Core.OrganizationListener.WritingOwnListeners.GroupEventListener">
       <title>GroupEventListener</title>
 
       <para>To listen group changes, you need to extend
@@ -104,7 +102,7 @@
 }</programlisting>
     </section>
 
-    <section>
+    <section id="Core.OrganizationListener.WritingOwnListeners.MembershipEventListener">
       <title>MembershipEventListener</title>
 
       <para>To listen to membership changes, you need to extend
@@ -132,7 +130,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="Core.OrganizationListener.RegisteringListeners">
     <title>Registering your listeners</title>
 
     <para>Registering the listeners is then achieved by using the ExoContainer
@@ -183,4 +181,4 @@
         <programlisting>permission java.lang.RuntimePermission "manageListeners"</programlisting>
       </note></para>
   </section>
-</chapter>
+</section>

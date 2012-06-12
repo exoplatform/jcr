@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.JCA">
-  <?dbhtml filename="ch-jca.html"?>
-
+<section id="JCR.JCA">
   <title>The <emphasis>JCA</emphasis> Resource Adapter</title>
 
     <para>eXo JCR supports <emphasis>J2EE Connector Architecture</emphasis>
@@ -14,7 +12,7 @@
     Since the JCR Sessions have not been designed to be shareable, the session
     pooling is simply not covered by the adapter.</para>
 
-  <section>
+  <section id="JCR.JCA.SessionFactory">
     <title>The <emphasis>SessionFactory</emphasis></title>
 
     <para>The equivalent of the
@@ -66,7 +64,7 @@
    Session getSession(String workspace, String userName, String password) throws RepositoryException;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.JCA.Configuration">
     <title>Configuration</title>
 
     <table>
@@ -97,7 +95,7 @@
     </table>
   </section>
 
-  <section>
+  <section id="JCR.JCA.Deployment">
     <title>Deployment</title>
 
     <para>In case of the standalone mode where the JCR and its dependencies
@@ -130,4 +128,4 @@
   &lt;/tx-connection-factory&gt;
 &lt;/connection-factories&gt;</programlisting>
   </section>
-</chapter>
+</section>

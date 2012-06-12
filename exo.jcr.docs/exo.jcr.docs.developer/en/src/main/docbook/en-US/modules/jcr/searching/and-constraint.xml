@@ -15,7 +15,7 @@
     Property Comparison</link>.</para>
   </note>
 
-  <section>
+  <section id="JCR.ANDConstraint.RepositoryStructure">
     <title>Repository Structure:</title>
 
     <para>The repository contains mix:title nodes, where prop_pagecount has
@@ -45,7 +45,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.ANDConstraint.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -69,7 +69,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.ANDConstraint.FetchingResult">
     <title>Fetching the Result</title>
 
     <para>Let's get nodes:</para>

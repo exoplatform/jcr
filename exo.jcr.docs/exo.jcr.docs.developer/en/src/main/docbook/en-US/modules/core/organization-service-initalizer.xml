@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Core.OrganizationServiceInitializer">
-  <?dbhtml filename="ch-organization-service-initalizer.html"?>
-
+<section id="Core.OrganizationServiceInitializer">
   <title>Organization Service Initializer</title>
 
   <para>Use the Organization Service Initializer to create users, groups and
@@ -186,4 +184,4 @@
       consist.</para>
     </listitem>
   </itemizedlist>
-</chapter>
+</section>

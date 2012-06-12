@@ -2,17 +2,15 @@
 <!-- This document was created with Syntext Serna Free. -->
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.JTA">
-  <?dbhtml filename="ch-jta.html"?>
-
+<section id="JCR.JTA">
   <title>JTA</title>
 
   <para>eXo JCR supports the Java Transaction API out of the box. If a
   <emphasis>TransactionService</emphasis> has been defined (refer to the
-  chapter about the TransactionService for more details) at session save, it
+ section about the TransactionService for more details) at session save, it
   checks if a global transaction is active and if so, it automatically
   enrolles the JCR session in the global transaction. If you intend to use a
   managed data source, you will have to configure the service
   <emphasis>DataSourceProvider</emphasis> (for more details please refer to
-  the corresponding chapter).</para>
-</chapter>
+  the corresponding section).</para>
+</section>

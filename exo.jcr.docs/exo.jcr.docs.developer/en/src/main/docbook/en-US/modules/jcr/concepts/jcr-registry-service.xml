@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.RegistryService">
-  <?dbhtml filename="ch-jcr-registry-service.html"?>
-
+<section id="JCR.RegistryService">
   <title>Registry Service</title>
 
-  <section>
+  <section id="JCR.RegistryService.Concept">
     <title>Concept</title>
 
     <para>The Registry Service is one of the key parts of the infrastructure
@@ -54,7 +52,7 @@
 &lt;/value-param&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.RegistryService.API">
     <title>The API</title>
 
     <para>The main functionality of the Registry Service is pretty simple and
@@ -119,7 +117,7 @@
      .....</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.RegistryService.Configuration">
     <title>Configuration</title>
 
     <para>RegistryService has two optional params: value parameter <emphasis
@@ -146,4 +144,4 @@
    &lt;/init-params&gt;
 &lt;/component&gt;</programlisting>
   </section>
-</chapter>
+</section>

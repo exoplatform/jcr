@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Core.DatabaseConfigurationforHibernate">
-  <?dbhtml filename="ch-db-configuration-hibernate.html"?>
-
+<section id="Core.DatabaseConfigurationForHibernate">
   <title>Database Configuration for Hibernate</title>
 
   <para>As usual, it is quite simple to use our configuration XML syntax to
   configure and parametrize different Databases for eXo tables but also for
   your own use.</para>
 
-  <section>
+  <section id="Core.DatabaseConfigurationForHibernate.GenericConfiguration">
     <title>Generic configuration</title>
 
     <para>The default DB configuration uses HSQLDB, a Java Database quite
@@ -52,7 +50,7 @@
     development environments and for demonstrations.</para>
   </section>
 
-  <section>
+  <section id="Core.DatabaseConfigurationForHibernate.ExampleDBConfiguration">
     <title>Example DB configuration</title>
 
     <para>For MySQL</para>
@@ -82,7 +80,7 @@
 &lt;/component&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="Core.DatabaseConfigurationForHibernate.RegisteringCustomHibernateXMLFilesIntoService">
     <title>Registering custom Hibernate XML files into the service</title>
 
     <para>It is possible to use the eXo hibernate service and register your
@@ -114,4 +112,4 @@
   &lt;/external-component-plugins&gt;  
 &lt;/configuration&gt;</programlisting>
   </section>
-</chapter>
+</section>

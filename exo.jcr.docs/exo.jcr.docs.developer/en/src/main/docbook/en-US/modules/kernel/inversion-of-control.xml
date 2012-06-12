@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.InversionOfControl">
-  <?dbhtml filename="ch-inversion-of-control.html"?>
-
+<section id="Kernel.InversionOfControl">
   <title>Inversion Of Control</title>
 
     <para>The services are not responsible for the instantiation of the
@@ -29,7 +27,7 @@
       </listitem>
     </itemizedlist>
 
-  <section>
+  <section id="Kernel.InversionOfControl.How">
     <title>How</title>
 
     <para>Don't let the object create itself the instances of the object that
@@ -43,7 +41,7 @@
     </mediaobject>
   </section>
 
-  <section>
+  <section id="Kernel.InversionOfControl.Injection">
     <title>Injection</title>
 
     <para>There are two ways to inject a dependency:</para>
@@ -64,7 +62,7 @@
 }</programlisting>
   </section>
 
-  <section>
+  <section id="Kernel.InversionOfControl.SideEffects">
     <title>Side effects</title>
 
     <itemizedlist>
@@ -85,4 +83,4 @@
       </listitem>
     </itemizedlist>
   </section>
-</chapter>
+</section>

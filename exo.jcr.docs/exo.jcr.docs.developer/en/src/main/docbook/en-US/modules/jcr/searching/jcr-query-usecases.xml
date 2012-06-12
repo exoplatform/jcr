@@ -1,20 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.QueryUsecases">
-  <?dbhtml filename="ch-jcr-query-usecases.html"?>
-
+<section id="JCR.QueryUsecases">
   <title>JCR Query Usecases</title>
-
     <para>JCR supports two query languages - JCR and XPath. A query, whether
     XPath or SQL, specifies a subset of nodes within a workspace, called the
     result set. The result set constitutes all the nodes in the workspace that
     meet the constraints stated in the query.</para>
 
-  <section>
+  <section id="JCR.QueryUsecases.QueryLifecycle">
     <title>Query Lifecycle</title>
 
-    <section>
+    <section id="JCR.QueryUsecases.QueryLifecycle.QueryCreationAndExecution">
       <title>Query Creation and Execution</title>
 
       <para><emphasis role="bold">SQL</emphasis></para>
@@ -29,14 +26,14 @@ QueryResult result = query.execute();</programlisting>
       <para><emphasis role="bold">XPath</emphasis></para>
 
       <programlisting language="java">// get QueryManager
-QueryManager queryManager = workspace.getQueryManager(); 
+QueryManager queryManager = workspace.getQueryManager();
 // make XPath query
 Query query = queryManager.createQuery("//element(*,nt:base)", Query.XPATH);
 // execute query
 QueryResult result = query.execute();</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.QueryUsecases.QueryLifecycle.QueryResultProcessing">
       <title>Query Result Processing</title>
 
       <programlisting language="java">// fetch query result
@@ -60,7 +57,7 @@ while(rowIterator.hasNext()){
 }</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.QueryUsecases.QueryLifecycle.Scoring">
       <title>Scoring</title>
 
       <para>The result returns a score for each row in the result set. The
@@ -83,7 +80,7 @@ while(rowIterator.hasNext()){
     </section>
   </section>
 
-  <section>
+  <section id="JCR.QueryUsecases.QueryResultSettings">
     <title>Query result settings</title>
 
     <itemizedlist>
@@ -94,7 +91,7 @@ while(rowIterator.hasNext()){
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.QueryUsecases.TypeConstraints">
     <title>Type Constraints</title>
 
     <itemizedlist>
@@ -114,7 +111,7 @@ while(rowIterator.hasNext()){
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.QueryUsecases.PropertyConstraints">
     <title>Property Constraints</title>
 
     <itemizedlist>
@@ -171,7 +168,7 @@ while(rowIterator.hasNext()){
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.QueryUsecases.PathConstraint">
     <title>Path Constraint</title>
 
     <itemizedlist>
@@ -192,8 +189,8 @@ while(rowIterator.hasNext()){
     </itemizedlist>
   </section>
 
-  <section>
-    <title>Ordering specifing</title>
+  <section id="JCR.QueryUsecases.OrderingSpecifying">
+    <title>Ordering specifying</title>
 
     <itemizedlist>
       <listitem>
@@ -217,7 +214,7 @@ while(rowIterator.hasNext()){
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.QueryUsecases.FulltextSearch">
     <title><link linkend="JCR.FulltextSearchAndSettings">Fulltext
     Search</link></title>
 
@@ -244,7 +241,7 @@ while(rowIterator.hasNext()){
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.QueryUsecases.IndexingRulesAndAdditionalFeatures">
     <title>Indexing rules and additional features</title>
 
     <itemizedlist>
@@ -289,7 +286,7 @@ while(rowIterator.hasNext()){
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.QueryUsecases.QueryExamples">
     <title>Query Examples</title>
 
     <xi:include href="offset-and-limit.xml"
@@ -391,11 +388,11 @@ while(rowIterator.hasNext()){
                 xmlns:xi="http://www.w3.org/2001/XInclude" />
   </section>
 
-  <section>
+  <section id="JCR.QueryUsecases.TipsAndTricks">
     <title>Tips and tricks</title>
 
     <xi:include href="tip-nodename-with-number.xml"
                 xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   </section>
-</chapter>
+</section>

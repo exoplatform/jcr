@@ -12,7 +12,7 @@
     <para>This ORDER BY construction only works in XPath!</para>
   </note>
 
-  <section>
+  <section id="JCR.OrderByDescendant.RepositoryStructure">
     <title>Repository structure:</title>
 
     <itemizedlist>
@@ -84,7 +84,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.OrderByDescendant.QueryExecution">
     <title>Query Execution</title>
 
     <para><emphasis role="bold">XPath</emphasis></para>
@@ -98,7 +98,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.OrderByDescendant.FetchingResult">
     <title>Fetching the Result</title>
 
     <para>Let's get nodes:</para>

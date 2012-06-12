@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.JBossCacheConfigurationTemplates">
-  <?dbhtml filename="ch-jbosscache-configuration-templates.html"?>
-
+<section id="JCR.JBossCacheConfigurationTemplates">
   <title>JBoss Cache configuration</title>
 
-  <para>This chapter will show you how to use and configure Jboss Cache in the clustered environment.
+  <para>This section will show you how to use and configure Jboss Cache in the clustered environment.
   Also, you will know how to use a template-based configuration offered by eXo JCR for JBoss Cache instances.</para>
 
   <section id="JCR.JBossCacheConfigurationTemplates.JBoss_Cache_Config_for_Indexer">
@@ -118,7 +116,7 @@
     configuration templates for JCR's components. They are situated in
     application package in /conf/porta/ folder.</para>
 
-    <section>
+    <section id="JCR.JBossCacheConfigurationTemplates.Shipped_Jboss_Cache_Config_template.Data_container_template">
       <title>Data container template</title>
 
       <para>Data container template is "jbosscache-data.xml":</para>
@@ -166,7 +164,7 @@
       <para></para>
     </section>
 
-    <section>
+    <section id="JCR.JBossCacheConfigurationTemplates.Shipped_Jboss_Cache_Config_template.Lock_manager_template">
       <title>Lock manager template</title>
 
       <para>It's template name is "jbosscache-lock.xml"</para>
@@ -268,7 +266,7 @@
       </table>
     </section>
 
-    <section>
+    <section id="JCR.JBossCacheConfigurationTemplates.Shipped_Jboss_Cache_Config_template.Query_handler">
       <title>Query handler (indexer) template</title>
 
       <para>Have a look at "jbosscache-indexer.xml"</para>
@@ -302,4 +300,4 @@
       </table>
     </section>
   </section>
-</chapter>
+</section>

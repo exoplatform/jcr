@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCRWithGateIn.HowToExtendMyGateInInstance">
-  <?dbhtml filename="ch-how-to-extend-my-gatein-instance.html"?>
-
+<section id="JCRWithGateIn.HowToExtendMyGateInInstance">
   <title>How to extend my GateIn instance?</title>
 
       <para>Since GateIn beta 2, there are a set of features added to
@@ -13,7 +11,7 @@
       several portal instances at the same time, in "eXo terminology" that
       means to have several "portal.war".</para>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Motivations">
       <title>Motivations</title>
 
       <para>Up to now, to create an application over an eXo portal such as
@@ -42,7 +40,7 @@
       practices".</para>
     </section>
 
-  <section>
+   <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites">
     <title>Prerequisites</title>
 
     <para>To be able to migrate an application to GateIn, the first thing we
@@ -50,7 +48,7 @@
     portal container instances. The following section aims to help you to be
     compatible with GateIn.</para>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites.RemovingAllHardCodedPortalContainerName">
       <title>Removing all the hard coded portal container name (i.e.
       "portal")</title>
 
@@ -87,7 +85,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites.RemovingAllHardCodedRestContextName">
       <title>Removing all the hard coded rest context name (i.e.
       "rest")</title>
 
@@ -111,7 +109,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites.RemovingAllHardCodedRealmName">
       <title>Removing all the hard coded realm name (i.e.
       "exo-domain")</title>
 
@@ -135,7 +133,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites.MakingHttpFiltersCompatible">
       <title>Making your Http Filters compatible</title>
 
       <para>Now all your Http Filters that need to get the current
@@ -145,7 +143,7 @@
       the current <emphasis>ExoContainer</emphasis>.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites.MakingHttpServletsCompatible">
       <title>Making your HttpServlets compatible</title>
 
       <para>Now all your HttpServlets that need to get the current
@@ -188,7 +186,7 @@
       </important>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites.MakingHttpSessionListenersCompatible">
       <title>Making your HttpSessionListeners compatible</title>
 
       <para>Now all your HttpSessionListeners that need to get the current
@@ -210,7 +208,7 @@
       application of a portal container.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites.UseInitTasks">
       <title>Use init tasks if you need a PortalContainer to initialize an
       Http Filter or an HttpServlet</title>
 
@@ -391,7 +389,7 @@ public class GadgetRegister implements ServletContextListener {
       </note>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites.MakingLoginModulesCompatible">
       <title>Making your LoginModules compatible</title>
 
       <para>Now all your LoginModules that need to get the current
@@ -413,7 +411,7 @@ public class GadgetRegister implements ServletContextListener {
       </important>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites.AvoidingStaticModifier">
       <title>Avoiding <emphasis>static</emphasis> modifier on component
       dependency</title>
 
@@ -424,7 +422,7 @@ public class GadgetRegister implements ServletContextListener {
       not compatible with a multi-portal instance.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites.AvoidComponentInitialization">
       <title>Avoid component initialization based on component dependency in
       the constructor</title>
 
@@ -442,10 +440,10 @@ public class GadgetRegister implements ServletContextListener {
     </section>
   </section>
 
-  <section>
+  <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ">
     <title>FAQ</title>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.WhatChanged">
       <title>What has changed since the previous versions?</title>
 
       <para>The main difference with previous versions is the way to package
@@ -490,7 +488,7 @@ public class GadgetRegister implements ServletContextListener {
       </important>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.WhatMainPurposeOfPortalExtension">
       <title>What is the main purpose of a <emphasis>portal
       extension</emphasis>?</title>
 
@@ -502,7 +500,7 @@ public class GadgetRegister implements ServletContextListener {
       duplicated files that are in the portal.war.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.WhatMainPurposeOfStarter">
       <title>What is the main purpose of the
       <emphasis>starter</emphasis>?</title>
 
@@ -532,7 +530,7 @@ public class GadgetRegister implements ServletContextListener {
       <emphasis>starter</emphasis>.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowPortalAndPortalContainerRelated">
       <title>How a portal and a portal container are related?</title>
 
       <para>Each portal instance has its own portal container which allows the
@@ -540,7 +538,7 @@ public class GadgetRegister implements ServletContextListener {
       isolation between the different portal instances.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDefineAndRegisterPortalContainerDefinition">
       <title>How to define and register a
       <emphasis>PortalContainerDefinition</emphasis>?</title>
 
@@ -657,7 +655,7 @@ public class GadgetRegister implements ServletContextListener {
       then "portal" and so on.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowPlatformInterpretsDependencyOrder">
       <title>How the platform interprets the dependency order defined into the
       PortalContainerDefinition?</title>
 
@@ -711,7 +709,7 @@ public class GadgetRegister implements ServletContextListener {
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToChangeNameOfServletContextRealmRestContext">
       <title>How to change the ServletContext name, the realm name and/or the
       rest context name of my portal without using a
       PortalContainerDefinition?</title>
@@ -828,7 +826,7 @@ public class GadgetRegister implements ServletContextListener {
 
       <para>The end of the process depends on your application server</para>
 
-      <section>
+      <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToChangeNameOfServletContextRealmRestContext.JBoss">
         <title>On JBoss (tested on JBoss 5.1.0.GA)</title>
 
         <para>You need to change the name of the application policy in your
@@ -836,7 +834,7 @@ public class GadgetRegister implements ServletContextListener {
         "my-exo-domain").</para>
       </section>
 
-      <section>
+      <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToChangeNameOfServletContextRealmRestContext.Tomcat">
         <title>On Tomcat (tested on Tomcat 6.0.20)</title>
 
         <para><emphasis role="underline">You need to:</emphasis></para>
@@ -879,7 +877,7 @@ public class GadgetRegister implements ServletContextListener {
       </section>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToAddNewConfigurationFile">
       <title>How to add new configuration file to a given portal from a war
       file?</title>
 
@@ -996,7 +994,7 @@ public class GadgetRegister implements ServletContextListener {
 &lt;/web-app&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToCreateDefinePortalExtension">
       <title>How to create/define a portal extension?</title>
 
       <para>A portal extension is in fact a web application declared as a
@@ -1080,14 +1078,14 @@ public class GadgetRegister implements ServletContextListener {
 &lt;/configuration&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeployPortalExtension">
       <title>How to deploy a portal extension?</title>
 
       <para>Refer to <emphasis>How to deploy the sample
       extension?</emphasis></para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToCreateDefineNewPortal">
       <title>How to create/define a new portal?</title>
 
       <para>To duplicate the entire "portal.war" file to create a new portal,
@@ -1282,14 +1280,14 @@ public class GadgetRegister implements ServletContextListener {
       </important>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeployNewPortal">
       <title>How to deploy a new portal?</title>
 
       <para>Refer to <emphasis>How to deploy the sample
       portal?</emphasis></para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToImportProperlyConfigurationFileUsingPrefixWar">
       <title>How to import properly a configuration file using the prefix
       "war:"?</title>
 
@@ -1337,7 +1335,7 @@ public class GadgetRegister implements ServletContextListener {
 &lt;/configuration&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToAvoidDuplicatingConfigurationFiles">
       <title>How to avoid duplicating configuration files just to rename a
       simple value?</title>
 
@@ -1381,7 +1379,7 @@ public class GadgetRegister implements ServletContextListener {
 &lt;/configuration&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToAddOrChangeRepositoryAndWorkspace">
       <title>How to add or change a Repository and/or a Workspace?</title>
 
       <para>Now you can add new JCR repositories or workspaces thanks to an
@@ -1516,7 +1514,7 @@ public class GadgetRegister implements ServletContextListener {
       </warning>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToAddNewResourceBundles">
       <title>How to add new ResourceBundles to my portal?</title>
 
       <para>Now you can add new Resource Bundles, thanks to an external
@@ -1562,7 +1560,7 @@ public class GadgetRegister implements ServletContextListener {
 &lt;/configuration&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToOverwriteExistingResourceBundles">
       <title>How to overwrite existing ResourceBundles in my portal?</title>
 
       <para>Now each portal container has its own
@@ -1611,7 +1609,7 @@ UIHomePagePortlet.Label.SampleKey=This is a new key that has been added to the R
       </note>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToReplaceGroovyTemplate">
       <title>How to replace a groovy template of my portal?</title>
 
       <para>Now each portal container has its own
@@ -1637,7 +1635,7 @@ UIHomePagePortlet.Label.SampleKey=This is a new key that has been added to the R
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToAddNewPortalConfigurationsNavigationsPagesAndPortletPreferences">
       <title>How to add new Portal Configurations, Navigations, Pages or
       Portlet Preferences to my portal?</title>
 
@@ -1726,7 +1724,7 @@ UIHomePagePortlet.Label.SampleKey=This is a new key that has been added to the R
 &lt;/configuration&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToAddHttpFilters">
       <title>How to add new Http Filters to my portal without modifying the
       portal binary?</title>
 
@@ -1810,7 +1808,7 @@ public class SampleFilter implements Filter
       </note>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToAddNewHttpSessionListenersAndServletContextListeners">
       <title>How to add new <emphasis>HttpSessionListeners</emphasis> and/or
       <emphasis>ServletContextListeners</emphasis> to my portal without
       modifying the portal binary?</title>
@@ -1952,7 +1950,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
       </note>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToAddNewHttpServlet">
       <title>How to add new <emphasis>HttpServlet</emphasis> to my portal
       without modifying the portal binary?</title>
 
@@ -1961,7 +1959,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
       article <link linkend="WS">WS</link>.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToOverrideOrAddContextParameter">
       <title>How to override or add a Context Parameter to my portal without
       modifying the portal binary?</title>
 
@@ -1971,7 +1969,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
       <emphasis>portalContainer.getPortalContext()</emphasis>.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.WhereFindExampleOfExtendingPortal">
       <title>Where can I found an example of how to extend my portal?</title>
 
       <para>We added an example of portal extension (i.e. ability to customize
@@ -1979,10 +1977,10 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
       in the svn of gatein at gatein/sample/extension.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySampleExtension">
       <title>How to deploy the sample extension?</title>
 
-      <section>
+      <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySampleExtension.JBoss">
         <title>On JBoss (tested on JBoss 5.1.0.GA)</title>
 
         <para>We assume that you have a clean JBoss version of GateIn, in
@@ -2064,7 +2062,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
         </warning>
       </section>
 
-      <section>
+      <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySampleExtension.Tomcat">
         <title>On Tomcat (tested on Tomcat 6.0.20)</title>
 
         <para>We assume that you have a clean Tomcat version of GateIn, in
@@ -2123,7 +2121,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
       </section>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.WhereFindExampleOfCreatingNewPortal">
       <title>Where can I find an example of how to create a new
       portal?</title>
 
@@ -2132,10 +2130,10 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
       that you can find in the svn of gatein at gatein/sample/portal.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySamplePortal">
       <title>How to deploy the sample portal?</title>
 
-      <section>
+      <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySamplePortal.JBoss">
         <title>On JBoss (tested on JBoss 5.1.0.GA)</title>
 
         <para>We assume that you have a clean JBoss version of GateIn, in
@@ -2244,7 +2242,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
         </warning>
       </section>
 
-      <section>
+      <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySamplePortal.Tomcat">
         <title>On Tomcat (tested on Tomcat 6.0.20)</title>
 
         <para>We assume that you have a clean Tomcat version of GateIn, in
@@ -2383,7 +2381,7 @@ exo-domain-sample-portal {
       </section>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.java.lang.IllegalStateException">
       <title>I get "java.lang.IllegalStateException: No pre init tasks can be
       added to the portal container 'portal', because it has already been
       initialized." what can I do to fix it?</title>
@@ -2432,10 +2430,10 @@ exo-domain-sample-portal {
     </section>
   </section>
 
-  <section>
+  <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Recommendations">
     <title>Recommendations</title>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Recommendations.NotShipConfigurationFilesWithJarFiles">
       <title>Don't ship your configuration files with your jar files?</title>
 
       <para>Remove all the configuration files from the jar files (
@@ -2450,7 +2448,7 @@ exo-domain-sample-portal {
       files into the jar files of your extension, you brake this law.</para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Recommendations.UsingDedicatedWorkspaceRepositoryForExtension">
       <title>Using a dedicated workspace/repository for your
       extension?</title>
 
@@ -2459,4 +2457,4 @@ exo-domain-sample-portal {
       dedicated workspace or repository per extension.</para>
     </section>
   </section>
-</chapter>
+</section>

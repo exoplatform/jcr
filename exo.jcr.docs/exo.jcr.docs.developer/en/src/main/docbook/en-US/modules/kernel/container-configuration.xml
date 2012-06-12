@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.ContainerConfiguration">
-  <?dbhtml filename="ch-kernel-container-configuration.html"?>
-
+<section id="Kernel.ContainerConfiguration">
   <title>Container Configuration</title>
 
     <para>eXo Portal uses PicoContainer, which implements the Inversion of
@@ -20,7 +18,7 @@
 
     <para>Confused? - You might be interested in the <link
     linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
-    for Beginners</link> chapter to understand the basics.</para>
+    for Beginners</link> section to understand the basics.</para>
 
   <section id="Kernel.ContainerConfiguration.ConfigurationNamespace">
     <title>Kernel configuration namespace</title>
@@ -54,12 +52,12 @@
 &lt;/configuration&gt;</programlisting>
 
       <para>The variables that are supported, are System properties and
-      variables that are specific to your portal container, see next chapters
+      variables that are specific to your portal container, see next sections
       for more details.</para>
     </note>
   </section>
 
-  <section>
+  <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded">
     <title>Understanding how configuration files are loaded</title>
 
     <para>eXo Portal uses PicoContainer, which implements the Inversion of
@@ -75,13 +73,13 @@
     or set additional parameters. If the service is configured in two or more
     places, the configuration override mechanism will be used.</para>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.ConfigurationRetrieval">
       <title>Configuration Retrieval</title>
 
       <para>The container performs the following steps to make eXo Container
       configuration retrieval, depending on the container type.</para>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.ConfigurationRetrieval.OrderForPortalContainer">
         <title>Configuration retrieval order for the
         <envar>PortalContainer</envar></title>
 
@@ -120,7 +118,7 @@
         </orderedlist>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.ConfigurationRetrieval.StandaloneContainer">
         <title>Configuration retrieval for a
         <envar>StandaloneContainer</envar></title>
 
@@ -186,7 +184,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
         </orderedlist>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.ConfigurationRetrieval.GeneralNotes">
         <title>General notes about the configuration retrieval</title>
 
         <note>
@@ -307,7 +305,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
         are independent).</para>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.ConfigurationRetrieval.Log">
         <title>Configuration retrieval log</title>
 
         <para>In case of problems with service configuration, it's important
@@ -329,7 +327,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
    ......</programlisting></para>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.ConfigurationRetrieval.EffectiveConfigurationAtRuntime">
         <title>Getting the effective configuration at Runtime</title>
 
         <para>The effective configuration of the StandaloneContainer,
@@ -342,14 +340,14 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers">
       <title>Advanced concepts for the
       <emphasis>PortalContainers</emphasis></title>
 
       <para>Since eXo JCR 1.12, we added a set of new features that have been
       designed to extend portal applications such as GateIn.</para>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.AddNewConfigurationFilesFromWARFile">
         <title>Add new configuration files from a WAR file</title>
 
         <para>A <envar>ServletContextListener</envar> called
@@ -379,7 +377,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
 &lt;/web-app&gt;</programlisting>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.CreatingPortalContainersFromWARFile">
         <title>Creating your <emphasis>PortalContainers</emphasis> from a WAR
         file</title>
 
@@ -397,7 +395,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
           </note></para>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.DefiningPortalContainerWithDependenciesAndSettings">
         <title>Defining a <emphasis>PortalContainer</emphasis> with its
         dependencies and its settings</title>
 
@@ -1014,7 +1012,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
         </orderedlist>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.PortalContainerSettings">
         <title><envar>PortalContainer</envar> settings</title>
 
         <para>We can inject the value of the portal container settings into
@@ -1118,7 +1116,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
         container "foo"</emphasis>.</para>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.AddingDynamicallySettingsDependenciesToPortalContainer">
         <title>Adding dynamically settings and/or dependencies to a
         <envar>PortalContainer</envar></title>
 
@@ -1266,7 +1264,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
           </listitem>
         </orderedlist>
 
-        <section>
+        <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.AddingDynamicallySettingsDependenciesToPortalContainer.PortalContainerDefinitionChange">
           <title>The existing implementations of
           <envar>PortalContainerDefinitionChange</envar></title>
 
@@ -1276,7 +1274,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
           out of the box some implementations that we describe in the next sub
           sections.</para>
 
-          <section>
+          <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.AddingDynamicallySettingsDependenciesToPortalContainer.PortalContainerDefinitionChange.AddDependencies">
             <title><envar>AddDependencies</envar></title>
 
             <para>This modification adds a list of dependencies at the end of
@@ -1340,7 +1338,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
 &lt;/external-component-plugins&gt;</programlisting>
           </section>
 
-          <section>
+          <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.AddingDynamicallySettingsDependenciesToPortalContainer.PortalContainerDefinitionChange.AddDependenciesBefore">
             <title><envar>AddDependenciesBefore</envar></title>
 
             <para>This modification adds a list of dependencies before a given
@@ -1420,7 +1418,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
 &lt;/external-component-plugins&gt;</programlisting>
           </section>
 
-          <section>
+          <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.AddingDynamicallySettingsDependenciesToPortalContainer.PortalContainerDefinitionChange.AddDependenciesAfter">
             <title><envar>AddDependenciesAfter</envar></title>
 
             <para>This modification adds a list of dependencies after a given
@@ -1500,7 +1498,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
 &lt;/external-component-plugins&gt;</programlisting>
           </section>
 
-          <section>
+          <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.AddingDynamicallySettingsDependenciesToPortalContainer.PortalContainerDefinitionChange.AddSettings">
             <title><envar>AddSettings</envar></title>
 
             <para>This modification adds new settings to a
@@ -1578,7 +1576,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
         </section>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.DisableDynamicallyPortalContainer">
         <title>Disable dynamically a portal container</title>
 
         <para>It is possible to use <envar>component-plugin</envar> elements
@@ -1738,7 +1736,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.ContainerConfiguration.SystemPropertyConfiguration">
     <title>System property configuration</title>
 
     <para>A new property configurator service has been developed for taking
@@ -1749,7 +1747,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
     used by all the services in the different portal containers in the
     application runtime.</para>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.SystemPropertyConfiguration.PropertiesInitParam">
       <title>Properties init param</title>
 
       <para>The properties init param takes a property declared to configure
@@ -1767,7 +1765,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
 &lt;/component&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.SystemPropertyConfiguration.PropertiesURLInitParam">
       <title>Properties URL init param</title>
 
       <para>The properties URL init param allow to load an external file by
@@ -1796,7 +1794,7 @@ my-var2=value 2
 complex-value=${my-var1}-${my-var2}</programlisting></para>
     </section>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.SystemPropertyConfiguration.SystemPropertyConfigurationOfPropertiesURL">
       <title>System Property configuration of the properties URL</title>
 
       <para>It is possible to replace the properties URL init param by a
@@ -1805,10 +1803,10 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.ContainerConfiguration.VariableSyntaxes">
     <title>Variable Syntaxes</title>
 
-    <para>All the variables that we described in the previous chapters can be
+    <para>All the variables that we described in the previous sections can be
     defined thanks to 2 possible syntaxes which are
     <emphasis>${variable-name}</emphasis> or
     <emphasis>${variable-name:default-value}</emphasis>. The first syntax
@@ -1819,13 +1817,13 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
     will be the given default value.</para>
   </section>
 
-  <section>
+  <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles">
     <title>Runtime configuration profiles</title>
 
     <para>The kernel configuration is able to handle configuration profiles at
     runtime (as opposed to packaging time).</para>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesActivation">
       <title>Profiles activation</title>
 
       <para>An active profile list is obtained during the boot of the root
@@ -1841,13 +1839,13 @@ sh gatein.sh -Dexo.profiles=foo
 sh run.sh -Dexo.profiles=foo,bar</programlisting>
     </section>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration">
       <title>Profiles configuration</title>
 
       <para>Profiles are configured in the configuration files of the eXo
       kernel.</para>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration.ProfilesDefinition">
         <title>Profiles definition</title>
 
         <para>Profile activation occurs at XML to configuration object
@@ -1882,13 +1880,13 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
         </orderedlist>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration.ProfilesCapableConfigurationElements">
         <title>Profiles capable configuration elements</title>
 
         <para>A configuration element is <emphasis>profiles</emphasis> capable
         when it carries a profiles element.</para>
 
-        <section>
+        <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration.ProfilesCapableConfigurationElements.ComponentElement">
           <title>Component element</title>
 
           <para>The component element declares a component when activated. It
@@ -1906,7 +1904,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
 &lt;/component&gt;</programlisting>
         </section>
 
-        <section>
+        <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration.ProfilesCapableConfigurationElements.ComponentPluginElement">
           <title>Component plugin element</title>
 
           <para>The component-plugin element is used to dynamically extend the
@@ -1929,7 +1927,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
 &lt;/external-component-plugins&gt;</programlisting>
         </section>
 
-        <section>
+        <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration.ProfilesCapableConfigurationElements.ImportElement">
           <title>Import element</title>
 
           <para>The import element imports a referenced configuration file
@@ -1940,7 +1938,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
 &lt;import profiles="bar"&gt;bar&lt;/import&gt;</programlisting>
         </section>
 
-        <section>
+        <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration.ProfilesCapableConfigurationElements.InitParamElement">
           <title>Init param element</title>
 
           <para>The init param element configures the parameter argument of
@@ -1966,7 +1964,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
 &lt;/component&gt;</programlisting>
         </section>
 
-        <section>
+        <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration.ProfilesCapableConfigurationElements.ValueCollectionElement">
           <title>Value collection element</title>
 
           <para>The value collection element configures one of the value of
@@ -1983,7 +1981,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
 &lt;/object&gt;</programlisting>
         </section>
 
-        <section>
+        <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration.ProfilesCapableConfigurationElements.FieldConfigurationElement">
           <title>Field configuration element</title>
 
           <para>The field configuration element configures the field of an
@@ -2014,10 +2012,10 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.ContainerConfiguration.ComponentRequestLifecycle">
     <title>Component request life cycle</title>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.ComponentRequestLifecycle.ComponentRequestLifeCycleContract">
       <title>Component request life cycle contract</title>
 
       <para>The component request life cycle is an interface that defines a
@@ -2049,7 +2047,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
       that interface.</para>
     </section>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.ComponentRequestLifecycle.RequestLifeCycle">
       <title>Request life cycle</title>
 
       <para>The <envar>RequestLifeCycle</envar> class has several statics
@@ -2058,7 +2056,7 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
       respecting the constraint to execute the request life cycle of a
       component only once even if it can be scheduled several times.</para>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.ComponentRequestLifecycle.RequestLifeCycle.SchedulingComponentRequestLifeCycle">
         <title>Scheduling a component request life cycle</title>
 
         <programlisting language="java">RequestLifeCycle.begin(component);
@@ -2072,7 +2070,7 @@ finally
 }</programlisting>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.ComponentRequestLifecycle.RequestLifeCycle.SchedulingContainerRequestLifeCycle">
         <title>Scheduling a container request life cycle</title>
 
         <para>Scheduling a container triggers the component request life cyle
@@ -2095,17 +2093,17 @@ finally
       </section>
     </section>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.ComponentRequestLifecycle.RequestLifeCycleTriggered">
       <title>When request life cycle is triggered</title>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.ComponentRequestLifecycle.RequestLifeCycleTriggered.PortalRequestLifeCycle">
         <title>Portal request life cycle</title>
 
         <para>Each portal request triggers the life cycle of the associated
         portal container.</para>
       </section>
 
-      <section>
+      <section id="Kernel.ContainerConfiguration.ComponentRequestLifecycle.RequestLifeCycleTriggered.JMXRequestLifeCycle">
         <title>JMX request Life Cycle</title>
 
         <para>When a JMX bean is invoked, the request life cycle of the
@@ -2115,4 +2113,4 @@ finally
       </section>
     </section>
   </section>
-</chapter>
+</section>

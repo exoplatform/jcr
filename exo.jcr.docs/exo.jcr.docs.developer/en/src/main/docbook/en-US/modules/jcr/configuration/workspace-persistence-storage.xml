@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.WorkspacePersistenceStorage">
-  <?dbhtml filename="ch-workspace-data-container.html"?>
-
+<section id="JCR.WorkspacePersistenceStorage">
   <title>Workspace Data Container</title>
-
   <para>Each Workspace of JCR has its own persistent storage to hold
   workspace's items data. eXo Content Repository can be configured so that it
   can use one or more workspaces that are logical units of the repository
@@ -181,4 +178,4 @@
 
   <para>It's recommended to store properties with large values in a file value
   storage only.</para>
-</chapter>
+</section>

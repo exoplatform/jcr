@@ -2,11 +2,8 @@
 <!-- This document was created with Syntext Serna Free. -->
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.LockManagerConfiguration">
-  <?dbhtml filename="ch-lock-manager-config.html"?>
-
+<section id="JCR.LockManagerConfiguration">
   <title>LockManager configuration</title>
-
     <para>What LockManager does?</para>
 
     <para>In general, LockManager stores Lock objects, so it can give a Lock
@@ -23,7 +20,7 @@
       </listitem>
     </itemizedlist>
 
-  <section>
+  <section id="JCR.LockManagerConfiguration.CacheableLockManagerImpl">
     <title>CacheableLockManagerImpl</title>
 
     <para>CacheableLockManagerImpl stores Lock objects in JBoss-cache, so
@@ -51,7 +48,7 @@
     remove Expired Locks. LockRemover separates threads, that periodically ask
     LockManager to remove Locks that live so long.</para>
 
-    <section>
+    <section id="JCR.LockManagerConfiguration.CacheableLockManagerImpl.Configuration">
       <title>Configuration</title>
 
       <para>The configuration uses the template JBoss-cache configuration for
@@ -312,7 +309,7 @@
       </table>
     </section>
 
-    <section>
+    <section id="LockMigrationFrom1.12.x">
       <title>Lock migration from 1.12.x</title>
 
       <para>There are 3 choices:</para>
@@ -377,4 +374,4 @@
       </itemizedlist>
     </section>
   </section>
-</chapter>
+</section>

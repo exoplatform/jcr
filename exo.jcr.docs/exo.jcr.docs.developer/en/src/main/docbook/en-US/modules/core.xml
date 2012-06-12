@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<part>
-  <?dbhtml filename="part-core.html"?>
-
+  <chapter xml:id="chapter-eXoCore">
   <title>eXoCore</title>
-  <partintro>
+  
     <para>The eXo Core is a set of common services, such as Authentication and Security, Organization, Database, Logging,
         JNDI, LDAP, Document reader, and other services, that are used by eXo
         products and modules. It also can be used in the business logic.
     </para>
-  </partintro>
+  
   <xi:include href="core/db-creator-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
@@ -49,4 +47,4 @@
 
   <xi:include href="core/digest-auth.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-</part>
+</chapter>

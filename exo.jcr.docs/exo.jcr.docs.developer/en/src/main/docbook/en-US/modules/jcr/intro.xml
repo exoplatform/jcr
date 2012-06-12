@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.Introduction">
-  <?dbhtml filename="ch-intro.html"?>
-
+<section id="JCR.Introduction">
   <title>Introduction in eXoJCR</title>
-
     <para>Java Content Repository API as well as other Java language related
     standards is created within the Java Community Process http://jcp.org/ as
     a result of collaboration of an expert group and the Java community. It is
@@ -13,7 +10,7 @@
     url="http://www.jcp.org/en/jsr/detail?id=170">JSR-170</ulink> (Java
     Specification Request).</para>
 
-    <section>
+    <section id="JCR.Introduction.DataModel">
       <title>Data model</title>
 
       <para>The main purpose of content repository is to maintain the data.
@@ -64,4 +61,4 @@
       repository configuration, rather than part of the application
       programming task.</para>
     </section>
-</chapter>
+</section>
