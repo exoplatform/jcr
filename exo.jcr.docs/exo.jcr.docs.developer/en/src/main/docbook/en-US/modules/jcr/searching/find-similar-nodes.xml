@@ -27,7 +27,7 @@
    &lt;/properties&gt;
 &lt;/query-handler&gt;</programlisting>
 
-  <section>
+  <section id="JCR.FindSimilarNodes.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>Repository contains many nt:file nodes"</para>
@@ -96,7 +96,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.FindSimilarNodes.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -120,7 +120,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.FindSimilarNodes.FetchingResult">
     <title>Fetching result</title>
 
     <para>Let's get nodes:</para>

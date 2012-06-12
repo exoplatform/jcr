@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.UsingJCR">
-  <?dbhtml filename="ch-jcr-usage.html"?>
-
+<section id="JCR.UsingJCR">
   <title>Using JCR</title>
 
-    <section>
+    <section id="JCR.UsingJCR.ObtainingRepositoryObject">
       <title>Obtaining a Repository object</title>
 
       <para>A javax.jcr.Repository object can be obtained by:</para>
@@ -56,7 +54,7 @@
         
     </section>
 
-    <section>
+    <section id="JCR.UsingJCR.JCRSessionCommonConsiderations">
       <title>JCR Session common considerations</title>
 
       <para><itemizedlist>
@@ -92,10 +90,10 @@
         </itemizedlist></para>
     </section>
 
-  <section>
+  <section id="JCR.UsingJCR.JCRApplicationPractices">
     <title>JCR Application practices</title>
 
-    <section>
+    <section id="JCR.UsingJCR.JCRApplicationPractices.SimplifyingManagementMultiworkspaceApplication">
       <title>Simplifying the management of a multi-workspace
       application</title>
 
@@ -164,7 +162,7 @@ Session session = sessionProvider.getSession("workspaceName", repository);
  sessionProvider.close(); </programlisting>
     </section>
 
-    <section>
+    <section id="JCR.UsingJCR.JCRApplicationPractices.ReusingSessionProvider">
       <title>Reusing SessionProvider</title>
 
       <para>As shown above, creating the SessionProvider involves multiple
@@ -246,4 +244,4 @@ Session session = sessionProvider.getSession("workspaceName", repository);
       </itemizedlist>
     </section>
   </section>
-</chapter>
+</section>

@@ -7,7 +7,7 @@
   <para>Find a node with the primary type 'nt:file' that is located on the
   exact path "/folder1/folder2/document1".</para>
 
-  <section>
+  <section id="JCR.ExactPathConstraint.RepositoryStructure">
     <title>Repository Structure</title>
 
     <para>Repository filled by different nodes. There are several folders
@@ -49,7 +49,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.ExactPathConstraint.QueryExecution">
     <title>Query Execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -79,7 +79,7 @@ QueryResult result = query.execute();</programlisting>
     XPath fetches by default all nodes.</para>
   </section>
 
-  <section>
+  <section id="JCR.ExactPathConstraint.FetchingResult">
     <title>Fetching the Result</title>
 
     <para>Let's get nodes:</para>

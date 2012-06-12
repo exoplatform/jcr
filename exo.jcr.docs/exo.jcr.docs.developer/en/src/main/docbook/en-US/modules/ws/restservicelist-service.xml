@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="WS.RestServicesList">
-  <?dbhtml filename="ch-ws-restserviceslist-service.html"?>
-
+<section id="WS.RestServicesList">
   <title>RestServicesList Service</title>
 
     <para>RestServicesList service provides information about
@@ -25,7 +23,7 @@
 
     <para>The list can be provided in two formats: HTML and JSON.</para>
 
-  <section>
+  <section id="WS.RestServicesList.Usage">
     <title>Usage</title>
 
     <note>
@@ -35,7 +33,7 @@
       works as per-request resource.</para>
     </note>
 
-    <section>
+    <section id="WS.RestServicesList.Usage.HTMLFormat">
       <title>HTML format</title>
 
       <para>To get the list of services in HTML format use listHTML()
@@ -159,7 +157,7 @@ public byte[] listHTML()
       </table>
     </section>
 
-    <section>
+    <section id="WS.RestServicesList.Usage.JSONFormat">
       <title>JSON format</title>
 
       <para>To get the list of services in HTML format use listJSON()
@@ -209,4 +207,4 @@ public RootResourcesList listJSON()
       <para></para>
     </section>
   </section>
-</chapter>
+</section>

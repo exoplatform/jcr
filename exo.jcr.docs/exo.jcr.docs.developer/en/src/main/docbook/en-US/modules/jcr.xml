@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<part>
-  <?dbhtml filename="part-jcr.html"?>
+<chapter xml:id="chapter-JCR">
 
   <title>eXoJCR</title>
    <para>eXo provides JCR implementation called eXo JCR.</para>
@@ -14,25 +13,25 @@
   <!-- concepts -->
   <xi:include href="jcr/concepts/why-jcr.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-              
+
  <xi:include href="jcr/concepts/jcr-exo-implementation.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-              
+
   <xi:include href="jcr/concepts/jcr-advantages.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/concepts/jcr-compatibility-levels.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-              
+
   <xi:include href="jcr/concepts/jcr-usage.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />            
-              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="jcr/concepts/jcr-extensions.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />                            
-              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="jcr/concepts/jcr-applications.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />                                          
-              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="jcr/concepts/nodetype-registration.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
@@ -41,21 +40,21 @@
 
   <xi:include href="jcr/concepts/jcr-namespace-altering.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-              
-  <xi:include href="jcr/concepts/nodetypes-and-namespaces.xml" 
-              xmlns:xi="http://www.w3.org/2001/XInclude" />               
 
- <!-- common configs -->  
+  <xi:include href="jcr/concepts/nodetypes-and-namespaces.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
+ <!-- common configs -->
 
   <xi:include href="jcr/configuration/exo-jcr-configuration.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/configuration/multilanguage-support.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-              
+
   <xi:include href="jcr/configuration/multi-db-schema-support.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-  
+
   <xi:include href="jcr/configuration/search-configuration.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
@@ -69,10 +68,10 @@
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/configuration/workspace-persistence-storage.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />      
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/configuration/rest-services-on-groovy.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />   
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <!-- cluster configs -->
 
@@ -105,37 +104,37 @@
   <!-- search -->
 
   <xi:include href="jcr/searching/jcr-query-usecases.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />    
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/searching/searching-repository-content.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />    
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/searching/fulltext-search-and-settings.xml"
                   xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <!-- api extensions -->
-  
+
   <xi:include href="jcr/api-extensions.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-              
+
   <!-- protocols -->
-  
+
   <xi:include href="jcr/protocols/webdav.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/protocols/ftp.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
 
   <!-- backup -->
   <xi:include href="jcr/backup/exojcr-backup-service.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" /> 
-   
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="jcr/backup/backup-client.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />    
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/backup/use-external-backup-tool.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />    
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <!-- other  -->
 
@@ -146,7 +145,7 @@
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
 
-              
+
   <xi:include href="jcr/jta.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
@@ -154,19 +153,19 @@
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/other/acl.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />                            
-              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="jcr/other/acl-ext.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />                                          
-              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="jcr/other/link-producer.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-              
+
   <xi:include href="jcr/other/binary-values-processing.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-              
+
   <xi:include href="jcr/other/jcr-resources.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />              
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <!-- data container configs -->
 
@@ -179,7 +178,7 @@
   <xi:include href="jcr/db-cleaner-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <!-- tuning guide --> 
+  <!-- tuning guide -->
   <xi:include href="jcr/performance-tuning-guide.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-</part>
+</chapter>

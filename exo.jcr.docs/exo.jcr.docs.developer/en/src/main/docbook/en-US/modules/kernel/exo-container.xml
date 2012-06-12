@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.ExoContainer">
-  <?dbhtml filename="ch-exo-container.html"?>
-
+<section id="Kernel.ExoContainer">
   <title>ExoContainer info</title>
 
   <para>ExoContainer is the main IoC kernel object. The container is
   responsible for loading services/components.</para>
 
-  <section>
+  <section id="Kernel.ExoContainer.ContainerHierarchy">
     <title>Container hierarchy</title>
 
     <itemizedlist>
@@ -32,4 +30,4 @@
       </imageobject>
     </mediaobject>
   </section>
-</chapter>
+</section>

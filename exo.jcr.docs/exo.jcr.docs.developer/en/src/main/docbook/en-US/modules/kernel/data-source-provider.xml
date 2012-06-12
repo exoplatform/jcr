@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.DataSourceProvider">
-  <?dbhtml filename="ch-data-source-provider.html"?>
-
+<section id="Kernel.DataSourceProvider">
   <title>The data source provider</title>
 
     <para>The <emphasis>DataSourceProvider</emphasis> is a service used to
@@ -37,7 +35,7 @@
         </tgroup>
       </table>
 
-  <section>
+  <section id="Kernel.DataSourceProvider.Configuration">
     <title>Configuration</title>
 
     <para>The configuration of the <emphasis>DataSourceProvider</emphasis>
@@ -126,4 +124,4 @@
       </tgroup>
     </table>
   </section>
-</chapter>
+</section>

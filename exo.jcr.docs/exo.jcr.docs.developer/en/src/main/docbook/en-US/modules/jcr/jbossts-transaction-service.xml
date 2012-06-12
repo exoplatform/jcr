@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.JBossTransactionsService">
-  <?dbhtml filename="ch-jbossts-tranasction-service.html"?>
-
+<section id="JCR.JBossTransactionsService">
   <title>JBossTransactionsService</title>
 
     <para>JBossTransactionsService implements eXo <link
@@ -17,7 +15,7 @@
     implementaion. See <link linkend="JCR.ClusterConfig">Cluster
     configuration</link> for example.</para>
 
-  <section>
+  <section id="JCR.JBossTransactionsService.Configuration">
     <title>Configuration</title>
 
     <para>Example configuration:</para>
@@ -35,4 +33,4 @@
 
     <para>timeout - XA transaction timeout in seconds</para>
   </section>
-</chapter>
+</section>

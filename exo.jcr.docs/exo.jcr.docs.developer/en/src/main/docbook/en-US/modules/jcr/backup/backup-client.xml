@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.BackupClient">
-  <?dbhtml filename="ch-backup-client.html"?>
-
+<section id="JCR.BackupClient">
   <title>HTTPBackupAgent and backup client</title>
 
   <warning>
@@ -12,8 +10,8 @@
     in order to save the changes of the repository configuration. See the
     <link
     linkend="JCR.eXoJCRconfiguration.PortalAndStandaloneConfiguration">eXo JCR
-    Configuration article at chapter '2 Portal and Standalone
-    configuration'</link> .</para>
+    Configuration article at the 'Portal and Standalone
+    configuration'</link> section.</para>
   </warning>
 
   <highlights>
@@ -34,7 +32,7 @@
 
     <para>The backup client is http client for HTTPBackupAgent.</para>
 
-  <section>
+  <section id="JCR.BackupClient.HTTPBackupAgent">
     <title>HTTPBackupAgent</title>
 
     <para>The HTTPBackupAgent is based on REST (see details about the <link
@@ -69,10 +67,10 @@
         </listitem>
       </itemizedlist></para>
 
-    <section>
+    <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods">
       <title>HTTPBackupAgent methods</title>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.StartingBackupService">
         <title>Starting Backup Service</title>
 
         <para><emphasis
@@ -163,7 +161,7 @@ failure message in response  - the description of failure</programlisting></para
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.StoppingBackupService">
         <title>Stopping Backup Service</title>
 
         <para><emphasis
@@ -197,7 +195,7 @@ failure message in response  - the description of failure</programlisting></para
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.BackupInfoService">
         <title>Backup Info Service</title>
 
         <para><emphasis role="bold">/rest/jcr-backup/info</emphasis></para>
@@ -232,7 +230,7 @@ failure message in response  - the description of failure</programlisting></para
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.DroppingWorkspaceService">
         <title>Dropping Workspace Service</title>
 
         <para><emphasis
@@ -279,7 +277,7 @@ failure message in response  - the description of failure</programlisting></para
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.BackupInfo">
         <title>Backup Info</title>
 
         <para><emphasis
@@ -348,7 +346,7 @@ failure message in response  - the description of failure</programlisting></para
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.CurrentBackupsInformation">
         <title>Current Backups Information</title>
 
         <para><emphasis
@@ -383,7 +381,7 @@ failure message in response  - the description of failure</programlisting>
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.CompletedBackupsInformation">
         <title>Completed Backups Information</title>
 
         <para><emphasis
@@ -418,7 +416,7 @@ failure message in response  - the description of failure</programlisting>
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.WorkspaceSpecificBackupInformation">
         <title>Workspace-specific Backup Information</title>
 
         <para><emphasis
@@ -462,7 +460,7 @@ failure message in response  - the description of failure</programlisting>
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.SingleBackupInformation">
         <title>Single Backup Information</title>
 
         <para><emphasis
@@ -543,7 +541,7 @@ failure message in response  - the description of failure</programlisting>
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.RestoreOn_WorkspaceInformation">
         <title>Restores on a Workspace Information</title>
 
         <para><emphasis
@@ -588,7 +586,7 @@ failure message in response  - the description of failure</programlisting>
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.RestoreInformation">
         <title>Restores Information</title>
 
         <para><emphasis
@@ -624,7 +622,7 @@ failure message in response  - the description of failure</programlisting>
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.RestoringService">
         <title>Restoring Service</title>
 
         <para><emphasis
@@ -777,7 +775,7 @@ failure message in response  - the description of failure</programlisting>
           </itemizedlist></para>
       </section>
 
-      <section>
+      <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentMethods.DefaultWorkspaceInformation">
         <title>Default Workspace Information</title>
 
         <para><emphasis
@@ -903,7 +901,7 @@ failure message in response  - the description of failure</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentConfiguration">
       <title>HTTPBackupAgent Configuration</title>
 
       <para>Add the components
@@ -956,12 +954,12 @@ failure message in response  - the description of failure</programlisting>
 
       <para>See the <link
       linkend="JCR.eXoJCRconfiguration.PortalAndStandaloneConfiguration">eXo
-      JCR Configuration article at chapter '2 Portal and Standalone
-      configuration'</link> for details.</para>
+      JCR Configuration article at the 'Portal and Standalone
+      configuration'</link> section for details.</para>
     </section>
   </section>
 
-  <section>
+  <section id="JCR.BackupClient.BackupClient">
     <title>Backup Client</title>
 
     <highlights>
@@ -1041,10 +1039,10 @@ failure message in response  - the description of failure</programlisting>
 </programlisting>
   </section>
 
-  <section>
+  <section id="JCR.BackupClient.BackupClientUsage">
     <title>Backup Client Usage</title>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.BuildingApplication">
       <title>Building application</title>
 
       <itemizedlist>
@@ -1067,7 +1065,7 @@ failure message in response  - the description of failure</programlisting>
       </note>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RunningApplication">
       <title>Running application</title>
 
       <itemizedlist>
@@ -1078,7 +1076,7 @@ failure message in response  - the description of failure</programlisting>
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.GettingInformationAboutBackupService">
       <title>Getting information about backup service</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 info</programlisting>
@@ -1092,7 +1090,7 @@ failure message in response  - the description of failure</programlisting>
   default incremental job period : 3600</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.StartingFullBackup">
       <title>Starting full backup</title>
 
       <para>Start full backup only on workspace "backup", the parameter
@@ -1106,7 +1104,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.StartingFullAndIncrementalBackup">
       <title>Starting full and incremental backup on a single
       workspace</title>
 
@@ -1121,7 +1119,7 @@ failure message in response  - the description of failure</programlisting>
  tatus code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.GettingInformationAboutCurrentBackupsInProgress">
       <title>Getting information about the current backups (in
       progress)</title>
 
@@ -1145,7 +1143,7 @@ failure message in response  - the description of failure</programlisting>
     started time              : Fri, 17 Apr 2009 17:02:41 EEST</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.GettingInformationAboutCurrentBackupByBackupId">
       <title>Getting information about the current backup by
       'backup_id'</title>
 
@@ -1164,7 +1162,7 @@ failure message in response  - the description of failure</programlisting>
     started time             : Fri, 17 Apr 2009 17:03:16 EEST</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.StoppingBackupByBackupId">
       <title>Stopping backup by "backup_id"</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 stop 6c302adc7f00010100df88d29535c6ee</programlisting>
@@ -1175,7 +1173,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.GettingInformationAboutCompletedBackups">
       <title>Getting information about the completed (ready to restore)
       backups</title>
 
@@ -1203,7 +1201,7 @@ failure message in response  - the description of failure</programlisting>
     started time              : Thu, 16 Apr 2009 14:51:08 EEST</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringToWorkspace">
       <title>Restoring to workspace</title>
 
       <para>Restore to workspace "backup3", for restore need the
@@ -1218,7 +1216,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.GettingInformationAboutCurrentRestore">
       <title>Getting information about the current restore</title>
 
       <para>Get information about the current restore for workspace
@@ -1239,7 +1237,7 @@ failure message in response  - the description of failure</programlisting>
     restore state           : successful</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringWorkspaceAndRemoveExistWorkspace">
       <title>Restoring workspace and remove exists workspace</title>
 
       <para>Restore to workspace "backup" and remove fully (will be removed
@@ -1255,7 +1253,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringWorkspaceFromBackupSet">
       <title>Restoring workspace from backup set</title>
 
       <para>Restore to workspace "backup", for restore need the
@@ -1271,7 +1269,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringWorkspaceFromBackupSetAndRemoveExistWorkspace">
       <title>Restoring workspace from backup set and remove exists
       workspace</title>
 
@@ -1289,7 +1287,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringWorkspaceWithOriginalConfiguration">
       <title>Restoring workspace with original configuation</title>
 
       <para>Restore to workspace "backup" with original configuration of
@@ -1304,7 +1302,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringWorkspaceWithOriginalConfiguationAndRemoveExistWorkspace">
       <title>Restoring workspace with original configuation and remove exists
       workspace</title>
 
@@ -1322,7 +1320,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringWorkspaceFromBackupSetWithOriginalConfiguation">
       <title>Restoring workspace from backup set with original
       configuation</title>
 
@@ -1339,7 +1337,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringWorkspaceFromBackupSetWithOriginalConfiguationAndRemoveExistWorkspace">
       <title>Restoring workspace from backup set with original configuation
       and remove exists workspace</title>
 
@@ -1358,7 +1356,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringRepository">
       <title>Restoring repository</title>
 
       <para>Restore to repository "repository" , for restore need the
@@ -1373,7 +1371,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringRepositoryAndRemoveExistRepository">
       <title>Restoring repository and remove exists repository</title>
 
       <para>Restore to repositoy "repository" and remove fully (will be
@@ -1389,7 +1387,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringRepositoryFromBackupSet">
       <title>Restoring repository from backup set</title>
 
       <para>Restore to repository "repository", for restore need the
@@ -1405,7 +1403,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringRepositoryFromBackupSetAndRemoveExistRepository">
       <title>Restoring repository from backup set and remove exists
       repository</title>
 
@@ -1423,7 +1421,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringRepositoryWithOriginalConfiguation">
       <title>Restoring repository with original configuation</title>
 
       <para>Restore to repository "repository" with original configuration of
@@ -1438,7 +1436,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringRepositoryWithOriginalConfiguationAndRemoveExistRepository">
       <title>Restoring repository with original configuation and remove exists
       repository</title>
 
@@ -1456,7 +1454,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringRepositoryFromBackupSetWithOriginalConfiguation">
       <title>Restoring repository from backup set with original
       configuation</title>
 
@@ -1473,7 +1471,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupClientUsage.RestoringRepositoryFromBackupSetWithOriginalConfiguationAndRemoveExistRepository">
       <title>Restoring repository from backup set with original configuation
       and remove exists repository</title>
 
@@ -1493,11 +1491,11 @@ failure message in response  - the description of failure</programlisting>
     </section>
   </section>
 
-  <section>
+  <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForWorkspaceBackup">
     <title>Full example about creating backup and restoring it for workspace
     'backup'</title>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForWorkspaceBackup.CreatingBackup">
       <title>Creating backup</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 start /repository/backup ../temp/backup 10000</programlisting>
@@ -1508,7 +1506,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForWorkspaceBackup.GettingInformationAboutCurrentBackups">
       <title>Getting information about current backups</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 list</programlisting>
@@ -1525,7 +1523,7 @@ failure message in response  - the description of failure</programlisting>
     started time              : Fri, 17 Apr 2009 17:10:09 EEST</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForWorkspaceBackup.StoppingBackupById">
       <title>Stopping backup by id</title>
 
       <para>Stop backup with id b469ba957f0001010178febaedf20eb7 :</para>
@@ -1538,7 +1536,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForWorkspaceBackup.DeletingWorkspaceBackupAndCloseOpenedSessionsOnWorkspace">
       <title>Deleting the workspace "backup" and close opened sessions on this
       workspace</title>
 
@@ -1550,7 +1548,7 @@ failure message in response  - the description of failure</programlisting>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForWorkspaceBackup.RestoringWorkspaceBackup">
       <title>Restoring the workspace "backup"</title>
 
       <itemizedlist>
@@ -1628,7 +1626,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
 </programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForWorkspaceBackup.GettingInformationAboutRestoreForWorkspaceReposistoryBackup">
       <title>Getting information about restore for workspace
       /repository/backup</title>
 
@@ -1648,7 +1646,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
     </section>
   </section>
 
-  <section>
+  <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForRepository">
     <title>Full example about creating backup and restoring it for repository
     'repository'</title>
 
@@ -1664,7 +1662,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
    &lt;type&gt;org.exoplatform.services.jcr.ext.repository.RestRepositoryService&lt;/type&gt;
 &lt;/component&gt;</programlisting>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForRepository.CreatingBackup">
       <title>Creating backup</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 start /repository ../temp/backup 10000</programlisting>
@@ -1675,7 +1673,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForRepository.GettingInformationAboutCurrentBackups">
       <title>Getting information about current backups</title>
 
       <programlisting>jcrbackup http://root:exo@127.0.0.1:8080 list</programlisting>
@@ -1691,7 +1689,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
     started time               : Mon, 11 Oct 2010 10:59:35 EEST</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForRepository.StoppingBackupById">
       <title>Stopping backup by id</title>
 
       <para>Stop backup with id 9a4d40fb7f0000012ec8f0a4ec70b3da :</para>
@@ -1704,7 +1702,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForRepository.DeletingReposistoryAndCloseAllOpenedSessions">
       <title>Deleting the repository "repository" and close all opened
       sessions</title>
 
@@ -1716,7 +1714,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
   status code = 200</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForRepository.RestoringRepository">
       <title>Restoring the repository "repository"</title>
 
       <itemizedlist>
@@ -1884,7 +1882,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
 </programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.FullExampleAboutCreatingBackupAndRestoringForRepository.GettingInformationAboutRestoreForRepository">
       <title>Getting information about restore for repository
       'repository'</title>
 
@@ -1901,4 +1899,4 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
     finished time           : Mon, 11 Oct 2010 11:51:17 EEST</programlisting>
     </section>
   </section>
-</chapter>
+</section>

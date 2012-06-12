@@ -8,7 +8,7 @@
   property contains a value less than 90. Only select the title of each
   node.</para>
 
-  <section>
+  <section id="JCR.PropertyComparison.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>Repository contains several mix:title nodes, where each
@@ -38,7 +38,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.PropertyComparison.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -62,7 +62,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.PropertyComparison.FetchingResult">
     <title>Fetching result</title>
 
     <para>Let's get nodes:</para>

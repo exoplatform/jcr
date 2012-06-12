@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCRWithGateIn.HowToUseDataSourceUnderJBoss">
+<section id="JCRWithGateIn.HowToUseDataSourceUnderJBoss">
   <title>How to use AS Managed DataSource under JBoss AS</title>
 
   <?dbhtml filename="ch-how-to-use-managed-datasource-under-jboss.html"?>
 
-    <para>This chapter will show you how to use AS Managed DataSource under JBoss AS.
+    <para>This section will show you how to use AS Managed DataSource under JBoss AS.
     </para>
 
     <important>
@@ -17,7 +17,7 @@
       <para>only no-tx-datasource is supported in JCR 1.12</para>
     </important>
 
-    <section>
+    <section id="JCRWithGateIn.HowToUseDataSourceUnderJBoss.DeclaringDatasourcesInAS">
       <title>Declaring the datasources in the AS</title>
 
       <para>Under JBoss, just put a file XXX-ds.xml in the deploy server
@@ -69,7 +69,7 @@
       schema</ulink></para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToUseDataSourceUnderJBoss.NotLeteXoBindDatasourcesExplictly">
       <title>Do not let eXo bind datasources explicitly</title>
 
       <para>Edit server/default/conf/gatein/configuration.properties and
@@ -99,4 +99,4 @@
 
       <para>Running eXo after these configurations goes well.</para>
     </section>
-</chapter>
+</section>

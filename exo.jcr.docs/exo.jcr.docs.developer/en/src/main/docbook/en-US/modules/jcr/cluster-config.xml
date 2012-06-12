@@ -2,15 +2,13 @@
 <!-- This document was created with Syntext Serna Free. -->
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.ClusterConfig">
-  <?dbhtml filename="ch-cluster-config.html"?>
-
+<section id="JCR.ClusterConfig">
   <title>Configuring JBoss AS with eXo JCR in cluster</title>
 
   <section id="JCR.ClusterConfig.Launching_Cluster">
     <title>Launching Cluster</title>
 
-    <section>
+    <section id="JCR.ClusterConfig.Launching_Cluster.Deploying_eXo_JCR_To_JBoss_As">
       <title>Deploying eXo JCR to JBoss As</title>
 
       <para>To deploy eXo JCR to JBoss, do the following steps:</para>
@@ -169,7 +167,7 @@
   <section id="JCR.ClusterConfig.Requirements">
     <title>Requirements</title>
 
-    <section>
+    <section id="JCR.ClusterConfig.Requirements.Environment_Requirements">
       <title>Environment requirements</title>
 
       <itemizedlist>
@@ -195,7 +193,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCR.ClusterConfig.Requirements.Configuration_Requirements">
       <title>Configuration requirements</title>
 
       <para>Configuration of every workspace in repository must contains of
@@ -302,4 +300,4 @@
       </listitem>
     </itemizedlist>
   </section>
-</chapter>
+</section>

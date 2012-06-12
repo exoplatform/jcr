@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.RESTServicesOnGroovy">
-  <?dbhtml filename="ch-rest-services-on-groovy.html"?>
-
+<section id="JCR.RESTServicesOnGroovy">
   <title>REST Services on Groovy</title>
 
     <para>Starting from version 1.9, JCR Service supports REST services
@@ -13,7 +11,7 @@
     <para>The feature bases on <link linkend="WS.RestFramework">RESTful
     framework</link> and uses ResourceContainer concept.</para>
 
-  <section>
+  <section id="JCR.RESTServicesOnGroovy.Usage">
     <title>Usage</title>
 
     <para>Scripts should extend ResourceContainer and should be stored in JCR
@@ -46,4 +44,4 @@
   &lt;/init-params&gt;
 &lt;/component&gt;</programlisting>
   </section>
-</chapter>
+</section>

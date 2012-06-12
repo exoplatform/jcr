@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.BackupService">
-  <?dbhtml filename="ch-exojcr-backup-service.html"?>
-
+<section id="JCR.BackupService">
   <title>eXo JCR Backup Service</title>
 
   <note>
@@ -11,7 +9,7 @@
     restoring of whole repository.</para>
   </note>
 
-  <section>
+  <section id="JCR.BackupService.Concept">
     <title>Concept</title>
 
     <para>The main purpose of that feature is to restore data in case of
@@ -64,10 +62,10 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.BackupService.HowItWorks">
     <title>How it works</title>
 
-    <section>
+    <section id="JCR.BackupService.HowItWorks.ImplementationDetails">
       <title>Implementation details</title>
 
       <para>Full backup/restore is implemented using the JCR SysView
@@ -93,7 +91,7 @@
       </note>
     </section>
 
-    <section>
+    <section id="JCR.BackupService.HowItWorks.WorkBasics">
       <title>Work basics</title>
 
       <para>The work of Backup is based on the BackupConfig configuration and
@@ -195,7 +193,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="JCR.BackupService.Configuration">
     <title>Configuration</title>
 
     <para>As an optional extension, the Backup service is not enabled by
@@ -251,7 +249,7 @@
       </itemizedlist></para>
   </section>
 
-  <section>
+  <section id="JCR.BackupService.RDBMSBackup">
     <title>RDBMS backup</title>
 
     <para>RDBMS backup It is the lastest, currently supportedm used by default
@@ -287,10 +285,10 @@
       </itemizedlist></para>
   </section>
 
-  <section>
+  <section id="JCR.BackupService.Usage">
     <title>Usage</title>
 
-    <section>
+    <section id="JCR.BackupService.Usage.PerformingBackup">
       <title>Performing a Backup</title>
 
       <para>In the following example, we create a BackupConfig bean for the
@@ -324,7 +322,7 @@ BackupChain chain = backup.startBackup(config);</programlisting>
 backup.stopBackup(chain);</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupService.Usage.PerformingRestore">
       <title>Performing a Restore</title>
 
       <para>Restoration involves reloading the backup file into a
@@ -351,7 +349,7 @@ repository.configWorkspace(workspaceEntry);
 // run restoration
 backup.restore(bchLog, repositoryEntry, workspaceEntry);</programlisting>
 
-      <section>
+      <section id="JCR.BackupService.Usage.PerformingRestore.ExistingWorkspace">
         <title>Restoring into an existing workspace</title>
 
         <note>
@@ -383,7 +381,7 @@ repo.removeWorkspace(workspace);</programlisting>
         </itemizedlist>
       </section>
 
-      <section>
+      <section id="JCR.BackupService.Usage.PerformingRestore.SystemWorkspace">
         <title>System workspace</title>
 
         <note>
@@ -436,7 +434,7 @@ repo.removeWorkspace(workspace);</programlisting>
       </section>
     </section>
 
-    <section>
+    <section id="JCR.BackupService.Usage.RepositoryAndWorkspaceInitializationFromBackup">
       <title>Repository and Workspace initialization from backup</title>
 
       <para>Repository and Workspace initialization from backup can use the
@@ -493,7 +491,7 @@ repo.removeWorkspace(workspace);</programlisting>
     ...
 &lt;/workspace&gt;</programlisting>
 
-      <section>
+      <section id="JCR.BackupService.Usage.RepositoryAndWorkspaceInitializationFromBackup.WorkspaceOverBackupWorksaceInitializer">
         <title>Restore the Workspace over BackupWorksaceInitializer</title>
 
         <para>Example of configuration initializer to resore the workspace
@@ -534,7 +532,7 @@ repo.removeWorkspace(workspace);</programlisting>
         </itemizedlist>
       </section>
 
-      <section>
+      <section id="JCR.BackupService.Usage.RepositoryAndWorkspaceInitializationFromBackup.RepositoryOverBackupWorksaceInitializer">
         <title>Restore the Repository over BackupWorksaceInitializer</title>
 
         <para>Example of configuration initializers to restore the repository
@@ -607,7 +605,7 @@ repo.removeWorkspace(workspace);</programlisting>
     </section>
   </section>
 
-  <section>
+  <section id="JCR.BackupService.Scheduling">
     <title>Scheduling (experimental)</title>
 
     <para>The Backup service has an additional feature that can be useful for
@@ -705,7 +703,7 @@ repo.removeWorkspace(workspace);</programlisting>
     again. That behaviour may be changed in the future.</para>
   </section>
 
-  <section>
+  <section id="JCR.BackupService.RestoreExistingWorkspaceOrReposistory">
     <title>Restore existing workspace or repository</title>
 
     <para>The resore of existing workspace or repositry is available.</para>
@@ -811,7 +809,7 @@ repo.removeWorkspace(workspace);</programlisting>
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.BackupService.RestoreWorkspaceOrRepositoryUsingOriginalConfiguration">
     <title>Restore a workspace or a repository using original
     configuration</title>
 
@@ -953,7 +951,7 @@ repo.removeWorkspace(workspace);</programlisting>
             BackupConfigurationException;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.BackupService.BackupSetPortability">
     <title>Backup set portability</title>
 
     <para>The Backup log is stored during the Backup operation into two
@@ -961,4 +959,4 @@ repo.removeWorkspace(workspace);</programlisting>
     interactive operations via Backup API (e.g. console) and backup set files
     for portability (e.g. on another server).</para>
   </section>
-</chapter>
+</section>

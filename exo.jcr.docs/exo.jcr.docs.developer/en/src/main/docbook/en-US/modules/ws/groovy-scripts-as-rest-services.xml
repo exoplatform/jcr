@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="WS.GroovyScripts">
-  <?dbhtml filename="ch-groovy-scripts-as-rest-services.html"?>
-
+<section id="WS.GroovyScripts">
   <title>Groovy Scripts as REST Services</title>
 
-    <para>This chapter describes how to use Groovy scripts as REST services.
+    <para>This section describes how to use Groovy scripts as REST services.
     Consider these operations:</para>
 
     <itemizedlist>
@@ -32,10 +30,10 @@
       </listitem>
     </itemizedlist>
 
-    <para>In this chapter, we consider RESTful service to be compatible with JSR-311
+    <para>In this section, we consider RESTful service to be compatible with JSR-311
     specification. The last feature is currently available in version 1.11-SNAPSHOT.</para>
 
-  <section>
+  <section id="WS.GroovyScripts.LoadingScriptAndSaveInJCR">
     <title>Loading script and save it in JCR</title>
 
     <para>There are two ways to save a script in JCR. The first way is to save
@@ -110,7 +108,7 @@ http://localhost:8080/rest/script/groovy/add/repository/production/script/groovy
 http://localhost:8080/rest/script/groovy/add/repository/production/script/groovy/test1.groovy</programlisting>
   </section>
 
-  <section>
+  <section id="WS.GroovyScripts.Instantiation">
     <title>Instantiation</title>
 
     <para>org.exoplatform.services.script.groovy.GroovyScriptInstantiator is
@@ -124,7 +122,7 @@ http://localhost:8080/rest/script/groovy/add/repository/production/script/groovy
 &lt;/component&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="WS.GroovyScripts.DeployingNewlyCreatedClassAsRESTfulService">
     <title>Deploying newly created Class as RESTful service</title>
 
     <para>To deploy script automatically at server statup time, its property
@@ -161,7 +159,7 @@ http://localhost:8080/rest/script/groovy/add/repository/production/script/groovy
     script's source code (property jcr:data).</para>
   </section>
 
-  <section>
+  <section id="WS.GroovyScripts.ScriptLifecycleManagement">
     <title>Script Lifecycle Management</title>
 
     <para>If GroovyScript2RestLoader configured as was decribed in the
@@ -232,7 +230,7 @@ http://localhost:8080/rest/script/groovy/update/repository/production/script/gro
 http://localhost:8080/rest/script/groovy/delete/repository/production/script/groovy/JcrGroovyTest.groovy</programlisting>
   </section>
 
-  <section>
+  <section id="WS.GroovyScripts.GettingNodeUUIDExample">
     <title>Getting node UUID example</title>
 
     <para>Now we are going to try simple example of Groovy RESTfull service.
@@ -367,7 +365,7 @@ http://localhost:8080/rest/script/groovy/delete/repository/production/script/gro
     </mediaobject>
   </section>
 
-  <section>
+  <section id="WS.GroovyScripts.GroovyScriptRestrictions">
     <title>Groovy script restrictions</title>
 
     <para>You should keep one class per one groovy file. The same actually for
@@ -378,4 +376,4 @@ http://localhost:8080/rest/script/groovy/delete/repository/production/script/gro
 
     <para>That is all.</para>
   </section>
-</chapter>
+</section>

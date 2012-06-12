@@ -80,7 +80,7 @@
   <para>Find node with mixin type 'mix:title' where 'jcr:title' contains
   "tréma" and "naïve" strings.</para>
 
-  <section>
+  <section id="JCR.IgnoreAccentSymbols.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>Repository filled by nodes with mixin type 'mix:title' and different
@@ -104,7 +104,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.IgnoreAccentSymbols.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -128,7 +128,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.IgnoreAccentSymbols.FetchingResult">
     <title>Fetching result</title>
 
     <para>Let's get nodes:</para>

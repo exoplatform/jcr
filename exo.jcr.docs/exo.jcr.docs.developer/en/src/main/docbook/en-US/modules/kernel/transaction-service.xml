@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="Kernel.TransactionService">
-  <?dbhtml filename="ch-tranasction-service.html"?>
-
+<section id="Kernel.TransactionService">
   <title>TransactionService</title>
 
     <para>TransactionServices provides access to the TransactionManager and
@@ -53,7 +51,7 @@
       </tgroup>
     </table>
 
-  <section>
+  <section id="Kernel.TransactionService.ExistingTransactionServiceImplementations">
     <title>Existing TransactionService implementations</title>
 
     <para>eXo JCR proposes out of the box several implementations, they all
@@ -65,7 +63,7 @@
     transaction timeout by configuration using the value parameter
     <emphasis>timeout</emphasis> that is expressed in seconds. </para>
 
-    <section>
+    <section id="Kernel.TransactionService.ExistingTransactionServiceImplementations.JOTMInStandaloneMode">
       <title>JOTM in standalone mode</title>
 
       <para>To use JOTM as TransactionManager in standalone mode, simply add
@@ -84,7 +82,7 @@
    &lt;/component&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="Kernel.TransactionService.ExistingTransactionServiceImplementations.GenericTransactionServiceBasedOnTransactionManagerLookupOfJBossCache">
       <title>Generic TransactionService based on the TransactionManagerLookup
       of JBoss Cache</title>
 
@@ -115,9 +113,8 @@
    &lt;/component&gt;</programlisting>
     </section>
 
-    <section>
-      <title>Specific GenericTransactionService for JBoss Cache and
-      Arjuna</title>
+    <section id="Kernel.TransactionService.ExistingTransactionServiceImplementations.GenericTransactionServiceForJBossCacheAndArjuna">
+      <title>Specific GenericTransactionService for JBoss Cache and Arjuna</title>
 
       <para>If you intend to use JBoss Cache with Arjuna, you can use a more
       specific GenericTransactionService, it is mostly interesting in case you
@@ -143,7 +140,7 @@
    &lt;/component&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="Kernel.TransactionService.ExistingTransactionServiceImplementations.GenericTransactionServiceBasedOnTransactionManagerLookupOfInfinispan">
       <title>Generic TransactionService based on the TransactionManagerLookup
       of Infinispan</title>
 
@@ -174,7 +171,7 @@
    &lt;/component&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="Kernel.TransactionService.ExistingTransactionServiceImplementations.SpecificGenericTransactionServiceForInfinispanAndArjuna">
       <title>Specific GenericTransactionService for Infinispan and
       Arjuna</title>
 
@@ -202,7 +199,7 @@
    &lt;/component&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="Kernel.TransactionService.ExistingTransactionServiceImplementations.VerySpecificTransactionServiceForJBossAS">
       <title>A very specific TransactionService for JBoss AS</title>
 
       <para>If you intend to use JBoss AS with JBoss Cache and Infinispan, you
@@ -222,7 +219,7 @@
    &lt;/component&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="Kernel.TransactionService.ExistingTransactionServiceImplementations.TransactionsEssentialsInStandaloneMode">
       <title>TransactionsEssentials in standalone mode</title>
 
       <para>To use TransactionsEssentials as TransactionManager in standalone
@@ -241,4 +238,4 @@
    &lt;/component&gt;</programlisting>
     </section>
   </section>
-</chapter>
+</section>

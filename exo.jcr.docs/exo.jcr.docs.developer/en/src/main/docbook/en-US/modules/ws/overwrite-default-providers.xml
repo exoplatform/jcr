@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="WS.OverwriteDefaultProviders">
-  <?dbhtml filename="overwrite-default-providers.html"?>
-
+<section id="WS.OverwriteDefaultProviders">
   <title>Overwrite default providers</title>
-  <para>This chapter will show you how to overwrite the default providers in eXo JAX-RS implementation.</para>
+  <para>This section will show you how to overwrite the default providers in eXo JAX-RS implementation.</para>
 
   <section id="WS.OverwriteDefaultProviders.Motivation">
     <title>Motivation</title>
@@ -211,4 +209,4 @@ public class Application1 extends Application
     to/from Resource1. But it will not impact to other services in any kind.
     </para>
   </section>
-</chapter>
+</section>
