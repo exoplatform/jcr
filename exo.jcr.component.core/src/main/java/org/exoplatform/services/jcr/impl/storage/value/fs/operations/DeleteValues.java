@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
-import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.File;
@@ -103,8 +102,8 @@ public class DeleteValues extends ValueFileOperation
             {
                bckFiles[i] =
                   new File(file.getAbsolutePath() + "." + System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet());
-               DirectoryHelper.renameFile(file, bckFiles[i]);
-            }           
+               move(file, bckFiles[i]);
+            }
          }
       }
    }
@@ -122,7 +121,13 @@ public class DeleteValues extends ValueFileOperation
                File f = bckFiles[i];
                if (f != null)
                {
-                  DirectoryHelper.renameFile(f, files[i]);
+                  // As the files could be registered to the file cleaner 
+                  // to be removed in case of a move that failed
+                  // or in case of a WriteValue.rollback() that could not
+                  // remove the file, we need to unregister the files that
+                  // will be restored thanks to the backup file
+                  cleaner.removeFile(files[i]);
+                  move(f, files[i]);
                }
             }
          }
