@@ -2222,5 +2222,12 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    public void removeListener(WorkspaceStorageCacheListener listener) throws UnsupportedOperationException
    {
       throw new UnsupportedOperationException("The cache listeners are not supported by the LinkedWorkspaceStorageCacheImpl");
-   }   
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void addChildNodesCount(NodeData parent, int count)
+   {
+   }
 }

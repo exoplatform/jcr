@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache.FakeValueSet;
 import org.exoplatform.services.jcr.infinispan.CacheKey;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
@@ -213,7 +214,17 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
-         setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).putIfAbsent(key, value);
+         if (!localMode && value instanceof FakeValueSet)
+         {
+            // Ensure that a FakeKeySet won't be replicated
+            return;
+         }
+         Object oldValue = setCacheLocalMode().putIfAbsent(key, value);
+         if (oldValue instanceof FakeValueSet)
+         {
+            // The old value is a fake value so we will replace it with the new one
+            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, value);
+         }
       }
    }
 
@@ -246,7 +257,13 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          if (existingObject instanceof Set || (existingObject == null && forceModify))
          {
             // set found
-            if (existingObject instanceof Set)
+            if (existingObject instanceof FakeValueSet)
+            {
+               // remove the FakeValueSet instance as it is not up to date anymore
+               setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+               return;
+            }
+            else if (existingObject instanceof Set)
             {
                newSet.addAll((Set<Object>)existingObject);
             }
@@ -359,7 +376,13 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          Object existingObject = cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
 
          // if found value is really set! add to it.
-         if (existingObject instanceof Set)
+         if (existingObject instanceof FakeValueSet)
+         {
+            // remove the FakeValueSet instance as it is not up to date anymore
+            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+            return;
+         }
+         else if (existingObject instanceof Set)
          {
             Set<Object> newSet = new HashSet<Object>((Set<Object>)existingObject);
             newSet.remove(value);
