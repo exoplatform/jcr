@@ -181,6 +181,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
             if (set != null)
             {
+               if (set instanceof FakeValueSet)
+               {
+                  return null;
+               }
                final List<NodeData> childs = new ArrayList<NodeData>();
 
                for (String childId : set)
@@ -763,24 +767,15 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             pages = new HashMap<Integer, Set<String>>();
          }
 
-         if (childs.size() > 0)
+         Set<String> set = new HashSet<String>();
+         for (NodeData child : childs)
          {
-            Set<String> set = new HashSet<String>();
-            for (NodeData child : childs)
-            {
-               putNode(child, ModifyChildOption.NOT_MODIFY);
-               set.add(child.getIdentifier());
-            }
+            putNode(child, ModifyChildOption.NOT_MODIFY);
+            set.add(child.getIdentifier());
+         }
 
-            pages.put(fromOrderNum, set);
-            cache.put(cacheId, pages);
-         }
-         else
-         {
-            // cache fact of empty childs list
-            pages.put(fromOrderNum, new HashSet<String>());
-            cache.put(cacheId, pages);
-         }
+         pages.put(fromOrderNum, set);
+         cache.put(cacheId, pages);
       }
       finally
       {
@@ -806,21 +801,13 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          }
 
          cache.setLocal(true);
-         if (childs.size() > 0)
+         Set<Object> set = new HashSet<Object>();
+         for (NodeData child : childs)
          {
-            Set<Object> set = new HashSet<Object>();
-            for (NodeData child : childs)
-            {
-               putNode(child, ModifyChildOption.NOT_MODIFY);
-               set.add(child.getIdentifier());
-            }
-            cache.putIfAbsent(new CacheNodesId(getOwnerId(), parent.getIdentifier()), set);
+            putNode(child, ModifyChildOption.NOT_MODIFY);
+            set.add(child.getIdentifier());
          }
-         else
-         {
-            // cache fact of empty childs list
-            cache.putIfAbsent(new CacheNodesId(getOwnerId(), parent.getIdentifier()), new HashSet<Object>());
-         }
+         cache.putIfAbsent(new CacheNodesId(getOwnerId(), parent.getIdentifier()), set);
       }
       finally
       {
@@ -986,6 +973,32 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    public List<NodeData> getChildNodes(final NodeData parent)
    {
       return getChildNodes.run(parent);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void addChildNodesCount(NodeData parent, int count)
+   {
+      boolean inTransaction = cache.isTransactionActive();
+      try
+      {
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+
+         cache.setLocal(true);
+         cache.putIfAbsent(new CacheNodesId(getOwnerId(), parent.getIdentifier()), new FakeValueSet(count));
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            dedicatedTxCommit();
+         }
+      }
    }
 
    /**
@@ -2374,5 +2387,25 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    public void stop()
    {
       cache.stop();
-   }   
+   }
+
+   public static class FakeValueSet extends HashSet<String>
+   {
+      /**
+       * Serial Version UID
+       */
+      private static final long serialVersionUID = 6163005084471981227L;
+
+      public FakeValueSet() {}
+
+      public FakeValueSet(int size)
+      {
+         for (int i = 0; i < size; i++)
+         {
+            // We put only fake ids to store the size and to force a reloading in case getChildNodes
+            // is called
+            add(Integer.toString(i));
+         }
+      }
+   }
 }

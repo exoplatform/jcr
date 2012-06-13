@@ -225,15 +225,19 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          {
             // empty Set<Object> marks that there is no child nodes
             // get list of children uuids
-            final Set<Object> set =
-               (Set<Object>)cache.get(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST);
+            final Set<String> set =
+               (Set<String>)cache.get(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST);
             if (set != null)
             {
+               if (set instanceof FakeValueSet)
+               {
+                  return null;
+               }
                final List<NodeData> childs = new ArrayList<NodeData>();
 
-               for (Object child : set)
+               for (String child : set)
                {
-                  NodeData node = (NodeData)cache.get(makeItemFqn((String)child), ITEM_DATA);
+                  NodeData node = (NodeData)cache.get(makeItemFqn(child), ITEM_DATA);
 
                   if (node == null)
                   {
@@ -982,22 +986,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          }
 
          cache.setLocal(true);
-         if (childs.size() > 0)
+         Set<Object> set = new HashSet<Object>();
+         for (NodeData child : childs)
          {
-            Set<Object> set = new HashSet<Object>();
-            for (NodeData child : childs)
-            {
-               putNode(child, ModifyChildOption.NOT_MODIFY);
-               set.add(child.getIdentifier());
-            }
-            cache.putIfAbsent(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, set);
+            putNode(child, ModifyChildOption.NOT_MODIFY);
+            set.add(child.getIdentifier());
          }
-         else
-         {
-            // cache fact of empty childs list
-            cache.putIfAbsent(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST,
-               new HashSet<Object>());
-         }
+         cache.putIfAbsent(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, set);
       }
       finally
       {
@@ -1032,24 +1027,15 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             pages = new HashMap<Integer, Set<String>>();
          }
          
-         if (childs.size() > 0)
+         Set<String> set = new HashSet<String>();
+         for (NodeData child : childs)
          {
-            Set<String> set = new HashSet<String>();
-            for (NodeData child : childs)
-            {
-               putNode(child, ModifyChildOption.NOT_MODIFY);
-               set.add(child.getIdentifier());
-            }
+            putNode(child, ModifyChildOption.NOT_MODIFY);
+            set.add(child.getIdentifier());
+         }
 
-            pages.put(fromOrderNum, set);
-            cache.put(fqn, ITEM_LIST, pages);
-         }
-         else
-         {
-            // cache fact of empty childs list
-            pages.put(fromOrderNum, new HashSet<String>());
-            cache.put(fqn, ITEM_LIST, pages);
-         }
+         pages.put(fromOrderNum, set);
+         cache.put(fqn, ITEM_LIST, pages);
       }
       finally
       {
@@ -1076,23 +1062,17 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
          cache.setLocal(true);
          Fqn<String> fqn = makeChildFqn(childNodesByPatternList, parent.getIdentifier(), pattern.getQPathEntry());
+         Set<Object> set = new HashSet<Object>();
+         for (NodeData child : childs)
+         {
+            putNode(child, ModifyChildOption.NOT_MODIFY);
+            set.add(child.getIdentifier());
+         }
          if (childs.size() > 0)
          {
-            Set<Object> set = new HashSet<Object>();
-            for (NodeData child : childs)
-            {
-               putNode(child, ModifyChildOption.NOT_MODIFY);
-               set.add(child.getIdentifier());
-            }
-
             cache.putIfAbsent(fqn, PATTERN_OBJ, pattern);
-            cache.putIfAbsent(fqn, ITEM_LIST, set);
          }
-         else
-         {
-            // cache fact of empty childs list
-            cache.putIfAbsent(fqn, ITEM_LIST, new HashSet<Object>());
-         }
+         cache.putIfAbsent(fqn, ITEM_LIST, set);
       }
       finally
       {
@@ -1296,6 +1276,33 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    public int getChildNodesCount(NodeData parent)
    {
       return getChildNodesCount.run(parent);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void addChildNodesCount(NodeData parent, int count)
+   {
+      boolean inTransaction = cache.isTransactionActive();
+      try
+      {
+
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+
+         cache.setLocal(true);
+         cache.putIfAbsent(makeChildListFqn(childNodesList, parent.getIdentifier()), ITEM_LIST, new FakeValueSet(count));
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            dedicatedTxCommit();
+         }
+      }
    }
 
    /**
@@ -2192,6 +2199,26 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       protected TransactionManager getTransactionManager()
       {
          return JBossCacheWorkspaceStorageCache.this.getTransactionManager();
+      }
+   }
+
+   public static class FakeValueSet extends HashSet<String>
+   {
+      /**
+       * Serial Version UID
+       */
+      private static final long serialVersionUID = 6163005084471981227L;
+
+      public FakeValueSet() {}
+
+      public FakeValueSet(int size)
+      {
+         for (int i = 0; i < size; i++)
+         {
+            // We put only fake ids to store the size and to force a reloading in case getChildNodes
+            // is called
+            add(Integer.toString(i));
+         }
       }
    }
 }
