@@ -2,8 +2,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Kernel.ServicesWiring">
-  <?dbhtml filename="ch-services-wiring.html"?>
-
   <title id="KernelServicesWiring.Title">Services Wiring</title>
 
     <para>The container package is responsible of building a hierarchy of
@@ -32,7 +30,7 @@
     that XML file, we define the list of services and their init parameters
     that will be loaded in the corresponding container.</para>
   
-  <section>
+  <section id="Kernel.ServicesWiring.PortalInstance">
     <title>Portal Instance</title>
 
     <para>As there can be several portal container instances per JVM. it is
@@ -43,7 +41,7 @@
     Configuration for Beginners</link>.</para>
   </section>
 
-  <section>
+  <section id="Kernel.ServicesWiring.IntroductionXMLSchemaOfConfigurationXML">
     <title>Introduction to the XML schema of the configuration.xml
     file</title>
 
@@ -137,7 +135,7 @@
     you can add a NodeType from your own configuration.xml file.</para>
   </section>
 
-  <section>
+  <section id="Kernel.ServicesWiring.ConfigurationRetrievalAndLogOfRetrieval">
     <title>Configuration retrieval and log of this retrieval</title>
 
     <para>When the RootContainer is starting the configuration retrieval looks

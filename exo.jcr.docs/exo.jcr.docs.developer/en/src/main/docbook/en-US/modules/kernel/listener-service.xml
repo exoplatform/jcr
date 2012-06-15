@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Kernel.ListenerService">
-  <?dbhtml filename="ch-listener-service.html"?>
-
   <title>ListenerService</title>
 
     <para>Basicaly, ListenerService used to store Listeners and broadcast
@@ -37,11 +35,11 @@ class AsynchListenerWithException&lt;S,D&gt; extends Listener&lt;S,D&gt;
 
     <para>By default, <classname>ExecutoreService</classname> configured with
     thread pool size 1, you can change it in configuration:</para>
-    
+
     <programlisting language="xml">   &lt;component&gt;
       &lt;key&gt;org.exoplatform.services.listener.ListenerService&lt;/key&gt;
       &lt;type&gt;org.exoplatform.services.listener.ListenerService&lt;/type&gt;
-      
+
       &lt;init-params&gt;
          &lt;value-param&gt;
             &lt;name&gt;asynchPoolSize&lt;/name&gt;

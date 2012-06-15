@@ -3,14 +3,11 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="ISPN.integration">
-  <?dbhtml filename="ispn-integration.html"?>
-
   <title>Infinispan integration</title>
-
   <para>eXo JCR can rely on distributed cache such as Infinispan. This article
   describes the required configuration.</para>
 
-  <section>
+  <section id="ISPN.integration.ComponentsConfigurationRequirement">
     <title>Components configuration requirements</title>
 
     <programlisting>&lt;component&gt;
@@ -50,7 +47,7 @@
 </programlisting>
   </section>
 
-  <section>
+  <section id="ISPN.integration.WorkspacesConfigurationRequirements">
     <title>Workspaces configuration requirements</title>
 
     <para>Each mentioned below components uses instances of Infinispan Cache
@@ -183,13 +180,13 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="ISPN.integration.ShippedInfinispanCacheConfigurationTemplates">
     <title>Shipped Infinispan Cache configuration templates</title>
 
     <para>eXo JCR implementation is shipped with ready-to-use Infinispan Cache
     configuration templates for JCR's components. </para>
 
-    <section>
+    <section id="ISPN.integration.ShippedInfinispanCacheConfigurationTemplates.DataContainerTemplate">
       <title>Data container template</title>
 
       <para>Data container template is "infinispan-data.xml":</para>
@@ -247,7 +244,7 @@
       </table>
     </section>
 
-    <section>
+    <section id="ISPN.integration.ShippedInfinispanCacheConfigurationTemplates.LockManagerTemplate">
       <title>Lock manager template</title>
 
       <para>Its template name is "infinispan-lock.xml"</para>
@@ -368,7 +365,7 @@
       </table>
     </section>
 
-    <section>
+    <section id="ISPN.integration.ShippedInfinispanCacheConfigurationTemplates.QueryHandlerTemplate">
       <title>Query handler (indexer) template</title>
 
       <para>Have a look at "infinispan-indexer.xml"</para>

@@ -2,8 +2,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Core.OrganizationService">
-  <?dbhtml filename="ch-organization-service.html"?>
-
   <title>Organization Service</title>
 
     <para>OrganizationService is the service that allows to access the
@@ -42,10 +40,10 @@
       </listitem>
     </itemizedlist>
 
-  <section>
+  <section id="Core.OrganizationService.OrganizationalModel">
     <title>Organizational Model</title>
 
-    <section>
+    <section id="Core.OrganizationService.OrganizationalModel.User">
       <title>User</title>
 
       <itemizedlist>
@@ -59,7 +57,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="Core.OrganizationService.OrganizationalModel.Group">
       <title>Group</title>
 
       <para>Gather a set of users</para>
@@ -83,7 +81,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="Core.OrganizationService.OrganizationalModel.Membership">
       <title>Membership</title>
 
       <itemizedlist>
@@ -102,14 +100,14 @@
     </section>
   </section>
 
-  <section>
+  <section id="Core.OrganizationService.CustomOrganizationServiceImplementationInstructions">
     <title>Custom Organization Service implementation instructions</title>
 
     <para>To create a custom organization service you need to implement a
     several interfaces and extend some classes which will be listed
     below.</para>
 
-    <section>
+    <section id="Core.OrganizationService.CustomOrganizationServiceImplementationInstructions.BasicEntitiesImplementation">
       <title>Basic entities implementation</title>
 
       <para>First of all you need to create classes implementing the following
@@ -198,7 +196,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="Core.OrganizationService.CustomOrganizationServiceImplementationInstructions.UnitHandlersImplementation">
       <title>Unit handlers implementation</title>
 
       <para>After you created basic organization service unit instances you
@@ -410,7 +408,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="Core.OrganizationService.CustomOrganizationServiceImplementationInstructions.ExtendingBaseOrganizationServiceClass">
       <title>Extending BaseOrganizationService class</title>
 
       <para>Finally you need to create your main custom organization service
@@ -428,7 +426,7 @@
       url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/JCROrganizationServiceImpl.java">JCROrganizationServiceImpl</ulink>.</para>
     </section>
 
-    <section>
+    <section id="Core.OrganizationService.CustomOrganizationServiceImplementationInstructions.VerificationOfCompliance">
       <title>Verification of compliance</title>
 
       <para>Make sure that your custom organization service implementation is
@@ -463,13 +461,13 @@
           </itemizedlist> Check <ulink
         url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/pom.xml">pom.xml</ulink>
         file to find out one of the ways to configure maven project object
-        model. More detailed description you can find in the dedicated chapter
+        model. More detailed description you can find in the dedicated section
         called "Organization Service TCK tests configuration"</para>
       </note>
     </section>
   </section>
 
-  <section>
+  <section id="Core.OrganizationService.RelatedArticlesAndHowTo">
     <title>Related articles and how-tos</title>
 
     <itemizedlist>

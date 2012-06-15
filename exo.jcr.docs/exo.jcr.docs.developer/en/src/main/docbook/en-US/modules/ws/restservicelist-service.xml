@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="WS.RestServicesList">
-  <?dbhtml filename="ch-ws-restserviceslist-service.html"?>
-
   <title>RestServicesList Service</title>
 
     <para>RestServicesList service provides information about
@@ -25,7 +23,7 @@
 
     <para>The list can be provided in two formats: HTML and JSON.</para>
 
-  <section>
+  <section id="WS.RestServicesList.Usage">
     <title>Usage</title>
 
     <note>
@@ -35,7 +33,7 @@
       works as per-request resource.</para>
     </note>
 
-    <section>
+    <section id="WS.RestServicesList.Usage.HTMLFormat">
       <title>HTML format</title>
 
       <para>To get the list of services in HTML format use listHTML()
@@ -55,7 +53,8 @@ public byte[] listHTML()
        HTML code:
      </para>
 
-      <programlisting language="xml">
+      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
+&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
    &lt;head&gt;
       &lt;title&gt;eXo JAXRS Implementation&lt;/title&gt;
    &lt;/head&gt;
@@ -158,7 +157,7 @@ public byte[] listHTML()
       </table>
     </section>
 
-    <section>
+    <section id="WS.RestServicesList.Usage.JSONFormat">
       <title>JSON format</title>
 
       <para>To get the list of services in HTML format use listJSON()

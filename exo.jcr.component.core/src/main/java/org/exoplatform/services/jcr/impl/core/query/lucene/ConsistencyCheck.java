@@ -147,7 +147,7 @@ class ConsistencyCheck
             }
             else
             {
-               throw new IOException(e.getMessage());
+               throw new IOException(e.getMessage(), e);
             }
          }
       }
@@ -401,7 +401,7 @@ class ConsistencyCheck
          }
          catch (RepositoryException e)
          {
-            throw new IOException(e.toString());
+            throw new IOException(e.toString(), e);
          }
       }
    }

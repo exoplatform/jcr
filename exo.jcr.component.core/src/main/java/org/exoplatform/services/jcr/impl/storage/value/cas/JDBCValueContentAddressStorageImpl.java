@@ -280,7 +280,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       catch (NamingException e)
       {
          throw new RepositoryConfigurationException("JDBC data source is not available in JNDI with name '" + sn
-            + "'. Error: " + e);
+            + "'. Error: " + e, e);
       }
    }
 

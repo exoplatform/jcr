@@ -2,8 +2,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Core.SecurityService">
-  <?dbhtml filename="ch-security-service.html"?>
-
   <title>Security Service</title>
 
     <para>The purpose is to make a simple, unified way for the authentication
@@ -15,7 +13,7 @@
     url="http://java.sun.com/j2se/1.5.0/docs/guide/security/jaas/tutorials/GeneralAcnAndAzn.html">Java
     Tutorial</ulink></para>
 
-  <section>
+  <section id="Core.SecurityService.Framework">
     <title>Framework</title>
 
     <para>The central point of this framework is the <emphasis
@@ -31,7 +29,7 @@
     procedure). Using JAAS it should happen in LoginModule's login() and
     logout() methods respectively.</para>
 
-    <section>
+    <section id="Core.SecurityService.Framework.ConversationStateAndConversationRegistry">
       <title>ConversationState and ConversationRegistry</title>
 
       <para>The ConversationState can be stored</para>
@@ -83,7 +81,7 @@ conversationRegistry.getState("key");</programlisting>
 &lt;/component&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="Core.SecurityService.Framework.Authenticator">
       <title>Authenticator</title>
 
       <para>An Authenticator is responsible for Identity creation, it consists of
@@ -145,10 +143,10 @@ conversationRegistry.getState("key");</programlisting>
     </section>
   </section>
 
-  <section>
+  <section id="Core.SecurityService.Usage">
     <title>Usage</title>
 
-    <section>
+    <section id="Core.SecurityService.Usage.JAASLoginModule">
       <title>JAAS login module</title>
 
       <para>The framework described is not coupled with any authentication
@@ -240,7 +238,7 @@ if (conversationState != null) {
       <para></para>
     </section>
 
-    <section>
+    <section id="Core.SecurityService.Usage.PredefindedJAASLoginModules">
       <title>Predefinded JAAS login modules</title>
 
       <para>There are several JAAS Login modules included in eXo Platform
@@ -272,7 +270,7 @@ if (conversationState != null) {
 };</programlisting>
     </section>
 
-    <section>
+    <section id="Core.SecurityService.Usage.J2EEContainerAuthentication">
       <title>J2EE container authentication</title>
 
       <para>As you know, when a user in JAAS is authenticated, a Subject is

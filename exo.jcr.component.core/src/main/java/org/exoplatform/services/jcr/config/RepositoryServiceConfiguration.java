@@ -203,7 +203,7 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
          mctx.setIndent(2);
          mctx.marshalDocument(this, "UTF-8", null, sw);
       }
-      catch (Exception e)
+      catch (JiBXException e)
       {
          LOG.warn("Cannot convert the configuration to XML format", e);
          return null;

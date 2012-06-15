@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="WS.CrossDomainAJAX">
-  <?dbhtml filename="ch-framework-for-cross-domain-ajax.html"?>
-
   <title>Framework for cross-domain AJAX</title>
   <para>eXo Webservice provides a framework to cross-domain AJAX. This section shows you how to use this framework.</para>
 

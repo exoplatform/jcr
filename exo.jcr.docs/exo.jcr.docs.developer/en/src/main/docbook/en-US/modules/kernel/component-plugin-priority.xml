@@ -2,8 +2,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Kernel.ComponentPluginPriority">
-  <?dbhtml filename="ch-component-plugin-priority.html"?>
-
   <title>Component Plugin Priority</title>
 
   <para>Since kernel version 2.0.6 it is possible to setup order of loading

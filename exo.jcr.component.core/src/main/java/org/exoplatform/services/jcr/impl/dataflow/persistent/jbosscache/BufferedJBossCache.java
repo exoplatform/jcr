@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache.FakeValueSet;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
@@ -971,10 +972,16 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       public void apply()
       {
-         cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
-         if (cache.get(fqn, key) != null)
+         if (!localMode && value instanceof FakeValueSet)
          {
-            // skip
+            // Ensure that a FakeValueSet won't be replicated
+            return;
+         }
+         cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
+         Object oldValue;
+         if ((oldValue = cache.get(fqn, key)) != null && !(oldValue instanceof FakeValueSet))
+         {
+            // a value already exists and it is not a FakeValueSet
             return;
          }
          if (useExpiration)
@@ -1056,7 +1063,14 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          if (existingObject instanceof Set || (existingObject == null && forceModify))
          {
             // set found
-            if (existingObject instanceof Set)
+            if (existingObject instanceof FakeValueSet)
+            {
+               // remove the FakeValueSet instance as it is not up to date anymore
+               setCacheLocalMode();
+               cache.put(fqn, key, null);
+               return;
+            }
+            else if (existingObject instanceof Set)
             {
                newSet.addAll((Set<Object>)existingObject);
             }
@@ -1193,7 +1207,14 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
          Object existingObject = cache.get(getFqn(), key);
          // if found value is really set! add to it.
-         if (existingObject instanceof Set)
+         if (existingObject instanceof FakeValueSet)
+         {
+            // remove the FakeValueSet instance as it is not up to date anymore
+            setCacheLocalMode();
+            cache.put(fqn, key, null);
+            return;
+         }
+         else if (existingObject instanceof Set)
          {
             Set<Object> newSet = new HashSet<Object>((Set<Object>)existingObject);
             newSet.remove(value);

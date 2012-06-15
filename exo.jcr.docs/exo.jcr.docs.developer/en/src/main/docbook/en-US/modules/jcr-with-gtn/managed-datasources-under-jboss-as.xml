@@ -17,7 +17,7 @@
       <para>only no-tx-datasource is supported in JCR 1.12</para>
     </important>
 
-    <section>
+    <section id="JCRWithGateIn.HowToUseDataSourceUnderJBoss.DeclaringDatasourcesInAS">
       <title>Declaring the datasources in the AS</title>
 
       <para>Under JBoss, just put a file XXX-ds.xml in the deploy server
@@ -69,7 +69,7 @@
       schema</ulink></para>
     </section>
 
-    <section>
+    <section id="JCRWithGateIn.HowToUseDataSourceUnderJBoss.NotLeteXoBindDatasourcesExplictly">
       <title>Do not let eXo bind datasources explicitly</title>
 
       <para>Edit server/default/conf/gatein/configuration.properties and

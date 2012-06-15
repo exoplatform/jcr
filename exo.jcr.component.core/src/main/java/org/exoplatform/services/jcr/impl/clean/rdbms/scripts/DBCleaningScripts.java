@@ -210,7 +210,7 @@ public abstract class DBCleaningScripts
    /**
     * Returns SQL scripts for renaming new JCR tables to new ones.
     */
-   protected Collection<String> getOldTablesRenamingScripts()
+   protected Collection<String> getOldTablesRenamingScripts() throws DBCleanException
    {
       return new ArrayList<String>();
    }

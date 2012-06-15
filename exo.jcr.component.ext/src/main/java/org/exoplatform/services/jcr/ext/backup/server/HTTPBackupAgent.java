@@ -404,7 +404,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -498,7 +498,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -560,7 +560,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.INTERNAL_SERVER_ERROR;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -673,7 +673,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -807,7 +807,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -976,7 +976,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -1127,7 +1127,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -1225,7 +1225,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -1337,7 +1337,7 @@ public class HTTPBackupAgent implements ResourceContainer
             status = Response.Status.NOT_FOUND;
             failMessage = e.getMessage();
          }
-         catch (Throwable e)
+         catch (Throwable e) //NOSONAR
          {
             exception = e;
             status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -1412,7 +1412,7 @@ public class HTTPBackupAgent implements ResourceContainer
             status = Response.Status.NOT_FOUND;
             failMessage = e.getMessage();
          }
-         catch (Throwable e)
+         catch (Throwable e) //NOSONAR
          {
             exception = e;
             status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -1506,7 +1506,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -1614,7 +1614,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -1752,7 +1752,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -1860,7 +1860,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -1920,7 +1920,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -1978,7 +1978,7 @@ public class HTTPBackupAgent implements ResourceContainer
          status = Response.Status.NOT_FOUND;
          failMessage = e.getMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          exception = e;
          status = Response.Status.INTERNAL_SERVER_ERROR;
@@ -2011,7 +2011,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
          return Response.ok(infoBeen).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about backup service", e);
 
@@ -2047,7 +2047,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
          return Response.ok(shortInfoList).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about current or completed backups", e);
 
@@ -2083,7 +2083,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
          return Response.ok(shortInfoList).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about current or completed reposioty backups", e);
 
@@ -2131,7 +2131,7 @@ public class HTTPBackupAgent implements ResourceContainer
          return Response.status(Response.Status.NOT_FOUND).entity("No current or completed backup with 'id' " + id)
             .type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about current or completed backup with 'id' " + id, e);
 
@@ -2180,7 +2180,7 @@ public class HTTPBackupAgent implements ResourceContainer
             "No current or completed repository backup with 'id' " + id).type(MediaType.TEXT_PLAIN).cacheControl(
             noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about current or completed repository backup with 'id' " + id, e);
 
@@ -2212,7 +2212,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
          return Response.ok(shortInfoList).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about current backups", e);
 
@@ -2244,7 +2244,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
          return Response.ok(shortInfoList).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about current repositorty backups", e);
 
@@ -2277,7 +2277,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
          return Response.ok(list).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about completed backups", e);
 
@@ -2310,7 +2310,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
          return Response.ok(list).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about completed backups", e);
 
@@ -2364,7 +2364,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
          return Response.ok(shortInfoList).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about current or completed backups", e);
 
@@ -2414,7 +2414,7 @@ public class HTTPBackupAgent implements ResourceContainer
 
          return Response.ok(shortInfoList).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about current or completed repository backups", e);
 
@@ -2464,7 +2464,7 @@ public class HTTPBackupAgent implements ResourceContainer
          }
 
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error(
             "Can not get information about current restore for workspace /" + repository + "/" + workspace + "'", e);
@@ -2513,7 +2513,7 @@ public class HTTPBackupAgent implements ResourceContainer
          }
 
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about current restore for repository /" + repository + "'", e);
 
@@ -2569,7 +2569,7 @@ public class HTTPBackupAgent implements ResourceContainer
          return Response.ok(new ShortInfoList(list)).cacheControl(noCache).build();
 
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about current restores.", e);
 
@@ -2623,7 +2623,7 @@ public class HTTPBackupAgent implements ResourceContainer
          return Response.ok(new ShortInfoList(list)).cacheControl(noCache).build();
 
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.error("Can not get information about current repository restores.", e);
 
@@ -2656,7 +2656,7 @@ public class HTTPBackupAgent implements ResourceContainer
          return Response.status(Response.Status.NOT_FOUND).entity("Can not get default workspace configuration.").type(
             MediaType.TEXT_PLAIN).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get default workspace configuration.").type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();
@@ -2678,7 +2678,7 @@ public class HTTPBackupAgent implements ResourceContainer
       {
          return Response.ok(repositoryService.getDefaultRepository().getConfiguration()).cacheControl(noCache).build();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          return Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(
             "Can not get default workspace configuration.").type(MediaType.TEXT_PLAIN).cacheControl(noCache).build();

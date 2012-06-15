@@ -94,8 +94,11 @@ public class Handler extends URLStreamHandler implements Startable
    {
       ExoContainer container = ExoContainerContext.getCurrentContainer();
       repositoryService = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-      nodeRepresentationService = (NodeRepresentationService)container.getComponentInstanceOfType(NodeRepresentationService.class);
-      threadLocalSessionProviderService = (ThreadLocalSessionProviderService)container.getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
+      nodeRepresentationService =
+         (NodeRepresentationService)container.getComponentInstanceOfType(NodeRepresentationService.class);
+      threadLocalSessionProviderService =
+         (ThreadLocalSessionProviderService)container
+            .getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
    }
 
    // URLStreamHandler
@@ -148,17 +151,17 @@ public class Handler extends URLStreamHandler implements Startable
       catch (RepositoryException e)
       {
          //e.printStackTrace();
-         throw new IOException("Open connection to URL '" + url.toString() + "' failed!");
+         throw new IOException("Open connection to URL '" + url.toString() + "' failed!", e);
       }
       catch (URISyntaxException e)
       {
          //e.printStackTrace();
-         throw new IOException("Open connection to URL '" + url.toString() + "' failed!");
+         throw new IOException("Open connection to URL '" + url.toString() + "' failed!", e);
       }
       catch (RepositoryConfigurationException e)
       {
          //e.printStackTrace();
-         throw new IOException("Open connection to URL '" + url.toString() + "' failed!");
+         throw new IOException("Open connection to URL '" + url.toString() + "' failed!", e);
       }
    }
 

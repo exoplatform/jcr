@@ -191,7 +191,7 @@ public abstract class AbstractXMLViewNodeRepresentation implements NodeRepresent
       catch (Exception e)
       {
          LOG.error(e.getLocalizedMessage(), e);
-         throw new IOException("can't get input stream");
+         throw new IOException("can't get input stream", e);
       }
 
    }

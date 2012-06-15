@@ -144,7 +144,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
             restorer.commit();
          }
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          throwable = e;
 

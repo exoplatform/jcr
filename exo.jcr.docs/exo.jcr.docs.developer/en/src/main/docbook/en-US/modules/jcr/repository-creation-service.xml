@@ -2,15 +2,12 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.RepositoryCreationService">
-  <?dbhtml filename="ch-repository-creation-service.html"?>
-
   <title>RepositoryCreationService</title>
-
     <para><emphasis>RepositoryCreationService</emphasis> is the service which is used to create repositories
     in runtime. The service can be used in a standalone or cluster
     environment.</para>
 
-  <section>
+  <section id="JCR.RepositoryCreationService.Dependencies">
     <title>Dependencies</title>
 
     <para>RepositoryConfigurationService depends to next components:</para>
@@ -39,7 +36,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.RepositoryCreationService.HowItWorks">
     <title>How it works</title>
 
     <itemizedlist>
@@ -71,7 +68,7 @@
     RepositoryEntry rEntry, String token)).</para>
   </section>
 
-  <section>
+  <section id="JCR.RepositoryCreationService.Configuration">
     <title>Configuration</title>
 
     <para>RepositoryCreationService configuration</para>
@@ -149,7 +146,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.RepositoryCreationService.RepositoryCreationServiceInterface">
     <title>RepositoryCreationService Interface</title>
 
     <programlisting language="java">public interface RepositoryCreationService
@@ -235,7 +232,7 @@
 }</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.RepositoryCreationService.ConclusionsAndRestrictions">
     <title>Conclusions and restrictions</title>
 
     <itemizedlist>

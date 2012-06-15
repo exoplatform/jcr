@@ -3,8 +3,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.WebDAV">
-  <?dbhtml filename="ch-webdav.html"?>
-
   <title>WebDAV</title>
 
   <para>The WebDAV protocol enables you to use the third party tools to
@@ -65,7 +63,7 @@
     </listitem>
   </itemizedlist>
 
-  <section>
+  <section id="JCR.WebDAV.Configuration">
     <title>Configuration</title>
 
     <programlisting language="xml">&lt;component&gt;
@@ -191,7 +189,7 @@
 &lt;/component&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.WebDAV.Screenshots">
     <title>Screenshots</title>
 
     <para>At present, eXo JCR WebDav server is tested by using MS Internet
@@ -200,7 +198,7 @@
     url="http://www.xythos.com/home/xythos/products/xythos_drive.html">Xythos
     Drive</ulink>, Microsoft Office 2003 (as client), and Ubuntu Linux.</para>
 
-    <section>
+    <section id="JCR.WebDAV.Screenshots.MSInternetExplorer">
       <title>MS Internet Explorer</title>
 
       <para>(File -&gt; Open as Web Folder)</para>
@@ -212,7 +210,7 @@
       </mediaobject>
     </section>
 
-    <section>
+    <section id="JCR.WebDAV.Screenshots.DavExplorer">
       <title>Dav Explorer</title>
 
       <mediaobject>
@@ -222,7 +220,7 @@
       </mediaobject>
     </section>
 
-    <section>
+    <section id="JCR.WebDAV.Screenshots.XythosDrive">
       <title>Xythos Drive</title>
 
       <mediaobject>
@@ -232,7 +230,7 @@
       </mediaobject>
     </section>
 
-    <section>
+    <section id="JCR.WebDAV.Screenshots.MicrosoftOffice2003">
       <title>Microsoft Office 2003</title>
 
       <para>(as client) (File-&gt;Open with typing http://... href in the file
@@ -245,7 +243,7 @@
       </mediaobject>
     </section>
 
-    <section>
+    <section id="JCR.WebDAV.Screenshots.UbuntuLinux">
       <title>Ubuntu Linux</title>
 
       <mediaobject>
@@ -256,7 +254,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="JCR.WebDAV.ComparisonTableOfWebDavAndJCRCommands">
     <title>Comparison table of WebDav and JCR commands</title>
 
     <table>
@@ -395,13 +393,13 @@
     </table>
   </section>
 
-  <section>
+  <section id="JCR.WebDAV.Restrictions">
     <title>Restrictions</title>
 
     <para>There are some restrictions for WebDAV in different Operating
     systems.</para>
 
-    <section>
+    <section id="JCR.WebDAV.Restrictions.Windows7">
       <title>Windows 7</title>
 
       <para>When you try to set up a web folder by “adding a network location”
@@ -430,7 +428,7 @@
       </orderedlist>
     </section>
 
-    <section>
+    <section id="JCR.WebDAV.Restrictions.MicrosoftOffice2010">
       <title>Microsoft Office 2010</title>
 
       <para>If you have Microsoft Office 2010 applications or Microsoft Office

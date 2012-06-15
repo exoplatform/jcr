@@ -900,7 +900,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                + AbstractQueryImpl.class.getName());
          }
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          throw new RepositoryException("Unable to create query: " + t.toString(), t);
       }

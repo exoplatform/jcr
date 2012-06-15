@@ -20,7 +20,6 @@ package org.exoplatform.applications.jcr.browser;
 
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 

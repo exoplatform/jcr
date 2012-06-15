@@ -2,7 +2,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.CompatibilityLevels">
-  <?dbhtml filename="ch-jcr-compatibility-levels.html"?>
 
   <title>Compatibility Levels</title>
 
@@ -15,7 +14,7 @@
     <para>eXo JCR supports JSR-170 level 1 and level 2 and all optional
     features. The recent JSR-283 is not yet supported.</para>
 
-  <section>
+  <section id="JCR.CompatibilityLevels.Level1">
     <title>Level 1</title>
 
     <para>Level 1 includes read-only functionality for very simple
@@ -95,7 +94,7 @@
     </mediaobject>
   </section>
 
-  <section>
+  <section id="JCR.CompatibilityLevels.Level2">
     <title>Level 2</title>
 
     <para>JCR level 2 includes reading/ writing content functionality,
@@ -147,7 +146,7 @@
     </mediaobject>
   </section>
 
-  <section>
+  <section id="JCR.CompatibilityLevels.OptionalFeatures">
     <title>Optional features</title>
 
     <para>On the top of Level 1 or Level 2, a number of optional features are

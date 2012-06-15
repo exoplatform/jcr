@@ -2,8 +2,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.AccessControlExtension">
-  <?dbhtml filename="ch-acl-ext.html"?>
-
   <title>Access Control Extension</title>
 
   <para>An extended Access Control system consists of:</para>
@@ -32,7 +30,7 @@
       </listitem>
     </itemizedlist>
     
-  <section>
+  <section id="JCR.AccessControlExtension.Prerequisites">
     <title>Prerequisites</title>
 
     <para>This is an extension of eXo JCR Access Control features. Please read
@@ -40,7 +38,7 @@
     linkend="JCR.Extensions">JCR Extensions</link> topics first.</para>
   </section>
 
-  <section>
+  <section id="JCR.AccessControlExtension.AccessContextAction">
     <title>Access Context Action</title>
 
     <para>SetAccessControlContextAction implements Action and may be called by
@@ -61,7 +59,7 @@
 &lt;/value&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.AccessControlExtension.InvocationContext">
     <title>The Invocation Context</title>
 
     <para>The <emphasis role="bold">InvocationContext</emphasis> contains the
@@ -78,13 +76,13 @@
 }</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.AccessControlExtension.CustomExtendedAccessManager">
     <title>Custom Extended Access Manager</title>
 
     <para>By default, all Workspaces share an AccessManager instance, created
     by RepositoryService at the startup (DefaultAccessManagerImpl) which
     supports default access control policy as described in the <emphasis
-    role="bold">Access Control</emphasis> chapter. Custom Access Control
+    role="bold">Access Control</emphasis> section. Custom Access Control
     policy can be applied to certain Workspace configuring <emphasis
     role="bold">access-manager</emphasis> element inside <emphasis
     role="bold">workspace</emphasis> as follows:</para>
@@ -118,7 +116,7 @@
     </mediaobject>
   </section>
 
-  <section>
+  <section id="JCR.AccessControlExtension.ExampleCustomAccessManager">
     <title>Example of a custom Access Manager</title>
 
     <para>The sample CustomAccessManagerImpl below extends the default access

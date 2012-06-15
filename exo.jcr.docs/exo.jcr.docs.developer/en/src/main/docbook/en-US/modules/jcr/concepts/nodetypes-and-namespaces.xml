@@ -2,10 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.NodeTypesandNamespaces">
-  <?dbhtml filename="ch-nodetypes-and-namespaces.html"?>
-
   <title>Node Types and Namespaces</title>
-
     <para>Support of node types and namespaces is required by the JSR-170
     specification. Beyond the methods required by the specification, eXo JCR
     has its own API extension for the <link
@@ -13,7 +10,7 @@
     as the ability to declaratively define node types in the Repository at the
     start-up time.</para>
 
-  <section>
+  <section id="JCR.NodeTypesandNamespaces.NodeTypesDefinition">
     <title>Node Types definition</title>
 
     <para>Node type registration extension is declared in
@@ -113,7 +110,7 @@
 ]&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.NodeTypesandNamespaces.NamespacesDefinition">
     <title>Namespaces definition</title>
 
     <para>Default namespaces are registered by repository at the start-up

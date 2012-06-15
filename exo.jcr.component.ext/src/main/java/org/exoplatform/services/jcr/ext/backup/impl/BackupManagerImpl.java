@@ -382,7 +382,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             {
                LOG.error("The interapted this thread.", e);
             }
-            catch (Throwable e)
+            catch (Throwable e) //NOSONAR
             {
                LOG.error("The unknown error", e);
             }
@@ -439,7 +439,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             {
                LOG.error("The interapted this thread.", e);
             }
-            catch (Throwable e)
+            catch (Throwable e) //NOSONAR
             {
                LOG.error("The unknown error", e);
             }
@@ -1730,7 +1730,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          {
             jobRestore.restore();
          }
-         catch (Throwable e)
+         catch (Throwable e) //NOSONAR
          {
             throw new BackupOperationException(e);
          }

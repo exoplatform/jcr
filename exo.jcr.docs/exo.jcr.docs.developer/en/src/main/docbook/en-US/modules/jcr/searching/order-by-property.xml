@@ -7,7 +7,7 @@
   <para>Select all nodes with the mixin type ''mix:title' and order them by
   the 'prop_pagecount' property.</para>
 
-  <section>
+  <section id="JCR.OrderByProperty.RepositoryStructure">
     <title>Repository Structure</title>
 
     <para>The repository contains several mix:title nodes, where
@@ -37,7 +37,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.OrderByProperty.QueryExecution">
     <title>Query Execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -61,7 +61,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.OrderByProperty.FetchingResult">
     <title>Fetching the Result</title>
 
     <para>Let's get nodes:</para>

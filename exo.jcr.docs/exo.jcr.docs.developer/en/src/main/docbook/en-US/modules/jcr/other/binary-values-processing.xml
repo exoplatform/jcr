@@ -2,8 +2,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.BinaryValuesProcessing">
-  <?dbhtml filename="ch-binary-values-processing.html"?>
-
   <title>Binary Values Processing</title>
   <para>Processing binary large object (BLOB) is very important in eXo JCR, so this section focuses on explaining how to
   do it.

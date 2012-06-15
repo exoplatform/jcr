@@ -112,7 +112,8 @@ public class ValueFactoryImpl implements ValueFactory
                }
                catch (UnsupportedEncodingException e)
                {
-                  throw new RuntimeException("FATAL ERROR Charset " + Constants.DEFAULT_ENCODING + " is not supported!");
+                  throw new RuntimeException(
+                     "FATAL ERROR Charset " + Constants.DEFAULT_ENCODING + " is not supported!", e);
                }
             case PropertyType.BOOLEAN :
                return createValue(Boolean.parseBoolean(value));

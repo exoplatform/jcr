@@ -2,8 +2,6 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.APIExtensions">
-  <?dbhtml filename="ch-api-extensions.html"?>
-
   <title>JCR API Extensions</title>
 
       <para>eXo JCR implementation offers new extended feature beyond JCR
@@ -60,10 +58,11 @@
       "-Dorg.exoplatform.jcr.forceUserGetNodesLazily=true" to the java system
       properties.</para>
 
-      <para>In order to enable add the "-Dorg.exoplatform.jcr.forceUserGetNodesLazily=true" to the java system properties.</para>
-      <para>The "lazy" iterator reads the child nodes "page" after "page" into the memory.
-	  In this context, a "page" is a set of nodes that is read at once. By default, the size of the page is
-	  100 nodes and can be configured though workspace container configuration using "lazy-node-iterator-page-size" parameter. For example:</para>
+      <para>The "lazy" iterator reads the child nodes "page" after "page" into
+      the memory. In this context, a "page" is a set of nodes that is read at
+      once. The size of the page is by default 100 nodes and can be configured
+      though workspace container configuration using
+      "lazy-node-iterator-page-size" parameter. For example:</para>
 
       <programlisting language="xml">&lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
    &lt;properties&gt;

@@ -169,7 +169,6 @@ public class OracleCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TRIGGER BI_" + valueTableName + "");
       scripts.add("DROP SEQUENCE " + valueTableName + "_SEQ");
 
       scripts.addAll(super.getTablesDroppingScripts());
@@ -184,7 +183,6 @@ public class OracleCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TRIGGER BI_" + valueTableName + "_OLD");
       scripts.add("DROP SEQUENCE " + valueTableName + "_SEQ_OLD");
 
       scripts.addAll(super.getOldTablesDroppingScripts());
@@ -212,7 +210,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
 
       // TRIGGER and SEQ
       scripts.add("RENAME " + valueTableName + "_SEQ TO " + valueTableName + "_SEQ_OLD");
-      scripts.add("ALTER TRIGGER BI_" + valueTableName + " RENAME TO BI_" + valueTableName + "_OLD");
+      scripts.add("DROP TRIGGER BI_" + valueTableName);
 
       // JCR_ITEM
       scripts.add("ALTER TABLE " + itemTableName + " RENAME TO " + itemTableName + "_OLD");
@@ -248,7 +246,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
    /**
     * {@inheritDoc}
     */
-   protected Collection<String> getOldTablesRenamingScripts()
+   protected Collection<String> getOldTablesRenamingScripts() throws DBCleanException
    {
       Collection<String> scripts = new ArrayList<String>();
 
@@ -264,7 +262,18 @@ public class OracleCleaningScipts extends DBCleaningScripts
 
       // TRIGGER and SEQ
       scripts.add("RENAME " + valueTableName + "_SEQ_OLD TO " + valueTableName + "_SEQ");
-      scripts.add("ALTER TRIGGER BI_" + valueTableName + "_OLD RENAME TO BI_" + valueTableName + "");
+      try
+      {
+         scripts.add(DBInitializerHelper.getObjectScript("CREATE OR REPLACE trigger", multiDb, dialect, wsEntry));
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new DBCleanException(e);
+      }
+      catch (IOException e)
+      {
+         throw new DBCleanException(e);
+      }
 
       // ITEM
       scripts.add("ALTER TABLE " + itemTableName + "_OLD RENAME TO " + itemTableName + "");

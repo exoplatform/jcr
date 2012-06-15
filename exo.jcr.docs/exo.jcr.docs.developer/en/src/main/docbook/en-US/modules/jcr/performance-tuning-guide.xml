@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.PerformanceTuningGuide">
-  <?dbhtml filename="ch-jcr-performance-tuning.html"?>
-
   <title>JCR Performance Tuning Guide</title>
 
     <para>This section will show you possible ways of improving JCR</para>
@@ -11,10 +9,10 @@
     <para>It is intended to GateIn Administrators and those who wants to use
     JCR features.</para>
 
-  <section>
+  <section id="JCR.PerformanceTuningGuide.JCRPerformanceAndScalability">
     <title>JCR Performance and Scalability</title>
 
-    <section>
+    <section id="JCR.PerformanceTuningGuide.JCRPerformanceAndScalability.ClusterConfiguration">
       <title>Cluster configuration</title>
 
       <para><citetitle>EC2 network</citetitle>: 1Gbit</para>
@@ -49,7 +47,7 @@
       -Djava.net.preferIPv4Stack=true</code></para>
     </section>
 
-    <section>
+    <section id="JCR.PerformanceTuningGuide.JCRPerformanceAndScalability.JCRClusteredPerformance">
       <title>JCR Clustered Performance</title>
 
       <para>Benchmark test using webdav (Complex read/write load test
@@ -212,10 +210,10 @@
     </section>
   </section>
 
-  <section>
+  <section id="JCR.PerformanceTuningGuide.PerformanceTuningGuide">
     <title>Performance Tuning Guide</title>
 
-    <section>
+    <section id="JCR.PerformanceTuningGuide.PerformanceTuningGuide.JBossASTuning">
       <title>JBoss AS Tuning</title>
 
       <para>You can use <parameter>maxThreads</parameter> parameter to
@@ -249,7 +247,7 @@
       </tip>
     </section>
 
-    <section>
+    <section id="JCR.PerformanceTuningGuide.PerformanceTuningGuide.JCRCacheTuning">
       <title>JCR Cache Tuning</title>
 
       <para><citetitle>Cache size</citetitle></para>
@@ -274,7 +272,7 @@
       recomended timeout value</para>
     </section>
 
-    <section>
+    <section id="JCR.PerformanceTuningGuide.PerformanceTuningGuide.Clustering">
       <title>Clustering</title>
 
       <para>For performance it is better to have loadbalacer, DB server and
@@ -319,7 +317,7 @@
    <para>value is set in miliseconds.</para>
     </section>
 
-    <section>
+    <section id="JCR.PerformanceTuningGuide.PerformanceTuningGuide.JVMParameters">
       <title>JVM parameters</title>
 
       <para><citetitle>PermGen space size</citetitle></para>

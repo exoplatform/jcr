@@ -2,10 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.HowToImplementWorkspaceDataContainer">
-  <title>How-to implement Workspace Data Container</title>
-
-  <?dbhtml filename="ch-data-container-howto.html"?>
-
+  <title>How to implement Workspace Data Container</title>
     <para>To implement Workspace data container, you need to do the following:
     </para>
 

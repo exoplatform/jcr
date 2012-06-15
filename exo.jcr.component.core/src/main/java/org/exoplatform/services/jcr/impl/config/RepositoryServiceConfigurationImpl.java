@@ -94,15 +94,15 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
             }
             catch (InstantiationException e)
             {
-               throw new RepositoryConfigurationException(e.getLocalizedMessage());
+               throw new RepositoryConfigurationException(e.getLocalizedMessage(), e);
             }
             catch (IllegalAccessException e)
             {
-               throw new RepositoryConfigurationException(e.getLocalizedMessage());
+               throw new RepositoryConfigurationException(e.getLocalizedMessage(), e);
             }
             catch (ClassNotFoundException e)
             {
-               throw new RepositoryConfigurationException(e.getLocalizedMessage());
+               throw new RepositoryConfigurationException(e.getLocalizedMessage(), e);
             }
          }
       }

@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCRMultilanguageSupport">
-  <?dbhtml filename="ch-multilanguage-support.html"?>
-
   <title>Multi-language support in eXo JCR RDB backend</title>
 
 
@@ -21,7 +19,7 @@
       component.</para>
     </note>
 
-  <section>
+  <section id="JCRMultilanguageSupport.Oracle">
     <title>Oracle</title>
 
     <para>In order to run multilanguage JCR on an Oracle backend Unicode
@@ -74,7 +72,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
           .....</programlisting>
   </section>
 
-  <section>
+  <section id="JCRMultilanguageSupport.DB2">
     <title>DB2</title>
 
     <para>DB2 Universal Database (DB2 UDB) supports <ulink
@@ -105,7 +103,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     </note>
   </section>
 
-  <section>
+  <section id="JCRMultilanguageSupport.MySQL">
     <title>MySQL</title>
 
     <para>JCR MySQL-backend requires special dialect <ulink
@@ -133,7 +131,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
           .....</programlisting>
   </section>
 
-  <section>
+  <section id="JCRMultilanguageSupport.PostgreSQL">
     <title>PostgreSQL</title>
 
     <para>On PostgreSQL-backend, multilingual support can be enabled in <ulink

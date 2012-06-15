@@ -21,6 +21,8 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexInputStream;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.IndexOutputStream;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -39,6 +41,7 @@ import java.util.Set;
 public class IndexInfos
 {
 
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.IndexInfos");
    /**
     * Default file name, that is used if not defined;
     */
@@ -232,9 +235,13 @@ public class IndexInfos
             dir.deleteFile(from);
          }
       }
-      catch (Exception e)
+      catch (IOException e)
       {
          // do noting. Will be removed later
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("Can't deleted file: " + e.getMessage());
+         }
       }
    }
 

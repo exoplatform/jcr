@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.PatternSyntaxException;
 
 import javax.ws.rs.core.MediaType;
 
@@ -321,11 +322,22 @@ public class WebDavServiceInitParams
                   }
                }
             }
-            catch (Exception e)
+            catch (PatternSyntaxException e)
             {
                log.warn("Invalid " + InitParamsNames.CACHE_CONTROL + " parameter");
             }
-
+            catch (UnsupportedOperationException e)
+            {
+               log.warn("Invalid " + InitParamsNames.CACHE_CONTROL + " parameter");
+            }
+            catch (ClassCastException e)
+            {
+               log.warn("Invalid " + InitParamsNames.CACHE_CONTROL + " parameter");
+            }
+            catch (IllegalArgumentException e)
+            {
+               log.warn("Invalid " + InitParamsNames.CACHE_CONTROL + " parameter");
+            }
          }
       }
 

@@ -8,7 +8,7 @@
   node by path "/root1/root2". Only find children, do not find further
   descendants.</para>
 
-  <section>
+  <section id="JCR.ChildNodeConstraint.RepositoryStructure">
     <title>Repository Structure</title>
 
     <para>The repository is filled by "nt:folder" nodes. The nodes are placed
@@ -52,7 +52,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.ChildNodeConstraint.QueryExecution">
     <title>Query Execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -81,7 +81,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.ChildNodeConstraint.FetchingResult">
     <title>Fetching the Result</title>
 
     <para>Let's get nodes:</para>

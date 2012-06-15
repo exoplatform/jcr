@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.Statistics">
-  <?dbhtml filename="ch-statistics.html"?>
-
   <title>eXo JCR statistics</title>
   <para>This section will show you how to get and manage all statistics provided by eXo JCR.</para>
   
@@ -213,7 +211,7 @@
     </table>
   </section>
 
-  <section>
+  <section id="JCR.Statistics.Statistics_On_JCR_API_Accesses">
     <title>Statistics on the JCR API accesses</title>
 
     <para>In order to know exactly how your application uses eXo JCR, it can

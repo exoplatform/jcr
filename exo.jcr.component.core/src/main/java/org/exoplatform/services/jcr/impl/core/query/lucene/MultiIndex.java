@@ -755,7 +755,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   lastIndexReader =
                      (lastIndexReaderId >= 0) ? (indexes.get(lastIndexReaderId)).getReadOnlyIndexReader() : null;
                }
-               catch (Throwable e)
+               catch (Throwable e) //NOSONAR
                {
                   // this is safe index reader retrieval. The last index already closed, possibly merged or 
                   // any other exception that occurs here
@@ -795,7 +795,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                            {
                               lastIndexReader = (indexes.get(lastIndexReaderId)).getReadOnlyIndexReader();
                            }
-                           catch (Throwable e)
+                           catch (Throwable e) //NOSONAR
                            {
                               // this is safe index reader retrieval. The last index already closed, 
                               // possibly merged or any other exception that occurs here
@@ -2457,7 +2457,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          catch (NumberFormatException e)
          {
-            throw new IllegalArgumentException(line);
+            throw new IllegalArgumentException(line, e);
          }
          int endActionIdx = line.indexOf(' ', endTransIdx + 1);
          if (endActionIdx == -1)

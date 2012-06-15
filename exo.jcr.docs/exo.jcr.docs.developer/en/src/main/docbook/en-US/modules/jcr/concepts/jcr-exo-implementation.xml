@@ -1,9 +1,8 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
-<chapter id="JCR.eXoImplementation">
-<?dbhtml filename="ch-jcr-exo-implementation.html"?> 
+<section id="JCR.eXoImplementation">
   <title>eXo JCR Implementation</title>
-  <section>
+  <section id="JCR.eXoImplementation.RelatedDocuments">
     <title>Related Documents</title>
     <para>Access Control Configuration, Export Import Implementation, External
     Value Storages, JDBC Data Container config, Locking, Multilanguage
@@ -130,4 +129,4 @@
       </listitem>
     </itemizedlist>
   </section>
-</chapter>
+</section>

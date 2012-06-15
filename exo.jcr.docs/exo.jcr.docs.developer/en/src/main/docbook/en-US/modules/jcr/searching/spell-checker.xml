@@ -25,7 +25,7 @@
    &lt;/properties&gt;
 &lt;/query-handler&gt;</programlisting>
 
-  <section>
+  <section id="JCR.SpellChecker.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>Repository contains node, with string property "The quick brown fox
@@ -45,7 +45,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.SpellChecker.QueryExecution">
     <title>Query execution</title>
 
     <para>Query looks only for root node, because spell checker looks for
@@ -72,7 +72,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.SpellChecker.FetchingResult">
     <title>Fetching result</title>
 
     <para>Get suggestion of coorect spelling our phrase:</para>

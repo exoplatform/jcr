@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter>
-  <?dbhtml filename="part-kernel.html"?>
-
+<chapter xml:id="chapter-Kernel">
   <title>eXoKernel</title>
 
     <para>eXo Kernel is the basis of all eXo platform products and modules.
@@ -17,7 +15,7 @@
 
     <para>The Kernel module also contains a set of very low level
     services.</para>
-  
+
   <xi:include href="kernel/exo-container.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
@@ -53,9 +51,9 @@
 
   <xi:include href="kernel/transaction-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="kernel/data-source-provider.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+ 
+   <xi:include href="kernel/data-source-provider.xml"
+               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="kernel/jndi-naming.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
@@ -68,8 +66,8 @@
 
   <xi:include href="kernel/listener-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="kernel/rpc-service.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
+ 
+   <xi:include href="kernel/rpc-service.xml"
+               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
 </chapter>

@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.core.nodetype;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeExistsException;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeExistsException; //NOSONAR
 
 import java.io.InputStream;
 import java.util.List;

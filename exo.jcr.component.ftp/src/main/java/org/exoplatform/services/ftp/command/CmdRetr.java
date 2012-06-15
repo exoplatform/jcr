@@ -140,7 +140,7 @@ public class CmdRetr extends FtpCommandImpl
          reply(FtpConst.Replyes.REPLY_226);
          return;
       }
-      catch (Throwable exc)
+      catch (Throwable exc) //NOSONAR
       {
          LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }
@@ -184,7 +184,7 @@ public class CmdRetr extends FtpCommandImpl
             LOG.trace("An exception occurred: " + wexc.getMessage());
          }
       }
-      catch (Throwable exc)
+      catch (Throwable exc) //NOSONAR
       {
          LOG.info("Unhandled exception. " + exc.getMessage(), exc);
       }

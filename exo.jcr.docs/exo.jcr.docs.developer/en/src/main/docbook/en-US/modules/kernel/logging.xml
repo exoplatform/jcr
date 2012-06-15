@@ -2,8 +2,6 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Kernel.LogConfiguration">
-  <?dbhtml filename="ch-logging.html"?>
-
   <title>Logs configuration</title>
 
     <para>In order to accommodate to the different target runtime where it can
@@ -27,7 +25,7 @@
         </listitem>
       </itemizedlist></para>
 
-  <section>
+  <section id="Kernel.LogConfiguration.LogsConfigurationInitializer">
     <title>Logs configuration initializer</title>
 
     <para>eXo lets you choose whatever logging engine you want as this is
@@ -69,10 +67,10 @@
       </itemizedlist></para>
   </section>
 
-  <section>
+  <section id="Kernel.LogConfiguration.ConfigurationExamples">
     <title>Configuration examples</title>
 
-    <section>
+    <section id="Kernel.LogConfiguration.ConfigurationExamples.Log4J">
       <title>Log4J</title>
 
       <para><ulink url="http://logging.apache.org/log4j/">Log4J</ulink> is a
@@ -104,7 +102,7 @@
     &lt;/init-params&gt;
   &lt;/component&gt;</programlisting>
 
-      <section>
+      <section id="Kernel.LogConfiguration.ConfigurationExamples.Log4J.AssigningLoggerLevelForClassesComponents">
         <title>Assigning logger level for classes or components</title>
 
         <para>You can set logger level for class or group of classes by
@@ -147,7 +145,7 @@
       </section>
     </section>
 
-    <section>
+    <section id="Kernel.LogConfiguration.ConfigurationExamples.JDKLogging">
       <title>JDK Logging</title>
 
       <para>JDK logging (aka JUL) is the builtin logging framework introduced
@@ -189,7 +187,7 @@
           
     </section>
 
-    <section>
+    <section id="Kernel.LogConfiguration.ConfigurationExamples.CommonsLoggingSimpleLogs">
       <title>Commons Logging SimpleLogss</title>
 
       <para>SimpleLog is a minimal logging system distributed with Commons
@@ -217,10 +215,10 @@
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.LogConfiguration.TipsAndTroubleshooting">
     <title>Tips and Troubleshooting</title>
 
-    <section>
+    <section id="Kernel.LogConfiguration.TipsAndTroubleshooting.JBossTips">
       <title>JBoss tips</title>
 
       <para>If you use log4j configuration, you can change the log
@@ -246,7 +244,7 @@
         </tip>
     </section>
 
-    <section>
+    <section id="Kernel.LogConfiguration.TipsAndTroubleshooting.OtherTips">
       <title>Other tips</title>
 
       <para>If you see only ERROR level logs while starting ear on jboss

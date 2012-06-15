@@ -2,8 +2,6 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.QueryHandlerConfiguration">
-  <?dbhtml filename="ch-query-handler-config.html"?>
-
   <title>QueryHandler configuration</title>
 
   <para>This section shows you how to configure
@@ -93,7 +91,7 @@
   <section id="JCR.QueryHandlerConfiguration.Configuration">
     <title>Configuration</title>
 
-    <section>
+    <section id="JCR.QueryHandlerConfiguration.Configuration.Query-handlerConfigurationOverview">
       <title>Query-handler configuration overview</title>
 
       <para>Configuration example:</para>
@@ -247,7 +245,7 @@
       </note>
     </section>
 
-    <section>
+    <section id="JCR.QueryHandlerConfiguration.Configuration.StandaloneStrategy">
       <title>Standalone strategy</title>
 
       <para>When running JCR in standalone usually standalone indexing is used
@@ -268,7 +266,7 @@
 &lt;/workspace&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies">
       <title>Cluster-ready indexing strategies</title>
 
       <para>For both cluster-ready implementations JBoss Cache, JGroups and
@@ -324,7 +322,7 @@
 &lt;/workspace&gt;
 </programlisting>
 
-      <section>
+      <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies.LocalIndexRecoveryFilters">
         <title>Local Index Recovery Filters</title>
 
         <para>Common usecase for all cluster-ready applications is a hot
@@ -405,7 +403,7 @@
       </section>
     </section>
 
-    <section>
+    <section id="JCR.QueryHandlerConfiguration.Configuration.JBoss-CacheTemplateConfiguration">
       <title>JBoss-Cache template configuration</title>
 
       <para>JBoss-Cache template configuration for query handler is about the
@@ -443,7 +441,7 @@
     JCR updates that brings new features related to index. Usually index
     re-creation requested on server's startup or in runtime.</para>
 
-    <section>
+    <section id="JCR.QueryHandlerConfiguration.Asynchronous_reindexing.OnStartupIndexing">
       <title>On startup indexing</title>
 
       <para>Common usecase for updating and re-creating the index is to stop
@@ -484,7 +482,7 @@
       return true.</para>
     </section>
 
-    <section>
+    <section id="JCR.QueryHandlerConfiguration.Asynchronous_reindexing.HotAsynchronousWorkspaceReindexingViaJMX">
       <title>Hot Asynchronous Workspace Reindexing via JMX</title>
 
       <para>Some hard system faults, error during upgrades, migration issues
@@ -523,7 +521,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCR.QueryHandlerConfiguration.Asynchronous_reindexing.Notices">
       <title>Notices</title>
 
       <para>First of all, can't launch Hot re-indexing via JMX if index is
@@ -551,7 +549,7 @@
   <section id="JCR.QueryHandlerConfiguration.Advanced_tuning">
     <title>Advanced tuning</title>
 
-    <section>
+    <section id="JCR.QueryHandlerConfiguration.Advanced_tuning.LuceneTuning">
       <title>Lucene tuning</title>
 
       <para>As mentioned above, JCR Indexing is based on Lucene indexing

@@ -2,8 +2,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Core.SpringSecurityIntegration">
-  <?dbhtml filename="ch-spring-security-integration.html"?>
-
   <title>Spring Security Integration</title>
 
     <para>This tutorial will guide you through a few steps and show you how
@@ -18,7 +16,7 @@
     project from where you can start your own portlet development targeting
     the eXo platform.</para>
 
-  <section>
+  <section id="Core.SpringSecurityIntegration.Installation">
     <title>Installation</title>
 
     <para>This tutorial assumes that you have a working eXo WCM installation
@@ -55,13 +53,13 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="Core.SpringSecurityIntegration.Configuration">
     <title>Configuration</title>
 
     <para>To enable spring security in exo we need to go through a few
     configuration steps:</para>
 
-    <section>
+    <section id="Core.SpringSecurityIntegration.Configuration.JAASDisabling">
       <title>JAAS disabling</title>
 
       <para>First, we need to disable the JAAS security which is the default
@@ -106,7 +104,7 @@
 ...</programlisting>
     </section>
 
-    <section>
+    <section id="Core.SpringSecurityIntegration.Configuration.EnablingSpringSecurity">
       <title>Enabling spring security</title>
 
       <para>To enable spring and set the spring security filter, add the
@@ -150,7 +148,7 @@
 ...</programlisting>
     </section>
 
-    <section>
+    <section id="Core.SpringSecurityIntegration.Configuration.SecurityContextXml">
       <title>security-context.xml</title>
 
       <para>We need to configure the spring security filter chain for our
@@ -194,7 +192,7 @@
     </section>
   </section>
 
-  <section>
+  <section id="Core.SpringSecurityIntegration.LoginPortletExample">
     <title>Login portlet example</title>
 
     <para>Now that we have successfully installed and configured spring
@@ -204,7 +202,7 @@
     spring framework, but you can obviously use whatever web framework you
     want to achieve the same.</para>
 
-    <section>
+    <section id="Core.SpringSecurityIntegration.LoginPortletExample.BuildingPortlet">
       <title>Building the portlet</title>
 
       <para>So we need a login form to capture user credentials inputs. The
@@ -282,7 +280,7 @@ public class LoginBean {
       point.</para>
     </section>
 
-    <section>
+    <section id="Core.SpringSecurityIntegration.LoginPortletExample.SettingUpLoginPortalPage">
       <title>Setting up the login portal page</title>
 
       <para>Now that we have a login portlet available we need to set it up
@@ -313,7 +311,7 @@ public class LoginBean {
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="Core.SpringSecurityIntegration.LoginPortletExample.CustomizationOfPortalLoginAndLogoutUrls">
       <title>Customization of portal login and logout urls</title>
 
       <para>In the portal header, there is a login or logout action displayed
@@ -361,7 +359,7 @@ eXo.core.Browser.addOnLoadCallback("validateUser", validateUser);</programlistin
       URL.</para>
     </section>
 
-    <section>
+    <section id="Core.SpringSecurityIntegration.LoginPortletExample.LookAtLoginPage">
       <title>A look at the login page</title>
 
       <para>Once you are done with all this, just click on the login action
@@ -376,7 +374,7 @@ eXo.core.Browser.addOnLoadCallback("validateUser", validateUser);</programlistin
     </section>
   </section>
 
-  <section>
+  <section id="Core.SpringSecurityIntegration.IntegrationStrategies">
     <title>Integration strategies</title>
 
     <para>Until now we haven't discussed about any integration strategies
@@ -384,7 +382,7 @@ eXo.core.Browser.addOnLoadCallback("validateUser", validateUser);</programlistin
     platform. To address this problem we have the choice between at least two
     different strategies.</para>
 
-    <section>
+    <section id="Core.SpringSecurityIntegration.IntegrationStrategies.DirectIntegration">
       <title>Direct integration</title>
       <para>We can
       directly integrate eXo with the external realm. Everything related to
@@ -399,7 +397,7 @@ eXo.core.Browser.addOnLoadCallback("validateUser", validateUser);</programlistin
       needs.</para>
     </section>
 
-    <section>
+    <section id="Core.SpringSecurityIntegration.IntegrationStrategies.Replication">
       <title>Replication</title>
 
       <para>Or we can go through a replication process between the external
@@ -409,7 +407,7 @@ eXo.core.Browser.addOnLoadCallback("validateUser", validateUser);</programlistin
     </section>
   </section>
 
-  <section>
+  <section id="Core.SpringSecurityIntegration.IntegrationWitheXoPortal">
     <title>Integration with eXo portal</title>
 
     <para>Being successfully authenticated against an external realm is not
@@ -512,7 +510,7 @@ public class SpringSecurityEventHandler implements ApplicationListener {
 ...</programlisting>
   </section>
 
-  <section>
+  <section id="Core.SpringSecurityIntegration.SecurityContextPropagationtoPortlets">
     <title>Security context propagation to portlets</title>
 
     <para>Part of the problem is the question of security context propagation
@@ -529,7 +527,7 @@ public class SpringSecurityEventHandler implements ApplicationListener {
     portlet webapp side and use the http request to propagate the context in
     between.</para>
 
-    <section>
+    <section id="Core.SpringSecurityIntegration.SecurityContextPropagationtoPortlets.PortalSideFilter">
       <title>Portal side filter</title>
 
       <para>We will use the spring security extensible filter chain to plug in
@@ -578,7 +576,7 @@ public class PortalSideSecurityContextFilter extends SpringSecurityFilter {
 ...</programlisting>
     </section>
 
-    <section>
+    <section id="Core.SpringSecurityIntegration.SecurityContextPropagationtoPortlets.PortletSideFilter">
       <title>Portlet side filter</title>
 
       <para>In the portlet webapp we create a regular filter named
@@ -656,7 +654,7 @@ public class PortletSideSecurityContextFilter implements Filter {
     </section>
   </section>
 
-  <section>
+  <section id="Core.SpringSecurityIntegration.Conclusion">
     <title>Conclusion</title>
 
     <para>We are done! Now we know how to integrate the spring security

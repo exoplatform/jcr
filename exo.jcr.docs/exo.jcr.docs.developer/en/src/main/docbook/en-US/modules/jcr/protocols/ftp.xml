@@ -2,8 +2,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.FTP">
-  <?dbhtml filename="ch-ftp.html"?>
-
   <title>FTP</title>
 
     <para>The JCR-FTP Server represents the standard eXo service, operates as
@@ -13,10 +11,10 @@
     The FTP server is supported by a standard configuration which can be
     changed as required.</para>
     
-  <section>
+  <section id="JCR.FTP.ConfigurationParameters">
     <title>Configuration Parameters</title>
 
-    <section>
+    <section id="JCR.FTP.ConfigurationParameters.CommandPort">
       <title>command-port:</title>
 
       <programlisting language="xml">&lt;value-param&gt;
@@ -32,7 +30,7 @@
       or if the port is protected.</para>
     </section>
 
-    <section>
+    <section id="JCR.FTP.ConfigurationParameters.DataminportAndDatamaxport">
       <title>data-min-port &amp; data-max-port</title>
 
       <programlisting language="xml">&lt;value-param&gt;
@@ -52,7 +50,7 @@
       should be free from listening by other server-programs.</para>
     </section>
 
-    <section>
+    <section id="JCR.FTP.ConfigurationParameters.System">
       <title>system</title>
 
       <programlisting language="xml">&lt;value-param&gt;
@@ -67,7 +65,7 @@
       supported.</para>
     </section>
 
-    <section>
+    <section id="JCR.FTP.ConfigurationParameters.Clientsideencoding">
       <title>client-side-encoding</title>
 
       <programlisting language="xml">&lt;value-param&gt;
@@ -83,7 +81,7 @@
       with the client.</para>
     </section>
 
-    <section>
+    <section id="JCR.FTP.ConfigurationParameters.Deffoldernodetype">
       <title>def-folder-node-type</title>
 
       <programlisting language="xml">&lt;value-param&gt;
@@ -95,7 +93,7 @@
       created.</para>
     </section>
 
-    <section>
+    <section id="JCR.FTP.ConfigurationParameters.Deffilenodetype">
       <title>def-file-node-type</title>
 
       <programlisting language="xml">&lt;value-param&gt;
@@ -107,7 +105,7 @@
       created.</para>
     </section>
 
-    <section>
+    <section id="JCR.FTP.ConfigurationParameters.Deffilemimetype">
       <title>def-file-mime-type</title>
 
       <programlisting language="xml">&lt;value-param&gt;
@@ -120,7 +118,7 @@
       this value is used.</para>
     </section>
 
-    <section>
+    <section id="JCR.FTP.ConfigurationParameters.Cachefoldername">
       <title>cache-folder-name</title>
 
       <programlisting language="xml">&lt;value-param&gt;
@@ -131,7 +129,7 @@
       <para>The Path of the cache folder.</para>
     </section>
 
-    <section>
+    <section id="JCR.FTP.ConfigurationParameters.Uploadspeedlimit">
       <title>upload-speed-limit</title>
 
       <programlisting language="xml">&lt;value-param&gt;
@@ -142,7 +140,7 @@
       <para>Restriction of the upload speed. It is measured in bytes.</para>
     </section>
 
-    <section>
+    <section id="JCR.FTP.ConfigurationParameters.Downloadspeedlimit">
       <title>download-speed-limit</title>
 
       <programlisting language="xml">&lt;value-param&gt;
@@ -153,7 +151,7 @@
       <para>Restriction of the download speed. It is measured in bytes.</para>
     </section>
 
-    <section>
+    <section id="JCR.FTP.ConfigurationParameters.Timeout">
       <title>timeout</title>
 
       <programlisting language="xml">&lt;value-param&gt;

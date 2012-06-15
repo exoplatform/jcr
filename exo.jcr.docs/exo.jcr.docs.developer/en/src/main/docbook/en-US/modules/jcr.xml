@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter>
-  <?dbhtml filename="part-jcr.html"?>
+<chapter xml:id="chapter-JCR">
 
   <title>eXoJCR</title>
-    <para>eXo provides JCR implementation called eXo JCR.</para>
-    <para>This chapter will show you how to configure and use eXo JCR in GateIn and standalone.</para>
+   <para>eXo provides JCR implementation called eXo JCR.</para>
+   <para>This part will show you how to configure and use eXo JCR in GateIn and standalone.</para>
+
   <xi:include href="jcr/intro.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
@@ -14,7 +14,7 @@
   <xi:include href="jcr/concepts/why-jcr.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
               
- <xi:include href="jcr/concepts/jcr-exo-implementation.xml"
+  <xi:include href="jcr/concepts/jcr-exo-implementation.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
               
   <xi:include href="jcr/concepts/jcr-advantages.xml"
@@ -25,9 +25,6 @@
               
   <xi:include href="jcr/concepts/jcr-usage.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />            
-
-  <xi:include href="jcr/concepts/session-leak-detected.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
               
   <xi:include href="jcr/concepts/jcr-extensions.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />                            

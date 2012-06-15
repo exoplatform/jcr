@@ -7,7 +7,7 @@
   <para>Find all nodes with a mixin type 'mix:title' and where the property
   'jcr:title' equals 'casesensitive' in lower or upper case.</para>
 
-  <section>
+  <section id="JCR.FindNodesCaseInsensitive.RepositoryStructure">
     <title>Repository Structure</title>
 
     <para>The repository contains mix:title nodes, whose jcr:title properties
@@ -34,7 +34,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.FindNodesCaseInsensitive.QueryExecution">
     <title>Query Execution</title>
 
     <itemizedlist>
@@ -90,7 +90,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.FindNodesCaseInsensitive.FetchingResult">
     <title>Fetching the Result</title>
 
     <para>Let's get nodes:</para>

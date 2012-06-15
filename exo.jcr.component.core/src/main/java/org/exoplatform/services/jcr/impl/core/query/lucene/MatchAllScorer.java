@@ -85,7 +85,7 @@ class MatchAllScorer extends Scorer
    @Override
    public void score(Collector collector) throws IOException
    {
-      collector.setScorer(this); // TODO: WTF? missing in exo but present in jcrbt
+      collector.setScorer(this);
       while (nextDoc() != NO_MORE_DOCS)
       {
          collector.collect(docID());

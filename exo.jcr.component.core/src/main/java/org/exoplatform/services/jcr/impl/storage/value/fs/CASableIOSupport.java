@@ -73,7 +73,7 @@ public class CASableIOSupport
       catch (NoSuchAlgorithmException e)
       {
          LOG.error("Can't wriet using " + digestAlgo + " algorithm, " + e, e);
-         throw new IOException(e.getMessage());
+         throw new IOException(e.getMessage(), e);
       }
 
       return new FileDigestOutputStream(file, md);
