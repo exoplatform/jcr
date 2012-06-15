@@ -24,8 +24,6 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.EditableValueData;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -45,24 +43,20 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue, Reada
 
    public static final int TYPE = PropertyType.BINARY;
 
-   protected EditableValueData changedData = null;
-
-   protected boolean changed = false;
-
-   protected static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.BinaryValue");
+   protected boolean changed;
 
    /**
-    * BinaryValue constructor.
-    * 
-    * @param stream
-    *          InputStream
-    * @throws IOException
-    *           if error
-    */
+   * BinaryValue constructor.
+   * 
+   * @param stream
+   *          InputStream
+   * @throws IOException
+   *           if error
+   */
    public BinaryValue(InputStream stream, SpoolConfig spoolConfig)
       throws IOException
    {
-      this(new TransientValueData(0, stream, null, spoolConfig, false));
+      this(new TransientValueData(0, stream, null, spoolConfig));
    }
 
    /** 
@@ -73,33 +67,13 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue, Reada
       super(TYPE, data);
    }
 
+   /**
+    * {@inheritDoc}
+    */
    @Override
-   public ValueData getInternalData()
-   {
-      if (changedData != null)
-      {
-         return changedData;
-      }
-
-      return super.getInternalData();
-   }
-
-   @Override
-   protected LocalSessionValueData getLocalData(boolean asStream) throws IOException
-   {
-      if (this.changed)
-      {
-         // reset to be recreated with new stream/bytes
-         this.data = null;
-         this.changed = false;
-      }
-
-      return super.getLocalData(asStream);
-   }
-
    public String getReference() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      return getInternalString();
+      return getString();
    }
 
    /**
@@ -115,13 +89,13 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue, Reada
     * */
    public void update(InputStream stream, long length, long position) throws IOException, RepositoryException
    {
-      if (changedData == null)
+      if (!changed)
       {
-         changedData = createEditableCopy(this.getInternalData());
+         internalData = createEditableCopy(this.getInternalData());
       }
 
-      this.changedData.update(stream, length, position);
-      this.changed = true;
+      ((EditableValueData)internalData).update(stream, length, position);
+      invalidateStream();
    }
 
    /**
@@ -132,13 +106,13 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue, Reada
     */
    public void setLength(long size) throws IOException, RepositoryException
    {
-      if (changedData == null)
+      if (!changed)
       {
-         changedData = createEditableCopy(this.getInternalData());
+         internalData = createEditableCopy(this.getInternalData());
       }
 
-      this.changedData.setLength(size);
-      this.changed = true;
+      ((EditableValueData)internalData).setLength(size);
+      invalidateStream();
    }
 
    /**
@@ -187,5 +161,4 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue, Reada
          }
       }
    }
-
 }

@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -27,7 +28,6 @@ import java.util.Date;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
 /**
@@ -40,22 +40,31 @@ public class DoubleValue extends BaseValue
 
    public static final int TYPE = PropertyType.DOUBLE;
 
+   /**
+    * DoubleValue constructor.
+    */
    public DoubleValue(double dbl) throws IOException
    {
       super(TYPE, new TransientValueData(dbl));
    }
 
+   /**
+    * DoubleValue constructor.
+    */
    DoubleValue(ValueData data) throws IOException
    {
       super(TYPE, data);
    }
 
    /**
-    * @see Value#getDate
+    * {@inheritDoc}
     */
+   @Override
    public Calendar getDate() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      Double doubleNumber = new Double(getInternalString());
+      validateByteArrayMethodInvoking();
+
+      Double doubleNumber = ValueDataUtil.getDouble(getInternalData());
 
       if (doubleNumber != null)
       {
@@ -71,11 +80,14 @@ public class DoubleValue extends BaseValue
    }
 
    /**
-    * @see Value#getLong
+    * {@inheritDoc}
     */
+   @Override
    public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      Double doubleNumber = new Double(getInternalString());
+      validateByteArrayMethodInvoking();
+
+      Double doubleNumber = ValueDataUtil.getDouble(getInternalData());
 
       if (doubleNumber != null)
       {
@@ -88,8 +100,9 @@ public class DoubleValue extends BaseValue
    }
 
    /**
-    * @see Value#getBoolean
+    * {@inheritDoc}
     */
+   @Override
    public boolean getBoolean() throws ValueFormatException, IllegalStateException, RepositoryException
    {
       throw new ValueFormatException("conversion to boolean failed: inconvertible types");

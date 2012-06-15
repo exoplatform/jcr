@@ -27,7 +27,6 @@ import java.util.Calendar;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
 /**
@@ -42,59 +41,74 @@ public class ReferenceValue extends BaseValue
 
    private final Identifier identifier;
 
+   /**
+    * ReferenceValue constructor. 
+    */
    public ReferenceValue(Identifier identifier) throws IOException
    {
       super(TYPE, new TransientValueData(identifier));
       this.identifier = identifier;
    }
 
+   /**
+    * ReferenceValue constructor. 
+    */
    public ReferenceValue(ValueData data) throws IOException, RepositoryException
    {
       super(TYPE, data);
-      this.identifier = new Identifier(getInternalString());
+      this.identifier = new Identifier(getString());
    }
 
    /**
-    * @see Value#getDate
+    * {@inheritDoc}
     */
+   @Override
    public Calendar getDate() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-
       throw new ValueFormatException("conversion to date failed: inconvertible types");
    }
 
    /**
-    * @see Value#getLong
+    * {@inheritDoc}
     */
+   @Override
    public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-
       throw new ValueFormatException("conversion to long failed: inconvertible types");
    }
 
    /**
-    * @see Value#getBoolean
+    * {@inheritDoc}
     */
+   @Override
    public boolean getBoolean() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-
       throw new ValueFormatException("conversion to boolean failed: inconvertible types");
    }
 
    /**
-    * @see Value#getDouble
+    * {@inheritDoc}
     */
+   @Override
    public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-
       throw new ValueFormatException("conversion to double failed: inconvertible types");
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public String getReference() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      return getInternalString();
+      validateByteArrayMethodInvoking();
+
+      return identifier.getString();
    }
 
+   /**
+    * Returns {@link Identifier}.
+    */
    public Identifier getIdentifier()
    {
       return identifier;

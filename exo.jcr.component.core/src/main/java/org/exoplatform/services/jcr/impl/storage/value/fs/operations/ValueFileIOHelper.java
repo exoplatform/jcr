@@ -19,8 +19,6 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -58,52 +56,6 @@ public class ValueFileIOHelper
     * Helper logger.
     */
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.ValueFileIOHelper");
-
-   /**
-    * Read value from file.
-    * 
-    * @param file
-    *          File
-    * @param orderNum
-    *          - used in PersistedValueData logic
-    * @param maxBufferSize
-    *          - threshold for spooling
-    * @return ValueData
-    * @throws IOException
-    *           if error
-    */
-   protected ValueData readValue(File file, int orderNum, int maxBufferSize) throws IOException
-   {
-
-      long fileSize = file.length();
-
-      if (fileSize > maxBufferSize)
-      {
-         return new FilePersistedValueData(orderNum, file);
-      }
-      else
-      {
-         FileInputStream is = new FileInputStream(file);
-         try
-         {
-            int buffSize = (int)fileSize;
-            byte[] res = new byte[buffSize];
-            int rpos = 0;
-            int r = -1;
-            byte[] buff = new byte[IOBUFFER_SIZE > buffSize ? IOBUFFER_SIZE : buffSize];
-            while ((r = is.read(buff)) >= 0)
-            {
-               System.arraycopy(buff, 0, res, rpos, r);
-               rpos += r;
-            }
-            return new ByteArrayPersistedValueData(orderNum, res);
-         }
-         finally
-         {
-            is.close();
-         }
-      }
-   }
 
    /**
     * Write value to a file.

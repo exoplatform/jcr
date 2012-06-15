@@ -19,28 +19,48 @@
 package org.exoplatform.services.jcr.impl.dataflow;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 /**
+ * Common class for all value data implementation.
+ * 
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
- * @version $Id: AbstractNewValueData.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id: AbstractValueData.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public abstract class AbstractNewValueData extends AbstractSessionValueData
+public abstract class AbstractValueData implements ValueData
 {
+
+   /**
+    * Logger. 
+    */
+   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.AbstractValueData");
+
+   /**
+    * Value data order number.
+    */
+   protected int orderNumber;
 
    /**
     * Constructor AbstractNewValueData.
     */
-   protected AbstractNewValueData(int orderNumber)
+   protected AbstractValueData(int orderNumber)
    {
-      super(orderNumber);
+      this.orderNumber = orderNumber;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public final int getOrderNumber()
+   {
+      return orderNumber;
    }
 
    /**
@@ -87,10 +107,23 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
     */
    public long read(OutputStream stream, long length, long position) throws IOException
    {
-      byte[] data = getAsByteArray();
+      if (isByteArray())
+      {
+         return readFromByteArray(stream, length, position);
+      }
+      else
+      {
+         throw new IllegalStateException("Method is not supported for ValueData represented in array of bytes");
+      }
+   }
 
-      validate(length, position, data.length);
-      length = adjustReadLength(length, position, data.length);
+   /**
+    * Reads data from array of bytes to {@link OutputStream}.
+    */
+   protected long readFromByteArray(OutputStream stream, long length, long position) throws IOException
+   {
+      byte[] data = getAsByteArray();
+      length = validateAndAdjustLenght(length, position, data.length);
 
       stream.write(data, (int)position, (int)length);
 
@@ -98,23 +131,12 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
    }
 
    /**
-    *  Adjusts length of byte to read. Should not be possible to exceed array border. 
-    */
-   protected long adjustReadLength(long length, long position, long dataLength)
-   {
-      if (position + length >= dataLength)
-      {
-         return dataLength - position;
-      }
-
-      return length;
-   }
-
-   /**
     * Validate parameters. <code>Length</code> and <code>position</code> should not be negative and 
     * <code>length</code> should not be greater than <code>dataLength</code>
+    * 
+    * @return adjusted length of byte to read. Should not be possible to exceed array border. 
     */
-   protected void validate(long length, long position, long dataLength) throws IOException
+   protected long validateAndAdjustLenght(long length, long position, long dataLength) throws IOException
    {
       if (position < 0)
       {
@@ -130,17 +152,26 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
       {
          throw new IOException("Position " + position + " out of value size " + dataLength);
       }
+
+      if (position + length >= dataLength)
+      {
+         return dataLength - position;
+      }
+
+      return length;
    }
 
    /**
-    * Validate <code>size</code> parameter, should not be negative.
+    * {@inheritDoc}
     */
-   protected void validate(long size) throws IOException
+   public boolean equals(Object obj)
    {
-      if (size < 0)
+      if (obj instanceof ValueData)
       {
-         throw new IOException("Size must be higher or equals 0. But given " + size);
+         return this.equals((ValueData)obj);
       }
+
+      return false;
    }
 
    /**
@@ -151,35 +182,25 @@ public abstract class AbstractNewValueData extends AbstractSessionValueData
       ValueData valueData = another;
       if (another instanceof TransientValueData)
       {
-         valueData = ((TransientValueData)another).delegate;
+         return another.equals(this);
       }
-
-      if (valueData instanceof AbstractNewValueData)
+      else if (valueData instanceof AbstractValueData)
       {
          return this == valueData || internalEquals(valueData);
-      }
-      else if (valueData instanceof StreamPersistedValueData)
-      {
-         return internalEquals(valueData);
-      }
-      else if (valueData instanceof ByteArrayPersistedValueData)
-      {
-         try
-         {
-            return Arrays.equals(valueData.getAsByteArray(), getAsByteArray());
-         }
-         catch (IllegalStateException e)
-         {
-            LOG.error("Error in comparing values", e);
-         }
-         catch (IOException e)
-         {
-            LOG.error("Error in comparing values", e);
-         }
       }
 
       return false;
    }
+
+   /**
+    * Creates transient copy of value data. 
+    */
+   protected abstract TransientValueData createTransientCopy(int orderNumber) throws IOException;
+
+   /**
+    * Creates persisted copy of value data. 
+    */
+   protected abstract PersistedValueData createPersistedCopy(int orderNumber) throws IOException;
 
    /**
     * Represents internal value as array of bytes.

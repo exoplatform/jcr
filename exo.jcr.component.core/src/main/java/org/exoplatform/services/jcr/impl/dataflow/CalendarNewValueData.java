@@ -18,57 +18,19 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
-
 import java.util.Calendar;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
  * @version $Id: CalendarNewValueData.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class CalendarNewValueData extends AbstractNewValueData
+public class CalendarNewValueData extends CalendarValueData implements NewValueData
 {
-   /**
-    * The value.
-    */
-   private final Calendar value;
-
    /**
     * CalendarNewValueData constructor.
     */
    protected CalendarNewValueData(int orderNumber, Calendar value)
    {
-      super(orderNumber);
-      this.value = value;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected boolean internalEquals(ValueData another)
-   {
-      if (another instanceof CalendarNewValueData)
-      {
-         return ((CalendarNewValueData)another).value.equals(value);
-      }
-
-      return false;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected byte[] spoolInternalValue()
-   {
-      return new JCRDateFormat().serialize(value);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public String toString()
-   {
-      return value.toString();
+      super(orderNumber, value);
    }
 }

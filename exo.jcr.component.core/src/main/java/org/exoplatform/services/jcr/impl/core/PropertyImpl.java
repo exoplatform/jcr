@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.core.nodetype.PropertyDefinitionImpl;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -572,7 +573,7 @@ public class PropertyImpl extends ItemImpl implements Property
          vals = new StringBuilder(getPath()).append(" values: ");
          for (int i = 0; i < getValueArray().length; i++)
          {
-            vals.append(new String(((BaseValue)getValueArray()[i]).getInternalData().getAsByteArray())).append(";");
+            vals.append(ValueDataUtil.getString(((BaseValue)getValueArray()[i]).getInternalData())).append(";");
          }
       }
       catch (Exception e)

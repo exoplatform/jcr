@@ -22,7 +22,7 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -79,7 +79,7 @@ public class SimpleExcerptProvider implements ExcerptProvider
                List<ValueData> values = property.getValues();
                for (int i = 0; i < values.size(); i++)
                {
-                  text.append(new String(values.get(i).getAsByteArray(), Constants.DEFAULT_ENCODING));
+                  text.append(ValueDataUtil.getString(values.get(i)));
                }
             }
          }

@@ -63,15 +63,7 @@ public abstract class AbstractItemDataCopyVisitor extends ItemDataTraversingVisi
       {
          for (ValueData vd : src)
          {
-            if (vd.isByteArray())
-            {
-               copy.add(new TransientValueData(vd.getOrderNumber(), vd.getAsByteArray()));
-            }
-            else
-            {
-               copy.add(new TransientValueData(vd.getOrderNumber(), vd.getAsStream(), SpoolConfig
-                  .getDefaultSpoolConfig()));
-            }
+            copy.add(ValueDataUtil.createTransientCopy(vd));
          }
       }
       catch (IOException e)

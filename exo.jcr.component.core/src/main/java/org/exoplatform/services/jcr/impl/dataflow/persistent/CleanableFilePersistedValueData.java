@@ -21,10 +21,8 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
-import java.io.FileNotFoundException;
+import java.io.IOException;
 
 /**
  * Created by The eXo Platform SAS. Implementation of FileStream ValueData secures deleting file in
@@ -33,37 +31,27 @@ import java.io.FileNotFoundException;
  * @author Gennady Azarenkov
  * @version $Id: CleanableFilePersistedValueData.java 35209 2009-08-07 15:32:27Z pnedonosko $
  */
-
 public class CleanableFilePersistedValueData extends FilePersistedValueData
 {
 
-   protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CleanableFileStreamValueData");
-
-   protected FileCleaner cleaner;
+   protected FileCleaner fileCleaner;
 
    /**
-    *   Empty constructor to serialization.
+    * Empty constructor for serialization.
     */
-   public CleanableFilePersistedValueData()
+   public CleanableFilePersistedValueData() throws IOException
    {
+      super();
    }
 
    /**
     * CleanableFilePersistedValueData constructor.
-    * @param orderNumber
-    *          int
-    * @param file
-    *          SwapFile
-    * @param cleaner
-    *          FileCleaner
     */
-   public CleanableFilePersistedValueData(int orderNumber, SwapFile file, FileCleaner cleaner)
-      throws FileNotFoundException
+   public CleanableFilePersistedValueData(int orderNumber, SwapFile file, FileCleaner fileCleaner) throws IOException
    {
       super(orderNumber, file);
-      this.cleaner = cleaner;
+      this.fileCleaner = fileCleaner;
 
-      // aquire this file
       file.acquire(this);
    }
 
@@ -80,15 +68,12 @@ public class CleanableFilePersistedValueData extends FilePersistedValueData
 
          if (!PrivilegedFileHelper.delete(file))
          {
-            if (cleaner != null)
-            {
-               cleaner.addFile(file);
+            fileCleaner.addFile(file);
 
-               if (LOG.isDebugEnabled())
-               {
-                  LOG.debug("Could not remove temporary file on finalize: inUse=" + (((SwapFile)file).inUse()) + ", "
-                     + PrivilegedFileHelper.getAbsolutePath(file));
-               }
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug("Could not remove temporary file on finalize: inUse=" + (((SwapFile)file).inUse()) + ", "
+                  + PrivilegedFileHelper.getAbsolutePath(file));
             }
          }
       }

@@ -18,9 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
-import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 
 import java.io.ByteArrayInputStream;
@@ -34,6 +33,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Random;
+
+import javax.jcr.PropertyType;
 
 /**
  * Created by The eXo Platform SAS. <br/>Date:
@@ -52,7 +53,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
    public void testSerialization() throws Exception
    {
 
-      List<AbstractPersistedValueData> list = new ArrayList<AbstractPersistedValueData>();
+      List<PersistedValueData> list = new ArrayList<PersistedValueData>();
       // Random random = new Random();
 
       ByteArrayInputStream bin;
@@ -63,7 +64,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
          list.add(new StreamPersistedValueData(0, bin));
       }
 
-      Iterator<AbstractPersistedValueData> it;
+      Iterator<PersistedValueData> it;
       // Serialize with JCR
 
       long jcrwrite = 0;
@@ -93,10 +94,10 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
 
          long t3 = System.currentTimeMillis();
 
-         PersistedValueDataReader rdr = new PersistedValueDataReader(fileCleaner, maxBufferSize, holder);
+         PersistedValueDataReader rdr = new PersistedValueDataReader(holder);
          for (int i = 0; i < nodes; i++)
          {
-            AbstractPersistedValueData obj = rdr.read(jcrin);
+            PersistedValueData obj = rdr.read(jcrin, PropertyType.BINARY);
          }
          t3 = System.currentTimeMillis() - t3;
          jcrread += t3;

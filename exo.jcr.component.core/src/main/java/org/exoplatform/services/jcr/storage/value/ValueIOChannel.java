@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.storage.value;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
 
 import java.io.IOException;
@@ -38,13 +39,18 @@ public interface ValueIOChannel
     * 
     * @param propertyId
     *          - Property ID
-    * @param maxBufferSize
-    *          - maximum size when value will be read to memory buffer
+    * @param orderNumber
+    *          value data order number
+    * @param type
+    *          property type                  
+    * @param SpoolConfig
+    *          spool configuration
     * @return ValueData
     * @throws IOException
     *           if error occurs
     */
-   ValueData read(String propertyId, int orderNumber, int maxBufferSize) throws IOException;
+   ValueData read(String propertyId, int orderNumber, int type, SpoolConfig spoolConfig)
+      throws IOException;
 
    /**
     * Inspects whether corresponding file exists in value storage or not.

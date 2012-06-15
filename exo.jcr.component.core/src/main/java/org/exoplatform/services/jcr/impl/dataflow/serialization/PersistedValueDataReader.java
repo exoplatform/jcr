@@ -22,10 +22,9 @@ import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 
 import java.io.File;
@@ -43,16 +42,6 @@ public class PersistedValueDataReader
 {
 
    /**
-    * FileCleaner used to construct TransientValueData.
-    */
-   private final FileCleaner fileCleaner;
-
-   /**
-    * MaxBufferSize used to construct TransientValueData.
-    */
-   private final int maxBufferSize;
-
-   /**
     * ReadedSpoolFile holder,
     */
    private final ReaderSpoolFileHolder holder;
@@ -60,17 +49,11 @@ public class PersistedValueDataReader
    /**
     * Constructor.
     * 
-    * @param fileCleaner
-    *          FileCleaner
-    * @param maxBufferSize
-    *          int
     * @param holder
     *          ReaderSpoolFileHolder
     */
-   public PersistedValueDataReader(FileCleaner fileCleaner, int maxBufferSize, ReaderSpoolFileHolder holder)
+   public PersistedValueDataReader(ReaderSpoolFileHolder holder)
    {
-      this.fileCleaner = fileCleaner;
-      this.maxBufferSize = maxBufferSize;
       this.holder = holder;
    }
 
@@ -79,13 +62,15 @@ public class PersistedValueDataReader
     * 
     * @param in
     *          ObjectReader.
+    * @param type
+    *          property type         
     * @return PersistedValueData object.
     * @throws UnknownClassIdException
     *           If read Class ID is not expected or do not exist.
     * @throws IOException
     *           If an I/O error has occurred.
     */
-   public AbstractPersistedValueData read(ObjectReader in) throws UnknownClassIdException, IOException
+   public PersistedValueData read(ObjectReader in, int type) throws UnknownClassIdException, IOException
    {
       File tempDirectory = new File(SerializationConstants.TEMP_DIR);
       PrivilegedFileHelper.mkdirs(tempDirectory);
@@ -105,7 +90,8 @@ public class PersistedValueDataReader
       {
          byte[] data = new byte[in.readInt()];
          in.readFully(data);
-         return new ByteArrayPersistedValueData(orderNumber, data);
+
+         return ValueDataUtil.createValueData(type, orderNumber, data);
       }
       else
       {
@@ -132,7 +118,7 @@ public class PersistedValueDataReader
             sf.acquire(this); // workaround for AsyncReplication test
             try
             {
-               AbstractPersistedValueData vd = new StreamPersistedValueData(orderNumber, sf);
+               PersistedValueData vd = new StreamPersistedValueData(orderNumber, sf);
 
                // skip data in input stream
                if (in.skip(length) != length)

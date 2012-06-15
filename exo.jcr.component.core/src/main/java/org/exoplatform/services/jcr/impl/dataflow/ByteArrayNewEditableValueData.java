@@ -45,7 +45,7 @@ public class ByteArrayNewEditableValueData extends ByteArrayNewValueData impleme
     */
    public void update(InputStream stream, long length, long position) throws IOException, RepositoryException
    {
-      validate(length, position, Integer.MAX_VALUE);
+      validateAndAdjustLenght(length, position, Integer.MAX_VALUE);
 
       long newSize = Math.max(length + position, value.length);
       byte[] newBytes = new byte[(int)newSize];
@@ -87,7 +87,10 @@ public class ByteArrayNewEditableValueData extends ByteArrayNewValueData impleme
     */
    public void setLength(long size) throws IOException, RepositoryException
    {
-      validate(size);
+      if (size < 0)
+      {
+         throw new IOException("Size must be higher or equals 0. But given " + size);
+      }
 
       byte[] newBytes = new byte[(int)size];
       System.arraycopy(value, 0, newBytes, 0, Math.min(value.length, newBytes.length));

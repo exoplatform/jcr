@@ -19,19 +19,17 @@
 package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
 /**
@@ -55,32 +53,23 @@ public class DateValue extends BaseValue
       super(TYPE, new TransientValueData(date));
    }
 
+   /**
+    * Constructs a <code>DateValue</code> object representing a date.
+    */
    DateValue(ValueData data) throws IOException
    {
       super(TYPE, data);
    }
 
    /**
-    * @see BaseValue#getInternalString()
+    * {@inheritDoc}
     */
-   protected String getInternalString() throws ValueFormatException, RepositoryException
-   {
-      Calendar date = getInternalCalendar();
-
-      if (date != null)
-      {
-         return JCRDateFormat.format(date);
-      }
-
-      throw new ValueFormatException("empty value");
-   }
-
-   /**
-    * @see Value#getLong
-    */
+   @Override
    public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      Calendar date = getInternalCalendar();
+      validateByteArrayMethodInvoking();
+
+      Calendar date = ValueDataUtil.getDate(getInternalData());
 
       if (date != null)
       {
@@ -93,20 +82,34 @@ public class DateValue extends BaseValue
    }
 
    /**
-    * @see Value#getBoolean
+    * {@inheritDoc}
     */
+   @Override
    public boolean getBoolean() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-
       throw new ValueFormatException("cannot convert date to boolean");
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public String getString() throws ValueFormatException, IllegalStateException, RepositoryException
+   {
+      validateByteArrayMethodInvoking();
+
+      return getInternalString();
    }
 
    /**
-    * @see Value#getDouble
+    * {@inheritDoc}
     */
+   @Override
    public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      Calendar date = getInternalCalendar();
+      validateByteArrayMethodInvoking();
+
+      Calendar date = ValueDataUtil.getDate(getInternalData());
 
       if (date != null)
       {
@@ -123,12 +126,15 @@ public class DateValue extends BaseValue
       }
    }
 
-   // @Override
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public long getLength()
    {
       try
       {
-         return getInternalString().length();
+         return getString().length();
       }
       catch (ValueFormatException e)
       {
@@ -140,32 +146,30 @@ public class DateValue extends BaseValue
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    @Override
-   public InputStream getStream() throws ValueFormatException, RepositoryException
+   protected InputStream getAsStream() throws IOException, ValueFormatException, IllegalStateException,
+      RepositoryException
    {
-
-      try
-      {
-         if (data == null)
-         {
-            String inernalString = getInternalString();
-
-            // force replace of data
-            data = new LocalSessionValueData(true);
-
-            // Replace internall stram
-            data.stream = new ByteArrayInputStream(inernalString.getBytes(Constants.DEFAULT_ENCODING));
-         }
-         return data.getAsStream();
-      }
-      catch (UnsupportedEncodingException e)
-      {
-         throw new RepositoryException(Constants.DEFAULT_ENCODING + " not supported on this platform", e);
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e);
-      }
-
+      return new ByteArrayInputStream(getInternalString().getBytes());
    }
+
+   /**
+    * Returns {@link Calendar} represented in String format.
+    */
+   private String getInternalString() throws RepositoryException
+   {
+      Calendar date = ValueDataUtil.getDate(internalData);
+      if (date != null)
+      {
+         return JCRDateFormat.format(date);
+      }
+      else
+      {
+         throw new ValueFormatException("empty value");
+      }
+   }
+
 }

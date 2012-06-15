@@ -36,7 +36,7 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.xml.ItemDataKeeperAdapter;
 import org.exoplatform.services.jcr.impl.xml.importing.ContentImporter;
 import org.exoplatform.services.log.ExoLogger;
@@ -255,7 +255,7 @@ public class VersionHistoryImporter
             (PropertyData)dataManager.getItemData(versionHistoryData, new QPathEntry(Constants.JCR_VERSIONABLEUUID, 1),
                ItemType.PROPERTY);
 
-         String versionableUuid = ValueDataConvertor.readString(versionableUuidProp.getValues().get(0));
+         String versionableUuid = ValueDataUtil.getString(versionableUuidProp.getValues().get(0));
 
          // fetch child versionable node
 
@@ -293,7 +293,7 @@ public class VersionHistoryImporter
             PropertyData propVersionHistory =
                (PropertyData)dataManager.getItemData(versionedChild, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1),
                   ItemType.PROPERTY);
-            String prevVerHistoryId = ValueDataConvertor.readString(propVersionHistory.getValues().get(0));
+            String prevVerHistoryId = ValueDataUtil.getString(propVersionHistory.getValues().get(0));
 
             PropertyData propBaseVersion =
                (PropertyData)dataManager.getItemData(versionedChild, new QPathEntry(Constants.JCR_BASEVERSION, 1),

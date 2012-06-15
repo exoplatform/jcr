@@ -21,9 +21,9 @@ package org.exoplatform.services.jcr.impl.core.value;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.core.JCRName;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -44,12 +44,18 @@ public class NameValue extends BaseValue
 
    private final LocationFactory locationFactory;
 
+   /**
+    * NameValue constructor.
+    */
    public NameValue(InternalQName name, LocationFactory locationFactory) throws IOException
    {
       super(TYPE, new TransientValueData(name));
       this.locationFactory = locationFactory;
    }
 
+   /**
+    * NameValue constructor.
+    */
    public NameValue(ValueData data, LocationFactory locationFactory) throws IOException
    {
       super(TYPE, data);
@@ -59,15 +65,18 @@ public class NameValue extends BaseValue
    /**
     * {@inheritDoc}
     */
+   @Override
    public String getString() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      JCRName name = locationFactory.createJCRName(getQName());
-      return name.getAsString();
+      validateByteArrayMethodInvoking();
+
+      return ValueDataUtil.getName(getInternalData(), locationFactory);
    }
 
    /**
     * {@inheritDoc}
     */
+   @Override
    public Calendar getDate() throws ValueFormatException, IllegalStateException, RepositoryException
    {
       throw new ValueFormatException("conversion to date failed: inconvertible types");
@@ -76,6 +85,7 @@ public class NameValue extends BaseValue
    /**
     * {@inheritDoc}
     */
+   @Override
    public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
    {
       throw new ValueFormatException("conversion to long failed: inconvertible types");
@@ -84,6 +94,7 @@ public class NameValue extends BaseValue
    /**
     * {@inheritDoc}
     */
+   @Override
    public boolean getBoolean() throws ValueFormatException, IllegalStateException, RepositoryException
    {
       throw new ValueFormatException("conversion to boolean failed: inconvertible types");
@@ -92,29 +103,25 @@ public class NameValue extends BaseValue
    /**
     * {@inheritDoc}
     */
+   @Override
    public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
    {
       throw new ValueFormatException("conversion to double failed: inconvertible types");
    }
 
    /**
-    * Return name value.
-    * 
-    * @return qname InternalQName
-    * @throws ValueFormatException
-    * @throws IllegalStateException
-    * @throws RepositoryException
+    * Return {@link InternalQName} value.
     */
-   public InternalQName getQName() throws ValueFormatException, IllegalStateException, RepositoryException
+   public InternalQName getQName() throws ValueFormatException, IllegalStateException,
+      RepositoryException
    {
       try
       {
-         return InternalQName.parse(getInternalString());
+         return InternalQName.parse(ValueDataUtil.getString(internalData));
       }
       catch (IllegalNameException e)
       {
-         throw new RepositoryException(e);
+         throw new RepositoryException(e.getMessage(), e);
       }
    }
-
 }

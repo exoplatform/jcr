@@ -37,9 +37,9 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
@@ -54,7 +54,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -122,7 +121,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected final List<ValueIOChannel> valueChanges;
 
    protected final WriteValueHelper writeValueHelper = new WriteValueHelper();
-
+   
    // All statements should be closed in closeStatements() method.
 
    protected PreparedStatement findItemById;
@@ -2321,7 +2320,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, InternalQName.parse(cname));
 
          String identifier = getIdentifier(cid);
-         List<ValueData> values = readValues(cid, identifier, cversion);
+         List<ValueData> values = readValues(cid, cptype, identifier, cversion);
          PersistedPropertyData pdata =
             new PersistedPropertyData(identifier, qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued, values);
 
@@ -2411,8 +2410,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws ValueStorageNotFoundException
     *           if no such storage found with Value storageId
     */
-   private List<ValueData> readValues(String cid, String identifier, int cversion) throws IOException, SQLException,
-      ValueStorageNotFoundException
+   private List<ValueData> readValues(String cid, int cptype, String identifier, int cversion) throws IOException,
+      SQLException, ValueStorageNotFoundException
    {
 
       List<ValueData> data = new ArrayList<ValueData>();
@@ -2425,8 +2424,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             final int orderNum = valueRecords.getInt(COLUMN_VORDERNUM);
             final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
             ValueData vdata =
-               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion,
-                  valueRecords.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+               valueRecords.wasNull() ? ValueDataUtil.readValueData(cid, cptype, orderNum, cversion,
+                  valueRecords.getBinaryStream(COLUMN_VDATA), containerConfig.spoolConfig) : readValueData(identifier,
+                  orderNum, cptype, storageId);
             data.add(vdata);
          }
       }
@@ -2452,6 +2452,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     *          PropertyData
     * @param orderNumber
     *          Value order number
+    * @param type
+    *          property type         
     * @param storageId
     *          external Value storage id
     * @return ValueData
@@ -2462,104 +2464,18 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws ValueStorageNotFoundException
     *           if no such storage found with Value storageId
     */
-   protected ValueData readValueData(String identifier, int orderNumber, String storageId) throws SQLException,
-      IOException, ValueStorageNotFoundException
+   protected ValueData readValueData(String identifier, int orderNumber, int type, String storageId)
+      throws SQLException, IOException, ValueStorageNotFoundException
    {
       ValueIOChannel channel = this.containerConfig.valueStorageProvider.getChannel(storageId);
       try
       {
-         return channel.read(identifier, orderNumber, this.containerConfig.maxBufferSize);
+         return channel.read(identifier, orderNumber, type, containerConfig.spoolConfig);
       }
       finally
       {
          channel.close();
       }
-   }
-
-   /**
-    * Read ValueData from database.
-    * 
-    * @param cid
-    *          Property id
-    * @param orderNumber
-    *          Value order number
-    * @param version
-    *          persistent version (used for BLOB swapping)
-    * @param content
-    * @return ValueData
-    * @throws SQLException
-    *           database error
-    * @throws IOException
-    *           I/O error (swap)
-    */
-   protected ValueData readValueData(String cid, int orderNumber, int version, final InputStream content)
-      throws SQLException, IOException
-   {
-
-      byte[] buffer = new byte[0];
-      byte[] spoolBuffer = new byte[ValueFileIOHelper.IOBUFFER_SIZE];
-      int read;
-      int len = 0;
-      OutputStream out = null;
-
-      SwapFile swapFile = null;
-      try
-      {
-         // stream from database
-         if (content != null)
-         {
-            while ((read = content.read(spoolBuffer)) >= 0)
-            {
-               if (out != null)
-               {
-                  // spool to temp file
-                  out.write(spoolBuffer, 0, read);
-                  len += read;
-               }
-               else if (len + read > this.containerConfig.maxBufferSize)
-               {
-                  // threshold for keeping data in memory exceeded;
-                  // create temp file and spool buffer contents
-                  swapFile = SwapFile.get(this.containerConfig.swapDirectory, cid + orderNumber + "." + version);
-                  if (swapFile.isSpooled())
-                  {
-                     // break, value already spooled
-                     buffer = null;
-                     break;
-                  }
-                  out = PrivilegedFileHelper.fileOutputStream(swapFile);
-                  out.write(buffer, 0, len);
-                  out.write(spoolBuffer, 0, read);
-                  buffer = null;
-                  len += read;
-               }
-               else
-               {
-                  // reallocate new buffer and spool old buffer contents
-                  byte[] newBuffer = new byte[len + read];
-                  System.arraycopy(buffer, 0, newBuffer, 0, len);
-                  System.arraycopy(spoolBuffer, 0, newBuffer, len, read);
-                  buffer = newBuffer;
-                  len += read;
-               }
-            }
-         }
-      }
-      finally
-      {
-         if (out != null)
-         {
-            out.close();
-            swapFile.spoolDone();
-         }
-      }
-
-      if (buffer == null)
-      {
-         return new CleanableFilePersistedValueData(orderNumber, swapFile, this.containerConfig.swapCleaner);
-      }
-
-      return new ByteArrayPersistedValueData(orderNumber, buffer);
    }
 
    /**
@@ -2598,7 +2514,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                StreamPersistedValueData streamData = (StreamPersistedValueData)vd;
 
                SwapFile swapFile =
-                  SwapFile.get(this.containerConfig.swapDirectory, cid + i + "." + data.getPersistedVersion());
+                  SwapFile.get(this.containerConfig.spoolConfig.tempDirectory,
+                     cid + i + "." + data.getPersistedVersion());
                try
                {
                   writeValueHelper.writeStreamedValue(swapFile, streamData);
@@ -2672,7 +2589,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       if (ptTempProp != null)
       {
          ptValue = ptTempProp.first().getValueData();
-         ptName = InternalQName.parse(new String(ptValue.getAsByteArray(), Constants.DEFAULT_ENCODING));
+         ptName = InternalQName.parse(ValueDataUtil.getString(ptValue));
       }
 
       // mixins if exist in the list of properties
@@ -2687,7 +2604,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             ValueData vdata = mxnb.getValueData();
 
             mixinsData.add(vdata);
-            mixins.add(InternalQName.parse(new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING)));
+            mixins.add(InternalQName.parse(ValueDataUtil.getString(vdata)));
          }
       }
 
@@ -2773,12 +2690,15 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
       protected ValueData data;
 
-      public TempPropertyData(ResultSet item) throws SQLException
+      public TempPropertyData(ResultSet item) throws SQLException, IOException
       {
          this(item, true);
       }
 
-      public TempPropertyData(ResultSet item, boolean readValue) throws SQLException
+      /**
+       * Constructor TempPropertyData.
+       */
+      public TempPropertyData(ResultSet item, boolean readValue) throws SQLException, IOException
       {
          orderNum = item.getInt(COLUMN_VORDERNUM);
          data = readValue ? new ByteArrayPersistedValueData(orderNum, item.getBytes(COLUMN_VDATA)) : null;
@@ -2806,10 +2726,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
       protected final int version;
 
-      protected final int type;
-
       protected final boolean multi;
 
+      protected final int type;
+      
       protected final String storage_desc;
 
       public ExtendedTempPropertyData(ResultSet item) throws SQLException, ValueStorageNotFoundException, IOException
@@ -2818,13 +2738,13 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          id = item.getString("P_ID");
          name = item.getString("P_NAME");
          version = item.getInt("P_VERSION");
-         type = item.getInt("P_TYPE");
+         type = item.getInt(COLUMN_PTYPE);
          multi = item.getBoolean("P_MULTIVALUED");
          storage_desc = item.getString(COLUMN_VSTORAGE_DESC);
          InputStream is = item.getBinaryStream(COLUMN_VDATA);
          data =
-            storage_desc == null ? readValueData(id, orderNum, version, is) : readValueData(getIdentifier(id),
-               orderNum, storage_desc);
+            storage_desc == null ? ValueDataUtil.readValueData(id, type, orderNum, version, is,
+               containerConfig.spoolConfig) : readValueData(getIdentifier(id), orderNum, type, storage_desc);
       }
    }
 

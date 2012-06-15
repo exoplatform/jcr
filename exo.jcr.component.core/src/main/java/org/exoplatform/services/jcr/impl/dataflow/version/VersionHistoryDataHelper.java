@@ -33,10 +33,10 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -173,15 +173,7 @@ public class VersionHistoryDataHelper extends TransientNodeData
          if (createdData == null)
             throw new VersionException("jcr:created is not found, version: " + vd.getQPath().getAsString());
 
-         Calendar created = null;
-         try
-         {
-            created = new JCRDateFormat().deserialize(new String(createdData.getValues().get(0).getAsByteArray()));
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException(e);
-         }
+         Calendar created = new JCRDateFormat().deserialize(ValueDataUtil.getString(createdData.getValues().get(0)));
 
          if (lastVersionData == null || created.after(lastCreated))
          {
@@ -220,16 +212,12 @@ public class VersionHistoryDataHelper extends TransientNodeData
             // label found
             try
             {
-               String versionIdentifier = new String(prop.getValues().get(0).getAsByteArray());
+               String versionIdentifier = ValueDataUtil.getString(prop.getValues().get(0));
                return (NodeData)dataManager.getItemData(versionIdentifier);
             }
             catch (IllegalStateException e)
             {
                throw new RepositoryException("Version label data error: " + e.getMessage(), e);
-            }
-            catch (IOException e)
-            {
-               throw new RepositoryException("Version label data reading error: " + e.getMessage(), e);
             }
          }
       }

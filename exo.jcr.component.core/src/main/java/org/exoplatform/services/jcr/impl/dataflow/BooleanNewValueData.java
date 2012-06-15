@@ -18,55 +18,19 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.services.jcr.datamodel.ValueData;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
  * @version $Id: BooleanNewValueData.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class BooleanNewValueData extends AbstractNewValueData
+public class BooleanNewValueData extends BooleanValueData implements NewValueData
 {
-
-   /**
-    * The value.
-    */
-   private final boolean value;
 
    /**
     * BooleanNewValueData constructor.
     */
    protected BooleanNewValueData(int orderNumber, boolean value)
    {
-      super(orderNumber);
-      this.value = value;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected boolean internalEquals(ValueData another)
-   {
-      if (another instanceof BooleanNewValueData)
-      {
-         return ((BooleanNewValueData)another).value == value;
-      }
-
-      return false;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected byte[] spoolInternalValue()
-   {
-      return Boolean.toString(value).getBytes();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public String toString()
-   {
-      return Boolean.toString(value);
+      super(orderNumber, value);
    }
 }

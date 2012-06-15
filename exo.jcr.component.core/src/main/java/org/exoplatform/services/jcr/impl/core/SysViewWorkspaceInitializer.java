@@ -43,6 +43,7 @@ import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
@@ -753,8 +754,8 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                            // check NodeData specific properties
                            if (currentProperty.getQPath().getName().equals(Constants.JCR_PRIMARYTYPE))
                            {
-                              parent.setPrimartTypeName(InternalQName.parse(new String(currentProperty.getValues().get(
-                                 0).getAsByteArray())));
+                              parent.setPrimartTypeName(InternalQName.parse(ValueDataUtil.getString(currentProperty
+                                 .getValues().get(0))));
                            }
                            else if (currentProperty.getQPath().getName().equals(Constants.JCR_MIXINTYPES))
                            {
@@ -762,16 +763,13 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                               for (int i = 0; i < currentProperty.getValues().size(); i++)
                               {
                                  mixins[i] =
-                                    InternalQName
-                                       .parse(new String(currentProperty.getValues().get(i).getAsByteArray()));
+                                    InternalQName.parse(ValueDataUtil.getString(currentProperty.getValues().get(i)));
                               }
                               parent.setMixinTypeNames(mixins);
                            }
                            else if (currentProperty.getQPath().getName().equals(Constants.EXO_OWNER))
                            {
-                              String exoOwner =
-                                 new String(currentProperty.getValues().get(0).getAsByteArray(),
-                                    Constants.DEFAULT_ENCODING);
+                              String exoOwner = ValueDataUtil.getString(currentProperty.getValues().get(0));
                               parent.setExoOwner(exoOwner);
 
                               SVNodeData curParent = parents.pop();
@@ -788,8 +786,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                               List<String> exoPrivileges = new ArrayList<String>();
                               for (int i = 0; i < currentProperty.getValues().size(); i++)
                               {
-                                 exoPrivileges.add(new String(currentProperty.getValues().get(i).getAsByteArray(),
-                                    Constants.DEFAULT_ENCODING));
+                                 exoPrivileges.add(ValueDataUtil.getString(currentProperty.getValues().get(i)));
                               }
                               parent.setExoPrivileges(exoPrivileges);
 
@@ -852,7 +849,7 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
                               {
                                  vdata =
                                     new TransientValueData(currentProperty.getValues().size(), null, new SpoolFile(
-                                       PrivilegedFileHelper.getAbsolutePath(pfile)), spoolConfig, true);
+                                       PrivilegedFileHelper.getAbsolutePath(pfile)), spoolConfig);
                               }
                               else
                               {

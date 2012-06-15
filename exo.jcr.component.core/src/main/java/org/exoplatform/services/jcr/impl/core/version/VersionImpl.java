@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
 
@@ -112,26 +113,19 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       List<ValueData> successorsValues = successorsData.getValues();
       Version[] successors = new Version[successorsValues.size()];
 
-      try
+      for (int i = 0; i < successorsValues.size(); i++)
       {
-         for (int i = 0; i < successorsValues.size(); i++)
+         String videntifier = ValueDataUtil.getString(successorsValues.get(i));
+         VersionImpl version = (VersionImpl)dataManager.getItemByIdentifier(videntifier, true);
+         if (version != null)
          {
-            String videntifier = new String(successorsValues.get(i).getAsByteArray());
-            VersionImpl version = (VersionImpl)dataManager.getItemByIdentifier(videntifier, true);
-            if (version != null)
-            {
-               successors[i] = version;
-            }
-            else
-            {
-               throw new RepositoryException("Successor version is not found " + videntifier + ", this version "
-                  + getPath());
-            }
+            successors[i] = version;
          }
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException("Successor value read error " + e, e);
+         else
+         {
+            throw new RepositoryException("Successor version is not found " + videntifier + ", this version "
+               + getPath());
+         }
       }
 
       return successors;
@@ -156,28 +150,20 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
       List<ValueData> predecessorsValues = predecessorsData.getValues();
       Version[] predecessors = new Version[predecessorsValues.size()];
 
-      try
+      for (int i = 0; i < predecessorsValues.size(); i++)
       {
-         for (int i = 0; i < predecessorsValues.size(); i++)
+         String videntifier = ValueDataUtil.getString(predecessorsValues.get(i));
+         VersionImpl version = (VersionImpl)dataManager.getItemByIdentifier(videntifier, false, false);
+         if (version != null)
          {
-            String videntifier = new String(predecessorsValues.get(i).getAsByteArray());
-            VersionImpl version = (VersionImpl)dataManager.getItemByIdentifier(videntifier, false, false);
-            if (version != null)
-            {
-               predecessors[i] = version;
-            }
-            else
-            {
-               throw new RepositoryException("Predecessor version is not found " + videntifier + ", this version "
-                  + getPath());
-            }
+            predecessors[i] = version;
+         }
+         else
+         {
+            throw new RepositoryException("Predecessor version is not found " + videntifier + ", this version "
+               + getPath());
          }
       }
-      catch (IOException e)
-      {
-         throw new RepositoryException("Predecessor value read error " + e, e);
-      }
-
       return predecessors;
    }
 
@@ -209,7 +195,7 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          {
             for (ValueData svd : successorsProp.getValues())
             {
-               newSuccessorsValue.add(new TransientValueData(svd.getAsByteArray()));
+               newSuccessorsValue.add(ValueDataUtil.createTransientCopy(svd));
             }
          }
          catch (IOException e)
@@ -255,7 +241,7 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          {
             for (ValueData svd : predeccessorsProp.getValues())
             {
-               newPredeccessorValue.add(new TransientValueData(svd.getAsByteArray()));
+               newPredeccessorValue.add(ValueDataUtil.createTransientCopy(svd));
             }
          }
          catch (IOException e)
@@ -287,10 +273,9 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          {
             for (ValueData sdata : successorsProp.getValues())
             {
-               byte[] sb = sdata.getAsByteArray();
-               if (!successorIdentifier.equals(new String(sb)))
+               if (!successorIdentifier.equals(ValueDataUtil.getString(sdata)))
                {
-                  newSuccessors.add(new TransientValueData(sb));
+                  newSuccessors.add(ValueDataUtil.createTransientCopy(sdata));
                }
             }
          }
@@ -328,10 +313,9 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          {
             for (ValueData sdata : successorsProp.getValues())
             {
-               byte[] sb = sdata.getAsByteArray();
-               if (!removedSuccessorIdentifier.equals(new String(sb)))
+               if (!removedSuccessorIdentifier.equals(ValueDataUtil.getString(sdata)))
                {
-                  newSuccessors.add(new TransientValueData(sb));
+                  newSuccessors.add(ValueDataUtil.createTransientCopy(sdata));
                }
             }
          }
@@ -369,10 +353,9 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          {
             for (ValueData sdata : predeccessorsProp.getValues())
             {
-               byte[] sb = sdata.getAsByteArray();
-               if (!predecessorIdentifier.equals(new String(sb)))
+               if (!predecessorIdentifier.equals(ValueDataUtil.getString(sdata)))
                {
-                  newPredeccessors.add(new TransientValueData(sb));
+                  newPredeccessors.add(ValueDataUtil.createTransientCopy(sdata));
                }
             }
          }
@@ -410,10 +393,9 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
          {
             for (ValueData sdata : predeccessorsProp.getValues())
             {
-               byte[] sb = sdata.getAsByteArray();
-               if (!removedPredecessorIdentifier.equals(new String(sb)))
+               if (!removedPredecessorIdentifier.equals(ValueDataUtil.getString(sdata)))
                {
-                  newPredeccessors.add(new TransientValueData(sb));
+                  newPredeccessors.add(ValueDataUtil.createTransientCopy(sdata));
                }
             }
          }

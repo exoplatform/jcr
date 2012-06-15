@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
@@ -36,6 +37,7 @@ import java.util.Random;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
+import javax.jcr.PropertyType;
 import javax.jcr.Value;
 
 /**
@@ -143,7 +145,7 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
          {
             try
             {
-               channels.get(i).read(propertyId, i, 2100 * 1024);
+               channels.get(i).read(propertyId, i, PropertyType.BINARY, SpoolConfig.getDefaultSpoolConfig());
             }
             catch (IOException e)
             {

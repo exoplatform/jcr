@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 
 import java.io.IOException;
 import java.util.Calendar;
@@ -27,7 +28,6 @@ import java.util.Date;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
 /**
@@ -41,23 +41,31 @@ public class LongValue extends BaseValue
 
    public static final int TYPE = PropertyType.LONG;
 
+   /**
+    * LongValue constructor.
+    */
    public LongValue(long l) throws IOException
    {
       super(TYPE, new TransientValueData(l));
    }
 
+   /**
+    * LongValue constructor.
+    */
    LongValue(ValueData data) throws IOException
    {
       super(TYPE, data);
    }
 
    /**
-    * @see Value#getDate
+    * {@inheritDoc}
     */
+   @Override
    public Calendar getDate() throws ValueFormatException, IllegalStateException, RepositoryException
    {
+      validateByteArrayMethodInvoking();
 
-      Long longNumber = new Long(getInternalString());
+      Long longNumber = ValueDataUtil.getLong(getInternalData());
 
       if (longNumber != null)
       {
@@ -73,20 +81,23 @@ public class LongValue extends BaseValue
    }
 
    /**
-    * @see Value#getBoolean
+    * {@inheritDoc}
     */
+   @Override
    public boolean getBoolean() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-
       throw new ValueFormatException("conversion to boolean failed: inconvertible types");
    }
 
    /**
-    * @see Value#getDouble
+    * {@inheritDoc}
     */
+   @Override
    public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      Long longNumber = new Long(getInternalString());
+      validateByteArrayMethodInvoking();
+
+      Long longNumber = ValueDataUtil.getLong(getInternalData());
 
       if (longNumber != null)
       {

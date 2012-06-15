@@ -26,10 +26,10 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
 import java.util.Stack;
 
 import javax.jcr.RepositoryException;
@@ -78,18 +78,10 @@ public class ChildVersionRemoveVisitor extends ItemDataTraversingVisitor
          && nodeTypeDataManager.isNodeType(Constants.NT_VERSIONEDCHILD, parents.peek().getPrimaryTypeName(), parents
             .peek().getMixinTypeNames()))
       {
-
          // check and remove child VH
-         try
-         {
-            String vhID = new String(property.getValues().get(0).getAsByteArray());
+         String vhID = ValueDataUtil.getString(property.getValues().get(0));
 
-            dataManager().removeVersionHistory(vhID, containingHistory, ancestorToSave);
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException("Child version history UUID read error " + e, e);
-         }
+         dataManager().removeVersionHistory(vhID, containingHistory, ancestorToSave);
       }
    }
 

@@ -18,48 +18,19 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.services.jcr.datamodel.ValueData;
-
-import java.util.Arrays;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
  * @version $Id: ByteArrayNewValueData.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class ByteArrayNewValueData extends AbstractNewValueData
+public class ByteArrayNewValueData extends ByteArrayValueData implements NewValueData
 {
-   /**
-    * The value.
-    */
-   protected byte[] value;
-
    /**
     * ByteArrayNewValueData constructor.
     */
    protected ByteArrayNewValueData(int orderNumber, byte[] value)
    {
-      super(orderNumber);
+      super(orderNumber, value);
       this.value = value;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected boolean internalEquals(ValueData another)
-   {
-      if (another instanceof ByteArrayNewValueData)
-      {
-         return Arrays.equals(((ByteArrayNewValueData)another).value, value);
-      }
-
-      return false;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected byte[] spoolInternalValue()
-   {
-      return value;
    }
 }

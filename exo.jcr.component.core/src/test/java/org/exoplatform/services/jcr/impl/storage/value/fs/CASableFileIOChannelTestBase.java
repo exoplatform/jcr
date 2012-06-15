@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordAlreadyExistsException;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordNotFoundException;
@@ -31,6 +32,8 @@ import org.exoplatform.services.log.Log;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+
+import javax.jcr.PropertyType;
 
 /**
  * Created by The eXo Platform SAS
@@ -205,7 +208,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       fch.write(propertyId, value);
       fch.commit();
 
-      ValueData fvalue = fch.read(propertyId, value.getOrderNumber(), 200 * 1024);
+      ValueData fvalue =
+         fch.read(propertyId, value.getOrderNumber(), PropertyType.BINARY, SpoolConfig.getDefaultSpoolConfig());
 
       InputStream etalon, tested;
       compareStream(etalon = new FileInputStream(testFile), tested = fvalue.getAsStream());
@@ -281,7 +285,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 
       try
       {
-         openCASChannel(digestType).read(IdGenerator.generate(), 1, 1024 * 200);
+         openCASChannel(digestType).read(IdGenerator.generate(), 1, PropertyType.BINARY,
+            SpoolConfig.getDefaultSpoolConfig());
          fail("RecordNotFoundException should be thrown, record not found");
       }
       catch (RecordNotFoundException e)

@@ -38,6 +38,7 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.xml.VersionHistoryRemover;
@@ -48,7 +49,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -658,18 +658,12 @@ public abstract class BaseXmlImporter implements ContentImporter
          PropertyData vhpd =
             (PropertyData)dataConsumer.getItemData(mixVersionableNode, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1),
                ItemType.PROPERTY);
-         try
-         {
-            String vhID = new String(vhpd.getValues().get(0).getAsByteArray());
-            VersionHistoryRemover historyRemover =
-               new VersionHistoryRemover(vhID, dataConsumer, nodeTypeDataManager, repository, currentWorkspaceName,
-                  null, ancestorToSave, changesLog, accessManager, userState);
-            historyRemover.remove();
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException(e);
-         }
+
+         String vhID = ValueDataUtil.getString(vhpd.getValues().get(0));
+         VersionHistoryRemover historyRemover =
+            new VersionHistoryRemover(vhID, dataConsumer, nodeTypeDataManager, repository, currentWorkspaceName, null,
+               ancestorToSave, changesLog, accessManager, userState);
+         historyRemover.remove();
       }
       catch (IllegalStateException e)
       {

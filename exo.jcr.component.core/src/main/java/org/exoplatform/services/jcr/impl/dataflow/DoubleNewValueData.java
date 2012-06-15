@@ -18,55 +18,18 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.services.jcr.datamodel.ValueData;
-
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
  * @version $Id: DoubleNewValueData.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class DoubleNewValueData extends AbstractNewValueData
+public class DoubleNewValueData extends DoubleValueData implements NewValueData
 {
-   /**
-    * The value.
-    */
-   private final double value;
-
    /**
     * DoubleNewValueData constructor.
     */
    protected DoubleNewValueData(int orderNumber, double value)
    {
-      super(orderNumber);
-      this.value = value;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected boolean internalEquals(ValueData another)
-   {
-      if (another instanceof DoubleNewValueData)
-      {
-         return ((DoubleNewValueData)another).value == value;
-      }
-
-      return false;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected byte[] spoolInternalValue()
-   {
-      return Double.toString(value).getBytes();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public String toString()
-   {
-      return Double.toString(value);
+      super(orderNumber, value);
    }
 }

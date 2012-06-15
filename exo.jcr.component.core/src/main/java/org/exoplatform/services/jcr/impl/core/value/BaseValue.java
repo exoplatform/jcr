@@ -21,17 +21,13 @@ package org.exoplatform.services.jcr.impl.core.value;
 import org.exoplatform.services.jcr.core.value.ExtendedValue;
 import org.exoplatform.services.jcr.core.value.ReadableBinaryValue;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractSessionValueData;
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Arrays;
 import java.util.Calendar;
 
 import javax.jcr.PropertyType;
@@ -49,13 +45,36 @@ import javax.jcr.ValueFormatException;
 public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
 {
 
+   /**
+    * Logger.
+    */
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.BaseValue");
 
+   /**
+    * Value type.
+    */
    protected final int type;
 
-   protected LocalSessionValueData data;
-
+   /**
+    * Internal value data.
+    */
    protected ValueData internalData;
+
+   /**
+    * Indicates that stream consuming method already was invoked.
+    */
+   protected boolean streamConsumed;
+
+   /**
+    * Indicates that bytes consuming method already was invoked. 
+    */
+   protected boolean bytesConsumed;
+
+   /**
+    * Store stream value. Should returns same stream instance for different
+    * invoking {@link BaseValue#getStream()} method.
+    */
+   protected InputStream stream;
 
    /**
     * Package-private default constructor.
@@ -72,80 +91,6 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
    }
 
    /**
-    * Return Session scope ValueData.
-    * 
-    * @param asStream
-    *          boolean
-    * @return LocalSessionValueData
-    * @throws IOException
-    *           if error
-    */
-   protected LocalSessionValueData getLocalData(boolean asStream) throws IOException
-   {
-      if (data == null)
-      {
-         data = new LocalSessionValueData(asStream);
-      }
-
-      return data;
-   }
-
-   /**
-    * Returns the internal string representation of this value without modifying the value state.
-    * 
-    * @return String the internal string representation
-    * @throws ValueFormatException
-    *           if the value can not be represented as a <code>String</code> or if the value is
-    *           <code>null</code>.
-    * @throws RepositoryException 
-    *           if another error occurs.
-    */
-   protected String getInternalString() throws ValueFormatException, RepositoryException
-   {
-      try
-      {
-         return new String(getLocalData(false).getAsByteArray(), Constants.DEFAULT_ENCODING);
-      }
-      catch (UnsupportedEncodingException e)
-      {
-         throw new RepositoryException(Constants.DEFAULT_ENCODING + " not supported on this platform", e);
-      }
-      catch (IOException e)
-      {
-         throw new ValueFormatException("conversion to string failed: " + e.getMessage(), e);
-      }
-   }
-
-   /**
-    * Return the internal calendar.
-    * 
-    * @return Calendar
-    * @throws ValueFormatException
-    *           if formatter error
-    * @throws RepositoryException
-    *           if other error
-    */
-   protected Calendar getInternalCalendar() throws ValueFormatException, RepositoryException
-   {
-      try
-      {
-         if (type == PropertyType.DATE)
-            return new JCRDateFormat().deserialize(new String(getLocalData(false).getAsByteArray(),
-               Constants.DEFAULT_ENCODING));
-
-         return JCRDateFormat.parse(new String(getLocalData(false).getAsByteArray(), Constants.DEFAULT_ENCODING));
-      }
-      catch (UnsupportedEncodingException e)
-      {
-         throw new RepositoryException(Constants.DEFAULT_ENCODING + " not supported on this platform", e);
-      }
-      catch (IOException e)
-      {
-         throw new ValueFormatException("conversion to date failed: " + e.getMessage(), e);
-      }
-   }
-
-   /**
     * {@inheritDoc}
     */
    public final int getType()
@@ -158,16 +103,9 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
     */
    public Calendar getDate() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      Calendar cal = getInternalCalendar();
+      validateByteArrayMethodInvoking();
 
-      if (cal == null)
-      {
-         throw new ValueFormatException("not a valid date format " + getInternalString());
-      }
-      else
-      {
-         return cal;
-      }
+      return ValueDataUtil.getDate(getInternalData());
    }
 
    /**
@@ -175,13 +113,15 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
     */
    public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
    {
+      validateByteArrayMethodInvoking();
+
       try
       {
-         return Long.parseLong(getInternalString());
+         return ValueDataUtil.getLong(getInternalData());
       }
       catch (NumberFormatException e)
       {
-         throw new ValueFormatException("conversion to long failed", e);
+         throw new ValueFormatException("Can't convert to Long value");
       }
    }
 
@@ -190,7 +130,9 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
     */
    public boolean getBoolean() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      return Boolean.valueOf(getInternalString()).booleanValue();
+      validateByteArrayMethodInvoking();
+
+      return ValueDataUtil.getBoolean(getInternalData());
    }
 
    /**
@@ -198,13 +140,15 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
     */
    public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
    {
+      validateByteArrayMethodInvoking();
+
       try
       {
-         return Double.parseDouble(getInternalString());
+         return ValueDataUtil.getDouble(getInternalData());
       }
       catch (NumberFormatException e)
       {
-         throw new ValueFormatException("conversion to double failed", e);
+         throw new ValueFormatException("Can't convert to Long value");
       }
    }
 
@@ -213,13 +157,20 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
     */
    public InputStream getStream() throws ValueFormatException, RepositoryException
    {
+      validateStreamMethodInvoking();
+
       try
       {
-         return getLocalData(true).getAsStream();
+         if (stream == null)
+         {
+            stream = getAsStream();
+         }
+
+         return stream;
       }
       catch (IOException e)
       {
-         throw new RepositoryException(e);
+         throw new RepositoryException(e.getMessage(), e);
       }
    }
 
@@ -228,7 +179,9 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
     */
    public String getString() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      return getInternalString();
+      validateByteArrayMethodInvoking();
+
+      return ValueDataUtil.getString(getInternalData());
    }
 
    /**
@@ -240,43 +193,30 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
    }
 
    /**
-    * @return Returns the data TransientValueData.
-    */
-   public ValueData getInternalData()
-   {
-      return internalData;
-   }
-
-   /**
     * {@inheritDoc}
     */
    public long getLength()
    {
-      try
-      {
-         return getLocalData(type == PropertyType.BINARY).getLength();
-      }
-      catch (IOException e)
-      {
-         throw new RuntimeException(e);
-      }
+      return getInternalData().getLength();
    }
 
    /**
     * {@inheritDoc}
     */
+   @Override
    public boolean equals(Object obj)
    {
       if (this == obj)
       {
          return true;
       }
-      if (!obj.getClass().equals(getClass()))
-         return false;
-      if (obj instanceof BaseValue)
+      else if (!obj.getClass().equals(getClass()))
       {
-         BaseValue other = (BaseValue)obj;
-         return getInternalData().equals(other.getInternalData());
+         return false;
+      }
+      else if (obj instanceof BaseValue)
+      {
+         return getInternalData().equals(((BaseValue)obj).getInternalData());
       }
       return false;
    }
@@ -286,148 +226,26 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
     */
    public int getOrderNumber()
    {
-      try
-      {
-         return getLocalData(type == PropertyType.BINARY).getOrderNumber();
-      }
-      catch (IOException e)
-      {
-         throw new RuntimeException(e);
-      }
+      return getInternalData().getOrderNumber();
    }
 
    /**
-     * {@inheritDoc}
-     */
+    * {@inheritDoc}
+    */
    public long read(OutputStream stream, long length, long position) throws IOException, RepositoryException
    {
       return getInternalData().read(stream, length, position);
    }
 
    /**
-    * Session scope ValueData.
+    * {@inheritDoc}
     */
-   protected class LocalSessionValueData extends AbstractSessionValueData
-   {
-
-      protected InputStream stream;
-
-      protected byte[] bytes;
-
-      protected final long length;
-
-      /**
-       * Create new Value data.
-       * 
-       * @param asStream
-       *          boolean
-       * @throws IOException
-       *           if error
-       */
-      public LocalSessionValueData(boolean asStream) throws IOException
-      {
-         super(getInternalData().getOrderNumber());
-         ValueData idata = getInternalData();
-         if (asStream)
-         {
-            stream = idata.getAsStream();
-            bytes = null;
-         }
-         else
-         {
-            bytes = idata.getAsByteArray();
-            stream = null;
-         }
-         length = idata.getLength();
-      }
-
-      public boolean equals(ValueData another)
-      {
-         if (bytes != null)
-         {
-            // by content
-            try
-            {
-               return Arrays.equals(getAsByteArray(), another.getAsByteArray());
-            }
-            catch (IOException e)
-            {
-               LOG.error("Read error", e);
-               return false;
-            }
-         }
-         else
-         {
-            // by stream... not equals
-            return false;
-         }
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public byte[] getAsByteArray() throws IllegalStateException, IOException
-      {
-         if (streamConsumed())
-            throw new IllegalStateException("stream value has already been consumed");
-         return bytes;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public InputStream getAsStream() throws IOException, IllegalStateException
-      {
-         if (bytesConsumed())
-         {
-            throw new IllegalStateException("non-stream value has already been consumed");
-         }
-         return stream;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public long getLength()
-      {
-         return length;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public long read(OutputStream stream, long length, long position) throws IOException
-      {
-         // it's extra feature of eXoJCR, so
-         // read direct from the ValueData, i.e. don't respecting the consumed stream etc.
-         return getInternalData().read(stream, length, position);
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public boolean isByteArray()
-      {
-         return bytes != null;
-      }
-
-      private boolean streamConsumed()
-      {
-         return stream != null;
-      }
-
-      private boolean bytesConsumed()
-      {
-         return bytes != null;
-      }
-   }
-
    @Override
    public String toString()
    {
-      String typeName;
-      // contains size or value
       String info;
+
+      String typeName;
       try
       {
          typeName = PropertyType.nameFromValue(type);
@@ -437,9 +255,10 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
          // Value has abnormal type
          typeName = String.valueOf(type);
       }
+
       if (type == PropertyType.BINARY)
       {
-         info = "size: " + ((internalData == null) ? "undefined" : (internalData.getLength() + " bytes"));
+         info = "size: " + ((getInternalData() == null) ? "undefined" : (getInternalData().getLength() + " bytes"));
       }
       else
       {
@@ -456,8 +275,48 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
             info = "can't retrieve value";
          }
       }
-      return String.format("Value {\n type: %s;\n data-class: %s;\n %s\n}", typeName, internalData == null ? null
+
+      return String.format("Value {\n type: %s;\n data-class: %s;\n %s\n}", typeName, getInternalData() == null ? null
          : internalData.getClass().getName(), info);
+   }
+
+   /**
+    * Returns internal value data.
+    */
+   public ValueData getInternalData()
+   {
+      return internalData;
+   }
+
+   protected InputStream getAsStream() throws IOException, ValueFormatException, IllegalStateException,
+      RepositoryException
+   {
+      return getInternalData().getAsStream();
+   }
+
+   protected void validateStreamMethodInvoking() throws IllegalStateException
+   {
+      if (streamConsumed)
+      {
+         throw new IllegalStateException("non-stream value has already been consumed");
+      }
+
+      bytesConsumed = true;
+   }
+
+   protected void validateByteArrayMethodInvoking() throws IllegalStateException
+   {
+      if (bytesConsumed)
+      {
+         throw new IllegalStateException("non-stream value has already been consumed");
+      }
+
+      streamConsumed = true;
+   }
+
+   protected void invalidateStream()
+   {
+      this.stream = null;
    }
 
 }

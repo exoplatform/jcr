@@ -40,6 +40,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.AbstractValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManagerListener;
@@ -49,7 +50,6 @@ import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -560,32 +560,11 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                         if (vd instanceof TransientValueData)
                         {
                            TransientValueData tvd = (TransientValueData)vd;
-                           ValueData pvd;
 
-                           if (vd.isByteArray())
-                           {
-                              pvd = new ByteArrayPersistedValueData(i, vd.getAsByteArray());
-                              values.add(pvd);
-                           }
-                           else
-                           {
-                              File destFile = null;
+                           PersistedValueData pvd = tvd.createPersistedCopy(i);
+                           tvd.delegate((AbstractValueData)pvd);
 
-                              if (tvd.getSpoolFile() != null)
-                              {
-                                 // spooled to temp file
-                                 pvd = new StreamPersistedValueData(i, tvd.getSpoolFile(), destFile);
-                              }
-                              else
-                              {
-                                 // with original stream
-                                 pvd = new StreamPersistedValueData(i, tvd.getOriginalStream(), destFile);
-                              }
-
-                              values.add(pvd);
-                           }
-
-                           tvd.delegate(pvd);
+                           values.add(pvd);
                         }
                         else
                         {

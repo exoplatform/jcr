@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.query.AdditionalNamespaceResolver;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
 import org.exoplatform.services.jcr.impl.core.query.misc.Pattern;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1155,23 +1155,14 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                   continue;
                }
 
-               try
+               for (int i = 0; i < values.size(); i++)
                {
-                  for (int i = 0; i < values.size(); i++)
+                  String val = ValueDataUtil.getString(values.get(i));
+                  if (val.equals(propertyValue))
                   {
-                     byte[] bytes = values.get(i).getAsByteArray();
-                     String val = new String(bytes, Constants.DEFAULT_ENCODING);
-                     if (val.equals(propertyValue))
-                     {
-                        return true;
-                     }
+                     return true;
                   }
                }
-               catch (IOException e)
-               {
-                  LOG.error(e.getLocalizedMessage());
-               }
-
             }
             catch (RepositoryException e)
             {

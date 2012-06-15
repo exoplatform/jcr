@@ -54,6 +54,7 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.infinispan.AbstractMapper;
 import org.exoplatform.services.jcr.infinispan.CacheKey;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
@@ -338,7 +339,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                      ValueData vdata = lData.get(i);
                      try
                      {
-                        if (new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING).equals(identifier))
+                        if (ValueDataUtil.getString(vdata).equals(identifier))
                         {
                            props.add(prop);
                         }
@@ -348,7 +349,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                         // property was not added, force read from lower layer
                         return null;
                      }
-                     catch (IOException e)
+                     catch (RepositoryException e)
                      {
                         // property was not added, force read from lower layer
                         return null;
@@ -1336,7 +1337,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             String nodeIdentifier = null;
             try
             {
-               nodeIdentifier = new String(vdata.getAsByteArray(), Constants.DEFAULT_ENCODING);
+               nodeIdentifier = ValueDataUtil.getString(vdata);
             }
             catch (IllegalStateException e)
             {
@@ -1345,7 +1346,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                   LOG.trace("An exception occurred: " + e.getMessage());
                }
             }
-            catch (IOException e)
+            catch (RepositoryException e)
             {
                if (LOG.isTraceEnabled())
                {

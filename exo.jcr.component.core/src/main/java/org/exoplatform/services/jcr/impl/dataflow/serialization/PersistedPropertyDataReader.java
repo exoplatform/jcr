@@ -120,10 +120,10 @@ public class PersistedPropertyDataReader
 
          int listSize = in.readInt();
          List<ValueData> values = new ArrayList<ValueData>();
-         PersistedValueDataReader rdr = new PersistedValueDataReader(fileCleaner, maxBufferSize, holder);
+         PersistedValueDataReader rdr = new PersistedValueDataReader(holder);
          for (int i = 0; i < listSize; i++)
          {
-            values.add(rdr.read(in));
+            values.add(rdr.read(in, type));
          }
 
          prop =

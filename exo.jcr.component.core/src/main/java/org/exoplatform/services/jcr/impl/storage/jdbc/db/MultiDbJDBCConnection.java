@@ -22,7 +22,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 
@@ -34,6 +34,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Single database connection implementation.
@@ -225,7 +227,15 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
       for (int i = 0; i < values.size(); i++)
       {
          ValueData vdata = values.get(i);
-         String refNodeIdentifier = ValueDataConvertor.readString(vdata);
+         String refNodeIdentifier;
+         try
+         {
+            refNodeIdentifier = ValueDataUtil.getString(vdata);
+         }
+         catch (RepositoryException e)
+         {
+            throw new IOException(e.getMessage(), e);
+         }
 
          insertReference.setString(1, refNodeIdentifier);
          insertReference.setString(2, data.getIdentifier());

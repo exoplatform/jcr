@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCStorageConnection;
 
@@ -35,6 +36,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
+
+import javax.jcr.RepositoryException;
 
 /**
  * Single database connection implementation.
@@ -297,7 +300,16 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       for (int i = 0; i < values.size(); i++)
       {
          ValueData vdata = values.get(i);
-         String refNodeIdentifier = new String(vdata.getAsByteArray());
+
+         String refNodeIdentifier;
+         try
+         {
+            refNodeIdentifier = ValueDataUtil.getString(vdata);
+         }
+         catch (RepositoryException e)
+         {
+            throw new IOException(e.getMessage(), e);
+         }
 
          insertReference.setString(1, getInternalId(refNodeIdentifier));
          insertReference.setString(2, getInternalId(data.getIdentifier()));

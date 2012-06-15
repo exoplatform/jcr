@@ -46,6 +46,7 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.core.query.Reindexable;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
@@ -61,7 +62,6 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
-import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
@@ -286,31 +286,31 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          this.containerConfig.checkSNSNewConnection = false;
       }
 
-      // ------------- Values swap config ------------------
+      // ------------- Spool config ------------------
+      this.containerConfig.spoolConfig = SpoolConfig.getDefaultSpoolConfig();
       try
       {
-         this.containerConfig.maxBufferSize = wsConfig.getContainer().getParameterInteger(MAXBUFFERSIZE_PROP);
+         this.containerConfig.spoolConfig.maxBufferSize =
+            wsConfig.getContainer().getParameterInteger(MAXBUFFERSIZE_PROP);
       }
       catch (RepositoryConfigurationException e)
       {
-         this.containerConfig.maxBufferSize = DEF_MAXBUFFERSIZE;
+         this.containerConfig.spoolConfig.maxBufferSize = DEF_MAXBUFFERSIZE;
       }
 
       try
       {
          String sdParam = wsConfig.getContainer().getParameterValue(SWAPDIR_PROP);
-         this.containerConfig.swapDirectory = new File(sdParam);
+         this.containerConfig.spoolConfig.tempDirectory = new File(sdParam);
       }
       catch (RepositoryConfigurationException e1)
       {
-         this.containerConfig.swapDirectory = new File(DEF_SWAPDIR);
+         this.containerConfig.spoolConfig.tempDirectory = new File(DEF_SWAPDIR);
       }
-      if (!PrivilegedFileHelper.exists(containerConfig.swapDirectory))
+      if (!PrivilegedFileHelper.exists(this.containerConfig.spoolConfig.tempDirectory))
       {
-         PrivilegedFileHelper.mkdirs(containerConfig.swapDirectory);
+         PrivilegedFileHelper.mkdirs(this.containerConfig.spoolConfig.tempDirectory);
       }
-
-      this.containerConfig.swapCleaner = FileCleanerHolder.getFileCleaner();
 
       this.containerConfig.initScriptPath =
          DBInitializerHelper.scriptPath(containerConfig.dbDialect, containerConfig.dbStructureType.isMultiDatabase());
@@ -928,7 +928,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          tables.put(DBInitializerHelper.getRefTableName(containerConfig),
             tableTransformationRuleGenerator.getRefTableTransformationRule());
 
-         restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, containerConfig.swapCleaner, dbCleaner));
+         restorers.add(new DBRestore(storageDir, jdbcConn, tables, wsConfig, containerConfig.spoolConfig.fileCleaner,
+            dbCleaner));
 
          if (wsConfig.getContainer().getValueStorages() != null)
          {

@@ -37,11 +37,10 @@ import java.nio.channels.ReadableByteChannel;
  */
 public class StreamNewEditableValueData extends StreamNewValueData implements EditableBinaryValue
 {
-
    public StreamNewEditableValueData(InputStream stream, int orderNumber, SpoolConfig spoolConfig) throws IOException
    {
       // don't send any data there (no stream, no bytes)
-      super(orderNumber, null, null, spoolConfig, true);
+      super(orderNumber, null, null, spoolConfig);
 
       SpoolFile sf = SpoolFile.createTempFile("jcrvdedit", null, spoolConfig.tempDirectory);
       OutputStream sfout = PrivilegedFileHelper.fileOutputStream(sf);
@@ -72,8 +71,7 @@ public class StreamNewEditableValueData extends StreamNewValueData implements Ed
       }
 
       this.spoolFile = sf;
-      this.spoolChannel = PrivilegedFileHelper.randomAccessFile(sf, "rw").getChannel();
-      this.spooled = true;
+      this.channel = PrivilegedFileHelper.randomAccessFile(sf, "rw").getChannel();
    }
 
    /**
@@ -97,9 +95,9 @@ public class StreamNewEditableValueData extends StreamNewValueData implements Ed
     */
    public void update(InputStream stream, long length, long position) throws IOException
    {
-      validate(length, position, Integer.MAX_VALUE);
+      validateAndAdjustLenght(length, position, Integer.MAX_VALUE);
 
-      MappedByteBuffer bb = spoolChannel.map(FileChannel.MapMode.READ_WRITE, position, length);
+      MappedByteBuffer bb = channel.map(FileChannel.MapMode.READ_WRITE, position, length);
 
       ReadableByteChannel ch = Channels.newChannel(stream);
       ch.read(bb);
@@ -123,18 +121,21 @@ public class StreamNewEditableValueData extends StreamNewValueData implements Ed
     */
    public void setLength(long size) throws IOException
    {
-      validate(size);
+      if (size < 0)
+      {
+         throw new IOException("Size must be higher or equals 0. But given " + size);
+      }
 
-      if (spoolChannel.size() < size)
+      if (channel.size() < size)
       {
          // extend file
-         MappedByteBuffer bb = spoolChannel.map(FileChannel.MapMode.READ_WRITE, size, 0);
+         MappedByteBuffer bb = channel.map(FileChannel.MapMode.READ_WRITE, size, 0);
          bb.force();
       }
       else
       {
          // truncate file
-         spoolChannel.truncate(size);
+         channel.truncate(size);
       }
    }
 }

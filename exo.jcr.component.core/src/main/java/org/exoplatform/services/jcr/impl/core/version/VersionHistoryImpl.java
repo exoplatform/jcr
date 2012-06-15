@@ -40,7 +40,7 @@ import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
@@ -127,13 +127,9 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       {
          try
          {
-            return new String(versionableUuid.getValues().get(0).getAsByteArray());
+            return ValueDataUtil.getString(versionableUuid.getValues().get(0));
          }
          catch (IllegalStateException e)
-         {
-            LOG.error("jcr:versionableUuid, error of read " + e + ". Version history " + getPath(), e);
-         }
-         catch (IOException e)
          {
             LOG.error("jcr:versionableUuid, error of read " + e + ". Version history " + getPath(), e);
          }
@@ -293,20 +289,13 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       List<PropertyData> labelsList = getData().getVersionLabels();
       List<String> vlabels = new ArrayList<String>();
 
-      try
+      for (PropertyData prop : labelsList)
       {
-         for (PropertyData prop : labelsList)
+         String versionUuid = ValueDataUtil.getString(prop.getValues().get(0));
+         if (versionUuid.equals(((VersionImpl)version).getInternalIdentifier()))
          {
-            String versionUuid = ValueDataConvertor.readString(prop.getValues().get(0));
-            if (versionUuid.equals(((VersionImpl)version).getInternalIdentifier()))
-            {
-               vlabels.add(locationFactory.createJCRName(prop.getQPath().getName()).getAsString());
-            }
+            vlabels.add(locationFactory.createJCRName(prop.getQPath().getName()).getAsString());
          }
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException("Get version " + version.getPath() + " labels error " + e, e);
       }
 
       return vlabels;
@@ -352,20 +341,13 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       PlainChangesLog changes = new PlainChangesLogImpl(session);
 
       // remove labels first
-      try
+      for (PropertyData vlabel : getData().getVersionLabels())
       {
-         for (PropertyData vlabel : getData().getVersionLabels())
+         String versionUuid = ValueDataUtil.getString(vlabel.getValues().get(0));
+         if (versionUuid.equals(version.getInternalIdentifier()))
          {
-            String versionUuid = new String(vlabel.getValues().get(0).getAsByteArray());
-            if (versionUuid.equals(version.getInternalIdentifier()))
-            {
-               changes.add(ItemState.createDeletedState(vlabel));
-            }
+            changes.add(ItemState.createDeletedState(vlabel));
          }
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException("Get version " + version.getPath() + " labels error " + e, e);
       }
 
       // remove this version from successor anf predecessor list
@@ -380,70 +362,56 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
          (PropertyData)dataManager.getItemData((NodeData)version.getData(), new QPathEntry(Constants.JCR_PREDECESSORS,
             0), ItemType.PROPERTY);
 
-      try
+      for (ValueData pvalue : predecessorsData.getValues())
       {
-         for (ValueData pvalue : predecessorsData.getValues())
-         {
-            String pidentifier = new String(pvalue.getAsByteArray());
-            VersionImpl predecessor = (VersionImpl)dataManager.getItemByIdentifier(pidentifier, false, false);
-            // actually predecessor is V2's successor
-            if (predecessor != null)
-            {// V2's successor
-               if (successorsData != null)
-               {// to redirect V2's successor
-                  // case of VH graph merge
-                  for (ValueData svalue : successorsData.getValues())
-                  {
-                     predecessor.removeAddSuccessor(version.getInternalIdentifier(),
-                        new String(svalue.getAsByteArray()), changes);
-                  }
-               }
-               else
+         String pidentifier = ValueDataUtil.getString(pvalue);
+         VersionImpl predecessor = (VersionImpl)dataManager.getItemByIdentifier(pidentifier, false, false);
+         // actually predecessor is V2's successor
+         if (predecessor != null)
+         {// V2's successor
+            if (successorsData != null)
+            {// to redirect V2's successor
+             // case of VH graph merge
+               for (ValueData svalue : successorsData.getValues())
                {
-                  // case of VH last version remove
-                  predecessor.removeSuccessor(version.getInternalIdentifier(), changes);
+                  predecessor.removeAddSuccessor(version.getInternalIdentifier(), ValueDataUtil.getString(svalue),
+                     changes);
                }
             }
             else
             {
-               throw new RepositoryException("A predecessor (" + pidentifier + ") of the version " + version.getPath()
+               // case of VH last version remove
+               predecessor.removeSuccessor(version.getInternalIdentifier(), changes);
+            }
+         }
+         else
+         {
+            throw new RepositoryException("A predecessor (" + pidentifier + ") of the version " + version.getPath()
+               + " is not found.");
+         }
+      }
+
+      if (successorsData != null)
+      {
+         for (ValueData svalue : successorsData.getValues())
+         {
+            String sidentifier = ValueDataUtil.getString(svalue);
+            VersionImpl successor = (VersionImpl)dataManager.getItemByIdentifier(sidentifier, false, false);
+            if (successor != null)
+            {
+               // case of VH graph merge
+               for (ValueData pvalue : predecessorsData.getValues())
+               {
+                  successor.removeAddPredecessor(version.getInternalIdentifier(), ValueDataUtil.getString(pvalue),
+                     changes);
+               }
+            }
+            else
+            {
+               throw new RepositoryException("A successor (" + sidentifier + ") of the version " + version.getPath()
                   + " is not found.");
             }
          }
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException("Get predecessor " + version.getPath() + " error " + e, e);
-      }
-
-      try
-      {
-         if (successorsData != null)
-         {
-            for (ValueData svalue : successorsData.getValues())
-            {
-               String sidentifier = new String(svalue.getAsByteArray());
-               VersionImpl successor = (VersionImpl)dataManager.getItemByIdentifier(sidentifier, false, false);
-               if (successor != null)
-               {
-                  // case of VH graph merge
-                  for (ValueData pvalue : predecessorsData.getValues())
-                  {
-                     successor.removeAddPredecessor(version.getInternalIdentifier(),
-                        new String(pvalue.getAsByteArray()), changes);
-                  }
-               }
-               else
-               {
-                  throw new RepositoryException("A successor (" + sidentifier + ") of the version " + version.getPath()
-                     + " is not found.");
-               }
-            }
-         }
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException("Get successor " + version.getPath() + " error " + e, e);
       }
 
       ItemDataRemoveVisitor removeVisitor = new ItemDataRemoveVisitor(dataManager.getTransactManager(), null);
@@ -673,19 +641,18 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       List<ValueData> predecessorsNew = new ArrayList<ValueData>();
       for (ValueData predecessorValue : predecessors)
       {
-         byte[] pib;
+         VersionImpl predecessor =
+            (VersionImpl)dataManager.getItemByIdentifier(ValueDataUtil.getString(predecessorValue), false, false);
+         predecessor.addSuccessor(versionData.getIdentifier(), changesLog);
+
          try
          {
-            pib = predecessorValue.getAsByteArray();
+            predecessorsNew.add(ValueDataUtil.createTransientCopy(predecessorValue));
          }
          catch (IOException e)
          {
-            throw new RepositoryException(e);
+            throw new RepositoryException(e.getMessage(), e);
          }
-         VersionImpl predecessor = (VersionImpl)dataManager.getItemByIdentifier(new String(pib), false, false);
-         predecessor.addSuccessor(versionData.getIdentifier(), changesLog);
-
-         predecessorsNew.add(new TransientValueData(pib));
       }
 
       // jcr:predecessors

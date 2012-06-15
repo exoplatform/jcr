@@ -32,11 +32,11 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 
-import java.io.IOException;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
@@ -222,15 +222,7 @@ public class VersionHistoryRemover
                throw new RepositoryException("Property " + Constants.JCR_CHILDVERSIONHISTORY.getAsString()
                   + " for node " + nodeData.getQPath().getAsString() + " not found");
 
-            String childVhID;
-            try
-            {
-               childVhID = new String(property.getValues().get(0).getAsByteArray());
-            }
-            catch (IOException e)
-            {
-               throw new RepositoryException("Child version history UUID read error " + e, e);
-            }
+            String childVhID = ValueDataUtil.getString(property.getValues().get(0));
             VersionHistoryRemover historyRemover =
                new VersionHistoryRemover(childVhID, dataManager, ntManager, repository, currentWorkspaceName,
                   containingHistory, ancestorToSave, transientChangesLog, accessManager, userState);

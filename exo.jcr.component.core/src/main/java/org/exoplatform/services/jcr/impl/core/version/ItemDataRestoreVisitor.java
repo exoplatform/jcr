@@ -40,6 +40,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.version.VersionHistoryDataHelper;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
@@ -48,7 +49,6 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.IdentityConstants;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -373,7 +373,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
       // make new node from frozen
       try
       {
-         fidentifier = new String(frozenIdentifier.getValues().get(0).getAsByteArray());
+         fidentifier = ValueDataUtil.getString(frozenIdentifier.getValues().get(0));
          NodeData sameIdentifierNodeRestored = (NodeData)findDelegated(fidentifier);
          if (sameIdentifierNodeRestored != null)
          {
@@ -452,11 +452,6 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          throw new RepositoryException("jcr:frozenUuid, error of data read "
             + userSession.getLocationFactory().createJCRPath(frozenIdentifier.getQPath()).getAsString(false), e);
       }
-      catch (IOException e)
-      {
-         throw new RepositoryException("jcr:frozenUuid, error of data read "
-            + userSession.getLocationFactory().createJCRPath(frozenIdentifier.getQPath()).getAsString(false), e);
-      }
 
       PropertyData frozenPrimaryType =
          (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_FROZENPRIMARYTYPE, 0),
@@ -481,7 +476,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             for (int i = 0; i < mvs.size(); i++)
             {
                ValueData mvd = mvs.get(i);
-               mixins[i] = InternalQName.parse(new String(mvd.getAsByteArray()));
+               mixins[i] = InternalQName.parse(ValueDataUtil.getString(mvd));
 
                if (mixins[i].equals(Constants.EXO_PRIVILEGEABLE))
                {
@@ -494,7 +489,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
 
                   for (ValueData value : aclData.getValues())
                   {
-                     acl.addPermissions(new String(value.getAsByteArray(), Constants.DEFAULT_ENCODING));
+                     acl.addPermissions(ValueDataUtil.getString(value));
                   }
 
                   accessList = acl.getPermissionEntries();
@@ -505,7 +500,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                      (PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.EXO_OWNER, 0),
                         ItemType.PROPERTY);
 
-                  owner = new String(ownerData.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING);
+                  owner = ValueDataUtil.getString(ownerData.getValues().get(0));
                }
             }
          }
@@ -519,11 +514,6 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             throw new RepositoryException("jcr:frozenMixinTypes, error of data read "
                + userSession.getLocationFactory().createJCRPath(frozenMixinTypes.getQPath()).getAsString(false), e);
          }
-         catch (IOException e)
-         {
-            throw new RepositoryException("jcr:frozenMixinTypes, error of data read "
-               + userSession.getLocationFactory().createJCRPath(frozenMixinTypes.getQPath()).getAsString(false), e);
-         }
       }
 
       AccessControlList acl = new AccessControlList(owner, accessList);
@@ -531,7 +521,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
       InternalQName ptName = null;
       try
       {
-         ptName = InternalQName.parse(new String(frozenPrimaryType.getValues().get(0).getAsByteArray()));
+         ptName = InternalQName.parse(ValueDataUtil.getString(frozenPrimaryType.getValues().get(0)));
       }
       catch (IllegalNameException e)
       {
@@ -539,11 +529,6 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             + userSession.getLocationFactory().createJCRPath(frozenPrimaryType.getQPath()).getAsString(false), e);
       }
       catch (IllegalStateException e)
-      {
-         throw new RepositoryException("jcr:frozenPrimaryType, error of data read "
-            + userSession.getLocationFactory().createJCRPath(frozenPrimaryType.getQPath()).getAsString(false), e);
-      }
-      catch (IOException e)
       {
          throw new RepositoryException("jcr:frozenPrimaryType, error of data read "
             + userSession.getLocationFactory().createJCRPath(frozenPrimaryType.getQPath()).getAsString(false), e);
@@ -611,8 +596,8 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
          {
 
             String vhIdentifier =
-               new String(((PropertyData)dataManager.getItemData(frozen, new QPathEntry(
-                  Constants.JCR_CHILDVERSIONHISTORY, 0), ItemType.PROPERTY)).getValues().get(0).getAsByteArray());
+               ValueDataUtil.getString(((PropertyData)dataManager.getItemData(frozen, new QPathEntry(
+                  Constants.JCR_CHILDVERSIONHISTORY, 0), ItemType.PROPERTY)).getValues().get(0));
 
             NodeData cHistory = null;
             if ((cHistory = (NodeData)dataManager.getItemData(vhIdentifier)) == null)
@@ -627,25 +612,10 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
             throw new RepositoryException("jcr:childVersionHistory, error of data read "
                + userSession.getLocationFactory().createJCRPath(cvhpPropPath).getAsString(false), e);
          }
-         catch (IOException e)
-         {
-            throw new RepositoryException("jcr:childVersionHistory, error of data read "
-               + userSession.getLocationFactory().createJCRPath(cvhpPropPath).getAsString(false), e);
-         }
 
-         String versionableIdentifier = null;
-         try
-         {
-            versionableIdentifier =
-               new String(((PropertyData)dataManager.getItemData(childHistory, new QPathEntry(
-                  Constants.JCR_VERSIONABLEUUID, 0), ItemType.PROPERTY)).getValues().get(0).getAsByteArray());
-
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException("jcr:childVersionHistory, error of data read "
-               + userSession.getLocationFactory().createJCRPath(cvhpPropPath).getAsString(false), e);
-         }
+         String versionableIdentifier =
+            ValueDataUtil.getString(((PropertyData)dataManager.getItemData(childHistory, new QPathEntry(
+               Constants.JCR_VERSIONABLEUUID, 0), ItemType.PROPERTY)).getValues().get(0));
 
          NodeData versionable = (NodeData)dataManager.getItemData(versionableIdentifier);
          if (versionable != null)
@@ -715,18 +685,9 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
                // (JCR_XITEM PK) as UUID must be unique,
                // but jcr:uuid property containts real UUID.
                QPath jcrUuidPath = QPath.makeChildPath(frozen.getQPath(), Constants.JCR_UUID);
-               try
-               {
-                  jcrUuid =
-                     new String(((PropertyData)dataManager.getItemData(frozen, new QPathEntry(Constants.JCR_UUID, 0),
-                        ItemType.PROPERTY)).getValues().get(0).getAsByteArray());
-
-               }
-               catch (IOException e)
-               {
-                  throw new RepositoryException("jcr:uuid, error of data read "
-                     + userSession.getLocationFactory().createJCRPath(jcrUuidPath).getAsString(false), e);
-               }
+               jcrUuid =
+                  ValueDataUtil.getString(((PropertyData)dataManager.getItemData(frozen, new QPathEntry(
+                     Constants.JCR_UUID, 0), ItemType.PROPERTY)).getValues().get(0));
                existing = (NodeData)dataManager.getItemData(jcrUuid);
             }
             else

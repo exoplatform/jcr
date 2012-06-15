@@ -44,13 +44,13 @@ import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataMoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableDataManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1280,14 +1280,10 @@ public class SessionDataManager implements ItemDataConsumer
             try
             {
                PropertyData vhPropertyData = (PropertyData)getItemData(data.getIdentifier());
-               removeVersionHistory(new String(vhPropertyData.getValues().get(0).getAsByteArray()), null,
+               removeVersionHistory(ValueDataUtil.getString(vhPropertyData.getValues().get(0)), null,
                   ancestorToSave);
             }
             catch (IllegalStateException e)
-            {
-               throw new RepositoryException(e.getLocalizedMessage(), e);
-            }
-            catch (IOException e)
             {
                throw new RepositoryException(e.getLocalizedMessage(), e);
             }

@@ -46,12 +46,11 @@ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.EditableValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -390,15 +389,8 @@ public abstract class ItemImpl implements Item
                dataManager.getItemData(node, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1), ItemType.PROPERTY);
             if (vhpd != null && !vhpd.isNode())
             {
-               try
-               {
-                  String vhID = new String(((PropertyData)vhpd).getValues().get(0).getAsByteArray());
-                  dataManager.removeVersionHistory(vhID, null, data.getQPath());
-               }
-               catch (IOException e)
-               {
-                  throw new RepositoryException(e);
-               }
+               String vhID = ValueDataUtil.getString(((PropertyData)vhpd).getValues().get(0));
+               dataManager.removeVersionHistory(vhID, null, data.getQPath());
             }
             else
             {
@@ -990,21 +982,15 @@ public abstract class ItemImpl implements Item
          if (!constraints.match(value, type))
          {
             String strVal = null;
-            try
+            if (type != PropertyType.BINARY)
             {
-               if (type != PropertyType.BINARY)
-               {
-                  strVal = ValueDataConvertor.readString(value);
-               }
-               else
-               {
-                  strVal = "PropertyType.BINARY";
-               }
+               strVal = ValueDataUtil.getString(value);
             }
-            catch (IOException e)
+            else
             {
-               LOG.error("Error of value read: " + e.getMessage(), e);
+               strVal = "PropertyType.BINARY";
             }
+
             throw new ConstraintViolationException("Can not set value '" + strVal + "' to " + getPath()
                + " due to value constraints ");
          }

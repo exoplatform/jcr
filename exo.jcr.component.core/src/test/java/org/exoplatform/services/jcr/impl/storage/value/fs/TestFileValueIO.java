@@ -21,7 +21,9 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
@@ -31,6 +33,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import javax.jcr.PropertyType;
 
 /**
  * Created by The eXo Platform SAS.
@@ -70,8 +74,10 @@ public class TestFileValueIO extends TestCase
 
       static public ValueData testReadValue(File file, int orderNum, int maxBufferSize) throws IOException
       {
+         SpoolConfig spoolConfig = SpoolConfig.getDefaultSpoolConfig();
+         spoolConfig.maxBufferSize = maxBufferSize;
 
-         return new FileValueIOUtil().readValue(file, orderNum, maxBufferSize);
+         return ValueDataUtil.readValueData(PropertyType.BINARY, orderNum, file, spoolConfig);
       }
 
       static public void testWriteValue(File file, ValueData value) throws IOException

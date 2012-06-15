@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
 
 import java.io.IOException;
@@ -96,8 +97,7 @@ public class DocumentViewStreamExporter extends StreamExporter
       {
          if (propName.equals(Constants.JCR_XMLCHARACTERS))
          {
-            writer
-               .writeCharacters(new String(property.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING));
+            writer.writeCharacters(ValueDataUtil.getString(property.getValues().get(0)));
          }
          else
          {

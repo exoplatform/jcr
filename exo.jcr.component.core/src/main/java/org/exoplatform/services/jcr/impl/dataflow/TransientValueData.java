@@ -1,4 +1,5 @@
 /*
+
  * Copyright (C) 2009 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
@@ -23,6 +24,7 @@ import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -40,52 +42,45 @@ import java.util.Calendar;
  */
 public class TransientValueData implements ValueData
 {
-
+   /**
+    * Logger.
+    */
    protected final static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.TransientValueData");
 
-   protected ValueData delegate;
+   /**
+    * Delegated value data. At session level it is instance of {@link NewValueData}. At save it becomes
+    * instance of {@link PersistedValueData}.
+    */
+   protected AbstractValueData delegate;
 
    /**
     * TransientValueData constructor.
     */
-   public TransientValueData(int orderNumber, InputStream stream, SpoolFile spoolFile, SpoolConfig spoolConfig,
-      boolean closeTmpStream) throws IOException
+   public TransientValueData(int orderNumber, InputStream stream, SpoolFile spoolFile, SpoolConfig spoolConfig)
+      throws IOException
    {
-      this.delegate = new StreamNewValueData(orderNumber, stream, spoolFile, spoolConfig, closeTmpStream);
+      this.delegate = new StreamNewValueData(orderNumber, stream, spoolFile, spoolConfig);
    }
 
    /**
     * TransientValueData constructor.
-    * 
-    * @param stream
-    *          InputStream
-    * @throws IOException 
     */
    public TransientValueData(InputStream stream, SpoolConfig spoolConfig) throws IOException
    {
-      this(0, stream, null, spoolConfig, false);
+      this(0, stream, null, spoolConfig);
    }
 
    /**
     * Creates TransientValueData with incoming input stream. the stream will be lazily spooled to
     * file or byte array depending on maxBufferSize.
-    * 
-    * @param orderNumber
-    *          int
-    * @param stream
-    *          InputStream
-    * @throws IOException 
     */
    public TransientValueData(int orderNumber, InputStream stream, SpoolConfig spoolConfig) throws IOException
    {
-      this(orderNumber, stream, null, spoolConfig, false);
+      this(orderNumber, stream, null, spoolConfig);
    }
 
    /**
     * Creates TransientValueData with incoming byte array.
-    * 
-    * @param value
-    *          byte[]
     */
    public TransientValueData(byte[] value)
    {
@@ -94,10 +89,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Creates TransientValueData with incoming byte array.
-    * @param orderNumber
-    *          int
-    * @param value
-    *          byte[]
     */
    public TransientValueData(int orderNumber, byte[] value)
    {
@@ -106,9 +97,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for String value data.
-    * 
-    * @param value
-    *          String
     */
    public TransientValueData(String value)
    {
@@ -117,11 +105,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for String value data.
-    * 
-    * @param orderNumber
-    *          int 
-    * @param value
-    *          String
     */
    public TransientValueData(int orderNumber, String value)
    {
@@ -130,9 +113,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for boolean value data.
-    * 
-    * @param value
-    *          boolean
     */
    public TransientValueData(boolean value)
    {
@@ -141,11 +121,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for boolean value data.
-    * 
-    * @param orderNumber
-    *          int
-    * @param value
-    *          boolean
     */
    public TransientValueData(int orderNumber, boolean value)
    {
@@ -154,9 +129,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for Calendar value data.
-    * 
-    * @param value
-    *          Calendar
     */
    public TransientValueData(Calendar value)
    {
@@ -165,11 +137,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for Calendar value data.
-    * 
-    * @param orderNumber
-    *          int
-    * @param value
-    *          Calendar
     */
    public TransientValueData(int orderNumber, Calendar value)
    {
@@ -178,9 +145,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for double value data.
-    * 
-    * @param value
-    *          double
     */
    public TransientValueData(double value)
    {
@@ -189,11 +153,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for double value data.
-    * 
-    * @param orderNumber
-    *          int
-    * @param value
-    *          double
     */
    public TransientValueData(int orderNumber, double value)
    {
@@ -202,9 +161,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for long value data.
-    * 
-    * @param value
-    *          long
     */
    public TransientValueData(long value)
    {
@@ -213,11 +169,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for long value data.
-    * 
-    * @param orderNumber
-    *          int
-    * @param value
-    *          long
     */
    public TransientValueData(int orderNumber, long value)
    {
@@ -226,9 +177,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for Name value data.
-    * 
-    * @param value
-    *          InternalQName
     */
    public TransientValueData(InternalQName value)
    {
@@ -237,11 +185,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for Name value data.
-    *
-    * @param orderNumber
-    *          int
-    * @param value
-    *          InternalQName
     */
    public TransientValueData(int orderNumber, InternalQName value)
    {
@@ -250,9 +193,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for Path value data.
-    * 
-    * @param value
-    *          QPath
     */
    public TransientValueData(QPath value)
    {
@@ -261,11 +201,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for Path value data.
-    * 
-    * @param orderNumber
-    *          int
-    * @param value
-    *          QPath
     */
    public TransientValueData(int orderNumber, QPath value)
    {
@@ -274,9 +209,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for Reference value data.
-    * 
-    * @param value
-    *          Identifier
     */
    public TransientValueData(Identifier value)
    {
@@ -285,11 +217,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for Reference value data.
-    * 
-    * @param orderNumber
-    *          int
-    * @param value
-    *          Identifier
     */
    public TransientValueData(int orderNumber, Identifier value)
    {
@@ -298,9 +225,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for Permission value data.
-    * 
-    * @param value
-    *          AccessControlEntry
     */
    public TransientValueData(AccessControlEntry value)
    {
@@ -309,11 +233,6 @@ public class TransientValueData implements ValueData
 
    /**
     * Constructor for Permission value data.
-    * 
-    * @param orderNumber
-    *          int
-    * @param value
-    *          AccessControlEntry
     */
    public TransientValueData(int orderNumber, AccessControlEntry value)
    {
@@ -377,43 +296,18 @@ public class TransientValueData implements ValueData
 
    /**
     * Re-init this TransientValueData with another value.  
-    * 
-    * @param newValue ValueData
     */
-   public void delegate(ValueData newValue)
+   public void delegate(AbstractValueData newValue)
    {
       this.delegate = newValue;
    }
 
    /**
-    * Return temporary spool file. Can be null. For persistent operations on newly created data only.
-    * 
-    * @return File temp file
+    * Creates persisted copy of value. {@link AbstractValueData#createPersistedCopy(int)}
     */
-   public SpoolFile getSpoolFile()
+   public PersistedValueData createPersistedCopy(int orderNumber) throws IOException
    {
-      if (delegate instanceof StreamNewValueData)
-      {
-         return ((StreamNewValueData)delegate).spoolFile;
-      }
-
-      return null;
-   }
-
-   /**
-    * Get original stream. Can be consumed or null. 
-    * WARN: method for persistent operations on modified ValueData only.
-    * 
-    * @return InputStream original stream
-    */
-   public InputStream getOriginalStream()
-   {
-      if (delegate instanceof StreamNewValueData)
-      {
-         return ((StreamNewValueData)delegate).tmpStream;
-      }
-
-      return null;
+      return delegate.createPersistedCopy(orderNumber);
    }
 
    /**

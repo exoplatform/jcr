@@ -41,7 +41,6 @@ import java.util.Calendar;
  * @author Gennady Azarenkov
  * @version $Id: TestTransientValueData.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-
 public class TestTransientValueData extends TestCase
 {
 
@@ -59,10 +58,6 @@ public class TestTransientValueData extends TestCase
       // as stream
       assertTrue(vd.getAsStream() instanceof ByteArrayInputStream);
       assertTrue(vd.isByteArray());
-
-      // no spool file as spooled to byte array
-      assertNull(vd.getSpoolFile());
-
    }
 
    public void testCreateFileStreamTransientValueData() throws Exception
@@ -83,7 +78,7 @@ public class TestTransientValueData extends TestCase
          SpoolConfig spoolConfig = SpoolConfig.getDefaultSpoolConfig();
          spoolConfig.maxBufferSize = 5;
 
-         TransientValueData vd = new TransientValueData(0, fs1, null, spoolConfig, true);
+         TransientValueData vd = new TransientValueData(0, fs1, null, spoolConfig);
 
          // spool to file
          InputStream fs2 = vd.getAsStream();

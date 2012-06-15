@@ -23,11 +23,13 @@ import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.security.IdentityConstants;
 
 import java.io.IOException;
 import java.util.StringTokenizer;
 
+import javax.jcr.RepositoryException;
 import javax.jcr.ValueFormatException;
 
 /**
@@ -47,41 +49,59 @@ public class PermissionValue extends BaseValue
 
    private String permission;
 
+   /**
+    * PermissionValue constructor.
+    */
    public PermissionValue(ValueData data) throws IOException
    {
       super(TYPE, data);
 
       try
       {
-         String[] persArray = parse(new String(data.getAsByteArray()));
+         String[] persArray = parse(ValueDataUtil.getString(data));
          this.identity = persArray[0];
          this.permission = persArray[1];
       }
-      catch (IOException e)
+      catch (RepositoryException e)
       {
-         throw new RuntimeException("FATAL ERROR IOException occured: " + e.getMessage(), e);
+         throw new RuntimeException("FATAL ERROR RepositoryException occured: " + e.getMessage(), e);
       }
    }
 
+   /**
+    * PermissionValue constructor.
+    */
    public PermissionValue(String identity, String permission) throws IOException
    {
       super(TYPE, new TransientValueData(asString(identity, permission))); // identity + " " +
       // permission
       if (identity != null && identity.indexOf(" ") != -1)
+      {
          throw new RuntimeException("Identity should not contain ' '");
+      }
+
       if (permission != null && !permission.equals(PermissionType.READ) && !permission.equals(PermissionType.ADD_NODE)
          && !permission.equals(PermissionType.REMOVE) && !permission.equals(PermissionType.SET_PROPERTY))
+      {
          throw new RuntimeException("Permission should be one of defined in PermissionType. Have " + permission);
+      }
+
       this.identity = identity;
       this.permission = permission;
    }
 
+   /**
+    * Factory method.
+    */
    static public PermissionValue parseValue(String pstring) throws IOException
    {
       String[] persArray = parse(pstring);
       return new PermissionValue(persArray[0], persArray[1]);
    }
 
+   /**
+    * Factory method.
+    */
    static public String[] parse(String pstring)
    {
       StringTokenizer parser = new StringTokenizer(pstring, AccessControlEntry.DELIMITER);
@@ -113,18 +133,24 @@ public class PermissionValue extends BaseValue
     * {@inheritDoc}
     */
    @Override
-   protected String getInternalString() throws ValueFormatException
+   public String getString() throws ValueFormatException
    {
+      validateByteArrayMethodInvoking();
+
       return asString(identity, permission);
    }
 
-   static protected String asString(String identity, String permission)
+   protected static String asString(String identity, String permission)
    {
       if (identity != null || permission != null) // SystemIdentity.ANY, PermissionType.ALL
+      {
          return (identity != null ? identity : IdentityConstants.ANY) + AccessControlEntry.DELIMITER
             + (permission != null ? permission : PermissionType.READ);
+      }
       else
+      {
          return "";
+      }
    }
 
    /**

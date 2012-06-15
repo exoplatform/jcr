@@ -44,7 +44,7 @@ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
@@ -511,8 +511,7 @@ public class DocumentViewImporter extends BaseXmlImporter
       try
       {
          InputStream vStream = new ByteArrayInputStream(Base64.decode(propertiesMap.get(propName)));
-         TransientValueData binaryValue = new TransientValueData(0, vStream, null, valueFactory.getSpoolConfig(), true);
-
+         TransientValueData binaryValue = new TransientValueData(0, vStream, null, valueFactory.getSpoolConfig());
          binaryValue.getAsStream().close();
 
          newProperty =
@@ -583,15 +582,7 @@ public class DocumentViewImporter extends BaseXmlImporter
       {
          if (propName.equals(Constants.JCR_VERSIONHISTORY))
          {
-            try
-            {
-
-               nodeData.setVersionHistoryIdentifier(ValueDataConvertor.readString(values.get(0)));
-            }
-            catch (IOException e)
-            {
-               throw new RepositoryException(e);
-            }
+            nodeData.setVersionHistoryIdentifier(ValueDataUtil.getString(values.get(0)));
 
             // check if node contains VH
             if (dataConsumer.getItemData(nodeData.getVersionHistoryIdentifier()) != null)
@@ -606,14 +597,7 @@ public class DocumentViewImporter extends BaseXmlImporter
          }
          else if (propName.equals(Constants.JCR_BASEVERSION))
          {
-            try
-            {
-               nodeData.setBaseVersionIdentifier(ValueDataConvertor.readString(values.get(0)));
-            }
-            catch (IOException e)
-            {
-               throw new RepositoryException(e);
-            }
+            nodeData.setBaseVersionIdentifier(ValueDataUtil.getString(values.get(0)));
          }
       }
    }

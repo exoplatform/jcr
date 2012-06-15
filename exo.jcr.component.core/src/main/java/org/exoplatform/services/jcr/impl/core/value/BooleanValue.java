@@ -38,11 +38,17 @@ public class BooleanValue extends BaseValue
 
    public static final int TYPE = PropertyType.BOOLEAN;
 
+   /**
+    * BooleanValue constructor.
+    */
    public BooleanValue(boolean bool) throws IOException
    {
       super(TYPE, new TransientValueData(bool));
    }
 
+   /**
+    * BooleanValue constructor.
+    */
    public BooleanValue(ValueData data) throws IOException
    {
       super(TYPE, data);
@@ -51,6 +57,7 @@ public class BooleanValue extends BaseValue
    /**
     * {@inheritDoc}
     */
+   @Override
    public Calendar getDate() throws ValueFormatException, IllegalStateException, RepositoryException
    {
       throw new ValueFormatException("conversion to date failed: inconvertible types");
@@ -59,6 +66,7 @@ public class BooleanValue extends BaseValue
    /**
     * {@inheritDoc}
     */
+   @Override
    public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
    {
       throw new ValueFormatException("conversion to long failed: inconvertible types");
@@ -67,6 +75,7 @@ public class BooleanValue extends BaseValue
    /**
     * {@inheritDoc}
     */
+   @Override
    public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
    {
       throw new ValueFormatException("conversion to double failed: inconvertible types");

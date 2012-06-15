@@ -41,12 +41,11 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.util.NodeDataReader;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -283,20 +282,13 @@ public class NamespaceDataPersister implements ComponentPersister
                PropertyType.STRING);
             nsr.read();
 
-            try
-            {
-               String exoUri = ValueDataConvertor.readString(nsr.getPropertyValue(Constants.EXO_URI_NAME));
-               String exoPrefix = ValueDataConvertor.readString(nsr.getPropertyValue(Constants.EXO_PREFIX));
-               namespacesMap.put(exoPrefix, exoUri);
-               urisMap.put(exoUri, exoPrefix);
+            String exoUri = ValueDataUtil.getString(nsr.getPropertyValue(Constants.EXO_URI_NAME));
+            String exoPrefix = ValueDataUtil.getString(nsr.getPropertyValue(Constants.EXO_PREFIX));
+            namespacesMap.put(exoPrefix, exoUri);
+            urisMap.put(exoUri, exoPrefix);
 
-               if (log.isDebugEnabled())
-                  log.debug("Namespace " + exoPrefix + " is loaded");
-            }
-            catch (IOException e)
-            {
-               throw new RepositoryException("Namespace load error " + e, e);
-            }
+            if (log.isDebugEnabled())
+               log.debug("Namespace " + exoPrefix + " is loaded");
          }
 
          for (NodeData skipedNs : nsReader.getSkiped())

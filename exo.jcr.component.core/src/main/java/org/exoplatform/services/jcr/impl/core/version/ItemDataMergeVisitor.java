@@ -36,11 +36,11 @@ import org.exoplatform.services.jcr.impl.dataflow.ItemDataCopyVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -295,30 +295,23 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
                   (PropertyData)mergeDataManager.getItemData(mergeNode, new QPathEntry(Constants.JCR_ISCHECKEDOUT, 0),
                      ItemType.PROPERTY);
 
-               try
+               if (!ValueDataUtil.getBoolean(isCheckedOutProperty.getValues().get(0))
+                  && isSuccessor(mergeVersion, corrVersion))
                {
-                  if (!Boolean.valueOf(new String(isCheckedOutProperty.getValues().get(0).getAsByteArray()))
-                     && isSuccessor(mergeVersion, corrVersion))
-                  {
-                     // if v' is a successor of v and
-                     // n is not checked-in doupdate(n, n').
-                     doUpdate(mergeNode, corrNode);
-                  }
-                  else if (mergeVersion.getQPath().equals(corrVersion.getQPath())
-                     || isPredecessor(mergeVersion, corrVersion))
-                  {
-                     // else if v is equal to or a predecessor of v' doleave(n).
-                     doLeave(mergeNode);
-                  }
-                  else
-                  {
-                     // else dofail(n, v').
-                     doFail(mergeNode, corrVersion);
-                  }
+                  // if v' is a successor of v and
+                  // n is not checked-in doupdate(n, n').
+                  doUpdate(mergeNode, corrNode);
                }
-               catch (IOException e)
+               else if (mergeVersion.getQPath().equals(corrVersion.getQPath())
+                  || isPredecessor(mergeVersion, corrVersion))
                {
-                  throw new RepositoryException("Merge. Get isCheckedOut error " + e.getMessage(), e);
+                  // else if v is equal to or a predecessor of v' doleave(n).
+                  doLeave(mergeNode);
+               }
+               else
+               {
+                  // else dofail(n, v').
+                  doFail(mergeNode, corrVersion);
                }
             }
             else
@@ -458,14 +451,7 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
          PropertyData bvProperty =
             (PropertyData)dmanager.getItemData(node, new QPathEntry(Constants.JCR_BASEVERSION, 0), ItemType.PROPERTY);
 
-         try
-         {
-            return (NodeData)dmanager.getItemData(new String(bvProperty.getValues().get(0).getAsByteArray()));
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException("Merge. Get base version error " + e.getMessage(), e);
-         }
+         return (NodeData)dmanager.getItemData(ValueDataUtil.getString(bvProperty.getValues().get(0)));
       }
 
       return null; // non versionable
@@ -524,36 +510,29 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
       {
          for (ValueData pv : predecessorsProperty.getValues())
          {
-            try
+            String pidentifier = ValueDataUtil.getString(pv);
+
+            if (pidentifier.equals(corrVersion.getIdentifier()))
             {
-               String pidentifier = new String(pv.getAsByteArray());
+               return true; // got it
+            }
 
-               if (pidentifier.equals(corrVersion.getIdentifier()))
+            // search in predecessors of the predecessor
+            NodeData predecessor = (NodeData)mergeDataManager.getItemData(pidentifier);
+            if (predecessor != null)
+            {
+               if (isPredecessor(predecessor, corrVersion))
                {
-                  return true; // got it
-               }
-
-               // search in predecessors of the predecessor
-               NodeData predecessor = (NodeData)mergeDataManager.getItemData(pidentifier);
-               if (predecessor != null)
-               {
-                  if (isPredecessor(predecessor, corrVersion))
-                  {
-                     return true;
-                  }
-               }
-               else
-               {
-                  throw new RepositoryException("Merge. Predecessor is not found by uuid " + pidentifier + ". Version "
-                     + mergeSession.getLocationFactory().createJCRPath(mergeVersion.getQPath()).getAsString(false));
+                  return true;
                }
             }
-            catch (IOException e)
+            else
             {
-               throw new RepositoryException("Merge. Get predecessors error " + e.getMessage(), e);
+               throw new RepositoryException("Merge. Predecessor is not found by uuid " + pidentifier + ". Version "
+                  + mergeSession.getLocationFactory().createJCRPath(mergeVersion.getQPath()).getAsString(false));
             }
          }
-      // else it's a root version
+         // else it's a root version
       }
 
       return false;
@@ -574,36 +553,29 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
       {
          for (ValueData sv : successorsProperty.getValues())
          {
-            try
+            String sidentifier = ValueDataUtil.getString(sv);
+
+            if (sidentifier.equals(corrVersion.getIdentifier()))
             {
-               String sidentifier = new String(sv.getAsByteArray());
+               return true; // got it
+            }
 
-               if (sidentifier.equals(corrVersion.getIdentifier()))
+            // search in successors of the successor
+            NodeData successor = (NodeData)mergeDataManager.getItemData(sidentifier);
+            if (successor != null)
+            {
+               if (isSuccessor(successor, corrVersion))
                {
-                  return true; // got it
-               }
-
-               // search in successors of the successor
-               NodeData successor = (NodeData)mergeDataManager.getItemData(sidentifier);
-               if (successor != null)
-               {
-                  if (isSuccessor(successor, corrVersion))
-                  {
-                     return true;
-                  }
-               }
-               else
-               {
-                  throw new RepositoryException("Merge. Ssuccessor is not found by uuid " + sidentifier + ". Version "
-                     + mergeSession.getLocationFactory().createJCRPath(mergeVersion.getQPath()).getAsString(false));
+                  return true;
                }
             }
-            catch (IOException e)
+            else
             {
-               throw new RepositoryException("Merge. Get successors error " + e.getMessage(), e);
+               throw new RepositoryException("Merge. Ssuccessor is not found by uuid " + sidentifier + ". Version "
+                  + mergeSession.getLocationFactory().createJCRPath(mergeVersion.getQPath()).getAsString(false));
             }
          }
-      // else it's a end of version graph node
+         // else it's a end of version graph node
       }
 
       return false;

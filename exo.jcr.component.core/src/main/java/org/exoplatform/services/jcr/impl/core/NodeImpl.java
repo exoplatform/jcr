@@ -56,7 +56,7 @@ import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableDataManager;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
@@ -434,15 +434,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          PropertyData isCheckedOut =
             (PropertyData)dataManager.getItemData(vancestor, new QPathEntry(Constants.JCR_ISCHECKEDOUT, 1),
                ItemType.PROPERTY);
-         try
-         {
-            return ValueDataConvertor.readBoolean(isCheckedOut.getValues().get(0));
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException("Can't read property "
-               + locationFactory.createJCRPath(vancestor.getQPath()).getAsString(false) + "/jcr:isCheckedOut. " + e, e);
-         }
+
+         return ValueDataUtil.getBoolean(isCheckedOut.getValues().get(0));
       }
 
       return true;
@@ -775,15 +768,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       PropertyData bvProp =
          (PropertyData)dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_BASEVERSION, 1),
             ItemType.PROPERTY);
-      try
-      {
-         return (Version)dataManager.getItemByIdentifier(ValueDataConvertor.readString(bvProp.getValues().get(0)),
-            true, false);
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException("jcr:baseVersion property error " + e, e);
-      }
+
+      return (Version)dataManager.getItemByIdentifier(ValueDataUtil.getString(bvProp.getValues().get(0)), true, false);
    }
 
    /**
@@ -2622,15 +2608,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          throw new UnsupportedRepositoryOperationException("Node does not have jcr:versionHistory " + getPath());
       }
 
-      try
-      {
-         return (VersionHistoryImpl)dataManager.getItemByIdentifier(new String(vhProp.getValues().get(0)
-            .getAsByteArray()), pool, false);
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException("Error of version history ID read " + e, e);
-      }
+      return (VersionHistoryImpl)dataManager.getItemByIdentifier(ValueDataUtil.getString(vhProp.getValues().get(0)),
+         pool, false);
    }
 
    boolean checkLocking() throws RepositoryException
@@ -2969,7 +2948,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          {
             for (ValueData mfvd : mergeFailed.getValues())
             {
-               mergeFailedRefs.add(new TransientValueData(mfvd.getAsByteArray()));
+               mergeFailedRefs.add(ValueDataUtil.createTransientCopy(mfvd));
             }
 
             mergeFailed =
@@ -2995,7 +2974,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
             for (ValueData vd : mergeFailedRefs)
             {
-               String mfIdentifier = new String(vd.getAsByteArray());
+               String mfIdentifier = ValueDataUtil.getString(vd);
                if (mfIdentifier.equals(offendingIdentifier))
                {
                   // offending version is alredy in jcr:mergeFailed, skip it
@@ -3135,10 +3114,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       {
          try
          {
-            byte[] mfb = mfvd.getAsByteArray();
-            if (!version.getUUID().equals(new String(mfb)))
+            if (!version.getUUID().equals(ValueDataUtil.getString(mfvd)))
             {
-               mf.add(new TransientValueData(mfb));
+               mf.add(ValueDataUtil.createTransientCopy(mfvd));
             }
          }
          catch (IOException e)
