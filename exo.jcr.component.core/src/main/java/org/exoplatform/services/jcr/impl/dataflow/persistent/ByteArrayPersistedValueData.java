@@ -69,6 +69,10 @@ public class ByteArrayPersistedValueData extends ByteArrayValueData implements P
    {
       out.writeInt(orderNumber);
       out.writeInt(value.length);
-      out.write(value);
+
+      if (value.length > 0)
+      {
+         out.write(value);
+      }
    }
 }

@@ -69,8 +69,12 @@ public class StringPersistedValueData extends StringValueData implements Persist
    {
       out.writeInt(orderNumber);
 
-      byte[] data = value.getBytes();
+      byte[] data = value.getBytes(Constants.DEFAULT_ENCODING);
       out.writeInt(data.length);
-      out.write(data);
+
+      if (data.length > 0)
+      {
+         out.write(data);
+      }
    }
 }
