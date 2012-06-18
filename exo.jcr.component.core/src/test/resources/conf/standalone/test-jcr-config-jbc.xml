@@ -77,10 +77,10 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
@@ -136,14 +136,14 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws1" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws1_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr1" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -195,14 +195,14 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws2" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws2_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr2" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -276,14 +276,14 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1_ws3" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1_ws3_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr3" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -345,10 +345,10 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db2" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db2_ws" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db2_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db2_ws_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
@@ -403,14 +403,14 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db2" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db2_ws1" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db2_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db2_ws1_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr1db2" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -481,10 +481,10 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
@@ -548,14 +548,14 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws1" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws1_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr1tck" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -618,14 +618,14 @@
                   <properties>
                      <property name="time-out" value="15m" />
                      <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck" />
+                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_db1tck_ws2" />
                      <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
                      <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_pk" />
+                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_db1tck_ws2_pk" />
                      <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr2tck" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
