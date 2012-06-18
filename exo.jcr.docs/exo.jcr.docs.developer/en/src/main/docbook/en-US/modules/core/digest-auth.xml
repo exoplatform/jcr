@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section>
+<section id="Core.DigestAuthentication">
   <title>Digest Authentication</title>
 
     <para>Digest access authentication is one of the agreed methods a web
@@ -13,13 +13,13 @@
     cryptographic hashing with usage of nonce values to discourage
     cryptanalysis. It uses the HTTP protocol.</para>
 
-  <section>
+  <section id="Core.DigestAuthentication.ServerConfiguration">
     <title>Server configuration</title>
 
     <para>To configure you server to use DIGEST authentication we need to edit
     serverside JAAS module implementation configuration file.</para>
 
-    <section>
+    <section id="Core.DigestAuthentication.ServerConfiguration.TomcatServerConfiguration">
       <title>Tomcat Server configuration</title>
 
       <para>You need to fulfill a couple of steps. Firstly change login
@@ -59,7 +59,7 @@
 };</programlisting></para>
     </section>
 
-    <section>
+    <section id="Core.DigestAuthentication.ServerConfiguration.JettyServerConfiguration">
       <title>Jetty server configuration</title>
 
       <para>You need to fulfill a couple of steps. Firstly change login
@@ -94,7 +94,7 @@
 };</programlisting></para>
     </section>
 
-    <section>
+    <section id="Core.DigestAuthentication.ServerConfiguration.JBossServerConfiguration">
       <title>JBoss server configuration</title>
 
       <para>Edit config file located here:
@@ -137,11 +137,11 @@
       <para>More information about jboss server Digest authentication
       configuration can be found at <ulink
       url="http://docs.jboss.org/jbossas/guides/webguide/r2/en/html/ch05.html">JBoss
-      quide chapter</ulink>.</para>
+      guide chapter</ulink>.</para>
     </section>
   </section>
 
-  <section>
+  <section id="Core.DigestAuthentication.OrganizationServiceImplementationRequirements">
     <title>OrganizationService implementation requirements</title>
 
     <para>To make your own

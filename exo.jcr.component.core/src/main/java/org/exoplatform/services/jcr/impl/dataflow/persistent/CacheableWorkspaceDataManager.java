@@ -571,6 +571,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @Override
    public int getChildNodesCount(final NodeData parent) throws RepositoryException
    {
+
       if (cache.isEnabled())
       {
          int childCount = cache.getChildNodesCount(parent);
@@ -579,13 +580,39 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             return childCount;
          }
       }
-      return executeAction(new PrivilegedExceptionAction<Integer>()
+      final DataRequest request = new DataRequest(parent.getIdentifier(), DataRequest.GET_NODES);
+
+      try
       {
-         public Integer run() throws RepositoryException
+         request.start();
+         if (cache.isEnabled())
          {
-            return CacheableWorkspaceDataManager.super.getChildNodesCount(parent);
+            // Try first to get the value from the cache since a
+            // request could have been launched just before
+            int childCount = cache.getChildNodesCount(parent);
+            if (childCount >= 0)
+            {
+               return childCount;
+            }
          }
-      });
+
+         return executeAction(new PrivilegedExceptionAction<Integer>()
+         {
+            public Integer run() throws RepositoryException
+            {
+               int childCount = CacheableWorkspaceDataManager.super.getChildNodesCount(parent);
+               if (cache.isEnabled())
+               {
+                  cache.addChildNodesCount(parent, childCount);
+               }
+               return childCount;
+            }
+         });
+      }
+      finally
+      {
+         request.done();
+      }
    }
 
    /**

@@ -7,7 +7,7 @@
   <para>Find all nodes in repository, that contain a mixin type
   "mix:title".</para>
 
-  <section>
+  <section id="JCR.FindNodesByMixinType.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>The repository contains nodes with different primary types and mixin
@@ -37,7 +37,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.FindNodesByMixinType.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -61,7 +61,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.FindNodesByMixinType.FetchingResult">
     <title>Fetching result</title>
 
     <para>Let's get nodes:</para>

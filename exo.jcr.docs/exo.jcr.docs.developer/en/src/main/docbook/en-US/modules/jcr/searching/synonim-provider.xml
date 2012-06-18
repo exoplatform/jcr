@@ -31,7 +31,7 @@
 quick=fast
 sluggish=lazy</programlisting>
 
-  <section>
+  <section id="JCR.SynonimProvider.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>Repository contains mix:title nodes, where jcr:title has different
@@ -51,7 +51,7 @@ sluggish=lazy</programlisting>
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.SynonimProvider.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -75,7 +75,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.SynonimProvider.FetchingResult">
     <title>Fetching result</title>
 
     <para>Let's get nodes:</para>

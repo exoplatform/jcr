@@ -81,6 +81,10 @@ public class ValueRecordsRemover extends AbstractInconsistencyRepair
       catch (JCRInvalidItemStateException e)
       {
          // this is ok, since record is absent in ITEM table
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("An exception occurred: " + e.getMessage());
+         }
       }
       catch (InvalidItemStateException e)
       {

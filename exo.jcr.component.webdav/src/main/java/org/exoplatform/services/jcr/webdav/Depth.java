@@ -76,7 +76,7 @@ public class Depth
          }
          catch (NumberFormatException e)
          {
-            throw new PreconditionException("Invalid depth value " + strValue);
+            throw new PreconditionException("Invalid depth value " + strValue, e);
          }
       }
    }

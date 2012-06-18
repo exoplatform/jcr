@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
 <section id="JCR.NodeTypeRegistration">
-<?dbhtml filename="ch-nodetype-registration.html"?>  <title>NodeType Registration</title>
+<title>NodeType Registration</title>
   <para>eXo JCR implementation supports two ways of Nodetypes
   registration:</para>
   <itemizedlist>
@@ -12,9 +12,9 @@
       <para>From an XML document (stream)</para>
     </listitem>
   </itemizedlist>
-  <section>
+  <section id="JCR.NodeTypeRegistration.InterfacesAndMethods">
     <title>Interfaces and methods</title>
-    <section>
+    <section id="JCR.NodeTypeRegistration.InterfacesAndMethods.ExtendedNodeTypeManager">
       <title>ExtendedNodeTypeManager</title>
       <para>The ExtendedNodeTypeManager (from JCR 1.11) interface provides the
       following methods related to registering node types:</para>
@@ -65,7 +65,7 @@ public void unregisterNodeTypes(String[] names) throws UnsupportedRepositoryOper
                                                  NoSuchNodeTypeException,
                                                  RepositoryException;</programlisting>
     </section>
-    <section>
+    <section id="JCR.NodeTypeRegistration.InterfacesAndMethods.NodeTypeValue">
       <title>NodeTypeValue</title>
       <para>The NodeTypeValue interface represents a simple container
       structure used to define node types which are then registered through
@@ -148,7 +148,7 @@ public List&lt;PropertyDefinitionValue&gt; getDeclaredPropertyDefinitionValues()
  */
 public void setDeclaredPropertyDefinitionValues(List&lt;PropertyDefinitionValue&gt; declaredPropertyDefinitionValues);</programlisting>
     </section>
-    <section>
+    <section id="JCR.NodeTypeRegistration.InterfacesAndMethods.NodeDefinitionValue">
       <title>NodeDefinitionValue</title>
       <para>The NodeDefinitionValue interface extends ItemDefinitionValue with
       the addition of writing methods, enabling the characteristics of a child
@@ -233,7 +233,7 @@ public void setDeclaredPropertyDefinitionValues(List&lt;PropertyDefinitionValue&
 
 </programlisting>
     </section>
-    <section>
+    <section id="JCR.NodeTypeRegistration.InterfacesAndMethods.PropertyDefinitionValue">
       <title>PropertyDefinitionValue</title>
       <para>The PropertyDefinitionValue interface extends ItemDefinitionValue
       with the addition of writing methods, enabling the characteristics of a
@@ -279,7 +279,7 @@ public List&lt;String&gt; getValueConstraints();
  */
 public void setValueConstraints(List&lt;String&gt; valueConstraints);</programlisting>
     </section>
-    <section>
+    <section id="JCR.NodeTypeRegistration.InterfacesAndMethods.ItemDefinitionValue">
       <title>ItemDefinitionValue</title>
       <programlisting language="java"> /**
  * @return Returns the autoCreate.
@@ -332,19 +332,19 @@ public boolean isReadOnly();
 public void setReadOnly(boolean readOnly);</programlisting>
     </section>
   </section>
-  <section>
+  <section id="JCR.NodeTypeRegistration.NodeTypeRegistration">
     <title>Node type registration</title>
     <para>eXo JCR implementation supports various methods of the node-type
     registration.</para>
-    <section>
-      <title>Run time registration from xml file.</title>
+    <section id="JCR.NodeTypeRegistration.NodeTypeRegistration.RunTimeRegistrationFromXmlFile">
+      <title>Run time registration from xml file</title>
       <programlisting language="java">ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
                                                              .getNodeTypeManager();
 InputStream is = MyClass.class.getResourceAsStream(&quot;mynodetypes.xml&quot;);
 nodeTypeManager.registerNodeTypes(is,ExtendedNodeTypeManager.IGNORE_IF_EXISTS );</programlisting>
     </section>
-    <section>
-      <title>Run time registration using NodeTypeValue.</title>
+    <section id="JCR.NodeTypeRegistration.NodeTypeRegistration.RunTimeRegistrationUsingNodeTypeValue">
+      <title>Run time registration using NodeTypeValue</title>
       <programlisting language="java">ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
                                                              .getNodeTypeManager();
 NodeTypeValue testNValue = new NodeTypeValue();
@@ -369,7 +369,7 @@ testNValue.setDeclaredPropertyDefinitionValues(props);
 nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);</programlisting>
     </section>
   </section>
-  <section>
+  <section id="JCR.NodeTypeRegistration.ChangingExistingNodeType">
     <title>Changing existing node type</title>
     <para>If you want to replace existing node type definition, you should
     pass ExtendedNodeTypeManager.REPLACE_IF_EXISTS as a second parameter for
@@ -380,7 +380,7 @@ InputStream is = MyClass.class.getResourceAsStream(&quot;mynodetypes.xml&quot;);
 .....
 nodeTypeManager.registerNodeTypes(is,ExtendedNodeTypeManager.REPLACE_IF_EXISTS );</programlisting>
   </section>
-  <section>
+  <section id="JCR.NodeTypeRegistration.RemovingNodeType">
     <title>Removing node type</title>
     <note>
       <para>Node type is possible to remove only when the repository does not
@@ -388,9 +388,9 @@ nodeTypeManager.registerNodeTypes(is,ExtendedNodeTypeManager.REPLACE_IF_EXISTS )
     </note>
     <programlisting language="java">nodeTypeManager.unregisterNodeType(&quot;myNodeType&quot;);</programlisting>
   </section>
-  <section>
+  <section id="JCR.NodeTypeRegistration.PracticalHowto">
     <title>Practical How to</title>
-    <section>
+    <section id="JCR.NodeTypeRegistration.PracticalHowto.AddingNewPropertyDefinition">
       <title>Adding new PropertyDefinition</title>
       <programlisting language="java">
 NodeTypeValue myNodeTypeValue = nodeTypeManager.getNodeTypeValue(myNodeTypeName);
@@ -408,7 +408,7 @@ myNodeTypeValue.setDeclaredPropertyDefinitionValues(props);
 
 nodeTypeManager.registerNodeType(myNodeTypeValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);</programlisting>
     </section>
-    <section>
+    <section id="JCR.NodeTypeRegistration.PracticalHowto.AddingNewChildNodeDefinition">
       <title>Adding new child NodeDefinition</title>
       <programlisting language="java">NodeTypeValue myNodeTypeValue = nodeTypeManager.getNodeTypeValue(myNodeTypeName);
 
@@ -425,7 +425,7 @@ testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
 nodeTypeManager.registerNodeType(myNodeTypeValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);</programlisting>
     </section>
-    <section>
+    <section id="JCR.NodeTypeRegistration.PracticalHowto.ChangingRemovingExistingPropertyDefinitionChildNodeDefinition">
       <title>Changing or removing existing PropertyDefinition or child NodeDefinition</title>
       <para>Note that the existing data must be consistent  before changing or removing a existing definition . JCR
       <emphasis role="bold">does not allow</emphasis> you to change the node
@@ -465,7 +465,7 @@ nodeTypeManager.registerNodeType(myNodeTypeValue, ExtendedNodeTypeManager.REPLAC
         </listitem>
       </itemizedlist>
     </section>
-    <section>
+    <section id="JCR.NodeTypeRegistration.PracticalHowto.ChangingListOfSuperTypes">
       <title>Changing the list of super types</title>
       <programlisting language="java">NodeTypeValue testNValue = nodeTypeManager.getNodeTypeValue(&quot;exo:myNodeType&quot;);
 

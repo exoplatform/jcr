@@ -2,11 +2,8 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.Extensions">
-  <?dbhtml filename="ch-jcr-extensions.html"?>
-
     <title>JCR Service Extensions</title>
-
-    <section>
+    <section id="JCR.Extensions.Concept">
       <title>Concept</title>
 
       <para>eXo JCR supports <emphasis role="bold">observation</emphasis>
@@ -38,7 +35,7 @@
       case.</para>
     </section>
 
-    <section>
+    <section id="JCR.Extensions.Implementation">
       <title>Implementation</title>
 
       <mediaobject>
@@ -50,7 +47,7 @@
       <para>Interceptor framework class diagram</para>
     </section>
 
-    <section>
+    <section id="JCR.Extensions.Configuration">
       <title>Configuration</title>
 
       <para>Add a <emphasis role="bold">SessionActionCatalog</emphasis>
@@ -149,7 +146,7 @@
 &lt;/component&gt;</programlisting>
     </section>
 
-  <section>
+  <section id="JCR.Extensions.RelatedPages">
     <title>Related Pages</title>
 
     <para><link linkend="JCR.AccessControlExtension">Access Control

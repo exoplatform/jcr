@@ -2,8 +2,6 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.WorkspaceDataContainer">
-  <?dbhtml filename="ch-data-container.html"?>
-
   <title>JCR Workspace Data Container (architecture contract)</title>
 
   <para>The goals of this section are:</para>
@@ -24,10 +22,10 @@
       </listitem>
     </itemizedlist>
 
-  <section>
+  <section id="JCR.WorkspaceDataContainer.Concepts">
     <title>Concepts</title>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.Concepts.ContainerAndConnection">
       <title>Container and connection</title>
 
       <para>Workspace Data Container (container) serves Repository Workspace
@@ -100,7 +98,7 @@
       Value Storages configuration.</para>
     </section>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.Concepts.ValueStorages">
       <title>Value storages</title>
 
       <para>Container provides optional special mechanism for Value storing.
@@ -123,7 +121,7 @@
       implementation specifics of the storages).</para>
     </section>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.Concepts.Lifecycle">
       <title>Lifecycle</title>
 
       <para>Container is used for read and write operations by data manager.
@@ -136,7 +134,7 @@
       by the container (connection).</para>
     </section>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.Concepts.ValueStorageLifecycle">
       <title>Value storage lifecycle</title>
 
       <para>Value storage is used from the container inside. Reads are related
@@ -146,13 +144,13 @@
     </section>
   </section>
 
-  <section>
+  <section id="JCR.WorkspaceDataContainer.Requirements">
     <title>Requirements</title>
 
     <para>Connection creation and reuse should be a thread safe operation.
     Connection provides CRUD operations support on the storage.</para>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.Requirements.ReadOperations">
       <title>Read operations</title>
 
       <itemizedlist>
@@ -221,7 +219,7 @@
 </programlisting>
     </section>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.Requirements.WriteOperations">
       <title>Write operations</title>
 
       <itemizedlist>
@@ -314,7 +312,7 @@
       during preparation, validation or persistence.</para>
     </section>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.Requirements.StateOperations">
       <title>State operations</title>
 
       <itemizedlist>
@@ -327,7 +325,7 @@
 </programlisting>
     </section>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.Requirements.ValidationOfWriteOperations">
       <title>Validation of write operations</title>
 
       <para>Container has to care about storage consistency (JCR constraints)
@@ -393,7 +391,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.Requirements.ConsistencyOfSave">
       <title>Consistency of save</title>
 
       <para>The container (connection) should implement consistency of Commit
@@ -407,10 +405,10 @@
     </section>
   </section>
 
-  <section>
+  <section id="JCR.WorkspaceDataContainer.ValueStoragesAPI">
     <title>Value storages API</title>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.ValueStoragesAPI.StoragesProvider">
       <title>Storages provider:</title>
 
       <para>Container implementation obtains Values Storages option via
@@ -441,7 +439,7 @@
       doesn't used anywhere and storage implementations has it empty.</para>
     </section>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.ValueStoragesAPI.ValueStoragePlugin">
       <title>Value storage plugin</title>
 
       <para>Provider implementation should use ValueStoragePlugin abstract
@@ -480,7 +478,7 @@
 </programlisting>
     </section>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.ValueStoragesAPI.ValueIOChannel">
       <title>Value I/O channel</title>
 
       <para>Channel should implement ValueIOChannel interface. CRUD operation
@@ -514,7 +512,7 @@
 </programlisting>
     </section>
 
-    <section>
+    <section id="JCR.WorkspaceDataContainer.ValueStoragesAPI.TransactionSupportViaChannel">
       <title>Transaction support via channel</title>
 
       <para>Modification operations should be applied only when commiting.

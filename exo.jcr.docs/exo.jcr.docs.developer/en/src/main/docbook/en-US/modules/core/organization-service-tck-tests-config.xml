@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section>
-  <?dbhtml filename="organization-service-tests-config.html"?>
-
+<section id="Core.OrganizationServiceTCKTestsConfiguration">
   <title>Organization Service TCK tests configuration</title>
-
     <para>The process of launching the Organization Service TCK tests against
     your Organization Service is quite easy. For instance you may add TCK
     tests to your maven project and launch them during unit testing phase. To
@@ -27,7 +24,7 @@
       </listitem>
     </itemizedlist>
 
-  <section>
+  <section id="Core.OrganizationServiceTCKTestsConfiguration.MavenPomXmlFileConfiguration">
     <title>Maven pom.xml file configuration</title>
 
     <para>Organization Service TCK tests are available as a separate maven
@@ -141,7 +138,7 @@
     server</ulink></para>
   </section>
 
-  <section>
+  <section id="Core.OrganizationServiceTCKTestsConfiguration.StandaloneContainerAndOrganizationServiceConfiguration">
     <title>Standalone container and Organization Service configuration</title>
 
     <para>TCK tests use standalone container, so to launch TCK tests propertly

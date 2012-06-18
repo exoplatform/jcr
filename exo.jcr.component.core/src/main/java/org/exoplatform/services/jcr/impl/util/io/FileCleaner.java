@@ -128,6 +128,14 @@ public class FileCleaner extends WorkerThread
          files.offer(file);
       }
    }
+   
+   /**
+    * @param file   
+    */
+   public void removeFile(File file)
+   {
+      files.remove(file);
+   }
 
    @Override
    public void halt()

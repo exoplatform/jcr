@@ -166,6 +166,16 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    void put(ItemData item);
 
    /**
+    * Adds the total amount of children nodes.
+    *
+    * @param parent
+    *          the parent data
+    * @param count
+    *          the total amount of nodes
+    */
+   void addChildNodesCount(NodeData parent, int count);
+
+   /**
     * Adds page of child nodes.
     * 
     * @param parent

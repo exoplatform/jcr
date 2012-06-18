@@ -246,7 +246,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
 
          return logAndGetCheckingResultMessage();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          return logAndGetExceptionDuringCheckingMessage(e);
       }

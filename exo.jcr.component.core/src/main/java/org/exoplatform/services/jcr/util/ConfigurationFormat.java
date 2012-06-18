@@ -44,7 +44,7 @@ public class ConfigurationFormat
          text = Deserializer.resolveNClean(text);
          return Boolean.valueOf(text).booleanValue();
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.warn("Unparseable boolean '" + text + "'.", e);
          return false;
@@ -58,7 +58,7 @@ public class ConfigurationFormat
          text = Deserializer.resolveNClean(text);
          return StringNumberParser.parseInt(text);
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.warn("Unparseable int '" + text + "'. Check StringNumberParser.parseInt for details.", e);
          return 0;
@@ -72,7 +72,7 @@ public class ConfigurationFormat
          text = Deserializer.resolveNClean(text);
          return StringNumberParser.parseLong(text);
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.warn("Unparseable long '" + text + "'. Check StringNumberParser.parseLong for details.", e);
          return 0l;
@@ -86,7 +86,7 @@ public class ConfigurationFormat
          text = Deserializer.resolveNClean(text);
          return StringNumberParser.parseTime(text);
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.warn("Unparseable time (as long) '" + text + "'. Check StringNumberParser.parseTime for details.", e);
          return 0l;
@@ -99,7 +99,7 @@ public class ConfigurationFormat
       {
          return StringNumberParser.serializeTime(time);
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.warn("Unserialable time '" + time + "'. Check StringNumberParser.serializeTime for details.", e);
          return "";
@@ -112,7 +112,7 @@ public class ConfigurationFormat
       {
          return StringNumberParser.serializeInt(integerValue);
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.warn("Unserialable integer value '" + integerValue
             + "'. Check StringNumberParser.serializeInt for details.", e);
@@ -126,7 +126,7 @@ public class ConfigurationFormat
       {
          return StringNumberParser.serializeLong(longValue);
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          LOG.warn("Unserialable long value '" + longValue
             + "'. Check StringNumberParser.serializeLong for details.", e);

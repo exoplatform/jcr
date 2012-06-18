@@ -22,7 +22,7 @@
   primary type 'nt:unstructured' and containing 'quick' string (fulltext
   search by full node).</para>
 
-  <section>
+  <section id="JCR.RegexpIndexingRule.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>Repository contains nt:unstructured nodes, with different
@@ -52,7 +52,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.RegexpIndexingRule.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -76,7 +76,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.RegexpIndexingRule.FetchingResult">
     <title>Fetching result</title>
 
     <para>Let's get nodes:</para>

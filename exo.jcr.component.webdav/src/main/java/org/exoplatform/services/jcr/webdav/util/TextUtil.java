@@ -52,7 +52,7 @@ public class TextUtil
             }
             catch (NumberFormatException e)
             {
-               throw new IllegalArgumentException();
+               throw new IllegalArgumentException(e);
             }
             i += 2;
          }

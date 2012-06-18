@@ -1,11 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.eXoJCRApplicationModel">
-  <?dbhtml filename="ch-jcr-applications.html"?>
-
+<section id="JCR.eXoJCRApplicationModel">
   <title>eXo JCR Application Model</title>
-
   <para>The following is a picture about the interaction between Applications
   and JCR:</para>
 
@@ -35,4 +32,4 @@
   specific Frameworks. It is possible to build a multi-layered (in framework
   sense) JCR application, for example Web application uses Web framework that
   uses Command framework underneath.</para>
-</chapter>
+</section>

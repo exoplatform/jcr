@@ -195,12 +195,12 @@ public class SearchResultResponseEntity implements StreamingOutput
       }
       catch (XMLStreamException exc)
       {
-         throw new IOException(exc.getMessage());
+         throw new IOException(exc.getMessage(), exc);
       }
       catch (Exception exc)
       {
          LOG.error(exc.getMessage(), exc);
-         throw new IOException(exc.getMessage());
+         throw new IOException(exc.getMessage(), exc);
       }
    }
 }

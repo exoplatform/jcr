@@ -61,7 +61,15 @@ public class JBossStandaloneJTAManagerLookup implements TransactionManagerLookup
          manager = loadClassStrict("com.arjuna.ats.jta.TransactionManager").getMethod("transactionManager");
          user = loadClassStrict("com.arjuna.ats.jta.UserTransaction").getMethod("userTransaction");
       }
-      catch (Exception e)
+      catch (ClassNotFoundException e)
+      {
+         throw new RuntimeException(e);
+      }
+      catch (SecurityException e)
+      {
+         throw new RuntimeException(e);
+      }
+      catch (NoSuchMethodException e)
       {
          throw new RuntimeException(e);
       }

@@ -29,10 +29,12 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
@@ -49,6 +51,7 @@ import org.exoplatform.services.transaction.TransactionService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.InvalidItemStateException;
@@ -96,6 +99,63 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
       idNode = "foo2";
       executeConcurrentReadNWrite(con, cwdm, Mode.WRITE_FIRST, idNode);
       assertNotNull(cwdm.getItemData(idNode));
+   }
+
+   public void testGetChildNodesCount() throws Exception
+   {
+      MyWorkspaceStorageConnection con = new MyWorkspaceStorageConnection();
+      WorkspaceDataContainer wdc = new MyWorkspaceDataContainer(con);
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
+      final CacheableWorkspaceDataManager cwdm =
+         new CacheableWorkspaceDataManager(wconf, wdc, getCacheImpl(), new SystemDataContainerHolder(wdc));
+      final NodeData parentNode =
+         new PersistedNodeData("testGetChildNodesCount", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null,
+            "getChildNodesCount")), null, 0, 1, null, null, null);
+      assertEquals(0, con.getChildNodesCountCalls.get());
+      int result = cwdm.getChildNodesCount(parentNode);
+      assertEquals(0, result);
+      assertEquals(1, con.getChildNodesCountCalls.get());
+      result = cwdm.getChildNodesCount(parentNode);
+      assertEquals(0, result);
+      assertEquals(1, con.getChildNodesCountCalls.get());
+      PlainChangesLog chlog = new PlainChangesLogImpl();
+      chlog.add(ItemState.createAddedState(new PersistedNodeData("id-node" + parentNode.getIdentifier(), QPath
+         .makeChildPath(parentNode.getQPath(), new InternalQName(null, "node")), parentNode.getIdentifier(), 1, 0,
+         Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
+      cwdm.save(chlog);
+      result = cwdm.getChildNodesCount(parentNode);
+      assertEquals(1, result);
+      assertEquals(2, con.getChildNodesCountCalls.get());
+   }
+
+   public void testGetChildNodesCount2() throws Exception
+   {
+      MyWorkspaceStorageConnection con = new MyWorkspaceStorageConnection();
+      con.childNodesCount = 1;
+      WorkspaceDataContainer wdc = new MyWorkspaceDataContainer(con);
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
+      final CacheableWorkspaceDataManager cwdm =
+         new CacheableWorkspaceDataManager(wconf, wdc, getCacheImpl(), new SystemDataContainerHolder(wdc));
+      final NodeData parentNode =
+         new PersistedNodeData("testGetChildNodesCount2", QPath.makeChildPath(Constants.ROOT_PATH, new InternalQName(null,
+            "getChildNodesCount")), null, 0, 1, null, null, null);
+      assertEquals(0, con.getChildNodesCountCalls.get());
+      int result = cwdm.getChildNodesCount(parentNode);
+      assertEquals(1, result);
+      assertEquals(1, con.getChildNodesCountCalls.get());
+      result = cwdm.getChildNodesCount(parentNode);
+      assertEquals(1, result);
+      assertEquals(1, con.getChildNodesCountCalls.get());
+      PlainChangesLog chlog = new PlainChangesLogImpl();
+      chlog.add(ItemState.createAddedState(new PersistedNodeData("id-node" + parentNode.getIdentifier(), QPath
+         .makeChildPath(parentNode.getQPath(), new InternalQName(null, "node")), parentNode.getIdentifier(), 1, 0,
+         Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
+      cwdm.save(chlog);
+      result = cwdm.getChildNodesCount(parentNode);
+      assertEquals(2, result);
+      assertEquals(2, con.getChildNodesCountCalls.get());
    }
 
    /**
@@ -196,6 +256,7 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
       public void add(NodeData data) throws RepositoryException, UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
       {
+         childNodesCount++;
       }
 
       public void add(PropertyData data) throws RepositoryException, UnsupportedOperationException,
@@ -221,9 +282,12 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
       {
       }
 
+      public int childNodesCount = 0;
+      public AtomicInteger getChildNodesCountCalls = new AtomicInteger();
       public int getChildNodesCount(NodeData parent) throws RepositoryException
       {
-         return -1;
+         getChildNodesCountCalls.incrementAndGet();
+         return childNodesCount;
       }
 
       public List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException

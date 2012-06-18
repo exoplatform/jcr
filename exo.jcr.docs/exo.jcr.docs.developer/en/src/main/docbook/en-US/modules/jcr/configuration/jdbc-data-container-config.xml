@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.JDBCDataContainerConfig">
-  <?dbhtml filename="ch-jdbc-data-container-config.html"?>
-
   <title>JDBC Data Container Config</title>
 
   <para>eXo JCR persistent data container can work in two configuration
@@ -246,7 +244,7 @@
   <para>Read more about <link linkend="JCR.eXoJCRconfiguration">Repository
   configuration</link>.</para>
 
-  <section>
+  <section id="JCR.JDBCDataContainerConfig.GeneralRecommendationsForDatabaseConfiguration">
     <title>General recommendations for database configuration</title>
 
     <itemizedlist>
@@ -258,7 +256,7 @@
       </listitem>
     </itemizedlist>
 
-    <section>
+    <section id="JCR.JDBCDataContainerConfig.GeneralRecommendationsForDatabaseConfiguration.DB2Configuration">
       <title>DB2 configuration</title>
 
       <itemizedlist>
@@ -287,7 +285,7 @@ $ db2start</programlisting></para>
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCR.JDBCDataContainerConfig.GeneralRecommendationsForDatabaseConfiguration.MySQLConfiguration">
       <title>MySQL configuration</title>
 
       <itemizedlist>
@@ -311,7 +309,7 @@ $ db2start</programlisting></para>
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCR.JDBCDataContainerConfig.GeneralRecommendationsForDatabaseConfiguration.PostgreSQLConfiguration">
       <title>PostgreSQL configuration</title>
 
       <itemizedlist>
@@ -334,7 +332,7 @@ ANALYZE JCR_SVALUE</programlisting>
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCR.JDBCDataContainerConfig.GeneralRecommendationsForDatabaseConfiguration.MSSQLConfiguration">
       <title>MS SQL configuration</title>
 
       <itemizedlist>
@@ -364,7 +362,7 @@ UPDATE STATISTICS JCR_SVALUE</programlisting>
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCR.JDBCDataContainerConfig.GeneralRecommendationsForDatabaseConfiguration.SybaseConfiguration">
       <title>Sybase configuration</title>
 
       <itemizedlist>
@@ -384,7 +382,7 @@ update statistics JCR_SVALUE</programlisting>
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCR.JDBCDataContainerConfig.GeneralRecommendationsForDatabaseConfiguration.OracleConfiguration">
       <title>Oracle configuration</title>
 
       <itemizedlist>
@@ -522,7 +520,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     </note>
   </section>
 
-  <section>
+  <section id="JCR.JDBCDataContainerConfig.Multi-databaseConfiguration">
     <title>Multi-database Configuration</title>
 
     <note>
@@ -639,7 +637,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     persisted in two different databases (ws in HSQLDB, ws1 in MySQL).</para>
   </section>
 
-  <section>
+  <section id="JCR.JDBCDataContainerConfig.Single-databaseConfiguration">
     <title>Single-database configuration</title>
 
     <para>It's simplier to configure a single-database data container. We have
@@ -713,7 +711,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     <para>In this way, we have configured two workspaces which will be
     persisted in one database (PostgreSQL).</para>
 
-    <section>
+    <section id="JCR.JDBCDataContainerConfig.Single-databaseConfiguration.DynamicWorkspaceCreation">
       <title>Dynamic Workspace Creation</title>
 
       <para>Workspaces can be added dynamically during runtime.</para>
@@ -735,7 +733,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     </section>
   </section>
 
-  <section>
+  <section id="JCR.JDBCDataContainerConfig.SimpleAndComplexQueries">
     <title>Simple and Complex queries</title>
 
     <para>eXo JCR provides two ways for interact with Database -
@@ -776,7 +774,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
       </simplelist></para>
   </section>
 
-  <section>
+  <section id="JCR.JDBCDataContainerConfig.ForseQueryHints">
     <title>Forse Query Hints</title>
 
     <para>Some databases supports hints to increase query performance (like
@@ -799,7 +797,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     all other dialects this parameter is ignored.</para>
   </section>
 
-  <section>
+  <section id="JCR.JDBCDataContainerConfig.NotesForMicrosoftWindowsUsers">
     <title>Notes for Microsoft Windows users</title>
 
     <para>The current configuration of eXo JCR uses <ulink

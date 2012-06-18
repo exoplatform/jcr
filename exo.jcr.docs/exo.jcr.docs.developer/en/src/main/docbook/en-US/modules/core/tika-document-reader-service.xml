@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Core.TikaDocumentReaderService">
-  <?dbhtml filename="ch-core-document-reader-service.html"?>
-
   <title>Tika Document Reader Service</title>
 
     <para>DocumentReaderService provides API to retrieve DocumentReader by
@@ -11,8 +9,8 @@
 
     <para>DocumentReader lets the user fetch content of document as String or,
     in case of TikaDocumentReader, as Reader.</para>
-    
-  <section>
+
+  <section id="Core.TikaDocumentReaderService.Architecture">
     <title>Architecture</title>
 
     <para>Basicaly, DocumentReaderService is a container for all registered
@@ -33,7 +31,7 @@
       </note></para>
   </section>
 
-  <section>
+  <section id="Core.TikaDocumentReaderService.Configuration">
     <title>Configuration</title>
 
     <para>How TikaDocumentReaderService Impl configuration looks
@@ -135,7 +133,7 @@
          &lt;/component-plugin&gt;
 
       &lt;/component-plugins&gt;
-      
+
       &lt;init-params&gt;
         &lt;value-param&gt;
           &lt;name&gt;tika-configuration&lt;/name&gt;
@@ -166,7 +164,7 @@
       &lt;mime&gt;application/msworddot&lt;/mime&gt;
       &lt;mime&gt;application/powerpoint&lt;/mime&gt;
       &lt;mime&gt;application/ppt&lt;/mime&gt;
-      
+
       &lt;mime&gt;application/x-tika-msoffice&lt;/mime&gt;
       &lt;mime&gt;application/msword&lt;/mime&gt;
       &lt;mime&gt;application/vnd.ms-excel&lt;/mime&gt;
@@ -292,7 +290,7 @@
 &lt;/properties&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="Core.TikaDocumentReaderService.OldStyleDocumentReadersAndTikaParsers">
     <title>Old-style DocumentReaders and Tika Parsers</title>
 
     <para>As you see configuration above, there is both old-style
@@ -310,7 +308,7 @@
     configuration will be checked for Parsers only if there is no already
     registered DocumentReader.</para>
 
-    <section>
+    <section id="Core.TikaDocumentReaderService.HowToMakeAndRegisterOwnDocumentReader">
       <title>How to make and register own DocumentReader</title>
 
       <para>You can make you own DocumentReader in two ways.</para>
@@ -320,8 +318,8 @@
       <itemizedlist>
         <listitem>
           <para>extend BaseDocumentReader</para>
-        </listitem> 
-      </itemizedlist>          
+        </listitem>
+      </itemizedlist>
   <programlisting language="java">public class MyDocumentReader extends BaseDocumentReader
 {
    public String[] getMimeTypes()
@@ -330,7 +328,7 @@
    }
    ...
 }</programlisting>
-          
+
         <itemizedlist>
           <listitem>
             <para>register it as component-plugin</para>
@@ -342,8 +340,8 @@
    &lt;type&gt;com.mycompany.document.MyDocumentReader&lt;/type&gt;
    &lt;description&gt;to read my own file format&lt;/description&gt;
 &lt;/component-plugin&gt;</programlisting>
-          
-     
+
+
 
       <para><emphasis role="bold">Tika Parser</emphasis>:</para>
       <itemizedlist>
@@ -355,7 +353,7 @@
 {
    ...
 }</programlisting>
-          
+
         <itemizedlist>
           <listitem>
             <para>register it in tika-config.xml</para>
@@ -365,12 +363,12 @@
       &lt;mime&gt;mymimetype&lt;/mime&gt;
  &lt;/parser&gt;
 </programlisting>
-          
-     
+
+
     </section>
   </section>
 
-  <section>
+  <section id="Core.TikaDocumentReaderService.TikaDocumentReaderFeaturesAndNotes">
     <title>TikaDocumentReader features and notes</title>
 
     <para>TikaDocumentReader features and notes:<itemizedlist>

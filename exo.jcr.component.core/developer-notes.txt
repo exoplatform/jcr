@@ -20,3 +20,4 @@
 * Changed annotation for WebDavServiceImpl.mkcol() method parameter nodeTypeHeader
 * WebDavServiceImpl initial parameters names and default values moved to separate classes InitParamsDefaults and InitParamsNames
 * Added new initial parameters to define allowed file node types and folder node types
+* Support case insensitive order by

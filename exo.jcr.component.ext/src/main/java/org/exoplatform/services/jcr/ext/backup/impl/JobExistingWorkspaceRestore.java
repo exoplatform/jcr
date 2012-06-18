@@ -101,7 +101,7 @@ public class JobExistingWorkspaceRestore extends JobWorkspaceRestore
 
          super.restoreWorkspace();
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          throw new WorkspaceRestoreException("Workspace " + wEntry.getName() + " was not restored", t);
       }

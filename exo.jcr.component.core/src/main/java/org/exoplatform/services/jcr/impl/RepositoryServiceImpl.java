@@ -156,7 +156,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
             throw new RepositoryConfigurationException("Repository container " + rEntry.getName() + " already started");
          }
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          repositoryContainers.remove(rEntry.getName());
 
@@ -277,7 +277,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       {
          log.error("Error start repository service", e);
       }
-      catch (Throwable e)
+      catch (Throwable e) //NOSONAR
       {
          log.error("Error start repository service", e);
          throw new RuntimeException(e);

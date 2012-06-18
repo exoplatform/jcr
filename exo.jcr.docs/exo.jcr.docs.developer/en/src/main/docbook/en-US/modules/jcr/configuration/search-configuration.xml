@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.SearchConfiguration">
-  <?dbhtml filename="ch-search-configuration.html"?>
-
   <title>Search Configuration</title>
   <para>Search is an important function in eXo JCR, so it is very necessary for you to know how to configure the eXo JCR Search tool.</para>
 
@@ -375,7 +373,7 @@
   <section id="JCR.SearchConfiguration.Global_Search_Index">
     <title>Global Search Index</title>
 
-    <section>
+    <section id="JCR.SearchConfiguration.Global_Search_Index.Configuration">
       <title>Global Search Index Configuration</title>
 
       <para>The global search index is configured in the above-mentioned
@@ -395,7 +393,7 @@
       to create a customized Handler in 5 minutes.</para>
     </section>
 
-    <section>
+    <section id="JCR.SearchConfiguration.Global_Search_Index.Customized_Search_Indexes_Analyzers">
       <title>Customized Search Indexes and Analyzers</title>
 
       <para>By default Exo JCR uses the Lucene standard Analyzer to index
@@ -438,7 +436,7 @@
       analyzer, and a new search index to use the analyzer. You put it in a
       jar, which is deployed with your application.</para>
 
-      <section>
+      <section id="JCR.SearchConfiguration.Global_Search_Index.Customized_Search_Indexes_Analyzers.Creating_filter">
         <title>Creating the filter</title>
 
         <para>The ISOLatin1AccentFilter is not present in the current Lucene
@@ -449,7 +447,7 @@
         <para>which defines how chars are read and used by the filter.</para>
       </section>
 
-      <section>
+      <section id="JCR.SearchConfiguration.Global_Search_Index.Customized_Search_Indexes_Analyzers.Creating_Analyzer">
         <title>Creating the analyzer</title>
 
         <para>The analyzer has to extends
@@ -460,7 +458,7 @@
         <para>to put your own filters. You can have a glance at the example analyzer attached to this article.</para>
       </section>
 
-      <section>
+      <section id="JCR.SearchConfiguration.Global_Search_Index.Customized_Search_Indexes_Analyzers.Creating_Search_Index">
         <title>Creating the search index</title>
 
         <para>Now, we have the analyzer, we have to write the SearchIndex,
@@ -481,7 +479,7 @@
         </note>
       </section>
 
-      <section>
+      <section id="JCR.SearchConfiguration.Global_Search_Index.Customized_Search_Indexes_Analyzers.Configuring_Application_Use_SearchIndex">
         <title>Configuring your application to use your SearchIndex</title>
 
         <para>In
@@ -496,7 +494,7 @@
         </programlisting>
       </section>
 
-      <section>
+      <section id="JCR.SearchConfiguration.Global_Search_Index.Customized_Search_Indexes_Analyzers.Configure_Application_Use_Analyzer">
         <title>Configure your application to use your Analyzer</title>
 
         <para>In
@@ -522,7 +520,7 @@
   <section id="JCR.SearchConfiguration.Indexing_Adjustments">
     <title>Indexing Adjustments</title>
 
-    <section>
+    <section id="JCR.SearchConfiguration.Indexing_Adjustments.IndexingConfiguration">
       <title>IndexingConfiguration</title>
 
       <para>Starting with version 1.9, the default search index implementation
@@ -540,10 +538,10 @@
       <programlisting language="xml">&lt;param name="indexing-configuration-path" value="/indexing_configuration.xml"/&gt;</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.SearchConfiguration.Indexing_Adjustments.Indexing_Rules">
       <title>Indexing rules</title>
 
-      <section>
+      <section id="JCR.SearchConfiguration.Indexing_Adjustments.Indexing_Rules.Node_Scope_Limit">
         <title>Node Scope Limit</title>
 
         <para>To optimize the index size, you can limit the node scope so that
@@ -567,7 +565,7 @@
         throughout the XML file!</para>
       </section>
 
-      <section>
+      <section id="JCR.SearchConfiguration.Indexing_Adjustments.Indexing_Rules.Indexing_Boost_Value">
         <title>Indexing Boost Value</title>
 
         <para>It is also possible to configure a <phrase>boost value</phrase>
@@ -599,7 +597,7 @@
 </programlisting>
       </section>
 
-      <section>
+      <section id="JCR.SearchConfiguration.Indexing_Adjustments.Indexing_Rules.Conditional_Index_Rules">
         <title>Conditional Index Rules</title>
 
         <para>You may also add a <phrase>condition</phrase> to the index rule
@@ -669,7 +667,7 @@
 &lt;/configuration&gt;</programlisting>
       </section>
 
-      <section>
+      <section id="JCR.SearchConfiguration.Indexing_Adjustments.Indexing_Rules.Exclusion_Node_Scope_Index">
         <title>Exclusion from the Node Scope Index</title>
 
         <para>Per default all configured properties are fulltext indexed if
@@ -690,7 +688,7 @@
       </section>
     </section>
 
-    <section>
+    <section id="JCR.SearchConfiguration.Indexing_Adjustments.IndexingAggregates">
       <title>Indexing Aggregates</title>
 
       <para>Sometimes it is useful to include the contents of descendant nodes
@@ -755,10 +753,10 @@
 </programlisting>
     </section>
 
-    <section>
+    <section id="JCR.SearchConfiguration.Indexing_Adjustments.Property_Level_Analyzers">
       <title>Property-Level Analyzers</title>
 
-      <section>
+      <section id="JCR.SearchConfiguration.Indexing_Adjustments.Property_Level_Analyzers.Example">
         <title>Example</title>
 
         <para>In this configuration section, you define how a property has to
@@ -789,7 +787,7 @@
         takes the property as a whole.</para>
       </section>
 
-      <section>
+      <section id="JCR.SearchConfiguration.Indexing_Adjustments.Property_Level_Analyzers.Characteristics_Node_Scope_Searches">
         <title>Characteristics of Node Scope Searches</title>
 
         <para>When using analyzers, you may encounter an unexpected behavior
@@ -855,7 +853,7 @@
       </section>
     </section>
 
-    <section>
+    <section id="JCR.SearchConfiguration.Indexing_Adjustments.Advanced_Features">
       <title>Advanced features</title>
 
       <para>eXo JCR supports some advanced features, which are not specified

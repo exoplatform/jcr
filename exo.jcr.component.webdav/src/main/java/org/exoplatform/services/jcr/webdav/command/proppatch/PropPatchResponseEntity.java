@@ -169,7 +169,7 @@ public class PropPatchResponseEntity implements StreamingOutput
       }
       catch (XMLStreamException exc)
       {
-         throw new IOException(exc.getMessage());
+         throw new IOException(exc.getMessage(), exc);
       }
    }
 

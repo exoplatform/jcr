@@ -142,7 +142,7 @@ public class JobRepositoryRestore extends Thread
          stateRestore = REPOSITORY_RESTORE_SUCCESSFUL;
          endTime = Calendar.getInstance();
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          stateRestore = REPOSITORY_RESTORE_FAIL;
          restoreException = t;
@@ -230,7 +230,7 @@ public class JobRepositoryRestore extends Thread
             + " in repository \"" + repositoryEntry.getName() + "\"." + " There was database error.", e);
 
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          restored = false;
 
@@ -250,7 +250,7 @@ public class JobRepositoryRestore extends Thread
             {
                removeRepository(repositoryService, repositoryEntry.getName());
             }
-            catch (Throwable thr)
+            catch (Throwable thr) //NOSONAR
             {
                LOG.error("The partly restored repository \"" + repositoryEntry.getName() + "\" can not be removed.",
                   thr);
@@ -384,7 +384,7 @@ public class JobRepositoryRestore extends Thread
       {
          restore();
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          LOG.error("The restore was fail", t);
       }

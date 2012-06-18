@@ -249,7 +249,7 @@ public class LockCommand
          catch (Exception e)
          {
             LOG.error(e.getMessage(), e);
-            throw new IOException(e.getMessage());
+            throw new IOException(e.getMessage(), e);
          }
       }
 

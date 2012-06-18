@@ -2,13 +2,11 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.eXoJCRconfiguration">
-  <?dbhtml filename="ch-exo-jcr-configuration.html"?>
-
   <title>eXo JCR configuration</title>
 
   <para>This section provides you the knowledge about eXo JCR configuration in details, including the basic and advanced configuration.</para>
 
-  <section>
+  <section id="JCR.eXoJCRconfiguration.RelatedDocuments">
     <title>Related documents</title>
 
     <itemizedlist>
@@ -121,7 +119,7 @@
     disabled.</para>
   </section>
 
-  <section>
+  <section id="JCR.eXoJCRconfiguration.JCRConfiguration">
     <title>JCR Configuration</title>
 
     <para>The Configuration is defined in an XML file (see DTD below).</para>
@@ -151,7 +149,7 @@
     </itemizedlist>
   </section>
 
-  <section id="JCR.eXoJCRconfiguration.RepositoryConfiguration">
+  <section id="JCR.eXoJCRconfiguration.RepositoryServiceConfiguration">
     <title>Repository service configuration (JCR repositories
     configuration)</title>
 
@@ -167,9 +165,8 @@
     <para><emphasis role="bold">repositories</emphasis>: The list of
     repositories.</para>
   </section>
-
-  <section>
-    <title>Repository configuration:</title>
+  <section id="JCR.eXoJCRconfiguration.RepositoryConfiguration">
+    <title>Repository configuration</title>
 
     <para><emphasis role="bold">name</emphasis>: The name of a
     repository.</para>
@@ -211,8 +208,8 @@
     threads.</para>
   </section>
 
-  <section>
-    <title>Workspace configuration:</title>
+  <section id="JCR.eXoJCRconfiguration.WorkspaceConfiguration">
+    <title>Workspace configuration</title>
 
     <para><emphasis role="bold">name</emphasis>: The name of a
     workspace</para>
@@ -261,8 +258,8 @@
     defining conditions when this plugin is applicable.</para>
   </section>
 
-  <section>
-    <title>Initializer configuration (optional):</title>
+  <section id="JCR.eXoJCRconfiguration.InitializerConfiguration">
+    <title>Initializer configuration (optional)</title>
 
     <para><emphasis role="bold">class</emphasis>: Initializer implementation
     class.</para>
@@ -287,8 +284,8 @@
     initial startup procedure (used for Clustering). </para>
   </section>
 
-  <section>
-    <title>Cache configuration:</title>
+  <section id="JCR.eXoJCRconfiguration.CacheConfiguration">
+    <title>Cache configuration</title>
 
     <para><emphasis role="bold">enabled</emphasis>: If workspace cache is
     enabled or not.</para>
@@ -343,8 +340,8 @@
     default.</para>
   </section>
 
-  <section>
-    <title>Query Handler configuration:</title>
+  <section id="JCR.eXoJCRconfiguration.QueryHandlerConfiguration">
+    <title>Query Handler configuration</title>
 
     <para><emphasis role="bold">class</emphasis>: A Query Handler class
     name.</para>
@@ -356,8 +353,8 @@
     linkend="JCR.SearchConfiguration">Search Configuration</link>.</para>
   </section>
 
-  <section>
-    <title>Lock Manager configuration:</title>
+  <section id="JCR.eXoJCRconfiguration.LockManagerConfiguration">
+    <title>Lock Manager configuration</title>
 
     <para><emphasis role="bold">time-out</emphasis>: Time after which the
     unused global lock will be removed.</para>
@@ -418,7 +415,7 @@
 &lt;!ELEMENT property EMPTY&gt;</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.eXoJCRconfiguration.HelpApplicationToProhibitUseOfClosedSessions">
     <title>Help application to prohibit the use of closed sessions</title>
 
     <para>Products that use eXo JCR, sometimes missuse it since they continue
@@ -455,7 +452,7 @@
       </listitem>
     </orderedlist>
   </section>
-  <section>
+  <section id="JCR.eXoJCRconfiguration.GettingEffectiveConfigurationAtRuntimeOfAllRepositories">
     <title>Getting the effective configuration at Runtime of all the
     repositories</title>
 

@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
 <section id="Kernel.JobSchedulerService">
-<?dbhtml filename="ch-job-scheduler-service.html"?>  <title>Job Scheduler Service</title>
+<title>Job Scheduler Service</title>
   <para><emphasis role="bold">Job scheduler</emphasis>  defines a job to execute a given number of times during a given period. It is a service that is in charge of unattended background executions, commonly known for historical reasons as batch processing. It is used to create and run jobs automatically and continuously, to schedule event-driven jobs and reports.</para>
-  <section>
+  <section id="Kernel.JobSchedulerService.WhatIsJobSchedulerServiceIneXoProducts">
     <title>Where is Job Scheduler Service used in eXo Products?</title>
     <para>Job Scheduler Service is widely used in many eXo products such as Social, DMS, WCM, eXo Knowledge and eXo Collaboration.</para>
     <para>In eXo products, Job Schedulers are used to do some tasks as below:</para>
@@ -30,7 +30,7 @@
     <para>Also, it is used in Schedule lifecycle in DMS.</para>
     <para>By using Job Scheduler Service in eXo kernel, many kinds of job can be configured to run, such as, addPeriodJob, addCronJob, addGlobalJobListener, addJobListener and many more. Just write a job (a class implements Job interface of quartz library and configures plug-in for JobSchedulerService and you&apos;re done. </para>
   </section>
-  <section>
+  <section id="Kernel.JobSchedulerService.HowJobSchedulerWork">
     <title>How does Job Scheduler work?</title>
     <para>Jobs are scheduled to run when a given Trigger occurs. Triggers can
     be created with nearly any combination of the following directives:</para>
@@ -81,7 +81,7 @@
     environment, Jobs can perform their work as part of a distributed (XA)
     transaction.</para>
     <para>(Source: quartz-scheduler.org) </para>
-    <section>
+    <section id="Kernel.JobSchedulerService.HowJobSchedulerWork.JobSchedulerServiceInKernel">
       <title>How can Job Scheduler Service be used in Kernel?</title>
       <para>Kernel leverages <ulink url="http://www.quartz-scheduler.org">Quartz</ulink> for its scheduler
       service and wraps <classname>org.quartz.Scheduler</classname> in
@@ -118,7 +118,7 @@
 
 &lt;/configuration&gt;</programlisting>
     </section>
-    <section>
+    <section id="Kernel.JobSchedulerService.HowJobSchedulerWork.Samples">
       <title>Samples</title>
       <note>
         <para>You can download the project code from <ulink url="https://github.com/hoatle/job-scheduler-service-tutorial">here</ulink></para>
@@ -168,7 +168,7 @@
       <para>Generate an eclipse project by using maven eclipse plugin and then import into eclipse:</para>
       <programlisting>mvn eclipse:eclipse</programlisting>
       <para>eXo Kernel makes it easier to work with job scheduler service. All you need is just to define your &quot;job&quot; class to be performed by implementing <emphasis role="italic">org.quartz.Job</emphasis> interface and add configuration for it. </para>
-      <section>
+      <section id="Kernel.JobSchedulerService.HowJobSchedulerWork.Samples.DefineJob">
         <title>Define a job</title>
         <para>To define a job, do as follows:</para>
         <para>Define your job to be performed. For example, the job <emphasis role="italic">DumbJob</emphasis> is defined as follows:</para>
@@ -202,7 +202,7 @@ public class DumbJob implements Job {
 }</programlisting>
         <para>All jobs are required to implement the method <emphasis role="italic">execute</emphasis> from <emphasis role="italic">org.quartz.Job</emphasis> interface. This method will be called whenever a job is performed. With <emphasis role="italic">DumbJob</emphasis>, you just use logging to see that it will work. By looking at the terminal, you will see the the log message: &quot;DumbJob is executing...&quot;</para>
       </section>
-      <section>
+      <section id="Kernel.JobSchedulerService.HowJobSchedulerWork.Samples.JobConfiguration">
         <title>Job configuration</title>
         <para>After defining the &quot;job&quot;, the only next step is to configure it by using <emphasis role="italic">external-component-plugin</emphasis> configuration for <emphasis role="italic">org.exoplatform.services.scheduler.JobSchedulerService</emphasis>. You can use these methods below for setting component plugin:</para>
         <programlisting language="java">public void addPeriodJob(ComponentPlugin plugin) throws Exception;</programlisting>
@@ -258,7 +258,7 @@ public class DumbJob implements Job {
         <programlisting language="java">public void addTriggerListener(ComponentPlugin plugin) throws Exception;</programlisting>
         <para>The component plugin for two methods above must be the type of <emphasis role="italic">org.quartz.TriggerListener</emphasis>. This trigger listener is used so that it will be informed when a <emphasis role="italic">org.quartz.Trigger</emphasis> fires.</para>
       </section>
-      <section>
+      <section id="Kernel.JobSchedulerService.HowJobSchedulerWork.Samples.RunProject">
         <title>Run the project</title>
         <para>Create <emphasis role="italic">conf.portal</emphasis> package in your sample project. Add the configuration.xml file with the content as follows:</para>
         <programlisting language="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
@@ -308,7 +308,7 @@ public class DumbJob implements Job {
       </section>
     </section>
   </section>
-  <section>
+  <section id="Kernel.JobSchedulerService.Reference">
     <title>Reference</title>
     <para>To further understand about Job Scheduler, you can refer the
     following links:</para>

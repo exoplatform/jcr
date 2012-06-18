@@ -21,7 +21,7 @@
   <para>XPath does not have any specification for defining escape symbols, so
   we must use the default escape character (' \').</para>
 
-  <section>
+  <section id="JCR.EscapinginLIKEStatements.RepositoryStructure">
     <title>Repository structure</title>
 
     <para>The repository contains mix:title nodes, where jcr:title can have
@@ -51,7 +51,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.EscapinginLIKEStatements.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -75,7 +75,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.EscapinginLIKEStatements.FetchingResult">
     <title>Fetching result</title>
 
     <para>Let's get nodes:</para>

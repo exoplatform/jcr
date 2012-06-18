@@ -262,19 +262,7 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
          }
       };
       multiThreadingTest(task);
-      assertEquals(READER * TIMES, con.getChildNodesCountCalls.get());
-      // Add data to the cache
-      cwdm.getChildNodesData(nodeData);
-      task = new MyTask()
-      {
-         public void execute() throws Exception
-         {
-            int result = cwdm.getChildNodesCount(nodeData);
-            assertEquals(1, result);
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(READER * TIMES, con.getChildNodesCountCalls.get());
+      assertEquals(1, con.getChildNodesCountCalls.get());
    }
 
    private static interface MyTask
@@ -397,7 +385,7 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
 
       public int getChildNodesCount(NodeData parent)
       {
-         return childNodes != null ? childNodes.size() : -1;
+         return childNodes != null ? childNodes.size() : count;
       }
 
       public List<PropertyData> getReferencedProperties(String identifier)
@@ -450,6 +438,14 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
       {
       }
 
+      private volatile int count = -1;
+      /**
+       * @see org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache#addChildNodesCount(org.exoplatform.services.jcr.datamodel.NodeData, int)
+       */
+      public void addChildNodesCount(NodeData parent, int count)
+      {
+         this.count = count;
+      }
    }
 
    private static class MyWorkspaceStorageConnection implements WorkspaceStorageConnection

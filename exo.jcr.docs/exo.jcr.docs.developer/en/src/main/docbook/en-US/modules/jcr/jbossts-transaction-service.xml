@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.JBossTransactionsService">
-  <?dbhtml filename="ch-jbossts-tranasction-service.html"?>
-
   <title>JBossTransactionsService</title>
 
     <para>JBossTransactionsService implements eXo <link
@@ -17,7 +15,7 @@
     implementaion. See <link linkend="JCR.ClusterConfig">Cluster
     configuration</link> for example.</para>
 
-  <section>
+  <section id="JCR.JBossTransactionsService.Configuration">
     <title>Configuration</title>
 
     <para>Example configuration:</para>

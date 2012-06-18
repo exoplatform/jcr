@@ -112,6 +112,10 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
       }
       catch (SQLException e)
       {
+         if (LOG.isTraceEnabled())
+         {
+            LOG.trace("Can't get container name: " + e.getMessage());
+         }
       }
 
       return resultSet.getString(column).substring(containerName.length());

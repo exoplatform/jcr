@@ -34,7 +34,7 @@
   search query by content of 'nt:file'; this search includes the content of
   child 'jcr:content' node.</para>
 
-  <section>
+  <section id="JCR.AggregationRule.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>Repository contains different nt:file nodes.</para>
@@ -81,7 +81,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.AggregationRule.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -105,7 +105,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.AggregationRule.FetchingResult">
     <title>Fetching the result</title>
 
     <para>Let's get nodes:</para>

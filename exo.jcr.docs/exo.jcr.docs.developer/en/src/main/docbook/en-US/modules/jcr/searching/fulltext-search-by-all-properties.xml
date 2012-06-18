@@ -7,7 +7,7 @@
   <para>Find nodes with mixin type 'mix:title' where any property contains
   'break' string.</para>
 
-  <section>
+  <section id="JCR.FulltextSearchByAllProperties.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>Repository filled with different nodes with mixin type 'mix:title'
@@ -39,7 +39,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.FulltextSearchByAllProperties.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -64,7 +64,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.FulltextSearchByAllProperties.FetchingResult">
     <title>Fetching result</title>
 
     <para>Let's get nodes:</para>

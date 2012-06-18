@@ -55,7 +55,7 @@
                   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
                      <property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" />
-                     zz
+                     <property name="jgroups-configuration" value="udp-mux-v3.xml" />
                      <property name="infinispan-cluster-name" value="JCR-cluster" />
                      <property name="use-distributed-cache" value="${use-distributed-cache}" />
                   </properties>

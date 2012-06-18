@@ -9,7 +9,7 @@
   ascending node. This way nodes that match better the query statement are
   ordered at the last positions in the result list.</para>
 
-  <section>
+  <section id="JCR.OrderByScore.Info">
     <title>Info</title>
 
     <para>SQL and XPath queries support both score constructions jcr:score and
@@ -31,7 +31,7 @@ SELECT * FROM nt:base ORDER BY jcr:score()[ASC|DESC]
     <programlisting>... order by jcr:score()</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.OrderByScore.RepositoryStructure">
     <title>Repository Structure</title>
 
     <para>The repository contains mix:title nodes, where the jcr:description
@@ -61,7 +61,7 @@ SELECT * FROM nt:base ORDER BY jcr:score()[ASC|DESC]
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.OrderByScore.QueryExecution">
     <title>Query Execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -85,7 +85,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.OrderByScore.FetchingResult">
     <title>Fetching the Result</title>
 
     <para>Let's get nodes</para>

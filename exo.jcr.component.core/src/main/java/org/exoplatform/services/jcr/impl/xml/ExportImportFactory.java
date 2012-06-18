@@ -147,7 +147,7 @@ public class ExportImportFactory
       }
       catch (XMLStreamException e)
       {
-         throw new IOException(e.getLocalizedMessage());
+         throw new IOException(e.getLocalizedMessage(), e);
       }
 
       if (type == XmlMapping.SYSVIEW)

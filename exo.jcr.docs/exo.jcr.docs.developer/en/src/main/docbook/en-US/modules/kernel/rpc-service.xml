@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Kernel.RPCService">
-  <?dbhtml filename="ch-rpc-service.html"?>
-
   <title>RPC Service</title>
 
     <para>The <emphasis>RPCService</emphasis> is only needed in a cluser
@@ -120,7 +118,7 @@
       <emphasis>RPCService</emphasis> instance in a standalone mode</para>
     </note>
 
-  <section>
+  <section id="Kernel.RPCService.Configuration">
     <title>Configuration</title>
 
     <para>The configuration of the <emphasis>RPCService</emphasis> should be
@@ -255,7 +253,7 @@
     </table>
   </section>
 
-  <section>
+  <section id="Kernel.RPCService.SingleMethodCallCommand">
     <title>The SingleMethodCallCommand</title>
 
     <para>Most of the time we only need to call a method on a given object,

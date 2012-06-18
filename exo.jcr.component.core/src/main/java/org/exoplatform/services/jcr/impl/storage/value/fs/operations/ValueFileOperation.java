@@ -26,6 +26,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
@@ -296,5 +297,43 @@ public abstract class ValueFileOperation extends ValueFileIOHelper implements Va
       {
          twoPhaseCommit();         
       }
+   }
+   
+   /**  
+    * Moves a file from a location to another by using the method {{File.renameTo(File)}}  
+    * if it fails it will do a copy and delete. If the source file cannot be deleted  
+    * it will be given to the file cleaner  
+    * @param srcFile the file to be moved  
+    * @param destFile the destination file  
+    * @throws IOException if error occurs  
+    */
+   protected void move(File srcFile, File destFile) throws IOException
+   {
+      if (!srcFile.renameTo(destFile))
+      {
+         try
+         {
+            copyClose(new FileInputStream(srcFile), new FileOutputStream(destFile));
+         }
+         catch (IOException e)
+         {
+            throw new IOException("Could not move the file from " + srcFile.getAbsolutePath() + " to "
+               + destFile.getAbsolutePath(), e);
+         }
+         if (!srcFile.delete())
+         {
+            if (LOG.isDebugEnabled())
+            {
+               LOG.debug("The file '"
+                  + srcFile.getAbsolutePath()  
+                  + "' could not be deleted which prevents the application"  
+                  + " to move it properly, it is probably due to a stream used to read this property "  
+                  + "that has not been closed as expected. The file will be given to the file cleaner for a later deletion.");  
+            }  
+            // The source could not be deleted so we add it to the  
+            // file cleaner  
+            cleaner.addFile(srcFile);  
+         }  
+      }  
    }
 }

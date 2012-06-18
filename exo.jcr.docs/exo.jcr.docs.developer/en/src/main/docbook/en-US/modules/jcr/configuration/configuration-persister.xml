@@ -2,8 +2,6 @@
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.ConfigurationPersister">
-  <?dbhtml filename="ch-jcr-configuration-persister.html"?>
-
   <title>JCR Configuration persister</title>
   <para>eXo JCR allows using <emphasis>persister</emphasis> to store configuration. In this section, you will understand how to use and configure
   eXo JCR persister.</para>

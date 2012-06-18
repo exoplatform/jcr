@@ -12,7 +12,7 @@
     all mix:title nodes where jcr:title does NOT start with 'P'</link>"</para>
   </note>
 
-  <section>
+  <section id="JCR.LIKEConstraint.RepositoryStructure">
     <title>Repository structure:</title>
 
     <para>The repository contains 3 mix:title nodes, where each jcr:title has
@@ -42,7 +42,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.LIKEConstraint.QueryExecution">
     <title>Query execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -66,7 +66,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.LIKEConstraint.FetchingResult">
     <title>Fetching result</title>
 
     <para>Let's get nodes:</para>

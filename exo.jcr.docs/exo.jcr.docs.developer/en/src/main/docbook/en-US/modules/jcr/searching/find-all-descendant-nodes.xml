@@ -7,7 +7,7 @@
   <para>Find all nodes with the primary type 'nt:folder' that are descendants
   of the node "/folder1/folder2".</para>
 
-  <section>
+  <section id="JCR.FindAllDescendantNodes.RepositoryStructure">
     <title>Repository Structure</title>
 
     <para>The repository contains "nt:folder" nodes. The nodes are placed in a
@@ -51,7 +51,7 @@
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.FindAllDescendantNodes.QueryExecution">
     <title>Query Execution</title>
 
     <para><emphasis role="bold">SQL</emphasis></para>
@@ -75,7 +75,7 @@ Query query = queryManager.createQuery(xpathStatement, Query.XPATH);
 QueryResult result = query.execute();</programlisting>
   </section>
 
-  <section>
+  <section id="JCR.FindAllDescendantNodes.FetchingResult">
     <title>Fetching the Result</title>
 
     <para>Let's get nodes:</para>

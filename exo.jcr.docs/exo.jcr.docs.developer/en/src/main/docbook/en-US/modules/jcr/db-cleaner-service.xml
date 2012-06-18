@@ -2,11 +2,9 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.DBCleanerService">
-  <?dbhtml filename="ch-db-cleaner-service.html"?>
-
   <title>DBCleanService</title>
 
-    <para>It is a special service for data removal from database. The chapter
+    <para>It is a special service for data removal from database. The section
     shortly describes the principles of work <emphasis>DBCleaner</emphasis> under all
     databases.</para>
 
@@ -104,7 +102,7 @@ connection.commit();</programlisting></entry>
     database and JCR configuration.</para>
   </section>
 
-  <section>
+  <section id="JCR.DBCleanerService.Clean_Only_Single_Workspace">
     <title>Need to clean only single workspace</title>
 
     <para>Simple cleaning records from JCR table is used in case of single-db
@@ -221,7 +219,7 @@ connection.commit();</programlisting></entry>
     </table>
   </section>
 
-  <section>
+  <section id="JCR.DBCleanerService.Clean_Whole_Reposistory">
     <title>Need to clean the whole repository</title>
 
     <para>In case of single-db all workspaces will be processed simultaneously

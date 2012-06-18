@@ -110,7 +110,7 @@ public class JobExistingRepositoryRestore extends JobRepositoryRestore
 
          super.restoreRepository();
       }
-      catch (Throwable t)
+      catch (Throwable t) //NOSONAR
       {
          throw new RepositoryRestoreExeption("Repository " + repositoryEntry.getName() + " was not restored", t);
       }

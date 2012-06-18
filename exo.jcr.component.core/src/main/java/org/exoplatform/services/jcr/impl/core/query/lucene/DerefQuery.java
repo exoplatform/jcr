@@ -31,7 +31,6 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AbstractHitColle
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 

@@ -396,7 +396,7 @@ class IndexMerger extends Thread implements IndexListener
                }
             }
          }
-         catch (Throwable e)
+         catch (Throwable e) //NOSONAR
          {
             log.error("Error while merging indexes: ", e);
          }

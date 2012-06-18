@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<chapter id="JCR.BackupClient">
-  <?dbhtml filename="ch-backup-clonsole.dist.html"?>
-
+<section id="JCR.BackupClient">
   <title>Backup console binary distribution</title>
 
-  <section>
+  <section id="JCR.BackupClient.Introduction">
     <title>Introduction</title>
 
     <para>The backup console binary distribution is script-based front-end to
@@ -18,7 +16,7 @@
     Platform.</para>
   </section>
 
-  <section>
+  <section id="JCR.BackupClient.jcrbackup.cmdAndjcrbackup.sh">
     <title>jcrbackup.cmd and jcrbackup.sh</title>
 
     <para>These scripts suitable for Standalone and flexible for various
@@ -83,7 +81,7 @@
 </programlisting>
   </section>
 
-  <section>
+  <section id="JCR.BackupClient.exobackup.shAndexobackup.cmd">
     <title>exobackup.sh and exobackup.cmd</title>
 
     <para>These scripts suitable for use with GateIn based products like
@@ -143,10 +141,10 @@
            12. restore &lt;backup_set_path&gt; </programlisting>
   </section>
 
-  <section>
+  <section id="JCR.BackupClient.BackupConsoleBinaryDistributionUsage">
     <title>Backup console binary distribution usage</title>
 
-    <section>
+    <section id="JCR.BackupClient.BackupConsoleBinaryDistributionUsage.BuildingApplication">
       <title>Building application</title>
 
       <itemizedlist>
@@ -158,7 +156,7 @@
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupConsoleBinaryDistributionUsage.GettingInformationAboutBackupService">
       <title>Getting information about backup service</title>
 
       <para>The context is "portal" by default for FORM authentiaction.</para>
@@ -174,7 +172,7 @@
   default incremental job period : 3600</programlisting>
     </section>
 
-    <section>
+    <section id="JCR.BackupClient.BackupConsoleBinaryDistributionUsage.GettingInformationAboutBackupServiceWithUseNotDefaultContext">
       <title>Getting information about backup service with use not default
       context</title>
 
@@ -191,4 +189,4 @@
   default incremental job period : 3600</programlisting>
     </section>
   </section>
-</chapter>
+</section>

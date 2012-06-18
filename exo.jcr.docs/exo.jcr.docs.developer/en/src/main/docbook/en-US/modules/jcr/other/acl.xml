@@ -1,9 +1,9 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
-<chapter id="JCR.AccessControl">
-<?dbhtml filename="ch-acl.html"?>  <title>Access Control</title>
+<section id="JCR.AccessControl">
+<title>Access Control</title>
   <para>eXo JCR is a complete implementation of the standard JSR 170: <ulink url="http://jcp.org/en/jsr/detail?id=170">Content Repository for Java TM Technology API</ulink>, including <emphasis role="bold">Level 1, Level 2 and Additional Features</emphasis> specified in the JCR Specification.</para>
-  <section>
+  <section id="JCR.AccessControl.StandardActionPermissions">
     <title>Standard Action Permissions</title>
     <para>The JCR specification (JSR 170) does not have many requirements
     about Access Control. It only requires the implementation of the
@@ -60,14 +60,14 @@
       </listitem>
     </itemizedlist>
   </section>
-  <section>
+  <section id="JCR.AccessControl.eXoAccessControl">
     <title>eXo Access Control</title>
     <para>The JSR170 specification does not define how permissions are managed
     or checked. So eXo JCR has implemented its own proprietary extension to
     manage and check permissions on nodes. In essence, this extension uses an
     <ulink url="http://en.wikipedia.org/wiki/Access_control_list">Access Control List (ACL)</ulink> policy model applied to eXo Organization model
     (see eXo Platform Organization Service).</para>
-    <section>
+    <section id="JCR.AccessControl.eXoAccessControl.PrincipalAndIdentity">
       <title>Principal and Identity</title>
       <para>At the heart of eXo Access Control, is the notion of the <emphasis role="bold">identity</emphasis> concept. Access to JCR is made through
       sessions acquired against a repository. Sessions can be authenticated
@@ -96,7 +96,7 @@
         </listitem>
       </itemizedlist>
     </section>
-    <section>
+    <section id="JCR.AccessControl.eXoAccessControl.ACL">
       <title>ACL</title>
       <para>An access control list (ACL) is a list of permissions attached to
       an object. An ACL specifies which users, groups or system processes are
@@ -118,7 +118,7 @@
           the node, independent of the privilegeable facet.</para>
         </listitem>
       </itemizedlist>
-      <section>
+      <section id="JCR.AccessControl.eXoAccessControl.ACL.Privilegeable">
         <title>Privilegeable</title>
         <para>A privilegeable node defines the permissions required for
         actions on this node. For this purpose, it contains an ACL.</para>
@@ -155,7 +155,7 @@
           </listitem>
         </itemizedlist>
       </section>
-      <section>
+      <section id="JCR.AccessControl.eXoAccessControl.ACL.Ownable">
         <title>Ownable</title>
         <para>An ownable node defines an owner identity. The <emphasis role="bold">owner</emphasis> has always <emphasis role="bold">full privileges</emphasis>. These privileges are independent of the
         permissions set by exo:permissions. At JCR level, the ownership is
@@ -177,7 +177,7 @@
         principal of a session belongs to the groups to which the
         concerned action is granted.</para>
       </section>
-      <section>
+      <section id="JCR.AccessControl.eXoAccessControl.ACL.ACLInheritance">
         <title>ACL Inheritance</title>
         <para>To grant or deny access to a node, eXo JCR applies a
         privilege resolving logic at node access time.</para>
@@ -199,7 +199,7 @@
         permissions, the system looks up into the node&apos;s ancestor hierarchy
         for the <emphasis role="bold">first</emphasis> ACL.</para>
       </section>
-      <section>
+      <section id="JCR.AccessControl.eXoAccessControl.ACL.DefaultACLOfRootNode">
         <title>Default ACL of the root node</title>
         <para>When no matching ACL is found in the ancestor hierarchy, the
         system may end up looking at the root node&apos;s ACL. As ACL are optional,
@@ -213,7 +213,7 @@
         </itemizedlist>
       </section>
     </section>
-    <section>
+    <section id="JCR.AccessControl.eXoAccessControl.Notes">
       <title>Notes</title>
       <para><emphasis role="bold">Access Control nodetypes are not extendible:</emphasis> The access control mechanism works for <emphasis role="bold">exo:owneable</emphasis> and <emphasis role="bold">exo:privilegeable</emphasis> nodetypes only, not for their
       subtypes! So you cannot extend those nodetypes.</para>
@@ -230,9 +230,9 @@
       there is no exo:permission property assigned to the node itself, the
       permissions of the node&apos;s ancestors are used.</para>
     </section>
-    <section>
+    <section id="JCR.AccessControl.eXoAccessControl.Examples">
       <title>Example</title>
-      <section>
+      <section id="JCR.AccessControl.eXoAccessControl.Examples.XMLExample">
         <title>XML Example</title>
         <para>In the following example, you see a node named &quot;Politics&quot; which
         contains two nodes named &quot;Cats&quot; and &quot;Dogs&quot;.</para>
@@ -279,7 +279,7 @@ exo:text=&quot;&quot; exo:title=&quot;Dogs_x0020_are_x0020_friends&quot; /&gt;
         users having a &quot;manager&quot; role in the group &quot;/organization&quot; and the
         user &quot;root&quot; have the rights to access this node.</para>
       </section>
-      <section>
+      <section id="JCR.AccessControl.eXoAccessControl.Examples.InheritanceExamples">
         <title>Inheritance Examples</title>
         <para>Here is an example showing the accessibility of two nodes (to
         show inheritance) for two sample users named <emphasis role="bold">manager</emphasis> and <emphasis role="bold">user</emphasis>:</para>
@@ -291,7 +291,7 @@ exo:text=&quot;&quot; exo:title=&quot;Dogs_x0020_are_x0020_friends&quot; /&gt;
           </imageobject>
         </mediaobject>
       </section>
-      <section>
+      <section id="JCR.AccessControl.eXoAccessControl.Examples.PermissionValidation">
         <title>Permission validation</title>
         <para>This session describes  how permission is validated for different
         JCR actions.</para>
@@ -358,7 +358,7 @@ exo:text=&quot;&quot; exo:title=&quot;Dogs_x0020_are_x0020_friends&quot; /&gt;
         </note>
       </section>
     </section>
-    <section>
+    <section id="JCR.AccessControl.eXoAccessControl.JavaAPI">
       <title>Java API</title>
       <para>eXo JCR&apos;s ExtendedNode interface which extends javax.jcr.Node
       interface provides additional methods for Access Control
@@ -409,4 +409,4 @@ exo:text=&quot;&quot; exo:title=&quot;Dogs_x0020_are_x0020_friends&quot; /&gt;
       (add_node, set_property, remove, read).</para>
     </section>
   </section>
-</chapter>
+</section>
