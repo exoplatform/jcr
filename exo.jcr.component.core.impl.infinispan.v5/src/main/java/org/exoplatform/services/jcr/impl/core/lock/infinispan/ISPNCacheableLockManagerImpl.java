@@ -119,7 +119,6 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          configureJDBCCacheLoader(config.getLockManager());
 
          cache = factory.createCache("L" + config.getUniqueName().replace("_", ""), config.getLockManager());
-         PrivilegedISPNCacheHelper.start(cache);
       }
       else
       {
@@ -350,11 +349,19 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          LOG.warn("CacheLoader DataSource " + INFINISPAN_JDBC_CL_DATASOURCE + " is not configured.");
       }
    }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void start()
+   {
+      PrivilegedISPNCacheHelper.start(cache);
+      super.start();
+   }
 
    /**
     * {@inheritDoc}
     */
-   @Override
    public void stop()
    {
       super.stop();
