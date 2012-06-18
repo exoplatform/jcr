@@ -23,6 +23,7 @@ import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.IndexInput;
 import org.apache.lucene.store.IndexOutput;
+import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 
 import java.io.IOException;
@@ -56,9 +57,9 @@ class PersistentIndex extends AbstractIndex
     *  index.
     */
    PersistentIndex(String name, Analyzer analyzer, Similarity similarity, DocNumberCache cache,
-      IndexingQueue indexingQueue, final DirectoryManager directoryManager) throws IOException
+      IndexingQueue indexingQueue, final DirectoryManager directoryManager, IndexerIoModeHandler modeHandler) throws IOException
    {
-      super(analyzer, similarity, directoryManager.getDirectory(name), cache, indexingQueue);
+      super(analyzer, similarity, directoryManager.getDirectory(name), cache, indexingQueue, modeHandler);
       this.name = name;
       if (isExisting())
       {

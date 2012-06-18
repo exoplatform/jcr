@@ -62,7 +62,7 @@ class VolatileIndex extends AbstractIndex
     */
    VolatileIndex(Analyzer analyzer, Similarity similarity, IndexingQueue indexingQueue) throws IOException
    {
-      super(analyzer, similarity, new RAMDirectory(), null, indexingQueue);
+      super(analyzer, similarity, new RAMDirectory(), null, indexingQueue, null);
    }
 
    /**

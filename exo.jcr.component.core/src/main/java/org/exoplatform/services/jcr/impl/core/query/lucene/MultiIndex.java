@@ -335,7 +335,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          PersistentIndex index =
             new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
-               directoryManager);
+               directoryManager, modeHandler);
          index.setMaxFieldLength(handler.getMaxFieldLength());
          index.setUseCompoundFile(handler.getUseCompoundFile());
          index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
@@ -693,7 +693,24 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                for (Iterator<String> it = remove.iterator(); it.hasNext();)
                {
                   Term idTerm = new Term(FieldNames.UUID, it.next());
-                  volatileIndex.removeDocument(idTerm);
+                  int num = volatileIndex.removeDocument(idTerm);
+                  if (num == 0)
+                  {
+                     for (int i = indexes.size() - 1; i >= 0; i--)
+                     {
+                        // only look in registered indexes
+                        PersistentIndex idx = indexes.get(i);
+                        if (indexNames.contains(idx.getName()))
+                        {
+                           num = idx.removeDocument(idTerm);
+                           if (num > 0)
+                           {
+                              break;
+                           }
+                        }
+                     }
+                  }
+
                }
 
                // try to avoid getting index reader for each doc
@@ -1124,7 +1141,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          index =
             new PersistentIndex(indexName, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
-               directoryManager);
+               directoryManager, modeHandler);
       }
       catch (IOException e)
       {
@@ -3426,7 +3443,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             PersistentIndex index =
                new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
-                  directoryManager);
+                  directoryManager, modeHandler);
             index.setMaxFieldLength(handler.getMaxFieldLength());
             index.setUseCompoundFile(handler.getUseCompoundFile());
             index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
@@ -3527,7 +3544,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             offlineIndex =
                new OfflinePersistentIndex(handler.getTextAnalyzer(), handler.getSimilarity(), cache, indexingQueue,
-                  directoryManager);
+                  directoryManager, modeHandler);
             if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
             {
                flush();

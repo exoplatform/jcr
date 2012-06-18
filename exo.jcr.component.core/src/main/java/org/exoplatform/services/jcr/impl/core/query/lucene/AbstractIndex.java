@@ -25,6 +25,8 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
+import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
+import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,6 +111,8 @@ abstract class AbstractIndex
     */
    private boolean isExisting;
 
+   protected final IndexerIoModeHandler modeHandler;
+
    /**
     * Constructs an index with an <code>analyzer</code> and a
     * <code>directory</code>.
@@ -123,13 +127,14 @@ abstract class AbstractIndex
     * @throws IOException if the index cannot be initialized.
     */
    AbstractIndex(final Analyzer analyzer, Similarity similarity, final Directory directory, DocNumberCache cache,
-      IndexingQueue indexingQueue) throws IOException
+      IndexingQueue indexingQueue, IndexerIoModeHandler modeHandler) throws IOException
    {
       this.analyzer = analyzer;
       this.similarity = similarity;
       this.directory = directory;
       this.cache = cache;
       this.indexingQueue = indexingQueue;
+      this.modeHandler = modeHandler;
 
       AbstractIndex.this.isExisting = IndexReader.indexExists(directory);
 
@@ -246,7 +251,14 @@ abstract class AbstractIndex
       if (indexReader == null || !indexReader.isCurrent())
       {
          IndexReader reader = IndexReader.open(getDirectory(), null, false, termInfosIndexDivisor);
-         indexReader = new CommittableIndexReader(reader);
+         // if modeHandler != null and mode==READ_ONLY, then reader should be with transient deleteions.
+         // This is used to transiently update reader in clustered environment when some documents have 
+         // been deleted. If index reader not null and already contains some transient deletions, but it
+         // is no more current, it will be re-created loosing deletions. They will already be applied by
+         // coordinator node in the cluster. And there is no need to inject them into the new reader  
+
+         indexReader =
+            new CommittableIndexReader(reader, modeHandler != null && modeHandler.getMode() == IndexerIoMode.READ_ONLY);
       }
       return indexReader;
    }

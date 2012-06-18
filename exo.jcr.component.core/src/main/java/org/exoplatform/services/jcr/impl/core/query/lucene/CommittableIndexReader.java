@@ -16,11 +16,15 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.StaleReaderException;
+import org.apache.lucene.store.LockObtainFailedException;
+
+import java.io.IOException;
+import java.util.Set;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * Wraps an <code>IndexReader</code> and allows to commit changes without
@@ -36,13 +40,28 @@ class CommittableIndexReader extends FilterIndexReader {
     private volatile long modCount;
 
     /**
+     * If reader is created with flag transientDeletions, then reader 
+     * deleted documents are stored in the memory buffer and not applied to underlying
+     * index reader.
+     */
+    private final boolean transientDeletions;
+
+    private final Set<Integer> deletedDocs;
+
+    /**
      * Creates a new <code>CommittableIndexReader</code> based on <code>in</code>.
      *
      * @param in the <code>IndexReader</code> to wrap.
+     * @param transientDeletions If reader is created with flag transientDeletions, then reader 
+     *        deleted documents are stored in the memory buffer and not applied to underlying
+     *        index reader.
      */
-    CommittableIndexReader(IndexReader in) {
+    CommittableIndexReader(IndexReader in, boolean transientDeletions) {
         super(in);
         modCount = in.getVersion();
+        this.transientDeletions = transientDeletions;
+        // no need to initialize Set if transientDeletions = false
+        this.deletedDocs = transientDeletions? new CopyOnWriteArraySet<Integer>() : null;
     }
 
     //------------------------< FilterIndexReader >-----------------------------
@@ -55,6 +74,36 @@ class CommittableIndexReader extends FilterIndexReader {
     protected void doDelete(int n) throws CorruptIndexException, IOException {
         super.doDelete(n);
         modCount++;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    public void deleteDocument(int docNum) throws StaleReaderException, CorruptIndexException,
+       LockObtainFailedException, IOException {
+       // skip acquiring write lock
+       if (transientDeletions)
+       {
+           deletedDocs.add(docNum);
+           modCount++; // doDelete won't be executed, so incrementing modCount
+       }
+       else
+       {
+           super.deleteDocument(docNum);
+       }
+    }
+   
+    @Override
+    public boolean isDeleted(int n) {
+       if (transientDeletions)
+       {
+           return deletedDocs.contains(n);
+       }
+       else
+       {
+           return super.isDeleted(n);
+       }
     }
 
     //------------------------< additional methods >----------------------------
