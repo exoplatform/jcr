@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
 import java.io.IOException;
@@ -34,8 +34,6 @@ import java.io.IOException;
 public class CleanableFilePersistedValueData extends FilePersistedValueData
 {
 
-   protected FileCleaner fileCleaner;
-
    /**
     * Empty constructor for serialization.
     */
@@ -47,11 +45,9 @@ public class CleanableFilePersistedValueData extends FilePersistedValueData
    /**
     * CleanableFilePersistedValueData constructor.
     */
-   public CleanableFilePersistedValueData(int orderNumber, SwapFile file, FileCleaner fileCleaner) throws IOException
+   public CleanableFilePersistedValueData(int orderNumber, SwapFile file, SpoolConfig spoolConfig) throws IOException
    {
-      super(orderNumber, file);
-      this.fileCleaner = fileCleaner;
-
+      super(orderNumber, file, spoolConfig);
       file.acquire(this);
    }
 
@@ -68,7 +64,7 @@ public class CleanableFilePersistedValueData extends FilePersistedValueData
 
          if (!PrivilegedFileHelper.delete(file))
          {
-            fileCleaner.addFile(file);
+            spoolConfig.fileCleaner.addFile(file);
 
             if (LOG.isDebugEnabled())
             {

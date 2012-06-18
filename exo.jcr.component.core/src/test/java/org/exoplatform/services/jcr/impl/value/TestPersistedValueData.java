@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.value;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
@@ -64,7 +65,7 @@ public class TestPersistedValueData extends TestCase
       out.write(buf);
       out.close();
 
-      FilePersistedValueData vd = new FilePersistedValueData(0, file);
+      FilePersistedValueData vd = new FilePersistedValueData(0, file, SpoolConfig.getDefaultSpoolConfig());
       assertFalse(vd.isByteArray());
       assertEquals(10, vd.getLength());
       assertEquals(0, vd.getOrderNumber());
@@ -93,7 +94,8 @@ public class TestPersistedValueData extends TestCase
          out.write(buf);
          out.close();
 
-         CleanableFilePersistedValueData vd = new CleanableFilePersistedValueData(0, file, testFileCleaner);
+         CleanableFilePersistedValueData vd =
+            new CleanableFilePersistedValueData(0, file, SpoolConfig.getDefaultSpoolConfig());
          assertTrue(file.exists());
 
          vd = null;

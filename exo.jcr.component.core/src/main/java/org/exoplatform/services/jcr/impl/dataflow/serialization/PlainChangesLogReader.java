@@ -24,7 +24,7 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -41,9 +41,9 @@ public class PlainChangesLogReader
 {
 
    /**
-    * File cleaner.
+    * SpoolConfig.
     */
-   private FileCleaner fileCleaner;
+   private SpoolConfig spoolConfig;
 
    /**
     * Maximum buffer size.
@@ -57,18 +57,10 @@ public class PlainChangesLogReader
 
    /**
     * PlainChangesLogReader constructor.
-    * 
-    * @param fileCleaner
-    *          File cleaner
-    * @param maxBufferSize
-    *          maximum buffer size
-    * @param holder
-    *          Spool file holder
     */
-   public PlainChangesLogReader(FileCleaner fileCleaner, int maxBufferSize, ReaderSpoolFileHolder holder)
+   public PlainChangesLogReader(ReaderSpoolFileHolder holder, SpoolConfig spoolConfig)
    {
-      this.fileCleaner = fileCleaner;
-      this.maxBufferSize = maxBufferSize;
+      this.spoolConfig = spoolConfig;
       this.holder = holder;
    }
 
@@ -98,7 +90,7 @@ public class PlainChangesLogReader
       int listSize = in.readInt();
       for (int i = 0; i < listSize; i++)
       {
-         ItemStateReader isr = new ItemStateReader(fileCleaner, maxBufferSize, holder);
+         ItemStateReader isr = new ItemStateReader(holder, spoolConfig);
          ItemState is = isr.read(in);
          items.add(is);
       }

@@ -53,6 +53,7 @@ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
@@ -109,6 +110,8 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    protected final NodeTypeDataValidator nodeTypeDataValidator;
 
+   protected final FileCleanerHolder cleanerHolder;
+
    /**
     * Listeners (soft references)
     */
@@ -132,7 +135,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    public NodeTypeDataManagerImpl(final String accessControlPolicy, final LocationFactory locationFactory,
       final NamespaceRegistry namespaceRegistry, final NodeTypeDataPersister persister,
       final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder,
-      final NodeTypeRepository nodeTypeRepository)
+      final NodeTypeRepository nodeTypeRepository, FileCleanerHolder cleanerHolder)
    {
 
       this.namespaceRegistry = namespaceRegistry;
@@ -140,7 +143,8 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       this.dataManager = dataManager;
       this.indexSearcherHolder = indexSearcherHolder;
 
-      this.valueFactory = new ValueFactoryImpl(locationFactory);
+      this.valueFactory = new ValueFactoryImpl(locationFactory, cleanerHolder);
+      this.cleanerHolder = cleanerHolder;
       this.accessControlPolicy = accessControlPolicy;
 
       this.nodeTypeRepository = nodeTypeRepository;
@@ -148,7 +152,8 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       this.buildInNodeTypesNames = new HashSet<InternalQName>();
 
       this.nodeTypeConverter = new NodeTypeConverter(this.locationFactory, this.accessControlPolicy);
-      this.nodeTypeDataValidator = new NodeTypeDataValidator(this.locationFactory, this.nodeTypeRepository);
+      this.nodeTypeDataValidator =
+         new NodeTypeDataValidator(this.locationFactory, this.nodeTypeRepository, cleanerHolder);
    }
 
    /**
@@ -163,10 +168,11 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
     */
    public NodeTypeDataManagerImpl(final RepositoryEntry config, final LocationFactory locationFactory,
       final NamespaceRegistry namespaceRegistry, final NodeTypeDataPersister persister,
-      final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder)
+      final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder,
+      FileCleanerHolder cleanerHolder)
    {
       this(config.getAccessControl(), locationFactory, namespaceRegistry, persister, dataManager, indexSearcherHolder,
-         new InmemoryNodeTypeRepository(persister));
+         new InmemoryNodeTypeRepository(persister), cleanerHolder);
    }
 
    /**

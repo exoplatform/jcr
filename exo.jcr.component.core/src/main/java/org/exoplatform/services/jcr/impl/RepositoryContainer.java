@@ -64,6 +64,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataM
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.value.StandaloneStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
@@ -583,6 +584,7 @@ public class RepositoryContainer extends ExoContainer
          public Void run()
          {
             registerComponentInstance(config);
+            registerComponentImplementation(FileCleanerHolder.class);
             registerComponentImplementation(LockRemoverHolder.class);
             return null;
          }

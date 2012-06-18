@@ -25,6 +25,8 @@ import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.jcr.storage.value.ValuePluginFilter;
@@ -34,6 +36,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -69,7 +72,8 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
     */
    private final ValueDataResourceHolder resorcesHolder;
 
-   public StandaloneStoragePluginProvider(WorkspaceEntry wsConfig) throws RepositoryConfigurationException, IOException
+   public StandaloneStoragePluginProvider(WorkspaceEntry wsConfig, FileCleanerHolder holder)
+      throws RepositoryConfigurationException, IOException
    {
 
       this.resorcesHolder = new ValueDataResourceHolder();
@@ -95,7 +99,10 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
                Object o = null;
                try
                {
-                  o = ClassLoading.forName(storageEntry.getType(), this).newInstance();
+                  o =
+                     ClassLoading.forName(storageEntry.getType(), this).getConstructor(FileCleaner.class)
+                        .newInstance(holder.getFileCleaner());
+
                }
                catch (InstantiationException e)
                {
@@ -113,6 +120,16 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
                   continue;
                }
                catch (IllegalAccessException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (InvocationTargetException e)
+               {
+                  log.error("Value Storage Plugin instantiation FAILED. ", e);
+                  continue;
+               }
+               catch (NoSuchMethodException e)
                {
                   log.error("Value Storage Plugin instantiation FAILED. ", e);
                   continue;

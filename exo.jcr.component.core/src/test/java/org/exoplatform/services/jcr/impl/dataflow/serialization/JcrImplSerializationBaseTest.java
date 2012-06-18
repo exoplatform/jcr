@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdExcepti
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 
@@ -170,7 +171,7 @@ public abstract class JcrImplSerializationBaseTest extends JcrImplBaseTest
          while (true)
          {
             TransactionChangesLog obj =
-               (new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder)).read(jcrin);
+               (new TransactionChangesLogReader(SpoolConfig.getDefaultSpoolConfig(), holder)).read(jcrin);
             // TransactionChangesLog obj = new TransactionChangesLog();
             // obj.readObject(jcrin);
             readed.add(obj);

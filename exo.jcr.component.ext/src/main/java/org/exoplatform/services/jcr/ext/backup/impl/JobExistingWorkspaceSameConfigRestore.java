@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -138,7 +139,10 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
                   (WorkspacePersistentDataManager) repository.getWorkspaceContainer(wEntry.getName()).getComponent(
                            WorkspacePersistentDataManager.class);
 
-         JCRRestore restorer = new JCRRestore(dataManager);
+         FileCleanerHolder cleanerHolder =
+            (FileCleanerHolder)repository.getWorkspaceContainer(wEntry.getName()).getComponent(FileCleanerHolder.class);
+
+         JCRRestore restorer = new JCRRestore(dataManager, cleanerHolder.getFileCleaner());
          for (File incrBackupFile : JCRRestore.getIncrementalFiles(storageDir))
          {
             restorer.incrementalRestore(incrBackupFile);

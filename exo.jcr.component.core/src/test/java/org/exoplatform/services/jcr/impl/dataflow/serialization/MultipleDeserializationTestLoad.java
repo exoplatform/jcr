@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -136,7 +137,7 @@ public class MultipleDeserializationTestLoad extends JcrImplSerializationBaseTes
       ObjectReaderImpl jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
       long jcrfread = System.currentTimeMillis();
       TransactionChangesLog mlog =
-         (TransactionChangesLog)(new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder)).read(jcrin);
+         (new TransactionChangesLogReader(SpoolConfig.getDefaultSpoolConfig(), holder)).read(jcrin);
       //TransactionChangesLog mlog = new TransactionChangesLog();
       //mlog.readObject(jcrin);
       jcrfread = System.currentTimeMillis() - jcrfread;
@@ -144,14 +145,14 @@ public class MultipleDeserializationTestLoad extends JcrImplSerializationBaseTes
 
       long jcrread = 0;
 
-      TransactionChangesLogReader rdr = new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder);
+      TransactionChangesLogReader rdr = new TransactionChangesLogReader(SpoolConfig.getDefaultSpoolConfig(), holder);
 
       for (int j = 0; j < iterations; j++)
       {
          // deserialize
          jcrin = new ObjectReaderImpl(new FileInputStream(jcrfile));
          long t3 = System.currentTimeMillis();
-         TransactionChangesLog log = (TransactionChangesLog)rdr.read(jcrin);
+         TransactionChangesLog log = rdr.read(jcrin);
 
          t3 = System.currentTimeMillis() - t3;
          jcrread += t3;

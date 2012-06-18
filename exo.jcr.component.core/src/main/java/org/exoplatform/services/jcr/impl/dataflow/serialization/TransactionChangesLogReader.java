@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 
 import java.io.IOException;
 
@@ -36,19 +36,19 @@ import java.io.IOException;
 public class TransactionChangesLogReader
 {
 
-   private FileCleaner fileCleaner;
-
-   private int maxBufferSize;
+   /**
+    * Spool config.
+    */
+   private final SpoolConfig spoolConfig;
 
    private ReaderSpoolFileHolder holder;
 
    /**
-    * Constructor.
+    * TransactionChangesLogReader constructor.
     */
-   public TransactionChangesLogReader(FileCleaner fileCleaner, int maxBufferSize, ReaderSpoolFileHolder holder)
+   public TransactionChangesLogReader(SpoolConfig spoolConfig, ReaderSpoolFileHolder holder)
    {
-      this.fileCleaner = fileCleaner;
-      this.maxBufferSize = maxBufferSize;
+      this.spoolConfig = spoolConfig;
       this.holder = holder;
    }
 
@@ -79,7 +79,7 @@ public class TransactionChangesLogReader
 
       while (in.readByte() == SerializationConstants.NOT_NULL_DATA)
       {
-         PlainChangesLogReader rdr = new PlainChangesLogReader(fileCleaner, maxBufferSize, holder);
+         PlainChangesLogReader rdr = new PlainChangesLogReader(holder, spoolConfig);
          PlainChangesLog pl = rdr.read(in);
          log.addLog(pl);
       }

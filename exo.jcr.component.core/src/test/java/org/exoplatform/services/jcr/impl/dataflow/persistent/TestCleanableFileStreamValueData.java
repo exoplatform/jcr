@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
@@ -91,7 +92,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       fout.close();
       sf.spoolDone();
 
-      cleanableValueData = new CleanableFilePersistedValueData(1, sf, testCleaner);
+      cleanableValueData = new CleanableFilePersistedValueData(1, sf, SpoolConfig.getDefaultSpoolConfig());
    }
 
    @Override
@@ -142,7 +143,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
       CleanableFilePersistedValueData cfvd2 =
-         new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), testCleaner);
+         new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), SpoolConfig.getDefaultSpoolConfig());
       assertTrue(testFile.exists());
 
       cleanableValueData = null; // CleanableVD dies but another instance points swapped file
@@ -248,7 +249,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       // file shared with third CleanableVD, i.e. file still exists (aquired by TransientVD)
       CleanableFilePersistedValueData cfvd2 =
-         new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), testCleaner);
+         new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), SpoolConfig.getDefaultSpoolConfig());
       assertTrue(testFile.exists());
 
       trvd = null; // TransientVD dies

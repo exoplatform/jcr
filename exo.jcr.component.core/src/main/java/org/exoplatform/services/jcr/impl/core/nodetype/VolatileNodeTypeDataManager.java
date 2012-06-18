@@ -49,8 +49,7 @@ public class VolatileNodeTypeDataManager extends NodeTypeDataManagerImpl
          nodeTypeDataManagerImpl.namespaceRegistry,
          null, // to be sure
          nodeTypeDataManagerImpl.dataManager, nodeTypeDataManagerImpl.indexSearcherHolder,
-         nodeTypeDataManagerImpl.nodeTypeRepository.createCopy());
-
+         nodeTypeDataManagerImpl.nodeTypeRepository.createCopy(), nodeTypeDataManagerImpl.cleanerHolder);
    }
 
    public void registerVolatileNodeTypes(final Collection<NodeTypeData> volatileNodeTypes) throws RepositoryException

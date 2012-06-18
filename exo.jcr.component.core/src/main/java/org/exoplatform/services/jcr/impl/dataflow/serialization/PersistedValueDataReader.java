@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
@@ -46,15 +47,18 @@ public class PersistedValueDataReader
     */
    private final ReaderSpoolFileHolder holder;
 
+   private final SpoolConfig spoolConfig;
+
    /**
     * Constructor.
     * 
     * @param holder
     *          ReaderSpoolFileHolder
     */
-   public PersistedValueDataReader(ReaderSpoolFileHolder holder)
+   public PersistedValueDataReader(ReaderSpoolFileHolder holder, SpoolConfig spoolConfig)
    {
       this.holder = holder;
+      this.spoolConfig = spoolConfig;
    }
 
    /**
@@ -106,19 +110,19 @@ public class PersistedValueDataReader
             // Deleted ItemState usecase 
             if (length == SerializationConstants.NULL_FILE)
             {
-               return new StreamPersistedValueData(orderNumber, (SerializationSpoolFile)null);
+               return new StreamPersistedValueData(orderNumber, (SerializationSpoolFile)null, spoolConfig);
             }
             sf = new SerializationSpoolFile(tempDirectory, id, holder);
             writeToFile(in, sf, length);
             holder.put(id, sf);
-            return new StreamPersistedValueData(orderNumber, sf);
+            return new StreamPersistedValueData(orderNumber, sf, spoolConfig);
          }
          else
          {
             sf.acquire(this); // workaround for AsyncReplication test
             try
             {
-               PersistedValueData vd = new StreamPersistedValueData(orderNumber, sf);
+               PersistedValueData vd = new StreamPersistedValueData(orderNumber, sf, spoolConfig);
 
                // skip data in input stream
                if (in.skip(length) != length)

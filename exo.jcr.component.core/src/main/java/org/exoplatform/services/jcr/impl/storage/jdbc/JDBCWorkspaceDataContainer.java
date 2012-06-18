@@ -62,6 +62,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
@@ -196,8 +197,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public JDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
       InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
-      DataSourceProvider dsProvider) throws RepositoryConfigurationException, NamingException, RepositoryException,
-      IOException
+      DataSourceProvider dsProvider, FileCleanerHolder fileCleanerHolder) throws RepositoryConfigurationException,
+      NamingException, RepositoryException, IOException
    {
       checkIntegrity(wsConfig, repConfig);
       this.wsConfig = wsConfig;
@@ -287,7 +288,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
 
       // ------------- Spool config ------------------
-      this.containerConfig.spoolConfig = SpoolConfig.getDefaultSpoolConfig();
+      this.containerConfig.spoolConfig = new SpoolConfig(fileCleanerHolder.getFileCleaner());
       try
       {
          this.containerConfig.spoolConfig.maxBufferSize =

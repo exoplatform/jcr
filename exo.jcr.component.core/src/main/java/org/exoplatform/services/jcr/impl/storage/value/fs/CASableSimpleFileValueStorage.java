@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.ValueContentAddressStorage;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 
 import java.io.IOException;
@@ -40,6 +41,14 @@ public class CASableSimpleFileValueStorage extends FileValueStorage
    private ValueContentAddressStorage vcas;
 
    private String digestAlgo;
+
+   /**
+    * CASableSimpleFileValueStorage constructor.
+    */
+   public CASableSimpleFileValueStorage(FileCleaner fileCleaner)
+   {
+      super(fileCleaner);
+   }
 
    @Override
    public void init(Properties props, ValueDataResourceHolder resources) throws IOException,

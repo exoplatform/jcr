@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -88,8 +89,8 @@ public class JCRSerializationLogTestLoad extends JcrImplSerializationBaseTest
 
       for (int i = 0; i < iter; i++)
       {
-         TransactionChangesLogReader rdr = new TransactionChangesLogReader(fileCleaner, maxBufferSize, holder);
-         TransactionChangesLog obj = (TransactionChangesLog)rdr.read(jcrin);
+         TransactionChangesLogReader rdr = new TransactionChangesLogReader(SpoolConfig.getDefaultSpoolConfig(),R holder);
+         TransactionChangesLog obj = rdr.read(jcrin);
 
          //  readed.add(obj); 
       }

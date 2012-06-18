@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeRepository;
 import org.exoplatform.services.jcr.impl.core.value.ValueConstraintsValidator;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -60,9 +61,9 @@ public class NodeTypeDataValidator
    
    protected class ValidatorValueFactory extends ValueFactoryImpl
    {
-      ValidatorValueFactory(LocationFactory locationFactory)
+      ValidatorValueFactory(LocationFactory locationFactory, FileCleanerHolder cleanerHolder)
       {
-         super(locationFactory);
+         super(locationFactory, cleanerHolder);
       }
 
       /**
@@ -106,11 +107,11 @@ public class NodeTypeDataValidator
       }
    }
 
-   public NodeTypeDataValidator(LocationFactory locationFactory, NodeTypeRepository hierarchy)
+   public NodeTypeDataValidator(LocationFactory locationFactory, NodeTypeRepository hierarchy,
+      FileCleanerHolder cleanerHolder)
    {
       this.hierarchy = hierarchy;
-
-      this.valueFactory = new ValidatorValueFactory(locationFactory); 
+      this.valueFactory = new ValidatorValueFactory(locationFactory, cleanerHolder);
    }
 
    public void validateNodeType(List<NodeTypeData> nodeTypeDataList) throws RepositoryException

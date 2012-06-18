@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
@@ -61,7 +62,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
       for (int i = 0; i < nodes; i++)
       {
          bin = new ByteArrayInputStream(createBLOBTempData(20));
-         list.add(new StreamPersistedValueData(0, bin));
+         list.add(new StreamPersistedValueData(0, bin, SpoolConfig.getDefaultSpoolConfig()));
       }
 
       Iterator<PersistedValueData> it;
@@ -94,7 +95,7 @@ public class JCRSerializationVSJavaSerializationTestLoad extends JcrImplSerializ
 
          long t3 = System.currentTimeMillis();
 
-         PersistedValueDataReader rdr = new PersistedValueDataReader(holder);
+         PersistedValueDataReader rdr = new PersistedValueDataReader(holder, SpoolConfig.getDefaultSpoolConfig());
          for (int i = 0; i < nodes; i++)
          {
             PersistedValueData obj = rdr.read(jcrin, PropertyType.BINARY);

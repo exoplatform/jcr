@@ -458,11 +458,11 @@ public abstract class StreamValueData extends AbstractValueData
       }
       else if (spoolFile != null)
       {
-         return new StreamPersistedValueData(orderNumber, spoolFile, null);
+         return new StreamPersistedValueData(orderNumber, spoolFile, null, spoolConfig);
       }
       else
       {
-         return new StreamPersistedValueData(orderNumber, stream, null);
+         return new StreamPersistedValueData(orderNumber, stream, null, spoolConfig);
       }
    }
 

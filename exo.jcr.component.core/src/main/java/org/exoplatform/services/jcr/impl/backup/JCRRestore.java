@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.backup;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.dataflow.ChangesLogIterator;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -30,11 +29,11 @@ import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
@@ -77,14 +76,12 @@ public class JCRRestore
 
    private final DataManager dataManager;
 
-   private final FileCleaner fileCleaner;
+   private final SpoolConfig spoolConfig;
 
-   private final File tempDir = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
-
-   public JCRRestore(DataManager dataManager)
+   public JCRRestore(DataManager dataManager, FileCleaner fileCleaner)
    {
       this.dataManager = dataManager;
-      this.fileCleaner = FileCleanerHolder.getFileCleaner();
+      this.spoolConfig = new SpoolConfig(fileCleaner);
    }
 
    /**
@@ -323,7 +320,7 @@ public class JCRRestore
          }
 
          RestoreChangesLog restoreChangesLog =
-            new RestoreChangesLog(transactionChangesLog, listFixupStreams, listFiles, fileCleaner);
+            new RestoreChangesLog(transactionChangesLog, listFixupStreams, listFiles, spoolConfig.fileCleaner);
 
          restoreChangesLog.restore();
 
@@ -341,7 +338,8 @@ public class JCRRestore
       int bufferSize = 1024 * 8;
       byte[] buf = new byte[bufferSize];
 
-      SpoolFile tempFile = SpoolFile.createTempFile("vdincb" + System.currentTimeMillis(), ".stmp", tempDir);
+      SpoolFile tempFile =
+         SpoolFile.createTempFile("vdincb" + System.currentTimeMillis(), ".stmp", spoolConfig.tempDirectory);
       FileOutputStream fos = PrivilegedFileHelper.fileOutputStream(tempFile);
       long readBytes = fileSize;
 
@@ -411,7 +409,7 @@ public class JCRRestore
 
             // re-init the value
             propertyData.getValues().set(listFixupStream.get(i).getValueDataId(),
-               new StreamPersistedValueData(vd.getOrderNumber(), listFile.get(i)));
+               new StreamPersistedValueData(vd.getOrderNumber(), listFile.get(i), spoolConfig));
          }
 
          for (int i = 0; i < listFile.size(); i++)

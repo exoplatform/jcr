@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.usecases;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
@@ -50,7 +51,7 @@ public class RemoveVDTest extends BaseUsecasesTest
 
       File f = this.createBLOBTempFile("tempFile", 300);
 
-      FilePersistedValueData vd = new FilePersistedValueData(0, f);
+      FilePersistedValueData vd = new FilePersistedValueData(0, f, SpoolConfig.getDefaultSpoolConfig());
       // vd.setMaxBufferSize(200*1024);
       //      assertNull(vd.getFile()); // not spooling by default until getAsStream() will be call
 
@@ -70,7 +71,7 @@ public class RemoveVDTest extends BaseUsecasesTest
 
       FilePersistedValueData vd1 = null;
 
-      PersistedValueDataReader vdr = new PersistedValueDataReader(holder);
+      PersistedValueDataReader vdr = new PersistedValueDataReader(holder, SpoolConfig.getDefaultSpoolConfig());
       try
       {
          vd1 = (FilePersistedValueData)vdr.read(or, PropertyType.BINARY);

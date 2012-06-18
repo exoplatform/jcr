@@ -49,15 +49,15 @@ public class FilePersistedValueData extends StreamValueData implements Persisted
     */
    public FilePersistedValueData() throws IOException
    {
-      this(0, null);
+      this(0, null, SpoolConfig.getDefaultSpoolConfig());
    }
 
    /**
     * FilePersistedValueData constructor.
     */
-   public FilePersistedValueData(int orderNumber, File file) throws IOException
+   public FilePersistedValueData(int orderNumber, File file, SpoolConfig spoolConfig) throws IOException
    {
-      super(orderNumber, null, null, SpoolConfig.getDefaultSpoolConfig());
+      super(orderNumber, null, null, spoolConfig);
       this.file = file;
    }
 
@@ -183,6 +183,6 @@ public class FilePersistedValueData extends StreamValueData implements Persisted
     */
    public PersistedValueData createPersistedCopy(int orderNumber) throws IOException
    {
-      return new FilePersistedValueData(orderNumber, file);
+      return new FilePersistedValueData(orderNumber, file, spoolConfig);
    }
 }

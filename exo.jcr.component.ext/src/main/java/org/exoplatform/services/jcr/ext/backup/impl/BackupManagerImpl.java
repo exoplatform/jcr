@@ -57,6 +57,7 @@ import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -942,7 +943,9 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          repoService.getRepository(repositoryName).getWorkspaceContainer(workspaceName);
       WorkspacePersistentDataManager dataManager =
          (WorkspacePersistentDataManager)workspaceContainer.getComponent(WorkspacePersistentDataManager.class);
-      JCRRestore restorer = new JCRRestore(dataManager);
+      FileCleanerHolder cleanerHolder = (FileCleanerHolder)workspaceContainer.getComponent(FileCleanerHolder.class);
+
+      JCRRestore restorer = new JCRRestore(dataManager, cleanerHolder.getFileCleaner());
       restorer.incrementalRestore(new File(pathBackupFile));
    }
 

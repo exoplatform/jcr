@@ -45,6 +45,8 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue, Reada
 
    protected boolean changed;
 
+   protected final SpoolConfig spoolConfig;
+
    /**
    * BinaryValue constructor.
    * 
@@ -56,15 +58,16 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue, Reada
    public BinaryValue(InputStream stream, SpoolConfig spoolConfig)
       throws IOException
    {
-      this(new TransientValueData(0, stream, null, spoolConfig));
+      this(new TransientValueData(0, stream, null, spoolConfig), spoolConfig);
    }
 
    /** 
     * For ValueFactory.loadValue(). 
     */
-   BinaryValue(ValueData data)
+   BinaryValue(ValueData data, SpoolConfig spoolConfig)
    {
       super(TYPE, data);
+      this.spoolConfig = spoolConfig;
    }
 
    /**
@@ -148,8 +151,7 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue, Reada
          // edited BLOB file, make a copy
          try
          {
-            return new EditableValueData(oldValue.getAsStream(), oldValue.getOrderNumber(),
-               SpoolConfig.getDefaultSpoolConfig());
+            return new EditableValueData(oldValue.getAsStream(), oldValue.getOrderNumber(), spoolConfig);
          }
          catch (FileNotFoundException e)
          {

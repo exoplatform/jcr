@@ -141,7 +141,7 @@ public class ValueDataUtil
 
       if (swapFile != null)
       {
-         return new CleanableFilePersistedValueData(orderNumber, swapFile, spoolConfig.fileCleaner);
+         return new CleanableFilePersistedValueData(orderNumber, swapFile, spoolConfig);
       }
       else
       {
@@ -171,7 +171,7 @@ public class ValueDataUtil
 
       if (fileSize > spoolConfig.maxBufferSize)
       {
-         return new FilePersistedValueData(orderNumber, file);
+         return new FilePersistedValueData(orderNumber, file, spoolConfig);
       }
       else
       {

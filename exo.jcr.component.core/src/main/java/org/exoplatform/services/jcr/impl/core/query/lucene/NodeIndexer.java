@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,16 +128,17 @@ public class NodeIndexer
     * @param stateProvider the persistent item state manager to retrieve properties.
     * @param mappings      internal namespace mappings.
     * @param extractor     content extractor
+    * @param fileCleanerHolder file cleaner holder for {@link ValueFactoryImpl}
     */
    public NodeIndexer(NodeDataIndexing node, ItemDataConsumer stateProvider, NamespaceMappings mappings,
-      DocumentReaderService extractor)
+      DocumentReaderService extractor, FileCleanerHolder fileCleanerHolder)
    {
       this.node = node;
       this.stateProvider = stateProvider;
       this.mappings = mappings;
       this.resolver = new LocationFactory(mappings);
       this.extractor = extractor;
-      this.vFactory = new ValueFactoryImpl(this.resolver);
+      this.vFactory = new ValueFactoryImpl(this.resolver, fileCleanerHolder);
    }
 
    /**

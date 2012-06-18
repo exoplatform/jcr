@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -64,19 +65,20 @@ public class ValueFactoryImpl implements ValueFactory
 
    private final SpoolConfig spoolConfig;
 
-   public ValueFactoryImpl(LocationFactory locationFactory, WorkspaceEntry workspaceConfig)
+   public ValueFactoryImpl(LocationFactory locationFactory, WorkspaceEntry workspaceConfig,
+      FileCleanerHolder cleanerHolder)
    {
       this.locationFactory = locationFactory;
-      this.spoolConfig = SpoolConfig.getDefaultSpoolConfig();
+      this.spoolConfig = new SpoolConfig(cleanerHolder.getFileCleaner());
       this.spoolConfig.maxBufferSize =
          workspaceConfig.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
    }
 
-   public ValueFactoryImpl(LocationFactory locationFactory)
+   public ValueFactoryImpl(LocationFactory locationFactory, FileCleanerHolder cleanerHolder)
    {
       this.locationFactory = locationFactory;
-      this.spoolConfig = SpoolConfig.getDefaultSpoolConfig();
+      this.spoolConfig = new SpoolConfig(cleanerHolder.getFileCleaner());
    }
 
    /**
@@ -382,7 +384,7 @@ public class ValueFactoryImpl implements ValueFactory
             case PropertyType.STRING :
                return new StringValue(data);
             case PropertyType.BINARY :
-               return new BinaryValue(data);
+               return new BinaryValue(data, spoolConfig);
             case PropertyType.BOOLEAN :
                return new BooleanValue(data);
             case PropertyType.LONG :

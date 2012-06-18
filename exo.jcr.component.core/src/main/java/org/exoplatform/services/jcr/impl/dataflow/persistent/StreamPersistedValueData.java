@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
@@ -51,17 +52,17 @@ public class StreamPersistedValueData extends FilePersistedValueData
    /**
     * StreamPersistedValueData constructor for stream data.
     */
-   public StreamPersistedValueData(int orderNumber, InputStream stream) throws IOException
+   public StreamPersistedValueData(int orderNumber, InputStream stream, SpoolConfig spoolConfig) throws IOException
    {
-      this(orderNumber, stream, null);
+      this(orderNumber, stream, null, spoolConfig);
    }
 
    /**
     * StreamPersistedValueData  constructor for data spooled to temp file.
     */
-   public StreamPersistedValueData(int orderNumber, SpoolFile tempFile) throws IOException
+   public StreamPersistedValueData(int orderNumber, SpoolFile tempFile, SpoolConfig spoolConfig) throws IOException
    {
-      this(orderNumber, tempFile, null);
+      this(orderNumber, tempFile, null, spoolConfig);
    }
 
    /**
@@ -69,9 +70,10 @@ public class StreamPersistedValueData extends FilePersistedValueData
     * <p/>
     * Destination file reserved for use in JBC impl.
    */
-   public StreamPersistedValueData(int orderNumber, InputStream stream, File destFile) throws IOException
+   public StreamPersistedValueData(int orderNumber, InputStream stream, File destFile, SpoolConfig spoolConfig)
+      throws IOException
    {
-      super(orderNumber, destFile);
+      super(orderNumber, destFile, spoolConfig);
       this.tempFile = null;
       this.stream = stream;
    }
@@ -84,9 +86,10 @@ public class StreamPersistedValueData extends FilePersistedValueData
     * @param orderNumber int
     * @param tempFile File
     */
-   public StreamPersistedValueData(int orderNumber, SpoolFile tempFile, File destFile) throws IOException
+   public StreamPersistedValueData(int orderNumber, SpoolFile tempFile, File destFile, SpoolConfig spoolConfig)
+      throws IOException
    {
-      super(orderNumber, destFile);
+      super(orderNumber, destFile, spoolConfig);
       this.tempFile = tempFile;
       this.stream = null;
 

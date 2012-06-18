@@ -48,7 +48,6 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceD
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.impl.xml.importing.ACLInitializationHelper;
-import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -482,10 +481,8 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
       this.namespaceRegistry = namespaceRegistry;
       this.locationFactory = locationFactory;
 
-      this.spoolConfig = SpoolConfig.getDefaultSpoolConfig();
-      this.spoolConfig.maxBufferSize =
-         config.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
-            WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
+      this.spoolConfig = valueFactory.getSpoolConfig();
+
       this.restorePath = restorePath;
 
       if (this.restorePath == null)

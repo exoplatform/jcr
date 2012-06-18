@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePlugin;
 import org.exoplatform.services.log.ExoLogger;
@@ -46,7 +45,7 @@ public abstract class FileValueStorage extends ValueStoragePlugin
    public final static String PATH = "path";
 
    /**
-    * Temporarory directopry name under stoprage root dir.
+    * Temporary directory name under storage root dir.
     */
    public static final String TEMP_DIR_NAME = "temp";
 
@@ -58,11 +57,10 @@ public abstract class FileValueStorage extends ValueStoragePlugin
 
    /**
     * FileValueStorage constructor.
-    * 
     */
-   public FileValueStorage()
+   public FileValueStorage(FileCleaner fileCleaner)
    {
-      this.cleaner = FileCleanerHolder.getFileCleaner();
+      this.cleaner = fileCleaner;
    }
 
    /**

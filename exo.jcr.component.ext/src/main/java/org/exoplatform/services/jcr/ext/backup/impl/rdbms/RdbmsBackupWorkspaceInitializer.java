@@ -73,7 +73,7 @@ public class RdbmsBackupWorkspaceInitializer extends RdbmsWorkspaceInitializer
       super.doRestore();
 
       // restore from incremental backup
-      JCRRestore restorer = new JCRRestore(dataManager);
+      JCRRestore restorer = new JCRRestore(dataManager, spoolConfig.fileCleaner);
       for (File incrBackupFile : JCRRestore.getIncrementalFiles(new File(restoreDir)))
       {
          restorer.incrementalRestore(incrBackupFile);

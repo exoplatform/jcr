@@ -55,7 +55,7 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
 
    private ObjectOutputStream oosFileData;
 
-   private FileCleaner fileCleaner = FileCleanerHolder.getFileCleaner();
+   private FileCleaner fileCleaner;
 
    public IncrementalBackupJob()
    {
@@ -67,6 +67,11 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
       this.workspaceName = workspaceName;
       this.config = config;
       this.timeStamp = timeStamp;
+
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)repository.getWorkspaceContainer(workspaceName).getComponent(FileCleanerHolder.class);
+
+      this.fileCleaner = cleanerHolder.getFileCleaner();
 
       try
       {

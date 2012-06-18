@@ -107,7 +107,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       FileIOChannel fch = openCASChannel(digestType);
 
       String propertyId = IdGenerator.generate();
-      ValueData value = new StreamPersistedValueData(0, new FileInputStream(testFile));
+      ValueData value =
+         new StreamPersistedValueData(0, new FileInputStream(testFile), SpoolConfig.getDefaultSpoolConfig());
 
       fch.write(propertyId, value);
       fch.commit();
@@ -138,7 +139,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 
       // prepare
       String propertyId = IdGenerator.generate();
-      ValueData value = new StreamPersistedValueData(0, new FileInputStream(testFile));
+      ValueData value =
+         new StreamPersistedValueData(0, new FileInputStream(testFile), SpoolConfig.getDefaultSpoolConfig());
       fch.write(propertyId, value);
       fch.commit();
 
@@ -147,7 +149,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       try
       {
          fch = openCASChannel(digestType);
-         fch.write(new String(propertyId), new StreamPersistedValueData(0, new FileInputStream(testFile)));
+         fch.write(new String(propertyId),
+            new StreamPersistedValueData(0, new FileInputStream(testFile), SpoolConfig.getDefaultSpoolConfig()));
          fch.commit();
 
          fail("RecordAlreadyExistsException should be thrown, record exists");
@@ -177,10 +180,12 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       String propertyId = IdGenerator.generate();
       try
       {
-         ValueData value = new StreamPersistedValueData(0, new FileInputStream(testFile));
+         ValueData value =
+            new StreamPersistedValueData(0, new FileInputStream(testFile), SpoolConfig.getDefaultSpoolConfig());
          fch.write(propertyId, value);
          fch.delete(propertyId);
-         fch.write(propertyId, new StreamPersistedValueData(0, new FileInputStream(testFile)));
+         fch.write(propertyId,
+            new StreamPersistedValueData(0, new FileInputStream(testFile), SpoolConfig.getDefaultSpoolConfig()));
          fch.commit();
 
          // long initialSize = calcDirSize(rootDir);
@@ -204,7 +209,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       FileIOChannel fch = openCASChannel(digestType);
 
       String propertyId = IdGenerator.generate();
-      ValueData value = new StreamPersistedValueData(0, new FileInputStream(testFile));
+      ValueData value =
+         new StreamPersistedValueData(0, new FileInputStream(testFile), SpoolConfig.getDefaultSpoolConfig());
       fch.write(propertyId, value);
       fch.commit();
 
@@ -228,7 +234,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       FileIOChannel fch = openCASChannel(digestType);
 
       String propertyId = IdGenerator.generate();
-      ValueData value = new StreamPersistedValueData(0, new FileInputStream(testFile));
+      ValueData value =
+         new StreamPersistedValueData(0, new FileInputStream(testFile), SpoolConfig.getDefaultSpoolConfig());
       fch.write(propertyId, value);
       fch.commit();
 
@@ -313,7 +320,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
 
       for (int i = 0; i < 20; i++)
       {
-         fch.write(propertyId, new StreamPersistedValueData(i, new FileInputStream(testFile)));
+         fch.write(propertyId,
+            new StreamPersistedValueData(i, new FileInputStream(testFile), SpoolConfig.getDefaultSpoolConfig()));
       }
       fch.commit();
 
@@ -343,7 +351,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       {
          File f = createBLOBTempFile(300);
          addedSize += f.length();
-         fch.write(propertyId, new StreamPersistedValueData(i, new FileInputStream(f)));
+         fch.write(propertyId,
+            new StreamPersistedValueData(i, new FileInputStream(f), SpoolConfig.getDefaultSpoolConfig()));
       }
       fch.commit();
 
@@ -372,7 +381,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          propertyId = IdGenerator.generate();
 
          FileIOChannel fch = openCASChannel(digestType);
-         fch.write(propertyId, new StreamPersistedValueData(0, new FileInputStream(testFile)));
+         fch.write(propertyId,
+            new StreamPersistedValueData(0, new FileInputStream(testFile), SpoolConfig.getDefaultSpoolConfig()));
          fch.commit();
       }
 
@@ -401,7 +411,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          addedSize += f.length();
 
          FileIOChannel fch = openCASChannel(digestType);
-         fch.write(propertyId, new StreamPersistedValueData(i, new FileInputStream(f)));
+         fch.write(propertyId,
+            new StreamPersistedValueData(i, new FileInputStream(f), SpoolConfig.getDefaultSpoolConfig()));
          fch.commit();
       }
 
@@ -431,7 +442,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
             propertyId = pid;
 
          FileIOChannel fch = openCASChannel(digestType);
-         fch.write(pid, new StreamPersistedValueData(0, new FileInputStream(testFile)));
+         fch.write(pid,
+            new StreamPersistedValueData(0, new FileInputStream(testFile), SpoolConfig.getDefaultSpoolConfig()));
          fch.commit();
       }
 
@@ -472,7 +484,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          addedSize += (fileSize = f.length());
 
          FileIOChannel fch = openCASChannel(digestType);
-         fch.write(pid, new StreamPersistedValueData(i, new FileInputStream(f)));
+         fch.write(pid, new StreamPersistedValueData(i, new FileInputStream(f), SpoolConfig.getDefaultSpoolConfig()));
          fch.commit();
       }
 
@@ -512,7 +524,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          File f = createBLOBTempFile(450);
          addedSize += (m1fileSize = f.length());
 
-         StreamPersistedValueData v = new StreamPersistedValueData(i, new FileInputStream(f));
+         StreamPersistedValueData v =
+            new StreamPersistedValueData(i, new FileInputStream(f), SpoolConfig.getDefaultSpoolConfig());
 
          if (i == 1)
             sharedValue = v;
@@ -534,7 +547,8 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          if (i == 2)
          {
             // use shared
-            sharedValue = new StreamPersistedValueData(i, sharedValue.getAsStream());
+            sharedValue =
+               new StreamPersistedValueData(i, sharedValue.getAsStream(), SpoolConfig.getDefaultSpoolConfig());
             v = sharedValue;
          }
          else
@@ -543,7 +557,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
             m2filesCount++;
             File f = createBLOBTempFile(350);
             addedSize += (m2fileSize = f.length()); // add size
-            v = new StreamPersistedValueData(i, new FileInputStream(f));
+            v = new StreamPersistedValueData(i, new FileInputStream(f), SpoolConfig.getDefaultSpoolConfig());
          }
          fch.write(property2MultivaluedId, v);
       }
@@ -552,7 +566,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
       // add some single valued properties, two new property will have shared value too
       String property1Id = null;
       String property2Id = null;
-      sharedValue = new StreamPersistedValueData(0, sharedValue.getAsStream());
+      sharedValue = new StreamPersistedValueData(0, sharedValue.getAsStream(), SpoolConfig.getDefaultSpoolConfig());
       for (int i = 0; i < 10; i++)
       {
          String pid = IdGenerator.generate();
@@ -571,7 +585,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
          {
             File f = createBLOBTempFile(425);
             addedSize += f.length();
-            v = new StreamPersistedValueData(i, new FileInputStream(f));
+            v = new StreamPersistedValueData(i, new FileInputStream(f), SpoolConfig.getDefaultSpoolConfig());
          }
          FileIOChannel vfch = openCASChannel(digestType);
          vfch.write(pid, v);

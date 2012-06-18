@@ -35,6 +35,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.value.StandaloneStoragePluginProvider;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -98,9 +99,12 @@ public class JDBCWDCTest extends TestCase
 
       ref.add(new StringRefAddr("username", "sa"));
       ref.add(new StringRefAddr("password", ""));
+
+      FileCleanerHolder cleanerHolder = new FileCleanerHolder();
+
       container =
-         new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(config),
-            null);
+         new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(config,
+            cleanerHolder), null, cleanerHolder);
 
       Properties logProps = new Properties();
       logProps.put("org.apache.commons.logging.simplelog.defaultlog", "debug");

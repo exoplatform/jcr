@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCService;
@@ -65,22 +66,24 @@ public class SystemSearchManager extends SearchManager
 
    public static final String INDEX_DIR_SUFFIX = "system";
 
-   public SystemSearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
-      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+   public SystemSearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry,
+      RepositoryService rService, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
-      RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
-      RepositoryConfigurationException
+      RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService, FileCleanerHolder cleanerHolder)
+      throws RepositoryException, RepositoryConfigurationException
    {
       super(ctx, wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, null, service, cfm, indexSearcherHolder,
-         rpcService);
+         rpcService, cleanerHolder);
    }
 
-   public SystemSearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry, RepositoryService rService,
-      QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
+   public SystemSearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry,
+      RepositoryService rService, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, DocumentReaderService service, ConfigurationManager cfm,
-      RepositoryIndexSearcherHolder indexSearcherHolder) throws RepositoryException, RepositoryConfigurationException
+      RepositoryIndexSearcherHolder indexSearcherHolder, FileCleanerHolder cleanerHolder) throws RepositoryException,
+      RepositoryConfigurationException
    {
-      this(ctx, wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, service, cfm, indexSearcherHolder, null);
+      this(ctx, wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, service, cfm, indexSearcherHolder, null,
+         cleanerHolder);
    }
 
    @Override

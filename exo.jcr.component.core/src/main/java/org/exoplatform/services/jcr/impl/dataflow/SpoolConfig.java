@@ -33,17 +33,23 @@ import java.io.File;
  */
 public class SpoolConfig
 {
-   public FileCleaner fileCleaner = FileCleanerHolder.getFileCleaner();
+   public FileCleaner fileCleaner;
 
    public File tempDirectory = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
 
    public int maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;
 
    /**
-    * Returns default config.
+    * SpoolConfig constructor.
     */
+   public SpoolConfig(FileCleaner fileCleaner)
+   {
+      this.fileCleaner = fileCleaner;
+   }
+
    public static SpoolConfig getDefaultSpoolConfig()
    {
-      return new SpoolConfig();
+      return new SpoolConfig(FileCleanerHolder.getDefaultFileCleaner());
    }
+
 }
