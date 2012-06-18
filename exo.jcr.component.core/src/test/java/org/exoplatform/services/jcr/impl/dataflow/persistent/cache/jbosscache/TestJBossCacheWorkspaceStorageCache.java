@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -134,7 +135,7 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
                    }
                }
 
-               cwdm.save(chlog);
+               cwdm.save(new TransactionChangesLog(chlog));
             }
             catch (Exception e)
             {

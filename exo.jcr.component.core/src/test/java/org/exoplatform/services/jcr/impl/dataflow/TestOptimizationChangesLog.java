@@ -19,12 +19,13 @@ package org.exoplatform.services.jcr.impl.dataflow;
 import java.util.List;
 
 import javax.jcr.Node;
+import javax.jcr.Property;
 import javax.jcr.Value;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.TesterItemsPersistenceListener;
 
 /**
@@ -62,16 +63,10 @@ public class TestOptimizationChangesLog extends JcrImplBaseTest
      assertEquals(1, logs.size());
      
      List<ItemState> states = logs.get(0).getAllStates();
-     assertEquals(3, states.size());
+     assertEquals(1, states.size());
 
      assertEquals(ItemState.ADDED, states.get(0).getState());
-     assertFalse(states.get(0).isPersisted());
-     
-     assertEquals(ItemState.UPDATED, states.get(1).getState());
-     assertFalse(states.get(1).isPersisted());
-     
-     assertEquals(ItemState.ADDED, states.get(2).getState());
-     assertTrue(states.get(2).isPersisted());
+     assertTrue(states.get(0).isPersisted());
    }
    
    /**
@@ -102,13 +97,10 @@ public class TestOptimizationChangesLog extends JcrImplBaseTest
      assertEquals(1, logs.size());
      
      List<ItemState> states = logs.get(0).getAllStates();
-     assertEquals(2, states.size());
+     assertEquals(1, states.size());
 
      assertEquals(ItemState.UPDATED, states.get(0).getState());
-     assertFalse(states.get(0).isPersisted());
-     
-     assertEquals(ItemState.UPDATED, states.get(1).getState());
-     assertTrue(states.get(1).isPersisted());
+     assertTrue(states.get(0).isPersisted());
    }
    
    /**
@@ -136,16 +128,7 @@ public class TestOptimizationChangesLog extends JcrImplBaseTest
      assertEquals(1, logs.size());
      
      List<ItemState> states = logs.get(0).getAllStates();
-     assertEquals(3, states.size());
-
-     assertEquals(ItemState.ADDED, states.get(0).getState());
-     assertFalse(states.get(0).isPersisted());
-     
-     assertEquals(ItemState.UPDATED, states.get(1).getState());
-     assertFalse(states.get(1).isPersisted());
-     
-     assertEquals(ItemState.DELETED, states.get(2).getState());
-     assertFalse(states.get(2).isPersisted());
+     assertEquals(0, states.size());
    }
    
    /**
@@ -176,13 +159,10 @@ public class TestOptimizationChangesLog extends JcrImplBaseTest
      assertEquals(1, logs.size());
           
      List<ItemState> states = logs.get(0).getAllStates();
-     assertEquals(2, states.size());
+     assertEquals(1, states.size());
      
-     assertEquals(ItemState.UPDATED, states.get(0).getState());
-     assertFalse(states.get(0).isPersisted());
-     
-     assertEquals(ItemState.DELETED, states.get(1).getState());
-     assertTrue(states.get(1).isPersisted());
+     assertEquals(ItemState.DELETED, states.get(0).getState());
+     assertTrue(states.get(0).isPersisted());
    }
    
    /**
@@ -202,7 +182,7 @@ public class TestOptimizationChangesLog extends JcrImplBaseTest
      
      testNode.setProperty("x", "a");
      testNode.setProperty("x", (Value)null);
-     testNode.setProperty("x", "c");
+     PropertyImpl p = (PropertyImpl)testNode.setProperty("x", "c");
      session.save();
      
      List<TransactionChangesLog> logs = pListener.pushChanges();
@@ -210,18 +190,12 @@ public class TestOptimizationChangesLog extends JcrImplBaseTest
      assertEquals(1, logs.size());
           
      List<ItemState> states = logs.get(0).getAllStates();
-     assertEquals(3, states.size());
+     assertEquals(1, states.size());
 
      assertEquals(ItemState.ADDED, states.get(0).getState());
-     assertFalse(states.get(0).isPersisted());
+     assertTrue(states.get(0).isPersisted());
      
-     assertEquals(ItemState.DELETED, states.get(1).getState());
-     assertFalse(states.get(1).isPersisted());
-     
-     assertEquals(ItemState.ADDED, states.get(2).getState());
-     assertTrue(states.get(2).isPersisted());
-     
-     assertFalse(states.get(0).getData().getIdentifier().equals(states.get(2).getData().getIdentifier()));
+     assertEquals(p.getInternalIdentifier(), states.get(0).getData().getIdentifier());
    }
    
    /**
@@ -231,7 +205,8 @@ public class TestOptimizationChangesLog extends JcrImplBaseTest
     *    setProperty("x", null);
     *    setProperty("x", "c");
     * Expected persistent changes :
-    *    setProperty("x", "c"); UPDATED
+    *    setProperty("x", null); DELETED
+    *    setProperty("x", "c");  ADDED
     */
    public void testAddSaveDelAdd() throws Exception
    {
@@ -255,11 +230,11 @@ public class TestOptimizationChangesLog extends JcrImplBaseTest
      assertEquals(2, states.size());
      
      assertEquals(ItemState.DELETED, states.get(0).getState());
-     assertFalse(states.get(0).isPersisted());
+     assertTrue(states.get(0).isPersisted());
      
-     assertEquals(ItemState.UPDATED, states.get(1).getState());
+     assertEquals(ItemState.ADDED, states.get(1).getState());
      assertTrue(states.get(1).isPersisted());
      
-     assertTrue(states.get(0).getData().getIdentifier().equals(states.get(1).getData().getIdentifier()));
+     assertFalse(states.get(0).getData().getIdentifier().equals(states.get(1).getData().getIdentifier()));
    }
 }

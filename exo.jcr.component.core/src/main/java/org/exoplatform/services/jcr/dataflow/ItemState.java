@@ -245,9 +245,9 @@ public class ItemState implements Externalizable
       eventFire = false;
    }
 
-   public void makeLogical()
+   public void makeStateAdded()
    {
-      isPersisted = false;
+      state = ADDED;
    }
 
    public boolean isDescendantOf(QPath relPath)

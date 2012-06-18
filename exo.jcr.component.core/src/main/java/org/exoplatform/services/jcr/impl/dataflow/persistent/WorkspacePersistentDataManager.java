@@ -147,55 +147,72 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       protected ItemStateChangesLog optimizeAndGetChangesLog()
       {
          // get all persisted property states, to avoid iterating by other states
-         LinkedList<ItemState> persistedProperyStates = new LinkedList<ItemState>();
+         LinkedList<RemovableItemSate> persistedCheckedStates = new LinkedList<RemovableItemSate>();
 
-         for (ItemState itemState : log.getAllStates())
+         ChangesLogIterator changesLogIterator = ((TransactionChangesLog)log).getLogIterator();
+         
+         while (changesLogIterator.hasNextLog())
          {
-            if (itemState.isPersisted() && !itemState.isNode())
+            PlainChangesLog changesLog = changesLogIterator.nextLog(); 
+            
+            for (ItemState itemState : changesLog.getAllStates())
             {
-               persistedProperyStates.add(itemState);
+               if (itemState.isPersisted() && !itemState.isNode())
+               {
+                  persistedCheckedStates.add(new RemovableItemSate(itemState, changesLog));
+               }
             }
          }
+         
          // Perform optimizations while list of property states contains more than one state.
-         while (persistedProperyStates.size() > 1)
+         while (persistedCheckedStates.size() > 1)
          {
             // Get last state and remove it, since there is no need to review this items once more
-            ItemState state = persistedProperyStates.removeLast();
+            RemovableItemSate lastRemovableState = persistedCheckedStates.removeLast();
+            ItemState lastState = lastRemovableState.getState();
 
-            if (state.isUpdated() || state.isDeleted())
+            if (lastState.isUpdated() || lastState.isDeleted())
             {
                // iterate from the head to the end
-               Iterator<ItemState> iterator = persistedProperyStates.iterator();
+               Iterator<RemovableItemSate> iterator = persistedCheckedStates.iterator();  
                while (iterator.hasNext())
                {
-                  ItemState checkedState = iterator.next();
+                  RemovableItemSate removableCheckedState = iterator.next();
+                  ItemState checkedState = removableCheckedState.getState();
                   // if UUIDs or paths are the same 
-                  if (checkedState.getData().getIdentifier().equals(state.getData().getIdentifier()))
+                  if (checkedState.getData().getIdentifier().equals(lastState.getData().getIdentifier()))
                   {
                      // remove updated state, because delete, add or update state 
-                     if (checkedState.isUpdated())
+                     if ((checkedState.isAdded() || checkedState.isUpdated()) && lastState.isDeleted())
                      {
-                        checkedState.makeLogical();
-                        iterator.remove();
-                     }
-                     else if ((checkedState.isAdded() || checkedState.isUpdated()) && state.isDeleted())
-                     {
-                        checkedState.makeLogical();
+                        removableCheckedState.removeState();
                         // Usecase when property was added and removed within the transaction or save. 
                         // So make all related changes logical 
                         if (checkedState.isAdded())
                         {
-                           state.makeLogical();
+                           lastRemovableState.removeState();
                         }
                      }
+                     else if (checkedState.isAdded() && lastState.isUpdated())
+                     {
+                        // Usecase when property was added many times within the transaction or save. 
+                        // So make last update to add and make all related changes logical
+                        removableCheckedState.removeState();
+                        lastState.makeStateAdded();
+                     }
+                     else if (checkedState.isUpdated())
+                     {
+                        removableCheckedState.removeState();
+                     }
+                     iterator.remove();
                   }
                }
             }
          }
-
+         
          return log;
       }
-
+      
       /**
        * {@inheritDoc}
        */
@@ -220,6 +237,29 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          return log.dump();
       }
    }
+   
+   protected class RemovableItemSate
+   {
+      private final ItemState state;
+      private final PlainChangesLogImpl changesLog;
+      
+      public RemovableItemSate(ItemState state, PlainChangesLog changesLog)
+      {
+         this.state = state;
+         this.changesLog = (PlainChangesLogImpl)changesLog;
+      }
+      
+      public ItemState getState()
+      {
+         return state;
+      }
+      
+      public void removeState()
+      {
+         changesLog.remove(state);
+      }
+   }
+   
 
    /**
     * WorkspacePersistentDataManager constructor.
@@ -274,11 +314,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       ConnectionMode mode = getMode();
       try
       {
-         if (changesLog instanceof PlainChangesLogImpl)
-         {
-            persistedLog = persister.save((PlainChangesLogImpl)changesLog);
-         }
-         else if (changesLog instanceof TransactionChangesLog)
+         if (changesLog instanceof TransactionChangesLog)
          {
             TransactionChangesLog orig = (TransactionChangesLog)changesLog;
 

@@ -348,6 +348,24 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       }
       return new PlainChangesLogImpl(items, originalLog.getSessionId(), originalLog.getEventType(), pairId, null);
    }
+   
+   /**
+    * Removes the property or node and all descendants from the log
+    * 
+    * @param item
+    *          item
+    */
+   public void remove(ItemState item)
+   {
+      if (item.isNode())
+      {
+         remove(item.getData().getQPath());
+      }
+      else 
+      {
+         removeProperty(item);
+      }
+   }
 
    /**
     * Adds item to the changes log.
@@ -449,66 +467,96 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
          if (qPath.isDescendantOf(rootPath) || item.getAncestorToSave().isDescendantOf(rootPath)
             || item.getAncestorToSave().equals(rootPath) || qPath.equals(rootPath))
          {
-            items.remove(i);
-            index.remove(item.getData().getIdentifier());
-            index.remove(item.getData().getQPath());
-            index.remove(new ParentIDQPathBasedKey(item));
-            index.remove(new IDStateBasedKey(item.getData().getIdentifier(), item.getState()));
-            childNodesInfo.remove(item.getData().getIdentifier());
-            lastChildNodeStates.remove(item.getData().getIdentifier());
-            lastChildPropertyStates.remove(item.getData().getIdentifier());
-            childNodeStates.remove(item.getData().getIdentifier());
-            childPropertyStates.remove(item.getData().getIdentifier());
-
-            if (item.isNode() && item.isPersisted())
+            
+            if (item.isNode())
             {
-               
-               int childInfo[] = childNodesInfo.get(item.getData().getParentIdentifier());
-               
-               if (childInfo != null)
-               {
-                  if (item.isDeleted())
-                  {
-                     ++childInfo[CHILD_NODES_COUNT];
-                  }
-                  else if (item.isAdded())
-                  {
-                     --childInfo[CHILD_NODES_COUNT];
-                  }
-
-                  childNodesInfo.put(item.getData().getParentIdentifier(), childInfo);
-               }
-            }
-
-            if (item.getData().isNode())
-            {
-               Map<String, ItemState> children = lastChildNodeStates.get(item.getData().getParentIdentifier());
-               if (children != null)
-               {
-                  children.remove(item.getData().getIdentifier());
-               }
-
-               List<ItemState> listItemStates = childNodeStates.get(item.getData().getParentIdentifier());
-               if (listItemStates != null)
-               {
-                  listItemStates.remove(item);
-               }
+               removeNode(item);
             }
             else
             {
-               Map<String, ItemState> children = lastChildPropertyStates.get(item.getData().getParentIdentifier());
-               if (children != null)
-               {
-                  children.remove(item.getData().getIdentifier());
-               }
-
-               List<ItemState> listItemStates = childPropertyStates.get(item.getData().getParentIdentifier());
-               if (listItemStates != null)
-               {
-                  listItemStates.remove(item);
-               }
+               removeProperty(item);
             }
          }
+      }
+   }
+   
+   /**
+    * Removes the node from the log
+    * 
+    * @param item
+    *          ItemState
+    */
+   private void removeNode(ItemState item)
+   {
+
+      items.remove(item);
+      index.remove(item.getData().getIdentifier());
+      index.remove(item.getData().getQPath());
+      index.remove(new ParentIDQPathBasedKey(item));
+      index.remove(new IDStateBasedKey(item.getData().getIdentifier(), item.getState()));
+      childNodesInfo.remove(item.getData().getIdentifier());
+      lastChildNodeStates.remove(item.getData().getIdentifier());
+      childNodeStates.remove(item.getData().getIdentifier());
+
+      if (item.isPersisted())
+      {
+
+         int childInfo[] = childNodesInfo.get(item.getData().getParentIdentifier());
+
+         if (childInfo != null)
+         {
+            if (item.isDeleted())
+            {
+               ++childInfo[CHILD_NODES_COUNT];
+            }
+            else if (item.isAdded())
+            {
+               --childInfo[CHILD_NODES_COUNT];
+            }
+
+            childNodesInfo.put(item.getData().getParentIdentifier(), childInfo);
+         }
+      }
+
+      Map<String, ItemState> children = lastChildNodeStates.get(item.getData().getParentIdentifier());
+      if (children != null)
+      {
+         children.remove(item.getData().getIdentifier());
+      }
+
+      List<ItemState> listItemStates = childNodeStates.get(item.getData().getParentIdentifier());
+      if (listItemStates != null)
+      {
+         listItemStates.remove(item);
+      }
+   }
+   
+   /**
+    * Removes the property from the log
+    * 
+    * @param item
+    *          ItemState
+    */
+   private void removeProperty(ItemState item)
+   {
+      items.remove(item);
+      index.remove(item.getData().getIdentifier());
+      index.remove(item.getData().getQPath());
+      index.remove(new ParentIDQPathBasedKey(item));
+      index.remove(new IDStateBasedKey(item.getData().getIdentifier(), item.getState()));
+      lastChildPropertyStates.remove(item.getData().getIdentifier());
+      childPropertyStates.remove(item.getData().getIdentifier());
+
+      Map<String, ItemState> children = lastChildPropertyStates.get(item.getData().getParentIdentifier());
+      if (children != null)
+      {
+         children.remove(item.getData().getIdentifier());
+      }
+
+      List<ItemState> listItemStates = childPropertyStates.get(item.getData().getParentIdentifier());
+      if (listItemStates != null)
+      {
+         listItemStates.remove(item);
       }
    }
 
