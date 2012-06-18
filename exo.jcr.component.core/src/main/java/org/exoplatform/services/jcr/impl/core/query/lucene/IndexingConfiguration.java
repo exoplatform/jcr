@@ -20,7 +20,6 @@ import org.apache.lucene.analysis.Analyzer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
-
 import org.w3c.dom.Element;
 
 /**
@@ -64,6 +63,14 @@ public interface IndexingConfiguration {
      *         otherwise.
      */
     boolean isIndexed(NodeData state, InternalQName propertyName);
+
+   /**
+    * Return <code>true</code> if result of check node for exclude rules successful.
+    * 
+    * @param state the node to check.
+    * @return <code>true</code> if the node is excluded; <code>false</code> otherwise.
+    */
+    boolean isExcluded(NodeData state);
 
     /**
      * Returns <code>true</code> if the property with the given name should be

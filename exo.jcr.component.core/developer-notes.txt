@@ -20,3 +20,4 @@
 * Changed annotation for WebDavServiceImpl.mkcol() method parameter nodeTypeHeader
 * WebDavServiceImpl initial parameters names and default values moved to separate classes InitParamsDefaults and InitParamsNames
 * Added new initial parameters to define allowed file node types and folder node types
+* Added exclude nodes from query results. We can add rules in indexing-configuration and exclude some node by path or by nodetype or by path + nodetype
