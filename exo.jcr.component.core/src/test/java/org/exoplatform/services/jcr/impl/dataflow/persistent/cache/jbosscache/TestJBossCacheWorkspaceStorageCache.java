@@ -123,7 +123,7 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
       chlog.add(ItemState.createAddedState(new PersistedNodeData("id-node" + parentNode.getIdentifier(), QPath
          .makeChildPath(parentNode.getQPath(), new InternalQName(null, "node")), parentNode.getIdentifier(), 1, 0,
          Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
-      cwdm.save(chlog);
+      cwdm.save(new TransactionChangesLog(chlog));
       result = cwdm.getChildNodesCount(parentNode);
       assertEquals(1, result);
       assertEquals(2, con.getChildNodesCountCalls.get());
@@ -152,7 +152,7 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
       chlog.add(ItemState.createAddedState(new PersistedNodeData("id-node" + parentNode.getIdentifier(), QPath
          .makeChildPath(parentNode.getQPath(), new InternalQName(null, "node")), parentNode.getIdentifier(), 1, 0,
          Constants.NT_UNSTRUCTURED, new InternalQName[0], null)));
-      cwdm.save(chlog);
+      cwdm.save(new TransactionChangesLog(chlog));
       result = cwdm.getChildNodesCount(parentNode);
       assertEquals(2, result);
       assertEquals(2, con.getChildNodesCountCalls.get());
