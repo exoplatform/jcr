@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -894,7 +895,7 @@ public class ItemDataRestoreVisitor extends AbstractItemDataCopyVisitor
 
          PropertyData baseVersion =
             TransientPropertyData.createPropertyData(restored, Constants.JCR_BASEVERSION, PropertyType.REFERENCE,
-               false, new TransientValueData(frozen.getParentIdentifier()));
+               false, new TransientValueData(new Identifier(frozen.getParentIdentifier())));
 
          PropertyData isCheckedOut =
             TransientPropertyData.createPropertyData(restored, Constants.JCR_ISCHECKEDOUT, PropertyType.BOOLEAN, false,

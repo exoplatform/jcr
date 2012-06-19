@@ -20,15 +20,10 @@ package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 
 import java.io.IOException;
-import java.util.Calendar;
-import java.util.Date;
 
 import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
 
 /**
  * a double value impl.
@@ -54,57 +49,5 @@ public class DoubleValue extends BaseValue
    DoubleValue(ValueData data) throws IOException
    {
       super(TYPE, data);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public Calendar getDate() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      validateByteArrayMethodInvoking();
-
-      Double doubleNumber = ValueDataUtil.getDouble(getInternalData());
-
-      if (doubleNumber != null)
-      {
-         // loosing timezone information...
-         Calendar cal = Calendar.getInstance();
-         cal.setTime(new Date(doubleNumber.longValue()));
-         return cal;
-      }
-      else
-      {
-         throw new ValueFormatException("empty value");
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      validateByteArrayMethodInvoking();
-
-      Double doubleNumber = ValueDataUtil.getDouble(getInternalData());
-
-      if (doubleNumber != null)
-      {
-         return doubleNumber.longValue();
-      }
-      else
-      {
-         throw new ValueFormatException("empty value");
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean getBoolean() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      throw new ValueFormatException("conversion to boolean failed: inconvertible types");
    }
 }

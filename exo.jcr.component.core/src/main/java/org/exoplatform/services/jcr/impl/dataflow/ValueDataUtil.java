@@ -19,13 +19,15 @@
 package org.exoplatform.services.jcr.impl.dataflow;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
+import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.BooleanPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CalendarPersistedValueData;
@@ -225,7 +227,7 @@ public class ValueDataUtil
          case PropertyType.DATE :
             try
             {
-               return new CalendarPersistedValueData(orderNumber, new JCRDateFormat().deserialize(getString(data)));
+               return new CalendarPersistedValueData(orderNumber, JCRDateFormat.parse(getString(data)));
             }
             catch (ValueFormatException e)
             {
@@ -239,11 +241,33 @@ public class ValueDataUtil
             return new LongPersistedValueData(orderNumber, Long.valueOf(getString(data)));
 
          case PropertyType.NAME :
+            try
+            {
+               return new NamePersistedValueData(orderNumber, InternalQName.parse(getString(data)));
+            }
+            catch (IllegalNameException e)
+            {
+               throw new IOException(e.getMessage(), e);
+            }
+
          case PropertyType.PATH :
+            try
+            {
+               return new PathPersistedValueData(orderNumber, QPath.parse(getString(data)));
+            }
+            catch (IllegalPathException e)
+            {
+               throw new IOException(e.getMessage(), e);
+            }
+
          case PropertyType.REFERENCE :
+            return new ReferencePersistedValueData(orderNumber, new Identifier(data));
+
          case PropertyType.STRING :
-         case ExtendedPropertyType.PERMISSION :
             return new StringPersistedValueData(orderNumber, getString(data));
+
+         case ExtendedPropertyType.PERMISSION :
+            return new PermissionPersistedValueData(orderNumber, AccessControlEntry.parse(getString(data)));
 
          default :
             throw new IllegalStateException("Unknown property type " + type);
@@ -286,29 +310,8 @@ public class ValueDataUtil
       {
          return getLong(((TransientValueData)valueData).delegate);
       }
-      else if (valueData instanceof LongValueData)
-      {
-         return ((LongValueData)valueData).value;
-      }
-      else
-      {
-         try
-         {
-            return Long.valueOf(getString(valueData.getAsByteArray()));
-         }
-         catch (UnsupportedEncodingException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-         catch (IllegalStateException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-      }
+      
+      return ((AbstractValueData) valueData).getLong();
    }
 
    /**
@@ -320,29 +323,8 @@ public class ValueDataUtil
       {
          return getDouble(((TransientValueData)valueData).delegate);
       }
-      else if (valueData instanceof DoubleValueData)
-      {
-         return ((DoubleValueData)valueData).value;
-      }
-      else
-      {
-         try
-         {
-            return Double.valueOf(getString(valueData.getAsByteArray()));
-         }
-         catch (UnsupportedEncodingException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-         catch (IllegalStateException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-      }
+
+      return ((AbstractValueData)valueData).getDouble();
    }
 
    /**
@@ -354,29 +336,8 @@ public class ValueDataUtil
       {
          return getDate(((TransientValueData)valueData).delegate);
       }
-      else if (valueData instanceof CalendarValueData)
-      {
-         return ((CalendarValueData)valueData).value;
-      }
-      else
-      {
-         try
-         {
-            return JCRDateFormat.parse(getString(valueData.getAsByteArray()));
-         }
-         catch (UnsupportedEncodingException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-         catch (IllegalStateException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-      }
+
+      return ((AbstractValueData)valueData).getDate();
    }
 
    /**
@@ -388,29 +349,8 @@ public class ValueDataUtil
       {
          return getBoolean(((TransientValueData)valueData).delegate);
       }
-      else if (valueData instanceof BooleanValueData)
-      {
-         return ((BooleanValueData)valueData).value;
-      }
-      else
-      {
-         try
-         {
-            return Boolean.valueOf(getString(valueData.getAsByteArray()));
-         }
-         catch (UnsupportedEncodingException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-         catch (IllegalStateException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException("Can't get boolean value", e);
-         }
-      }
+
+      return ((AbstractValueData)valueData).getBoolean();
    }
 
    /**
@@ -422,118 +362,67 @@ public class ValueDataUtil
       {
          return getString(((TransientValueData)valueData).delegate);
       }
-      else if (valueData instanceof StringValueData)
+
+      return ((AbstractValueData)valueData).getString();
+   }
+
+   /**
+    * Returns <code>String</code> value.
+    */
+   public static InternalQName getName(ValueData valueData) throws RepositoryException
+   {
+      if (valueData instanceof TransientValueData)
       {
-         return ((StringValueData)valueData).value;
+         return getName(((TransientValueData)valueData).delegate);
       }
-      else
+      
+      try
       {
-         try
-         {
-            return getString(valueData.getAsByteArray());
-         }
-         catch (UnsupportedEncodingException e)
-         {
-            throw new RepositoryException("Can't get String value", e);
-         }
-         catch (IllegalStateException e)
-         {
-            throw new RepositoryException("Can't get String value", e);
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException("Can't get String value", e);
-         }
+         return ((AbstractValueData)valueData).getName();
+      }
+      catch (IllegalNameException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
       }
    }
 
    /**
     * Returns <code>String</code> value.
     */
-   public static String getName(ValueData valueData, LocationFactory lFactory) throws RepositoryException
+   public static QPath getPath(ValueData valueData) throws RepositoryException
    {
       if (valueData instanceof TransientValueData)
       {
-         return getName(((TransientValueData)valueData).delegate, lFactory);
+         return getPath(((TransientValueData)valueData).delegate);
       }
-      else 
-      {
-         String internalString;
 
-         if (valueData instanceof StringValueData)
-         {
-            internalString = ((StringValueData)valueData).value;
-         }
-         else
-         {
-            try
-            {
-               internalString = getString(valueData.getAsByteArray());
-            }
-            catch (UnsupportedEncodingException e)
-            {
-               throw new RepositoryException("Can't get Name value", e);
-            }
-            catch (IllegalStateException e)
-            {
-               throw new RepositoryException("Can't get Name value", e);
-            }
-            catch (IOException e)
-            {
-               throw new RepositoryException("Can't get Name value", e);
-            }
-         }
-
-         try
-         {
-            return lFactory.createJCRName(InternalQName.parse(internalString)).getAsString();
-         }
-         catch (IllegalNameException e)
-         {
-            throw new RepositoryException("Can't get Name value", e);
-         }
-      }
+      return ((AbstractValueData)valueData).getPath();
    }
 
    /**
-    * Returns <code>String</code> value.
+    * Returns <code>Reference</code> value.
     */
-   public static String getPath(ValueData valueData, LocationFactory lFactory) throws RepositoryException
+   public static String getReference(ValueData valueData) throws RepositoryException
    {
       if (valueData instanceof TransientValueData)
       {
-         return getPath(((TransientValueData)valueData).delegate, lFactory);
+         return getReference(((TransientValueData)valueData).delegate);
       }
-      else
+
+      return ((AbstractValueData)valueData).getReference();
+   }
+
+   /**
+    * Returns <code>AccessControlEntry</code> value.
+    */
+   public static AccessControlEntry getPermission(ValueData valueData) throws RepositoryException
+   {
+      if (valueData instanceof TransientValueData)
       {
-         String internalString;
-
-         if (valueData instanceof StringValueData)
-         {
-            internalString = ((StringValueData)valueData).value;
-         }
-         else
-         {
-            try
-            {
-               internalString = getString(valueData.getAsByteArray());
-            }
-            catch (UnsupportedEncodingException e)
-            {
-               throw new RepositoryException("Can't get Name value", e);
-            }
-            catch (IllegalStateException e)
-            {
-               throw new RepositoryException("Can't get Name value", e);
-            }
-            catch (IOException e)
-            {
-               throw new RepositoryException("Can't get Name value", e);
-            }
-         }
-
-         return lFactory.createJCRPath(QPath.parse(internalString)).getAsString(false);
+         return getPermission(((TransientValueData)valueData).delegate);
       }
+
+      return ((AbstractValueData)valueData).getPermission();
    }
 
    /**

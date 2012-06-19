@@ -19,15 +19,11 @@
 package org.exoplatform.services.jcr.impl.dataflow;
 
 import org.exoplatform.services.jcr.access.AccessControlEntry;
-import org.exoplatform.services.jcr.datamodel.IllegalNameException;
-import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.StringPersistedValueData;
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -39,19 +35,20 @@ import javax.jcr.ValueFormatException;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
- * @version $Id: StringValueData.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id: ReferenceeValueData.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public abstract class StringValueData extends AbstractValueData
+public abstract class PermissionValueData extends AbstractValueData
 {
+
    /**
     * The value.
     */
-   protected String value;
+   protected AccessControlEntry value;
 
    /**
-    * StringValueData constructor.
+    * NameValueData constructor.
     */
-   protected StringValueData(int orderNumber, String value)
+   protected PermissionValueData(int orderNumber, AccessControlEntry value)
    {
       super(orderNumber);
       this.value = value;
@@ -62,9 +59,9 @@ public abstract class StringValueData extends AbstractValueData
     */
    protected boolean internalEquals(ValueData another)
    {
-      if (another instanceof StringValueData)
+      if (another instanceof PermissionValueData)
       {
-         return ((StringValueData)another).value.equals(value);
+         return ((PermissionValueData)another).value.equals(value);
       }
 
       return false;
@@ -77,7 +74,7 @@ public abstract class StringValueData extends AbstractValueData
    {
       try
       {
-         return value.getBytes(Constants.DEFAULT_ENCODING);
+         return value.getAsString().getBytes(Constants.DEFAULT_ENCODING);
       }
       catch (UnsupportedEncodingException e)
       {
@@ -90,7 +87,7 @@ public abstract class StringValueData extends AbstractValueData
     */
    public String toString()
    {
-      return value;
+      return value.getAsString();
    }
 
    /**
@@ -98,7 +95,7 @@ public abstract class StringValueData extends AbstractValueData
     */
    public PersistedValueData createPersistedCopy(int orderNumber) throws IOException
    {
-      return new StringPersistedValueData(orderNumber, value);
+      return new PermissionPersistedValueData(orderNumber, value);
    }
 
    /**
@@ -112,25 +109,25 @@ public abstract class StringValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
-   protected Long getLong()
+   protected Boolean getBoolean() throws ValueFormatException
    {
-      return Long.valueOf(value);
+      throw new ValueFormatException("Can't conver to Boolean. Wrong value type.");
    }
 
    /**
     * {@inheritDoc}
     */
-   protected Boolean getBoolean()
+   protected Double getDouble() throws ValueFormatException
    {
-      return Boolean.valueOf(value);
+      throw new ValueFormatException("Can't conver to Double. Wrong value type.");
    }
 
    /**
     * {@inheritDoc}
     */
-   protected Double getDouble()
+   protected Long getLong() throws ValueFormatException
    {
-      return Double.valueOf(value);
+      throw new ValueFormatException("Can't conver to Long. Wrong value type.");
    }
 
    /**
@@ -138,7 +135,7 @@ public abstract class StringValueData extends AbstractValueData
     */
    protected String getString()
    {
-      return value;
+      return value.getAsString();
    }
 
    /**
@@ -146,7 +143,7 @@ public abstract class StringValueData extends AbstractValueData
     */
    protected Calendar getDate() throws ValueFormatException
    {
-      return JCRDateFormat.parse(value);
+      throw new ValueFormatException("Can't conver to Calendar. Wrong value type.");
    }
 
    /**
@@ -154,31 +151,31 @@ public abstract class StringValueData extends AbstractValueData
     */
    protected InputStream getStream()
    {
-      return new ByteArrayInputStream(value.getBytes());
+      return new ByteArrayInputStream(spoolInternalValue());
    }
 
    /**
     * {@inheritDoc}
     */
-   protected InternalQName getName() throws IllegalNameException
+   protected InternalQName getName() throws ValueFormatException
    {
-      return InternalQName.parse(value);
+      throw new ValueFormatException("Can't conver to InternalQName. Wrong value type.");
    }
 
    /**
     * {@inheritDoc}
     */
-   protected QPath getPath() throws IllegalPathException
+   protected QPath getPath() throws ValueFormatException
    {
-      return QPath.parse(value);
+      throw new ValueFormatException("Can't conver to QPath. Wrong value type.");
    }
 
    /**
     * {@inheritDoc}
     */
-   protected String getReference()
+   protected String getReference() throws ValueFormatException
    {
-      return value;
+      throw new ValueFormatException("Can't conver to Identity. Wrong value type.");
    }
 
    /**
@@ -186,6 +183,7 @@ public abstract class StringValueData extends AbstractValueData
     */
    protected AccessControlEntry getPermission()
    {
-      return AccessControlEntry.parse(value);
+      return value;
    }
+
 }

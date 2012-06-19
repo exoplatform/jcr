@@ -31,7 +31,6 @@ import java.io.InputStream;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
 
 /**
  * a binary value implementation.
@@ -71,15 +70,6 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue, Reada
    }
 
    /**
-    * {@inheritDoc}
-    */
-   @Override
-   public String getReference() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      return getString();
-   }
-
-   /**
     * Update with <code>length</code> bytes from the specified InputStream <code>stream</code> to
     * this binary value at <code>position</code>
     * 
@@ -103,9 +93,6 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue, Reada
 
    /**
     * Truncates binary value to <code> size </code>
-    * 
-    * @param size
-    * @throws IOException
     */
    public void setLength(long size) throws IOException, RepositoryException
    {
@@ -120,12 +107,6 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue, Reada
 
    /**
     * Create editable ValueData copy.
-    * 
-    * @return EditableValueData
-    * @throws RepositoryException
-    *           if error occurs
-    * @throws IOException 
-    * @throws IllegalStateException 
     */
    private EditableValueData createEditableCopy(ValueData oldValue) throws RepositoryException, IllegalStateException,
       IOException

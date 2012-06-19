@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.datamodel.Identifier;
@@ -140,14 +141,8 @@ public class ValueFactoryImpl implements ValueFactory
             case PropertyType.REFERENCE :
                return createValue(new Identifier(value));
             case ExtendedPropertyType.PERMISSION :
-               try
-               {
-                  return PermissionValue.parseValue(value);
-               }
-               catch (IOException e)
-               {
-                  new ValueFormatException("Cant create PermissionValue " + e);
-               }
+               AccessControlEntry accessEntry = AccessControlEntry.parse(value);
+               return new PermissionValue(new TransientValueData(accessEntry));
             default :
                throw new ValueFormatException("unknown type " + type);
          }
@@ -280,8 +275,8 @@ public class ValueFactoryImpl implements ValueFactory
       {
          if (value instanceof NodeImpl)
          {
-            String jcrUuid = ((NodeImpl)value).getInternalIdentifier();
-            return new ReferenceValue(new TransientValueData(jcrUuid));
+            Identifier identifier = new Identifier(((NodeImpl)value).getInternalIdentifier());
+            return new ReferenceValue(new TransientValueData(identifier));
          }
          else
          {

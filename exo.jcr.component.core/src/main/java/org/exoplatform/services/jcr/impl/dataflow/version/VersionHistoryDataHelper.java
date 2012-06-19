@@ -173,7 +173,7 @@ public class VersionHistoryDataHelper extends TransientNodeData
          if (createdData == null)
             throw new VersionException("jcr:created is not found, version: " + vd.getQPath().getAsString());
 
-         Calendar created = new JCRDateFormat().deserialize(ValueDataUtil.getString(createdData.getValues().get(0)));
+         Calendar created = JCRDateFormat.parse(ValueDataUtil.getString(createdData.getValues().get(0)));
 
          if (lastVersionData == null || created.after(lastCreated))
          {
@@ -265,7 +265,7 @@ public class VersionHistoryDataHelper extends TransientNodeData
          TransientPropertyData
          // [PN] 10.04.07 VERSIONABLEUUID isn't referenceable!!!
             .createPropertyData(versionHistory, Constants.JCR_VERSIONABLEUUID, PropertyType.STRING, false,
-               new TransientValueData(new Identifier(versionable.getIdentifier())));
+               new TransientValueData(versionable.getIdentifier()));
 
       // ------ jcr:versionLabels ------
       NodeData vhVersionLabels =

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+ * Copyright (C) 2012 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,39 +16,21 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.core.value;
+package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-
-import java.io.IOException;
-
-import javax.jcr.PropertyType;
+import org.exoplatform.services.jcr.datamodel.QPath;
 
 /**
- * A <code>LongValue</code> provides an implementation of the <code>Value</code> interface
- * representing a long value.
- * 
- * @author Gennady Azarenkov
+ * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
+ * @version $Id: ReferenceNewValueData.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class LongValue extends BaseValue
+public class PathNewValueData extends PathValueData implements NewValueData
 {
-
-   public static final int TYPE = PropertyType.LONG;
-
    /**
-    * LongValue constructor.
+    * PathNewValueData constructor.
     */
-   public LongValue(long l) throws IOException
+   protected PathNewValueData(int orderNumber, QPath value)
    {
-      super(TYPE, new TransientValueData(l));
-   }
-
-   /**
-    * LongValue constructor.
-    */
-   LongValue(ValueData data) throws IOException
-   {
-      super(TYPE, data);
+      super(orderNumber, value);
    }
 }

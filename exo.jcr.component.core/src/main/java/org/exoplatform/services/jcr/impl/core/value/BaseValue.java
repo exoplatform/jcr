@@ -189,7 +189,9 @@ public abstract class BaseValue implements ExtendedValue, ReadableBinaryValue
     */
    public String getReference() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      throw new ValueFormatException("Can not convert " + PropertyType.nameFromValue(type) + " to Reference");
+      validateByteArrayMethodInvoking();
+
+      return ValueDataUtil.getReference(getInternalData());
    }
 
    /**

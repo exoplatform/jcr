@@ -19,15 +19,14 @@
 package org.exoplatform.services.jcr.impl.dataflow;
 
 import org.exoplatform.services.jcr.access.AccessControlEntry;
-import org.exoplatform.services.jcr.datamodel.IllegalNameException;
-import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.core.value.NameValue;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.StringPersistedValueData;
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -39,19 +38,20 @@ import javax.jcr.ValueFormatException;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
- * @version $Id: StringValueData.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id: ReferenceeValueData.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public abstract class StringValueData extends AbstractValueData
+public abstract class NameValueData extends AbstractValueData
 {
+
    /**
     * The value.
     */
-   protected String value;
+   protected InternalQName value;
 
    /**
-    * StringValueData constructor.
+    * NameValueData constructor.
     */
-   protected StringValueData(int orderNumber, String value)
+   protected NameValueData(int orderNumber, InternalQName value)
    {
       super(orderNumber);
       this.value = value;
@@ -62,9 +62,9 @@ public abstract class StringValueData extends AbstractValueData
     */
    protected boolean internalEquals(ValueData another)
    {
-      if (another instanceof StringValueData)
+      if (another instanceof NameValueData)
       {
-         return ((StringValueData)another).value.equals(value);
+         return ((NameValueData)another).value.equals(value);
       }
 
       return false;
@@ -77,7 +77,7 @@ public abstract class StringValueData extends AbstractValueData
    {
       try
       {
-         return value.getBytes(Constants.DEFAULT_ENCODING);
+         return value.getAsString().getBytes(Constants.DEFAULT_ENCODING);
       }
       catch (UnsupportedEncodingException e)
       {
@@ -90,7 +90,7 @@ public abstract class StringValueData extends AbstractValueData
     */
    public String toString()
    {
-      return value;
+      return value.getAsString();
    }
 
    /**
@@ -98,7 +98,7 @@ public abstract class StringValueData extends AbstractValueData
     */
    public PersistedValueData createPersistedCopy(int orderNumber) throws IOException
    {
-      return new StringPersistedValueData(orderNumber, value);
+      return new NamePersistedValueData(orderNumber, value);
    }
 
    /**
@@ -112,33 +112,36 @@ public abstract class StringValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
-   protected Long getLong()
+   protected Boolean getBoolean() throws ValueFormatException
    {
-      return Long.valueOf(value);
+      throw new ValueFormatException("Can't conver to Boolean. Wrong value type.");
    }
 
    /**
     * {@inheritDoc}
     */
-   protected Boolean getBoolean()
+   protected Double getDouble() throws ValueFormatException
    {
-      return Boolean.valueOf(value);
+      throw new ValueFormatException("Can't conver to Double. Wrong value type.");
    }
 
    /**
     * {@inheritDoc}
     */
-   protected Double getDouble()
+   protected Long getLong() throws ValueFormatException
    {
-      return Double.valueOf(value);
+      throw new ValueFormatException("Can't conver to Long. Wrong value type.");
    }
 
    /**
     * {@inheritDoc}
+    * 
+    * Take in account {@link NameValue#getString()} uses {@link LocationFactory} to create
+    * proper <code>String</code> value.
     */
    protected String getString()
    {
-      return value;
+      return value.getAsString();
    }
 
    /**
@@ -146,7 +149,7 @@ public abstract class StringValueData extends AbstractValueData
     */
    protected Calendar getDate() throws ValueFormatException
    {
-      return JCRDateFormat.parse(value);
+      throw new ValueFormatException("Can't conver to Calendar. Wrong value type.");
    }
 
    /**
@@ -154,29 +157,13 @@ public abstract class StringValueData extends AbstractValueData
     */
    protected InputStream getStream()
    {
-      return new ByteArrayInputStream(value.getBytes());
+      return new ByteArrayInputStream(spoolInternalValue());
    }
 
    /**
     * {@inheritDoc}
     */
-   protected InternalQName getName() throws IllegalNameException
-   {
-      return InternalQName.parse(value);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected QPath getPath() throws IllegalPathException
-   {
-      return QPath.parse(value);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected String getReference()
+   protected InternalQName getName()
    {
       return value;
    }
@@ -184,8 +171,26 @@ public abstract class StringValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
-   protected AccessControlEntry getPermission()
+   protected QPath getPath()
    {
-      return AccessControlEntry.parse(value);
+      QPathEntry entry = new QPathEntry(value, 0);
+      return new QPath(new QPathEntry[]{entry});
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected String getReference() throws ValueFormatException
+   {
+      throw new ValueFormatException("Can't conver to Identity. Wrong value type.");
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected AccessControlEntry getPermission() throws ValueFormatException
+   {
+      throw new ValueFormatException("Can't conver to AccessControlEntry. Wrong value type.");
+   }
+
 }

@@ -24,13 +24,10 @@ import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
-import org.exoplatform.services.security.IdentityConstants;
 
 import java.io.IOException;
-import java.util.StringTokenizer;
 
 import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -52,15 +49,16 @@ public class PermissionValue extends BaseValue
    /**
     * PermissionValue constructor.
     */
-   public PermissionValue(ValueData data) throws IOException
+   public PermissionValue(ValueData data)
    {
       super(TYPE, data);
 
       try
       {
-         String[] persArray = parse(ValueDataUtil.getString(data));
-         this.identity = persArray[0];
-         this.permission = persArray[1];
+         AccessControlEntry accessEntry = ValueDataUtil.getPermission(data);
+
+         this.identity = accessEntry.getIdentity();
+         this.permission = accessEntry.getPermission();
       }
       catch (RepositoryException e)
       {
@@ -73,8 +71,8 @@ public class PermissionValue extends BaseValue
     */
    public PermissionValue(String identity, String permission) throws IOException
    {
-      super(TYPE, new TransientValueData(asString(identity, permission))); // identity + " " +
-      // permission
+      super(TYPE, new TransientValueData(new AccessControlEntry(identity, permission)));
+
       if (identity != null && identity.indexOf(" ") != -1)
       {
          throw new RuntimeException("Identity should not contain ' '");
@@ -88,69 +86,6 @@ public class PermissionValue extends BaseValue
 
       this.identity = identity;
       this.permission = permission;
-   }
-
-   /**
-    * Factory method.
-    */
-   static public PermissionValue parseValue(String pstring) throws IOException
-   {
-      String[] persArray = parse(pstring);
-      return new PermissionValue(persArray[0], persArray[1]);
-   }
-
-   /**
-    * Factory method.
-    */
-   static public String[] parse(String pstring)
-   {
-      StringTokenizer parser = new StringTokenizer(pstring, AccessControlEntry.DELIMITER);
-      String identityString = parser.nextToken();
-      String permissionString = parser.nextToken();
-
-      String[] persArray = new String[2];
-
-      if (identityString != null)
-      {
-         persArray[0] = identityString;
-      }
-      else
-      {
-         persArray[0] = IdentityConstants.ANY;
-      }
-      if (permissionString != null)
-      {
-         persArray[1] = permissionString;
-      }
-      else
-      {
-         persArray[1] = PermissionType.READ;
-      }
-      return persArray;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public String getString() throws ValueFormatException
-   {
-      validateByteArrayMethodInvoking();
-
-      return asString(identity, permission);
-   }
-
-   protected static String asString(String identity, String permission)
-   {
-      if (identity != null || permission != null) // SystemIdentity.ANY, PermissionType.ALL
-      {
-         return (identity != null ? identity : IdentityConstants.ANY) + AccessControlEntry.DELIMITER
-            + (permission != null ? permission : PermissionType.READ);
-      }
-      else
-      {
-         return "";
-      }
    }
 
    /**

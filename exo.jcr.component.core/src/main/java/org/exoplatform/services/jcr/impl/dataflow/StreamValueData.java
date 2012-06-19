@@ -19,10 +19,17 @@
 package org.exoplatform.services.jcr.impl.dataflow;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
+import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 
 import java.io.ByteArrayInputStream;
@@ -32,12 +39,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.nio.ByteBuffer;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.util.Arrays;
+import java.util.Calendar;
+
+import javax.jcr.ValueFormatException;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -472,5 +483,96 @@ public abstract class StreamValueData extends AbstractValueData
    public TransientValueData createTransientCopy(int orderNumber) throws IOException
    {
       return new TransientValueData(getOrderNumber(), getAsStream(), spoolConfig);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Long getLong() throws ValueFormatException
+   {
+      return Long.valueOf(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Boolean getBoolean() throws ValueFormatException
+   {
+      return Boolean.valueOf(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Double getDouble() throws ValueFormatException
+   {
+      return Double.valueOf(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected String getString() throws ValueFormatException
+   {
+      try
+      {
+         return new String(getAsByteArray(), Constants.DEFAULT_ENCODING);
+      }
+      catch (UnsupportedEncodingException e)
+      {
+         throw new ValueFormatException("Unsupported encoding " + Constants.DEFAULT_ENCODING, e);
+      }
+      catch (IOException e)
+      {
+         throw new ValueFormatException("Can't represents data as array of bytes", e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Calendar getDate() throws ValueFormatException
+   {
+      return JCRDateFormat.parse(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected InputStream getStream() throws IOException
+   {
+      return getAsStream();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected InternalQName getName() throws ValueFormatException, IllegalNameException
+   {
+      return InternalQName.parse(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected QPath getPath() throws ValueFormatException, IllegalPathException
+   {
+      return QPath.parse(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected String getReference() throws ValueFormatException
+   {
+      return getString();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected AccessControlEntry getPermission() throws ValueFormatException
+   {
+      return AccessControlEntry.parse(getString());
    }
 }

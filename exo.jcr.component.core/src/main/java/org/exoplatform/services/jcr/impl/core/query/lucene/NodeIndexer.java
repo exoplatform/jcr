@@ -504,7 +504,8 @@ public class NodeIndexer
                   case PropertyType.PATH :
                      if (isIndexed(name))
                      {
-                        addPathValue(doc, fieldName, ValueDataUtil.getPath(value, resolver));
+                        addPathValue(doc, fieldName,
+                           resolver.createJCRPath(ValueDataUtil.getPath(value)).getAsString(false));
                      }
                      break;
                   case PropertyType.STRING :
@@ -529,7 +530,7 @@ public class NodeIndexer
                      if (isIndexed(name) || name.equals(Constants.JCR_PRIMARYTYPE)
                         || name.equals(Constants.JCR_MIXINTYPES))
                      {
-                        addNameValue(doc, fieldName, ValueDataUtil.getName(value, resolver));
+                        addNameValue(doc, fieldName, resolver.createJCRName(ValueDataUtil.getName(value)).getAsString());
                      }
                      break;
                   case ExtendedPropertyType.PERMISSION :

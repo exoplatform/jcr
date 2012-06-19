@@ -16,10 +16,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.impl.dataflow.persistent;
+package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.StringValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -27,22 +28,22 @@ import java.io.ObjectOutput;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
- * @version $Id: StringPersistedValueData.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @version $Id: ReferencePersistedValueData.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-public class StringPersistedValueData extends StringValueData implements PersistedValueData
+public class PermissionPersistedValueData extends PermissionValueData implements PersistedValueData
 {
    /**
     * Empty constructor for serialization.
     */
-   public StringPersistedValueData()
+   public PermissionPersistedValueData()
    {
       super(0, null);
    }
 
    /**
-    * StringPersistedValueData constructor.
+    * PermissionPersistedValueData constructor.
     */
-   public StringPersistedValueData(int orderNumber, String value)
+   public PermissionPersistedValueData(int orderNumber, AccessControlEntry value)
    {
       super(orderNumber, value);
    }
@@ -54,12 +55,24 @@ public class StringPersistedValueData extends StringValueData implements Persist
    {
       orderNumber = in.readInt();
 
+      String identity = null;
+      String permission = null;
+
       byte[] data = new byte[in.readInt()];
       if (data.length > 0)
       {
          in.readFully(data);
-         value = new String(data, Constants.DEFAULT_ENCODING);
+         identity = new String(data, Constants.DEFAULT_ENCODING);
       }
+
+      data = new byte[in.readInt()];
+      if (data.length > 0)
+      {
+         in.readFully(data);
+         permission = new String(data, Constants.DEFAULT_ENCODING);
+      }
+
+      value = new AccessControlEntry(identity, permission);
    }
 
    /**
@@ -69,12 +82,21 @@ public class StringPersistedValueData extends StringValueData implements Persist
    {
       out.writeInt(orderNumber);
 
-      byte[] data = value.getBytes(Constants.DEFAULT_ENCODING);
+      byte[] data = value.getIdentity().getBytes(Constants.DEFAULT_ENCODING);
       out.writeInt(data.length);
 
       if (data.length > 0)
       {
          out.write(data);
       }
+
+      data = value.getPermission().getBytes(Constants.DEFAULT_ENCODING);
+      out.writeInt(data.length);
+
+      if (data.length > 0)
+      {
+         out.write(data);
+      }
+
    }
 }

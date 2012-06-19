@@ -180,7 +180,7 @@ public class TransientValueData implements ValueData
     */
    public TransientValueData(InternalQName value)
    {
-      this.delegate = new StringNewValueData(0, value.getAsString());
+      this.delegate = new NameNewValueData(0, value);
    }
 
    /**
@@ -188,7 +188,7 @@ public class TransientValueData implements ValueData
     */
    public TransientValueData(int orderNumber, InternalQName value)
    {
-      this.delegate = new StringNewValueData(orderNumber, value.getAsString());
+      this.delegate = new NameNewValueData(orderNumber, value);
    }
 
    /**
@@ -196,7 +196,7 @@ public class TransientValueData implements ValueData
     */
    public TransientValueData(QPath value)
    {
-      this.delegate = new StringNewValueData(0, value.getAsString());
+      this.delegate = new PathNewValueData(0, value);
    }
 
    /**
@@ -204,7 +204,7 @@ public class TransientValueData implements ValueData
     */
    public TransientValueData(int orderNumber, QPath value)
    {
-      this.delegate = new StringNewValueData(orderNumber, value.getAsString());
+      this.delegate = new PathNewValueData(orderNumber, value);
    }
 
    /**
@@ -212,7 +212,7 @@ public class TransientValueData implements ValueData
     */
    public TransientValueData(Identifier value)
    {
-      this.delegate = new StringNewValueData(0, value.getString());
+      this.delegate = new ReferenceNewValueData(0, value);
    }
 
    /**
@@ -220,7 +220,7 @@ public class TransientValueData implements ValueData
     */
    public TransientValueData(int orderNumber, Identifier value)
    {
-      this.delegate = new StringNewValueData(orderNumber, value.getString());
+      this.delegate = new ReferenceNewValueData(orderNumber, value);
    }
 
    /**
@@ -228,7 +228,7 @@ public class TransientValueData implements ValueData
     */
    public TransientValueData(AccessControlEntry value)
    {
-      this.delegate = new StringNewValueData(0, value.getAsString());
+      this.delegate = new PermissionNewValueData(0, value);
    }
 
    /**
@@ -236,7 +236,7 @@ public class TransientValueData implements ValueData
     */
    public TransientValueData(int orderNumber, AccessControlEntry value)
    {
-      this.delegate = new StringNewValueData(orderNumber, value.getAsString());
+      this.delegate = new PermissionNewValueData(orderNumber, value);
    }
 
    /**

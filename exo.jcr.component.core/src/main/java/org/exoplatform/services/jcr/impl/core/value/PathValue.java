@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
-import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
@@ -26,7 +25,6 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 
 import java.io.IOException;
-import java.util.Calendar;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -65,56 +63,13 @@ public class PathValue extends BaseValue
    /**
     * {@inheritDoc}
     */
-   @Override
    public String getString() throws ValueFormatException, IllegalStateException, RepositoryException
    {
-      validateByteArrayMethodInvoking();
-
-      return ValueDataUtil.getPath(getInternalData(), locationFactory);
+      return locationFactory.createJCRPath(getQPath()).getAsString(false);
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public Calendar getDate() throws ValueFormatException, IllegalStateException, RepositoryException
+   public QPath getQPath() throws RepositoryException
    {
-      throw new ValueFormatException("conversion to date failed: inconvertible types");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      throw new ValueFormatException("conversion to long failed: inconvertible types");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean getBoolean() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      throw new ValueFormatException("conversion to boolean failed: inconvertible types");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      throw new ValueFormatException("conversion to double failed: inconvertible types");
-   }
-
-   /**
-    * Return {@link QPath} value.
-    */
-   public QPath getQPath() throws IllegalPathException, ValueFormatException, IllegalStateException,
-      RepositoryException
-   {
-      return QPath.parse(ValueDataUtil.getString(internalData));
+      return ValueDataUtil.getPath(getInternalData());
    }
 }

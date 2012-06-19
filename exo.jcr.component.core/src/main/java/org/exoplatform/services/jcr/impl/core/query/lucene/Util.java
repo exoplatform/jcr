@@ -22,7 +22,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
@@ -155,9 +154,11 @@ public class Util
          case PropertyType.LONG :
             return new Long(ValueDataUtil.getLong(value));
          case PropertyType.NAME :
-            return new QPathEntry(InternalQName.parse(ValueDataUtil.getString(value)), 1);
+            return new QPathEntry(ValueDataUtil.getName(value), 1);
          case PropertyType.PATH :
+            return ValueDataUtil.getPath(value);
          case PropertyType.REFERENCE :
+            return ValueDataUtil.getReference(value);
          case PropertyType.STRING :
             return ValueDataUtil.getString(value);
          default :

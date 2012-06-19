@@ -24,8 +24,6 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import java.io.IOException;
 
 import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
 
 /**
  * a string value implementation
@@ -51,37 +49,5 @@ public class StringValue extends BaseValue
    public StringValue(ValueData data) throws IOException
    {
       super(TYPE, data);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      try
-      {
-         return Long.valueOf(getString());
-      }
-      catch (NumberFormatException e)
-      {
-         throw new ValueFormatException("Can't convert to Long", e);
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      try
-      {
-         return Long.valueOf(getString());
-      }
-      catch (NumberFormatException e)
-      {
-         throw new ValueFormatException("Can't convert to Double", e);
-      }
    }
 }

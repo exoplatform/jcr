@@ -22,11 +22,8 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 
 import java.io.IOException;
-import java.util.Calendar;
 
 import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
 
 /**
  * a boolean value implementation.
@@ -52,32 +49,5 @@ public class BooleanValue extends BaseValue
    public BooleanValue(ValueData data) throws IOException
    {
       super(TYPE, data);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public Calendar getDate() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      throw new ValueFormatException("conversion to date failed: inconvertible types");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      throw new ValueFormatException("conversion to long failed: inconvertible types");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      throw new ValueFormatException("conversion to double failed: inconvertible types");
    }
 }

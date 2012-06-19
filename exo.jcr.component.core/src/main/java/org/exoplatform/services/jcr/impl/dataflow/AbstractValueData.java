@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 import org.exoplatform.services.log.ExoLogger;
@@ -27,6 +32,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Calendar;
+
+import javax.jcr.Value;
+import javax.jcr.ValueFormatException;
 
 /**
  * Common class for all value data implementation.
@@ -211,5 +220,55 @@ public abstract class AbstractValueData implements ValueData
     * Equals internal value. 
     */
    protected abstract boolean internalEquals(ValueData another);
+
+   /**
+    * {@link Value#getLong()}
+    */
+   protected abstract Long getLong() throws ValueFormatException;
+
+   /**
+    * {@link Value#getBoolean()}
+    */
+   protected abstract Boolean getBoolean() throws ValueFormatException;
+
+   /**
+    * {@link Value#getDouble()}
+    */
+   protected abstract Double getDouble() throws ValueFormatException;
+
+   /**
+    * {@link Value#getString()}
+    */
+   protected abstract String getString() throws ValueFormatException;
+
+   /**
+    * {@link Value#getDate()}
+    */
+   protected abstract Calendar getDate() throws ValueFormatException;
+
+   /**
+    * {@link Value#getStream()}
+    */
+   protected abstract InputStream getStream() throws IOException;
+
+   /**
+    * {@link Value#getString()}
+    */
+   protected abstract InternalQName getName() throws IllegalNameException, ValueFormatException;
+
+   /**
+    * {@link Value#getString()}
+    */
+   protected abstract QPath getPath() throws IllegalPathException, ValueFormatException;
+
+   /**
+    * {@link Value#getString()}
+    */
+   protected abstract String getReference() throws ValueFormatException;
+
+   /**
+    * {@link Value#getString()}
+    */
+   protected abstract AccessControlEntry getPermission() throws ValueFormatException;
 
 }

@@ -18,12 +18,25 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
+import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.util.Arrays;
+import java.util.Calendar;
+
+import javax.jcr.ValueFormatException;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -81,6 +94,93 @@ public abstract class ByteArrayValueData extends AbstractValueData
    public TransientValueData createTransientCopy(int orderNumber) throws IOException
    {
       return new TransientValueData(orderNumber, value);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Long getLong() throws ValueFormatException
+   {
+      return Long.valueOf(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Boolean getBoolean() throws ValueFormatException
+   {
+      return Boolean.valueOf(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Double getDouble() throws ValueFormatException
+   {
+      return Double.valueOf(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected String getString() throws ValueFormatException
+   {
+      try
+      {
+         return new String(value, Constants.DEFAULT_ENCODING);
+      }
+      catch (UnsupportedEncodingException e)
+      {
+         throw new ValueFormatException("Unsupported encoding " + Constants.DEFAULT_ENCODING, e);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Calendar getDate() throws ValueFormatException
+   {
+      return JCRDateFormat.parse(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected InputStream getStream()
+   {
+      return new ByteArrayInputStream(value);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected InternalQName getName() throws ValueFormatException, IllegalNameException
+   {
+      return InternalQName.parse(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected QPath getPath() throws ValueFormatException, IllegalPathException
+   {
+      return QPath.parse(getString());
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected String getReference() throws ValueFormatException
+   {
+      return getString();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected AccessControlEntry getPermission() throws ValueFormatException
+   {
+      return AccessControlEntry.parse(getString());
    }
 
 }

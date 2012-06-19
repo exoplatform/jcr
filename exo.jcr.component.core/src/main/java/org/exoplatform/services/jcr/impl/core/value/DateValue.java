@@ -20,17 +20,11 @@ package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Calendar;
 
 import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
 
 /**
  * a date value implementation.
@@ -60,116 +54,4 @@ public class DateValue extends BaseValue
    {
       super(TYPE, data);
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      validateByteArrayMethodInvoking();
-
-      Calendar date = ValueDataUtil.getDate(getInternalData());
-
-      if (date != null)
-      {
-         return date.getTimeInMillis();
-      }
-      else
-      {
-         throw new ValueFormatException("empty value");
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean getBoolean() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      throw new ValueFormatException("cannot convert date to boolean");
-   }
-   
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public String getString() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      validateByteArrayMethodInvoking();
-
-      return getInternalString();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      validateByteArrayMethodInvoking();
-
-      Calendar date = ValueDataUtil.getDate(getInternalData());
-
-      if (date != null)
-      {
-         long ms = date.getTimeInMillis();
-         if (ms <= Double.MAX_VALUE)
-         {
-            return ms;
-         }
-         throw new ValueFormatException("conversion from date to double failed: inconvertible types");
-      }
-      else
-      {
-         throw new ValueFormatException("empty value");
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public long getLength()
-   {
-      try
-      {
-         return getString().length();
-      }
-      catch (ValueFormatException e)
-      {
-         return super.getLength();
-      }
-      catch (RepositoryException e)
-      {
-         return super.getLength();
-      }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected InputStream getAsStream() throws IOException, ValueFormatException, IllegalStateException,
-      RepositoryException
-   {
-      return new ByteArrayInputStream(getInternalString().getBytes());
-   }
-
-   /**
-    * Returns {@link Calendar} represented in String format.
-    */
-   private String getInternalString() throws RepositoryException
-   {
-      Calendar date = ValueDataUtil.getDate(internalData);
-      if (date != null)
-      {
-         return JCRDateFormat.format(date);
-      }
-      else
-      {
-         throw new ValueFormatException("empty value");
-      }
-   }
-
 }

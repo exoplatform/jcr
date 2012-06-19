@@ -156,7 +156,7 @@ public class TestTransientValueData extends TestCase
       Calendar cal = Calendar.getInstance();
       long time = cal.getTimeInMillis();
       TransientValueData vd = new TransientValueData(cal);
-      assertEquals(time, new JCRDateFormat().deserialize(new String(vd.getAsByteArray())).getTimeInMillis());
+      assertEquals(time, JCRDateFormat.parse(new String(vd.getAsByteArray())).getTimeInMillis());
    }
 
    public void testNewDoubleValueData() throws Exception
