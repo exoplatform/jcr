@@ -18,19 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.services.jcr.access.AccessControlEntry;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.BooleanPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Calendar;
-
-import javax.jcr.ValueFormatException;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -78,7 +70,7 @@ public abstract class BooleanValueData extends AbstractValueData
     */
    public String toString()
    {
-      return Boolean.toString(value);
+      return Boolean.valueOf(value).toString();
    }
 
    /**
@@ -100,14 +92,7 @@ public abstract class BooleanValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
-   protected Long getLong() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Long. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
+   @Override
    protected Boolean getBoolean()
    {
       return value;
@@ -116,64 +101,8 @@ public abstract class BooleanValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
-   protected Double getDouble() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Double. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    protected String getString()
    {
       return Boolean.toString(value);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected Calendar getDate() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Calendar. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected InputStream getStream()
-   {
-      return new ByteArrayInputStream(spoolInternalValue());
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected InternalQName getName() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to InternalQName. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected QPath getPath() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to QPath. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected String getReference() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Identity. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected AccessControlEntry getPermission() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to AccessControlEntry. Wrong value type.");
    }
 }

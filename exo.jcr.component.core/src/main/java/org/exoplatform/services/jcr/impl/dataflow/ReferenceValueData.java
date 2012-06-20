@@ -18,19 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.datamodel.Identifier;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Calendar;
 
 import javax.jcr.ValueFormatException;
 
@@ -110,30 +104,6 @@ public abstract class ReferenceValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
-   protected Boolean getBoolean() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Boolean. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected Double getDouble() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Double. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected Long getLong() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Long. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    protected String getString()
    {
       return value.getString();
@@ -142,49 +112,9 @@ public abstract class ReferenceValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
-   protected Calendar getDate() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Calendar. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected InputStream getStream()
-   {
-      return new ByteArrayInputStream(spoolInternalValue());
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected InternalQName getName() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to InternalQName. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected QPath getPath() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to QPath. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
+   @Override
    protected String getReference() throws ValueFormatException
    {
       return value.getString();
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected AccessControlEntry getPermission() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to AccessControlEntry. Wrong value type.");
-   }
-
 }

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
@@ -28,12 +27,10 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.value.PathValue;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Calendar;
 
+import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
 /**
@@ -111,30 +108,6 @@ public abstract class PathValueData extends AbstractValueData
 
    /**
     * {@inheritDoc}
-    */
-   protected Boolean getBoolean() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Boolean. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected Double getDouble() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Double. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected Long getLong() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Long. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
     * 
     * Take in account {@link PathValue#getString()} uses {@link LocationFactory} to create
     * proper <code>String</code> value.
@@ -147,22 +120,7 @@ public abstract class PathValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
-   protected Calendar getDate() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Calendar. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected InputStream getStream()
-   {
-      return new ByteArrayInputStream(spoolInternalValue());
-   }
-
-   /**
-    * {@inheritDoc}
-    */
+   @Override
    protected InternalQName getName() throws ValueFormatException
    {
       if (value.getDepth() == 0 && !value.isAbsolute())
@@ -175,26 +133,10 @@ public abstract class PathValueData extends AbstractValueData
    }
 
    /**
-    * {@inheritDoc}
+    * {@link Value#getString()}
     */
    protected QPath getPath()
    {
       return value;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected String getReference() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to Identity. Wrong value type.");
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected AccessControlEntry getPermission() throws ValueFormatException
-   {
-      throw new ValueFormatException("Can't conver to AccessControlEntry. Wrong value type.");
    }
 }

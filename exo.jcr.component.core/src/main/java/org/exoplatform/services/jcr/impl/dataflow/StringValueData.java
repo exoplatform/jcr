@@ -29,9 +29,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StringPersistedValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 
@@ -112,6 +110,7 @@ public abstract class StringValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected Long getLong()
    {
       return Long.valueOf(value);
@@ -120,6 +119,7 @@ public abstract class StringValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected Boolean getBoolean()
    {
       return Boolean.valueOf(value);
@@ -128,6 +128,7 @@ public abstract class StringValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected Double getDouble()
    {
       return Double.valueOf(value);
@@ -144,6 +145,7 @@ public abstract class StringValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected Calendar getDate() throws ValueFormatException
    {
       return JCRDateFormat.parse(value);
@@ -152,14 +154,7 @@ public abstract class StringValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
-   protected InputStream getStream()
-   {
-      return new ByteArrayInputStream(value.getBytes());
-   }
-
-   /**
-    * {@inheritDoc}
-    */
+   @Override
    protected InternalQName getName() throws IllegalNameException
    {
       return InternalQName.parse(value);
@@ -168,6 +163,7 @@ public abstract class StringValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected QPath getPath() throws IllegalPathException
    {
       return QPath.parse(value);
@@ -176,6 +172,7 @@ public abstract class StringValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getReference()
    {
       return value;
@@ -184,6 +181,7 @@ public abstract class StringValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected AccessControlEntry getPermission()
    {
       return AccessControlEntry.parse(value);

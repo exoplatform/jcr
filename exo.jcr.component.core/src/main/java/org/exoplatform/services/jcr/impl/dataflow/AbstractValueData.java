@@ -221,54 +221,83 @@ public abstract class AbstractValueData implements ValueData
     */
    protected abstract boolean internalEquals(ValueData another);
 
+   // ================================== Getting value methods
+
    /**
     * {@link Value#getLong()}
     */
-   protected abstract Long getLong() throws ValueFormatException;
+   protected Long getLong() throws ValueFormatException
+   {
+      throw new ValueFormatException("Can't conver to Long. Wrong value type.");
+   }
 
    /**
     * {@link Value#getBoolean()}
     */
-   protected abstract Boolean getBoolean() throws ValueFormatException;
+   protected Boolean getBoolean() throws ValueFormatException
+   {
+      throw new ValueFormatException("Can't conver to Boolean. Wrong value type.");
+   }
 
    /**
     * {@link Value#getDouble()}
     */
-   protected abstract Double getDouble() throws ValueFormatException;
+   protected Double getDouble() throws ValueFormatException
+   {
+      throw new ValueFormatException("Can't conver to Double. Wrong value type.");
+   }
+
+   /**
+    * {@link Value#getDate()}
+    */
+   protected Calendar getDate() throws ValueFormatException
+   {
+      throw new ValueFormatException("Can't conver to Calendar. Wrong value type.");
+   }
+
+   /**
+    * {@link Value#getStream()}
+    */
+   protected InputStream getStream() throws IOException
+   {
+      return new ByteArrayInputStream(spoolInternalValue());
+   }
+
+   /**
+    * {@link Value#getString()}
+    */
+   protected InternalQName getName() throws IllegalNameException, ValueFormatException
+   {
+      throw new ValueFormatException("Can't conver to InternalQName. Wrong value type.");
+   }
+
+   /**
+    * {@link Value#getString()}
+    */
+   protected QPath getPath() throws IllegalPathException, ValueFormatException
+   {
+      throw new ValueFormatException("Can't conver to QPath. Wrong value type.");
+   }
+
+   /**
+    * {@link Value#getString()}
+    */
+   protected String getReference() throws ValueFormatException
+   {
+      throw new ValueFormatException("Can't conver to Identity. Wrong value type.");
+   }
+
+   /**
+    * {@link Value#getString()}
+    */
+   protected AccessControlEntry getPermission() throws ValueFormatException
+   {
+      throw new ValueFormatException("Can't conver to AccessControlEntry. Wrong value type.");
+   }
 
    /**
     * {@link Value#getString()}
     */
    protected abstract String getString() throws ValueFormatException;
-
-   /**
-    * {@link Value#getDate()}
-    */
-   protected abstract Calendar getDate() throws ValueFormatException;
-
-   /**
-    * {@link Value#getStream()}
-    */
-   protected abstract InputStream getStream() throws IOException;
-
-   /**
-    * {@link Value#getString()}
-    */
-   protected abstract InternalQName getName() throws IllegalNameException, ValueFormatException;
-
-   /**
-    * {@link Value#getString()}
-    */
-   protected abstract QPath getPath() throws IllegalPathException, ValueFormatException;
-
-   /**
-    * {@link Value#getString()}
-    */
-   protected abstract String getReference() throws ValueFormatException;
-
-   /**
-    * {@link Value#getString()}
-    */
-   protected abstract AccessControlEntry getPermission() throws ValueFormatException;
 
 }

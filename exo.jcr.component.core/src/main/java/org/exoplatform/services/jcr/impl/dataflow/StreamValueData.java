@@ -488,6 +488,7 @@ public abstract class StreamValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected Long getLong() throws ValueFormatException
    {
       return Long.valueOf(getString());
@@ -496,6 +497,7 @@ public abstract class StreamValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected Boolean getBoolean() throws ValueFormatException
    {
       return Boolean.valueOf(getString());
@@ -504,6 +506,7 @@ public abstract class StreamValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected Double getDouble() throws ValueFormatException
    {
       return Double.valueOf(getString());
@@ -531,6 +534,7 @@ public abstract class StreamValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected Calendar getDate() throws ValueFormatException
    {
       return JCRDateFormat.parse(getString());
@@ -539,6 +543,7 @@ public abstract class StreamValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected InputStream getStream() throws IOException
    {
       return getAsStream();
@@ -547,6 +552,7 @@ public abstract class StreamValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected InternalQName getName() throws ValueFormatException, IllegalNameException
    {
       return InternalQName.parse(getString());
@@ -555,6 +561,7 @@ public abstract class StreamValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected QPath getPath() throws ValueFormatException, IllegalPathException
    {
       return QPath.parse(getString());
@@ -563,6 +570,7 @@ public abstract class StreamValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected String getReference() throws ValueFormatException
    {
       return getString();
@@ -571,6 +579,7 @@ public abstract class StreamValueData extends AbstractValueData
    /**
     * {@inheritDoc}
     */
+   @Override
    protected AccessControlEntry getPermission() throws ValueFormatException
    {
       return AccessControlEntry.parse(getString());
