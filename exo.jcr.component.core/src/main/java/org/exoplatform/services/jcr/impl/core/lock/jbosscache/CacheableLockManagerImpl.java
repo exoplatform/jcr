@@ -548,10 +548,15 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
             ccl.disableDirectAccess();
          }
       }
+      else
+      {
+         // No cache loader has been defined
+         createStructuredNode(lockRoot);
+      }
 
-      super.start(); 
+      super.start();
    }
-   
+
    /**
     * {@inheritDoc}
     */
