@@ -50,6 +50,11 @@ import java.util.Set;
 public class ControllerCacheLoader implements CacheLoader
 {
    /**
+    *  Thread local parameter for allow direct access to the data from cache loader. 
+    */
+   private final ThreadLocal<Boolean> allowDirectAccess = new ThreadLocal<Boolean>();
+	
+   /**
     * The nested cache loader
     */
    private final CacheLoader cl;
@@ -103,6 +108,11 @@ public class ControllerCacheLoader implements CacheLoader
             return cl.exists(name);
          }
       }
+      else if (allowDirectAccess.get() != null)
+      {
+         return cl.exists(name);
+      }
+      
       // All the data is loaded at startup, so no need to call the nested cache loader for another
       // cache status other than CacheStatus.STARTING
       return false;
@@ -130,6 +140,11 @@ public class ControllerCacheLoader implements CacheLoader
             return cl.get(name);
          }
       }
+      else if (allowDirectAccess.get() != null)
+      {
+         return cl.get(name);
+      }
+      
       // All the data is loaded at startup, so no need to call the nested cache loader for another
       // cache status other than CacheStatus.STARTING
       return null;
@@ -305,4 +320,21 @@ public class ControllerCacheLoader implements CacheLoader
       cl.stop();
    }
 
+   
+   /**
+    * Enable direct access to the data from cache loader.
+    */
+   protected void enableDirectAccess()
+   {
+      allowDirectAccess.set(true);
+   }
+  
+   /**
+   * Disable direct access to the data from cache loader.
+   */
+   protected void disableDirectAccess()
+   {
+      allowDirectAccess.set(null);
+   }
+  
 }
