@@ -16,12 +16,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.io.IOException;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 /**
  * <code>ChildNodesQueryHits</code> implements query hits that returns the child
@@ -43,6 +43,8 @@ public class ChildNodesQueryHits extends AbstractQueryHits {
      * The current child hits.
      */
     private QueryHits childHits;
+    
+    private IndexingConfiguration indexConfig;
 
     /**
      * Creates a new <code>ChildNodesQueryHits</code> that returns the child
@@ -53,13 +55,14 @@ public class ChildNodesQueryHits extends AbstractQueryHits {
      * @throws IOException if an error occurs while reading from
      *                     <code>parents</code>
      */
-    public ChildNodesQueryHits(QueryHits parents, SessionImpl session)
+    public ChildNodesQueryHits(QueryHits parents, SessionImpl session, IndexingConfiguration indexConfig)
             throws IOException {
         this.parents = parents;
         this.session = session;
+        this.indexConfig = indexConfig;
         fetchNextChildHits();
     }
-
+    
     /**
      * {@inheritDoc}
      */
@@ -98,7 +101,7 @@ public class ChildNodesQueryHits extends AbstractQueryHits {
         if (nextParent != null) {
             try {
                 Node parent = (Node)session.getTransientNodesManager().getItemByIdentifier(nextParent.getNodeId(),true);
-                childHits = new NodeTraversingQueryHits(parent, false, 1);
+                childHits = new NodeTraversingQueryHits(parent, false, 1, indexConfig);
             } catch (RepositoryException e) {
                 throw Util.createIOException(e);
             }

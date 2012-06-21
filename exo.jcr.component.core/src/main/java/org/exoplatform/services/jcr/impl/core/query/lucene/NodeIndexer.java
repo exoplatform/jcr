@@ -196,9 +196,14 @@ public class NodeIndexer
       // special fields
       // UUID
       doc.add(new Field(FieldNames.UUID, node.getIdentifier(), Field.Store.YES, Field.Index.NOT_ANALYZED_NO_NORMS));
+
+      if (indexingConfig != null && indexingConfig.isExcluded(node))
+      {
+         return doc;
+      }
+
       try
       {
-
          if (node.getParentIdentifier() == null)
          {
             // root node
@@ -208,7 +213,6 @@ public class NodeIndexer
          else
          {
             addParentChildRelation(doc, node.getParentIdentifier());
-
          }
       }
       catch (NamespaceException e)

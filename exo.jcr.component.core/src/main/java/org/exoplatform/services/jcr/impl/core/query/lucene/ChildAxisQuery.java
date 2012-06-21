@@ -110,6 +110,8 @@ class ChildAxisQuery extends Query implements JcrQuery
     */
    private Scorer nameTestScorer;
 
+   private IndexingConfiguration indexConfig;
+
    /**
     * Creates a new <code>ChildAxisQuery</code> based on a <code>context</code>
     * query.
@@ -120,11 +122,12 @@ class ChildAxisQuery extends Query implements JcrQuery
     * selected.
     * @param version the index format version.
     * @param nsMappings the internal namespace mappings.
+    * @param indexConfig
     */
    ChildAxisQuery(ItemDataConsumer itemMgr, Query context, InternalQName nameTest, IndexFormatVersion version,
-      NamespaceMappings nsMappings)
+      NamespaceMappings nsMappings, IndexingConfiguration indexConfig)
    {
-      this(itemMgr, context, nameTest, LocationStepQueryNode.NONE, version, nsMappings);
+      this(itemMgr, context, nameTest, LocationStepQueryNode.NONE, version, nsMappings, indexConfig);
    }
 
    /**
@@ -140,9 +143,10 @@ class ChildAxisQuery extends Query implements JcrQuery
     * position of the child node is not checked.
     * @param version the index format version.
     * @param nsMapping the internal namespace mappings.
+    * @param indexConfig
     */
    ChildAxisQuery(ItemDataConsumer itemMgr, Query context, InternalQName nameTest, int position,
-      IndexFormatVersion version, NamespaceMappings nsMapping)
+      IndexFormatVersion version, NamespaceMappings nsMapping, IndexingConfiguration indexConfig)
    {
       this.itemMgr = itemMgr;
       this.contextQuery = context;
@@ -150,6 +154,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       this.position = position;
       this.version = version;
       this.nsMappings = nsMapping;
+      this.indexConfig = indexConfig;
    }
 
    /**
@@ -225,13 +230,14 @@ class ChildAxisQuery extends Query implements JcrQuery
                Query sub;
                if (nameTest == null)
                {
-                  sub = new MatchAllDocsQuery();
+                  sub = new MatchAllDocsQuery(indexConfig);
                }
                else
                {
                   sub = new NameQuery(nameTest, version, nsMappings);
                }
-               return new DescendantSelfAxisQuery(dsaq.getContextQuery(), sub, dsaq.getMinLevels() + 1).rewrite(reader);
+               return new DescendantSelfAxisQuery(dsaq.getContextQuery(), sub, dsaq.getMinLevels() + 1, indexConfig)
+                  .rewrite(reader);
             }
          }
       }
@@ -243,7 +249,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       }
       else
       {
-         return new ChildAxisQuery(itemMgr, cQuery, nameTest, position, version, nsMappings);
+         return new ChildAxisQuery(itemMgr, cQuery, nameTest, position, version, nsMappings, indexConfig);
       }
    }
 
@@ -277,7 +283,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       if (sort.getSort().length == 0 && matchesAnyChildNode())
       {
          Query context = getContextQuery();
-         return new ChildNodesQueryHits(searcher.evaluate(context), session);
+         return new ChildNodesQueryHits(searcher.evaluate(context), session, indexConfig);
       }
       else
       {
@@ -741,15 +747,18 @@ class ChildAxisQuery extends Query implements JcrQuery
                   Iterator<NodeData> entries;
                   if (nameTest != null)
                   {
-                     List<NodeData> childs = itemMgr.getChildNodesData(state);
-
                      List<NodeData> datas = new ArrayList<NodeData>();
-                     if (childs != null)
+                     if (indexConfig == null || !indexConfig.isExcluded(state))
                      {
-                        for (NodeData nodeData : childs)
+                        List<NodeData> childs = itemMgr.getChildNodesData(state);
+
+                        if (childs != null)
                         {
-                           if (nameTest.equals(nodeData.getQPath().getName()))
-                              datas.add(nodeData);
+                           for (NodeData nodeData : childs)
+                           {
+                              if (nameTest.equals(nodeData.getQPath().getName()))
+                                 datas.add(nodeData);
+                           }
                         }
                      }
                      entries = datas.iterator();
@@ -761,19 +770,23 @@ class ChildAxisQuery extends Query implements JcrQuery
                   }
                   while (entries.hasNext())
                   {
-                     String childId = entries.next().getIdentifier();
-                     Term uuidTerm = new Term(FieldNames.UUID, childId);
-                     TermDocs docs = reader.termDocs(uuidTerm);
-                     try
+                     NodeData nodeData = entries.next();
+                     if (indexConfig == null || !indexConfig.isExcluded(nodeData))
                      {
-                        if (docs.next())
+                        String childId = nodeData.getIdentifier();
+                        Term uuidTerm = new Term(FieldNames.UUID, childId);
+                        TermDocs docs = reader.termDocs(uuidTerm);
+                        try
                         {
-                           childrenHits.set(docs.doc());
+                           if (docs.next())
+                           {
+                              childrenHits.set(docs.doc());
+                           }
                         }
-                     }
-                     finally
-                     {
-                        docs.close();
+                        finally
+                        {
+                           docs.close();
+                        }
                      }
                   }
                }

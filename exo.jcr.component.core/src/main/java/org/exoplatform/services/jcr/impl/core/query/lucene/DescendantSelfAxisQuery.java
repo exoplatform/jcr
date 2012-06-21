@@ -79,6 +79,8 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
     */
    private Scorer subScorer;
 
+   private IndexingConfiguration indexConfig;
+
    /**
     * Creates a new <code>DescendantSelfAxisQuery</code> based on a
     * <code>context</code> and matches all descendants of the context nodes.
@@ -90,9 +92,9 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
     *                    descendant-or-self axis. If <code>false</code> this
     *                    query acts like a descendant axis.
     */
-   public DescendantSelfAxisQuery(Query context, boolean includeSelf)
+   public DescendantSelfAxisQuery(Query context, boolean includeSelf, IndexingConfiguration indexConfig)
    {
-      this(context, new MatchAllDocsQuery(), includeSelf);
+      this(context, new MatchAllDocsQuery(indexConfig), includeSelf, indexConfig);
    }
 
    /**
@@ -102,9 +104,9 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
     * @param context the context for this query.
     * @param sub     the sub query.
     */
-   public DescendantSelfAxisQuery(Query context, Query sub)
+   public DescendantSelfAxisQuery(Query context, Query sub, IndexingConfiguration indexConfig)
    {
-      this(context, sub, true);
+      this(context, sub, true, indexConfig);
    }
 
    /**
@@ -117,9 +119,9 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
     *                    descendant-or-self axis. If <code>false</code> this query acts like
     *                    a descendant axis.
     */
-   public DescendantSelfAxisQuery(Query context, Query sub, boolean includeSelf)
+   public DescendantSelfAxisQuery(Query context, Query sub, boolean includeSelf, IndexingConfiguration indexConfig)
    {
-      this(context, sub, includeSelf ? 0 : 1);
+      this(context, sub, includeSelf ? 0 : 1, indexConfig);
    }
 
    /**
@@ -131,11 +133,12 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
     * @param minLevels the minimal levels required between context and sub
     *                  nodes for a sub node to match.
     */
-   public DescendantSelfAxisQuery(Query context, Query sub, int minLevels)
+   public DescendantSelfAxisQuery(Query context, Query sub, int minLevels, IndexingConfiguration indexConfig)
    {
       this.contextQuery = context;
       this.subQuery = sub;
       this.minLevels = minLevels;
+      this.indexConfig = indexConfig;
    }
 
    /**
@@ -227,8 +230,8 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
          DescendantSelfAxisQuery dsaq = (DescendantSelfAxisQuery)contextQuery;
          if (dsaq.subQueryMatchesAll())
          {
-            return new DescendantSelfAxisQuery(dsaq.getContextQuery(), sQuery, dsaq.getMinLevels() + getMinLevels())
-               .rewrite(reader);
+            return new DescendantSelfAxisQuery(dsaq.getContextQuery(), sQuery, dsaq.getMinLevels() + getMinLevels(),
+               indexConfig).rewrite(reader);
          }
       }
       if (cQuery == contextQuery && sQuery == subQuery) // NOSONAR
@@ -237,7 +240,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       }
       else
       {
-         return new DescendantSelfAxisQuery(cQuery, sQuery, minLevels);
+         return new DescendantSelfAxisQuery(cQuery, sQuery, minLevels, indexConfig);
       }
    }
 
@@ -266,7 +269,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
             // intermediate ChildNodesQueryHits are required.
             for (int i = 2; i <= getMinLevels(); i++)
             {
-               result = new ChildNodesQueryHits(result, session);
+               result = new ChildNodesQueryHits(result, session, indexConfig);
             }
 
             ScoreNode sn;
@@ -358,7 +361,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
                   {
                      //Node node = session.getNodeById(sn.getNodeId());
                      Node node = (Node)session.getTransientNodesManager().getItemByIdentifier(sn.getNodeId(), true);
-                     currentTraversal = new NodeTraversingQueryHits(node, getMinLevels() == 0);
+                     currentTraversal = new NodeTraversingQueryHits(node, getMinLevels() == 0, indexConfig);
                   }
                   catch (RepositoryException e)
                   {

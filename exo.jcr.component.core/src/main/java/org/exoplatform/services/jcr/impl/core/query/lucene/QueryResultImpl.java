@@ -400,7 +400,7 @@ public abstract class QueryResultImpl implements QueryResult
             break;
          }
          // check access
-         if (!docOrder || checkAccess(sn))
+         if (!docOrder || isAccessGranted(sn))
          {
             collector.add(sn);
          }
@@ -412,7 +412,7 @@ public abstract class QueryResultImpl implements QueryResult
    }
 
    /**
-    * Checks access to <code>nodes</code>.
+    * Checks if access is granted to all <code>nodes</code>.
     *
     * @param nodes the nodes to check.
     * @return <code>true</code> if read access is granted to all
@@ -420,14 +420,12 @@ public abstract class QueryResultImpl implements QueryResult
     * @throws RepositoryException if an error occurs while checking access
     *                             rights.
     */
-   private boolean checkAccess(ScoreNode[] nodes) throws RepositoryException
+   private boolean isAccessGranted(ScoreNode[] nodes) throws RepositoryException
    {
       if (isSystemSession)
       {
          return true;
       }
-
-      IndexingConfiguration indexConfig = index.getIndexingConfig();
       for (int i = 0; i < nodes.length; i++)
       {
          try
@@ -436,7 +434,9 @@ public abstract class QueryResultImpl implements QueryResult
             if (nodes[i] != null)
             {
                NodeData nodeData = (NodeData)itemMgr.getItemData(nodes[i].getNodeId());
-               if (nodeData == null || !isAccessGranted(nodeData) || isExcluded(nodeData, indexConfig))
+               if (nodeData == null
+                  || !accessMgr.hasPermission(nodeData.getACL(), PermissionType.READ, session.getUserState()
+                     .getIdentity()))
                {
                   return false;
                }
@@ -451,31 +451,6 @@ public abstract class QueryResultImpl implements QueryResult
          }
       }
       return true;
-   }
-
-   /**
-    * Checks if access is granted to <code>node</code>.
-    *
-    * @param nodeData the node to check.
-    * @return <code>true</code> if read access is granted to <code>node</code>. 
-    * @throws RepositoryException if an error occurs while checking access
-    *                             rights.
-    */
-   private boolean isAccessGranted(NodeData nodeData) throws RepositoryException
-   {
-      return accessMgr.hasPermission(nodeData.getACL(), PermissionType.READ, session.getUserState().getIdentity());
-   }
-
-   /**
-    * Checks if <code>node</code> is excluded.
-    * 
-    * @param nodeData the node to check.
-    * @param indexConfig  place that stores exclude rules.
-    * @return <code>true</code> if <code>node</code> is excluded.
-    */
-   private boolean isExcluded(NodeData nodeData, IndexingConfiguration indexConfig) throws RepositoryException
-   {
-      return indexConfig == null ? false : indexConfig.isExcluded(nodeData);
    }
 
    /**
@@ -695,7 +670,7 @@ public abstract class QueryResultImpl implements QueryResult
             next = (ScoreNode[])resultNodes.get(nextPos);
             try
             {
-               if (!checkAccess(next))
+               if (!isAccessGranted(next))
                {
                   next = null;
                   invalid++;
