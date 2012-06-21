@@ -517,15 +517,14 @@
   <section id="JCR.eXoJCRconfiguration.HelpApplicationToAllowUseOfClosedDataSources">
     <title>Help application to allow the use of closed datasources</title>
  
-    <para>Due to that fact that usage of session that has been closed affects
-     usage of closed datasources we propose three modes to resolve such
-     kind of issues: </para>
+    <para>Since usage of closed session affects usage of closed datasource
+    we propose three ways to resolve such kind of isses: </para>
  
     <orderedlist>
       <listitem>
         <para>If the system property
-        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> has been
-        set to <emphasis>true</emphasis> (default value), then a SQLException will be
+        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> is
+        set to <emphasis>true</emphasis> (default value) then a SQLException will be
         thrown any time an application will try to access to a closed datasource.
         In the stack trace, you will be able to know the call stack that
         closes the datasource.</para>
@@ -533,9 +532,9 @@
 
       <listitem>
         <para>If the system property
-        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> has been
+        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> is
         set to <emphasis>false</emphasis> and the system property
-        <emphasis>exo.product.developing</emphasis> has been set to
+        <emphasis>exo.product.developing</emphasis> is set to
         <emphasis>true</emphasis>, then a warning will be logged in the log
         file with the full stack trace in order to help identifying the root
         cause of the issue. In the stack trace, you will be able to know the
@@ -544,9 +543,9 @@
 
       <listitem>
         <para>If the system property
-        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> has been
+        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> is
         set to <emphasis>false</emphasis> and the system property
-        <emphasis>exo.product.developing</emphasis> has been set to
+        <emphasis>exo.product.developing</emphasis> is set to
         <emphasis>false</emphasis> usage of closed datasource will be allowed
         and nothing will be logged or thrown.</para>
       </listitem>
