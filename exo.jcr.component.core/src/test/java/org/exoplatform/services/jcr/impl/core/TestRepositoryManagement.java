@@ -40,7 +40,6 @@ import org.jibx.runtime.IUnmarshallingContext;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.WeakHashMap;
@@ -67,13 +66,14 @@ public class TestRepositoryManagement extends JcrImplBaseTest
    private boolean isDefaultWsMultiDb;
 
    private final TesterConfigurationHelper helper;
+   
 
    public TestRepositoryManagement()
    {
       super();
       this.helper = TesterConfigurationHelper.getInstance();
    }
-
+      
    public void testAddNewRepository() throws Exception
    {
       ManageableRepository repository = null;
@@ -545,7 +545,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
          }
       }
    }
-
+   
    public void testRepositoryContainerGCedAfterStop() throws Exception
    {
       int numberOfRepositories = 3;
