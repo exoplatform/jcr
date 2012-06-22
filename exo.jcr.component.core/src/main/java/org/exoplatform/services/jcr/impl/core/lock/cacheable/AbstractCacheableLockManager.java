@@ -78,6 +78,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
+import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 /**
@@ -130,6 +131,11 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
     * The current Transaction Manager
     */
    protected TransactionManager tm;
+
+   /**
+    * Store datasource to have ability to get from context without recreation.
+    */
+   protected DataSource dataSource;
 
    public static final String LOCKS_FORCE_REMOVE = "org.exoplatform.jcr.locks.force.remove";
 

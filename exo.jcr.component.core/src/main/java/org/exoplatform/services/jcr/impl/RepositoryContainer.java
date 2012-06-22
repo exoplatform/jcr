@@ -317,6 +317,7 @@ public class RepositoryContainer extends ExoContainer
                   workspaceContainer.registerComponentImplementation(LinkedWorkspaceStorageCacheImpl.class);
                }
 
+               workspaceContainer.registerComponentImplementation(WorkspaceResumer.class);
                workspaceContainer.registerComponentImplementation(CacheableWorkspaceDataManager.class);
                workspaceContainer.registerComponentImplementation(LocalWorkspaceDataManagerStub.class);
                workspaceContainer.registerComponentImplementation(ObservationManagerRegistry.class);

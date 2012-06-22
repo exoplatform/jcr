@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.core;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.WorkspaceContainer;
+import org.exoplatform.services.jcr.impl.WorkspaceResumer;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
@@ -49,6 +50,8 @@ public final class WorkspaceContainerFacade
 
    private final WorkspaceContainer container;
 
+   private final WorkspaceResumer workspaceResumer;
+
    /**
     * Indicates that node keep responsible for resuming.
     */
@@ -62,6 +65,7 @@ public final class WorkspaceContainerFacade
    {
       this.workspaceName = workspaceName;
       this.container = container;
+      this.workspaceResumer = (WorkspaceResumer)container.getComponentInstanceOfType(WorkspaceResumer.class);
    }
 
    /**
@@ -220,6 +224,8 @@ public final class WorkspaceContainerFacade
     */
    private void suspend() throws RepositoryException
    {
+      workspaceResumer.onSuspend();
+
       List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
       setResponsibleForResuming(true);
       Comparator<Suspendable> c = new Comparator<Suspendable>()
@@ -254,6 +260,8 @@ public final class WorkspaceContainerFacade
     */
    private void resume() throws RepositoryException
    {
+      workspaceResumer.onResume();
+
       // components should be resumed in reverse order
       List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
       Comparator<Suspendable> c = new Comparator<Suspendable>()
