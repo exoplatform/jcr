@@ -183,6 +183,21 @@ public final class SessionRegistry implements Startable
    {
       if (timeOut > 0 && sessionCleaner != null)
          sessionCleaner.halt();
+      // Close all the current sessions to prevent memory leaks
+      for (SessionImpl s : sessionsMap.values())
+      {
+         try
+         {
+            s.logout();
+         }
+         catch (Exception e)
+         {
+            if (log.isDebugEnabled())
+            {
+               log.debug("Could not close the session", e);
+            }
+         }
+      }
       sessionsMap.clear();
    }
 
