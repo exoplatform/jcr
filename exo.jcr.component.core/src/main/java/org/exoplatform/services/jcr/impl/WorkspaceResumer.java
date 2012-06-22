@@ -197,7 +197,7 @@ public class WorkspaceResumer implements Startable, TopologyChangeListener
                            }
                         }
 
-                        //                  sleep();
+                        WorkspaceResumer.this.sleep();
                         wsContainer.setState(ManageableRepository.ONLINE);
                      }
                      catch (SecurityException e)
