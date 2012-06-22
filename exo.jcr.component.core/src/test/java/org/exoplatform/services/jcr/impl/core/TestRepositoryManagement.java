@@ -23,12 +23,14 @@ import org.exoplatform.container.xml.PropertiesParam;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.CacheEntry;
+import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.RepositoryServiceConfiguration;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.impl.RepositoryContainer;
 import org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.jibx.runtime.BindingDirectory;
@@ -40,6 +42,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jcr.PathNotFoundException;
@@ -407,25 +410,24 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       /**
         * {@inheritDoc}
         */
-   
 
-   public void run()
-   {
-   try
-   {
-     latcher.await();
-     tRrepository = helper.createRepository(container, false, null);
-   }
-   catch (Exception e)
-   {
-     e.printStackTrace();
-   }
-   }
+      public void run()
+      {
+         try
+         {
+            latcher.await();
+            tRrepository = helper.createRepository(container, false, null);
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+         }
+      }
 
-   public ManageableRepository getRepository()
-   {
-   return tRrepository;
-   }
+      public ManageableRepository getRepository()
+      {
+         return tRrepository;
+      }
    }
 
    public void testCreateAterRemoveCheckOldContent() throws Exception
@@ -542,5 +544,88 @@ public class TestRepositoryManagement extends JcrImplBaseTest
             helper.removeRepository(container, newRepository.getConfiguration().getName());
          }
       }
+   }
+   
+   public void testRepositoryContainerGCedAfterStop() throws Exception
+   {
+      int numberOfRepositories = 3;
+      int GCTimeoutUntilTenuredCleaned = 2 * 60 * 1000; // test timeout 
+      WeakHashMap<RepositoryContainer, Object> repositoryContainersInMemory =
+         new WeakHashMap<RepositoryContainer, Object>();
+
+      for (int i = 0; i < numberOfRepositories; i++)
+      {
+         ManageableRepository repository = null;
+         try
+         {
+            repository = createRepositoryWithJBCorISPNQueryHandler();
+            RepositoryContainer repositoryContainer =
+               helper.getRepositoryContainer(container, repository.getConfiguration().getName());
+            repositoryContainersInMemory.put(repositoryContainer, null);
+            SessionImpl session =
+               (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+            session.logout();
+         }
+         finally
+         {
+            if (repository != null)
+            {
+               helper.removeRepository(container, repository.getConfiguration().getName());
+            }
+         }
+      }
+      
+      long purgeStartTime = System.currentTimeMillis();
+      while (repositoryContainersInMemory.size() > 0
+         && (System.currentTimeMillis() - purgeStartTime < GCTimeoutUntilTenuredCleaned))
+      {
+         System.gc();
+         try
+         {
+            Thread.sleep(500);
+         }
+         catch (InterruptedException e)
+         {
+         }
+      }
+      if (repositoryContainersInMemory.size() > 0)
+      {
+         fail("Memmory leak spotted. Please check. No RepositoryContainer instances should be in the memory. But "
+            + repositoryContainersInMemory.size() + " found.");
+      }
+   }
+
+   private ManageableRepository createRepositoryWithJBCorISPNQueryHandler() throws Exception
+   {
+      RepositoryEntry repoEntry = helper.createRepositoryEntry(false, null, null, true);
+      // modify configuration
+      WorkspaceEntry workspaceEntry = repoEntry.getWorkspaceEntries().get(0);
+      QueryHandlerEntry queryHandler = workspaceEntry.getQueryHandler();
+      List<SimpleParameterEntry> parameters = queryHandler.getParameters();
+
+      if (!helper.ispnCacheEnabled())
+      {
+         // Use JBossCache components for core project
+         parameters.add(new SimpleParameterEntry("changesfilter-class",
+            "org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"));
+         parameters.add(new SimpleParameterEntry("jbosscache-configuration",
+            "conf/standalone/cluster/test-jbosscache-indexer.xml"));
+         parameters.add(new SimpleParameterEntry("jgroups-configuration", "jar:/conf/standalone/cluster/udp-mux.xml"));
+         parameters.add(new SimpleParameterEntry("jgroups-multiplexer-stack", "false"));
+         parameters.add(new SimpleParameterEntry("jbosscache-shareable", "true"));
+         parameters.add(new SimpleParameterEntry("jbosscache-cluster-name", "JCR-cluster-indexer"));
+      }
+      else
+      {
+         // Use Infinispan components for core.ispn project
+         parameters.add(new SimpleParameterEntry("changesfilter-class",
+            "org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter"));
+         parameters.add(new SimpleParameterEntry("infinispan-configuration",
+            "conf/standalone/cluster/test-infinispan-indexer.xml"));
+         parameters.add(new SimpleParameterEntry("jgroups-configuration", "jar:/conf/standalone/cluster/udp-mux-v3.xml"));
+         parameters.add(new SimpleParameterEntry("infinispan-cluster-name", "JCR-cluster"));
+      }
+
+      return helper.createRepository(container, repoEntry);
    }
 }

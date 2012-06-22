@@ -231,6 +231,12 @@ public class JBossCacheIndexChangesFilter extends IndexerChangesFilter
       {
          log.warn("Not all JBoss Cache MBeans were unregistered.");
       }
+
+      IndexerSingletonStoreCacheLoader issCacheLoader =
+         (IndexerSingletonStoreCacheLoader)((CacheSPI)cache).getCacheLoaderManager().getCacheLoader();
+      IndexerCacheLoader indexerCacheLoader = (IndexerCacheLoader)issCacheLoader.getCacheLoader();
+      indexerCacheLoader.unregister(rootFqn);
+
       
       try
       {

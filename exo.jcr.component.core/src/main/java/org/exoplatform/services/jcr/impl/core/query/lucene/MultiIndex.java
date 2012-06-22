@@ -1408,71 +1408,77 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       synchronized (this)
       {
-         // stop timer
-         if (flushTask != null)
-         {
-            flushTask.cancel();
-         }
-
-         // commit / close indexes
          try
          {
-            releaseMultiReader();
-         }
-         catch (IOException e)
-         {
-            log.error("Exception while closing search index.", e);
-         }
-         if (modeHandler.getMode().equals(IndexerIoMode.READ_WRITE))
-         {
+            // stop timer
+            if (flushTask != null)
+            {
+               flushTask.cancel();
+            }
+
+            // commit / close indexes
             try
             {
-               flush();
+               releaseMultiReader();
             }
             catch (IOException e)
             {
                log.error("Exception while closing search index.", e);
             }
-         }
-         volatileIndex.close();
-         for (int i = 0; i < indexes.size(); i++)
-         {
-            (indexes.get(i)).close();
-         }
-
-         // close indexing queue
-         indexingQueue.close();
-
-         // finally close directory
-         try
-         {
-            indexDir.close();
-         }
-         catch (IOException e)
-         {
-            log.error("Exception while closing directory.", e);
-         }
-         modeHandler.removeIndexerIoModeListener(this);
-         indexUpdateMonitor.removeIndexUpdateMonitorListener(this);
-         this.stopped.set(true);
-         // Remove the hook that will stop the threads if they are still running
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
-         {
-            public Void run()
+            if (modeHandler.getMode().equals(IndexerIoMode.READ_WRITE))
             {
                try
                {
-                  Runtime.getRuntime().removeShutdownHook(hook);
+                  flush();
                }
-               catch (IllegalStateException e)
+               catch (IOException e)
                {
-                  // can't register shutdown hook because
-                  // jvm shutdown sequence has already begun,
-                  // silently ignore...
+                  log.error("Exception while closing search index.", e);
                }
-               return null;
             }
-         });
+            volatileIndex.close();
+            for (int i = 0; i < indexes.size(); i++)
+            {
+               (indexes.get(i)).close();
+            }
+
+            // close indexing queue
+            indexingQueue.close();
+
+            // finally close directory
+            try
+            {
+               indexDir.close();
+            }
+            catch (IOException e)
+            {
+               log.error("Exception while closing directory.", e);
+            }
+            modeHandler.removeIndexerIoModeListener(this);
+            indexUpdateMonitor.removeIndexUpdateMonitorListener(this);
+            this.stopped.set(true);
+         }
+         finally
+         {
+            // Remove the hook that will stop the threads if they are still running
+            SecurityHelper.doPrivilegedAction(new PrivilegedAction<Object>()
+            {
+               public Void run()
+               {
+                  try
+                  {
+                     Runtime.getRuntime().removeShutdownHook(hook);
+                  }
+                  catch (IllegalStateException e)
+                  {
+                     // can't register shutdown hook because
+                     // jvm shutdown sequence has already begun,
+                     // silently ignore...
+                  }
+                  return null;
+               }
+            });
+         }
       }
       // stop index merger after all possible flushes.
       // when calling this method we must not lock this MultiIndex, otherwise

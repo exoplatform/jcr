@@ -718,6 +718,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       }
 
       modeHandler.addIndexerIoModeListener(this);
+
    }
 
    /**
@@ -1292,6 +1293,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          getContext().destroy();
          closed.set(true);
          log.info("Index closed: " + path);
+         modeHandler.removeIndexerIoModeListener(this);
+         if (indexInfos instanceof IndexerIoModeListener)
+         {
+            modeHandler.removeIndexerIoModeListener((IndexerIoModeListener)indexInfos);
+         }
+         if (indexUpdateMonitor instanceof IndexerIoModeListener)
+         {
+            modeHandler.removeIndexerIoModeListener((IndexerIoModeListener)indexUpdateMonitor);
+         }
       }
    }
 

@@ -28,6 +28,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.ActionNonTxAware;
 import org.infinispan.Cache;
+import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachelistener.annotation.CacheEntryModified;
 import org.infinispan.notifications.cachelistener.event.CacheEntryModifiedEvent;
@@ -195,8 +196,11 @@ public class ISPNIndexInfos extends IndexInfos implements IndexerIoModeListener
          // write to FS
          super.write();
 
-         // write to cache
-         write.run();
+         if (cache.getStatus()==ComponentStatus.RUNNING)
+         {
+            // write to cache
+            write.run();
+         }
       }
    }
 

@@ -226,7 +226,21 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
          }
       });
 
-      rpcService.registerTopologyChangeListener(this);
+      this.rpcService.registerTopologyChangeListener(this);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void close()
+   {
+      rpcService.unregisterCommand(changeIndexMode);
+      rpcService.unregisterCommand(checkIndexReady);
+      rpcService.unregisterCommand(getIndexFile);
+      rpcService.unregisterCommand(getIndexList);
+      rpcService.unregisterCommand(requestForResponsibleToSetIndexOnline);
+      
+      rpcService.unregisterTopologyChangeListener(this);
    }
 
    /**
@@ -456,8 +470,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
                         }
                      }
                      // node which was responsible for resuming leave the cluster, so resume component
-                     log
-                        .error("Node responsible for setting index back online seems to leave the cluster. Setting back online.");
+                     log.error("Node responsible for setting index back online seems to leave the cluster. Setting back online.");
                      searchManager.setOnline(true, false, false);
                   }
                   catch (SecurityException e1)

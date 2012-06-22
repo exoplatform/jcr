@@ -359,6 +359,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    {
       super.stop();
       PrivilegedISPNCacheHelper.stop(cache);
+      ISPNCacheFactory.releaseUniqueInstance(cache.getCacheManager());
    }
 
    /**

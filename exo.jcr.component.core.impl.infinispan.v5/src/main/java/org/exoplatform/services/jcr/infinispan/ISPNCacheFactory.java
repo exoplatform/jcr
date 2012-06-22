@@ -46,7 +46,9 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.management.MBeanServer;
@@ -79,7 +81,7 @@ public class ISPNCacheFactory<K, V>
    /**
     * A Map that contains all the registered CacheManager order by cluster name.
     */
-   private static Map<String, EmbeddedCacheManager> CACHE_MANAGERS = new HashMap<String, EmbeddedCacheManager>();
+   private static Map<String, CacheManagerInstance> CACHE_MANAGERS = new HashMap<String, CacheManagerInstance>();
 
    private static final MBeanServerLookup MBEAN_SERVER_LOOKUP = new MBeanServerLookup()
    {
@@ -210,14 +212,18 @@ public class ISPNCacheFactory<K, V>
       String clusterName = gc.transport().clusterName();
       if (CACHE_MANAGERS.containsKey(clusterName))
       {
-         manager = CACHE_MANAGERS.get(clusterName);
+         CacheManagerInstance cacheManagerInstance = CACHE_MANAGERS.get(clusterName);
+         cacheManagerInstance.acquire();
+         manager = cacheManagerInstance.cacheManager;
       }
       else
       {
          // Reset the manager before storing it into the map since the default config is used as
          // template to define a new configuration
          manager = new DefaultCacheManager(gc);
-         CACHE_MANAGERS.put(clusterName, manager);
+         CacheManagerInstance cacheManagerInstance = new CacheManagerInstance(manager);
+         cacheManagerInstance.acquire();
+         CACHE_MANAGERS.put(clusterName, cacheManagerInstance);
          if (LOG.isInfoEnabled())
          {
             LOG.info("A new ISPN Cache Manager instance has been registered for the region " + regionId
@@ -234,7 +240,7 @@ public class ISPNCacheFactory<K, V>
                return tm;
             }
          };
-         confBuilder.transaction().transactionManagerLookup(tml);         
+         confBuilder.transaction().transactionManagerLookup(tml);
       }
       Configuration conf = holder.getDefaultConfigurationBuilder().build();
       // Define the configuration of the cache
@@ -245,5 +251,60 @@ public class ISPNCacheFactory<K, V>
             + container.getContext().getName());
       }
       return manager;
+   }
+
+   public static synchronized void releaseUniqueInstance(EmbeddedCacheManager cacheManager)
+   {
+      Iterator<Entry<String, CacheManagerInstance>> iterator = CACHE_MANAGERS.entrySet().iterator();
+      while (iterator.hasNext())
+      {
+         Entry<String, CacheManagerInstance> next = iterator.next();
+         if (next.getValue().isSame(cacheManager))
+         {
+            CacheManagerInstance cacheManagerInstance = next.getValue();
+            cacheManagerInstance.release();
+            if (!cacheManagerInstance.hasReferences())
+            {
+               cacheManagerInstance.cacheManager.stop();
+               iterator.remove();
+            }
+            return;
+         }
+      }
+   }
+
+   /**
+    * This class is used to store the actual amount of times cache was used.
+    */
+   private static class CacheManagerInstance
+   {
+      private final EmbeddedCacheManager cacheManager;
+
+      private int references;
+
+      public CacheManagerInstance(EmbeddedCacheManager cache)
+      {
+         this.cacheManager = cache;
+      }
+
+      private void acquire()
+      {
+         references++;
+      }
+
+      private void release()
+      {
+         references--;
+      }
+
+      private boolean hasReferences()
+      {
+         return references > 0;
+      }
+
+      private boolean isSame(EmbeddedCacheManager cacheManager)
+      {
+         return this.cacheManager == cacheManager;
+      }
    }
 }

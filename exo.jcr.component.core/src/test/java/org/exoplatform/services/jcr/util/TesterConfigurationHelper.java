@@ -34,6 +34,8 @@ import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.impl.RepositoryContainer;
+import org.exoplatform.services.jcr.impl.RepositoryServiceImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
@@ -141,6 +143,14 @@ public class TesterConfigurationHelper
       service.getConfig().retain();
 
       return service.getRepository(repoEntry.getName());
+   }
+   
+   public RepositoryContainer getRepositoryContainer(ExoContainer container, String repositoryName) throws Exception
+   {
+      RepositoryServiceImpl service =
+         (RepositoryServiceImpl)container.getComponentInstanceOfType(RepositoryService.class);
+
+      return service.getRepositoryContainer(repositoryName);
    }
 
    public ManageableRepository createRepository(ExoContainer container, boolean isMultiDb, boolean cacheEnabled)
@@ -544,7 +554,7 @@ public class TesterConfigurationHelper
       ArrayList<SimpleParameterEntry> params = new ArrayList();
       params.addAll(wsEntry.getContainer().getParameters());
 
-      ContainerEntry containerEntry = new ContainerEntry(wsEntry.getContainer().getType(), (ArrayList)params);
+      ContainerEntry containerEntry = new ContainerEntry(wsEntry.getContainer().getType(), params);
       containerEntry.setParameters(params);
 
       // value storage
