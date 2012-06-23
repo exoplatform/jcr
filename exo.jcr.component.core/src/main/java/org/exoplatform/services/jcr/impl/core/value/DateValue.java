@@ -19,20 +19,12 @@
 package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 
 import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
-import javax.jcr.ValueFormatException;
 
 /**
  * a date value implementation.
@@ -55,117 +47,11 @@ public class DateValue extends BaseValue
       super(TYPE, new TransientValueData(date));
    }
 
+   /**
+    * Constructs a <code>DateValue</code> object representing a date.
+    */
    DateValue(ValueData data) throws IOException
    {
       super(TYPE, data);
-   }
-
-   /**
-    * @see BaseValue#getInternalString()
-    */
-   protected String getInternalString() throws ValueFormatException, RepositoryException
-   {
-      Calendar date = getInternalCalendar();
-
-      if (date != null)
-      {
-         return JCRDateFormat.format(date);
-      }
-
-      throw new ValueFormatException("empty value");
-   }
-
-   /**
-    * @see Value#getLong
-    */
-   public long getLong() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      Calendar date = getInternalCalendar();
-
-      if (date != null)
-      {
-         return date.getTimeInMillis();
-      }
-      else
-      {
-         throw new ValueFormatException("empty value");
-      }
-   }
-
-   /**
-    * @see Value#getBoolean
-    */
-   public boolean getBoolean() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-
-      throw new ValueFormatException("cannot convert date to boolean");
-   }
-
-   /**
-    * @see Value#getDouble
-    */
-   public double getDouble() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      Calendar date = getInternalCalendar();
-
-      if (date != null)
-      {
-         long ms = date.getTimeInMillis();
-         if (ms <= Double.MAX_VALUE)
-         {
-            return ms;
-         }
-         throw new ValueFormatException("conversion from date to double failed: inconvertible types");
-      }
-      else
-      {
-         throw new ValueFormatException("empty value");
-      }
-   }
-
-   // @Override
-   public long getLength()
-   {
-      try
-      {
-         return getInternalString().length();
-      }
-      catch (ValueFormatException e)
-      {
-         return super.getLength();
-      }
-      catch (RepositoryException e)
-      {
-         return super.getLength();
-      }
-   }
-
-   @Override
-   public InputStream getStream() throws ValueFormatException, RepositoryException
-   {
-
-      try
-      {
-         if (data == null)
-         {
-            String inernalString = getInternalString();
-
-            // force replace of data
-            data = new LocalSessionValueData(true);
-
-            // Replace internall stram
-            data.stream = new ByteArrayInputStream(inernalString.getBytes(Constants.DEFAULT_ENCODING));
-         }
-         return data.getAsStream();
-      }
-      catch (UnsupportedEncodingException e)
-      {
-         throw new RepositoryException(Constants.DEFAULT_ENCODING + " not supported on this platform", e);
-      }
-      catch (IOException e)
-      {
-         throw new RepositoryException(e);
-      }
-
    }
 }

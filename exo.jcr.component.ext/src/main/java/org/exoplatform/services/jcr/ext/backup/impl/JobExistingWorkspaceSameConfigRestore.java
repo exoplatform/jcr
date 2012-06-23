@@ -139,11 +139,10 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
                   (WorkspacePersistentDataManager) repository.getWorkspaceContainer(wEntry.getName()).getComponent(
                            WorkspacePersistentDataManager.class);
 
-         FileCleanerHolder fileCleanHolder =
-                  (FileCleanerHolder) repository.getWorkspaceContainer(wEntry.getName())
-               .getComponent(FileCleanerHolder.class);
+         FileCleanerHolder cleanerHolder =
+            (FileCleanerHolder)repository.getWorkspaceContainer(wEntry.getName()).getComponent(FileCleanerHolder.class);
 
-         JCRRestore restorer = new JCRRestore(dataManager, fileCleanHolder.getFileCleaner());
+         JCRRestore restorer = new JCRRestore(dataManager, cleanerHolder.getFileCleaner());
          for (File incrBackupFile : JCRRestore.getIncrementalFiles(storageDir))
          {
             restorer.incrementalRestore(incrBackupFile);

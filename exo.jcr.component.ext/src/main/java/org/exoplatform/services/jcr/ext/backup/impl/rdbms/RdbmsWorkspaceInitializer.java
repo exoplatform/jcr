@@ -36,7 +36,6 @@ import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -69,11 +68,11 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
    public RdbmsWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-      AccessManager accessManager, RepositoryService repositoryService, FileCleanerHolder cleanerHolder)
-      throws RepositoryConfigurationException, PathNotFoundException, RepositoryException
+      AccessManager accessManager, RepositoryService repositoryService) throws RepositoryConfigurationException,
+      PathNotFoundException, RepositoryException
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
-         accessManager, cleanerHolder);
+         accessManager);
 
       this.repositoryService = repositoryService;
    }

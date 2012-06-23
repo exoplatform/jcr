@@ -33,9 +33,12 @@ import java.io.IOException;
 public class SimpleFileValueStorage extends FileValueStorage
 {
 
-   public SimpleFileValueStorage(FileCleaner cleaner)
+   /**
+    * SimpleFileValueStorage constructor.
+    */
+   public SimpleFileValueStorage(FileCleaner fileCleaner)
    {
-      super(cleaner);
+      super(fileCleaner);
    }
 
    /**

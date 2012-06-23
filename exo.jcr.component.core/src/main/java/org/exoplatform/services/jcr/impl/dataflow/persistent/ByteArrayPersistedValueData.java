@@ -18,20 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.ByteArrayValueData;
 
-import java.io.ByteArrayInputStream;
-import java.io.Externalizable;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
-import java.io.OutputStream;
-import java.util.Arrays;
-
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -39,126 +30,22 @@ import javax.jcr.RepositoryException;
  * @author Gennady Azarenkov
  * @version $Id$
  */
-public class ByteArrayPersistedValueData extends AbstractPersistedValueData implements Externalizable
+public class ByteArrayPersistedValueData extends ByteArrayValueData implements PersistedValueData
 {
-
    /**
-    * The serialVersionUID.
-    */
-   private static final long serialVersionUID = -9131328056670315388L;
-   
-   protected byte[] data;
-   
-   /**
-    * Empty constructor to serialization.
+    * Empty constructor for serialization.
     */
    public ByteArrayPersistedValueData()
    {
-      super(0);
+      super(0, null);
    }
 
    /**
     * ByteArrayPersistedValueData constructor.
-    * @param orderNumber
-    *          int
-    * @param data
-    *          byte[]
     */
-   public ByteArrayPersistedValueData(int orderNumber, byte[] data)
+   public ByteArrayPersistedValueData(int orderNumber, byte[] value)
    {
-      super(orderNumber);
-      this.data = data;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public InputStream getAsStream() throws IOException
-   {
-      return new ByteArrayInputStream(data);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public byte[] getAsByteArray()
-   {
-      return data;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public long getLength()
-   {
-      return data.length;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public long read(OutputStream stream, long length, long position) throws IOException
-   {
-      if (position < 0)
-         throw new IOException("Position must be higher or equals 0. But given " + position);
-
-      if (length < 0)
-         throw new IOException("Length must be higher or equals 0. But given " + length);
-
-      // validation
-      if (position >= data.length && position > 0)
-         throw new IOException("Position " + position + " out of value size " + data.length);
-
-      if (position + length >= data.length)
-         length = data.length - position;
-
-      stream.write(data, (int)position, (int)length);
-
-      return length;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public boolean isByteArray()
-   {
-      return true;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public boolean equals(ValueData another)
-   {
-      if (this == another)
-      {
-         return true;
-      }
-
-      if (isByteArray() && another.isByteArray())
-      {
-         // by content
-         try
-         {
-            return Arrays.equals(getAsByteArray(), another.getAsByteArray());
-         }
-         catch (IOException e)
-         {
-            LOG.error("Read error", e);
-            return false;
-         }
-      }
-
-      return false;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public TransientValueData createTransientCopy() throws RepositoryException
-   {
-      return new TransientValueData(orderNumber, data);
+      super(orderNumber, value);
    }
 
    /**
@@ -168,8 +55,11 @@ public class ByteArrayPersistedValueData extends AbstractPersistedValueData impl
    {
       orderNumber = in.readInt();
       
-      data = new byte[in.readInt()];
-      if (data.length > 0) in.readFully(data);
+      value = new byte[in.readInt()];
+      if (value.length > 0)
+      {
+         in.readFully(value);
+      }
    }
 
    /**
@@ -178,9 +68,11 @@ public class ByteArrayPersistedValueData extends AbstractPersistedValueData impl
    public void writeExternal(ObjectOutput out) throws IOException
    {
       out.writeInt(orderNumber);
-      
-      out.writeInt(data.length);
-      out.write(data);
-   }
+      out.writeInt(value.length);
 
+      if (value.length > 0)
+      {
+         out.write(value);
+      }
+   }
 }

@@ -19,22 +19,20 @@ package org.exoplatform.services.jcr.impl.core.value;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+
 public class TestPermissionValue extends TestCase
 {
-   
-   public void testParse() {
 
-      String[] parsedValues = PermissionValue.parse("root read");
-      assertEquals(2, parsedValues.length);
-      assertEquals("root", parsedValues[0]);
-      assertEquals("read", parsedValues[1]);
+   public void testParse() throws Exception
+   {
+      AccessControlEntry accessEntry = AccessControlEntry.parse("root read");
+      assertEquals("root", accessEntry.getIdentity());
+      assertEquals("read", accessEntry.getPermission());
+   }
 
-    }
-
-    public void testAsString() {
-
-      assertEquals("root read", PermissionValue.asString("root", "read"));
-
-    }
-
+   public void testAsString() throws Exception
+   {
+      assertEquals("root read", new PermissionValue("root", "read").getString());
+   }
 }

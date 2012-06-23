@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
@@ -219,12 +220,12 @@ public class TestJCRVSReadWrite extends JcrImplBaseTest
             List<ValueData> data = new ArrayList<ValueData>();
             if (i % 10 == 0)
             {
-               data.add(new TransientValueData(fBLOB1));
-               data.add(new TransientValueData(fBLOB2));
+               data.add(new TransientValueData(fBLOB1, SpoolConfig.getDefaultSpoolConfig()));
+               data.add(new TransientValueData(fBLOB2, SpoolConfig.getDefaultSpoolConfig()));
             }
             else
             {
-               data.add(new TransientValueData(fBLOB1));
+               data.add(new TransientValueData(fBLOB1, SpoolConfig.getDefaultSpoolConfig()));
             }
 
             TransientPropertyData resData =

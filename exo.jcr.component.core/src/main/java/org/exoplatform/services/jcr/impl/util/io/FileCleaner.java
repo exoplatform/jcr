@@ -91,7 +91,7 @@ public class FileCleaner extends WorkerThread
    {
       this(null, timeout, start);
    }
-   
+
    public FileCleaner(String id, long timeout, boolean start)
    {
       super(timeout);

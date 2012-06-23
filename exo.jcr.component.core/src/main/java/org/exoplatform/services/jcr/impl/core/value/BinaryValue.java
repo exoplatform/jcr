@@ -19,109 +19,54 @@
 package org.exoplatform.services.jcr.impl.core.value;
 
 import org.exoplatform.services.jcr.core.value.EditableBinaryValue;
+import org.exoplatform.services.jcr.core.value.ReadableBinaryValue;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.EditableValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-import javax.jcr.ValueFormatException;
 
 /**
  * a binary value implementation.
  * 
  * @author Gennady Azarenkov
  */
-public class BinaryValue extends BaseValue implements EditableBinaryValue
+public class BinaryValue extends BaseValue implements EditableBinaryValue, ReadableBinaryValue
 {
 
    public static final int TYPE = PropertyType.BINARY;
 
-   protected EditableValueData changedData = null;
+   protected boolean changed;
 
-   protected boolean changed = false;
-
-   protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.BinaryValue");
+   protected final SpoolConfig spoolConfig;
 
    /**
-    * @param text
-    * @throws IOException
-    */
-   public BinaryValue(String text) throws IOException
-   {
-      super(TYPE, new TransientValueData(text));
-   }
-
-   /**
-    * BinaryValue constructor.
-    * 
-    * @param stream
-    *          InputStream
-    * @param fileCleaner
-    *          FileCleaner
-    * @param tempDirectory
-    *          File
-    * @param maxFufferSize
-    *          int
-    * @throws IOException
-    *           if error
-    */
-   public BinaryValue(InputStream stream, FileCleaner fileCleaner, File tempDirectory, int maxFufferSize)
+   * BinaryValue constructor.
+   * 
+   * @param stream
+   *          InputStream
+   * @throws IOException
+   *           if error
+   */
+   public BinaryValue(InputStream stream, SpoolConfig spoolConfig)
       throws IOException
    {
-      this(new TransientValueData(0, null, stream, null, fileCleaner, maxFufferSize, tempDirectory, true, false));
-   }
-
-   BinaryValue(TransientValueData data) throws IOException
-   {
-      super(TYPE, data);
+      this(new TransientValueData(0, stream, null, spoolConfig), spoolConfig);
    }
 
    /** 
     * For ValueFactory.loadValue(). 
-    * 
-    * */
-   BinaryValue(ValueData data)
+    */
+   BinaryValue(ValueData data, SpoolConfig spoolConfig)
    {
       super(TYPE, data);
-   }
-
-   @Override
-   public ValueData getInternalData()
-   {
-      if (changedData != null)
-      {
-         return changedData;
-      }
-
-      return super.getInternalData();
-   }
-
-   @Override
-   protected LocalSessionValueData getLocalData(boolean asStream) throws IOException
-   {
-
-      if (this.changed)
-      {
-         // reset to be recreated with new stream/bytes
-         this.data = null;
-         this.changed = false;
-      }
-
-      return super.getLocalData(asStream);
-   }
-
-   public String getReference() throws ValueFormatException, IllegalStateException, RepositoryException
-   {
-      return getInternalString();
+      this.spoolConfig = spoolConfig;
    }
 
    /**
@@ -137,40 +82,31 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue
     * */
    public void update(InputStream stream, long length, long position) throws IOException, RepositoryException
    {
-      if (changedData == null)
+      if (!changed)
       {
-         changedData = createEditableCopy(this.getInternalData());
+         internalData = createEditableCopy(this.getInternalData());
       }
 
-      this.changedData.update(stream, length, position);
-      this.changed = true;
+      ((EditableValueData)internalData).update(stream, length, position);
+      invalidateStream();
    }
 
    /**
     * Truncates binary value to <code> size </code>
-    * 
-    * @param size
-    * @throws IOException
     */
    public void setLength(long size) throws IOException, RepositoryException
    {
-      if (changedData == null)
+      if (!changed)
       {
-         changedData = createEditableCopy(this.getInternalData());
+         internalData = createEditableCopy(this.getInternalData());
       }
 
-      this.changedData.setLength(size);
-      this.changed = true;
+      ((EditableValueData)internalData).setLength(size);
+      invalidateStream();
    }
 
    /**
     * Create editable ValueData copy.
-    * 
-    * @return EditableValueData
-    * @throws RepositoryException
-    *           if error occurs
-    * @throws IOException 
-    * @throws IllegalStateException 
     */
    private EditableValueData createEditableCopy(ValueData oldValue) throws RepositoryException, IllegalStateException,
       IOException
@@ -184,7 +120,7 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue
 
          try
          {
-            return new EditableValueData(newBytes, oldValue.getOrderNumber(), null, -1, null);
+            return new EditableValueData(newBytes, oldValue.getOrderNumber());
          }
          catch (IOException e)
          {
@@ -196,9 +132,7 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue
          // edited BLOB file, make a copy
          try
          {
-            EditableValueData copy =
-               new EditableValueData(oldValue.getAsStream(), oldValue.getOrderNumber(), null, -1, null);
-            return copy;
+            return new EditableValueData(oldValue.getAsStream(), oldValue.getOrderNumber(), spoolConfig);
          }
          catch (FileNotFoundException e)
          {
@@ -210,5 +144,4 @@ public class BinaryValue extends BaseValue implements EditableBinaryValue
          }
       }
    }
-
 }

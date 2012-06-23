@@ -239,7 +239,7 @@ public abstract class QueryResultImpl implements QueryResult
          }
       }
       return new RowIteratorImpl(getScoreNodes(), selectProps, selectorNames, itemMgr, session.getLocationFactory(),
-         excerptProvider, spellSuggestion);
+         excerptProvider, spellSuggestion, index.getContext().getCleanerHolder());
    }
 
    /**

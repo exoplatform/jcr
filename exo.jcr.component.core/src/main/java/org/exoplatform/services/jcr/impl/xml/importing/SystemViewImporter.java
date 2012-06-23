@@ -40,7 +40,7 @@ import org.exoplatform.services.jcr.impl.core.value.BaseValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.xml.DecodedValue;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportNodeData;
 import org.exoplatform.services.jcr.impl.xml.importing.dataflow.ImportPropertyData;
@@ -390,16 +390,13 @@ public class SystemViewImporter extends BaseXmlImporter
             {
                if (propertyData.getQName().equals(Constants.JCR_FROZENPRIMARYTYPE))
                {
-                  fptName =
-                     InternalQName.parse(new String(propertyData.getValues().get(0).getAsByteArray(),
-                        Constants.DEFAULT_ENCODING));
+                  fptName = InternalQName.parse(ValueDataUtil.getString(propertyData.getValues().get(0)));
                }
                else if (propertyData.getQName().equals(Constants.JCR_FROZENMIXINTYPES))
                {
                   for (ValueData valueData : propertyData.getValues())
                   {
-                     fmtNames
-                        .add(InternalQName.parse(new String(valueData.getAsByteArray(), Constants.DEFAULT_ENCODING)));
+                     fmtNames.add(InternalQName.parse(ValueDataUtil.getString(valueData)));
                   }
                }
             }
@@ -409,10 +406,6 @@ public class SystemViewImporter extends BaseXmlImporter
             throw new RepositoryException(e.getMessage(), e);
          }
          catch (IllegalNameException e)
-         {
-            throw new RepositoryException(e.getMessage(), e);
-         }
-         catch (IOException e)
          {
             throw new RepositoryException(e.getMessage(), e);
          }
@@ -629,36 +622,29 @@ public class SystemViewImporter extends BaseXmlImporter
     */
    private void endVersionable(ImportNodeData currentNodeInfo, List<ValueData> values) throws RepositoryException
    {
-      try
+
+      if (propertyInfo.getName().equals(Constants.JCR_VERSIONHISTORY))
       {
-         if (propertyInfo.getName().equals(Constants.JCR_VERSIONHISTORY))
+         String versionHistoryIdentifier = null;
+         versionHistoryIdentifier = ValueDataUtil.getString(values.get(0));
+
+         currentNodeInfo.setVersionHistoryIdentifier(versionHistoryIdentifier);
+
+         // check if node contains VH
+         if (dataConsumer.getItemData(versionHistoryIdentifier) != null)
          {
-            String versionHistoryIdentifier = null;
-            versionHistoryIdentifier = ValueDataConvertor.readString(values.get(0));
-
-            currentNodeInfo.setVersionHistoryIdentifier(versionHistoryIdentifier);
-
-            // check if node contains VH
-            if (dataConsumer.getItemData(versionHistoryIdentifier) != null)
-            {
-               ItemState vhLastState = getLastItemState(versionHistoryIdentifier);
-               currentNodeInfo.setContainsVersionhistory(vhLastState == null || !vhLastState.isDeleted());
-            }
-            else
-            {
-               currentNodeInfo.setContainsVersionhistory(false);
-            }
+            ItemState vhLastState = getLastItemState(versionHistoryIdentifier);
+            currentNodeInfo.setContainsVersionhistory(vhLastState == null || !vhLastState.isDeleted());
          }
-         else if (propertyInfo.getName().equals(Constants.JCR_BASEVERSION))
+         else
          {
-            currentNodeInfo.setBaseVersionIdentifier(ValueDataConvertor.readString(values.get(0)));
+            currentNodeInfo.setContainsVersionhistory(false);
          }
       }
-      catch (IOException e)
+      else if (propertyInfo.getName().equals(Constants.JCR_BASEVERSION))
       {
-         throw new RepositoryException(e);
+         currentNodeInfo.setBaseVersionIdentifier(ValueDataUtil.getString(values.get(0)));
       }
-
    }
 
    /**
@@ -680,10 +666,8 @@ public class SystemViewImporter extends BaseXmlImporter
             {
                InputStream vStream = propertyInfo.getValues().get(k).getInputStream();
 
-               // TransientValueData binaryValue = new TransientValueData(vStream);
-               TransientValueData binaryValue =
-                  new TransientValueData(k, null, vStream, null, valueFactory.getFileCleaner(),
-                     valueFactory.getMaxBufferSize(), null, true);
+               TransientValueData binaryValue = new TransientValueData(k, vStream, null, valueFactory.getSpoolConfig());
+
                // Call to spool file into tmp
                binaryValue.getAsStream().close();
                vStream.close();

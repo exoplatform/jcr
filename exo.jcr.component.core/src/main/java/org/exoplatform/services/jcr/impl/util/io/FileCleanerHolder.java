@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.util.io;
 import org.exoplatform.container.ExoContainerContext;
 import org.picocontainer.Startable;
 
+
 /**
  * Created by The eXo Platform SAS. <br/> per workspace container file cleaner holder object
  * 
@@ -30,7 +31,11 @@ import org.picocontainer.Startable;
 public class FileCleanerHolder implements Startable
 {
 
+   //   private static final FileCleaner defaultFileCleaner = new Fi;
+
    private final FileCleaner fileCleaner;
+
+   private static FileCleaner defaultFileCleaner;
 
    public FileCleanerHolder()
    {
@@ -40,11 +45,17 @@ public class FileCleanerHolder implements Startable
    public FileCleanerHolder(ExoContainerContext ctx)
    {
       this.fileCleaner = new FileCleaner(ctx);
+      this.defaultFileCleaner = new FileCleaner(null);
    }
 
    public FileCleaner getFileCleaner()
    {
       return fileCleaner;
+   }
+
+   public static FileCleaner getDefaultFileCleaner()
+   {
+      return defaultFileCleaner;
    }
 
    /**
@@ -63,3 +74,4 @@ public class FileCleanerHolder implements Startable
    }
 
 }
+

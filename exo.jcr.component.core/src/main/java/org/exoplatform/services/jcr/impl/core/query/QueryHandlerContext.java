@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableResolver;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.rpc.RPCService;
 
 /**
@@ -90,6 +91,11 @@ public class QueryHandlerContext
     */
    private final RPCService rpcService;
 
+   /**
+    * {@link FileCleanerHolder}
+    */
+   private final FileCleanerHolder cleanerHolder;
+
    private final String repositoryName;
 
    private final String workspaceName;
@@ -125,7 +131,7 @@ public class QueryHandlerContext
       NodeTypeDataManager nodeTypeDataManager, NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
       String indexDirectory, DocumentReaderService extractor, boolean createInitialIndex,
       boolean useIndexRecoveryFilters, LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery,
-      RPCService rpcService, String repositoryName, String workspaceName)
+      RPCService rpcService, String repositoryName, String workspaceName, FileCleanerHolder cleanerHolder)
    {
       this.indexRecovery = indexRecovery;
       this.container = container;
@@ -144,6 +150,7 @@ public class QueryHandlerContext
       this.workspaceName = workspaceName;
       this.recoveryFilterUsed = useIndexRecoveryFilters;
       this.nodeTypeDataManager.addListener(propRegistry);
+      this.cleanerHolder = cleanerHolder;
    }
 
    /**
@@ -299,4 +306,11 @@ public class QueryHandlerContext
       return repositoryName + "/" + workspaceName + ((includeSystemMark && parentHandler == null) ? "[system]" : "");
    }
 
+   /**
+    * Returns {@link #cleanerHolder}.
+    */
+   public FileCleanerHolder getCleanerHolder()
+   {
+      return cleanerHolder;
+   }
 }

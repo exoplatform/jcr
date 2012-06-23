@@ -1621,7 +1621,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    protected Document createDocument(NodeDataIndexing node, NamespaceMappings nsMappings,
       IndexFormatVersion indexFormatVersion) throws RepositoryException
    {
-      NodeIndexer indexer = new NodeIndexer(node, getContext().getItemStateManager(), nsMappings, extractor);
+      NodeIndexer indexer =
+         new NodeIndexer(node, getContext().getItemStateManager(), nsMappings, extractor, getContext()
+            .getCleanerHolder());
       indexer.setSupportHighlighting(supportHighlighting);
       indexer.setIndexingConfiguration(indexingConfig);
       indexer.setIndexFormatVersion(indexFormatVersion);

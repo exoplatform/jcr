@@ -33,10 +33,8 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -93,17 +91,9 @@ public abstract class AbstractItemDefinitionAccessProvider
          {
             try
             {
-               return ValueDataConvertor.readBoolean(values.get(0));
-            }
-            catch (UnsupportedEncodingException e)
-            {
-               throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
+               return ValueDataUtil.getBoolean(values.get(0));
             }
             catch (IllegalStateException e)
-            {
-               throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
-            }
-            catch (IOException e)
             {
                throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
             }
@@ -122,21 +112,13 @@ public abstract class AbstractItemDefinitionAccessProvider
          {
             try
             {
-               return ValueDataConvertor.readLong(values.get(0));
+               return ValueDataUtil.getLong(values.get(0));
             }
             catch (NumberFormatException e)
             {
                throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
             }
-            catch (UnsupportedEncodingException e)
-            {
-               throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
-            }
             catch (IllegalStateException e)
-            {
-               throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
-            }
-            catch (IOException e)
             {
                throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
             }
@@ -215,17 +197,9 @@ public abstract class AbstractItemDefinitionAccessProvider
          {
             try
             {
-               return ValueDataConvertor.readQName(values.get(0));
-            }
-            catch (UnsupportedEncodingException e)
-            {
-               throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
+               return InternalQName.parse(ValueDataUtil.getString(values.get(0)));
             }
             catch (IllegalNameException e)
-            {
-               throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
-            }
-            catch (IOException e)
             {
                throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
             }
@@ -246,17 +220,9 @@ public abstract class AbstractItemDefinitionAccessProvider
          {
             try
             {
-               result[i++] = ValueDataConvertor.readQName(valueData);
-            }
-            catch (UnsupportedEncodingException e)
-            {
-               throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
+               result[i++] = InternalQName.parse(ValueDataUtil.getString(valueData));
             }
             catch (IllegalNameException e)
-            {
-               throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
-            }
-            catch (IOException e)
             {
                throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
             }
@@ -274,18 +240,7 @@ public abstract class AbstractItemDefinitionAccessProvider
       {
          if (values.size() == 1)
          {
-            try
-            {
-               return ValueDataConvertor.readString(values.get(0));
-            }
-            catch (UnsupportedEncodingException e)
-            {
-               throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
-            }
-            catch (IOException e)
-            {
-               throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
-            }
+            return ValueDataUtil.getString(values.get(0));
          }
       }
       return null;
@@ -303,19 +258,9 @@ public abstract class AbstractItemDefinitionAccessProvider
             int i = 0;
             for (ValueData valueData : values)
             {
-               try
-               {
-                  result[i++] = ValueDataConvertor.readString(valueData);
-               }
-               catch (UnsupportedEncodingException e)
-               {
-                  throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
-               }
-               catch (IOException e)
-               {
-                  throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
-               }
+               result[i++] = ValueDataUtil.getString(valueData);
             }
+
             return result;
          }
       }

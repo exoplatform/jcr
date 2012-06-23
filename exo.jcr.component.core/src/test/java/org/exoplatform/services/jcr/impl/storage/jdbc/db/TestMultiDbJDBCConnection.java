@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
@@ -64,7 +65,8 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
          st.executeUpdate("insert into JCR_MREF values" + "('E','B',2)");
          JDBCDataContainerConfig jdbcDataContainerConfig = new JDBCDataContainerConfig();
          jdbcDataContainerConfig.containerName = "ws3";
-         jdbcDataContainerConfig.maxBufferSize = 10;
+         jdbcDataContainerConfig.spoolConfig = SpoolConfig.getDefaultSpoolConfig();
+         jdbcDataContainerConfig.spoolConfig.maxBufferSize = 10;
          jdbcDataContainerConfig.dbStructureType = DatabaseStructureType.MULTI;
          jdbcConn = new MultiDbJDBCConnection(getJNDIConnection(), false, jdbcDataContainerConfig);
          tableType = "M";

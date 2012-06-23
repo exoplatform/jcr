@@ -20,6 +20,9 @@ package org.exoplatform.services.jcr.api.nodetypes;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
+
+import java.io.ByteArrayInputStream;
 
 import javax.jcr.Node;
 import javax.jcr.nodetype.NodeType;
@@ -82,8 +85,11 @@ public class TestDiscoveringNodeTypeDefinition extends JcrAPIBaseTest
       assertFalse(type.canAddChildNode("jcr:anyNode"));
       assertFalse(type.canAddChildNode("jcr:anyNode", "nt:base"));
       // assertTrue(type.canSetProperty("jcr:data", new BinaryValue("test")));
-      assertFalse(type.canSetProperty("jcr:data", new BinaryValue[]{new BinaryValue("test")}));
-      assertFalse(type.canSetProperty("jcr:notFound", new BinaryValue("test")));
+      assertFalse(type.canSetProperty("jcr:data",
+         new BinaryValue[]{new BinaryValue(new ByteArrayInputStream("test".getBytes()), SpoolConfig
+            .getDefaultSpoolConfig())}));
+      assertFalse(type.canSetProperty("jcr:notFound", new BinaryValue(new ByteArrayInputStream("test".getBytes()),
+         SpoolConfig.getDefaultSpoolConfig())));
       // [PN] 06.03.06 Row below commented
       // assertFalse(type.canSetProperty("jcr:data", new StringValue("test")));
       assertFalse(type.canRemoveItem("jcr:data"));

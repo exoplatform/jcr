@@ -42,9 +42,12 @@ public class CASableSimpleFileValueStorage extends FileValueStorage
 
    private String digestAlgo;
 
-   public CASableSimpleFileValueStorage(FileCleaner cleaner)
+   /**
+    * CASableSimpleFileValueStorage constructor.
+    */
+   public CASableSimpleFileValueStorage(FileCleaner fileCleaner)
    {
-      super(cleaner);
+      super(fileCleaner);
    }
 
    @Override

@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
-import org.exoplatform.services.jcr.core.value.ExtendedValue;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -41,18 +40,17 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
-import org.exoplatform.services.jcr.impl.core.value.PathValue;
 import org.exoplatform.services.jcr.impl.core.value.PermissionValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueConstraintsMatcher;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.dataflow.EditableValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -391,15 +389,8 @@ public abstract class ItemImpl implements Item
                dataManager.getItemData(node, new QPathEntry(Constants.JCR_VERSIONHISTORY, 1), ItemType.PROPERTY);
             if (vhpd != null && !vhpd.isNode())
             {
-               try
-               {
-                  String vhID = new String(((PropertyData)vhpd).getValues().get(0).getAsByteArray());
-                  dataManager.removeVersionHistory(vhID, null, data.getQPath());
-               }
-               catch (IOException e)
-               {
-                  throw new RepositoryException(e);
-               }
+               String vhID = ValueDataUtil.getString(((PropertyData)vhpd).getValues().get(0));
+               dataManager.removeVersionHistory(vhID, null, data.getQPath());
             }
             else
             {
@@ -925,10 +916,17 @@ public abstract class ItemImpl implements Item
 
    private ValueData valueData(Value value, int type) throws RepositoryException, ValueFormatException
    {
-
       if (value == null)
       {
          return null;
+      }
+      else if (value.getType() == type)
+      {
+         ValueData internalData = ((BaseValue)value).getInternalData();
+         if (!(internalData instanceof EditableValueData))
+         {
+            return internalData;
+         }
       }
 
       switch (type)
@@ -936,20 +934,16 @@ public abstract class ItemImpl implements Item
          case PropertyType.STRING :
             return new TransientValueData(value.getString());
          case PropertyType.BINARY :
-            ValueData vd;
-            if (value instanceof BaseValue || value instanceof ExtendedValue)
+            if (value instanceof BaseValue)
             {
-               // create Transient copy
-               vd = ((BaseValue)getSession().getValueFactory().createValue(value.getStream())).getInternalData();
+               return ((BaseValue)getSession().getValueFactory().createValue(value.getStream())).getInternalData();
             }
             else
             {
                // third part value impl, convert via String
-               vd =
-                  ((BaseValue)getSession().getValueFactory().createValue(value.getString(), PropertyType.BINARY))
-                     .getInternalData();
+               return ((BaseValue)getSession().getValueFactory().createValue(value.getString(), PropertyType.BINARY))
+                  .getInternalData();
             }
-            return vd;
          case PropertyType.BOOLEAN :
             return new TransientValueData(value.getBoolean());
          case PropertyType.LONG :
@@ -959,17 +953,8 @@ public abstract class ItemImpl implements Item
          case PropertyType.DATE :
             return new TransientValueData(value.getDate());
          case PropertyType.PATH :
-            ValueData pvd;
-            if (value instanceof PathValue)
-            {
-               pvd = ((PathValue)value).getInternalData();
-            }
-            else
-            {
-               QPath pathValue = locationFactory.parseJCRPath(value.getString()).getInternalPath();
-               pvd = new TransientValueData(pathValue);
-            }
-            return pvd;
+            QPath pathValue = locationFactory.parseJCRPath(value.getString()).getInternalPath();
+            return new TransientValueData(pathValue);
          case PropertyType.NAME :
             InternalQName nameValue = locationFactory.parseJCRName(value.getString()).getInternalName();
             return new TransientValueData(nameValue);
@@ -997,21 +982,15 @@ public abstract class ItemImpl implements Item
          if (!constraints.match(value, type))
          {
             String strVal = null;
-            try
+            if (type != PropertyType.BINARY)
             {
-               if (type != PropertyType.BINARY)
-               {
-                  strVal = ValueDataConvertor.readString(value);
-               }
-               else
-               {
-                  strVal = "PropertyType.BINARY";
-               }
+               strVal = ValueDataUtil.getString(value);
             }
-            catch (IOException e)
+            else
             {
-               LOG.error("Error of value read: " + e.getMessage(), e);
+               strVal = "PropertyType.BINARY";
             }
+
             throw new ConstraintViolationException("Can not set value '" + strVal + "' to " + getPath()
                + " due to value constraints ");
          }

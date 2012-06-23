@@ -21,20 +21,20 @@ package org.exoplatform.services.jcr.usecases;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataReader;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataWriter;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+import javax.jcr.PropertyType;
 
 /**
  * Created by The eXo Platform SAS. <br/>
@@ -51,7 +51,7 @@ public class RemoveVDTest extends BaseUsecasesTest
 
       File f = this.createBLOBTempFile("tempFile", 300);
 
-      FilePersistedValueData vd = new FilePersistedValueData(0, f);
+      FilePersistedValueData vd = new FilePersistedValueData(0, f, SpoolConfig.getDefaultSpoolConfig());
       // vd.setMaxBufferSize(200*1024);
       //      assertNull(vd.getFile()); // not spooling by default until getAsStream() will be call
 
@@ -71,10 +71,10 @@ public class RemoveVDTest extends BaseUsecasesTest
 
       FilePersistedValueData vd1 = null;
 
-      PersistedValueDataReader vdr = new PersistedValueDataReader(fileCleaner, maxBufferSize, holder);
+      PersistedValueDataReader vdr = new PersistedValueDataReader(holder, SpoolConfig.getDefaultSpoolConfig());
       try
       {
-         vd1 = (FilePersistedValueData)vdr.read(or);
+         vd1 = (FilePersistedValueData)vdr.read(or, PropertyType.BINARY);
       }
       catch (UnknownClassIdException e)
       {
@@ -91,7 +91,7 @@ public class RemoveVDTest extends BaseUsecasesTest
 
       try
       {
-         vd2 = (FilePersistedValueData)vdr.read(or);
+         vd2 = (FilePersistedValueData)vdr.read(or, PropertyType.BINARY);
       }
       catch (UnknownClassIdException e)
       {

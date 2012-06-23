@@ -22,7 +22,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 
 import java.io.IOException;
 import java.util.List;
@@ -73,7 +73,7 @@ public class PersistedPropertyDataWriter
          PersistedValueDataWriter wr = new PersistedValueDataWriter();
          for (int i = 0; i < listSize; i++)
          {
-            wr.write(out, (AbstractPersistedValueData)values.get(i));
+            wr.write(out, (PersistedValueData)values.get(i));
          }
       }
       else

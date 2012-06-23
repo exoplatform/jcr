@@ -25,7 +25,7 @@ import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdExcepti
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -42,14 +42,9 @@ public class ItemStateReader
 {
 
    /**
-    * File cleaner.
+    * SpoolConfig.
     */
-   private FileCleaner fileCleaner;
-
-   /**
-    * Maximum buffer size.
-    */
-   private int maxBufferSize;
+   private SpoolConfig spoolConfig;
 
    /**
     * Spool file holder.
@@ -58,15 +53,10 @@ public class ItemStateReader
 
    /**
     * ItemStateReader constructor.
-    * 
-    * @param fileCleaner
-    * @param maxBufferSize
-    * @param holder
     */
-   public ItemStateReader(FileCleaner fileCleaner, int maxBufferSize, ReaderSpoolFileHolder holder)
+   public ItemStateReader(ReaderSpoolFileHolder holder, SpoolConfig spoolConfig)
    {
-      this.fileCleaner = fileCleaner;
-      this.maxBufferSize = maxBufferSize;
+      this.spoolConfig = spoolConfig;
       this.holder = holder;
    }
 
@@ -115,7 +105,7 @@ public class ItemStateReader
          }
          else
          {
-            PersistedPropertyDataReader rdr = new PersistedPropertyDataReader(fileCleaner, maxBufferSize, holder);
+            PersistedPropertyDataReader rdr = new PersistedPropertyDataReader(holder, spoolConfig);
             is = new ItemState(rdr.read(in), state, eventFire, null, false, isPersisted, oldPath);
          }
          return is;

@@ -191,7 +191,6 @@ public class JCRDateFormat
     */
    public byte[] serialize(Calendar date)
    {
-
       final String calendarString =
          CALENDAR_FIELDS_SEPARATOR + date.isLenient() + CALENDAR_FIELDS_DELIMITER + date.getFirstDayOfWeek()
             + CALENDAR_FIELDS_DELIMITER + date.getMinimalDaysInFirstWeek() + CALENDAR_FIELDS_DELIMITER

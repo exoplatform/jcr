@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.ValueOperation;
@@ -186,9 +188,10 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
    /**
     * {@inheritDoc}
     */
-   public ValueData read(String propertyId, int orderNumber, int maxBufferSize) throws IOException
+   public ValueData read(String propertyId, int orderNumber, int type, SpoolConfig spoolConfig) throws IOException
    {
-      return readValue(getFile(propertyId, orderNumber), orderNumber, maxBufferSize);
+      File file = getFile(propertyId, orderNumber);
+      return ValueDataUtil.readValueData(type, orderNumber, file, spoolConfig);
    }
 
    /**

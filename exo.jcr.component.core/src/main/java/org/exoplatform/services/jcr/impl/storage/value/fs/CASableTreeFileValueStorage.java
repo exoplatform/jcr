@@ -40,9 +40,12 @@ public class CASableTreeFileValueStorage extends TreeFileValueStorage
 
    private String digestAlgo;
 
-   public CASableTreeFileValueStorage(FileCleaner cleaner)
+   /**
+    * CASableTreeFileValueStorage constructor.
+    */
+   public CASableTreeFileValueStorage(FileCleaner fileCleaner)
    {
-      super(cleaner);
+      super(fileCleaner);
    }
 
    /**

@@ -30,7 +30,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: EditableBinaryValue.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public interface EditableBinaryValue extends ReadableBinaryValue
+public interface EditableBinaryValue
 {
    /**
     * Update with <code>length</code> bytes from the specified InputStream <code>stream</code> to

@@ -23,16 +23,15 @@ import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.jcr.impl.core.JCRPathMatcher;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.Calendar;
 
 import javax.jcr.ItemNotFoundException;
@@ -88,28 +87,16 @@ public class ValueConstraintsMatcher extends ValueConstraintsValidator
       ValueData valueData = value;
       if (type == PropertyType.STRING)
       {
-         try
-         {
-            String strVal = new String(valueData.getAsByteArray(), Constants.DEFAULT_ENCODING);
+         String strVal = ValueDataUtil.getString(valueData);
 
-            for (int i = 0; invalid && i < constraints.length; i++)
+         for (int i = 0; invalid && i < constraints.length; i++)
+         {
+            String constrString = constraints[i];
+            if (strVal.matches(constrString))
             {
-               String constrString = constraints[i];
-               if (strVal.matches(constrString))
-               {
-                  invalid = false;
-               }
+               invalid = false;
             }
          }
-         catch (UnsupportedEncodingException e)
-         {
-            throw new RuntimeException("FATAL ERROR Charset " + Constants.DEFAULT_ENCODING + " is not supported!", e);
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException("FATAL ERROR Value data stream reading error " + e.getMessage(), e);
-         }
-
       }
       else if (type == PropertyType.NAME)
       {
@@ -376,20 +363,13 @@ public class ValueConstraintsMatcher extends ValueConstraintsValidator
       }
       else if (type == PropertyType.BOOLEAN)
       {
-         try
+         boolean bvalue = ValueDataUtil.getBoolean(valueData);
+         for (int i = 0; invalid && i < constraints.length; i++)
          {
-            boolean bvalue = Boolean.parseBoolean(new String(valueData.getAsByteArray()));
-            for (int i = 0; invalid && i < constraints.length; i++)
+            if (Boolean.parseBoolean(constraints[i]) == bvalue)
             {
-               if (Boolean.parseBoolean(constraints[i]) == bvalue)
-               {
-                  invalid = false;
-               }
+               invalid = false;
             }
-         }
-         catch (IOException e)
-         {
-            throw new RepositoryException("FATAL ERROR Value data stream reading error " + e.getMessage(), e);
          }
       }
 

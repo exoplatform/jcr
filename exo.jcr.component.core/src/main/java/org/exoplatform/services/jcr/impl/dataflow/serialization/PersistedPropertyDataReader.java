@@ -25,7 +25,7 @@ import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdExcepti
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,22 +40,16 @@ import java.util.List;
 public class PersistedPropertyDataReader
 {
 
-   private FileCleaner fileCleaner;
-
-   private int maxBufferSize;
+   private SpoolConfig spoolConfig;
 
    private final ReaderSpoolFileHolder holder;
 
    /**
     * Constructor.
-    * 
-    * @param fileCleaner - FileCleaner.
-    * @param maxBufferSize - MaxBufferSize.
     */
-   public PersistedPropertyDataReader(FileCleaner fileCleaner, int maxBufferSize, ReaderSpoolFileHolder holder)
+   public PersistedPropertyDataReader(ReaderSpoolFileHolder holder, SpoolConfig spoolConfig)
    {
-      this.fileCleaner = fileCleaner;
-      this.maxBufferSize = maxBufferSize;
+      this.spoolConfig = spoolConfig;
       this.holder = holder;
    }
 
@@ -120,10 +114,10 @@ public class PersistedPropertyDataReader
 
          int listSize = in.readInt();
          List<ValueData> values = new ArrayList<ValueData>();
-         PersistedValueDataReader rdr = new PersistedValueDataReader(fileCleaner, maxBufferSize, holder);
+         PersistedValueDataReader rdr = new PersistedValueDataReader(holder, spoolConfig);
          for (int i = 0; i < listSize; i++)
          {
-            values.add(rdr.read(in));
+            values.add(rdr.read(in, type));
          }
 
          prop =

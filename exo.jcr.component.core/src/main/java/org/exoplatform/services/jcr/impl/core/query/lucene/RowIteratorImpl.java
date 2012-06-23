@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,12 +153,15 @@ class RowIteratorImpl implements RowIterator
     * @param spellSuggestion
     *            the spell suggestion associated with the query result or
     *            <code>null</code> if none is available.
+    * @param cleanerHolder 
+    *             is used for {@link ValueFactoryImpl} creation
     */
 
    RowIteratorImpl(ScoreNodeIterator scoreNodes, InternalQName[] properties, InternalQName[] selectorNames,
       SessionDataManager itemMgr,
 
-      LocationFactory resolver, ExcerptProvider exProvider, SpellSuggestion spellSuggestion)
+      LocationFactory resolver, ExcerptProvider exProvider, SpellSuggestion spellSuggestion,
+      FileCleanerHolder cleanerHolder)
    {
       this.scoreNodes = scoreNodes;
       this.properties = properties;
@@ -166,7 +170,7 @@ class RowIteratorImpl implements RowIterator
       this.resolver = resolver;
       this.excerptProvider = exProvider;
       this.spellSuggestion = spellSuggestion;
-      this.valueFactory = new ValueFactoryImpl(resolver);
+      this.valueFactory = new ValueFactoryImpl(resolver, cleanerHolder);
    }
 
    /**

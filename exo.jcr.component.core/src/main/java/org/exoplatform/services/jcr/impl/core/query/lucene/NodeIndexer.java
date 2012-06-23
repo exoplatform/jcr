@@ -25,7 +25,6 @@ import org.exoplatform.services.document.DocumentReader;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.HandlerNotFoundException;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
-import org.exoplatform.services.jcr.core.value.ExtendedValue;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemType;
@@ -36,6 +35,8 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -127,16 +128,17 @@ public class NodeIndexer
     * @param stateProvider the persistent item state manager to retrieve properties.
     * @param mappings      internal namespace mappings.
     * @param extractor     content extractor
+    * @param fileCleanerHolder file cleaner holder for {@link ValueFactoryImpl}
     */
    public NodeIndexer(NodeDataIndexing node, ItemDataConsumer stateProvider, NamespaceMappings mappings,
-      DocumentReaderService extractor)
+      DocumentReaderService extractor, FileCleanerHolder fileCleanerHolder)
    {
       this.node = node;
       this.stateProvider = stateProvider;
       this.mappings = mappings;
       this.resolver = new LocationFactory(mappings);
       this.extractor = extractor;
-      this.vFactory = new ValueFactoryImpl(this.resolver);
+      this.vFactory = new ValueFactoryImpl(this.resolver, fileCleanerHolder);
    }
 
    /**
@@ -324,8 +326,7 @@ public class NodeIndexer
                try
                {
                   DocumentReader dreader =
-                     extractor.getDocumentReader(new String(pmime.getValues().get(0).getAsByteArray(),
-                        Constants.DEFAULT_ENCODING));
+                     extractor.getDocumentReader(ValueDataUtil.getString(pmime.getValues().get(0)));
 
                   data = propData.getValues();
 
@@ -347,7 +348,7 @@ public class NodeIndexer
                   if (encProp != null)
                   {
                      // encoding parameter used
-                     encoding = new String(encProp.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING);
+                     ValueDataUtil.getString(encProp.getValues().get(0));
                   }
 
                   if (dreader instanceof AdvancedDocumentReader)
@@ -465,49 +466,46 @@ public class NodeIndexer
                LOG.warn("null value found at property " + prop.getQPath().getAsString());
             }
 
-            ExtendedValue val = null;
             InternalQName name = prop.getQPath().getName();
-
             for (ValueData value : data)
             {
-               val = (ExtendedValue)vFactory.loadValue(value, propType);
-
                switch (propType)
                {
                   case PropertyType.BOOLEAN :
                      if (isIndexed(name))
                      {
-                        addBooleanValue(doc, fieldName, Boolean.valueOf(val.getBoolean()));
+                        addBooleanValue(doc, fieldName, ValueDataUtil.getBoolean(value));
                      }
                      break;
                   case PropertyType.DATE :
                      if (isIndexed(name))
                      {
-                        addCalendarValue(doc, fieldName, val.getDate());
+                        addCalendarValue(doc, fieldName, ValueDataUtil.getDate(value));
                      }
                      break;
                   case PropertyType.DOUBLE :
                      if (isIndexed(name))
                      {
-                        addDoubleValue(doc, fieldName, new Double(val.getDouble()));
+                        addDoubleValue(doc, fieldName, ValueDataUtil.getDouble(value));
                      }
                      break;
                   case PropertyType.LONG :
                      if (isIndexed(name))
                      {
-                        addLongValue(doc, fieldName, new Long(val.getLong()));
+                        addLongValue(doc, fieldName, ValueDataUtil.getLong(value));
                      }
                      break;
                   case PropertyType.REFERENCE :
                      if (isIndexed(name))
                      {
-                        addReferenceValue(doc, fieldName, val.getString());
+                        addReferenceValue(doc, fieldName, ValueDataUtil.getString(value));
                      }
                      break;
                   case PropertyType.PATH :
                      if (isIndexed(name))
                      {
-                        addPathValue(doc, fieldName, val.getString());
+                        addPathValue(doc, fieldName,
+                           resolver.createJCRPath(ValueDataUtil.getPath(value)).getAsString(false));
                      }
                      break;
                   case PropertyType.STRING :
@@ -516,12 +514,13 @@ public class NodeIndexer
                         // never fulltext index jcr:uuid String
                         if (name.equals(Constants.JCR_UUID))
                         {
-                           addStringValue(doc, fieldName, val.getString(), false, false, DEFAULT_BOOST, true);
+                           addStringValue(doc, fieldName, ValueDataUtil.getString(value), false, false, DEFAULT_BOOST,
+                              true);
                         }
                         else
                         {
-                           addStringValue(doc, fieldName, val.getString(), true, isIncludedInNodeIndex(name),
-                              getPropertyBoost(name), useInExcerpt(name));
+                           addStringValue(doc, fieldName, ValueDataUtil.getString(value), true,
+                              isIncludedInNodeIndex(name), getPropertyBoost(name), useInExcerpt(name));
                         }
                      }
                      break;
@@ -531,7 +530,7 @@ public class NodeIndexer
                      if (isIndexed(name) || name.equals(Constants.JCR_PRIMARYTYPE)
                         || name.equals(Constants.JCR_MIXINTYPES))
                      {
-                        addNameValue(doc, fieldName, val.getString());
+                        addNameValue(doc, fieldName, resolver.createJCRName(ValueDataUtil.getName(value)).getAsString());
                      }
                      break;
                   case ExtendedPropertyType.PERMISSION :

@@ -99,16 +99,12 @@ public class JDBCWDCTest extends TestCase
 
       ref.add(new StringRefAddr("username", "sa"));
       ref.add(new StringRefAddr("password", ""));
-      // ref.add(new StringRefAddr("maxActive", "10"));
-      // ref.add(new StringRefAddr("maxWait", "10"));
-      // ref.add(new StringRefAddr("database", "jdbc:hsqldb:file:data/test"));
 
-      // SimpleJNDIContextInitializer.initialize(sourceName, ref);
-      FileCleanerHolder holder = new FileCleanerHolder();
+      FileCleanerHolder cleanerHolder = new FileCleanerHolder();
 
       container =
          new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(config,
-            holder), holder, null);
+            cleanerHolder), null, cleanerHolder);
 
       Properties logProps = new Properties();
       logProps.put("org.apache.commons.logging.simplelog.defaultlog", "debug");

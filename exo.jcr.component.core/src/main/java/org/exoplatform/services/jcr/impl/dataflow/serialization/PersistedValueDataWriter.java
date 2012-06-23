@@ -21,8 +21,8 @@ package org.exoplatform.services.jcr.impl.dataflow.serialization;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
-import org.exoplatform.services.jcr.impl.dataflow.AbstractPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
@@ -47,11 +47,9 @@ public class PersistedValueDataWriter
     * @throws IOException
     *           If an I/O error has occurred.
     */
-   public void write(ObjectWriter out, AbstractPersistedValueData vd) throws IOException
+   public void write(ObjectWriter out, PersistedValueData vd) throws IOException
    {
-      // write id
       out.writeInt(SerializationConstants.PERSISTED_VALUE_DATA);
-
       out.writeInt(vd.getOrderNumber());
 
       boolean isByteArray = vd.isByteArray();
@@ -60,8 +58,7 @@ public class PersistedValueDataWriter
       if (isByteArray)
       {
          byte[] data = vd.getAsByteArray();
-         int f = data.length;
-         out.writeInt(f);
+         out.writeInt(data.length);
          out.write(data);
       }
       else

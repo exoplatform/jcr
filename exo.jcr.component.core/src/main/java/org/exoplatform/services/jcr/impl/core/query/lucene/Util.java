@@ -24,7 +24,7 @@ import org.apache.lucene.search.Query;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +34,7 @@ import java.util.Iterator;
 import java.util.regex.Pattern;
 
 import javax.jcr.PropertyType;
-import javax.jcr.ValueFormatException;
+import javax.jcr.RepositoryException;
 
 /**
  * <code>Util</code> provides various static utility methods.
@@ -137,34 +137,30 @@ public class Util
     *
     * @param value an internal value.
     * @return a comparable for the given <code>value</code>.
-   * @throws IOException 
-   * @throws ValueFormatException 
-   * @throws IllegalStateException 
-   * @throws UnsupportedEncodingException 
-   * @throws IllegalNameException 
     */
    public static Comparable getComparable(ValueData value, int type) throws UnsupportedEncodingException,
-      IllegalStateException, ValueFormatException, IOException, IllegalNameException
+      IllegalStateException, IOException, IllegalNameException, RepositoryException
    {
       switch (type)
       {
          case PropertyType.BINARY :
             return null;
          case PropertyType.BOOLEAN :
-            return ComparableBoolean.valueOf(ValueDataConvertor.readBoolean(value));
+            return ComparableBoolean.valueOf(ValueDataUtil.getBoolean(value));
          case PropertyType.DATE :
-            return new Long(ValueDataConvertor.readDate(value).getTimeInMillis());
+            return new Long(ValueDataUtil.getDate(value).getTimeInMillis());
          case PropertyType.DOUBLE :
-            return new Double(ValueDataConvertor.readDouble(value));
+            return new Double(ValueDataUtil.getDouble(value));
          case PropertyType.LONG :
-            return new Long(ValueDataConvertor.readLong(value));
+            return new Long(ValueDataUtil.getLong(value));
          case PropertyType.NAME :
-            return new QPathEntry(ValueDataConvertor.readQName(value), 1);
+            return new QPathEntry(ValueDataUtil.getName(value), 1);
          case PropertyType.PATH :
-            //return ValueDataConvertor.r;
+            return ValueDataUtil.getPath(value);
          case PropertyType.REFERENCE :
+            return ValueDataUtil.getReference(value);
          case PropertyType.STRING :
-            return ValueDataConvertor.readString(value);
+            return ValueDataUtil.getString(value);
          default :
             return null;
       }

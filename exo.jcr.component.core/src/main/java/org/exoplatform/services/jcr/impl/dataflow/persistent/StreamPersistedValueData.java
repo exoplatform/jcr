@@ -19,7 +19,8 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
@@ -28,8 +29,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -40,63 +39,57 @@ import javax.jcr.RepositoryException;
 public class StreamPersistedValueData extends FilePersistedValueData
 {
 
-   private static final long serialVersionUID = -5831609242005946202L;
-
+   /**
+    * Original stream.
+    */
    protected InputStream stream;
 
+   /**
+    * Reserved file to spool.
+    */
    protected SpoolFile tempFile;
 
    /**
-    * StreamPersistedValueData  constructor for stream data.
-    *
-    * @param orderNumber int
-    * @param stream InputStream
+    * StreamPersistedValueData constructor for stream data.
     */
-   public StreamPersistedValueData(int orderNumber, InputStream stream)
+   public StreamPersistedValueData(int orderNumber, InputStream stream, SpoolConfig spoolConfig) throws IOException
    {
-      this(orderNumber, stream, null);
+      this(orderNumber, stream, null, spoolConfig);
    }
 
    /**
     * StreamPersistedValueData  constructor for data spooled to temp file.
-    *
-    * @param orderNumber int
-    * @param tempFile File
-    * @throws FileNotFoundException 
     */
-   public StreamPersistedValueData(int orderNumber, SpoolFile tempFile) throws FileNotFoundException
+   public StreamPersistedValueData(int orderNumber, SpoolFile tempFile, SpoolConfig spoolConfig) throws IOException
    {
-      this(orderNumber, tempFile, null);
+      this(orderNumber, tempFile, null, spoolConfig);
    }
 
    /**
-    * StreamPersistedValueData constructor for stream data with know destenation file.
+    * StreamPersistedValueData constructor for stream data with know destination file.
     * <p/>
-    * Destenation file reserved for use in JBC impl.
-    * 
-    * @param orderNumber int
-    * @param stream InputStream
-    * @param destFile File
-    */
-   public StreamPersistedValueData(int orderNumber, InputStream stream, File destFile)
+    * Destination file reserved for use in JBC impl.
+   */
+   public StreamPersistedValueData(int orderNumber, InputStream stream, File destFile, SpoolConfig spoolConfig)
+      throws IOException
    {
-      super(orderNumber, destFile);
+      super(orderNumber, destFile, spoolConfig);
       this.tempFile = null;
       this.stream = stream;
    }
 
    /**
-    * StreamPersistedValueData  constructor for data spooled to temp file with know destenation file.
+    * StreamPersistedValueData  constructor for data spooled to temp file with know destination file.
     * <p/>
-    * Destenation file reserved for use in JBC impl.
+    * Destination file reserved for use in JBC impl.
     *
     * @param orderNumber int
     * @param tempFile File
-    * @throws FileNotFoundException 
     */
-   public StreamPersistedValueData(int orderNumber, SpoolFile tempFile, File destFile) throws FileNotFoundException
+   public StreamPersistedValueData(int orderNumber, SpoolFile tempFile, File destFile, SpoolConfig spoolConfig)
+      throws IOException
    {
-      super(orderNumber, destFile);
+      super(orderNumber, destFile, spoolConfig);
       this.tempFile = tempFile;
       this.stream = null;
 
@@ -109,8 +102,9 @@ public class StreamPersistedValueData extends FilePersistedValueData
    /**
     * StreamPersistedValueData empty constructor for serialization.
     */
-   public StreamPersistedValueData()
+   public StreamPersistedValueData() throws IOException
    {
+      super();
    }
 
    /**
@@ -171,15 +165,6 @@ public class StreamPersistedValueData extends FilePersistedValueData
     * {@inheritDoc}
     */
    @Override
-   public InputStream getAsStream() throws IOException
-   {
-      return super.getAsStream();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
    public long getLength()
    {
       if (file != null)
@@ -218,15 +203,6 @@ public class StreamPersistedValueData extends FilePersistedValueData
     * {@inheritDoc}
     */
    @Override
-   public TransientValueData createTransientCopy() throws RepositoryException
-   {
-      return new TransientValueData(this);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
    protected void finalize() throws Throwable
    {
       try
@@ -245,5 +221,32 @@ public class StreamPersistedValueData extends FilePersistedValueData
       {
          super.finalize();
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected boolean internalEquals(ValueData another)
+   {
+      if (another instanceof StreamPersistedValueData)
+      {
+         StreamPersistedValueData streamValue = (StreamPersistedValueData)another;
+
+         if (file != null && file.equals(streamValue.file))
+         {
+            return  true;
+         }
+         else if (tempFile != null && tempFile.equals(streamValue.tempFile))
+         {
+            return true;
+         }
+         else if (stream != null && stream == streamValue.stream)
+         {
+            return true;
+         }
+      }
+
+      return false;
    }
 }

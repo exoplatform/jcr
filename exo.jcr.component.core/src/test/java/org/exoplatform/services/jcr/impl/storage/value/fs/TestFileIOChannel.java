@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 import junit.framework.TestCase;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TesterTransientValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -30,6 +31,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.jcr.PropertyType;
 
 /**
  * Created by The eXo Platform SAS.
@@ -111,14 +114,17 @@ public class TestFileIOChannel extends TestCase
       // List <ValueData> values = channel.read("testReadFromIOChannel", 11);
 
       // assertEquals(2, values.size());
-      ValueData v0 = channel.read("testReadFromIOChannel", 0, 11);
+      ValueData v0 = channel.read("testReadFromIOChannel", 0, PropertyType.BINARY, SpoolConfig.getDefaultSpoolConfig());
       assertEquals(10, v0.getLength());
       assertEquals(0, v0.getOrderNumber());
       assertEquals(10, v0.getAsByteArray().length);
       assertTrue(v0.isByteArray());
       assertNotNull(v0.getAsStream());
 
-      ValueData v1 = channel.read("testReadFromIOChannel", 1, 11);
+      SpoolConfig spoolConfig = SpoolConfig.getDefaultSpoolConfig();
+      spoolConfig.maxBufferSize = 11;
+
+      ValueData v1 = channel.read("testReadFromIOChannel", 1, PropertyType.BINARY, spoolConfig);
       assertEquals(20, v1.getLength());
       assertEquals(1, v1.getOrderNumber());
       assertFalse(v1.isByteArray());

@@ -73,10 +73,10 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
     */
    public CQJDBCWorkspaceDataContainer(WorkspaceEntry wsConfig, RepositoryEntry repConfig,
       InitialContextInitializer contextInit, ValueStoragePluginProvider valueStorageProvider,
-      FileCleanerHolder fileCleanerHolder, DataSourceProvider dsProvider) throws RepositoryConfigurationException,
+      DataSourceProvider dsProvider, FileCleanerHolder fileCleanerHolder) throws RepositoryConfigurationException,
       NamingException, RepositoryException, IOException
    {
-      super(wsConfig, repConfig, contextInit, valueStorageProvider, fileCleanerHolder, dsProvider);
+      super(wsConfig, repConfig, contextInit, valueStorageProvider, dsProvider, fileCleanerHolder);
    }
 
    /**

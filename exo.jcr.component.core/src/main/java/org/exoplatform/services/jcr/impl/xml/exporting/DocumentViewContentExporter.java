@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
 import org.xml.sax.ContentHandler;
@@ -92,7 +93,7 @@ public class DocumentViewContentExporter extends HandlingContentExporter
             {
                if (propertyData.getQPath().getName().equals(Constants.JCR_XMLCHARACTERS))
                {
-                  strValue = new String(propertyData.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING);
+                  strValue = ValueDataUtil.getString(propertyData.getValues().get(0));
                }
             }
             contentHandler.characters(strValue.toCharArray(), 0, strValue.length());

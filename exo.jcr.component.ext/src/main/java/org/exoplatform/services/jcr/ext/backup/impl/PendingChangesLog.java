@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
@@ -482,6 +483,8 @@ public class PendingChangesLog
     */
    public void restore() throws IOException
    {
+      SpoolConfig spoolConfig = new SpoolConfig(fileCleaner);
+
       List<ItemState> listItemState = itemDataChangesLog.getAllStates();
       for (int i = 0; i < this.listFixupStream.size(); i++)
       {
@@ -493,7 +496,7 @@ public class PendingChangesLog
 
          // re-init the value
          propertyData.getValues().set(listFixupStream.get(i).getValueDataId(),
-            new StreamPersistedValueData(vd.getOrderNumber(), listFile.get(i)));
+            new StreamPersistedValueData(vd.getOrderNumber(), listFile.get(i), spoolConfig));
       }
 
       if (listRandomAccessFile != null)

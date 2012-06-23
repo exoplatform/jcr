@@ -67,9 +67,11 @@ public class IncrementalBackupJob extends AbstractIncrementalBackupJob
       this.workspaceName = workspaceName;
       this.config = config;
       this.timeStamp = timeStamp;
-      this.fileCleaner =
-         ((FileCleanerHolder)repository.getWorkspaceContainer(workspaceName).getComponent(FileCleanerHolder.class))
-            .getFileCleaner();
+
+      FileCleanerHolder cleanerHolder =
+         (FileCleanerHolder)repository.getWorkspaceContainer(workspaceName).getComponent(FileCleanerHolder.class);
+
+      this.fileCleaner = cleanerHolder.getFileCleaner();
 
       try
       {

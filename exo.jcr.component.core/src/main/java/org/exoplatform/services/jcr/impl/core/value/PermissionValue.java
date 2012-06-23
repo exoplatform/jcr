@@ -23,12 +23,11 @@ import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
-import org.exoplatform.services.security.IdentityConstants;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 
 import java.io.IOException;
-import java.util.StringTokenizer;
 
-import javax.jcr.ValueFormatException;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -47,84 +46,46 @@ public class PermissionValue extends BaseValue
 
    private String permission;
 
-   public PermissionValue(ValueData data) throws IOException
+   /**
+    * PermissionValue constructor.
+    */
+   public PermissionValue(ValueData data)
    {
       super(TYPE, data);
 
       try
       {
-         String[] persArray = parse(new String(data.getAsByteArray()));
-         this.identity = persArray[0];
-         this.permission = persArray[1];
-      }
-      catch (IOException e)
-      {
-         throw new RuntimeException("FATAL ERROR IOException occured: " + e.getMessage(), e);
-      }
-   }
+         AccessControlEntry accessEntry = ValueDataUtil.getPermission(data);
 
-   public PermissionValue(String identity, String permission) throws IOException
-   {
-      super(TYPE, new TransientValueData(asString(identity, permission))); // identity + " " +
-      // permission
-      if (identity != null && identity.indexOf(" ") != -1)
-         throw new RuntimeException("Identity should not contain ' '");
-      if (permission != null && !permission.equals(PermissionType.READ) && !permission.equals(PermissionType.ADD_NODE)
-         && !permission.equals(PermissionType.REMOVE) && !permission.equals(PermissionType.SET_PROPERTY))
-         throw new RuntimeException("Permission should be one of defined in PermissionType. Have " + permission);
-      this.identity = identity;
-      this.permission = permission;
-   }
-
-   static public PermissionValue parseValue(String pstring) throws IOException
-   {
-      String[] persArray = parse(pstring);
-      return new PermissionValue(persArray[0], persArray[1]);
-   }
-
-   static public String[] parse(String pstring)
-   {
-      StringTokenizer parser = new StringTokenizer(pstring, AccessControlEntry.DELIMITER);
-      String identityString = parser.nextToken();
-      String permissionString = parser.nextToken();
-
-      String[] persArray = new String[2];
-
-      if (identityString != null)
-      {
-         persArray[0] = identityString;
+         this.identity = accessEntry.getIdentity();
+         this.permission = accessEntry.getPermission();
       }
-      else
+      catch (RepositoryException e)
       {
-         persArray[0] = IdentityConstants.ANY;
+         throw new RuntimeException("FATAL ERROR RepositoryException occured: " + e.getMessage(), e);
       }
-      if (permissionString != null)
-      {
-         persArray[1] = permissionString;
-      }
-      else
-      {
-         persArray[1] = PermissionType.READ;
-      }
-      return persArray;
    }
 
    /**
-    * {@inheritDoc}
+    * PermissionValue constructor.
     */
-   @Override
-   protected String getInternalString() throws ValueFormatException
+   public PermissionValue(String identity, String permission) throws IOException
    {
-      return asString(identity, permission);
-   }
+      super(TYPE, new TransientValueData(new AccessControlEntry(identity, permission)));
 
-   static protected String asString(String identity, String permission)
-   {
-      if (identity != null || permission != null) // SystemIdentity.ANY, PermissionType.ALL
-         return (identity != null ? identity : IdentityConstants.ANY) + AccessControlEntry.DELIMITER
-            + (permission != null ? permission : PermissionType.READ);
-      else
-         return "";
+      if (identity != null && identity.indexOf(" ") != -1)
+      {
+         throw new RuntimeException("Identity should not contain ' '");
+      }
+
+      if (permission != null && !permission.equals(PermissionType.READ) && !permission.equals(PermissionType.ADD_NODE)
+         && !permission.equals(PermissionType.REMOVE) && !permission.equals(PermissionType.SET_PROPERTY))
+      {
+         throw new RuntimeException("Permission should be one of defined in PermissionType. Have " + permission);
+      }
+
+      this.identity = identity;
+      this.permission = permission;
    }
 
    /**

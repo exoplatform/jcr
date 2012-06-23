@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
-import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 
 import java.io.File;
 
@@ -47,11 +46,11 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
    public BackupWorkspaceInitializer(WorkspaceEntry config, RepositoryEntry repConfig,
       CacheableWorkspaceDataManager dataManager, NamespaceRegistryImpl namespaceRegistry,
       LocationFactory locationFactory, NodeTypeManagerImpl nodeTypeManager, ValueFactoryImpl valueFactory,
-      AccessManager accessManager, FileCleanerHolder cleanerHolder) throws RepositoryConfigurationException,
+      AccessManager accessManager) throws RepositoryConfigurationException,
       PathNotFoundException, RepositoryException
    {
       super(config, repConfig, dataManager, namespaceRegistry, locationFactory, nodeTypeManager, valueFactory,
-         accessManager, cleanerHolder);
+         accessManager);
 
       restoreDir = restorePath;
 
@@ -76,7 +75,7 @@ public class BackupWorkspaceInitializer extends SysViewWorkspaceInitializer
       super.doRestore();
 
       // restore from incremental backup
-      JCRRestore restorer = new JCRRestore(dataManager, fileCleaner);
+      JCRRestore restorer = new JCRRestore(dataManager, spoolConfig.fileCleaner);
       for (File incrBackupFile : JCRRestore.getIncrementalFiles(new File(restoreDir)))
       {
          restorer.incrementalRestore(incrBackupFile);

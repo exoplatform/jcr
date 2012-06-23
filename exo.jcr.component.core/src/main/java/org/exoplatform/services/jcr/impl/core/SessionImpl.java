@@ -188,6 +188,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    protected final NodeTypeDataManager nodeTypeManager;
 
+   protected final FileCleanerHolder cleanerHolder;
+
    /**
     * Transaction resources manager.
     */
@@ -218,10 +220,10 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.lazyReadThreshold =
          wsConfig.getLazyReadThreshold() > 0 ? wsConfig.getLazyReadThreshold() : DEFAULT_LAZY_READ_THRESHOLD;
 
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
-
       this.locationFactory = new LocationFactory(this);
+
+      this.cleanerHolder =
+         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
       this.valueFactory = new ValueFactoryImpl(locationFactory, wsConfig, cleanerHolder);
 
       this.namespaces = new LinkedHashMap<String, String>();
@@ -307,9 +309,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
-
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
 
       try
@@ -346,9 +345,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
-
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
 
@@ -390,9 +386,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
-
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
 
       try
@@ -431,9 +424,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
 
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
-
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
       try
       {
@@ -468,9 +458,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       LocationFactory factory = new LocationFactory(((NamespaceRegistryImpl)repository.getNamespaceRegistry()));
 
       WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
-
-      FileCleanerHolder cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
 
       ValueFactoryImpl valueFactoryImpl = new ValueFactoryImpl(factory, wsConfig, cleanerHolder);
       try

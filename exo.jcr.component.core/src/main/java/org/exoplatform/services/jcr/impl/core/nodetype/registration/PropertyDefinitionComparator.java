@@ -36,10 +36,10 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.nodetype.ItemAutocreator;
 import org.exoplatform.services.jcr.impl.core.value.ValueConstraintsMatcher;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -328,7 +328,7 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
                if (propertyData.getType() != PropertyType.BINARY)
                {
                   // may have large size
-                  strVal = new String(value.getAsByteArray());
+                  strVal = ValueDataUtil.getString(value);
                }
                else
                {
@@ -336,10 +336,6 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
                }
             }
             catch (IllegalStateException e)
-            {
-               LOG.error("Error of value read: " + e.getMessage(), e);
-            }
-            catch (IOException e)
             {
                LOG.error("Error of value read: " + e.getMessage(), e);
             }

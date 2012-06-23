@@ -144,9 +144,7 @@ public abstract class BaseStandaloneTest extends TestCase
          wconf.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
 
-      FileCleanerHolder wfcleaner =
-         (FileCleanerHolder)wsc.getComponent(FileCleanerHolder.class);
-      fileCleaner = wfcleaner.getFileCleaner();
+      fileCleaner = FileCleanerHolder.getDefaultFileCleaner();
       holder = new ReaderSpoolFileHolder();
 
       wsc = repository.getWorkspaceContainer("ws4");

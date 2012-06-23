@@ -35,12 +35,12 @@ public class TesterTransientValueData extends TransientValueData
 
    public TransientValueData getTransientValueData(InputStream stream, int orderNumber) throws IOException
    {
-      return new TransientValueData(orderNumber, null, stream, null, null, -1, null, true);
+      return new TransientValueData(orderNumber, stream, null, SpoolConfig.getDefaultSpoolConfig());
    }
 
    public TransientValueData getTransientValueData(byte[] data, int orderNumber) throws IOException
    {
-      return new TransientValueData(orderNumber, data, null, null, null, -1, null, true);
+      return new TransientValueData(orderNumber, data);
    }
 
 }

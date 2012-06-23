@@ -77,6 +77,7 @@ import org.exoplatform.services.jcr.impl.core.value.PathValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
+import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCException;
@@ -178,6 +179,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
    protected IndexerChangesFilter changesFilter;
 
+   protected final FileCleanerHolder cleanerHolder;
+
    /**
     * The Repository name.
     */
@@ -250,11 +253,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    public SearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry,
       RepositoryService rService, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
-      DocumentReaderService extractor, ConfigurationManager cfm, final RepositoryIndexSearcherHolder indexSearcherHolder)
+      DocumentReaderService extractor, ConfigurationManager cfm,
+      final RepositoryIndexSearcherHolder indexSearcherHolder, FileCleanerHolder cleanerHolder)
       throws RepositoryException, RepositoryConfigurationException
    {
       this(ctx, wEntry, rEntry, rService, config, nsReg, ntReg, itemMgr, parentSearchManager, extractor, cfm,
-         indexSearcherHolder, null);
+         indexSearcherHolder, null, cleanerHolder);
    }
 
    /**
@@ -292,8 +296,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       RepositoryService rService, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
       WorkspacePersistentDataManager itemMgr, SystemSearchManagerHolder parentSearchManager,
       DocumentReaderService extractor, ConfigurationManager cfm,
-      final RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService) throws RepositoryException,
-      RepositoryConfigurationException
+      final RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService, FileCleanerHolder cleanerHolder)
+      throws RepositoryException, RepositoryConfigurationException
    {
       this.ctx = ctx;
       this.wsContainerId = ctx.getName();
@@ -303,6 +307,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       this.rService = rService;
       this.wsId = wEntry.getUniqueName();
       this.extractor = extractor;
+      this.cleanerHolder = cleanerHolder;
       indexSearcherHolder.addIndexSearcher(this);
       this.config = config;
       this.nodeTypeDataManager = ntReg;
@@ -539,7 +544,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
          // final LocationFactory locationFactory = new
          // LocationFactory(this);
-         final ValueFactoryImpl valueFactory = new ValueFactoryImpl(new LocationFactory(nsReg));
+         final ValueFactoryImpl valueFactory = new ValueFactoryImpl(new LocationFactory(nsReg), cleanerHolder);
          BooleanQuery.setMaxClauseCount(Integer.MAX_VALUE);
          BooleanQuery query = new BooleanQuery();
 
@@ -867,7 +872,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       QueryHandlerContext context =
          new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
             PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, recoveryFilterUsed,
-            virtualTableResolver, indexRecovery, rpcService, repositoryName, wsId);
+            virtualTableResolver, indexRecovery, rpcService, repositoryName, wsId, cleanerHolder);
 
       return context;
    }

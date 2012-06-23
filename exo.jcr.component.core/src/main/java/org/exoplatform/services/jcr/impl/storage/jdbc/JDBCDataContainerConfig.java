@@ -16,11 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import org.exoplatform.services.jdbc.DataSourceProvider;
-
-import java.io.File;
 
 /**
  * Contains JDBCWorkspaceDataContainer-specific configuration
@@ -137,24 +135,14 @@ public class JDBCDataContainerConfig
    public boolean isManaged;
 
    /**
-    * Buffer size
-    */
-   public int maxBufferSize;
-
-   /**
     * Version of persisted storage
     */
    public String storageVersion;
 
    /**
-    * Tempfile cleaner
+    * Spool container configuration.
     */
-   public FileCleaner swapCleaner;
-
-   /**
-    * Swap directory
-    */
-   public File swapDirectory;
+   public SpoolConfig spoolConfig;
 
    /**
     * Unique container name

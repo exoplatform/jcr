@@ -36,8 +36,7 @@ public class StringValue extends BaseValue
    public static final int TYPE = PropertyType.STRING;
 
    /**
-    * @param text
-    * @throws IOException
+    * StringValue constructor. 
     */
    public StringValue(String text) throws IOException
    {
@@ -45,12 +44,10 @@ public class StringValue extends BaseValue
    }
 
    /**
-    * @param data
-    * @throws IOException
+    * StringValue constructor. 
     */
    public StringValue(ValueData data) throws IOException
    {
       super(TYPE, data);
    }
-
 }

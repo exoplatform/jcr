@@ -18,7 +18,10 @@
  */
 package org.exoplatform.services.jcr.access;
 
+import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.security.MembershipEntry;
+
+import java.util.StringTokenizer;
 
 /**
  * Created by The eXo Platform SAS.
@@ -110,6 +113,37 @@ public class AccessControlEntry
    public String toString()
    {
       return super.toString() + " (" + getAsString() + ")";
+   }
+
+   /**
+    * Factory method.
+    */
+   public static AccessControlEntry parse(String pstring)
+   {
+      StringTokenizer parser = new StringTokenizer(pstring, AccessControlEntry.DELIMITER);
+      String identity = parser.nextToken();
+      String permission = parser.nextToken();
+
+      String[] persArray = new String[2];
+
+      if (identity != null)
+      {
+         persArray[0] = identity;
+      }
+      else
+      {
+         persArray[0] = IdentityConstants.ANY;
+      }
+      if (permission != null)
+      {
+         persArray[1] = permission;
+      }
+      else
+      {
+         persArray[1] = PermissionType.READ;
+      }
+
+      return new AccessControlEntry(identity, permission);
    }
 
 }

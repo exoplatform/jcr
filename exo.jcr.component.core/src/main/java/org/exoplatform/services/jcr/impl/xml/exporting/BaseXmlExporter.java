@@ -31,7 +31,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.NodeDataOrderComparator;
 import org.exoplatform.services.jcr.impl.dataflow.PropertyDataOrderComparator;
-import org.exoplatform.services.jcr.impl.dataflow.ValueDataConvertor;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
 import org.xml.sax.SAXException;
 
@@ -281,7 +281,7 @@ public abstract class BaseXmlExporter extends ItemDataTraversingVisitor
             }
             break;
          default :
-            charValue = ValueDataConvertor.readString(data);
+            charValue = ValueDataUtil.getString(data);
             break;
       }
       return charValue;

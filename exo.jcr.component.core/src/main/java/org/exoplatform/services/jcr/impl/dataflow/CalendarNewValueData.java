@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+ * Copyright (C) 2012 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -18,45 +18,19 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.services.jcr.datamodel.ValueData;
+import java.util.Calendar;
 
 /**
- * 
- * Created by The eXo Platform SAS .
- * 
- * @author Gennady Azarenkov
- * @version $Id:AbstractValueData.java 12534 2007-02-02 15:30:52Z peterit $
+ * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
+ * @version $Id: CalendarNewValueData.java 34360 2009-07-22 23:58:59Z tolusha $
  */
-
-public abstract class AbstractSessionValueData implements ValueData
+public class CalendarNewValueData extends CalendarValueData implements NewValueData
 {
-
-   protected int orderNumber;
-
-   protected AbstractSessionValueData(int orderNumber)
-   {
-      this.orderNumber = orderNumber;
-   }
-
    /**
-    * {@inheritDoc}
+    * CalendarNewValueData constructor.
     */
-   public final int getOrderNumber()
+   protected CalendarNewValueData(int orderNumber, Calendar value)
    {
-      return orderNumber;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean equals(Object obj)
-   {
-      if (obj instanceof ValueData)
-      {
-         return this.equals((ValueData)obj);
-      }
-
-      return false;
+      super(orderNumber, value);
    }
 }

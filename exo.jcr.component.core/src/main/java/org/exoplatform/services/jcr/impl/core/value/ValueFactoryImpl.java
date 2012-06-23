@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.value;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.datamodel.Identifier;
@@ -28,16 +28,15 @@ import org.exoplatform.services.jcr.impl.core.JCRName;
 import org.exoplatform.services.jcr.impl.core.JCRPath;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
@@ -65,30 +64,22 @@ public class ValueFactoryImpl implements ValueFactory
 
    private LocationFactory locationFactory;
 
-   private FileCleaner fileCleaner;
-
-   private File tempDirectory;
-
-   private int maxBufferSize;
+   private final SpoolConfig spoolConfig;
 
    public ValueFactoryImpl(LocationFactory locationFactory, WorkspaceEntry workspaceConfig,
       FileCleanerHolder cleanerHolder)
    {
-
       this.locationFactory = locationFactory;
-      this.fileCleaner = cleanerHolder.getFileCleaner();
-      this.tempDirectory = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
-
-      this.maxBufferSize =
+      this.spoolConfig = new SpoolConfig(cleanerHolder.getFileCleaner());
+      this.spoolConfig.maxBufferSize =
          workspaceConfig.getContainer().getParameterInteger(WorkspaceDataContainer.MAXBUFFERSIZE_PROP,
             WorkspaceDataContainer.DEF_MAXBUFFERSIZE);
    }
 
-   public ValueFactoryImpl(LocationFactory locationFactory)
+   public ValueFactoryImpl(LocationFactory locationFactory, FileCleanerHolder cleanerHolder)
    {
       this.locationFactory = locationFactory;
-      this.maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;
-      this.tempDirectory = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+      this.spoolConfig = new SpoolConfig(cleanerHolder.getFileCleaner());
    }
 
    /**
@@ -151,14 +142,8 @@ public class ValueFactoryImpl implements ValueFactory
             case PropertyType.REFERENCE :
                return createValue(new Identifier(value));
             case ExtendedPropertyType.PERMISSION :
-               try
-               {
-                  return PermissionValue.parseValue(value);
-               }
-               catch (IOException e)
-               {
-                  new ValueFormatException("Cant create PermissionValue " + e);
-               }
+               AccessControlEntry accessEntry = AccessControlEntry.parse(value);
+               return new PermissionValue(new TransientValueData(accessEntry));
             default :
                throw new ValueFormatException("unknown type " + type);
          }
@@ -263,10 +248,13 @@ public class ValueFactoryImpl implements ValueFactory
    public Value createValue(InputStream value)
    {
       if (value == null)
+      {
          return null;
+      }
+
       try
       {
-         return new BinaryValue(value, fileCleaner, tempDirectory, maxBufferSize);
+         return new BinaryValue(value, spoolConfig);
       }
       catch (IOException e)
       {
@@ -288,8 +276,8 @@ public class ValueFactoryImpl implements ValueFactory
       {
          if (value instanceof NodeImpl)
          {
-            String jcrUuid = ((NodeImpl)value).getInternalIdentifier();
-            return new ReferenceValue(new TransientValueData(jcrUuid));
+            Identifier identifier = new Identifier(((NodeImpl)value).getInternalIdentifier());
+            return new ReferenceValue(new TransientValueData(identifier));
          }
          else
          {
@@ -385,7 +373,6 @@ public class ValueFactoryImpl implements ValueFactory
     */
    public Value loadValue(ValueData data, int type) throws RepositoryException
    {
-
       try
       {
          switch (type)
@@ -393,7 +380,7 @@ public class ValueFactoryImpl implements ValueFactory
             case PropertyType.STRING :
                return new StringValue(data);
             case PropertyType.BINARY :
-               return new BinaryValue(data);
+               return new BinaryValue(data, spoolConfig);
             case PropertyType.BOOLEAN :
                return new BooleanValue(data);
             case PropertyType.LONG :
@@ -422,19 +409,8 @@ public class ValueFactoryImpl implements ValueFactory
       }
    }
 
-   public FileCleaner getFileCleaner()
+   public SpoolConfig getSpoolConfig()
    {
-      return fileCleaner;
+      return spoolConfig;
    }
-
-   public int getMaxBufferSize()
-   {
-      return maxBufferSize;
-   }
-
-   public File getTempDirectory()
-   {
-      return tempDirectory;
-   }
-
 }

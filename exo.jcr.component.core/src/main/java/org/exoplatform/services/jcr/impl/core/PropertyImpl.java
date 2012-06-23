@@ -28,6 +28,8 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.core.nodetype.PropertyDefinitionImpl;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
+import org.exoplatform.services.jcr.impl.core.value.ReferenceValue;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -276,14 +278,16 @@ public class PropertyImpl extends ItemImpl implements Property
     */
    public Node getNode() throws ValueFormatException, RepositoryException
    {
-      try
+      Value value = getValue();
+
+      if (value instanceof ReferenceValue)
       {
-         String identifier = ((BaseValue)getValue()).getReference();
+         String identifier = ((BaseValue)value).getReference();
          return session.getNodeByUUID(identifier);
       }
-      catch (IllegalStateException e)
+      else
       {
-         throw new ValueFormatException("PropertyImpl.getNode() failed: " + e);
+         throw new ValueFormatException("Property cannot be converted to a reference");
       }
    }
 
@@ -572,7 +576,7 @@ public class PropertyImpl extends ItemImpl implements Property
          vals = new StringBuilder(getPath()).append(" values: ");
          for (int i = 0; i < getValueArray().length; i++)
          {
-            vals.append(new String(((BaseValue)getValueArray()[i]).getInternalData().getAsByteArray())).append(";");
+            vals.append(ValueDataUtil.getString(((BaseValue)getValueArray()[i]).getInternalData())).append(";");
          }
       }
       catch (Exception e)

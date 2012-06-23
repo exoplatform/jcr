@@ -47,4 +47,17 @@ public class Identifier
    {
       return string;
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean equals(Object another)
+   {
+      if (another instanceof Identifier)
+      {
+         return string.equals(((Identifier)another).string);
+      }
+
+      return false;
+   }
 }

@@ -23,6 +23,7 @@ import junit.framework.TestCase;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -40,7 +41,6 @@ import java.util.Calendar;
  * @author Gennady Azarenkov
  * @version $Id: TestTransientValueData.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-
 public class TestTransientValueData extends TestCase
 {
 
@@ -58,10 +58,6 @@ public class TestTransientValueData extends TestCase
       // as stream
       assertTrue(vd.getAsStream() instanceof ByteArrayInputStream);
       assertTrue(vd.isByteArray());
-
-      // no spool file as spooled to byte array
-      assertNull(vd.getSpoolFile());
-
    }
 
    public void testCreateFileStreamTransientValueData() throws Exception
@@ -78,8 +74,11 @@ public class TestTransientValueData extends TestCase
          out.close();
 
          FileInputStream fs1 = new FileInputStream(file);
-         TransientValueData vd =
-            new TransientValueData(0, null, fs1, null, testFileCleaner, 5, new File("target"), true);
+
+         SpoolConfig spoolConfig = SpoolConfig.getDefaultSpoolConfig();
+         spoolConfig.maxBufferSize = 5;
+
+         TransientValueData vd = new TransientValueData(0, fs1, null, spoolConfig);
 
          // spool to file
          InputStream fs2 = vd.getAsStream();
@@ -113,8 +112,8 @@ public class TestTransientValueData extends TestCase
    {
       TransientValueData vd = new TransientValueData("0123456789");
 
-      // same bytes object
-      assertSame(vd.getAsByteArray(), vd.getAsByteArray());
+      // not same bytes object
+      assertNotSame(vd.getAsByteArray(), vd.getAsByteArray());
 
       // but not same stream
       assertNotSame(vd.getAsStream(), vd.getAsStream());
@@ -157,7 +156,7 @@ public class TestTransientValueData extends TestCase
       Calendar cal = Calendar.getInstance();
       long time = cal.getTimeInMillis();
       TransientValueData vd = new TransientValueData(cal);
-      assertEquals(time, new JCRDateFormat().deserialize(new String(vd.getAsByteArray())).getTimeInMillis());
+      assertEquals(time, JCRDateFormat.parse(new String(vd.getAsByteArray())).getTimeInMillis());
    }
 
    public void testNewDoubleValueData() throws Exception

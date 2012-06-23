@@ -35,6 +35,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
@@ -613,7 +614,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                StreamPersistedValueData streamData = (StreamPersistedValueData)vd;
 
                SwapFile swapFile =
-                  SwapFile.get(this.containerConfig.swapDirectory, cid + i + "." + data.getPersistedVersion());
+                  SwapFile.get(this.containerConfig.spoolConfig.tempDirectory,
+                     cid + i + "." + data.getPersistedVersion());
                try
                {
                   writeValueHelper.writeStreamedValue(swapFile, streamData);
@@ -736,8 +738,9 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   {
                      final String storageId = resultSet.getString(COLUMN_VSTORAGE_DESC);
                      ValueData vdata =
-                        resultSet.wasNull() ? readValueData(cid, orderNum, cversion,
-                           resultSet.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+                        resultSet.wasNull() ? ValueDataUtil.readValueData(cid, cptype, orderNum, cversion,
+                           resultSet.getBinaryStream(COLUMN_VDATA), containerConfig.spoolConfig) : readValueData(
+                           identifier, orderNum, cptype, storageId);
                      data.add(vdata);
                   }
 
@@ -873,8 +876,9 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   {
                      final String storageId = resultSet.getString(COLUMN_VSTORAGE_DESC);
                      ValueData vdata =
-                        resultSet.wasNull() ? readValueData(cid, orderNum, cversion,
-                           resultSet.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+                        resultSet.wasNull() ? ValueDataUtil.readValueData(cid, cptype, orderNum, cversion,
+                           resultSet.getBinaryStream(COLUMN_VDATA), containerConfig.spoolConfig) : readValueData(
+                           identifier, orderNum, cptype, storageId);
                      data.add(vdata);
                   }
 
@@ -939,8 +943,16 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       {
          for (TempPropertyData value : permValues)
          {
-            StringTokenizer parser =
-               new StringTokenizer(new String(value.getValueData().getAsByteArray()), AccessControlEntry.DELIMITER);
+            StringTokenizer parser;
+            try
+            {
+               parser =
+                  new StringTokenizer(ValueDataUtil.getString(value.getValueData()), AccessControlEntry.DELIMITER);
+            }
+            catch (RepositoryException e)
+            {
+               throw new IOException(e.getMessage(), e);
+            }
             naPermissions.add(new AccessControlEntry(parser.nextToken(), parser.nextToken()));
          }
 
@@ -967,7 +979,14 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       SortedSet<TempPropertyData> ownerValues = properties.get(Constants.EXO_OWNER.getAsString());
       if (ownerValues != null)
       {
-         return new String(ownerValues.first().getValueData().getAsByteArray());
+         try
+         {
+            return ValueDataUtil.getString(ownerValues.first().getValueData());
+         }
+         catch (RepositoryException e)
+         {
+            throw new IOException(e.getMessage(), e);
+         }
       }
       else
       {
@@ -1079,8 +1098,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                + qpath.getAsString() + ", id " + cid + ", container " + this.containerConfig.containerName, null);
          }
 
-         byte[] data = primaryType.first().getValueData().getAsByteArray();
-         InternalQName ptName = InternalQName.parse(new String((data != null ? data : new byte[]{})));
+         InternalQName ptName = InternalQName.parse(ValueDataUtil.getString(primaryType.first().getValueData()));
 
          // MIXIN
          InternalQName[] mts;
@@ -1092,7 +1110,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             List<InternalQName> mNames = new ArrayList<InternalQName>();
             for (TempPropertyData mxnb : mixTypes)
             {
-               InternalQName mxn = InternalQName.parse(new String(mxnb.getValueData().getAsByteArray()));
+               InternalQName mxn = InternalQName.parse(ValueDataUtil.getString(mxnb.getValueData()));
                mNames.add(mxn);
 
                if (!privilegeable && Constants.EXO_PRIVILEGEABLE.equals(mxn))

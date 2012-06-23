@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.db;
 
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
@@ -65,7 +66,8 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
          st.close();
          JDBCDataContainerConfig jdbcDataContainerConfig = new JDBCDataContainerConfig();
          jdbcDataContainerConfig.containerName = "ws3";
-         jdbcDataContainerConfig.maxBufferSize = 10;
+         jdbcDataContainerConfig.spoolConfig = SpoolConfig.getDefaultSpoolConfig();
+         jdbcDataContainerConfig.spoolConfig.maxBufferSize = 10;
          jdbcDataContainerConfig.dbStructureType = DatabaseStructureType.SINGLE;
          jdbcConn = new SingleDbJDBCConnection(getJNDIConnection(), false, jdbcDataContainerConfig);
          tableType = "S";

@@ -32,9 +32,12 @@ import java.io.IOException;
 public class TreeFileValueStorage extends FileValueStorage
 {
 
-   public TreeFileValueStorage(FileCleaner cleaner)
+   /**
+    * TreeFileValueStorage constructor.
+    */
+   public TreeFileValueStorage(FileCleaner fileCleaner)
    {
-      super(cleaner);
+      super(fileCleaner);
    }
 
    @Override

@@ -588,8 +588,6 @@ public class RepositoryContainer extends ExoContainer
          public Void run()
          {
             registerComponentInstance(config);
-            // WorkspaceFileCleanerHolder - is a common holder for all workspaces. 
-            // It is used to initialize FileValueStorage
             registerComponentImplementation(FileCleanerHolder.class);
             registerComponentImplementation(LockRemoverHolder.class);
             return null;

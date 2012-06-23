@@ -21,12 +21,14 @@ package org.exoplatform.services.jcr.api.exporting;
 import org.apache.ws.commons.util.Base64;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.util.StringConverter;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -79,7 +81,9 @@ public class TestExportDocView extends ExportBase
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       try
       {
-         Value value = new BinaryValue("this is the content");
+         Value value =
+            new BinaryValue(new ByteArrayInputStream("this is the content".getBytes()),
+               SpoolConfig.getDefaultSpoolConfig());
          contentNode.setProperty("jcr:data", value);
          contentNode.setProperty("jcr:mimeType", "application/octet-stream");
       }

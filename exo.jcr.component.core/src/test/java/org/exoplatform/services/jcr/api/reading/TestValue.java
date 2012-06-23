@@ -20,7 +20,9 @@ package org.exoplatform.services.jcr.api.reading;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.core.value.BinaryValue;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
@@ -114,7 +116,8 @@ public class TestValue extends JcrAPIBaseTest
 
    public void testGetStream() throws RepositoryException, IOException
    {
-      Value value = new BinaryValue(new String("inputStream"));
+      Value value =
+         new BinaryValue(new ByteArrayInputStream("inputStream".getBytes()), SpoolConfig.getDefaultSpoolConfig());
       InputStream iS = value.getStream();
       int aval = iS.available();
       byte[] bytes = new byte[iS.available()];
