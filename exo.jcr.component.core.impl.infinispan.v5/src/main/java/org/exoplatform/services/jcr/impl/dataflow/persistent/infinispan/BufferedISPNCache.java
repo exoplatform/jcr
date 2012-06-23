@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.infinispan.CacheKey;
+import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -959,6 +960,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public void stop()
    {
       PrivilegedISPNCacheHelper.stop((Cache)parentCache);
+      ISPNCacheFactory.releaseUniqueInstance(parentCache.getCacheManager());
    }
 
    /**

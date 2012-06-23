@@ -345,7 +345,15 @@ public class ExoJBossCacheFactory<K, V>
 
             if (!cacheInstance.hasReferences())
             {
-               it.remove();
+               caches.remove(entry.getKey());
+               if (caches.isEmpty())
+               {
+                  allCacheTypes.remove(cacheType);
+                  if (allCacheTypes.isEmpty())
+                  {
+                     CACHES.remove(container);
+                  }
+               }
                PrivilegedJBossCacheHelper.stop((Cache<Serializable, Object>)cache);
             }
          }

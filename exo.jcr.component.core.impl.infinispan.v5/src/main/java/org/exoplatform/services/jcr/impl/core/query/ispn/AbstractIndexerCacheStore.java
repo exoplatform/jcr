@@ -249,5 +249,15 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
       // This cacheStore only accepts data
       return null;
    }
+   
+    /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void stop() throws CacheLoaderException
+   {
+      indexers.clear();
+      super.stop();
+   }
 
 }

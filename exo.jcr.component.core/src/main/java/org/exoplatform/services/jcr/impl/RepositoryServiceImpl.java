@@ -237,6 +237,11 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
 
       return (ManageableRepository)repositoryContainer.getComponentInstanceOfType(ManageableRepository.class);
    }
+   
+   public RepositoryContainer getRepositoryContainer(String name)
+   {
+      return repositoryContainers.get(name);
+   }
 
    public void setCurrentRepositoryName(String repositoryName) throws RepositoryConfigurationException
    {

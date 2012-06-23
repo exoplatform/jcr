@@ -74,4 +74,9 @@ public interface IndexRecovery
     * @throws RepositoryException if error occurs.
     */
    public boolean checkIndexReady() throws RepositoryException;
+   
+   /**
+    * Frees resources
+    */
+   public void close();
 }
