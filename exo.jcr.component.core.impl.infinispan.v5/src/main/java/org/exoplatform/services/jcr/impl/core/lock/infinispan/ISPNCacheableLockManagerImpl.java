@@ -215,7 +215,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          // detect dialect of data-source
          try
          {
-            final DataSource dataSource = (DataSource)new InitialContext().lookup(dataSourceName);
+            this.dataSource = (DataSource)new InitialContext().lookup(dataSourceName);
             if (dataSource == null)
             {
                throw new RepositoryException("DataSource (" + dataSourceName + ") can't be null");
