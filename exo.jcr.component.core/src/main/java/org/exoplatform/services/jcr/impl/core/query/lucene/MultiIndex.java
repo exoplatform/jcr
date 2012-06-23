@@ -312,7 +312,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       this.lastFlushTime = System.currentTimeMillis();
 
       modeHandler.addIndexerIoModeListener(this);
-      indexUpdateMonitor.addIndexUpdateMonitorListener(this);
 
       // this method is run in privileged mode internally
       // as of 1.5 deletable file is not used anymore
@@ -357,11 +356,17 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          reader.release();
       }
-      if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+
+      synchronized (this.modeHandler)
       {
-         // will also initialize IndexMerger
-         setReadWrite();
+         if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+         {
+            // will also initialize IndexMerger
+            setReadWrite();
+         }
+         indexUpdateMonitor.addIndexUpdateMonitorListener(this);
       }
+
       this.indexNames.setMultiIndex(this);
 
       // Add a hook that will stop the threads if they are still running

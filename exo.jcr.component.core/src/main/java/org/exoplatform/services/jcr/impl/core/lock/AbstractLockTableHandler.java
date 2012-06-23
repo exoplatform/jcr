@@ -32,8 +32,6 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 /**
@@ -48,12 +46,18 @@ public abstract class AbstractLockTableHandler implements LockTableHandler
    protected final LockManagerEntry lockManagerEntry;
 
    /**
+    * The data soure.
+    */
+   final DataSource ds;
+
+   /**
     * AbstractLockTableHandler constructor.
     */
-   public AbstractLockTableHandler(WorkspaceEntry workspaceEntry)
+   public AbstractLockTableHandler(WorkspaceEntry workspaceEntry, DataSource ds)
    {
       this.workspaceEntry = workspaceEntry;
       this.lockManagerEntry = workspaceEntry.getLockManager();
+      this.ds = ds;
    }
 
    /**
@@ -117,16 +121,6 @@ public abstract class AbstractLockTableHandler implements LockTableHandler
     */
    protected Connection openConnection() throws SQLException
    {
-      final DataSource ds;
-      try
-      {
-         ds = (DataSource)new InitialContext().lookup(getDataSourceName());
-      }
-      catch (NamingException e)
-      {
-         throw new SQLException(e);
-      }
-
       return SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>()
       {
          public Connection run() throws SQLException
@@ -140,11 +134,6 @@ public abstract class AbstractLockTableHandler implements LockTableHandler
     * Returns node identifier from ID column's value {@link DataSource}.
     */
    protected abstract String extractNodeId(String value);
-
-   /**
-    * Returns the name corresponding {@link DataSource}.
-    */
-   protected abstract String getDataSourceName() throws SQLException;
 
    /**
     * Returns {@link InspectionQuery} for removing row from LOCK table.

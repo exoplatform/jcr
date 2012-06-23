@@ -69,7 +69,7 @@ public class IndexerIoModeHandler
     * Changes the current mode of the indexer. If the value has changes all the listeners
     * will be notified
     */
-   public void setMode(IndexerIoMode mode)
+   public synchronized void setMode(IndexerIoMode mode)
    {
       if (this.mode != mode)
       {

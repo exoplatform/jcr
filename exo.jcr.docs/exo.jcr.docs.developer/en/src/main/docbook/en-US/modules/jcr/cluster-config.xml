@@ -270,34 +270,5 @@
       </itemizedlist>
     </section>
   </section>
-
-  <section id="JCR.ClusterConfig.How_to_stop_the_node_properly">
-    <title>How to stop the node properly</title>
-
-    <para>To be sure that all transactions are over and JCR is in consistent
-    state after stopping node, you need to follow next steps:</para>
-
-    <itemizedlist>
-      <listitem>
-        <para>Connect using JMX to one of cluster's node which you won't need
-        to stop.</para>
-      </listitem>
-
-      <listitem>
-        <para>Use RepositorySuspendController suspend all repositories (see
-        <link linkend="JCR.SearchIndexBackup">37.1 Repository
-        suspending</link>)</para>
-      </listitem>
-
-      <listitem>
-        <para>Stop the node</para>
-      </listitem>
-
-      <listitem>
-        <para>Use RepositorySuspendController to resume all repositories (see
-        <link linkend="JCR.SearchIndexBackup">37.3 Repository
-        resuming</link>)</para>
-      </listitem>
-    </itemizedlist>
-  </section>
 </section>
+
