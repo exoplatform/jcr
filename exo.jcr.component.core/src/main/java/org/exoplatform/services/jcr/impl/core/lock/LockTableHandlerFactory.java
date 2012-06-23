@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.core.lock;
 
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl;
 import org.exoplatform.services.jcr.impl.core.lock.jbosscache.JBCLockTableHandler;
 import org.exoplatform.services.jcr.impl.core.lock.jbosscache.JBCShareableLockTableHandler;
@@ -26,8 +27,9 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Field;
 
+import javax.sql.DataSource;
 
 /**
  * 
@@ -40,28 +42,27 @@ public class LockTableHandlerFactory
    protected static final Log LOG = ExoLogger.getExoLogger("exo.jcr.component.core.LockTableHandlerFactory");
 
    /**
-    * Provides {@link LockTableHandler} instance according to preconfigured {@link LockManager}
+    * Provides {@link LockTableHandler} instance according to preconfigured {@link WorkspaceLockManager}
     * 
     * @param workspaceEntry
+    * @param lockManager
     * @return {@link LockTableHandler}
     */
-   public static LockTableHandler getHandler(WorkspaceEntry workspaceEntry)
+   public static LockTableHandler getHandler(WorkspaceEntry workspaceEntry, AbstractCacheableLockManager lockManager)
    {
       String lockManagerFqn = workspaceEntry.getLockManager().getType();
-      String jbcLockManagerFqn = "org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl";
-      String ispnLockManagerFqn = "org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl";
+      DataSource ds = getDataSource(lockManager);
 
-      String ispnLockTableHandlerFqn = "org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNLockTableHandler";
 
-      if (jbcLockManagerFqn.equals(lockManagerFqn))
+      if ("org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl".equals(lockManagerFqn))
       {
          if (isJbcCacheShareable(workspaceEntry))
          {
-            return new JBCShareableLockTableHandler(workspaceEntry);
+            return new JBCShareableLockTableHandler(workspaceEntry, ds);
          }
-         return new JBCLockTableHandler(workspaceEntry);
+         return new JBCLockTableHandler(workspaceEntry, ds);
       }
-      else if(ispnLockManagerFqn.equals(lockManagerFqn))
+      else if ("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl".equals(lockManagerFqn))
       {
          // we're using reflection to create IspnLockTableHandler instance
          // such aproach allows to avoid addition of jcr.component.core.infinispan.v5 as a dependency
@@ -71,43 +72,46 @@ public class LockTableHandlerFactory
          // jcr.component.core.infinispan.v5 module
          try
          {
-            Class<?> ispnLockTableHandlerClass = Class.forName(ispnLockTableHandlerFqn);
-            Constructor<?>[] ispnLockTableHandlerClassConstructors =
-               ispnLockTableHandlerClass.getDeclaredConstructors();
+            Class<?> ispnLockTableHandlerClass =
+               Class.forName("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNLockTableHandler");
+            Constructor<?> ispnLockTableHandlerClassConstructor =
+               ispnLockTableHandlerClass.getConstructor(WorkspaceEntry.class, DataSource.class);
 
-            for (Constructor<?> constructor : ispnLockTableHandlerClassConstructors)
-            {
-               Class<?>[] parameterTypes = constructor.getParameterTypes();
-               if (parameterTypes.length == 1 && parameterTypes[0] == WorkspaceEntry.class)
-               {
-                  return (LockTableHandler)constructor.newInstance(workspaceEntry);
-               }
-            }
+            return (LockTableHandler)ispnLockTableHandlerClassConstructor.newInstance(workspaceEntry, ds);
          }
-         catch (ClassNotFoundException e)
+         catch (Throwable e)
          {
-            LOG.error(e.getMessage(), e);
-         }
-         catch (IllegalArgumentException e)
-         {
-            LOG.error(e.getMessage(), e);
-         }
-         catch (InstantiationException e)
-         {
-            LOG.error(e.getMessage(), e);
-         }
-         catch (IllegalAccessException e)
-         {
-            LOG.error(e.getMessage(), e);
-         }
-         catch (InvocationTargetException e)
-         {
-            LOG.error(e.getMessage(), e);
+            throw new IllegalStateException(e.getMessage(), e);
          }
       }
+      else
+      {
+         throw new UnsupportedOperationException(
+            "Currently supported only CacheableLockManagerImpl and ISPNCacheableLockManagerImpl");
+      }
+   }
 
-      throw new UnsupportedOperationException(
-         "Currently supported only CacheableLockManagerImpl and ISPNCacheableLockManagerImpl");
+   private static DataSource getDataSource(AbstractCacheableLockManager lockManager)
+   {
+      DataSource ds;
+      try
+      {
+         Field field = lockManager.getClass().getSuperclass().getDeclaredField("dataSource");
+         field.setAccessible(true);
+
+         ds = (DataSource)field.get(lockManager);
+      }
+      catch (Throwable e)
+      {
+         throw new IllegalStateException("Can't get access to the field 'dataSource' of class "
+            + lockManager.getClass());
+      }
+
+      if (ds == null)
+      {
+         throw new IllegalStateException("Datasource is null in class " + lockManager.getClass());
+      }
+      return ds;
    }
 
    private static Boolean isJbcCacheShareable(WorkspaceEntry workspaceEntry)

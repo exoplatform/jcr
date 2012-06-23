@@ -28,6 +28,8 @@ import org.exoplatform.services.log.Log;
 
 import java.sql.SQLException;
 
+import javax.sql.DataSource;
+
 /**
  * Provides means for nodes' IDs extraction in case we use {@link ISPNCacheableLockManagerImpl}
  * as {@link LockManager} based on ISPN Cache instance.
@@ -45,9 +47,9 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
    /**
     * ISPNLockTableHandler constructor.
     */
-   public ISPNLockTableHandler(WorkspaceEntry workspaceEntry)
+   public ISPNLockTableHandler(WorkspaceEntry workspaceEntry, DataSource ds)
    {
-      super(workspaceEntry);
+      super(workspaceEntry, ds);
    }
 
    /**
@@ -92,21 +94,6 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
       {
          return lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME) + "_" + "L"
             + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_");
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         throw new SQLException(e);
-      }
-   }
-   
-   /**
-    * {@inheritDoc}
-    */
-   protected String getDataSourceName() throws SQLException
-   {
-      try
-      {
-         return lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_CL_DATASOURCE);
       }
       catch (RepositoryConfigurationException e)
       {

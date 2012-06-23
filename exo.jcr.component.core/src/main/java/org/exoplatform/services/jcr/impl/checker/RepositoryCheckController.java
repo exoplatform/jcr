@@ -26,6 +26,7 @@ import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.AbstractRepositorySuspender;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -349,6 +350,9 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       JDBCWorkspaceDataContainer dataContainer =
          (JDBCWorkspaceDataContainer)getComponent(JDBCWorkspaceDataContainer.class, wsName);
 
+      AbstractCacheableLockManager lockManager =
+         (AbstractCacheableLockManager)getComponent(AbstractCacheableLockManager.class, wsName);
+
       ValueStoragePluginProvider vsPlugin =
          (ValueStoragePluginProvider)getComponent(ValueStoragePluginProvider.class, wsName);
 
@@ -356,7 +360,8 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       
       NodeTypeDataManagerImpl nodeTypeManager = (NodeTypeDataManagerImpl)getComponent(NodeTypeDataManagerImpl.class, wsName);
 
-      return new JDBCWorkspaceDataContainerChecker(dataContainer, vsPlugin, wsEntry, nodeTypeManager, lastReport);
+      return new JDBCWorkspaceDataContainerChecker(dataContainer, lockManager, vsPlugin, wsEntry, nodeTypeManager,
+         lastReport);
    }
 
    private Object getComponent(Class forClass, String wsName)

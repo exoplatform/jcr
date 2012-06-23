@@ -38,6 +38,7 @@ import org.exoplatform.services.jcr.impl.checker.RootAsParentAssigner;
 import org.exoplatform.services.jcr.impl.checker.ValueRecordsRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandlerFactory;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
@@ -90,14 +91,14 @@ public class JDBCWorkspaceDataContainerChecker
     * JDBCWorkspaceDataContainerChecker constructor.
     */
    public JDBCWorkspaceDataContainerChecker(JDBCWorkspaceDataContainer jdbcDataContainer,
-      ValueStoragePluginProvider vsPlugin, WorkspaceEntry workspaceEntry, NodeTypeDataManagerImpl nodeTypeManager,
-      InspectionReport report)
+      AbstractCacheableLockManager lockManager, ValueStoragePluginProvider vsPlugin, WorkspaceEntry workspaceEntry,
+      NodeTypeDataManagerImpl nodeTypeManager, InspectionReport report)
    {
       this.jdbcDataContainer = jdbcDataContainer;
       this.vsPlugin = vsPlugin;
       this.workspaceEntry = workspaceEntry;
       this.report = report;
-      this.lockHandler = LockTableHandlerFactory.getHandler(workspaceEntry);
+      this.lockHandler = LockTableHandlerFactory.getHandler(workspaceEntry, lockManager);
       this.nodeTypeManager = nodeTypeManager;
 
       initInspectionQueries();

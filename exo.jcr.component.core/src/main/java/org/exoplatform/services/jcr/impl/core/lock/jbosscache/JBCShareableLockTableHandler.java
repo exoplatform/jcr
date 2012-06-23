@@ -23,6 +23,8 @@ import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 
 import java.sql.SQLException;
 
+import javax.sql.DataSource;
+
 /**
  * Provides means for nodes' IDs extraction in case we use {@link CacheableLockManagerImpl}
  * as {@link LockManager} based on shareable JBoss Cache instance.
@@ -38,9 +40,9 @@ public class JBCShareableLockTableHandler extends JBCLockTableHandler implements
    /**
     * JBCShareableLockTableHandler constructor.
     */
-   public JBCShareableLockTableHandler(WorkspaceEntry workspaceEntry)
+   public JBCShareableLockTableHandler(WorkspaceEntry workspaceEntry, DataSource ds)
    {
-      super(workspaceEntry);
+      super(workspaceEntry, ds);
    }
 
    /**
