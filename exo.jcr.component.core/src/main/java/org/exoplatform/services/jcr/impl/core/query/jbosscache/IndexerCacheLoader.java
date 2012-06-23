@@ -87,8 +87,7 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
     */
    public void unregister(Fqn<String> fqn)
    {
-      boolean removed = indexers.remove(fqn) != null;
-      LOG.info("Removed=" + removed + " indexer for FQN " + fqn);
+      indexers.remove(fqn);
       if (LOG.isDebugEnabled())
       {
          LOG.debug("Unregister " + fqn.getLastElementAsString() + " " + this + " in " + indexers);
