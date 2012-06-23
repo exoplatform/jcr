@@ -119,5 +119,6 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter implements Loc
    public void close()
    {
       PrivilegedISPNCacheHelper.stop(cache);
+      ISPNCacheFactory.releaseUniqueInstance(cache.getCacheManager());
    }
 }

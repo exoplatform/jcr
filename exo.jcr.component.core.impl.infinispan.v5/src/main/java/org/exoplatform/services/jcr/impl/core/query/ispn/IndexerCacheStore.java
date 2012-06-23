@@ -236,6 +236,16 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
       }
    }
 
+    /**
+     * {@inheritDoc}
+     */
+   @Override
+   public void stop() throws CacheLoaderException
+   {
+      cacheManager.removeListener(listener);
+      super.stop();
+   }
+   
    @Listener
    public class CacheListener
    {

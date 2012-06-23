@@ -79,6 +79,21 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
          LOG.debug("Register " + searchManager.getWsId() + " " + this + " in " + indexers);
       }
    }
+   
+   /**
+    * Removes previously registered Indexer (combination of QueryHandlers and SearchManagers) from indexers map
+    * 
+    * @param fqn
+    */
+   public void unregister(Fqn<String> fqn)
+   {
+      boolean removed = indexers.remove(fqn) != null;
+      LOG.info("Removed=" + removed + " indexer for FQN " + fqn);
+      if (LOG.isDebugEnabled())
+      {
+         LOG.debug("Unregister " + fqn.getLastElementAsString() + " " + this + " in " + indexers);
+      }
+   }
 
    /**
     * @see org.jboss.cache.loader.CacheLoader#put(org.jboss.cache.Fqn, java.lang.Object, java.lang.Object)

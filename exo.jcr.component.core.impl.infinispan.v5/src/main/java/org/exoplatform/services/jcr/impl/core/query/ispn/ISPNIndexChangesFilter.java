@@ -134,5 +134,6 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
    public void close()
    {
       PrivilegedISPNCacheHelper.stop(cache);
+      ISPNCacheFactory.releaseUniqueInstance(cache.getCacheManager());
    }
 }

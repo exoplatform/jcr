@@ -428,7 +428,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       this.rpcService = rpcService;
       this.txResourceManager = txResourceManager;
-      doInitRemoteCommands();
    }
 
    /**
@@ -498,7 +497,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       this.rpcService = rpcService;
       this.txResourceManager = txResourceManager;
-      doInitRemoteCommands();
    }
 
    /**
@@ -2083,7 +2081,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Initialization remote commands.
     */
-   private void doInitRemoteCommands()
+   private void initRemoteCommands()
    {
       if (rpcService != null)
       {
@@ -2381,6 +2379,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void start()
    {
+      initRemoteCommands();
       isStopped.set(false);
 
       try
@@ -2483,6 +2482,14 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       if (filtersEnabled.get())
       {
          cache.removeListener(this);
+      }
+      if (rpcService!=null)
+      {
+         rpcService.unregisterTopologyChangeListener(this);
+         
+         rpcService.unregisterCommand(requestForResponsibleForResuming);
+         rpcService.unregisterCommand(resume);
+         rpcService.unregisterCommand(suspend);
       }
 
       isStopped.set(true);
