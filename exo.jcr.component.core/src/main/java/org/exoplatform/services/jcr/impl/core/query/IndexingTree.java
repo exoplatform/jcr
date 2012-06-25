@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.datamodel.QPath;
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey
  *         Kabashnyuk</a>
  * @version $Id: IndexingTree.java 790 2009-11-20 13:45:40Z skabashnyuk $
- * 
  */
 public class IndexingTree
 {
@@ -38,15 +37,20 @@ public class IndexingTree
    private final QPath excludedPath;
 
    /**
+    * Indicates if need to indexing every node. 
+    */
+   private final boolean allIndexing;
+
+   /**
     * @param indexingRoot
     * @param excludedPaths
     */
    public IndexingTree(NodeData indexingRoot, QPath excludedPath)
    {
-      super();
       this.indexingRoot = indexingRoot;
       this.indexingRootQpath = indexingRoot.getQPath();
       this.excludedPath = excludedPath;
+      this.allIndexing = indexingRoot.getQPath().getDepth() == 0;
    }
 
    /**
@@ -88,6 +92,7 @@ public class IndexingTree
          return true;
       }
 
-      return !eventData.getQPath().isDescendantOf(indexingRootQpath) && !eventData.getQPath().equals(indexingRootQpath);
+      return !allIndexing && !eventData.getQPath().isDescendantOf(indexingRootQpath)
+         && !eventData.getQPath().equals(indexingRootQpath);
    }
 }

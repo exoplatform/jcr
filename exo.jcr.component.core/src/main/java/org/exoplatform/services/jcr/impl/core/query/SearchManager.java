@@ -186,9 +186,14 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected final String repositoryName;
 
    /**
-    * The Repository name.
+    * The Workspace name.
     */
    protected final String workspaceName;
+
+   /**
+    * Indicates if workspace is system or not.
+    */
+   protected final boolean isSystem;
 
    /**
     * The repository service.
@@ -302,6 +307,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       this.rpcService = rpcService;
       this.repositoryName = rEntry.getName();
       this.workspaceName = wEntry.getName();
+      this.isSystem = rEntry.getSystemWorkspaceName().equals(workspaceName);
       this.rService = rService;
       this.wsId = wEntry.getUniqueName();
       this.extractor = extractor;
@@ -619,8 +625,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          if (indexingTree == null)
          {
             NodeData indexingRootNodeData = (NodeData)itemMgr.getItemData(Constants.ROOT_UUID);
-            
-            indexingTree = new IndexingTree(indexingRootNodeData, Constants.JCR_SYSTEM_PATH);
+            indexingTree = new IndexingTree(indexingRootNodeData, isSystem ? Constants.JCR_SYSTEM_PATH : null);
          }
          initializeQueryHandler();
       }
