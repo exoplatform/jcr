@@ -37,7 +37,6 @@ import org.exoplatform.services.jcr.impl.checker.PropertyRemover;
 import org.exoplatform.services.jcr.impl.checker.RootAsParentAssigner;
 import org.exoplatform.services.jcr.impl.checker.ValueRecordsRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
-import org.exoplatform.services.jcr.impl.core.lock.LockTableHandlerFactory;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataNotFoundException;
@@ -98,7 +97,7 @@ public class JDBCWorkspaceDataContainerChecker
       this.vsPlugin = vsPlugin;
       this.workspaceEntry = workspaceEntry;
       this.report = report;
-      this.lockHandler = LockTableHandlerFactory.getHandler(workspaceEntry, lockManager);
+      this.lockHandler = lockManager.getLockTableHandler();
       this.nodeTypeManager = nodeTypeManager;
 
       initInspectionQueries();
