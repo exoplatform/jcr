@@ -47,6 +47,7 @@ import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
+import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 import org.exoplatform.services.jcr.impl.core.lock.SessionLockManager;
 import org.exoplatform.services.jcr.impl.dataflow.TransientItemData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -1029,5 +1030,10 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
     * Clean cache directly.
     */
    protected abstract void doClean();
+
+   /**
+    * Returns {@link LockTableHandler} for lock table consistency checking.
+    */
+   public abstract LockTableHandler getLockTableHandler();
 
 }
