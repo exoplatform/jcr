@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
+import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.CacheableSessionLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
@@ -449,5 +450,13 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
             doRemove(lockData);
          }
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public LockTableHandler getLockTableHandler()
+   {
+      return new ISPNLockTableHandler(config, dataSource);
    }
 }
