@@ -23,6 +23,8 @@ import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.PortalContainer;
 import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.container.component.ThreadContext;
+import org.exoplatform.container.component.ThreadContextHolder;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -55,7 +57,7 @@ import javax.jcr.RepositoryException;
  * @version $Id: RepositoryServiceImpl.java 13986 2008-05-08 10:48:43Z pnedonosko $
  */
 
-public class RepositoryServiceImpl implements RepositoryService, Startable
+public class RepositoryServiceImpl implements RepositoryService, Startable, ThreadContextHolder
 {
 
    protected static Log log = ExoLogger.getLogger("exo.jcr.component.core.RepositoryServiceImpl");
@@ -186,6 +188,14 @@ public class RepositoryServiceImpl implements RepositoryService, Startable
       }
 
       return config;
+   }
+
+   /**
+    * {@inheritDoc} 
+    */
+   public ThreadContext getThreadContext()
+   {
+      return new ThreadContext(currentRepositoryName);
    }
 
    /**
