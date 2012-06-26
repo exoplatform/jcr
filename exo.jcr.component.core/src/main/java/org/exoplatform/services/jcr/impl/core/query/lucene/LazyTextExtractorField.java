@@ -104,7 +104,7 @@ public class LazyTextExtractorField extends AbstractField
                      cause = e.getCause();
                   }
 
-                  log.warn("Exception reading value for field: '" + name + "': " + cause);
+                  log.warn("Exception while reading the value of the  field: '" + name + "': " + cause);
                   log.debug("Dump:", e);
                }
                finally
