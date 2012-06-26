@@ -41,8 +41,6 @@ public interface QueryHandlerParams
 
    public static final String PARAM_EXCERPTPROVIDER_CLASS = "excerptprovider-class";
 
-   public static final String PARAM_EXCLUDED_NODE_IDENTIFERS = "excluded-node-identifers";
-
    public static final String PARAM_EXTRACTOR_BACKLOG = "extractor-backlog";
 
    public static final String PARAM_EXTRACTOR_POOLSIZE = "extractor-pool-size";
@@ -78,8 +76,6 @@ public interface QueryHandlerParams
    public static final String PARAM_QUERY_CLASS = "query-class";
 
    public static final String PARAM_RESULT_FETCH_SIZE = "result-fetch-size";
-
-   public static final String PARAM_ROOT_NODE_ID = "root-node-id";
 
    public static final String PARAM_SPELLCHECKER_CLASS = "spellchecker-class";
 

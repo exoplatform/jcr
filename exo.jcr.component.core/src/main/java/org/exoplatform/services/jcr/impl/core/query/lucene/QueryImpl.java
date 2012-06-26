@@ -113,7 +113,7 @@ public class QueryImpl extends AbstractQueryImpl
       Query query =
          LuceneQueryBuilder.createQuery(root, session, index.getContext().getItemStateManager(),
             index.getNamespaceMappings(), index.getTextAnalyzer(), propReg, index.getSynonymProvider(),
-            index.getIndexFormatVersion(), index.getContext().getVirtualTableResolver());
+            index.getIndexFormatVersion(), index.getContext().getVirtualTableResolver(), index.getIndexingConfig());
 
       OrderQueryNode orderNode = root.getOrderNode();
 

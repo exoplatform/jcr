@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
@@ -38,8 +37,6 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCService;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.jcr.RepositoryException;
 
@@ -96,11 +93,9 @@ public class SystemSearchManager extends SearchManager
          {
             if (indexingTree == null)
             {
-               List<QPath> excludedPaths = new ArrayList<QPath>();
-
                NodeData indexingRootNodeData = (NodeData)itemMgr.getItemData(Constants.SYSTEM_UUID);
 
-               indexingTree = new IndexingTree(indexingRootNodeData, excludedPaths);
+               indexingTree = new IndexingTree(indexingRootNodeData, null);
             }
             initializeQueryHandler();
          }

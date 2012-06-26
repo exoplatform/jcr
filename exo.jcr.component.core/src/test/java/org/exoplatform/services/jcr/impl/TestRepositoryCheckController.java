@@ -66,6 +66,8 @@ import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.UnsupportedRepositoryOperationException;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
@@ -108,11 +110,39 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    public void testCheckDataBase() throws Exception
    {
-      TesterRepositoryCheckController checkController =
-         new TesterRepositoryCheckController(repositoryService.getRepository("db1"));
+      ManageableRepository db1 = repositoryService.getRepository("db1");
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(db1);
 
-      assertResult(checkController.checkDataBase(), checkController.getLastReportPath(), true);
-      //assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+      SessionImpl session = (SessionImpl)repository.login(credentials, "ws1");
+      Node testRoot = session.getRootNode().addNode("testRoot");
+      Node exoTrash = testRoot.addNode("exo:trash");
+      Node exoTrash2 = testRoot.addNode("exo:trash2");
+      exoTrash.addNode("node1");
+      exoTrash.addNode("node2");
+      Node node1 = exoTrash2.addNode("node1");
+      Node node2 = exoTrash2.addNode("node2");
+
+      session.save();
+
+      assertResult(checkController.checkIndex(), checkController.getLastReportPath(), true);
+
+      QueryManager qman = session.getWorkspace().getQueryManager();
+
+      Query q = qman.createQuery("SELECT * FROM nt:base WHERE jcr:path LIKE '/testRoot/%'", Query.SQL);
+      assertEquals(5, q.execute().getNodes().getSize());
+
+      node1.addMixin("exo:hiddenable");
+      node2.addMixin("exo:nothiddenable");
+
+      session.save();
+
+      assertResult(checkController.checkIndex(), checkController.getLastReportPath(), true);
+
+      q = qman.createQuery("SELECT * FROM nt:base WHERE jcr:path LIKE '/testRoot/%'", Query.SQL);
+      assertEquals(4, q.execute().getNodes().getSize());
+
+      testRoot.remove();
+      session.save();
    }
 
    public void testLockUsecases() throws Exception

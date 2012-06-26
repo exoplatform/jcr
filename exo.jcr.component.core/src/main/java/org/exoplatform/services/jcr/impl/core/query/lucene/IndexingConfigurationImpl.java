@@ -47,6 +47,7 @@ import org.w3c.dom.NodeList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -96,6 +97,8 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
     * The configured analyzers for indexing properties.
     */
    private Map<String, Analyzer> analyzers = new HashMap<String, Analyzer>();
+
+   private Set<ExcludingRule> excludingRules = new HashSet<ExcludingRule>();
 
    /**
     * {@inheritDoc}
@@ -200,6 +203,10 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                }
             }
          }
+         else if (configNode.getNodeName().equals("exclude"))
+         {
+            excludingRules.add(new ExcludingRuleImpl(configNode, ntReg, resolver));
+         }
 
       }
       aggregateRules = idxAggregates.toArray(new AggregateRule[idxAggregates.size()]);
@@ -236,6 +243,22 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
       }
       // none of the configs matches -> index property
       return true;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isExcluded(NodeData state)
+   {
+      for (ExcludingRule rule : excludingRules)
+      {
+         if (rule.suiteFor(state))
+         {
+            return true;
+         }
+      }
+
+      return false;
    }
 
    /**

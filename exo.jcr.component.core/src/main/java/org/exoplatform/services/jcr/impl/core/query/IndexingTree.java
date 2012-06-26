@@ -23,14 +23,10 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey
  *         Kabashnyuk</a>
  * @version $Id: IndexingTree.java 790 2009-11-20 13:45:40Z skabashnyuk $
- * 
  */
 public class IndexingTree
 {
@@ -38,38 +34,23 @@ public class IndexingTree
 
    private final NodeData indexingRoot;
 
-   private final List<QPath> excludedPaths;
+   private final QPath excludedPath;
+
+   /**
+    * Indicates if need to indexing every node. 
+    */
+   private final boolean allIndexing;
 
    /**
     * @param indexingRoot
     * @param excludedPaths
     */
-   public IndexingTree(NodeData indexingRoot, List<QPath> excludedPaths)
+   public IndexingTree(NodeData indexingRoot, QPath excludedPath)
    {
-      super();
       this.indexingRoot = indexingRoot;
       this.indexingRootQpath = indexingRoot.getQPath();
-      this.excludedPaths = excludedPaths;
-   }
-
-   /**
-    * @param indexingRoot
-    * @param excludedPaths
-    */
-   public IndexingTree(NodeData indexingRoot)
-   {
-      super();
-      this.indexingRoot = indexingRoot;
-      this.indexingRootQpath = indexingRoot.getQPath();
-      this.excludedPaths = new ArrayList<QPath>();
-   }
-
-   /**
-    * @return the excludedPaths
-    */
-   public List<QPath> getExcludedPaths()
-   {
-      return excludedPaths;
+      this.excludedPath = excludedPath;
+      this.allIndexing = indexingRoot.getQPath().getDepth() == 0;
    }
 
    /**
@@ -91,15 +72,7 @@ public class IndexingTree
     */
    public boolean isExcluded(ItemState event)
    {
-
-      for (QPath excludedPath : excludedPaths)
-      {
-         if (event.getData().getQPath().isDescendantOf(excludedPath) || event.getData().getQPath().equals(excludedPath))
-            return true;
-      }
-
-      return !event.getData().getQPath().isDescendantOf(indexingRootQpath)
-         && !event.getData().getQPath().equals(indexingRootQpath);
+      return isExcluded(event.getData());
    }
 
    /**
@@ -113,13 +86,13 @@ public class IndexingTree
     */
    public boolean isExcluded(ItemData eventData)
    {
-
-      for (QPath excludedPath : excludedPaths)
+      if (excludedPath != null
+         && (eventData.getQPath().isDescendantOf(excludedPath) || eventData.getQPath().equals(excludedPath)))
       {
-         if (eventData.getQPath().isDescendantOf(excludedPath) || eventData.getQPath().equals(excludedPath))
-            return true;
+         return true;
       }
 
-      return !eventData.getQPath().isDescendantOf(indexingRootQpath) && !eventData.getQPath().equals(indexingRootQpath);
+      return !allIndexing && !eventData.getQPath().isDescendantOf(indexingRootQpath)
+         && !eventData.getQPath().equals(indexingRootQpath);
    }
 }

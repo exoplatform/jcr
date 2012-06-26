@@ -176,6 +176,15 @@
          </childNodeDefinition>
       </childNodeDefinitions>
    </nodeType>
+   
+   <nodeType name="exo:hiddenable" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+   </nodeType>
+
+   <nodeType name="exo:hiddenable2" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+   </nodeType>
+
+   <nodeType name="exo:nothiddenable" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+   </nodeType>
 
    <!-- exo:actions property will be used to store all actions that reference to this node -->
    <nodeType name="exo:actionable" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">

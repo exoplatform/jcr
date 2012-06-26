@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.commons.collections.iterators.IteratorChain;
+import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -44,6 +45,8 @@ public class NodeTraversingQueryHits extends AbstractQueryHits
      * The nodes to traverse.
      */
     private final Iterator nodes;
+    
+    private IndexingConfiguration indexConfig;
 
     /**
      * Creates query hits that consist of the nodes that are traversed from a
@@ -52,8 +55,8 @@ public class NodeTraversingQueryHits extends AbstractQueryHits
      * @param start        the start node of the traversal.
      * @param includeStart whether to include the start node in the result.
      */
-    public NodeTraversingQueryHits(Node start, boolean includeStart) {
-        this(start, includeStart, Integer.MAX_VALUE);
+    public NodeTraversingQueryHits(Node start, boolean includeStart, IndexingConfiguration indexConfig) {
+        this(start, includeStart, Integer.MAX_VALUE, indexConfig);
     }
 
     /**
@@ -66,8 +69,10 @@ public class NodeTraversingQueryHits extends AbstractQueryHits
      */
     public NodeTraversingQueryHits(Node start,
                                    boolean includeStart,
-                                   int maxDepth) {
+                                   int maxDepth,
+                                   IndexingConfiguration indexConfig) {
         this.nodes = new TraversingNodeIterator(start, maxDepth);
+        this.indexConfig = indexConfig;
         if (!includeStart) {
             nodes.next();
         }
@@ -179,10 +184,17 @@ public class NodeTraversingQueryHits extends AbstractQueryHits
                // create new TraversingNodeIterator for each child
                try
                {
-                  NodeIterator children = currentNode.getNodes();
-                  while (children.hasNext())
+                  if (indexConfig == null || !indexConfig.isExcluded((NodeData)((NodeImpl)currentNode).getData()))
                   {
-                     allIterators.add(new TraversingNodeIterator(children.nextNode(), maxDepth - 1));
+                     NodeIterator children = currentNode.getNodes();
+                     while (children.hasNext())
+                     {
+                        NodeImpl node = (NodeImpl)children.nextNode();
+                        if (indexConfig == null || !indexConfig.isExcluded((NodeData)node.getData()))
+                        {
+                           allIterators.add(new TraversingNodeIterator(node, maxDepth - 1));
+                        }
+                     }
                   }
                }
                catch (RepositoryException e)

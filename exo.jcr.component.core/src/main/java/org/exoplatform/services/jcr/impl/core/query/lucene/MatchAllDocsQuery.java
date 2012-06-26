@@ -16,12 +16,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.lucene.search.Sort;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.io.IOException;
 
 import javax.jcr.RepositoryException;
-
-import org.apache.lucene.search.Sort;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 /**
  * <code>MatchAllDocsQuery</code> extends the lucene <code>MatchAllDocsQuery</code>
@@ -30,8 +30,19 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 public class MatchAllDocsQuery
         extends org.apache.lucene.search.MatchAllDocsQuery
         implements JcrQuery {
+    
+   private IndexingConfiguration indexConfig;
 
-    /**
+   /**
+    * @param index
+    */
+   public MatchAllDocsQuery(IndexingConfiguration indexConfig)
+   {
+      super();
+      this.indexConfig = indexConfig;
+   }
+
+   /**
      * {@inheritDoc}
      */
     public QueryHits execute(JcrIndexSearcher searcher,
@@ -40,7 +51,7 @@ public class MatchAllDocsQuery
         if (sort.getSort().length == 0) {
             try {
                 return new NodeTraversingQueryHits(
-                        session.getRootNode(), true);
+                        session.getRootNode(), true, indexConfig);
             } catch (RepositoryException e) {
                 throw Util.createIOException(e);
             }
