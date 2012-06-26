@@ -85,7 +85,7 @@ public class LazyTextExtractorField extends AbstractField
          {
             if (extract == null)
             {
-               StringBuffer textExtract = new StringBuffer();
+               StringBuilder textExtract = new StringBuilder();
                char[] buffer = new char[1024];
                int len;
                try
@@ -97,7 +97,14 @@ public class LazyTextExtractorField extends AbstractField
                }
                catch (IOException e)
                {
-                  log.warn("Exception reading value for field: " + e.getMessage());
+                  Throwable cause = e;
+                  if ((e.getMessage() == null || e.getMessage().isEmpty()) && e.getCause() != null)
+                  {
+                     // some tika parsers throws exception with null message
+                     cause = e.getCause();
+                  }
+
+                  log.warn("Exception reading value for field: '" + name + "': " + cause);
                   log.debug("Dump:", e);
                }
                finally
