@@ -65,8 +65,10 @@ public class TestCaching extends BaseStandaloneTest
       Property lastModifiedProperty = contentNode.getProperty("jcr:lastModified");
 
       SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
-      Calendar lastModifiedDate = lastModifiedProperty.getDate();
-
+      
+      Calendar lastModifiedDate = Calendar.getInstance();
+      lastModifiedDate.setTimeInMillis(lastModifiedProperty.getDate().getTimeInMillis());
+      
       lastModifiedDate.add(Calendar.SECOND, -10);
       // Rollback If-Modified-Since 10 seconds earlier.
       String ifModifiedDate = dateFormat.format(lastModifiedDate.getTime());
