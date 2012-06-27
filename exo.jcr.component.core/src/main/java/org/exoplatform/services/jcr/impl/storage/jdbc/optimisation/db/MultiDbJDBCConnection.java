@@ -173,7 +173,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
             + JCR_VALUE + " V";
 
       FIND_MAX_PROPERTY_VERSIONS =
-         "select max(VERSION) FROM JCR_MITEM WHERE PARENT_ID=? and NAME=? and I_INDEX=? and I_CLASS=2";
+         "select max(VERSION) FROM " + JCR_ITEM + " WHERE PARENT_ID=? and NAME=? and I_INDEX=? and I_CLASS=2";
 
       INSERT_NODE =
          "insert into " + JCR_ITEM + " (ID, PARENT_ID, NAME, VERSION, I_CLASS, I_INDEX, N_ORDER_NUM) VALUES(?,?,?,?,"
