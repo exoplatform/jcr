@@ -31,7 +31,6 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.RepositoryException;
 
@@ -53,11 +52,6 @@ public final class WorkspaceContainerFacade
    private final WorkspaceResumer workspaceResumer;
 
    /**
-    * Indicates that node keep responsible for resuming.
-    */
-   public final AtomicBoolean responsibleForResuming = new AtomicBoolean(false);
-
-   /**
     * @param workspaceName
     * @param container
     */
@@ -66,19 +60,6 @@ public final class WorkspaceContainerFacade
       this.workspaceName = workspaceName;
       this.container = container;
       this.workspaceResumer = (WorkspaceResumer)container.getComponentInstanceOfType(WorkspaceResumer.class);
-   }
-
-   /**
-    * @return the responsibleForResuming
-    */
-   public boolean getResponsibleForResuming()
-   {
-      return responsibleForResuming.get();
-   }
-
-   public void setResponsibleForResuming(boolean rep)
-   {
-      responsibleForResuming.set(rep);
    }
 
    /**
@@ -188,7 +169,7 @@ public final class WorkspaceContainerFacade
                switch (state)
                {
                   case ManageableRepository.ONLINE :
-                     setOnline();
+                     resume();
                      break;
                   case ManageableRepository.OFFLINE :
                      suspend();
@@ -224,10 +205,13 @@ public final class WorkspaceContainerFacade
     */
    private void suspend() throws RepositoryException
    {
-      workspaceResumer.onSuspend();
+      if (workspaceResumer != null)
+      {
+         workspaceResumer.onSuspend();
+      }
 
       List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
-      setResponsibleForResuming(true);
+
       Comparator<Suspendable> c = new Comparator<Suspendable>()
       {
          public int compare(Suspendable s1, Suspendable s2)
@@ -254,13 +238,16 @@ public final class WorkspaceContainerFacade
    }
 
    /**
-    * Suspend all components in workspace.
+    * Set all components online.
     * 
     * @throws RepositoryException
     */
    private void resume() throws RepositoryException
    {
-      workspaceResumer.onResume();
+      if (workspaceResumer != null)
+      {
+         workspaceResumer.onResume();
+      }
 
       // components should be resumed in reverse order
       List<Suspendable> components = getComponentInstancesOfType(Suspendable.class);
@@ -284,19 +271,8 @@ public final class WorkspaceContainerFacade
          }
          catch (ResumeException e)
          {
-            throw new RepositoryException("Can't resume component", e);
+            throw new RepositoryException("Can't set component online", e);
          }
       }
-      setResponsibleForResuming(false);
-   }
-
-   /**
-    * Set all components online.
-    * 
-    * @throws RepositoryException
-    */
-   private void setOnline() throws RepositoryException
-   {
-      resume();
    }
 }

@@ -85,23 +85,12 @@ public class WorkspaceResumer implements Startable, TopologyChangeListener
    }
 
    /**
-    * WorkspaceResumer constructor.
-    */
-   public WorkspaceResumer(RepositoryImpl reposistory, WorkspaceEntry wsEntry)
-   {
-      this(null, reposistory, wsEntry);
-   }
-
-   /**
     * Unregister remote commands.
     */
    private void unregisterRemoteCommands()
    {
-      if (rpcService != null)
-      {
-         rpcService.unregisterCommand(requestForResponsibleForResuming);
-         rpcService.unregisterTopologyChangeListener(this);
-      }
+      rpcService.unregisterCommand(requestForResponsibleForResuming);
+      rpcService.unregisterTopologyChangeListener(this);
    }
 
    /**
@@ -109,23 +98,20 @@ public class WorkspaceResumer implements Startable, TopologyChangeListener
     */
    private void registerRemoteCommands()
    {
-      if (rpcService != null)
+      requestForResponsibleForResuming = rpcService.registerCommand(new RemoteCommand()
       {
-         requestForResponsibleForResuming = rpcService.registerCommand(new RemoteCommand()
+         public String getId()
          {
-            public String getId()
-            {
-               return this.getClass().getName() + "-requestForResponsibilityForResuming-" + wsEntry.getUniqueName();
-            }
+            return this.getClass().getName() + "-requestForResponsibilityForResuming-" + wsEntry.getUniqueName();
+         }
 
-            public Serializable execute(Serializable[] args) throws Throwable
-            {
-               return responsibleForResuming.get();
-            }
-         });
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            return responsibleForResuming.get();
+         }
+      });
 
-         rpcService.registerTopologyChangeListener(this);
-      }
+      rpcService.registerTopologyChangeListener(this);
    }
 
    /**
@@ -158,7 +144,7 @@ public class WorkspaceResumer implements Startable, TopologyChangeListener
     */
    public void onResume()
    {
-      LOG.info("Resuming workspace " + wsEntry.getUniqueName());
+      LOG.info("Setting workspace " + wsEntry.getUniqueName() + " online");
       responsibleForResuming.set(false);
    }
 
@@ -178,7 +164,7 @@ public class WorkspaceResumer implements Startable, TopologyChangeListener
                new Thread()
                {
                   @Override
-                  public synchronized void run()
+                  public void run()
                   {
                      try
                      {
@@ -186,7 +172,7 @@ public class WorkspaceResumer implements Startable, TopologyChangeListener
                            rpcService.executeCommandOnAllNodes(requestForResponsibleForResuming, true);
                         for (Object result : results)
                         {
-                           if ((Boolean)result)
+                           if (!(result instanceof Throwable) && (Boolean)result)
                            {
                               return;
                            }

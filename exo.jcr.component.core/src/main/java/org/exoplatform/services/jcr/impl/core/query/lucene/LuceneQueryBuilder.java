@@ -163,6 +163,8 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
 
    private final VirtualTableResolver<Query> virtualTableResolver;
 
+   private IndexingConfiguration indexConfig;
+
    /**
     * Creates a new <code>LuceneQueryBuilder</code> instance.
     * 
@@ -188,11 +190,12 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
     * @param virtualTableResolver
     * @throws RepositoryException
     */
-   private LuceneQueryBuilder(QueryRootNode root, SessionImpl session, ItemDataConsumer sharedItemMgr,
+   private LuceneQueryBuilder(QueryRootNode root, SessionImpl session,
+      ItemDataConsumer sharedItemMgr,
       // HierarchyManager hmgr,
       NamespaceMappings nsMappings, Analyzer analyzer, PropertyTypeRegistry propReg, SynonymProvider synonymProvider,
-      IndexFormatVersion indexFormatVersion, VirtualTableResolver<Query> virtualTableResolver)
-      throws RepositoryException
+      IndexFormatVersion indexFormatVersion, VirtualTableResolver<Query> virtualTableResolver,
+      IndexingConfiguration indexConfig) throws RepositoryException
    {
       this.root = root;
       this.session = session;
@@ -206,6 +209,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       this.virtualTableResolver = virtualTableResolver;
       this.nodeTypeDataManager = session.getWorkspace().getNodeTypesHolder();
       this.resolver = new LocationFactory(nsMappings);
+      this.indexConfig = indexConfig;
    }
 
    /**
@@ -235,13 +239,13 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
     */
    public static Query createQuery(QueryRootNode root, SessionImpl session, ItemDataConsumer sharedItemMgr,
       NamespaceMappings nsMappings, Analyzer analyzer, PropertyTypeRegistry propReg, SynonymProvider synonymProvider,
-      IndexFormatVersion indexFormatVersion, VirtualTableResolver<Query> virtualTableResolver)
-      throws RepositoryException
+      IndexFormatVersion indexFormatVersion, VirtualTableResolver<Query> virtualTableResolver,
+      IndexingConfiguration indexConfig) throws RepositoryException
    {
 
       LuceneQueryBuilder builder =
          new LuceneQueryBuilder(root, session, sharedItemMgr, nsMappings, analyzer, propReg, synonymProvider,
-            indexFormatVersion, virtualTableResolver);
+            indexFormatVersion, virtualTableResolver, indexConfig);
 
       Query q = builder.createLuceneQuery();
       if (builder.exceptions.size() > 0)
@@ -605,7 +609,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       {
          if (nameTest != null)
          {
-            andQuery.add(new DescendantSelfAxisQuery(context, nameTest, false), Occur.MUST);
+            andQuery.add(new DescendantSelfAxisQuery(context, nameTest, false, indexConfig), Occur.MUST);
          }
          else
          {
@@ -620,7 +624,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                PathQueryNode pathNode = (PathQueryNode)node.getParent();
                if (pathNode.getPathSteps()[0] != node)
                {
-                  Query subQuery = new DescendantSelfAxisQuery(context, andQuery, false);
+                  Query subQuery = new DescendantSelfAxisQuery(context, andQuery, false, indexConfig);
                   andQuery = new BooleanQuery();
                   andQuery.add(subQuery, Occur.MUST);
                }
@@ -634,19 +638,19 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                {
                   if (node.getIndex() == LocationStepQueryNode.NONE)
                   {
-                     context = new DescendantSelfAxisQuery(context, false);
+                     context = new DescendantSelfAxisQuery(context, false, indexConfig);
                      andQuery.add(context, Occur.MUST);
                   }
                   else
                   {
-                     context = new DescendantSelfAxisQuery(context, true);
+                     context = new DescendantSelfAxisQuery(context, true, indexConfig);
                      andQuery.add(new ChildAxisQuery(sharedItemMgr, context, null, node.getIndex(), indexFormatVersion,
-                        nsMappings), Occur.MUST);
+                        nsMappings, indexConfig), Occur.MUST);
                   }
                }
                else
                {
-                  andQuery.add(new MatchAllDocsQuery(), Occur.MUST);
+                  andQuery.add(new MatchAllDocsQuery(indexConfig), Occur.MUST);
                }
             }
          }
@@ -657,13 +661,13 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          if (nameTest != null)
          {
             andQuery.add(new ChildAxisQuery(sharedItemMgr, context, nameTest.getName(), node.getIndex(),
-               indexFormatVersion, nsMappings), Occur.MUST);
+               indexFormatVersion, nsMappings, indexConfig), Occur.MUST);
          }
          else
          {
             // select child nodes
             andQuery.add(new ChildAxisQuery(sharedItemMgr, context, null, node.getIndex(), indexFormatVersion,
-               nsMappings), Occur.MUST);
+               nsMappings, indexConfig), Occur.MUST);
          }
       }
 
@@ -685,7 +689,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
          if (node.getIncludeDescendants())
          {
             Query refPropQuery = Util.createMatchAllQuery(refProperty, indexFormatVersion);
-            context = new DescendantSelfAxisQuery(context, refPropQuery, false);
+            context = new DescendantSelfAxisQuery(context, refPropQuery, false, indexConfig);
          }
 
          context = new DerefQuery(context, refProperty, node.getNameTest(), indexFormatVersion, nsMappings);

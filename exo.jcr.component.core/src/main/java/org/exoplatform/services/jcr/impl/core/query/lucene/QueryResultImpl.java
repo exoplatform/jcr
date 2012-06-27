@@ -438,7 +438,6 @@ public abstract class QueryResultImpl implements QueryResult
                   || !accessMgr.hasPermission(nodeData.getACL(), PermissionType.READ, session.getUserState()
                      .getIdentity()))
                {
-
                   return false;
                }
             }

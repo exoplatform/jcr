@@ -103,7 +103,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.Node;
@@ -187,9 +186,14 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected final String repositoryName;
 
    /**
-    * The Repository name.
+    * The Workspace name.
     */
    protected final String workspaceName;
+
+   /**
+    * Indicates if workspace is system or not.
+    */
+   protected final boolean isSystem;
 
    /**
     * The repository service.
@@ -304,6 +308,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       this.rpcService = rpcService;
       this.repositoryName = rEntry.getName();
       this.workspaceName = wEntry.getName();
+      this.isSystem = rEntry.getSystemWorkspaceName().equals(workspaceName);
       this.rService = rService;
       this.wsId = wEntry.getUniqueName();
       this.extractor = extractor;
@@ -620,66 +625,8 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          if (indexingTree == null)
          {
-            List<QPath> excludedPath = new ArrayList<QPath>();
-            // Calculating excluded node identifiers
-            excludedPath.add(Constants.JCR_SYSTEM_PATH);
-
-            //if (config.getExcludedNodeIdentifers() != null)
-            String excludedNodeIdentifer =
-               config.getParameterValue(QueryHandlerParams.PARAM_EXCLUDED_NODE_IDENTIFERS, null);
-            if (excludedNodeIdentifer != null)
-            {
-               StringTokenizer stringTokenizer = new StringTokenizer(excludedNodeIdentifer);
-               while (stringTokenizer.hasMoreTokens())
-               {
-
-                  try
-                  {
-                     ItemData excludeData = itemMgr.getItemData(stringTokenizer.nextToken());
-                     if (excludeData != null)
-                     {
-                        excludedPath.add(excludeData.getQPath());
-                     }
-                  }
-                  catch (RepositoryException e)
-                  {
-                     LOG.warn(e.getLocalizedMessage());
-                  }
-               }
-            }
-
-            NodeData indexingRootData = null;
-            String rootNodeIdentifer = config.getParameterValue(QueryHandlerParams.PARAM_ROOT_NODE_ID, null);
-            if (rootNodeIdentifer != null)
-            {
-               try
-               {
-                  ItemData indexingRootDataItem = itemMgr.getItemData(rootNodeIdentifer);
-                  if (indexingRootDataItem != null && indexingRootDataItem.isNode())
-                  {
-                     indexingRootData = (NodeData)indexingRootDataItem;
-                  }
-               }
-               catch (RepositoryException e)
-               {
-                  LOG.warn(e.getLocalizedMessage() + " Indexing root set to " + Constants.ROOT_PATH.getAsString());
-
-               }
-
-            }
-            else
-            {
-               try
-               {
-                  indexingRootData = (NodeData)itemMgr.getItemData(Constants.ROOT_UUID);
-               }
-               catch (RepositoryException e)
-               {
-                  LOG.error("Fail to load root node data");
-               }
-            }
-
-            indexingTree = new IndexingTree(indexingRootData, excludedPath);
+            NodeData indexingRootNodeData = (NodeData)itemMgr.getItemData(Constants.ROOT_UUID);
+            indexingTree = new IndexingTree(indexingRootNodeData, isSystem ? Constants.JCR_SYSTEM_PATH : null);
          }
          initializeQueryHandler();
       }
