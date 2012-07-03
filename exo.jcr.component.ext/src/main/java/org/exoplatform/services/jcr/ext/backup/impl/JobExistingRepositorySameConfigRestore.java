@@ -65,10 +65,10 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
     * JobExistingRepositorySameConfigRestore constructor.
     */
    public JobExistingRepositorySameConfigRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
-      RepositoryEntry repositoryEntry, Map<String, BackupChainLog> workspacesMapping,
-      RepositoryBackupChainLog backupChainLog)
+      RepositoryEntry repositoryEntry, Map<String, File> workspacesMapping,
+      File backupChainLogFile)
    {
-      super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLog);
+      super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLogFile);
    }
 
    /**
@@ -137,7 +137,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
                   .getComponentInstancesOfType(Backupable.class);
 
             File fullBackupDir =
-               JCRRestore.getFullBackupFile(workspacesMapping.get(wEntry.getName()).getBackupConfig().getBackupDir());
+               JCRRestore.getFullBackupFile(new BackupChainLog(workspacesMapping.get(wEntry.getName())).getBackupConfig().getBackupDir());
             
             DataRestoreContext context;
 
@@ -232,7 +232,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
                   .getWorkspaceContainer(wEntry.getName()).getComponent(FileCleanerHolder.class);
 
             File storageDir =
-               JCRRestore.getFullBackupFile(workspacesMapping.get(wEntry.getName()).getBackupConfig().getBackupDir());
+               JCRRestore.getFullBackupFile(new BackupChainLog(workspacesMapping.get(wEntry.getName())).getBackupConfig().getBackupDir());
 
             JCRRestore restorer = new JCRRestore(dataManager, fileCleanHolder.getFileCleaner());
             for (File incrBackupFile : JCRRestore.getIncrementalFiles(storageDir))

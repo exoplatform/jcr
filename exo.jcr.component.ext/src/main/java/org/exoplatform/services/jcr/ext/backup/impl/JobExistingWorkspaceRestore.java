@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.File;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
@@ -52,9 +53,9 @@ public class JobExistingWorkspaceRestore extends JobWorkspaceRestore
     * JobExistingWorkspaceRestore constructor.
     */
    public JobExistingWorkspaceRestore(RepositoryService repositoryService, BackupManager backupManager,
-      String repositoryName, BackupChainLog log, WorkspaceEntry wEntry)
+      String repositoryName, File logFile, WorkspaceEntry wEntry)
    {
-      super(repositoryService, backupManager, repositoryName, log, wEntry);
+      super(repositoryService, backupManager, repositoryName, logFile, wEntry);
    }
 
    /**

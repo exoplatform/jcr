@@ -107,20 +107,20 @@ public class JobRepositoryRestore extends Thread
 
    protected RepositoryEntry repositoryEntry;
 
-   protected Map<String, BackupChainLog> workspacesMapping;
+   protected Map<String, File> workspacesMapping;
 
-   private RepositoryBackupChainLog repositoryBackupChainLog;
+   private File repositoryBackupChainLogFile;
 
    public JobRepositoryRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
-      RepositoryEntry repositoryEntry, Map<String, BackupChainLog> workspacesMapping,
-      RepositoryBackupChainLog backupChainLog)
+      RepositoryEntry repositoryEntry, Map<String, File> workspacesMapping,
+      File backupChainLog)
    {
       super("JobRepositoryRestore " + repositoryEntry.getName());
       this.repositoryService = repoService;
       this.backupManager = backupManagerImpl;
       this.repositoryEntry = repositoryEntry;
       this.workspacesMapping = workspacesMapping;
-      this.repositoryBackupChainLog = backupChainLog;
+      this.repositoryBackupChainLogFile = backupChainLog;
    }
 
    /**
@@ -179,7 +179,7 @@ public class JobRepositoryRestore extends Thread
       WorkspaceInitializerEntry wieOriginal = systemWorkspaceEntry.getInitializer();
 
       //getting backup chail log to system workspace.
-      BackupChainLog systemBackupChainLog = workspacesMapping.get(systemWorkspaceEntry.getName());
+      BackupChainLog systemBackupChainLog = new BackupChainLog(workspacesMapping.get(systemWorkspaceEntry.getName()));
 
       WorkspaceInitializerEntry wiEntry = getWorkspaceInitializerEntry(systemBackupChainLog);
 
@@ -212,7 +212,7 @@ public class JobRepositoryRestore extends Thread
             if (!(wsEntry.getName().equals(repositoryEntry.getSystemWorkspaceName())))
             {
                currennWorkspaceName = wsEntry.getName();
-               backupManager.restore(workspacesMapping.get(wsEntry.getName()), repositoryEntry.getName(), wsEntry,
+               backupManager.restore(new BackupChainLog(workspacesMapping.get(wsEntry.getName())), repositoryEntry.getName(), wsEntry,
                   false);
             }
          }
@@ -441,9 +441,9 @@ public class JobRepositoryRestore extends Thread
     * 
     * @return repositoryBackupChainLog
     */
-   public RepositoryBackupChainLog getRepositoryBackupChainLog()
+   public RepositoryBackupChainLog getRepositoryBackupChainLog() throws BackupOperationException
    {
-      return repositoryBackupChainLog;
+      return new RepositoryBackupChainLog(repositoryBackupChainLogFile);
    }
 
    /**
