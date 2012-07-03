@@ -1877,6 +1877,49 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       }
    }
    
+   public void testPullJobRepositoryRestore() throws Exception
+   {
+      // prepare
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
+
+      // backup
+      File backDir = new File("target/backup/" + IdGenerator.generate());
+      backDir.mkdirs();
+
+      RepositoryBackupConfig config = new RepositoryBackupConfig();
+      config.setRepository(repository.getConfiguration().getName());
+      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
+      config.setBackupDir(backDir);
+
+      RepositoryBackupChain bch = backup.startBackup(config);
+      waitEndOfBackup(bch);
+      backup.stopBackup(bch);
+
+      // restore
+      removeRepositoryFully(repository.getConfiguration().getName());
+
+      File backLog = new File(bch.getLogFilePath());
+      assertTrue(backLog.exists());
+
+      RepositoryBackupChainLog bchLog = new RepositoryBackupChainLog(backLog);
+
+      assertNotNull(bchLog.getStartedTime());
+      assertNotNull(bchLog.getFinishedTime());
+
+      backup.restoreRepository(bchLog.getBackupId(), false);
+
+      checkConent(repositoryService.getRepository(config.getRepository()),
+         repositoryService.getRepository(config.getRepository()).getConfiguration().getSystemWorkspaceName());
+      
+      assertNotNull(backup.getLastRepositoryRestore(config.getRepository()));
+
+      assertNotNull(backup.pullJobRepositoryRestore(config.getRepository()));
+
+      assertNull(backup.getLastRepositoryRestore(config.getRepository()));
+   }
+   
+   
    /**
     * Set new backup directory in RepositoryBackupChainLog
     * 
