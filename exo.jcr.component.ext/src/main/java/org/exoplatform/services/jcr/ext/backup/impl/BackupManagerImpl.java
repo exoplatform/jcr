@@ -2133,4 +2133,21 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   public JobRepositoryRestore pullJobRepositoryRestore(String repositoryName) throws BackupOperationException
+   {
+      JobRepositoryRestore job = restoreRepositoryJobs.remove(repositoryName);
+      
+      if (job != null)
+      {
+         return job;
+      }
+      else
+      {
+         throw new BackupOperationException("JobRepositoryRestore does not exist for repository '" + repositoryName + "'.");
+      }
+   }
+
 }
