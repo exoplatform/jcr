@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
+import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.ext.backup.server.WorkspaceRestoreExeption;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
@@ -32,6 +33,7 @@ import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.File;
 import java.util.Calendar;
 
 import javax.jcr.InvalidItemStateException;
@@ -114,9 +116,9 @@ public class JobWorkspaceRestore extends Thread
    private Calendar endTime;
 
    /**
-    * The BackupChainLog for restore.
+    * The file with BackupChainLog for restore.
     */
-   protected final BackupChainLog backupChainLog;
+   protected final File backupChainLogFile;
 
    /**
     * JobWorkspaceRestore constructor.
@@ -133,13 +135,13 @@ public class JobWorkspaceRestore extends Thread
     *          the workspace entry
     */
    public JobWorkspaceRestore(RepositoryService repositoryService, BackupManager backupManager, String repositoryName,
-      BackupChainLog log, WorkspaceEntry wEntry)
+      File logFile, WorkspaceEntry wEntry)
    {
       super("JobWorkspaceRestore " + repositoryName + "_" + wEntry.getName());
       this.repositoryService = repositoryService;
       this.backupManager = backupManager;
       this.repositoryName = repositoryName;
-      this.backupChainLog = log;
+      this.backupChainLogFile = logFile;
       this.wEntry = wEntry;
       this.stateRestore = RESTORE_INITIALIZED;
    }
@@ -200,7 +202,7 @@ public class JobWorkspaceRestore extends Thread
       try
       {
          RepositoryEntry reEntry = repository.getConfiguration();
-         backupManager.restore(backupChainLog, reEntry.getName(), wEntry, false);
+         backupManager.restore(new BackupChainLog(backupChainLogFile), reEntry.getName(), wEntry, false);
       }
       catch (InvalidItemStateException e)
       {
@@ -312,10 +314,11 @@ public class JobWorkspaceRestore extends Thread
     *
     * @return BackupChainLog
     *           return the backup chain log for this restore.
+    * @throws BackupOperationException 
     */
-   public BackupChainLog getBackupChainLog()
+   public BackupChainLog getBackupChainLog() throws BackupOperationException
    {
-      return backupChainLog;
+      return new BackupChainLog(backupChainLogFile);
    }
 
    /**

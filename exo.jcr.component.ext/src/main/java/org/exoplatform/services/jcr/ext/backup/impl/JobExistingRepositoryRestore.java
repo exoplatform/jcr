@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -49,10 +50,10 @@ public class JobExistingRepositoryRestore extends JobRepositoryRestore
     * JobExistingRepositoryRestore constructor.
     */
    public JobExistingRepositoryRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
-      RepositoryEntry repositoryEntry, Map<String, BackupChainLog> workspacesMapping,
-      RepositoryBackupChainLog backupChainLog)
+      RepositoryEntry repositoryEntry, Map<String, File> workspacesMapping,
+      File backupChainLogFile)
    {
-      super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLog);
+      super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLogFile);
    }
 
    @Override

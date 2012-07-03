@@ -60,9 +60,9 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
     * JobExistingWorkspaceSameConfigRestore constructor.
     */
    public JobExistingWorkspaceSameConfigRestore(RepositoryService repositoryService, BackupManager backupManager,
-      String repositoryName, BackupChainLog log, WorkspaceEntry wEntry)
+      String repositoryName, File logFile, WorkspaceEntry wEntry)
    {
-      super(repositoryService, backupManager, repositoryName, log, wEntry);
+      super(repositoryService, backupManager, repositoryName, logFile, wEntry);
    }
 
    /**
@@ -102,6 +102,7 @@ public class JobExistingWorkspaceSameConfigRestore extends JobWorkspaceRestore
                   repository.getWorkspaceContainer(wEntry.getName())
                .getComponentInstancesOfType(Backupable.class);
 
+         BackupChainLog backupChainLog = new BackupChainLog(backupChainLogFile);
          File storageDir = backupChainLog.getBackupConfig().getBackupDir();
          File fullBackupDir = JCRRestore.getFullBackupFile(storageDir);
 

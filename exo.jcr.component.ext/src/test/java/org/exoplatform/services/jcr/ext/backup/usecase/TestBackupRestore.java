@@ -325,7 +325,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       // restore
       RepositoryBackupChainLog rblog = new RepositoryBackupChainLog(new File(bch.getLogFilePath()));
 
-      Map<String, BackupChainLog> workspacesMapping = new HashMap<String, BackupChainLog>();
+      Map<String, File> workspacesMapping = new HashMap<String, File>();
       Map<String, BackupChainLog> backups = new HashMap<String, BackupChainLog>();
 
       for (String path : rblog.getWorkspaceBackupsInfo())
@@ -336,12 +336,12 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 
       for (WorkspaceEntry wsEntry : rblog.getOriginalRepositoryEntry().getWorkspaceEntries())
       {
-         workspacesMapping.put(wsEntry.getName(), backups.get(wsEntry.getName()));
+         workspacesMapping.put(wsEntry.getName(), new File(backups.get(wsEntry.getName()).getLogFilePath()));
       }
 
       JobExistingRepositorySameConfigRestore job =
          new JobExistingRepositorySameConfigRestore(repositoryService, backupManagerImpl, rblog
-            .getOriginalRepositoryEntry(), workspacesMapping, rblog);
+            .getOriginalRepositoryEntry(), workspacesMapping, new File(rblog.getLogFilePath()));
 
       job.run();
       assertEquals(JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL, job.getStateRestore());
@@ -382,7 +382,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       // restore
       RepositoryBackupChainLog rblog = new RepositoryBackupChainLog(new File(bch.getLogFilePath()));
 
-      Map<String, BackupChainLog> workspacesMapping = new HashMap<String, BackupChainLog>();
+      Map<String, File> workspacesMapping = new HashMap<String, File>();
       Map<String, BackupChainLog> backups = new HashMap<String, BackupChainLog>();
 
       for (String path : rblog.getWorkspaceBackupsInfo())
@@ -393,12 +393,12 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 
       for (WorkspaceEntry wsEntry : rblog.getOriginalRepositoryEntry().getWorkspaceEntries())
       {
-         workspacesMapping.put(wsEntry.getName(), backups.get(wsEntry.getName()));
+         workspacesMapping.put(wsEntry.getName(), new File(backups.get(wsEntry.getName()).getLogFilePath()));
       }
 
       JobExistingRepositoryRestore job =
          new JobExistingRepositoryRestore(repositoryService, backupManagerImpl, rblog.getOriginalRepositoryEntry(),
-            workspacesMapping, rblog);
+            workspacesMapping, new File(rblog.getLogFilePath()));
 
       job.run();
 
@@ -481,7 +481,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          component.clean();
       }
 
-      Map<String, BackupChainLog> workspacesMapping = new HashMap<String, BackupChainLog>();
+      Map<String, File> workspacesMapping = new HashMap<String, File>();
       Map<String, BackupChainLog> backups = new HashMap<String, BackupChainLog>();
 
       for (String path : rblog.getWorkspaceBackupsInfo())
@@ -492,12 +492,12 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 
       for (WorkspaceEntry wsEntry : rblog.getOriginalRepositoryEntry().getWorkspaceEntries())
       {
-         workspacesMapping.put(wsEntry.getName(), backups.get(wsEntry.getName()));
+         workspacesMapping.put(wsEntry.getName(), new File(backups.get(wsEntry.getName()).getLogFilePath()));
       }
 
       JobRepositoryRestore job =
          new JobRepositoryRestore(repositoryService, backupManagerImpl, rblog.getOriginalRepositoryEntry(),
-            workspacesMapping, rblog);
+            workspacesMapping, new File(rblog.getLogFilePath()));
 
       job.run();
       assertEquals(JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL, job.getStateRestore());
@@ -618,7 +618,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       BackupChainLog bclog = new BackupChainLog(new File(bch.getLogFilePath()));
 
       JobExistingWorkspaceSameConfigRestore job =
-         new JobExistingWorkspaceSameConfigRestore(repositoryService, backupManagerImpl, repositoryName, bclog, bclog
+         new JobExistingWorkspaceSameConfigRestore(repositoryService, backupManagerImpl, repositoryName, new File(bclog.getLogFilePath()), bclog
             .getOriginalWorkspaceEntry());
 
       job.run();
@@ -677,7 +677,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       BackupChainLog bclog = new BackupChainLog(new File(bch.getLogFilePath()));
 
       JobExistingWorkspaceRestore job =
-         new JobExistingWorkspaceRestore(repositoryService, backupManagerImpl, repositoryName, bclog, bclog
+         new JobExistingWorkspaceRestore(repositoryService, backupManagerImpl, repositoryName, new File(bclog.getLogFilePath()), bclog
             .getOriginalWorkspaceEntry());
 
       job.run();
@@ -756,7 +756,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       BackupChainLog bclog = new BackupChainLog(new File(bch.getLogFilePath()));
 
       JobWorkspaceRestore job =
-         new JobWorkspaceRestore(repositoryService, backupManagerImpl, repositoryName, bclog, bclog
+         new JobWorkspaceRestore(repositoryService, backupManagerImpl, repositoryName, new File(bclog.getLogFilePath()), bclog
             .getOriginalWorkspaceEntry());
 
       job.run();
