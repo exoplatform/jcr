@@ -602,7 +602,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       {
          try
          {
-            backupManager.restore(backupChain, rEntry, false);
+            backupManager.restore(backupChain, rEntry, false, true);
          }
          catch (BackupOperationException e)
          {

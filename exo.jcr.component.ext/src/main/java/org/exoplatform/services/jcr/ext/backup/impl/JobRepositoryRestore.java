@@ -111,9 +111,14 @@ public class JobRepositoryRestore extends Thread
 
    private RepositoryBackupChainLog repositoryBackupChainLog;
 
+   /**
+    * removeJobOnceOver, in 'true' then restore job well remove after restore.  
+    */
+   private boolean removeJobOnceOver;
+
    public JobRepositoryRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
       RepositoryEntry repositoryEntry, Map<String, BackupChainLog> workspacesMapping,
-      RepositoryBackupChainLog backupChainLog)
+      RepositoryBackupChainLog backupChainLog, boolean removeJobOnceOver)
    {
       super("JobRepositoryRestore " + repositoryEntry.getName());
       this.repositoryService = repoService;
@@ -121,6 +126,7 @@ public class JobRepositoryRestore extends Thread
       this.repositoryEntry = repositoryEntry;
       this.workspacesMapping = workspacesMapping;
       this.repositoryBackupChainLog = backupChainLog;
+      this.removeJobOnceOver = removeJobOnceOver;
    }
 
    /**
@@ -147,6 +153,13 @@ public class JobRepositoryRestore extends Thread
          restoreException = t;
 
          throw new RepositoryRestoreExeption(t.getMessage(), t);
+      }
+      finally
+      {
+         if (removeJobOnceOver)
+         {
+            backupManager.restoreRepositoryJobs.remove(this);
+         }  
       }
    }
 

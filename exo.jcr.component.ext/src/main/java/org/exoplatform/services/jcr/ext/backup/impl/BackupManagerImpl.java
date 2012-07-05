@@ -198,7 +198,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    /**
     * The list of repository restore job.
     */
-   private List<JobRepositoryRestore> restoreRepositoryJobs;
+   protected List<JobRepositoryRestore> restoreRepositoryJobs;
 
    /**
     * Initialization parameters of service.
@@ -1411,6 +1411,16 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       throws BackupOperationException, BackupConfigurationException, RepositoryException,
       RepositoryConfigurationException
    {
+      this.restore(log, repositoryEntry, asynchronous, false);
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void restore(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous,
+      boolean removeJobOnceOver) throws BackupOperationException, BackupConfigurationException, RepositoryException,
+      RepositoryConfigurationException
+   {
       if (repositoryEntry == null)
       {
          if (log.getOriginalRepositoryEntry() == null)
@@ -1423,14 +1433,43 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          return;
       }
 
-      this.restore(log, repositoryEntry, null, asynchronous);
+      this.restoreRepository(log, repositoryEntry, null, asynchronous, removeJobOnceOver);
    }
-
+   
    /**
     * {@inheritDoc}
     */
    public void restore(RepositoryBackupChainLog rblog, RepositoryEntry repositoryEntry,
       Map<String, String> workspaceNamesCorrespondMap, boolean asynchronous) throws BackupOperationException,
+      BackupConfigurationException, RepositoryException, RepositoryConfigurationException
+   {
+      this.restoreRepository(rblog, repositoryEntry, workspaceNamesCorrespondMap, asynchronous, false);
+   }
+   
+   /**
+    * Repository restore from backup.
+    *
+    * @param log
+    *          RepositoryBackupChainLog, the repository backup log
+    * @param repositoryEntry
+    *          RepositoryEntry, the repository entry
+    * @param workspaceNamesCorrespondMap
+    *          Map<String, String>, the map with correspondence workspace name in RepositoryEntry and RepositoryBackupChainLog.
+    * @param asynchronous
+    *          boolean, in 'true' then asynchronous restore.
+    * @param removeJobOnceOver
+    *          boolean, in 'true' then restore job well remove after restore.   
+    * @throws BackupOperationException
+    *           will be generate the exception BackupOperationException 
+    * @throws BackupConfigurationException
+    *           will be generate the exception BackupConfigurationException 
+    * @throws RepositoryException
+    *           will be generate the exception RepositoryException 
+    * @throws RepositoryConfigurationException
+    *           will be generate the exception RepositoryConfigurationException 
+    */
+   private void restoreRepository(RepositoryBackupChainLog rblog, RepositoryEntry repositoryEntry,
+      Map<String, String> workspaceNamesCorrespondMap, boolean asynchronous, boolean removeJobOnceOver) throws BackupOperationException,
       BackupConfigurationException, RepositoryException, RepositoryConfigurationException
    {
       // Checking repository exists. 
@@ -1537,7 +1576,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
       JobRepositoryRestore jobRepositoryRestore =
-         new JobRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, rblog);
+         new JobRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, rblog, removeJobOnceOver);
 
       restoreRepositoryJobs.add(jobRepositoryRestore);
       if (asynchronous)
@@ -2141,5 +2180,4 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
    }
-
 }
