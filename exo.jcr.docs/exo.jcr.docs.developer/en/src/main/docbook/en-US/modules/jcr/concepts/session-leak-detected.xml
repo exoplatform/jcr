@@ -4,14 +4,14 @@
 <section id="JCR.SessionLeakDetected">
   <title>Session Leak Detector</title>
 
-    <section>
+    <section id="JCR.SessionLeakDetected.Introduction">
       <title>Introduction</title>
 
       <para>The session leak detector is able to help you debug your application based on JCR when you suspect that you have a bug related to a wrong usage of JCR sessions. It works by creating a queue of weak references to JCR sessions and the queue is periodically cleaned. When a session reference is dequeued and is not cleared it is considered as a leaked session. Obviously what matters here is the time by which a session is stale known as max age. If the max age is too short period it will suspect that many sessions are leaked although they are not. The default max age value is configured at 2 minutes.</para>
                   
     </section>
 
-    <section>
+    <section id="JCR.SessionLeakDetected.Activation">
       <title>Activation</title>
 
       <para>Setting the virtual machine system property <emphasis role="bold">exo.jcr.session.tracking.active</emphasis> to true activates the session detector with a default time period of 2 minutes.</para>
@@ -38,7 +38,7 @@
 
     </section>
 
-  <section>
+  <section id="JCR.SessionLeakDetected.Report">
     <title>Report</title>
 
     <para>Each detector execution starts with</para>
