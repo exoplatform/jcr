@@ -80,6 +80,7 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -198,7 +199,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    /**
     * The list of repository restore job.
     */
-   private List<JobRepositoryRestore> restoreRepositoryJobs;
+   private Map<String,JobRepositoryRestore> restoreRepositoryJobs;
 
    /**
     * Initialization parameters of service.
@@ -519,7 +520,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       scheduler = new BackupScheduler(this, messages);
 
       this.restoreJobs = new ArrayList<JobWorkspaceRestore>();
-      this.restoreRepositoryJobs = new ArrayList<JobRepositoryRestore>();
+      this.restoreRepositoryJobs = new LinkedHashMap<String, JobRepositoryRestore>();
 
       this.workspaceBackupStopper = new WorkspaceBackupAutoStopper(ctx);
       this.workspaceBackupStopper.start();
@@ -1344,24 +1345,12 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public JobRepositoryRestore getLastRepositoryRestore(String repositoryName)
    {
-
-      for (int i = restoreRepositoryJobs.size() - 1; i >= 0; i--)
-      {
-         JobRepositoryRestore job = restoreRepositoryJobs.get(i);
-
-         if (repositoryName.equals(job.getRepositoryName()))
-         {
-            return job;
-
-         }
-      }
-
-      return null;
+      return restoreRepositoryJobs.get(repositoryName);
    }
 
    public List<JobRepositoryRestore> getRepositoryRestores()
    {
-      return restoreRepositoryJobs;
+      return new ArrayList<JobRepositoryRestore>(restoreRepositoryJobs.values());
    }
 
    /**
@@ -1394,7 +1383,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       if (asynchronous)
       {
          JobWorkspaceRestore jobRestore =
-            new JobWorkspaceRestore(repoService, this, repositoryName, log, workspaceEntry);
+            new JobWorkspaceRestore(repoService, this, repositoryName, new File(log.getLogFilePath()), workspaceEntry);
          restoreJobs.add(jobRestore);
          jobRestore.start();
       }
@@ -1444,7 +1433,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          //OK. Repository with "repositoryEntry.getName" is not exists.
       }
 
-      Map<String, BackupChainLog> workspacesMapping = new HashedMap();
+      Map<String, File> workspacesMapping = new HashedMap();
 
       Map<String, BackupChainLog> backups = new HashedMap();
 
@@ -1479,7 +1468,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             else
             {
-               workspacesMapping.put(wsEntry.getName(), backups.get(wsEntry.getName()));
+               workspacesMapping.put(wsEntry.getName(), new File (backups.get(wsEntry.getName()).getLogFilePath()));
             }
          }
       }
@@ -1531,15 +1520,15 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             }
             else
             {
-               workspacesMapping.put(wsEntry.getName(), backups.get(wsEntry.getName()));
+               workspacesMapping.put(wsEntry.getName(), new File(backups.get(wsEntry.getName()).getLogFilePath()));
             }
          }
       }
 
       JobRepositoryRestore jobRepositoryRestore =
-         new JobRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, rblog);
+         new JobRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, new File(rblog.getLogFilePath()));
 
-      restoreRepositoryJobs.add(jobRepositoryRestore);
+      restoreRepositoryJobs.put(repositoryEntry.getName(), jobRepositoryRestore);
       if (asynchronous)
       {
          jobRepositoryRestore.start();
@@ -1646,7 +1635,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          throw new RepositoryRestoreExeption("Repository \"" + repositoryEntry.getName() + "\" should be existed", e);
       }
 
-      Map<String, BackupChainLog> workspacesMapping = new HashedMap();
+      Map<String, File> workspacesMapping = new HashedMap();
 
       Map<String, BackupChainLog> backups = new HashedMap();
 
@@ -1679,7 +1668,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          }
          else
          {
-            workspacesMapping.put(wsEntry.getName(), backups.get(wsEntry.getName()));
+            workspacesMapping.put(wsEntry.getName(), new File(backups.get(wsEntry.getName()).getLogFilePath()));
          }
       }
 
@@ -1687,8 +1676,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       boolean isSameConfigRestore = false;
       try
       {
+         BackupChainLog bclog = new BackupChainLog(workspacesMapping.get(repositoryEntry.getWorkspaceEntries().get(0).getName()));
+         
          if (Class.forName(
-            workspacesMapping.get(repositoryEntry.getWorkspaceEntries().get(0).getName()).getFullBackupType()).equals(
+            bclog.getFullBackupType()).equals(
             org.exoplatform.services.jcr.ext.backup.impl.rdbms.FullBackupJob.class))
          {
             String newConf = new JsonGeneratorImpl().createJsonObject(repositoryEntry).toString();
@@ -1718,10 +1709,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       JobRepositoryRestore jobExistedRepositoryRestore =
          isSameConfigRestore ? new JobExistingRepositorySameConfigRestore(repoService, this, repositoryEntry,
-            workspacesMapping, rblog) : new JobExistingRepositoryRestore(repoService, this, repositoryEntry,
-            workspacesMapping, rblog);
+            workspacesMapping, new File(rblog.getLogFilePath())) : new JobExistingRepositoryRestore(repoService, this, repositoryEntry,
+            workspacesMapping, new File(rblog.getLogFilePath()));
 
-      restoreRepositoryJobs.add(jobExistedRepositoryRestore);
+      restoreRepositoryJobs.put(repositoryEntry.getName(), jobExistedRepositoryRestore);
       if (asynchronous)
       {
          jobExistedRepositoryRestore.start();
@@ -1829,8 +1820,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
       JobWorkspaceRestore jobRestore =
-         isSameConfigRestore ? new JobExistingWorkspaceSameConfigRestore(repoService, this, repositoryName, log,
-            workspaceEntry) : new JobExistingWorkspaceRestore(repoService, this, repositoryName, log, workspaceEntry);
+         isSameConfigRestore ? new JobExistingWorkspaceSameConfigRestore(repoService, this, repositoryName, new File (log.getLogFilePath()),
+            workspaceEntry) : new JobExistingWorkspaceRestore(repoService, this, repositoryName, new File (log.getLogFilePath()), workspaceEntry);
       restoreJobs.add(jobRestore);
 
       if (asynchronous)
@@ -2140,6 +2131,23 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             + "\" was not restored in repository \"" + backupChainLog.getBackupConfig().getRepository() + "\"", e);
       }
 
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public JobRepositoryRestore pullJobRepositoryRestore(String repositoryName) throws BackupOperationException
+   {
+      JobRepositoryRestore job = restoreRepositoryJobs.remove(repositoryName);
+      
+      if (job != null)
+      {
+         return job;
+      }
+      else
+      {
+         throw new BackupOperationException("JobRepositoryRestore does not exist for repository '" + repositoryName + "'.");
+      }
    }
 
 }

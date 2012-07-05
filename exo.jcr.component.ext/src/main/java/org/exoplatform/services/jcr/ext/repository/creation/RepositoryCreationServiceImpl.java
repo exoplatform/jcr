@@ -33,6 +33,7 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupConfigurationException;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
+import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
@@ -115,7 +116,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    /**
     * BackupManager used to restore repository from backup.
     */
-   private final BackupManager backupManager;
+   private final ExtendedBackupManager backupManager;
 
    /**
     * Exo container context;
@@ -168,7 +169,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       }
       
       this.repositoryService = repositoryService;
-      this.backupManager = backupManager;
+      this.backupManager = (ExtendedBackupManager)backupManager;
       this.rpcService = rpcService;
       this.context = context;
       this.initialContextInitializer = initialContextInitializer;
@@ -603,6 +604,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          try
          {
             backupManager.restore(backupChain, rEntry, false);
+            backupManager.pullJobRepositoryRestore(rEntry.getName());
          }
          catch (BackupOperationException e)
          {
