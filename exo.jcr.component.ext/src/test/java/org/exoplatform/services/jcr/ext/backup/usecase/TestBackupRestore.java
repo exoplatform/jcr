@@ -216,7 +216,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 
       JobExistingRepositorySameConfigRestore job =
          new JobExistingRepositorySameConfigRestore(repositoryService, backupManagerImpl, rblog
-            .getOriginalRepositoryEntry(), workspacesMapping, rblog, false);
+            .getOriginalRepositoryEntry(), workspacesMapping, rblog);
 
       job.run();
       assertEquals(JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL, job.getStateRestore());
@@ -273,7 +273,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 
       JobExistingRepositoryRestore job =
          new JobExistingRepositoryRestore(repositoryService, backupManagerImpl, rblog.getOriginalRepositoryEntry(),
-            workspacesMapping, rblog, false);
+            workspacesMapping, rblog);
 
       job.run();
 

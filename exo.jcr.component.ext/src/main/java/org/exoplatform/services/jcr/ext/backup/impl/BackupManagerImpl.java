@@ -1757,8 +1757,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       JobRepositoryRestore jobExistedRepositoryRestore =
          isSameConfigRestore ? new JobExistingRepositorySameConfigRestore(repoService, this, repositoryEntry,
-            workspacesMapping, rblog, false) : new JobExistingRepositoryRestore(repoService, this, repositoryEntry,
-            workspacesMapping, rblog, false);
+            workspacesMapping, rblog) : new JobExistingRepositoryRestore(repoService, this, repositoryEntry,
+            workspacesMapping, rblog);
 
       restoreRepositoryJobs.add(jobExistedRepositoryRestore);
       if (asynchronous)
