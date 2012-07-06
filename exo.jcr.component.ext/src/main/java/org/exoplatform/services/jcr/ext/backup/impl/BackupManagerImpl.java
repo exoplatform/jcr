@@ -84,6 +84,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
@@ -199,7 +200,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    /**
     * The list of repository restore job.
     */
-   protected List<JobRepositoryRestore> restoreRepositoryJobs;
+   protected CopyOnWriteArrayList<JobRepositoryRestore> restoreRepositoryJobs;
 
    /**
     * Initialization parameters of service.
@@ -517,7 +518,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       messages = new BackupMessagesLog(MESSAGES_MAXSIZE);
 
       this.restoreJobs = new ArrayList<JobWorkspaceRestore>();
-      this.restoreRepositoryJobs = new ArrayList<JobRepositoryRestore>();
+      this.restoreRepositoryJobs = new CopyOnWriteArrayList<JobRepositoryRestore>();
 
       this.workspaceBackupStopper = new WorkspaceBackupAutoStopper(ctx);
       this.workspaceBackupStopper.start();
