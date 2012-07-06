@@ -160,7 +160,44 @@ public class TestUserTransaction extends JcrAPIBaseTest
       {
       }
    }
+   
+   public void testSetRollbackOnly() throws Exception
+   {
+      assertNotNull(txService);
+      UserTransaction ut = txService.getUserTransaction();
 
+      ut.begin();
+      // we need to create the session within the transaction to ensure that it will be enlisted
+      Session session = repository.login(credentials, "ws");
+      session.getRootNode().addNode("txrollback");
+
+      ut.setRollbackOnly();
+      try
+      {
+         session.save();
+         fail("IllegalStateException should have be thrown as a save is forbidden after a setRollbackOnly");
+      }
+      catch (IllegalStateException e)
+      {
+      }
+      try
+      {
+         assertNotNull(session.getItem("/txrollback"));
+         fail("PathNotFoundException should have be thrown");
+      }
+      catch (PathNotFoundException e)
+      {
+      }
+      ut.rollback();
+      try
+      {
+         assertNotNull(session.getItem("/txrollback"));
+         fail("PathNotFoundException should have be thrown");
+      }
+      catch (PathNotFoundException e)
+      {
+      }
+   }
    // we don't have JNID for JBossTS in standalone now  
    public void _testUserTransactionFromJndi() throws Exception
    {

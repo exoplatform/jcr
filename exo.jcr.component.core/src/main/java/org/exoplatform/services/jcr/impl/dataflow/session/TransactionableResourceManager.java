@@ -163,13 +163,20 @@ public class TransactionableResourceManager implements XAResource
     * @param changes the changes to enlist in case a Global Tx has been started 
     * @return <code>true</code> if a global Tx has been started and the session and its change could
     * be enrolled successfully, <code>false</code> otherwise
+    * @throws IllegalStateException if the current status of the global transaction is not appropriate
     */
    public boolean canEnrollChangeToGlobalTx(final SessionImpl session, final PlainChangesLog changes)
    {
       try
       {
-         if (tm != null && session.isLive() && tm.getStatus() == Status.STATUS_ACTIVE)
+         int status;
+         if (tm != null && (status = tm.getStatus()) != Status.STATUS_NO_TRANSACTION)
          {
+            if (status != Status.STATUS_ACTIVE && status != Status.STATUS_PREPARING)
+            {
+               throw new IllegalStateException("The session cannot be enrolled in the current global transaction due " +
+               		"to an invalidate state, the current status is " + status + " and only ACTIVE and PREPARING are allowed");
+            }
             SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
             {
                public Void run() throws Exception
@@ -420,7 +427,7 @@ public class TransactionableResourceManager implements XAResource
                {
                   SessionImpl session = entry.getValue();
                   TransactionableDataManager txManager = session.getTransientNodesManager().getTransactManager();
-                  // Remove the change from the tx change log. Please not that a simple reset cannot
+                  // Remove the change from the tx change log. Please note that a simple reset cannot
                   // be done since the session could be enrolled in several tx, so each change need to
                   // be scoped to a given xid
                   txManager.removeLog(entry.getKey());
