@@ -199,7 +199,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    /**
     * The list of repository restore job.
     */
-   private Map<String,JobRepositoryRestore> restoreRepositoryJobs;
+   protected List<JobRepositoryRestore> restoreRepositoryJobs;
 
    /**
     * Initialization parameters of service.
@@ -517,7 +517,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       messages = new BackupMessagesLog(MESSAGES_MAXSIZE);
 
       this.restoreJobs = new ArrayList<JobWorkspaceRestore>();
-      this.restoreRepositoryJobs = new LinkedHashMap<String, JobRepositoryRestore>();
+      this.restoreRepositoryJobs = new ArrayList<JobRepositoryRestore>();
 
       this.workspaceBackupStopper = new WorkspaceBackupAutoStopper(ctx);
       this.workspaceBackupStopper.start();
@@ -1227,12 +1227,22 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public JobRepositoryRestore getLastRepositoryRestore(String repositoryName)
    {
-      return restoreRepositoryJobs.get(repositoryName);
+      for (int i = restoreRepositoryJobs.size() - 1; i >= 0; i--)
+      {
+         JobRepositoryRestore job = restoreRepositoryJobs.get(i);
+
+         if (repositoryName.equals(job.getRepositoryName()))
+         {
+            return job;
+         }
+      }
+
+      return null;
    }
 
    public List<JobRepositoryRestore> getRepositoryRestores()
    {
-      return new ArrayList<JobRepositoryRestore>(restoreRepositoryJobs.values());
+      return restoreRepositoryJobs;
    }
 
    /**
@@ -1282,6 +1292,16 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       throws BackupOperationException, BackupConfigurationException, RepositoryException,
       RepositoryConfigurationException
    {
+      this.restore(log, repositoryEntry, asynchronous, false);
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void restore(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous,
+      boolean removeJobOnceOver) throws BackupOperationException, BackupConfigurationException, RepositoryException,
+      RepositoryConfigurationException
+   {
       if (repositoryEntry == null)
       {
          if (log.getOriginalRepositoryEntry() == null)
@@ -1294,7 +1314,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          return;
       }
 
-      this.restore(log, repositoryEntry, null, asynchronous);
+      this.restoreRepository(log, repositoryEntry, null, asynchronous, removeJobOnceOver);
    }
 
    /**
@@ -1302,6 +1322,35 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public void restore(RepositoryBackupChainLog rblog, RepositoryEntry repositoryEntry,
       Map<String, String> workspaceNamesCorrespondMap, boolean asynchronous) throws BackupOperationException,
+      BackupConfigurationException, RepositoryException, RepositoryConfigurationException
+   {
+      this.restoreRepository(rblog, repositoryEntry, workspaceNamesCorrespondMap, asynchronous, false);
+   }
+   
+   /**
+    * Repository restore from backup.
+    *
+    * @param log
+    *          RepositoryBackupChainLog, the repository backup log
+    * @param repositoryEntry
+    *          RepositoryEntry, the repository entry
+    * @param workspaceNamesCorrespondMap
+    *          Map<String, String>, the map with correspondence workspace name in RepositoryEntry and RepositoryBackupChainLog.
+    * @param asynchronous
+    *          boolean, in 'true' then asynchronous restore.
+    * @param removeJobOnceOver
+    *          boolean, in 'true' then restore job well remove after restore.   
+    * @throws BackupOperationException
+    *           will be generate the exception BackupOperationException 
+    * @throws BackupConfigurationException
+    *           will be generate the exception BackupConfigurationException 
+    * @throws RepositoryException
+    *           will be generate the exception RepositoryException 
+    * @throws RepositoryConfigurationException
+    *           will be generate the exception RepositoryConfigurationException 
+    */
+   private void restoreRepository(RepositoryBackupChainLog rblog, RepositoryEntry repositoryEntry,
+      Map<String, String> workspaceNamesCorrespondMap, boolean asynchronous, boolean removeJobOnceOver) throws BackupOperationException,
       BackupConfigurationException, RepositoryException, RepositoryConfigurationException
    {
       // Checking repository exists. 
@@ -1412,9 +1461,10 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
       JobRepositoryRestore jobRepositoryRestore =
-         new JobRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, new File(rblog.getLogFilePath()));
+         new JobRepositoryRestore(repoService, this, repositoryEntry, workspacesMapping, 
+            new File(rblog.getLogFilePath()), removeJobOnceOver);
 
-      restoreRepositoryJobs.put(repositoryEntry.getName(), jobRepositoryRestore);
+      restoreRepositoryJobs.add(jobRepositoryRestore);
       if (asynchronous)
       {
          jobRepositoryRestore.start();
@@ -1597,7 +1647,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
             workspacesMapping, new File(rblog.getLogFilePath())) : new JobExistingRepositoryRestore(repoService, this, repositoryEntry,
             workspacesMapping, new File(rblog.getLogFilePath()));
 
-      restoreRepositoryJobs.put(repositoryEntry.getName(), jobExistedRepositoryRestore);
+      restoreRepositoryJobs.add(jobExistedRepositoryRestore);
       if (asynchronous)
       {
          jobExistedRepositoryRestore.start();
@@ -2017,22 +2067,4 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
 
    }
-   
-   /**
-    * {@inheritDoc}
-    */
-   public JobRepositoryRestore pullJobRepositoryRestore(String repositoryName) throws BackupOperationException
-   {
-      JobRepositoryRestore job = restoreRepositoryJobs.remove(repositoryName);
-
-      if (job != null)
-      {
-         return job;
-      }
-      else
-      {
-         throw new BackupOperationException("JobRepositoryRestore does not exist for repository '" + repositoryName + "'.");
-      }
-   }
-
 }

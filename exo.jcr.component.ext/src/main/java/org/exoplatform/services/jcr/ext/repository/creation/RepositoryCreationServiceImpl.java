@@ -117,7 +117,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
    /**
     * BackupManager used to restore repository from backup.
     */
-   private final ExtendedBackupManager backupManager;
+   private final BackupManager backupManager;
 
    /**
     * Exo container context;
@@ -170,7 +170,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       }
       
       this.repositoryService = repositoryService;
-      this.backupManager = (ExtendedBackupManager)backupManager;
+      this.backupManager = backupManager;
       this.rpcService = rpcService;
       this.context = context;
       this.initialContextInitializer = initialContextInitializer;
@@ -604,8 +604,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
       {
          try
          {
-            backupManager.restore(backupChain, rEntry, false);
-            backupManager.pullJobRepositoryRestore(rEntry.getName());
+            backupManager.restore(backupChain, rEntry, false, true);
          }
          catch (BackupOperationException e)
          {

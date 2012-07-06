@@ -69,7 +69,17 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
       RepositoryEntry repositoryEntry, Map<String, File> workspacesMapping,
       File backupChainLogFile)
    {
-      super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLogFile);
+      this(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLogFile, false);
+   }
+   
+   /**
+    * JobExistingRepositorySameConfigRestore constructor.
+    */
+   public JobExistingRepositorySameConfigRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
+      RepositoryEntry repositoryEntry, Map<String, File> workspacesMapping,
+      File backupChainLogFile, boolean removeJobOnceOver)
+   {
+      super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLogFile, removeJobOnceOver);
    }
 
    /**

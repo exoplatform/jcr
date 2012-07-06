@@ -307,6 +307,30 @@ public interface BackupManager
    void restore(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous)
       throws BackupOperationException, BackupConfigurationException, RepositoryException,
       RepositoryConfigurationException;
+   
+   /**
+    * Repository restore from backup.
+    *
+    * @param log
+    *          RepositoryBackupChainLog, the repository backup log
+    * @param repositoryEntry
+    *          RepositoryEntry, the repository entry
+    * @param asynchronous
+    *          boolean, in 'true' then asynchronous restore.   
+    * @param removeJobOnceOver
+    *          boolean, in 'true' then restore job well remove after restore.
+    * @throws BackupOperationException
+    *           will be generate the exception BackupOperationException 
+    * @throws BackupConfigurationException
+    *           will be generate the exception BackupConfigurationException 
+    * @throws RepositoryException
+    *           will be generate the exception RepositoryException 
+    * @throws RepositoryConfigurationException
+    *           will be generate the exception RepositoryConfigurationException 
+    */
+   void restore(RepositoryBackupChainLog log, RepositoryEntry repositoryEntry, boolean asynchronous, boolean removeJobOnceOver)
+            throws BackupOperationException, BackupConfigurationException, RepositoryException,
+            RepositoryConfigurationException;
 
    /**
     * Finding current backup by repository.

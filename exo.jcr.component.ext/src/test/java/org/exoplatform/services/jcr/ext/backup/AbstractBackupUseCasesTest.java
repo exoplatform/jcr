@@ -1877,9 +1877,9 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       }
    }
    
-   public void testPullJobRepositoryRestore() throws Exception
+   public void testRepositoryRestoreWithRemoveJobOnceOver() throws Exception
    {
-      // prepare
+   // prepare
       ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       addConent(repository, repository.getConfiguration().getSystemWorkspaceName());
 
@@ -1897,7 +1897,8 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       backup.stopBackup(bch);
 
       // restore
-      removeRepositoryFully(repository.getConfiguration().getName());
+      RepositoryEntry newRE =
+         helper.createRepositoryEntry(DatabaseStructureType.MULTI, repository.getConfiguration().getSystemWorkspaceName(), null);
 
       File backLog = new File(bch.getLogFilePath());
       assertTrue(backLog.exists());
@@ -1907,16 +1908,10 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       assertNotNull(bchLog.getStartedTime());
       assertNotNull(bchLog.getFinishedTime());
 
-      backup.restoreRepository(bchLog.getBackupId(), false);
+      backup.restore(bchLog, newRE, false, true);
 
-      checkConent(repositoryService.getRepository(config.getRepository()),
-         repositoryService.getRepository(config.getRepository()).getConfiguration().getSystemWorkspaceName());
-      
-      assertNotNull(backup.getLastRepositoryRestore(config.getRepository()));
-
-      assertNotNull(backup.pullJobRepositoryRestore(config.getRepository()));
-
-      assertNull(backup.getLastRepositoryRestore(config.getRepository()));
+      checkConent(repositoryService.getRepository(newRE.getName()), newRE.getSystemWorkspaceName());
+      assertNull(backup.getLastRepositoryRestore(newRE.getName()));
    }
    
    

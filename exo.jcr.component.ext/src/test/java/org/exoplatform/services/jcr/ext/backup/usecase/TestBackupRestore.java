@@ -497,7 +497,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 
       JobRepositoryRestore job =
          new JobRepositoryRestore(repositoryService, backupManagerImpl, rblog.getOriginalRepositoryEntry(),
-            workspacesMapping, new File(rblog.getLogFilePath()));
+            workspacesMapping, new File(rblog.getLogFilePath()), false);
 
       job.run();
       assertEquals(JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL, job.getStateRestore());

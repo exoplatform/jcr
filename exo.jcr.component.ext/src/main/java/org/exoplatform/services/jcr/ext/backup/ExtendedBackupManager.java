@@ -241,16 +241,4 @@ public interface ExtendedBackupManager extends BackupManager
     */
    void restoreRepository(File repositoryBackupSetDir, boolean asynchronous) throws BackupOperationException,
             BackupConfigurationException;
-   
-   /**
-    * Getting last repository restore job by repository name and remove it form list then.
-    *
-    * @param repositoryName
-    *          String,  the repository name
-    * @return JobRepositoryRestore
-    *           return the job to restore
-    * @throws BackupOperationException
-    *           if backup operation exception occurred
-    */
-   JobRepositoryRestore pullJobRepositoryRestore(String repositoryName) throws BackupOperationException;
 }

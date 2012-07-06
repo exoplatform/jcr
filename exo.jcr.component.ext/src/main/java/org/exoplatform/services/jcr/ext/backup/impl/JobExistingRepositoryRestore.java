@@ -53,7 +53,17 @@ public class JobExistingRepositoryRestore extends JobRepositoryRestore
       RepositoryEntry repositoryEntry, Map<String, File> workspacesMapping,
       File backupChainLogFile)
    {
-      super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLogFile);
+      this(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLogFile, false);
+   }
+   
+   /**
+    * JobExistingRepositoryRestore constructor.
+    */
+   public JobExistingRepositoryRestore(RepositoryService repoService, BackupManagerImpl backupManagerImpl,
+      RepositoryEntry repositoryEntry, Map<String, File> workspacesMapping,
+      File backupChainLogFile, boolean removeJobOnceOver)
+   {
+      super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLogFile, removeJobOnceOver);
    }
 
    @Override
