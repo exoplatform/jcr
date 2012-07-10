@@ -99,11 +99,19 @@ public class TestPersistedValueData extends TestCase
          assertTrue(file.exists());
 
          vd = null;
-         System.gc();
 
-         // allows GC to call finalize on vd
-         Thread.sleep(2500);
-         System.gc();
+         long purgeStartTime = System.currentTimeMillis();
+         while (file.exists() && (System.currentTimeMillis() - purgeStartTime < 2 * 60 * 1000))
+         {
+            System.gc();
+            try
+            {
+               Thread.sleep(500);
+            }
+            catch (InterruptedException e)
+            {
+            }
+         }
 
          assertFalse(file.exists());
       }
