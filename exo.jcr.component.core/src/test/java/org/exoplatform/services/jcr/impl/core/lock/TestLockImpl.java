@@ -168,4 +168,35 @@ public class TestLockImpl extends JcrImplBaseTest
       assertFalse(node.isLocked());
    }
 
+   public void testLoadLocksAfterStopStart() throws Exception
+   {
+      Node node = session.getRootNode().addNode("testLock");
+      node.addMixin("mix:lockable");
+      node.addMixin("mix:referenceable");
+      session.save();
+
+      node.lock(false, false);
+      session.save();
+
+      assertTrue(node.isLocked());
+
+      AbstractCacheableLockManager lockManager =
+         (AbstractCacheableLockManager)repository.getWorkspaceContainer("ws").getComponent(
+            AbstractCacheableLockManager.class);
+
+      lockManager.stop();
+
+      try
+      {
+         assertFalse(lockManager.lockExist(node.getUUID()));
+      }
+      catch (IllegalStateException e)
+      {
+         // not check for ISPN cache.  
+      }
+
+      lockManager.start();
+
+      assertTrue(lockManager.lockExist(node.getUUID()));
+   }
 }
