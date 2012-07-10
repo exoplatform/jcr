@@ -209,6 +209,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
                }
             });
          }
+
          PrivilegedJBossCacheHelper.create(cache);
          if (cache.getCacheStatus().startAllowed())
          {
@@ -216,8 +217,6 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
             addCacheLoader();
             PrivilegedJBossCacheHelper.start(cache);
          }
-
-         createStructuredNode(lockRoot);
       }
       else
       {
@@ -480,6 +479,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       }
 
       ControllerCacheLoader ccl = new ControllerCacheLoader(currentCL);
+
       List<IndividualCacheLoaderConfig> newConfig = new ArrayList<IndividualCacheLoaderConfig>(1);
       // create CacheLoaderConfig
       IndividualCacheLoaderConfig cclConfig = new IndividualCacheLoaderConfig();
@@ -500,10 +500,70 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       }
    }
 
+   private ControllerCacheLoader getControllerCacheLoader()
+   {
+      CacheLoaderConfig config = cache.getConfiguration().getCacheLoaderConfig();
+
+      List<IndividualCacheLoaderConfig> oldConfigs;
+
+      if (config == null || (oldConfigs = config.getIndividualCacheLoaderConfigs()) == null || oldConfigs.isEmpty())
+      {
+         if (LOG.isInfoEnabled())
+         {
+            LOG.info("No cache loader has been defined, thus no need to encapsulate any cache loader.");
+         }
+         return null;
+      }
+
+      CacheLoaderManager clm =
+         ((CacheSPI<Serializable, Object>)cache).getComponentRegistry().getComponent(CacheLoaderManager.class);
+      if (clm == null)
+      {
+         LOG.error("The CacheLoaderManager cannot be found");
+         return null;
+      }
+
+      CacheLoader currentCL = clm.getCacheLoader();
+      if (currentCL == null)
+      {
+         LOG.error("The CacheLoader cannot be found");
+         return null;
+      }
+
+      return (ControllerCacheLoader)currentCL;
+   }
+
    /**
     * {@inheritDoc}
     */
-   @Override
+   public void start()
+   {
+      ControllerCacheLoader ccl = getControllerCacheLoader();
+      if (ccl != null)
+      {
+         try
+         {
+            ccl.enableDirectAccess();
+            createStructuredNode(lockRoot);
+            getLockList();
+         }
+         finally
+         {
+            ccl.disableDirectAccess();
+         }
+      }
+      else
+      {
+         // No cache loader has been defined
+         createStructuredNode(lockRoot);
+      }
+
+      super.start();
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
    public void stop()
    {
       if (jmxManager != null)
