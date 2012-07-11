@@ -44,8 +44,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -61,18 +59,36 @@ import javax.jcr.RepositoryException;
 public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfiguration implements Startable
 {
 
-   private ValueParam param;
+   protected ValueParam param;
 
-   private ConfigurationManager configurationService;
+   protected ConfigurationManager configurationService;
 
    private ConfigurationPersister configurationPersister;
 
    private final List<String> configExtensionPaths = new CopyOnWriteArrayList<String>();
 
+   /**
+    * Max number of backup files
+    */
+   private final int maxBackupFiles;
+
+   /**
+    * Current backup file index
+    */
+   private int indexBackupFile = 1;
+
+   /**
+    * Default number of max backup files
+    */
+   public static final int DEFAULT_MAX_BACKUP_FILES = 3;
+
    public RepositoryServiceConfigurationImpl(InitParams params, ConfigurationManager configurationService,
       InitialContextInitializer initialContextInitializer) throws RepositoryConfigurationException
    {
       param = params.getValueParam("conf-path");
+      ValueParam valueBackupFiles = params.getValueParam("max-backup-files");
+      maxBackupFiles =
+         valueBackupFiles == null ? DEFAULT_MAX_BACKUP_FILES : Integer.valueOf(valueBackupFiles.getValue());
 
       if (params.getPropertiesParam("working-conf") != null)
       {
@@ -110,6 +126,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
 
    public RepositoryServiceConfigurationImpl(InputStream is) throws RepositoryConfigurationException
    {
+      this.maxBackupFiles = DEFAULT_MAX_BACKUP_FILES;
       init(is);
    }
 
@@ -157,7 +174,6 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    {
       try
       {
-
          if (!isRetainable())
             throw new RepositoryException("Unsupported  configuration place "
                + configurationService.getURL(param.getValue())
@@ -174,8 +190,12 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          {
             URL filePath = configurationService.getURL(param.getValue());
             final File sourceConfig = new File(filePath.toURI());
-            SimpleDateFormat format = new SimpleDateFormat("yyyyMMddHHmm");
-            final File backUp = new File(sourceConfig.getAbsoluteFile() + "_" + format.format(new Date()));
+            final File backUp = new File(sourceConfig.getAbsoluteFile() + "." + indexBackupFile++);
+
+            if (indexBackupFile > maxBackupFiles)
+            {
+               indexBackupFile = 1;
+            }
 
             try
             {
@@ -235,7 +255,6 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          {
             configurationPersister.write(new ByteArrayInputStream(((ByteArrayOutputStream)saveStream).toByteArray()));
          }
-
       }
       catch (JiBXException e)
       {
@@ -257,7 +276,6 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
       {
          throw new RepositoryException(e);
       }
-
    }
 
    /**

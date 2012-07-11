@@ -19,7 +19,10 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.container.configuration.ConfigurationManagerImpl;
+import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
+import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.CacheEntry;
@@ -32,14 +35,21 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.RepositoryContainer;
 import org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister;
+import org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl;
+import org.exoplatform.services.jcr.impl.config.TesterRepositoryServiceConfigurationImpl;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
+import org.exoplatform.services.naming.InitialContextInitializer;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.IUnmarshallingContext;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.WeakHashMap;
@@ -180,6 +190,55 @@ public class TestRepositoryManagement extends JcrImplBaseTest
             helper.removeRepository(container, repository.getConfiguration().getName());
          }
       }
+   }
+
+   public void testBackupFilesRepositoryConfiguration() throws Exception
+   {
+      InitParams params = new InitParams();
+
+      ValueParam confPath = new ValueParam();
+      confPath.setDescription("JCR configuration file");
+      confPath.setName("conf-path");
+      confPath.setValue("jar:/conf/standalone/test-jcr-config-jbc.xml");
+
+      params.addParam(confPath);
+
+      ValueParam maxBackupFiles = new ValueParam();
+      maxBackupFiles.setName("max-backup-files");
+      maxBackupFiles.setValue("5");
+
+      params.addParam(maxBackupFiles);
+
+      ConfigurationManagerImpl configManager =
+         (ConfigurationManagerImpl)container.getComponentInstanceOfType(ConfigurationManagerImpl.class);
+      InitialContextInitializer context =
+         (InitialContextInitializer)container.getComponentInstanceOfType(InitialContextInitializer.class);
+      String defaultRepositoryName = repositoryService.getConfig().getDefaultRepositoryName();
+      
+      
+      TesterRepositoryServiceConfigurationImpl repositoryServiceConfiguration =
+         new TesterRepositoryServiceConfigurationImpl(new RepositoryServiceConfigurationImpl(params, configManager,
+            context));
+
+      repositoryServiceConfiguration.setDefaultRepositoryName(defaultRepositoryName);
+
+      File configPath = repositoryServiceConfiguration.getContentPath();
+      final String configFileName = repositoryServiceConfiguration.getConfigFileName();
+
+      for (int i = 1; i <= 10; i++)
+      {
+         repositoryServiceConfiguration.retain();
+      }
+
+      String[] files = configPath.list(new FilenameFilter()
+      {
+         public boolean accept(File dir, String name)
+         {
+            return name.startsWith(configFileName) && Character.isDigit(name.charAt(name.length() - 1));
+         }
+      });
+
+      assertEquals(5, files.length);
    }
 
    public void testAddNewRepositoryWithSameName() throws Exception
@@ -349,6 +408,14 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
          JDBCConfigurationPersister persiter = new JDBCConfigurationPersister();
          persiter.init(props);
+
+         IBindingFactory bfact = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IMarshallingContext mctx = bfact.createMarshallingContext();
+         OutputStream saveStream = new ByteArrayOutputStream();
+         mctx.marshalDocument(repositoryService.getConfig(), "ISO-8859-1", null, saveStream);
+         saveStream.close();
+
+         persiter.write(new ByteArrayInputStream(((ByteArrayOutputStream)saveStream).toByteArray()));
 
          IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
