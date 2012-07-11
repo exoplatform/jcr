@@ -38,8 +38,12 @@ import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
 import org.jibx.runtime.IUnmarshallingContext;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.WeakHashMap;
@@ -180,6 +184,29 @@ public class TestRepositoryManagement extends JcrImplBaseTest
             helper.removeRepository(container, repository.getConfiguration().getName());
          }
       }
+   }
+
+   public void testBackupFilesRepositoryConfiguration() throws Exception
+   {
+      RepositoryServiceConfiguration repositoryServiceConfiguration = repositoryService.getConfig();
+      final String path = "conf/standalone";
+      final ClassLoader cl = Thread.currentThread().getContextClassLoader();
+      File configPath = new File(cl.getResource(path).toURI());
+
+      for (int i = 1; i <= 10; i++)
+      {
+         repositoryServiceConfiguration.retain();
+      }
+
+      String[] files = configPath.list(new FilenameFilter()
+      {
+         public boolean accept(File dir, String name)
+         {
+            return name.startsWith("test-jcr-config-jbc.xml.");
+         }
+      });
+
+      assertEquals(5, files.length);
    }
 
    public void testAddNewRepositoryWithSameName() throws Exception
@@ -349,6 +376,14 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
          JDBCConfigurationPersister persiter = new JDBCConfigurationPersister();
          persiter.init(props);
+
+         IBindingFactory bfact = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
+         IMarshallingContext mctx = bfact.createMarshallingContext();
+         OutputStream saveStream = new ByteArrayOutputStream();
+         mctx.marshalDocument(repositoryService.getConfig(), "ISO-8859-1", null, saveStream);
+         saveStream.close();
+
+         persiter.write(new ByteArrayInputStream(((ByteArrayOutputStream)saveStream).toByteArray()));
 
          IBindingFactory factory = BindingDirectory.getFactory(RepositoryServiceConfiguration.class);
          IUnmarshallingContext uctx = factory.createUnmarshallingContext();
