@@ -327,59 +327,6 @@ public class ExoJBossCacheFactory<K, V>
       return cache;
    }
 
-   //   public static synchronized <K, V> void releaseUniqueInstance(CacheType cacheType, Cache<K, V> cache)
-   //      throws RepositoryConfigurationException
-   //   {
-   //      ExoContainer container = ExoContainerContext.getCurrentContainer();
-   //      if (CACHES.containsKey(container))
-   //      {
-   //         releaseUniqueInstance(container, cacheType, cache);
-   //      }
-   //      else
-   //      {
-   //         for (ExoContainer c : CACHES.keySet())
-   //         {
-   //            if (releaseUniqueInstance(c, cacheType, cache))
-   //            {
-   //               return;
-   //            }
-   //         }
-   //      }
-   //   }
-   //
-   //   private static <K, V> boolean releaseUniqueInstance(ExoContainer container, CacheType cacheType, Cache<K, V> cache)
-   //   {
-   //      Map<CacheType, Map<ConfigurationKey, CacheInstance>> allCacheTypes = CACHES.get(container);
-   //      Map<ConfigurationKey, CacheInstance> caches = allCacheTypes.get(cacheType);
-   //
-   //      for (Iterator<Entry<ConfigurationKey, CacheInstance>> it = caches.entrySet().iterator(); it.hasNext();)
-   //      {
-   //         Entry<ConfigurationKey, CacheInstance> entry = it.next();
-   //
-   //         CacheInstance cacheInstance = entry.getValue();
-   //         if (cacheInstance.isSame(cache))
-   //         {
-   //            cacheInstance.release();
-   //
-   //            if (!cacheInstance.hasReferences())
-   //            {
-   //               it.remove();
-   //               if (caches.isEmpty())
-   //               {
-   //                  allCacheTypes.remove(cacheType);
-   //                  if (allCacheTypes.isEmpty())
-   //                  {
-   //                     CACHES.remove(container);
-   //                  }
-   //               }
-   //               PrivilegedJBossCacheHelper.stop((Cache<Serializable, Object>)cache);
-   //            }
-   //            return true;
-   //         }
-   //      }
-   //      return false;
-   //   }
-
    public static synchronized <K, V> void releaseUniqueInstance(CacheType cacheType, Cache<K, V> cache)
       throws RepositoryConfigurationException
    {
