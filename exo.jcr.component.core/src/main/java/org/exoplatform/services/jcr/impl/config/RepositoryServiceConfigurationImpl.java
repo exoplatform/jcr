@@ -40,7 +40,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
 import java.security.PrivilegedActionException;
@@ -69,7 +68,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    private final List<String> configExtensionPaths = new CopyOnWriteArrayList<String>();
 
    /**
-    * Max backup files count
+    * Max number of backup files
     */
    private final int maxBackupFiles;
 
@@ -79,7 +78,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    private int indexBackupFile = 1;
 
    /**
-    * Default count of max backup files
+    * Default number of max backup files
     */
    public static final int DEFAULT_MAX_BACKUP_FILES = 3;
 

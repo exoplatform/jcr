@@ -176,13 +176,10 @@
         <description>JCR configuration file</description>
         <value>jar:/conf/standalone/cluster/test-jcr-config-ijdbc-jbc.xml</value>
       </value-param>
-      <properties-param>
-        <name>working-conf</name>
-        <description>working-conf</description>
-        <property name="dialect" value="auto" />
-        <property name="source-name" value="jdbcjcr"/>
-        <property name="persister-class-name" value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister"/>
-      </properties-param>
+      <value-param>
+        <name>max-backup-files</name>
+        <value>5</value>
+      </value-param>
     </init-params>
   </component>
   

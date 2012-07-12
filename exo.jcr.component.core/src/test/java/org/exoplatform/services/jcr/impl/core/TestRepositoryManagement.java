@@ -220,7 +220,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       {
          public boolean accept(File dir, String name)
          {
-            return name.startsWith("test-jcr-config-ijdbc-jbc.xml.");
+            return name.startsWith("test-jcr-config") && Character.isDigit(name.charAt(name.length() - 1));
          }
       });
 
