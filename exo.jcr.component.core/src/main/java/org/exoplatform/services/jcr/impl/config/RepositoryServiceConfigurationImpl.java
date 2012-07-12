@@ -68,7 +68,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    private final List<String> configExtensionPaths = new CopyOnWriteArrayList<String>();
 
    /**
-    * Max backup files count
+    * Max number of backup files
     */
    private final int maxBackupFiles;
 
@@ -78,7 +78,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
    private int indexBackupFile = 1;
 
    /**
-    * Default count of max backup files
+    * Default number of max backup files
     */
    public static final int DEFAULT_MAX_BACKUP_FILES = 3;
 
@@ -122,6 +122,12 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
          }
       }
       this.configurationService = configurationService;
+   }
+
+   public RepositoryServiceConfigurationImpl(InputStream is) throws RepositoryConfigurationException
+   {
+      this.maxBackupFiles = DEFAULT_MAX_BACKUP_FILES;
+      init(is);
    }
 
    /**

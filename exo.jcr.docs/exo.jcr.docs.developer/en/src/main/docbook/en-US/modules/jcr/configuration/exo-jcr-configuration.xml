@@ -100,6 +100,10 @@
       &lt;description&gt;JCR repositories configuration file&lt;/description&gt;
       &lt;value&gt;jar:/conf/standalone/exo-jcr-config.xml&lt;/value&gt;
     &lt;/value-param&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;max-backup-files&lt;/name&gt;
+      &lt;value&gt;5&lt;/value&gt;
+    &lt;/value-param&gt;
     &lt;properties-param&gt;
       &lt;name&gt;working-conf&lt;/name&gt;
       &lt;description&gt;working-conf&lt;/description&gt;
@@ -112,6 +116,9 @@
 
     <para><emphasis role="bold">conf-path</emphasis> : a path to a
     RepositoryService JCR Configuration.</para>
+
+    <para><emphasis role="bold">max-backup-files</emphasis> : max number of backup files. This option lets you specify the number of stored backups. 
+    Number of backups can't exceed this value. File which will exceed the limit will replace the oldest file.</para>
 
     <para><emphasis role="bold">working-conf</emphasis> : optional; <link
     linkend="JCR.ConfigurationPersister">JCR configuration persister</link>
