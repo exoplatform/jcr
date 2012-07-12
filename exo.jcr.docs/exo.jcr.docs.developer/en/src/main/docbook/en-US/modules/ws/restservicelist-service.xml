@@ -53,8 +53,8 @@ public byte[] listHTML()
        HTML code:
      </para>
 
-      <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt;
-&lt;html xmlns="http://www.w3.org/1999/xhtml"&gt;
+      <programlisting language="html">&lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" &gt;
+&lt;html&gt;
    &lt;head&gt;
       &lt;title&gt;eXo JAXRS Implementation&lt;/title&gt;
    &lt;/head&gt;
