@@ -71,7 +71,7 @@
 *.tar
 *.zip
 *.war
-*.ear
+#*.ear
 *.sar
 *.class
 
