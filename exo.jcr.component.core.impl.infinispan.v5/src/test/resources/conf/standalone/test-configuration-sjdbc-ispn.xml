@@ -169,7 +169,7 @@
   
   <component>
     <key>org.exoplatform.services.jcr.config.RepositoryServiceConfiguration</key>
-    <type>org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl</type>
+    <type>org.exoplatform.services.jcr.impl.config.TesterRepositoryServiceConfigurationImpl</type>
     <init-params>
       <value-param>
         <name>conf-path</name>
