@@ -29,7 +29,7 @@
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.14.8-CR02-SNAPSHOT</version>
+  <version>1.14.8-CR02</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
 
