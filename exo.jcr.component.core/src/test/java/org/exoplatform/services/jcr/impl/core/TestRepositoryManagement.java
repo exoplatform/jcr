@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.RepositoryContainer;
 import org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister;
+import org.exoplatform.services.jcr.impl.config.TesterRepositoryServiceConfigurationImpl;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
@@ -188,10 +189,10 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
    public void testBackupFilesRepositoryConfiguration() throws Exception
    {
-      RepositoryServiceConfiguration repositoryServiceConfiguration = repositoryService.getConfig();
-      final String path = "conf/standalone";
-      final ClassLoader cl = Thread.currentThread().getContextClassLoader();
-      File configPath = new File(cl.getResource(path).toURI());
+      TesterRepositoryServiceConfigurationImpl repositoryServiceConfiguration =
+         (TesterRepositoryServiceConfigurationImpl)repositoryService.getConfig();
+      File configPath = repositoryServiceConfiguration.getContentPath();
+      final String configFileName = repositoryServiceConfiguration.getConfigFileName();
 
       for (int i = 1; i <= 10; i++)
       {
@@ -202,7 +203,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       {
          public boolean accept(File dir, String name)
          {
-            return name.startsWith("test-jcr-config") && Character.isDigit(name.charAt(name.length() - 1));
+            return name.startsWith(configFileName) && Character.isDigit(name.charAt(name.length() - 1));
          }
       });
 

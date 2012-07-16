@@ -59,7 +59,7 @@ import javax.jcr.RepositoryException;
 public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfiguration implements Startable
 {
 
-   private ValueParam param;
+   protected ValueParam param;
 
    private ConfigurationManager configurationService;
 
