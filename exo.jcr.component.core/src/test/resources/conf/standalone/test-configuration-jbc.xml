@@ -169,17 +169,20 @@
   
   <component>
     <key>org.exoplatform.services.jcr.config.RepositoryServiceConfiguration</key>
-    <type>org.exoplatform.services.jcr.impl.config.TesterRepositoryServiceConfigurationImpl</type>
+    <type>org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl</type>
     <init-params>
       <value-param>
         <name>conf-path</name>
         <description>JCR configuration file</description>
         <value>jar:/conf/standalone/test-jcr-config-jbc.xml</value>
       </value-param>
-      <value-param>
-        <name>max-backup-files</name>
-        <value>5</value>
-      </value-param>
+      <properties-param>
+        <name>working-conf</name>
+        <description>working-conf</description>
+        <property name="dialect" value="auto" />
+        <property name="source-name" value="jdbcjcr"/>
+        <property name="persister-class-name" value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister"/>
+      </properties-param>
     </init-params>
   </component>
   
