@@ -923,5 +923,14 @@ public class SybaseJDBCConnectionHelper
          return null;
       }
 
+      public <T> T getObject(int columnIndex, Class<T> type) throws SQLException
+      {
+         return null;
+      }
+
+      public <T> T getObject(String columnLabel, Class<T> type) throws SQLException
+      {
+         return null;
+      }
    }
 }

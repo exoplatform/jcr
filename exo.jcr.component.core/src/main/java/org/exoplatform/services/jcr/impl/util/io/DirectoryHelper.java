@@ -27,6 +27,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipException;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
@@ -177,7 +178,13 @@ public class DirectoryHelper
       {
          if (rootPath.isDirectory())
          {
-            String files[] = rootPath.list();
+            String[] files = rootPath.list();
+            if (files == null || files.length == 0)
+            {
+               // In java 7 no ZipException is thrown in case of an empty directory
+               // so to remain compatible we need to throw it explicitly
+               throw new ZipException("ZIP file must have at least one entry");
+            }
             for (int i = 0; i < files.length; i++)
             {
                compressDirectory("", new File(rootPath, files[i]), zip);
