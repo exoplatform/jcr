@@ -18,42 +18,41 @@
  */
 package org.exoplatform.services.jcr.impl.config;
 
-import org.exoplatform.container.configuration.ConfigurationManager;
-import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl;
-import org.exoplatform.services.naming.InitialContextInitializer;
 
 import java.io.File;
+
+import javax.jcr.RepositoryException;
 
 /**
  * @author <a href="mailto:aplotnikov@exoplatform.com">Andrey Plotnikov</a>
  * @version $Id: TesterRepositoryServiceConfigurationImpl.java 34360 16 Jul 2012 andrew.plotnikov $
  *
  */
-public class TesterRepositoryServiceConfigurationImpl extends RepositoryServiceConfigurationImpl
+public class TesterRepositoryServiceConfigurationImpl
 {
 
    private File contentPath;
 
    private String configFileName;
 
+   private RepositoryServiceConfigurationImpl repositoryServiceConf;
+
    /**
-    * @param params
-    * @param configurationService
-    * @param initialContextInitializer
-    * @throws RepositoryConfigurationException
+    * @param repositoryServiceConf
+    * @throws RepositoryConfigurationException 
     */
-   public TesterRepositoryServiceConfigurationImpl(InitParams params, ConfigurationManager configurationService,
-      InitialContextInitializer initialContextInitializer) throws RepositoryConfigurationException
+   public TesterRepositoryServiceConfigurationImpl(RepositoryServiceConfigurationImpl repositoryServiceConf)
+      throws RepositoryConfigurationException
    {
-      super(params, configurationService, initialContextInitializer);
-      if (param != null)
+      this.repositoryServiceConf = repositoryServiceConf;
+      if (this.repositoryServiceConf.param != null)
       {
          try
          {
-                     
-            File configFile = new File(configurationService.getURL(param.getValue()).toURI());
+            File configFile =
+               new File(this.repositoryServiceConf.configurationService.getURL(
+                  this.repositoryServiceConf.param.getValue()).toURI());
             contentPath = configFile.getParentFile();
             configFileName = configFile.getName();
          }
@@ -80,4 +79,13 @@ public class TesterRepositoryServiceConfigurationImpl extends RepositoryServiceC
       return configFileName;
    }
 
+   public void retain() throws RepositoryException
+   {
+      repositoryServiceConf.retain();
+   }
+
+   public void setDefaultRepositoryName(String name)
+   {
+      this.repositoryServiceConf.setDefaultRepositoryName(name);
+   }
 }
