@@ -19,7 +19,10 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.container.configuration.ConfigurationManagerImpl;
+import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
+import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.CacheEntry;
@@ -32,9 +35,11 @@ import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.RepositoryContainer;
 import org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister;
+import org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl;
 import org.exoplatform.services.jcr.impl.config.TesterRepositoryServiceConfigurationImpl;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
+import org.exoplatform.services.naming.InitialContextInitializer;
 import org.jibx.runtime.BindingDirectory;
 import org.jibx.runtime.IBindingFactory;
 import org.jibx.runtime.IMarshallingContext;
@@ -207,8 +212,33 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
    public void testBackupFilesRepositoryConfiguration() throws Exception
    {
+      InitParams params = new InitParams();
+
+      ValueParam confPath = new ValueParam();
+      confPath.setDescription("JCR configuration file");
+      confPath.setName("conf-path");
+      confPath.setValue("jar:/conf/standalone/test-jcr-config-ijdbc-jbc.xml");
+      
+      params.addParam(confPath);
+      
+      ValueParam maxBackupFiles = new ValueParam();
+      maxBackupFiles.setName("max-backup-files");
+      maxBackupFiles.setValue("5");
+
+      params.addParam(maxBackupFiles);
+      
+      ConfigurationManagerImpl configManager =
+         (ConfigurationManagerImpl)container.getComponentInstanceOfType(ConfigurationManagerImpl.class);
+      InitialContextInitializer context =
+         (InitialContextInitializer)container.getComponentInstanceOfType(InitialContextInitializer.class);
+      String defaultRepositoryName = repositoryService.getConfig().getDefaultRepositoryName();
+
       TesterRepositoryServiceConfigurationImpl repositoryServiceConfiguration =
-         (TesterRepositoryServiceConfigurationImpl)repositoryService.getConfig();
+         new TesterRepositoryServiceConfigurationImpl(new RepositoryServiceConfigurationImpl(params, configManager,
+            context));
+
+      repositoryServiceConfiguration.setDefaultRepositoryName(defaultRepositoryName);
+
       File configPath = repositoryServiceConfiguration.getContentPath();
       final String configFileName = repositoryServiceConfiguration.getConfigFileName();
 

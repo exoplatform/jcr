@@ -61,7 +61,7 @@ public class RepositoryServiceConfigurationImpl extends RepositoryServiceConfigu
 
    protected ValueParam param;
 
-   private ConfigurationManager configurationService;
+   protected ConfigurationManager configurationService;
 
    private ConfigurationPersister configurationPersister;
 
