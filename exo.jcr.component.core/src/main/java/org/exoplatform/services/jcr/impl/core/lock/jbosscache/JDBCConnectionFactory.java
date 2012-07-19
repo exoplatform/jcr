@@ -43,7 +43,7 @@ public class JDBCConnectionFactory implements ConnectionFactory
    /**
     * Logger
     */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NonManagedConnectionFactory");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JDBCConnectionFactory");
 
    private static final boolean trace = LOG.isTraceEnabled();
 
