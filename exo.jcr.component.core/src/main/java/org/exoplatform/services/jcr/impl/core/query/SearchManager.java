@@ -51,6 +51,7 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneVirtualTableRes
 import org.exoplatform.services.jcr.impl.core.query.lucene.QueryHits;
 import org.exoplatform.services.jcr.impl.core.query.lucene.ScoreNode;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 import org.exoplatform.services.jcr.impl.core.value.NameValue;
 import org.exoplatform.services.jcr.impl.core.value.PathValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
@@ -285,7 +286,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
             try
             {
                if (reader != null)
-                  reader.close();
+                  Util.closeOrRelease(reader);
             }
             catch (IOException e)
             {
