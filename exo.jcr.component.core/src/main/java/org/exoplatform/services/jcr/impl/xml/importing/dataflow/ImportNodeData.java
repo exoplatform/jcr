@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
+import org.exoplatform.services.jcr.impl.xml.importing.ACLInitializationHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -171,6 +172,19 @@ public class ImportNodeData extends TransientNodeData implements ImportItemData
          return new InternalQName[0];
       return mixinTypeNames;
 
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public AccessControlList getACL()
+   {
+      if (exoPrivileges != null || exoOwner != null)
+      {
+         return ACLInitializationHelper.initAcl(super.getACL(), exoOwner, exoPrivileges);
+      }
+      
+      return super.getACL();
    }
 
    /**
