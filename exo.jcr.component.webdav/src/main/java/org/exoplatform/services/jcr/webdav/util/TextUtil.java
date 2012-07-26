@@ -184,6 +184,26 @@ public class TextUtil
       }
       return curPath;
    }
+   
+   /**
+    * @param path 
+    *          path
+    * @return parentPath
+    */
+   public static String parentPath(final String path)
+   {
+      int index = path.lastIndexOf("/");
+      if (index == -1)
+      {
+         throw new IllegalArgumentException("Invalid path, it must contain at least one '/'");
+      }
+      String curPath = path.substring(0, index);
+      if (curPath.length() == 0)
+      {
+         curPath = "/";
+      }
+      return curPath;
+   }
 
    /**
     * Cuts the current name from the path.

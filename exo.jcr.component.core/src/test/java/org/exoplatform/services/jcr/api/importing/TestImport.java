@@ -32,21 +32,27 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.IdentityConstants;
 
+import sun.security.provider.SystemIdentity;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
 
+import javax.jcr.Credentials;
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -2164,4 +2170,266 @@ public class TestImport extends AbstractImportTest
       versionHistoryImporter.doImport();
       root.save();
    }
+   
+   
+   /**
+    * Test for issue https://jira.exoplatform.org/browse/JCR-1831 
+    */
+   public void testJCRContentWithCustomPrivilegeSys() throws Exception
+   {
+      contentWithCustomPrivilege(true);
+   }
+   
+   /**
+    * Test for issue https://jira.exoplatform.org/browse/JCR-1831 
+    */
+   public void testJCRContentWithCustomPrivilegeDoc() throws Exception
+   {
+      contentWithCustomPrivilege(false);
+   }
+   
+   private void contentWithCustomPrivilege(boolean isSystemViewExport) throws Exception
+   {
+      // prepare content 
+      NodeImpl testRoot = (NodeImpl)root.addNode("restricted", "nt:unstructured");
+      testRoot.addMixin("exo:privilegeable");
+      HashMap<String, String[]> perm = new HashMap<String, String[]>();
+      perm.put("john", new String[]{"read", "add_node", "set_property", "remove"});
+      perm.put("*:/platform/administrators", new String[]{"read", "add_node", "set_property", "remove"});
+      ((ExtendedNode)testRoot).setPermissions(perm);
+      session.save();
+      
+      Node file = testRoot.addNode("accept.gif", "nt:file");
+      file.addMixin("exo:privilegeable");
+      perm = new HashMap<String, String[]>();
+      perm.put("*:/platform/administrators", new String[]{"read", "add_node", "set_property", "remove"});
+      perm.put("root", new String[]{"read", "add_node", "set_property", "remove"});
+      perm.put("*:/organization/management/executive-board", new String[]{"read", "add_node", "set_property", "remove"});
+      perm.put("/platform/administrators", new String[]{"read", "add_node", "set_property", "remove"});
+      perm.put("any", new String[]{"read"});
+      ((ExtendedNode)file).setPermissions(perm);
+           
+      Node cont = (NodeImpl)file.addNode("jcr:content", "nt:resource");
+      cont.setProperty("jcr:mimeType", "text/plain");
+      cont.setProperty("jcr:lastModified", Calendar.getInstance());
+      cont.setProperty("jcr:data", new FileInputStream(createBLOBTempFile(1)));
+      session.save();
+      
+      Credentials cred = new CredentialsImpl("demo", "exo".toCharArray());
+      Session sess = repository.login(cred, "ws");
+      assertNotNull(sess.getItem("/restricted/accept.gif"));
+      assertNotNull(sess.getItem("/restricted/accept.gif/jcr:content"));
+      sess.logout();
+      
+      // system view export
+      File exportFile = isSystemViewExport ? File.createTempFile("sys-export", ".xml") : File.createTempFile("doc-export", ".xml");
+      exportFile.deleteOnExit();
+      if (isSystemViewExport)
+      {
+         session.exportSystemView(file.getPath(), new FileOutputStream(exportFile), false, false);
+      }
+      else
+      {
+         session.exportDocumentView(file.getPath(), new FileOutputStream(exportFile), false, false);
+      }
+      
+      // remove existed node
+      file.remove();
+      session.save();
+      
+      try
+      {
+         testRoot.getNode("accept.gif");
+         fail();
+      }
+      catch (PathNotFoundException e) {
+         //ok
+      }
+         
+      
+      // check import
+      session.importXML("/restricted", new FileInputStream(exportFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+      session.save();
+      Credentials newCredentials = new CredentialsImpl("demo", "exo".toCharArray());
+      Session newSession = repository.login(newCredentials, "ws");
+      assertNotNull(newSession.getItem("/restricted/accept.gif"));
+      assertNotNull(newSession.getItem("/restricted/accept.gif/jcr:content"));
+   }
+   
+   public void testJCRContentWithCustomOwnerAndPrivilegeSys() throws Exception
+   {
+      contentWithCustomOwnerAndPrivilege(true);
+   }
+   
+   public void testJCRContentWithCustomOwnerAndPrivilegeDoc() throws Exception
+   {
+      contentWithCustomOwnerAndPrivilege(false);
+   }
+ 
+   private void contentWithCustomOwnerAndPrivilege(boolean isSystemViewExport) throws Exception
+   {
+   // prepare content 
+      NodeImpl testRoot = (NodeImpl)root.addNode("restricted", "nt:unstructured");
+      testRoot.addMixin("exo:privilegeable");
+      HashMap<String, String[]> perm = new HashMap<String, String[]>();
+      perm.put("john", new String[]{"read", "add_node", "set_property", "remove"});
+      perm.put("*:/platform/administrators", new String[]{"read", "add_node", "set_property", "remove"});
+      ((ExtendedNode)testRoot).setPermissions(perm);
+      session.save();
+      
+      testRoot.addMixin("exo:owneable");
+      assertEquals("admin", testRoot.getProperty("exo:owner").getString());
+      assertEquals("admin", testRoot.getACL().getOwner());
+      
+      Session sessJohn = repository.login(new CredentialsImpl("john", "exo".toCharArray()), "ws");
+      Node file = sessJohn.getRootNode().getNode("restricted").addNode("accept.gif", "nt:file");
+      file.addMixin("exo:privilegeable");
+      perm = new HashMap<String, String[]>();
+      perm.put("*:/platform/administrators", new String[]{"read", "add_node", "set_property", "remove"});
+      perm.put("root", new String[]{"read", "add_node", "set_property", "remove"});
+      perm.put("*:/organization/management/executive-board", new String[]{"read", "add_node", "set_property", "remove"});
+      perm.put("/platform/administrators", new String[]{"read", "add_node", "set_property", "remove"});
+      perm.put("any", new String[]{"read"});
+      ((ExtendedNode)file).setPermissions(perm);
+      
+      file.addMixin("exo:owneable");
+      assertEquals("john", file.getProperty("exo:owner").getString());
+      assertEquals("john", ((ExtendedNode)file).getACL().getOwner());
+      
+           
+      Node cont = (NodeImpl)file.addNode("jcr:content", "nt:resource");
+      cont.setProperty("jcr:mimeType", "text/plain");
+      cont.setProperty("jcr:lastModified", Calendar.getInstance());
+      cont.setProperty("jcr:data", new FileInputStream(createBLOBTempFile(1)));
+      sessJohn.save();
+      
+       assertEquals("john", ((ExtendedNode)cont).getACL().getOwner());
+      
+      Credentials cred = new CredentialsImpl("demo", "exo".toCharArray());
+      Session sess = repository.login(cred, "ws");
+      assertNotNull(sess.getItem("/restricted/accept.gif"));
+      assertNotNull(sess.getItem("/restricted/accept.gif/jcr:content"));
+      sess.logout();
+      
+      // export
+      File exportFile = isSystemViewExport ? File.createTempFile("sys-export", ".xml") : File.createTempFile("doc-export", ".xml");
+      exportFile.deleteOnExit();
+      if (isSystemViewExport)
+      {
+         session.exportSystemView(file.getPath(), new FileOutputStream(exportFile), false, false);
+      }
+      else
+      {
+         session.exportDocumentView(file.getPath(), new FileOutputStream(exportFile), false, false);
+      }
+      
+      // remove existed node
+      file.remove();
+      sessJohn.save();
+      
+      try
+      {
+         testRoot.getNode("accept.gif");
+         fail();
+      }
+      catch (PathNotFoundException e) {
+         //ok
+      }
+         
+      
+      // check import
+      session.importXML("/restricted", new FileInputStream(exportFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+      session.save();
+      
+      assertEquals("admin", ((ExtendedNode)session.getItem("/restricted")).getACL().getOwner());
+      assertEquals("admin", ((ExtendedNode)session.getItem("/restricted")).getProperty("exo:owner").getString());
+      
+      assertEquals("john", ((ExtendedNode)session.getItem("/restricted/accept.gif")).getACL().getOwner());
+      assertEquals("john", ((ExtendedNode)session.getItem("/restricted/accept.gif")).getProperty("exo:owner").getString());
+      
+      assertEquals("john", ((ExtendedNode)session.getItem("/restricted/accept.gif/jcr:content")).getACL().getOwner());
+      
+      Credentials newCredentials = new CredentialsImpl("demo", "exo".toCharArray());
+      Session newSession = repository.login(newCredentials, "ws");
+      assertNotNull(newSession.getItem("/restricted/accept.gif"));
+      assertNotNull(newSession.getItem("/restricted/accept.gif/jcr:content"));
+   }
+   
+   public void testJCRContentWithCustomOwnerSys() throws Exception
+   {
+      contentWithCustomOwner(true);
+   }
+   
+   public void testJCRContentWithCustomOwnerDoc() throws Exception
+   {
+      contentWithCustomOwner(false);
+   }
+   
+   private void contentWithCustomOwner(boolean isSystemViewExport) throws Exception
+   {
+      ExtendedNode testRoot = (ExtendedNode)root.addNode("testRoot");
+      testRoot.addMixin("exo:privilegeable");
+      testRoot.setPermission("john", new String[]{PermissionType.READ, PermissionType.ADD_NODE,
+         PermissionType.SET_PROPERTY});
+      testRoot.setPermission(root.getSession().getUserID(), PermissionType.ALL);
+      testRoot.removePermission("any");
+
+      ExtendedNode subRoot = (ExtendedNode)testRoot.addNode("subroot");
+      root.getSession().save();
+      
+      testRoot.addMixin("exo:owneable");
+      assertEquals("admin", testRoot.getProperty("exo:owner").getString());
+      assertEquals("admin", testRoot.getACL().getOwner());
+      
+      Session session1 = repository.login(new CredentialsImpl("john", "exo".toCharArray()));
+      Node testRoot1 = session1.getRootNode().getNode("testRoot");
+
+      ExtendedNode subRoot1 = (ExtendedNode)testRoot1.getNode("subroot");
+      
+      subRoot1.addMixin("exo:owneable");
+      assertEquals("john", subRoot1.getProperty("exo:owner").getString());
+      assertEquals("john", subRoot1.getACL().getOwner());
+      
+      Node testNode = subRoot1.addNode("node");
+      assertEquals("john", ((ExtendedNode)testNode).getACL().getOwner());
+      session1.save();
+      
+      // export
+      File exportFile = isSystemViewExport ? File.createTempFile("sys-export", ".xml") : File.createTempFile("doc-export", ".xml");
+      exportFile.deleteOnExit();
+      
+      if (isSystemViewExport)
+      {
+         session1.exportSystemView(subRoot1.getPath(), new FileOutputStream(exportFile), false, false);
+      }
+      else
+      {
+         session1.exportDocumentView(subRoot1.getPath(), new FileOutputStream(exportFile), false, false);
+      }
+      
+      // remove existed node
+      subRoot1.remove();
+      session1.save();
+      
+      try
+      {
+         testRoot1.getNode("subroot");
+         fail();
+      }
+      catch (PathNotFoundException e) {
+         //ok
+      }
+      
+      session.importXML("/testRoot", new FileInputStream(exportFile), ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+      session.save();
+      
+      assertEquals("admin", ((ExtendedNode)session.getItem("/testRoot")).getACL().getOwner());
+      assertEquals("admin", ((ExtendedNode)session.getItem("/testRoot")).getProperty("exo:owner").getString());
+      
+      assertEquals("john", ((ExtendedNode)session.getItem("/testRoot/subroot")).getACL().getOwner());
+      assertEquals("john", ((ExtendedNode)session.getItem("/testRoot/subroot")).getProperty("exo:owner").getString());
+      
+      assertEquals("john", ((ExtendedNode)session.getItem("/testRoot/subroot/node")).getACL().getOwner());
+   }
+   
 }
