@@ -19,17 +19,28 @@
 package org.exoplatform.services.jcr.webdav.command;
 
 import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConst;
+import org.exoplatform.services.jcr.webdav.WebDavConstants;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
 import org.exoplatform.services.rest.impl.ContainerResponse;
+import org.exoplatform.services.rest.impl.EnvironmentContext;
 import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
+import org.exoplatform.services.rest.impl.RequestHandlerImpl;
+import org.exoplatform.services.rest.tools.DummySecurityContext;
+import org.exoplatform.services.rest.tools.ResourceLauncher;
+import org.exoplatform.services.security.IdentityConstants;
+
+import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -40,12 +51,18 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URLDecoder;
+import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Locale;
+import java.util.Set;
 
+import javax.jcr.Credentials;
 import javax.jcr.Node;
+import javax.jcr.Session;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.SecurityContext;
 
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
@@ -257,5 +274,56 @@ public class TestGet extends BaseStandaloneTest
    {
       return null;
    }
+   
+   
+   /**
+    *  Unit test for https://jira.exoplatform.org/browse/JCR-1832 
+    */
+   public void testGetFileFromFolder() throws Exception
+   {
+      ExtendedNode folderA = (ExtendedNode)session.getRootNode().addNode("folderA", "nt:folder");
+      folderA.addMixin("exo:privilegeable");
+      folderA.setPermission("john", PermissionType.ALL);
+      folderA.removePermission(IdentityConstants.ANY);
+      session.save();
+      
+      assertEquals(4, folderA.getACL().getPermissionEntries().size());
+      assertEquals("john read", folderA.getACL().getPermissionEntries().get(0).getAsString());
+      assertEquals("john add_node", folderA.getACL().getPermissionEntries().get(1).getAsString());
+      assertEquals("john set_property", folderA.getACL().getPermissionEntries().get(2).getAsString());
+      assertEquals("john remove", folderA.getACL().getPermissionEntries().get(3).getAsString());
+      
+      
+      Session sessJohn = repository.login(new CredentialsImpl("john", "exo".toCharArray()), "ws");
+      
+      ExtendedNode folderB = (ExtendedNode)sessJohn.getRootNode().getNode("folderA").addNode("folderB", "nt:folder");
+      
+      folderB.addMixin("exo:privilegeable");
+      folderB.setPermission("any", new String[]{"read"});
+      sessJohn.save();
+      
+      assertEquals(5, folderB.getACL().getPermissionEntries().size());
+      assertEquals("john read", folderB.getACL().getPermissionEntries().get(0).getAsString());
+      assertEquals("john add_node", folderB.getACL().getPermissionEntries().get(1).getAsString());
+      assertEquals("john set_property", folderB.getACL().getPermissionEntries().get(2).getAsString());
+      assertEquals("john remove", folderB.getACL().getPermissionEntries().get(3).getAsString());
+      assertEquals("any read", folderB.getACL().getPermissionEntries().get(4).getAsString());
+      
+      // Login as anonim. 
+      // Tthis session use on server side, thank SessionProvider.
+      repository.login(new CredentialsImpl(IdentityConstants.ANONIM, "exo".toCharArray()), "ws");
 
+      String path = getPathWS() + "/folderA/folderB";
+
+      ContainerResponse response = service(WebDAVMethods.GET, path, "", null, null);
+      assertEquals("Successful result expected (200), but actual is: " + response.getStatus(), 200, response.getStatus());
+      
+      XSLTStreamingOutput XSLTout = (XSLTStreamingOutput)response.getEntity();
+      ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
+      XSLTout.write(byteOut);
+
+      assertTrue("Response should contain parent collection href", byteOut.toString().contains("folderA"));
+
+   }
+   
 }

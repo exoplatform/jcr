@@ -184,6 +184,21 @@ public class TextUtil
       }
       return curPath;
    }
+   
+   /**
+    * @param path 
+    *          path
+    * @return parentPath
+    */
+   public static String parentPath(final String path)
+   {
+      String curPath = path.substring(0, path.lastIndexOf("/"));
+      if ("".equals(curPath))
+      {
+         curPath = "/";
+      }
+      return curPath;
+   }
 
    /**
     * Cuts the current name from the path.
