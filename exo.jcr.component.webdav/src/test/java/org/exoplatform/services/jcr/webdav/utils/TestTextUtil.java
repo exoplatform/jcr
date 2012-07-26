@@ -34,5 +34,15 @@ public class TestTextUtil extends TestCase
       assertEquals("/a/b",TextUtil.parentPath("/a/b/c.txt"));
       assertEquals("/a",TextUtil.parentPath("/a/b"));
       assertEquals("/",TextUtil.parentPath("/a"));
+      assertEquals("/",TextUtil.parentPath("/"));
+      
+      try
+      {
+         TextUtil.parentPath("a");
+         fail("A IllegalArgumentException is expected here");
+      }
+      catch (IllegalArgumentException e)
+      {
+      }
    }
 }

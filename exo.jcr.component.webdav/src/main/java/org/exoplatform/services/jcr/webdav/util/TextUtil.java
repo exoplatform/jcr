@@ -192,8 +192,13 @@ public class TextUtil
     */
    public static String parentPath(final String path)
    {
-      String curPath = path.substring(0, path.lastIndexOf("/"));
-      if ("".equals(curPath))
+      int index = path.lastIndexOf("/");
+      if (index == -1)
+      {
+         throw new IllegalArgumentException("Invalid path, it must contain at least one '/'");
+      }
+      String curPath = path.substring(0, index);
+      if (curPath.length() == 0)
       {
          curPath = "/";
       }
