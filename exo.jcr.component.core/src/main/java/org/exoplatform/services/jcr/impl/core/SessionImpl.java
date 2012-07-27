@@ -222,8 +222,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       this.locationFactory = new LocationFactory(this);
 
-      this.cleanerHolder =
-         (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
+      this.cleanerHolder = (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
       this.valueFactory = new ValueFactoryImpl(locationFactory, wsConfig, cleanerHolder);
 
       this.namespaces = new LinkedHashMap<String, String>();
@@ -1034,6 +1033,76 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
             (NodeData)srcParentNode.getData(), nodeTypeManager, getTransientNodesManager(), true,
             triggerEventsForDescendentsOnRename || srcParentNode != destParentNode); // NOSONAR
+
+      getTransientNodesManager().rename((NodeData)srcNode.getData(), initializer);
+   }
+
+   public void rename(String oldNameAbsPath, String newNameAbsPath) throws ItemExistsException, PathNotFoundException,
+      VersionException, LockException, RepositoryException
+   {
+      checkLive();
+      JCRPath srcNodePath = getLocationFactory().parseAbsPath(oldNameAbsPath);
+
+      NodeImpl srcNode = (NodeImpl)dataManager.getItem(srcNodePath.getInternalPath(), false);
+      JCRPath destNodePath = getLocationFactory().parseAbsPath(newNameAbsPath);
+      if (destNodePath.isIndexSetExplicitly())
+      {
+         throw new RepositoryException("The relPath provided must not have an index on its final element. "
+            + destNodePath.getAsString(false));
+      }
+
+      NodeImpl destParentNode = (NodeImpl)dataManager.getItem(destNodePath.makeParentPath().getInternalPath(), true);
+
+      if (srcNode == null || destParentNode == null)
+      {
+         throw new PathNotFoundException("No node exists at " + oldNameAbsPath + " or no node exists one level above "
+            + newNameAbsPath);
+      }
+
+      destParentNode.validateChildNode(destNodePath.getName().getInternalName(),
+         ((NodeTypeImpl)srcNode.getPrimaryNodeType()).getQName());
+
+      // Check for node with destAbsPath name in session
+      NodeImpl destNode =
+         (NodeImpl)dataManager.getItem((NodeData)destParentNode.getData(), new QPathEntry(destNodePath
+            .getInternalPath().getName(), 0), false, ItemType.NODE);
+
+      if (destNode != null)
+      {
+         if (!destNode.getDefinition().allowsSameNameSiblings())
+         {
+            throw new ItemExistsException("A node with this name (" + newNameAbsPath + ") is already exists. ");
+         }
+      }
+      NodeImpl srcParentNode = null;
+      if (destParentNode.getIdentifier().equals(srcNode.getParentIdentifier()))
+      {
+         // move to same parent
+         srcParentNode = destParentNode;
+      }
+      else
+      {
+         srcParentNode = srcNode.parent();
+      }
+      // Check if versionable ancestor is not checked-in
+      if (!srcParentNode.checkedOut())
+      {
+         throw new VersionException("Parent or source Node or its nearest ancestor is checked-in");
+      }
+
+      if (!srcNode.checkLocking())
+      {
+         throw new LockException("Source parent node " + srcNode.getPath() + " is locked ");
+      }
+
+      if (srcParentNode != destParentNode)//NOSONAR
+      {
+         throw new IllegalStateException("Rename is for the same-level nodes only. Use move() operation instead.");
+      }
+
+      ItemDataMoveVisitor initializer =
+         new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
+            (NodeData)srcParentNode.getData(), nodeTypeManager, getTransientNodesManager(), true, false);
 
       getTransientNodesManager().rename((NodeData)srcNode.getData(), initializer);
    }

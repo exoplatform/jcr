@@ -72,6 +72,42 @@ public class TestMoveNode extends JcrImplBaseTest
       }
    }
 
+   public void testRename() throws Exception
+   {
+      Node node1 = root.addNode("nodeToBeRenamed");
+      session.save();
+      session.rename(node1.getPath(), node1.getPath() + "-testing");
+      session.save();
+
+      try
+      {
+         root.getNode("nodeToBeRenamed");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+   }
+
+   public void testRenameOnDifferentLevels() throws Exception
+   {
+      try
+      {
+         Node node1 = root.addNode("someNode");
+         Node node2 = node1.addNode("node2Temp");
+         Node node3 = root.addNode("nodeToBeRenamed");
+         session.save();
+         session.rename(node3.getPath(), node2.getPath() + "-testing");
+         session.save();
+         fail();
+      }
+      catch (IllegalStateException e)
+      {
+         // ok
+      }
+   }
+
    public void testMoveAndRefreshFalse() throws Exception
    {
       Node node1 = root.addNode("node1");
@@ -265,7 +301,7 @@ public class TestMoveNode extends JcrImplBaseTest
 
       assertEquals(value, new String(bValue, "UTF-8"));
    }
-   
+
    public void testLocalBigFiles() throws Exception
    {
       Node testBinaryValue = root.addNode("testBinaryValue");
@@ -345,7 +381,7 @@ public class TestMoveNode extends JcrImplBaseTest
       WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       wsEntry.getContainer().getParameters()
          .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME, "false"));
-      
+
       ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
 

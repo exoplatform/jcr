@@ -20,14 +20,15 @@ package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.SessionLifecycleListener;
-import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.security.AccessControlException;
 import java.util.Map;
+
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Credentials;
 import javax.jcr.InvalidItemStateException;
@@ -263,6 +264,11 @@ public class DummySession implements ExtendedSession
    }
 
    public void setNamespacePrefix(String prefix, String uri) throws NamespaceException, RepositoryException
+   {
+   }
+
+   public void rename(String oldNameAbsPath, String newNameAbsPath) throws ItemExistsException, PathNotFoundException,
+      VersionException, LockException, RepositoryException
    {
    }
 }

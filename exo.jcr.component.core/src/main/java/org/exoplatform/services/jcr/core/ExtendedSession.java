@@ -32,7 +32,9 @@ import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.version.VersionException;
 import javax.transaction.xa.XAResource;
 
 /**
@@ -162,17 +164,65 @@ public interface ExtendedSession extends Session
     * the expected value is expressed in milliseconds 
     */
    void setTimeout(long timeout);
-   
+
    /**
     * Indicates whether the session has expired or not. A session expired when it has not
     * been modified since an amount of time bigger than the timeout
     * @return <code>true</code> if it has expired, <code>false</code> otherwise.
     */
    boolean hasExpired();
-   
+
    /**
     * Gives the XA representation of the session
     * @return the {@link XAResource} corresponding to the session
     */
    XAResource getXAResource();
+
+   /**
+    * Renames the node at <code>oldNameAbsPath</code> to the new name <code>newNameAbsPath</code>.
+    * A <code>ConstraintViolationException</code> is thrown either immediately or on <code>save</code>
+    * if performing this operation would violate a node type or implementation-specific constraint.
+    * Implementations may differ on when this validation is performed.
+    * As well, a <code>ConstraintViolationException</code> will be thrown on
+    * <code>save</code> if an attempt is made to separately <code>save</code>
+    * either the source or destination node.
+    * The <code>newNameAbsPath</code> provided must not
+    * have an index on its final element. If it does then a <code>RepositoryException</code>
+    * is thrown. Strictly speaking, the <code>newNameAbsPath</code> parameter is actually an <i>absolute path</i>
+    * to the parent node of the new location, appended with the new <i>name</i> desired for the
+    * renamed node. It does not specify a position within the child node
+    * ordering (if such ordering is supported). If ordering is supported by the node type of
+    * the parent node of the new location, then the newly moved node is appended to the end of the
+    * child node list.
+    * If no node exists at <code>oldNameAbsPath</code> or no node exists one level above <code>newNameAbsPath</code>
+    * (in other words, there is no node that will serve as the parent of the moved item) then a
+    * <code>PathNotFoundException</code> is thrown either immediately or on <code>save</code>.
+    * Implementations may differ on when this validation is performed.
+    * An <code>ItemExistsException</code> is thrown either immediately or on <code>save</code>
+    * if a property already exists at <code>newNameAbsPath</code> or a node already exists there and same-name siblings
+    * are not allowed. Implementations may differ on when this validation is performed.
+    * A <code>VersionException</code> is thrown either immediately or on <code>save</code>
+    * if the parent node of <code>newNameAbsPath</code> or the parent node of <code>oldNameAbsPath is versionable and
+    * checked-in, or is non-versionable and its nearest versionable ancestor is checked-in.
+    * Implementations may differ on when this validation is performed.
+    * A <code>LockException</code> is thrown either immediately or on <code>save</code>
+    * if a lock prevents the <code>move</code>. Implementations may differ on when this validation is performed.
+    *
+    * @param oldNameAbsPath is the old name of the node to be renamed.
+    * @param newNameAbsPath is the new name of the node to be renamed in.
+    * @throws ItemExistsException if a property already exists at
+    * <code>newNameAbsPath</code> or a node already exist there, and same name
+    * siblings are not allowed and this
+    * implementation performs this validation immediately instead of waiting until <code>save</code>.
+    * @throws PathNotFoundException if either <code>oldNameAbsPath</code> or <code>newNameAbsPath</code> cannot be found and this
+    * implementation performs this validation immediately instead of waiting until <code>save</code>.
+    * @throws VersionException if the parent node of <code>newNameAbsPath</code> or the parent node of <code>oldNameAbsPath</code>
+    * is versionable and checked-in, or is non-versionable and its nearest versionable ancestor is checked-in and this
+    * implementation performs this validation immediately instead of waiting until <code>save</code>.
+    * @throws LockException if the move operation would violate a lock and this
+    * implementation performs this validation immediately instead of waiting until <code>save</code>.
+    * @throws RepositoryException if the last element of <code>newNameAbsPath</code> has an index or if another error occurs.
+    */
+   public void rename(String oldNameAbsPath, String newNameAbsPath) throws ItemExistsException, PathNotFoundException,
+      VersionException, LockException, RepositoryException;
 }
