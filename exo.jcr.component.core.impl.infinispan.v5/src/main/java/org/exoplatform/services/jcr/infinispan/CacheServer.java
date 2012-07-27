@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.infinispan;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.StandaloneContainer;
 
 import java.net.URL;
@@ -43,6 +44,21 @@ public class CacheServer
 
    private static final String DEFAULT_CONFIG_FILE_PATH = "/conf/cache-server-configuration.xml";
 
+   private static void help(String errorMessage)
+   {
+      StringBuilder sb = new StringBuilder();
+      if (errorMessage != null)
+      {
+         sb.append(errorMessage + ", t");
+      }
+      else
+      {
+         sb.append("T");
+      }
+      sb.append("he expected arguments are: help|?|<configuration-file-path>|udp|tcp <initial-hosts>");
+      System.err.println(sb.toString());//NOSONAR
+   }
+
    /**
     * @param args
     */
@@ -52,18 +68,55 @@ public class CacheServer
       if (args == null || args.length == 0)
       {
          configPath = DEFAULT_CONFIG_FILE_PATH;
-         System.out.println("The configuration file will be loaded from '" + DEFAULT_CONFIG_FILE_PATH + "'");//NOSONAR
       }
       else if (args.length == 1)
       {
-         configPath = args[0];
-         System.out.println("The configuration file will be loaded from '" + args[0] + "'");//NOSONAR         
+         String arg = args[0];
+         if ("help".equals(arg) || "?".equals(arg))
+         {
+            help(null);
+            return;
+         }
+         else if ("udp".equals(arg))
+         {
+            configPath = DEFAULT_CONFIG_FILE_PATH;
+         }
+         else if ("tcp".equals(arg))
+         {
+            configPath = DEFAULT_CONFIG_FILE_PATH;
+            addTCP2ProfileList();
+            PropertyManager.setProperty("jgroups.bind_addr", "127.0.0.1");
+            System.out.println("No initial hosts have been configured so the bind address "//NOSONAR
+               + "has been automatically set to 127.0.0.1 assuming that it has been properly"
+               + " configured to map to localhost");
+         }
+         else
+         {
+            configPath = arg;
+         }
+      }
+      else if (args.length == 2)
+      {
+         String arg = args[0];
+         if ("tcp".equals(arg))
+         {
+            configPath = DEFAULT_CONFIG_FILE_PATH;
+            addTCP2ProfileList();
+            PropertyManager.setProperty("jgroups.tcpping.initial_hosts", args[1]);
+            System.out.println("The initial hosts have been configured to:" + args[1]);//NOSONAR
+         }
+         else
+         {
+            help("Unexpected syntax");
+            return;
+         }
       }
       else
       {
-         System.err.println("Too many arguments, the expected syntax is: java CacheServer <configuration-file-path>");//NOSONAR
+         help("Too many arguments");
          return;
       }
+      System.out.println("The configuration file will be loaded from '" + configPath + "'");//NOSONAR
 
       URL configUrl = CacheServer.class.getResource(configPath);
       if (configUrl != null)
@@ -75,6 +128,20 @@ public class CacheServer
          StandaloneContainer.addConfigurationPath(configPath);
       }
       StandaloneContainer.getInstance();
+   }
+
+   private static void addTCP2ProfileList()
+   {
+      String profiles = PropertyManager.getProperty(PropertyManager.RUNTIME_PROFILES);
+      StringBuilder sb = new StringBuilder();
+      if (profiles != null && !profiles.isEmpty())
+      {
+         sb.append(profiles);
+         sb.append(',');
+      }
+      sb.append("tcp");
+      PropertyManager.setProperty(PropertyManager.RUNTIME_PROFILES, sb.toString());
+      System.out.println("The tcp stack has been enabled");//NOSONAR            
    }
 
 }

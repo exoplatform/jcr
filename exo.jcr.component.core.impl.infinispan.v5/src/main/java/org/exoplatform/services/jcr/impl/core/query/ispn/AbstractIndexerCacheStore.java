@@ -58,7 +58,7 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
     */
    protected final Map<String, Indexer> indexers = new HashMap<String, Indexer>();
 
-   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.IndexerCacheLoader");
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.IndexerCacheLoader");//NOSONAR
 
    /**
     * Executor used to remove all the entries that have already been treated. We

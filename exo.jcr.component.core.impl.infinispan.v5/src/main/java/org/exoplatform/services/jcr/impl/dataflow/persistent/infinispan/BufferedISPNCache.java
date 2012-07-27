@@ -78,7 +78,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     */
    private final Boolean allowLocalChanges;
 
-   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.BufferedISPNCache");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.BufferedISPNCache");//NOSONAR
 
    public static enum ChangesType {
       REMOVE, PUT;
@@ -1092,7 +1092,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          {
             cacheChange.apply();
          }
-         catch (RuntimeException e)
+         catch (RuntimeException e)//NOSONAR
          {
             if (isTxCreated)
             {
@@ -1104,7 +1104,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                   }
                   tm.rollback();
                }
-               catch (Exception e1)
+               catch (Exception e1)//NOSONAR
                {
                   LOG.warn("Could not rollback the tx", e1);
                }

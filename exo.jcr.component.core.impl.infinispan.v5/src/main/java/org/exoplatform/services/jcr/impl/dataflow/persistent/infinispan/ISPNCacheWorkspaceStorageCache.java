@@ -122,8 +122,8 @@ import javax.transaction.TransactionManager;
  */
 public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable, Startable
 {
-   private static final Log LOG = ExoLogger
-      .getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNCacheWorkspaceStorageCache");
+   private static final Log LOG = ExoLogger//NOSONAR
+      .getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNCacheWorkspaceStorageCache");//NOSONAR
 
    /**
     * Name of the cache in case of the distributed cache
@@ -1725,7 +1725,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          {
             listener.onCacheEntryUpdated(data);
          }
-         catch (Exception e)
+         catch (RuntimeException e) //NOSONAR
          {
             LOG.warn("The method onCacheEntryUpdated fails for the listener " + listener.getClass(), e);
          }
@@ -2002,7 +2002,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                });
                return;
             }
-            catch (Exception e)
+            catch (Exception e) //NOSONAR
             {
                if (LOG.isDebugEnabled())
                {

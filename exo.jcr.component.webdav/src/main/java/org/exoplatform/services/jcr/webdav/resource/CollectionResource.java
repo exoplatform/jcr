@@ -468,10 +468,10 @@ public class CollectionResource extends GenericResource
                {
                   // this is added to fix EXOJCR-1379
                   // XSLT string operations with actual node href, (which are used during XSLT transformation
-                  // to receive parent href) produce wrong parent-href if node path containes non-latin symbols, 
+                  // to receive parent href) produce wrong parent-href if node path contains non-latin symbols, 
                   // so instead we simply add one more attribute which already contains parent-href
                   // as result: no XLST processor string manipulation is needed
-                  String nodeParentHref = rootHref + TextUtil.escape(node.getParent().getPath(), '%', true);
+                  String nodeParentHref = rootHref + TextUtil.escape(TextUtil.parentPath(node.getPath()), '%', true);
                   writer.writeAttribute(XML_PARENT_HREF, nodeParentHref);
                }
 

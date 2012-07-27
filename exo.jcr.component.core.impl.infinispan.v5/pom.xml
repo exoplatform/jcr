@@ -373,6 +373,25 @@
                </execution>
             </executions>
          </plugin>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>jar-with-dependencies</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>single</goal>
+                  </goals>
+                  <configuration>
+                     <primaryArtifact>false</primaryArtifact>
+                     <finalName>${project.artifactId}</finalName>
+                     <descriptors>
+                        <descriptor>${basedir}/src/main/assemblies/binary-assembly.xml</descriptor>
+                     </descriptors>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
    </build>
    <profiles>

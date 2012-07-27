@@ -49,8 +49,8 @@ public class JBossStandaloneJTAManagerLookup implements TransactionManagerLookup
    /**
     * The logger 
     */
-   private static final Log LOG =
-      ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.JBossStandaloneJTAManagerLookup");
+   private static final Log LOG = //NOSONAR
+      ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.JBossStandaloneJTAManagerLookup");//NOSONAR
 
    private Method manager, user;
 
@@ -63,15 +63,15 @@ public class JBossStandaloneJTAManagerLookup implements TransactionManagerLookup
       }
       catch (ClassNotFoundException e)
       {
-         throw new RuntimeException(e);
+         throw new RuntimeException(e);//NOSONAR
       }
       catch (SecurityException e)
       {
-         throw new RuntimeException(e);
+         throw new RuntimeException(e);//NOSONAR
       }
       catch (NoSuchMethodException e)
       {
-         throw new RuntimeException(e);
+         throw new RuntimeException(e);//NOSONAR
       }
    }
 
