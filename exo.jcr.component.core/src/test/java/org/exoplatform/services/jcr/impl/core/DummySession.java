@@ -267,8 +267,10 @@ public class DummySession implements ExtendedSession
    {
    }
 
-   public void rename(String oldNameAbsPath, String newNameAbsPath) throws ItemExistsException, PathNotFoundException,
-      VersionException, LockException, RepositoryException
+   public void move(String srcAbsPath, String destAbsPath, boolean triggerEventsForDescendentsOnRename)
+      throws ItemExistsException, PathNotFoundException, VersionException, ConstraintViolationException, LockException,
+      RepositoryException
    {
+
    }
 }

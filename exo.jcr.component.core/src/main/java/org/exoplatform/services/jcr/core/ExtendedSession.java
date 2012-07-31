@@ -32,6 +32,7 @@ import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.Workspace;
 import javax.jcr.lock.LockException;
 import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
@@ -179,50 +180,76 @@ public interface ExtendedSession extends Session
    XAResource getXAResource();
 
    /**
-    * Renames the node at <code>oldNameAbsPath</code> to the new name <code>newNameAbsPath</code>.
+    * Moves the node at <code>srcAbsPath</code> (and its entire subtree) to the new location
+    * at <code>destAbsPath</code>. Method can help to avoid performance impacts on "rename" of big trees.
+    * Rename means move of node within same parent. Keep in mind that this method will not give a performance growth
+    * on renaming of small trees but even probably will cause a decrease. Also it means that all listeners connected
+    * with descendants will not get events. Also in case of QuotaManager it will call re-calculating size of
+    * moved node and this will affect performance decrease. 
+    * <p>
+    * In order to persist the change, a <code>save</code>
+    * must be called on either the session or a common ancestor to both the source and destination locations.
+    * <p/>
     * A <code>ConstraintViolationException</code> is thrown either immediately or on <code>save</code>
     * if performing this operation would violate a node type or implementation-specific constraint.
     * Implementations may differ on when this validation is performed.
+    * <p>
     * As well, a <code>ConstraintViolationException</code> will be thrown on
     * <code>save</code> if an attempt is made to separately <code>save</code>
     * either the source or destination node.
-    * The <code>newNameAbsPath</code> provided must not
+    * <p>
+    * Note that this behavior differs from that of
+    * {@link Workspace#move}, which operates directly in the persistent
+    * workspace and does not require a <code>save</code>.
+    * <p/>
+    * The <code>destAbsPath</code> provided must not
     * have an index on its final element. If it does then a <code>RepositoryException</code>
-    * is thrown. Strictly speaking, the <code>newNameAbsPath</code> parameter is actually an <i>absolute path</i>
+    * is thrown. Strictly speaking, the <code>destAbsPath</code> parameter is actually an <i>absolute path</i>
     * to the parent node of the new location, appended with the new <i>name</i> desired for the
-    * renamed node. It does not specify a position within the child node
+    * moved node. It does not specify a position within the child node
     * ordering (if such ordering is supported). If ordering is supported by the node type of
     * the parent node of the new location, then the newly moved node is appended to the end of the
     * child node list.
-    * If no node exists at <code>oldNameAbsPath</code> or no node exists one level above <code>newNameAbsPath</code>
+    * <p/>
+    * This method cannot be used to move just an individual property by itself.
+    * It moves an entire node and its subtree (including, of course, any properties
+    * contained therein).
+    * <p/>
+    * If no node exists at <code>srcAbsPath</code> or no node exists one level above <code>destAbsPath</code>
     * (in other words, there is no node that will serve as the parent of the moved item) then a
     * <code>PathNotFoundException</code> is thrown either immediately or on <code>save</code>.
     * Implementations may differ on when this validation is performed.
+    * <p/>
     * An <code>ItemExistsException</code> is thrown either immediately or on <code>save</code>
-    * if a property already exists at <code>newNameAbsPath</code> or a node already exists there and same-name siblings
+    * if a property already exists at <code>destAbsPath</code> or a node already exists there and same-name siblings
     * are not allowed. Implementations may differ on when this validation is performed.
+    * <p/>
     * A <code>VersionException</code> is thrown either immediately or on <code>save</code>
-    * if the parent node of <code>newNameAbsPath</code> or the parent node of <code>oldNameAbsPath is versionable and
+    * if the parent node of <code>destAbsPath</code> or the parent node of <code>srcAbsPath] is versionable and
     * checked-in, or is non-versionable and its nearest versionable ancestor is checked-in.
     * Implementations may differ on when this validation is performed.
+    * <p/>
     * A <code>LockException</code> is thrown either immediately or on <code>save</code>
     * if a lock prevents the <code>move</code>. Implementations may differ on when this validation is performed.
-    *
-    * @param oldNameAbsPath is the old name of the node to be renamed.
-    * @param newNameAbsPath is the new name of the node to be renamed in.
+    * @param srcAbsPath the root of the subtree to be moved.
+    * @param destAbsPath the location to which the subtree is to be moved.
+    * @param triggerEventsForDescendentsOnRename indicates need of triggering events for all descendants in tree if move is a rename.
     * @throws ItemExistsException if a property already exists at
-    * <code>newNameAbsPath</code> or a node already exist there, and same name
+    * <code>destAbsPath</code> or a node already exist there, and same name
     * siblings are not allowed and this
     * implementation performs this validation immediately instead of waiting until <code>save</code>.
-    * @throws PathNotFoundException if either <code>oldNameAbsPath</code> or <code>newNameAbsPath</code> cannot be found and this
+    * @throws PathNotFoundException if either <code>srcAbsPath</code> or <code>destAbsPath</code> cannot be found and this
     * implementation performs this validation immediately instead of waiting until <code>save</code>.
-    * @throws VersionException if the parent node of <code>newNameAbsPath</code> or the parent node of <code>oldNameAbsPath</code>
-    * is versionable and checked-in, or is non-versionable and its nearest versionable ancestor is checked-in and this
+    * @throws VersionException if the parent node of <code>destAbsPath</code> or the parent node of <code>srcAbsPath</code>
+    * is versionable and checked-in, or or is non-verionable and its nearest versionable ancestor is checked-in and this
+    * implementation performs this validation immediately instead of waiting until <code>save</code>.
+    * @throws ConstraintViolationException if a node-type or other constraint violation is detected immediately and this
     * implementation performs this validation immediately instead of waiting until <code>save</code>.
     * @throws LockException if the move operation would violate a lock and this
     * implementation performs this validation immediately instead of waiting until <code>save</code>.
-    * @throws RepositoryException if the last element of <code>newNameAbsPath</code> has an index or if another error occurs.
+    * @throws RepositoryException if the last element of <code>destAbsPath</code> has an index or if another error occurs.
     */
-   public void rename(String oldNameAbsPath, String newNameAbsPath) throws ItemExistsException, PathNotFoundException,
-      VersionException, LockException, RepositoryException;
+   public void move(String srcAbsPath, String destAbsPath, boolean triggerEventsForDescendentsOnRename)
+      throws ItemExistsException, PathNotFoundException, VersionException, ConstraintViolationException, LockException,
+      RepositoryException;
 }

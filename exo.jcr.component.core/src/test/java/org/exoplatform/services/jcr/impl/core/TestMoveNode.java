@@ -72,11 +72,11 @@ public class TestMoveNode extends JcrImplBaseTest
       }
    }
 
-   public void testRename() throws Exception
+   public void testMoveWithoutTriggering() throws Exception
    {
       Node node1 = root.addNode("nodeToBeRenamed");
       session.save();
-      session.rename(node1.getPath(), node1.getPath() + "-testing");
+      session.move(node1.getPath(), node1.getPath() + "-testing", false);
       session.save();
 
       try
@@ -85,24 +85,6 @@ public class TestMoveNode extends JcrImplBaseTest
          fail();
       }
       catch (PathNotFoundException e)
-      {
-         // ok
-      }
-   }
-
-   public void testRenameOnDifferentLevels() throws Exception
-   {
-      try
-      {
-         Node node1 = root.addNode("someNode");
-         Node node2 = node1.addNode("node2Temp");
-         Node node3 = root.addNode("nodeToBeRenamed");
-         session.save();
-         session.rename(node3.getPath(), node2.getPath() + "-testing");
-         session.save();
-         fail();
-      }
-      catch (IllegalStateException e)
       {
          // ok
       }
