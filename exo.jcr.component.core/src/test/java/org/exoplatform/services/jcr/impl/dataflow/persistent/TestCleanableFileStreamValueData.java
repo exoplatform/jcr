@@ -26,9 +26,6 @@ import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
 import java.io.File;
 import java.io.FileOutputStream;
-import java.io.IOException;
-
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS.
@@ -42,13 +39,13 @@ import javax.jcr.RepositoryException;
 public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 {
 
-   private static final int CLEANER_TIMEOUT = 4000; // 4sec
+   private static final int CLEANER_TIMEOUT = 100;
 
    private static final String FILE_NAME = "testFileCleaned";
 
    private File parentDir = new File("./target");
 
-   private File testFile = new File(parentDir, FILE_NAME);
+   private File testFile;
 
    private FileCleaner testCleaner;
 
@@ -58,11 +55,6 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
    {
       /**
        * Dummy constructor.
-       * 
-       * @param parent
-       *          Fiel
-       * @param child
-       *          String
        */
       protected TestSwapFile(File parent, String child)
       {
@@ -84,6 +76,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
    {
       super.setUp();
 
+      testFile = new File(parentDir, FILE_NAME);
       testCleaner = new FileCleaner(CLEANER_TIMEOUT);
 
       SwapFile sf = SwapFile.get(parentDir, FILE_NAME);
@@ -110,33 +103,21 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       TestSwapFile.cleanShare();
 
-      System.gc();
-      Thread.sleep(CLEANER_TIMEOUT + 500);
-      Thread.yield();
-      System.gc();
+      sleepAndGC();
 
       super.tearDown();
    }
 
-   public void testFileCleaned() throws InterruptedException
+   public void testFileCleaned() throws Exception
    {
-
       assertTrue(testFile.exists());
-
       cleanableValueData = null; // CleanableVD dies
 
-      // allows GC to call finalize on vd
-      System.gc();
-      Thread.sleep(CLEANER_TIMEOUT + 500);
-      Thread.yield();
-      System.gc();
-
-      assertFalse(testFile.exists()); // file released and deleted
+      assertReleasedFile(testFile);
    }
 
-   public void testSharedFileNotCleaned() throws InterruptedException, IOException
+   public void testSharedFileNotCleaned() throws Exception
    {
-
       assertTrue(testFile.exists());
 
       System.gc();
@@ -149,26 +130,15 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       cleanableValueData = null; // CleanableVD dies but another instance points swapped file
 
       // allows GC to call finalize on vd
-      System.gc();
-      Thread.sleep(CLEANER_TIMEOUT + 500);
-      Thread.yield();
-      System.gc();
-
+      sleepAndGC();
       assertTrue(testFile.exists());
 
       // clean ValueData
       cfvd2 = null;
-
-      // allows GC to call finalize on vd
-      System.gc();
-      Thread.sleep(CLEANER_TIMEOUT + 500);
-      Thread.yield();
-      System.gc();
-
-      assertFalse(testFile.exists());
+      assertReleasedFile(testFile);
    }
 
-   public void testTransientFileNotCleaned() throws InterruptedException, IOException, RepositoryException
+   public void testTransientFileNotCleaned() throws Exception
    {
 
       assertTrue(testFile.exists());
@@ -182,15 +152,11 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       trvd = null; // TransientVD dies
 
       // allows GC to call finalize on vd
-      System.gc();
-      Thread.sleep(CLEANER_TIMEOUT + 500);
-      Thread.yield();
-      System.gc();
-
+      sleepAndGC();
       assertTrue(testFile.exists()); // but Swapped CleanableVD lives and uses the file
    }
 
-   public void testTransientFileCleaned() throws InterruptedException, IOException, RepositoryException
+   public void testTransientFileCleaned() throws Exception
    {
 
       assertTrue(testFile.exists());
@@ -205,26 +171,14 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       cleanableValueData = null; // CleanableVD dies but TransientVD still uses swapped file
 
-      // allows GC to work
-      System.gc();
-      Thread.sleep(CLEANER_TIMEOUT + 500);
-      Thread.yield();
-      System.gc();
-
+      sleepAndGC();
       assertTrue(testFile.exists());
 
       trvd = null; // TransientVD dies
-
-      // allows GC to call finalize on vd
-      System.gc();
-      Thread.sleep(CLEANER_TIMEOUT + 500);
-      Thread.yield();
-      System.gc();
-
-      assertFalse(testFile.exists()); // swapped file deleted
+      assertReleasedFile(testFile);
    }
 
-   public void testTransientSharedFileCleaned() throws InterruptedException, IOException, RepositoryException
+   public void testTransientSharedFileCleaned() throws Exception
    {
 
       assertTrue(testFile.exists());
@@ -241,11 +195,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       // 1st CleanableVD die
       cleanableValueData = null;
 
-      // allows GC to work
-      System.gc();
-      Thread.sleep(CLEANER_TIMEOUT + 500);
-      Thread.yield();
-      System.gc();
+      sleepAndGC();
 
       // file shared with third CleanableVD, i.e. file still exists (aquired by TransientVD)
       CleanableFilePersistedValueData cfvd2 =
@@ -254,23 +204,36 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       trvd = null; // TransientVD dies
 
-      // allows GC to work
-      System.gc();
-      Thread.sleep(CLEANER_TIMEOUT + 500);
-      Thread.yield();
-      System.gc();
-
+      sleepAndGC();
       assertTrue(testFile.exists()); // still exists, aquired by 2nd CleanableVD
 
       cfvd2 = null; // 2nd CleanableVD dies
+      assertReleasedFile(testFile);
+   }
 
-      // allows GC to work
+   private void sleepAndGC() throws Exception
+   {
       System.gc();
       Thread.sleep(CLEANER_TIMEOUT + 500);
       Thread.yield();
       System.gc();
-
-      assertFalse(testFile.exists()); // file should be deleted
    }
 
+   private void assertReleasedFile(File file) throws Exception
+   {
+      long purgeStartTime = System.currentTimeMillis();
+      while (file.exists() && (System.currentTimeMillis() - purgeStartTime < 2 * 60 * 1000))
+      {
+         System.gc();
+         try
+         {
+            Thread.sleep(500);
+         }
+         catch (InterruptedException e)
+         {
+         }
+      }
+
+      assertFalse(file.exists()); // file released and deleted
+   }
 }
