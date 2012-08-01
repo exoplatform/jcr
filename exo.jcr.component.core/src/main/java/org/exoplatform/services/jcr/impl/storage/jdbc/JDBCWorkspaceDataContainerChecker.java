@@ -593,12 +593,13 @@ public class JDBCWorkspaceDataContainerChecker
          + " I where I.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
          + "' and EXISTS (select * from " + itemTable + " J WHERE I.CONTAINER_NAME = J.CONTAINER_NAME and"
          + " I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
-         + " and I.VERSION != J.VERSION)" : "select * from " + itemTable + " I where EXISTS (select * from "
-         + itemTable + " J"
+         + " and I.VERSION != J.VERSION and I.I_CLASS = 2)" : "select * from " + itemTable
+         + " I where EXISTS (select * from " + itemTable + " J"
          + " WHERE I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
-         + " and I.VERSION != J.VERSION)", new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID,
-         DBConstants.COLUMN_NAME, DBConstants.COLUMN_VERSION, DBConstants.COLUMN_CLASS, DBConstants.COLUMN_INDEX},
-         "Several versions of same item.", new EarlierVersionsRemover(jdbcDataContainer.getConnectionFactory())));
+         + " and I.VERSION != J.VERSION and I.I_CLASS = 2)", new String[]{DBConstants.COLUMN_ID,
+         DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_VERSION, DBConstants.COLUMN_CLASS,
+         DBConstants.COLUMN_INDEX}, "Several versions of same item.", new EarlierVersionsRemover(jdbcDataContainer
+         .getConnectionFactory())));
 
       itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from " + itemTable + " P, " + valueTable
          + " V where P.ID=V.PROPERTY_ID and P.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
