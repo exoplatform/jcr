@@ -373,7 +373,7 @@
 
     <para>TikaDocumentReader features and notes:<itemizedlist>
         <listitem>
-          <para>TikaDocumentReader may return document contant as Reader
+          <para>TikaDocumentReader may return document content as Reader
           object. Old-Style DocumentReader does not;</para>
         </listitem>
 

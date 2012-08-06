@@ -352,14 +352,11 @@
               url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipTypeHandler.java">org.exoplatform.services.organization.MembershipTypeHandler</ulink></para>
 
               <para>This class is acted as a sub component of the organization
-              service. It is used to manage the membership - the relation of
-              user , group, and membership type - and broadcast the membership
-              event to all the registered listener in the organization
-              service. The membership event can be: new linked membership and
-              delete the membership type event. Each event should have 2
-              phases: pre event and post event. The method linkMembership and
-              removeMembership broadcast the event at each phase so the
-              listeners can handle the event properly.</para>
+              service. It is used to manage the membership type
+              record, the information about user role in group...
+              The interface should allow the developer create, delete and
+              update a membership type and broadcast the event to the umembership type
+              event listeners.</para>
             </listitem>
 
             <listitem>

@@ -39,6 +39,9 @@
   <xi:include href="core/ldap-configuration.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+  <xi:include href="core/jcr-orgservice-configuration.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
   <xi:include href="core/organization-service-tck-tests-config.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 

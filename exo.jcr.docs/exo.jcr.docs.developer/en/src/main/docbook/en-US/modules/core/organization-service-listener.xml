@@ -68,7 +68,7 @@
     System.out.println("Before deleting user " + user.getUserName());
   }
 
-  public void preDelete(User user) throws Exception {
+  public void postDelete(User user) throws Exception {
     System.out.println("After deleting user " + user.getUserName());
   }
 
@@ -96,7 +96,7 @@
     System.out.println("Before deleting group " + group.getName());
   }
 
-  public void preDelete(Group group) throws Exception {
+  public void postDelete(Group group) throws Exception {
     System.out.println("After deleting group " + group.getName());
   }
 }</programlisting>
@@ -123,7 +123,7 @@
     System.out.println("Before deleting membership");
   }
 
-  public void preDelete(Membership membership) throws Exception {
+  public void postDelete(Membership membership) throws Exception {
     System.out.println("After deleting membership");
   }
 }</programlisting>
