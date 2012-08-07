@@ -121,7 +121,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected final List<ValueIOChannel> valueChanges;
 
    protected final WriteValueHelper writeValueHelper = new WriteValueHelper();
-   
+
    // All statements should be closed in closeStatements() method.
 
    protected PreparedStatement findItemById;
@@ -189,6 +189,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected PreparedStatement findNodesAndProperties;
 
    protected PreparedStatement findNodesCount;
+
+   /**
+    * Exception instance for logging of call stack which called a closing of connection.
+    */
+   private Exception closedByCallStack;
 
    /**
     * Read-only flag, if true the connection is marked as READ-ONLY.
@@ -352,7 +357,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    {
       if (!isOpened())
       {
-         throw new IllegalStateException("Connection is closed");
+         throw new IllegalStateException("Connection is already closed", this.closedByCallStack);
       }
    }
 
@@ -386,7 +391,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          {
             try
             {
-               dbConnection.rollback();               
+               dbConnection.rollback();
             }
             finally
             {
@@ -409,7 +414,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                         LOG.error("Could not rollback value change", e1);
                      }
                   }
-               }               
+               }
                if (e != null)
                {
                   throw e;
@@ -438,7 +443,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             {
                LOG.warn("Could not close the connection", e);
             }
-         }         
+         }
       }
    }
 
@@ -448,6 +453,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    public final void close() throws IllegalStateException, RepositoryException
    {
       checkIfOpened();
+      this.closedByCallStack = new Exception("The connection has been closed by the following call stack");
+
       try
       {
          closeStatements();
@@ -644,7 +651,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          LOG.error("Can't close the statement: " + e.getMessage());
       }
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -2731,7 +2738,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       protected final boolean multi;
 
       protected final int type;
-      
+
       protected final String storage_desc;
 
       public ExtendedTempPropertyData(ResultSet item) throws SQLException, ValueStorageNotFoundException, IOException
