@@ -233,7 +233,8 @@ public interface ExtendedSession extends Session
     * if a lock prevents the <code>move</code>. Implementations may differ on when this validation is performed.
     * @param srcAbsPath the root of the subtree to be moved.
     * @param destAbsPath the location to which the subtree is to be moved.
-    * @param triggerEventsForDescendentsOnRename indicates need of triggering events for all descendants in tree if move is a rename.
+    * @param triggerEventsForDescendentsOnRename indicates need of triggering events for all descendants in tree
+    * if move is a rename.
     * @throws ItemExistsException if a property already exists at
     * <code>destAbsPath</code> or a node already exist there, and same name
     * siblings are not allowed and this
