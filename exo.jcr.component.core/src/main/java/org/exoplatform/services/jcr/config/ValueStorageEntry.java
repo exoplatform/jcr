@@ -29,7 +29,8 @@ import java.util.ArrayList;
 
 public class ValueStorageEntry extends ExtendedMappedParametrizedObjectEntry
 {
-
+   public static final String VALUE_STORAGE = "value-storage";
+   
    private String id;
 
    private ArrayList<ValueStorageFilterEntry> filters;

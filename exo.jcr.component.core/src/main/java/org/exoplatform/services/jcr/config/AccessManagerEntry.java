@@ -27,6 +27,8 @@ package org.exoplatform.services.jcr.config;
 
 public class AccessManagerEntry extends ExtendedMappedParametrizedObjectEntry
 {
+   public static final String ACCESS_MANAGER = "access-manager";
+
    public AccessManagerEntry()
    {
       super(ACCESS_MANAGER);

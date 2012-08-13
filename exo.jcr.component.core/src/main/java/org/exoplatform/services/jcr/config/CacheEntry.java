@@ -29,6 +29,7 @@ import java.util.ArrayList;
 
 public class CacheEntry extends ExtendedMappedParametrizedObjectEntry
 {
+   public static final String CACHE = "cache";
 
    private boolean enabled;
 

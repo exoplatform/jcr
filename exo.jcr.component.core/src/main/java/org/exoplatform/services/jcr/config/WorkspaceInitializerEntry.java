@@ -28,6 +28,8 @@ package org.exoplatform.services.jcr.config;
  */
 public class WorkspaceInitializerEntry extends ExtendedMappedParametrizedObjectEntry
 {
+   public static final String WORKSPACE_INITIALIZER = "workspace-initializer";
+
    public WorkspaceInitializerEntry()
    {
       super(WORKSPACE_INITIALIZER);

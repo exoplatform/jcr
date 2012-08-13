@@ -29,7 +29,8 @@ import java.util.ArrayList;
 
 public class ContainerEntry extends ExtendedMappedParametrizedObjectEntry
 {
-
+   public static final String CONTAINER = "container";
+   
    private ArrayList<ValueStorageEntry> valueStorages;
 
    public ContainerEntry()

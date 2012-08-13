@@ -29,6 +29,7 @@ import java.util.List;
 
 public class QueryHandlerEntry extends ExtendedMappedParametrizedObjectEntry
 {
+   public static final String QUERY_HANDLER = "query-handler";
 
    public QueryHandlerEntry()
    {

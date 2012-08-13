@@ -24,6 +24,8 @@ package org.exoplatform.services.jcr.config;
  */
 public class LockManagerEntry extends ExtendedMappedParametrizedObjectEntry
 {
+   public static final String LOCK_MANAGER = "lock-manager";
+
    public LockManagerEntry()
    {
       super(LOCK_MANAGER);

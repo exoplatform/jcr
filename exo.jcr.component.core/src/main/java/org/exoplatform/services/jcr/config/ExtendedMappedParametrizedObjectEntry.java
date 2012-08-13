@@ -34,24 +34,6 @@ import java.util.List;
  */
 public abstract class ExtendedMappedParametrizedObjectEntry extends MappedParametrizedObjectEntry
 {
-   public static final String CONTAINER = "container";
-
-   public static final String CACHE = "cache";
-
-   public static final String INITIALIZER = "initializer";
-
-   public static final String QUERY_HANDLER = "query-handler";
-
-   public static final String LOCK_PERSISTER = "lock-persister";
-
-   public static final String LOCK_MANAGER = "lock-manager";
-
-   public static final String ACCESS_MANAGER = "access-manager";
-
-   public static final String VALUE_STORAGE = "value-storage";
-
-   public static final String WORKSPACE_INITIALIZER = "workspace-initializer";
-
    private SystemParameterUpdater systemParameterUpdater;
 
    private String componentName;

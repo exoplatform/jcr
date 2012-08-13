@@ -226,7 +226,7 @@
     </init-params>
   </component -->
   
-    <component>
+  <component>
     <key>org.exoplatform.services.jcr.config.SystemParametersPersistenceConfigurator</key>
     <type>org.exoplatform.services.jcr.config.SystemParametersPersistenceConfigurator</type>
     <init-params>
