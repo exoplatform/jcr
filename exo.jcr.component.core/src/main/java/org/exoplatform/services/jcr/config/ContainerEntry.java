@@ -27,19 +27,20 @@ import java.util.ArrayList;
  * @version $Id: ContainerEntry.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class ContainerEntry extends MappedParametrizedObjectEntry
+public class ContainerEntry extends ExtendedMappedParametrizedObjectEntry
 {
-
+   public static final String CONTAINER = "container";
+   
    private ArrayList<ValueStorageEntry> valueStorages;
 
    public ContainerEntry()
    {
-      super();
+      super(CONTAINER);
    }
 
    public ContainerEntry(String type, ArrayList params)
    {
-      super(type, params);
+      super(type, params, CONTAINER);
    }
 
    public ArrayList<ValueStorageEntry> getValueStorages()

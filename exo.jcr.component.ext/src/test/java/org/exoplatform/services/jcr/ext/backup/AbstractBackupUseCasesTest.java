@@ -1579,16 +1579,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       String newDSName = helper.createDatasource();
       for (WorkspaceEntry ws : newRepoEntry.getWorkspaceEntries())
       {
-         for (int i = 0; i < ws.getContainer().getParameters().size(); i++)
-         {
-            SimpleParameterEntry spe = ws.getContainer().getParameters().get(i);
-
-            if (spe.getName().equals("source-name"))
-            {
-               ws.getContainer().getParameters().set(i, new SimpleParameterEntry(spe.getName(), newDSName));
-               break;
-            }
-         }
+         ws.getContainer().putParameterValue("source-name", newDSName);
       }
 
       // create repository entry with name of data source name is wrong in system workspace 
@@ -1597,17 +1588,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       {
          if (repository.getConfiguration().getSystemWorkspaceName().equals(ws.getName()))
          {
-            for (int i = 0; i < ws.getContainer().getParameters().size(); i++)
-            {
-               SimpleParameterEntry spe = ws.getContainer().getParameters().get(i);
-
-               if (spe.getName().equals("source-name"))
-               {
-                  ws.getContainer().getParameters().set(i,
-                     new SimpleParameterEntry(spe.getName(), spe.getValue() + "_wrong"));
-                  break;
-               }
-            }
+            ws.getContainer().putParameterValue("source-name", "wrong");
             break;
          }
       }
@@ -1669,16 +1650,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       String newDSName = helper.createDatasource();
       for (WorkspaceEntry ws : newRepoEntry.getWorkspaceEntries())
       {
-         for (int i = 0; i < ws.getContainer().getParameters().size(); i++)
-         {
-            SimpleParameterEntry spe = ws.getContainer().getParameters().get(i);
-
-            if (spe.getName().equals("source-name"))
-            {
-               ws.getContainer().getParameters().set(i, new SimpleParameterEntry(spe.getName(), newDSName));
-               break;
-            }
-         }
+         ws.getContainer().putParameterValue("source-name", newDSName);
       }
 
       // create repository entry with name of data source name is wrong in second workspace 
@@ -1687,17 +1659,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       {
          if (wsEntry.getName().equals(ws.getName()))
          {
-            for (int i = 0; i < ws.getContainer().getParameters().size(); i++)
-            {
-               SimpleParameterEntry spe = ws.getContainer().getParameters().get(i);
-
-               if (spe.getName().equals("source-name"))
-               {
-                  ws.getContainer().getParameters().set(i,
-                     new SimpleParameterEntry(spe.getName(), spe.getValue() + "_wrong"));
-                  break;
-               }
-            }
+            ws.getContainer().putParameterValue("source-name", "wrong");
             break;
          }
       }
@@ -1759,16 +1721,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       String newDSName = helper.createDatasource();
       for (WorkspaceEntry ws : newRepoEntry.getWorkspaceEntries())
       {
-         for (int i = 0; i < ws.getContainer().getParameters().size(); i++)
-         {
-            SimpleParameterEntry spe = ws.getContainer().getParameters().get(i);
-
-            if (spe.getName().equals("source-name"))
-            {
-               ws.getContainer().getParameters().set(i, new SimpleParameterEntry(spe.getName(), newDSName));
-               break;
-            }
-         }
+         ws.getContainer().putParameterValue("source-name", newDSName);
       }
 
       // create repository entry with name of data source name is wrong in second workspace 

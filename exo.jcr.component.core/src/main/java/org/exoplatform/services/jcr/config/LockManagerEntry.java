@@ -22,6 +22,12 @@ package org.exoplatform.services.jcr.config;
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: LockManagerEntry.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class LockManagerEntry extends MappedParametrizedObjectEntry
+public class LockManagerEntry extends ExtendedMappedParametrizedObjectEntry
 {
+   public static final String LOCK_MANAGER = "lock-manager";
+
+   public LockManagerEntry()
+   {
+      super(LOCK_MANAGER);
+   }
 }

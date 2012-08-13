@@ -123,24 +123,23 @@ public abstract class MappedParametrizedObjectEntry
     */
    public Integer getParameterInteger(String name, Integer defaultValue)
    {
-      for (int i = 0; i < parameters.size(); i++)
+      String value = getParameterValue(name, null);
+
+      if (value != null)
       {
-         SimpleParameterEntry p = parameters.get(i);
-         if (p.getName().equals(name))
+         try
          {
-            try
+            return StringNumberParser.parseInt(value);
+         }
+         catch (NumberFormatException e)
+         {
+            if (LOG.isTraceEnabled())
             {
-               return StringNumberParser.parseInt(p.getValue());
-            }
-            catch (NumberFormatException e)
-            {
-               if (LOG.isTraceEnabled())
-               {
-                  LOG.trace("An exception occurred: " + e.getMessage());
-               }
+               LOG.trace("An exception occurred: " + e.getMessage());
             }
          }
       }
+
       return defaultValue;
    }
 
@@ -152,17 +151,7 @@ public abstract class MappedParametrizedObjectEntry
     */
    public void putIntegerParameter(String name, Integer value)
    {
-      for (SimpleParameterEntry param : parameters)
-      {
-         if (param.getName().equals(name))
-         {
-            param.setValue(value.toString());
-            return;
-         }
-      }
-
-      SimpleParameterEntry newParam = new SimpleParameterEntry(name, value.toString());
-      parameters.add(newParam);
+      putParameterValue(name, value.toString());
    }
 
    /**
@@ -196,21 +185,19 @@ public abstract class MappedParametrizedObjectEntry
     */
    public Long getParameterLong(String name, Long defaultValue)
    {
-      for (int i = 0; i < parameters.size(); i++)
+      String value = getParameterValue(name, null);
+
+      if (value != null)
       {
-         SimpleParameterEntry p = parameters.get(i);
-         if (p.getName().equals(name))
+         try
          {
-            try
+            return StringNumberParser.parseLong(value);
+         }
+         catch (NumberFormatException e)
+         {
+            if (LOG.isTraceEnabled())
             {
-               return StringNumberParser.parseLong(p.getValue());
-            }
-            catch (NumberFormatException e)
-            {
-               if (LOG.isTraceEnabled())
-               {
-                  LOG.trace("An exception occurred: " + e.getMessage());
-               }
+               LOG.trace("An exception occurred: " + e.getMessage());
             }
          }
       }
@@ -248,21 +235,19 @@ public abstract class MappedParametrizedObjectEntry
     */
    public Double getParameterDouble(String name, Double defaultValue)
    {
-      for (int i = 0; i < parameters.size(); i++)
+      String value = getParameterValue(name, null);
+
+      if (value != null)
       {
-         SimpleParameterEntry p = parameters.get(i);
-         if (p.getName().equals(name))
+         try
          {
-            try
+            return StringNumberParser.parseDouble(value);
+         }
+         catch (NumberFormatException e)
+         {
+            if (LOG.isTraceEnabled())
             {
-               return StringNumberParser.parseDouble(p.getValue());
-            }
-            catch (NumberFormatException e)
-            {
-               if (LOG.isTraceEnabled())
-               {
-                  LOG.trace("An exception occurred: " + e.getMessage());
-               }
+               LOG.trace("An exception occurred: " + e.getMessage());
             }
          }
       }
@@ -301,21 +286,19 @@ public abstract class MappedParametrizedObjectEntry
     */
    public Long getParameterTime(String name, Long defaultValue)
    {
-      for (int i = 0; i < parameters.size(); i++)
+      String value = getParameterValue(name, null);
+
+      if (value != null)
       {
-         SimpleParameterEntry p = parameters.get(i);
-         if (p.getName().equals(name))
+         try
          {
-            try
+            return StringNumberParser.parseTime(value);
+         }
+         catch (NumberFormatException e)
+         {
+            if (LOG.isTraceEnabled())
             {
-               return StringNumberParser.parseTime(p.getValue());
-            }
-            catch (NumberFormatException e)
-            {
-               if (LOG.isTraceEnabled())
-               {
-                  LOG.trace("An exception occurred: " + e.getMessage());
-               }
+               LOG.trace("An exception occurred: " + e.getMessage());
             }
          }
       }
@@ -354,13 +337,11 @@ public abstract class MappedParametrizedObjectEntry
     */
    public Boolean getParameterBoolean(String name, Boolean defaultValue)
    {
-      for (int i = 0; i < parameters.size(); i++)
+      String value = getParameterValue(name, null);
+
+      if (value != null)
       {
-         SimpleParameterEntry p = parameters.get(i);
-         if (p.getName().equals(name))
-         {
-            return new Boolean(p.getValue());
-         }
+         return new Boolean(value);
       }
       return defaultValue;
    }
@@ -373,18 +354,7 @@ public abstract class MappedParametrizedObjectEntry
     */
    public void putBooleanParameter(String name, Boolean value)
    {
-      for (int i = 0; i < parameters.size(); i++)
-      {
-         SimpleParameterEntry p = parameters.get(i);
-         if (p.getName().equals(name))
-         {
-            p.setValue(value.toString());
-            return;
-         }
-      }
-
-      SimpleParameterEntry newParam = new SimpleParameterEntry(name, value.toString());
-      parameters.add(newParam);
+      putParameterValue(name, value.toString());
    }
 
    /**

@@ -27,16 +27,18 @@ import java.util.List;
  * @version $
  */
 
-public class QueryHandlerEntry extends MappedParametrizedObjectEntry
+public class QueryHandlerEntry extends ExtendedMappedParametrizedObjectEntry
 {
+   public static final String QUERY_HANDLER = "query-handler";
 
    public QueryHandlerEntry()
    {
+      super(QUERY_HANDLER);
    }
 
    public QueryHandlerEntry(String type, List params)
    {
-      super(type, params);
+      super(type, params, QUERY_HANDLER);
    }
 
 }

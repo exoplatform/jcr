@@ -29,8 +29,11 @@ import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.NamingContext;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.access.AccessControlPolicy;
+import org.exoplatform.services.jcr.config.ExtendedMappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.SystemParametersPersistenceConfigurator;
+import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
@@ -156,6 +159,7 @@ public class RepositoryContainer extends ExoContainer
             try
             {
                parent.registerComponentInstance(name, RepositoryContainer.this);
+               initAllWorkspaceComponentEntries(parent);
                registerComponents();
             }
             catch (Throwable t) //NOSONAR
@@ -168,6 +172,73 @@ public class RepositoryContainer extends ExoContainer
             return null;
          }
       });
+   }
+
+   private void initAllWorkspaceComponentEntries(ExoContainer parent)
+   {
+      SystemParametersPersistenceConfigurator sppc =
+         (SystemParametersPersistenceConfigurator)parent
+            .getComponentInstanceOfType(SystemParametersPersistenceConfigurator.class);
+
+      for (WorkspaceEntry workspaceEntry : config.getWorkspaceEntries())
+      {
+         initWorkspaceComponentEntries(sppc, workspaceEntry);
+      }
+   }
+
+   public void initWorkspaceComponentEntries(SystemParametersPersistenceConfigurator sppc, WorkspaceEntry workspaceEntry)
+   {
+      workspaceEntry.setUniqueName(getName() + "_" + workspaceEntry.getName());
+      if (sppc != null)
+      {
+         for (ExtendedMappedParametrizedObjectEntry entry : getWorkspaceComponentEntries(workspaceEntry))
+         {
+            entry.initSystemParameterUpdater(workspaceEntry, sppc);
+         }
+      }
+   }
+
+   private List<ExtendedMappedParametrizedObjectEntry> getWorkspaceComponentEntries(WorkspaceEntry workspaceEntry)
+   {
+      List<ExtendedMappedParametrizedObjectEntry> entries = new ArrayList<ExtendedMappedParametrizedObjectEntry>();
+      if (workspaceEntry.getAccessManager() != null)
+      {
+         entries.add(workspaceEntry.getAccessManager());
+      }
+
+      if (workspaceEntry.getCache() != null)
+      {
+         entries.add(workspaceEntry.getCache());
+      }
+
+      if (workspaceEntry.getInitializer() != null)
+      {
+         entries.add(workspaceEntry.getInitializer());
+      }
+
+      if (workspaceEntry.getLockManager() != null)
+      {
+         entries.add(workspaceEntry.getLockManager());
+      }
+
+      if (workspaceEntry.getQueryHandler() != null)
+      {
+         entries.add(workspaceEntry.getQueryHandler());
+      }
+
+      if (workspaceEntry.getContainer() != null)
+      {
+         entries.add(workspaceEntry.getContainer());
+         if (workspaceEntry.getContainer().getValueStorages() != null)
+         {
+            for (ValueStorageEntry valueStorageEntry : workspaceEntry.getContainer().getValueStorages())
+            {
+               entries.add(valueStorageEntry);
+            }
+         }
+      }
+
+      return entries;
    }
 
    /**
@@ -276,8 +347,6 @@ public class RepositoryContainer extends ExoContainer
 
                final WorkspaceContainer workspaceContainer = new WorkspaceContainer(RepositoryContainer.this, wsConfig);
                registerComponentInstance(wsConfig.getName(), workspaceContainer);
-
-               wsConfig.setUniqueName(getName() + "_" + wsConfig.getName());
 
                workspaceContainer.registerComponentInstance(wsConfig);
 
@@ -580,7 +649,41 @@ public class RepositoryContainer extends ExoContainer
       // The synchronizer will be used to synchronize all the cluster
       // nodes to prevent any concurrent jcr initialization i.e. EXOJCR-887
       synchronizer.waitForApproval(wsInitializer.isWorkspaceInitialized());
+
+      SystemParametersPersistenceConfigurator sppc =
+         (SystemParametersPersistenceConfigurator)parent
+            .getComponentInstanceOfType(SystemParametersPersistenceConfigurator.class);
+
+      if (sppc != null)
+      {
+         setInitializerAndValidateOverriddenParameters(wsConfig, wsInitializer);
+      }
+
       wsInitializer.initWorkspace();
+   }
+
+   public void setInitializerAndValidateOverriddenParameters(WorkspaceEntry workspaceEntry,
+      WorkspaceInitializer workspaceInitializer)
+   {
+      setInitializerForWorkspaceComponents(workspaceEntry, workspaceInitializer);
+      validateOverriddenParametersOfWorkspaceComponents(workspaceEntry);
+   }
+
+   private void setInitializerForWorkspaceComponents(WorkspaceEntry workspaceEntry,
+      WorkspaceInitializer workspaceInitializer)
+   {
+      for (ExtendedMappedParametrizedObjectEntry entry : getWorkspaceComponentEntries(workspaceEntry))
+      {
+         entry.getSystemParameterUpdater().setWorkspaceInitializer(workspaceInitializer);
+      }
+   }
+
+   private void validateOverriddenParametersOfWorkspaceComponents(WorkspaceEntry workspaceEntry)
+   {
+      for (ExtendedMappedParametrizedObjectEntry entry : getWorkspaceComponentEntries(workspaceEntry))
+      {
+         entry.getSystemParameterUpdater().validateOverriddenParameters();
+      }
    }
 
    // ////// initialize --------------

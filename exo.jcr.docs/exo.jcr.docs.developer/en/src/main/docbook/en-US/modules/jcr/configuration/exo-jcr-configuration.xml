@@ -4,7 +4,8 @@
 <section id="JCR.eXoJCRconfiguration">
   <title>eXo JCR configuration</title>
 
-  <para>This section provides you the knowledge about eXo JCR configuration in details, including the basic and advanced configuration.</para>
+  <para>This section provides you the knowledge about eXo JCR configuration in
+  details, including the basic and advanced configuration.</para>
 
   <section id="JCR.eXoJCRconfiguration.RelatedDocuments">
     <title>Related documents</title>
@@ -117,8 +118,10 @@
     <para><emphasis role="bold">conf-path</emphasis> : a path to a
     RepositoryService JCR Configuration.</para>
 
-    <para><emphasis role="bold">max-backup-files</emphasis> : max number of backup files. This option lets you specify the number of stored backups. 
-    Number of backups can't exceed this value. File which will exceed the limit will replace the oldest file.</para>
+    <para><emphasis role="bold">max-backup-files</emphasis> : max number of
+    backup files. This option lets you specify the number of stored backups.
+    Number of backups can't exceed this value. File which will exceed the
+    limit will replace the oldest file.</para>
 
     <para><emphasis role="bold">working-conf</emphasis> : optional; <link
     linkend="JCR.ConfigurationPersister">JCR configuration persister</link>
@@ -172,6 +175,7 @@
     <para><emphasis role="bold">repositories</emphasis>: The list of
     repositories.</para>
   </section>
+
   <section id="JCR.eXoJCRconfiguration.RepositoryConfiguration">
     <title>Repository configuration</title>
 
@@ -288,7 +292,7 @@
     permissions and other users have only a 'read' permission.</para>
 
     <para>Configurable initializer adds a capability to override workspace
-    initial startup procedure (used for Clustering). </para>
+    initial startup procedure (used for Clustering).</para>
   </section>
 
   <section id="JCR.eXoJCRconfiguration.CacheConfiguration">
@@ -459,26 +463,27 @@
       </listitem>
     </orderedlist>
   </section>
+
   <section id="JCR.eXoJCRconfiguration.HelpApplicationToAllowUseOfClosedDataSources">
     <title>Help application to allow the use of closed datasources</title>
- 
-    <para>Since usage of closed session affects usage of closed datasource
-    we propose three ways to resolve such kind of isses: </para>
- 
+
+    <para>Since usage of closed session affects usage of closed datasource we
+    propose three ways to resolve such kind of isses:</para>
+
     <orderedlist>
       <listitem>
         <para>If the system property
-        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> is
-        set to <emphasis>true</emphasis> (default value) then a SQLException will be
-        thrown any time an application will try to access to a closed datasource.
-        In the stack trace, you will be able to know the call stack that
-        closes the datasource.</para>
+        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> is set
+        to <emphasis>true</emphasis> (default value) then a SQLException will
+        be thrown any time an application will try to access to a closed
+        datasource. In the stack trace, you will be able to know the call
+        stack that closes the datasource.</para>
       </listitem>
 
       <listitem>
         <para>If the system property
-        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> is
-        set to <emphasis>false</emphasis> and the system property
+        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> is set
+        to <emphasis>false</emphasis> and the system property
         <emphasis>exo.product.developing</emphasis> is set to
         <emphasis>true</emphasis>, then a warning will be logged in the log
         file with the full stack trace in order to help identifying the root
@@ -488,14 +493,15 @@
 
       <listitem>
         <para>If the system property
-        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> is
-        set to <emphasis>false</emphasis> and the system property
+        <emphasis>exo.jcr.prohibit.closed.datasource.usage</emphasis> is set
+        to <emphasis>false</emphasis> and the system property
         <emphasis>exo.product.developing</emphasis> is set to
         <emphasis>false</emphasis> usage of closed datasource will be allowed
         and nothing will be logged or thrown.</para>
       </listitem>
     </orderedlist>
   </section>
+
   <section id="JCR.eXoJCRconfiguration.GettingEffectiveConfigurationAtRuntimeOfAllRepositories">
     <title>Getting the effective configuration at Runtime of all the
     repositories</title>
@@ -511,5 +517,117 @@
     has been really interpreted by the the JCR core. This could be helpful to
     understand how your repositories/workspaces are configured especially if
     you would like to overwrite the configuration for some reasons.</para>
+  </section>
+
+  <section id="JCR.eXoJCRconfiguration.ConfigurationOfWorkspacesUsingSystemProperties">
+    <title>Configuration of workspaces using system properties</title>
+
+    <para>You can configure values of properties defined in the file
+    repository-configuration.xml using System Properties. This is quite
+    helpful especially when you want to change the default configuration of
+    all the workspaces for example if we want to disable the rdms indexing for
+    all the workspace without this kind of improvement it is very error prone.
+    For all components that can be configured thanks to properties such as
+    container, value-storage, workspace-initializer, cache, query-handler,
+    lock-manager, access-manager and persister the logic for example for the
+    component 'container' and the property called 'foo' will be the
+    following:</para>
+
+    <orderedlist>
+      <listitem>
+        <para>If we have a system property called
+        <emphasis>exo.jcr.config.force.workspace.repository_collaboration.container.foo</emphasis>
+        that has been defined, its value will be used for the configuration of
+        the repository 'repository' and the workspace 'collaboration'</para>
+      </listitem>
+
+      <listitem>
+        <para>If we have a system property called
+        <emphasis>exo.jcr.config.force.repository.repository.container.foo</emphasis>
+        that has been defined, its value will be used for the configuration of
+        all the workspaces of the repository 'repository' except the
+        workspaces for which we configured the same property using system
+        properties defined in #1</para>
+      </listitem>
+
+      <listitem>
+        <para>If we have a system property called
+        <emphasis>exo.jcr.config.force.all.container.foo</emphasis> that has
+        been defined, its value will be used for the configuration of all the
+        workspaces except the workspaces for which we configured the same
+        property using system properties defined in #1 or #2</para>
+      </listitem>
+
+      <listitem>
+        <para>If we have a property 'foo' configured for the repository
+        'repository' and the workspace 'collaboration' and we have no system
+        properties corresponding to rule #1, #2 and #3, we will use this value
+        (current behavior)</para>
+      </listitem>
+
+      <listitem>
+        <para>If the previous rules don't allow to give a value to the
+        property 'foo', we will then check the default value in the following
+        order
+        <emphasis>exo.jcr.config.default.workspace.repository_collaboration.container.foo</emphasis>,
+        <emphasis>exo.jcr.config.default.repository.repository.container.foo</emphasis>,
+        <emphasis>exo.jcr.config.default.all.container.foo</emphasis></para>
+      </listitem>
+    </orderedlist>
+
+    <para>To turn on this feature you need to define a component called
+    SystemParametersPersistenceConfigurator. A simple example:</para>
+
+    <programlisting language="xml">  &lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.jcr.config.SystemParametersPersistenceConfigurator&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.jcr.config.SystemParametersPersistenceConfigurator&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;file-path&lt;/name&gt;
+        &lt;value&gt;target/temp&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;values-param&gt;
+        &lt;name&gt;unmodifiable&lt;/name&gt;
+        &lt;value&gt;cache.test-parameter-I&lt;/value&gt;
+      &lt;/values-param&gt;
+      &lt;values-param&gt;
+        &lt;name&gt;before-initialize&lt;/name&gt;
+        &lt;value&gt;value-storage.enabled&lt;/value&gt;
+      &lt;/values-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;</programlisting>
+
+    <para>To make the configuration process easier here you can define thee
+    parameters.</para>
+
+    <orderedlist>
+      <listitem>
+        <para><emphasis>file-path</emphasis> — this is mandatory parameter
+        which defines the location of the file where all parameters configured
+        on pervious launch of AS are stored.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>unmodifiable</emphasis> — this defines the list of
+        parameters which cannot be modified using system properties</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>before-initialize </emphasis>— this defines the list
+        of parameters which can be set only for not initialized workspaces
+        (e.g. during the first start of the AS)</para>
+      </listitem>
+    </orderedlist>
+
+    <para>The parameter in the list have the following format:<emphasis>
+    {component-name}.{parameter-name}</emphasis>. This takes affect for every
+    workspace component called <emphasis>{component-name}</emphasis>.</para>
+
+    <para>Please take into account that if this component is not defined in
+    the configuration, the workspace configuration overriding using system properties
+    mechanism will be disabled. In other words: if you don't configure
+    SystemParametersPersistenceConfigurator, the system properties are
+    ignored.</para>
+    
   </section>
 </section>
