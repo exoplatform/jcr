@@ -26,7 +26,10 @@ package org.exoplatform.services.jcr.config;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: WorkspaceInitializerEntry.java 111 2008-11-11 11:11:11Z peterit $
  */
-public class WorkspaceInitializerEntry extends MappedParametrizedObjectEntry
+public class WorkspaceInitializerEntry extends ExtendedMappedParametrizedObjectEntry
 {
-
+   public WorkspaceInitializerEntry()
+   {
+      super(WORKSPACE_INITIALIZER);
+   }
 }

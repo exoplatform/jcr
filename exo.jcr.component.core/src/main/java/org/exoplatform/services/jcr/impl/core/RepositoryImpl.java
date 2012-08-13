@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.access.AuthenticationPolicy;
 import org.exoplatform.services.jcr.access.DynamicIdentity;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.config.SystemParametersPersistenceConfigurator;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ManageableRepository;
@@ -225,6 +226,9 @@ public class RepositoryImpl implements ManageableRepository
 
       try
       {
+         repositoryContainer.initWorkspaceComponentEntries((SystemParametersPersistenceConfigurator)repositoryContainer
+            .getComponentInstanceOfType(SystemParametersPersistenceConfigurator.class), wsConfig);
+
          repositoryContainer.registerWorkspace(wsConfig);
       }
       catch (RepositoryConfigurationException e)
@@ -282,12 +286,6 @@ public class RepositoryImpl implements ManageableRepository
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      if (isWorkspaceInitialized(workspaceName))
-      {
-         LOG.warn("Workspace '" + workspaceName + "' is presumably initialized. config canceled");
-         return;
-      }
-
       final WorkspaceContainer wsContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
 
       if (wsContainer == null)
@@ -296,7 +294,27 @@ public class RepositoryImpl implements ManageableRepository
             + " is not configured. Use RepositoryImpl.configWorkspace() method");
       }
 
-      repositoryContainer.getWorkspaceContainer(workspaceName).getWorkspaceInitializer().initWorkspace();
+      WorkspaceInitializer workspaceInitializer =
+         repositoryContainer.getWorkspaceContainer(workspaceName).getWorkspaceInitializer();
+
+      SystemParametersPersistenceConfigurator sppc =
+         (SystemParametersPersistenceConfigurator)repositoryContainer
+            .getComponentInstanceOfType(SystemParametersPersistenceConfigurator.class);
+
+      if (sppc != null)
+      {
+         WorkspaceEntry workspaceEntry = repositoryContainer.getWorkspaceEntry(workspaceName);
+
+         repositoryContainer.setInitializerAndValidateOverriddenParameters(workspaceEntry, workspaceInitializer);
+      }
+
+      if (isWorkspaceInitialized(workspaceName))
+      {
+         LOG.warn("Workspace '" + workspaceName + "' is presumably initialized. config canceled");
+         return;
+      }
+
+      workspaceInitializer.initWorkspace();
       SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
       {
          public Void run()

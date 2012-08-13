@@ -178,6 +178,8 @@ public class TesterConfigurationHelper
    public RepositoryEntry createRepositoryEntry(DatabaseStructureType dbStructureType, String systemWSName, String dsName,
       boolean cacheEnabled, boolean cacheShared) throws Exception
    {
+      String repositoryName = "repo-" + IdGenerator.generate();
+
       // create system workspace entry
       List<String> ids = new ArrayList<String>();
       ids.add("id");
@@ -188,10 +190,12 @@ public class TesterConfigurationHelper
          wsEntry.setName(systemWSName);
       }
 
+      wsEntry.setUniqueName(repositoryName + "_" + wsEntry.getName());
+
       RepositoryEntry repository = new RepositoryEntry();
       repository.setSystemWorkspaceName(wsEntry.getName());
       repository.setDefaultWorkspaceName(wsEntry.getName());
-      repository.setName("repo-" + IdGenerator.generate());
+      repository.setName(repositoryName);
       repository.setSessionTimeOut(3600000);
       repository.setAuthenticationPolicy("org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator");
       repository.setSecurityDomain("exo-domain");
@@ -353,7 +357,6 @@ public class TesterConfigurationHelper
       workspaceEntry.setQueryHandler(qEntry);
       workspaceEntry.setLockManager(lockManagerEntry);
       workspaceEntry.setName(wsName);
-      workspaceEntry.setUniqueName(wsName);
 
       return workspaceEntry;
    }

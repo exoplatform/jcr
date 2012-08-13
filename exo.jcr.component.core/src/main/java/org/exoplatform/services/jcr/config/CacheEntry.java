@@ -27,19 +27,19 @@ import java.util.ArrayList;
  * @version $Id: CacheEntry.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class CacheEntry extends MappedParametrizedObjectEntry
+public class CacheEntry extends ExtendedMappedParametrizedObjectEntry
 {
 
    private boolean enabled;
 
    public CacheEntry()
    {
-      super();
+      super(CACHE);
    }
 
    public CacheEntry(ArrayList params)
    {
-      super("org.exoplatform.services.jcr.impl.storage.cache.WorkspaceCache", params);
+      super("org.exoplatform.services.jcr.impl.storage.cache.WorkspaceCache", params, CACHE);
    }
 
    /**

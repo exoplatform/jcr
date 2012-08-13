@@ -27,7 +27,7 @@ import java.util.ArrayList;
  * @version $Id: ValueStorageEntry.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class ValueStorageEntry extends MappedParametrizedObjectEntry
+public class ValueStorageEntry extends ExtendedMappedParametrizedObjectEntry
 {
 
    private String id;
@@ -36,12 +36,12 @@ public class ValueStorageEntry extends MappedParametrizedObjectEntry
 
    public ValueStorageEntry()
    {
-      super();
+      super(VALUE_STORAGE);
    }
 
    public ValueStorageEntry(String type, ArrayList<ValueStorageFilterEntry> params)
    {
-      super(type, params);
+      super(type, params, VALUE_STORAGE);
    }
 
    public ArrayList<ValueStorageFilterEntry> getFilters()
