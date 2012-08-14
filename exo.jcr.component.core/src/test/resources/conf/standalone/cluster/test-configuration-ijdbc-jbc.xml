@@ -244,6 +244,26 @@
     </init-params>
   </component -->
   
+  <component>
+    <key>org.exoplatform.services.jcr.config.SystemParametersPersistenceConfigurator</key>
+    <type>org.exoplatform.services.jcr.config.SystemParametersPersistenceConfigurator</type>
+    <init-params>
+      <value-param>
+        <name>file-path</name>
+        <value>target/temp</value>
+      </value-param>
+      <values-param>
+        <name>unmodifiable</name>
+        <value>cache.test-parameter-I</value>
+      </values-param>
+      <values-param>
+        <name>before-initialize</name>
+        <value>value-storage.enabled</value>
+        <value>cache.test-parameter-II</value>
+      </values-param>
+    </init-params>
+  </component>
+  
   <external-component-plugins>
     <target-component>org.exoplatform.services.naming.InitialContextInitializer</target-component>
     <component-plugin>
