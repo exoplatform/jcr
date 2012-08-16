@@ -60,7 +60,7 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
       WorkspaceStorageConnection conn = null;
       try
       {
-         conn = connFactory.openConnection();
+         conn = connFactory.openConnection(false);
          if (!(conn instanceof JDBCStorageConnection))
          {
             throw new SQLException("Connection is instance of " + conn);

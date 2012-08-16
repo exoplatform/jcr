@@ -49,6 +49,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
 
    /**
     * {@inheritDoc}
+    * Open connection for read-only usage. Auto commit mode won't be set to false.
     */
    @Override
    public WorkspaceStorageConnection openConnection() throws RepositoryException
@@ -64,14 +65,12 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
    {
       try
       {
-
          if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
             return new MultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }
 
          return new SingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
-
       }
       catch (SQLException e)
       {
