@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 
@@ -45,9 +46,9 @@ import javax.jcr.RepositoryException;
 public class RootAsParentAssigner extends AbstractInconsistencyRepair
 {
 
-   public RootAsParentAssigner(WorkspaceStorageConnectionFactory connFactory)
+   public RootAsParentAssigner(WorkspaceStorageConnectionFactory connFactory, JDBCDataContainerConfig containerConfig)
    {
-      super(connFactory);
+      super(connFactory, containerConfig);
    }
 
    /**
@@ -69,7 +70,7 @@ public class RootAsParentAssigner extends AbstractInconsistencyRepair
    {
       try
       {
-         String propertyId = exctractId(resultSet, DBConstants.COLUMN_ID);
+         String propertyId = getIdentifier(resultSet, DBConstants.COLUMN_ID);
          QPath path = QPath.parse(resultSet.getString(DBConstants.COLUMN_NAME));
 
          PropertyData data = new TransientPropertyData(path, propertyId, 0, 0, null, false, new ArrayList<ValueData>());
@@ -98,10 +99,10 @@ public class RootAsParentAssigner extends AbstractInconsistencyRepair
    {
       try
       {
-         String nodeId = exctractId(resultSet, DBConstants.COLUMN_ID);
+         String nodeId = getIdentifier(resultSet, DBConstants.COLUMN_ID);
          int orderNum = resultSet.getInt(DBConstants.COLUMN_NORDERNUM);
          int version = resultSet.getInt(DBConstants.COLUMN_VERSION);
-         QPath path = new QPath(new QPathEntry[]{extractName(resultSet)});
+         QPath path = new QPath(new QPathEntry[]{getQPathEntry(resultSet)});
 
          NodeData data = new TransientNodeData(path, nodeId, version, null, null, orderNum, Constants.ROOT_UUID, null);
 

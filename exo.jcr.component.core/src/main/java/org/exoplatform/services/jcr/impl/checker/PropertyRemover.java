@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 
@@ -49,9 +50,10 @@ public class PropertyRemover extends AbstractInconsistencyRepair
    /**
     * PropertyRemover constructor.
     */
-   public PropertyRemover(WorkspaceStorageConnectionFactory connFactory, NodeTypeDataManager nodeTypeManager)
+   public PropertyRemover(WorkspaceStorageConnectionFactory connFactory, JDBCDataContainerConfig containerConfig,
+      NodeTypeDataManager nodeTypeManager)
    {
-      super(connFactory);
+      super(connFactory, containerConfig);
       this.nodeTypeManager = nodeTypeManager;
    }
 
@@ -62,7 +64,7 @@ public class PropertyRemover extends AbstractInconsistencyRepair
    {
       try
       {
-         String parentId = exctractId(resultSet, DBConstants.COLUMN_PARENTID);
+         String parentId = getIdentifier(resultSet, DBConstants.COLUMN_PARENTID);
          InternalQName propertyName = InternalQName.parse(resultSet.getString(DBConstants.COLUMN_NAME));
          boolean multiValued = resultSet.getBoolean(DBConstants.COLUMN_PMULTIVALUED);
 
@@ -74,8 +76,8 @@ public class PropertyRemover extends AbstractInconsistencyRepair
          
          if (def == null || def.getDefinition(multiValued) == null || def.getDefinition(multiValued).isResidualSet())
          {
-            String propertyId = exctractId(resultSet, DBConstants.COLUMN_ID);
-            QPath path = new QPath(new QPathEntry[]{extractName(resultSet)});
+            String propertyId = getIdentifier(resultSet, DBConstants.COLUMN_ID);
+            QPath path = new QPath(new QPathEntry[]{getQPathEntry(resultSet)});
 
             PropertyData data =
                new TransientPropertyData(path, propertyId, 0, 0, null, false, new ArrayList<ValueData>());

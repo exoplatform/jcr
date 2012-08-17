@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 
@@ -49,11 +50,11 @@ public class ValueRecordsRemover extends AbstractInconsistencyRepair
    /**
     * ValueRecordsRemover constructor.
     */
-   public ValueRecordsRemover(WorkspaceStorageConnectionFactory connFactory, String containerName, boolean multiDb)
+   public ValueRecordsRemover(WorkspaceStorageConnectionFactory connFactory, JDBCDataContainerConfig containerConfig)
    {
-      super(connFactory);
-      this.containerName = containerName;
-      this.multiDb = multiDb;
+      super(connFactory, containerConfig);
+      this.containerName = containerConfig.containerName;
+      this.multiDb = containerConfig.dbStructureType.isMultiDatabase();
    }
 
    /**
@@ -63,7 +64,7 @@ public class ValueRecordsRemover extends AbstractInconsistencyRepair
    {
       try
       {
-         String propertyId = exctractId(resultSet, DBConstants.COLUMN_VPROPERTY_ID);
+         String propertyId = getIdentifier(resultSet, DBConstants.COLUMN_VPROPERTY_ID);
          QPath path = QPath.parse("[]");
 
          PropertyData data = new TransientPropertyData(path, propertyId, 0, 0, null, false, new ArrayList<ValueData>());
@@ -100,7 +101,10 @@ public class ValueRecordsRemover extends AbstractInconsistencyRepair
       }
    }
 
-   protected String exctractId(ResultSet resultSet, String column) throws SQLException
+   /**
+    * {@inheritDoc}
+    */
+   protected String getIdentifier(ResultSet resultSet, String column) throws SQLException
    {
       return resultSet.getString(column).substring(multiDb ? 0 : containerName.length());
    }

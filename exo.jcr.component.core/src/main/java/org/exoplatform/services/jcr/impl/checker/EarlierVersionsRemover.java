@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.checker;
 
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 
@@ -38,9 +39,9 @@ public class EarlierVersionsRemover extends AbstractInconsistencyRepair
    /**
     * RemoveEarlierVersions constructor.
     */
-   public EarlierVersionsRemover(WorkspaceStorageConnectionFactory connFactory)
+   public EarlierVersionsRemover(WorkspaceStorageConnectionFactory connFactory, JDBCDataContainerConfig containerConfig)
    {
-      super(connFactory);
+      super(connFactory, containerConfig);
    }
 
    /**
@@ -50,7 +51,7 @@ public class EarlierVersionsRemover extends AbstractInconsistencyRepair
    {
       try
       {
-         PropertyData data = (PropertyData)conn.getItemData(exctractId(resultSet, DBConstants.COLUMN_ID));
+         PropertyData data = (PropertyData)conn.getItemData(getIdentifier(resultSet, DBConstants.COLUMN_ID));
          int maxVersion = conn.getMaxPropertyVersion(data);
 
          if (resultSet.getInt(DBConstants.COLUMN_VERSION) < maxVersion)

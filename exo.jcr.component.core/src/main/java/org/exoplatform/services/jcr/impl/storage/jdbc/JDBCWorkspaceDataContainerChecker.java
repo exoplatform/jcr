@@ -502,7 +502,8 @@ public class JDBCWorkspaceDataContainerChecker
          + "' and NOT EXISTS(select * from " + itemTable + " P where P.ID = I.PARENT_ID)" : "select * from "
          + itemTable + " I where NOT EXISTS(select * from " + itemTable + " P where P.ID = I.PARENT_ID)", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_CLASS},
-         "Items that do not have parent nodes", new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory())));
+         "Items that do not have parent nodes", new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory(),
+            jdbcDataContainer.containerConfig)));
 
       String statement =
          singleDatabase ? "select * from " + itemTable + " P where P.CONTAINER_NAME='"
@@ -528,7 +529,7 @@ public class JDBCWorkspaceDataContainerChecker
       itemsInspectionQuery.add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID,
          DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
          "A node that has a single valued properties with nothing declared in the VALUE table.", new PropertyRemover(
-            jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
+            jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.containerConfig, nodeTypeManager)));
 
       itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from " + itemTable
          + " N where N.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
@@ -539,16 +540,14 @@ public class JDBCWorkspaceDataContainerChecker
          + " P where P.I_CLASS=2 and P.PARENT_ID=N.ID " + "and P.NAME='[http://www.jcp.org/jcr/1.0]primaryType')",
          new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
          "A node that doesn't have primary type property", new NodeRemover(jdbcDataContainer.getConnectionFactory(),
-            nodeTypeManager)));
+            jdbcDataContainer.containerConfig, nodeTypeManager)));
 
       itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from " + valueTable
          + " V where NOT EXISTS(select * from " + itemTable + " P " + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)"
          : "select * from " + valueTable + " V where NOT EXISTS(select * from " + itemTable + " P "
             + "where V.PROPERTY_ID = P.ID and P.I_CLASS=2)", new String[]{DBConstants.COLUMN_ID,
          DBConstants.COLUMN_VPROPERTY_ID}, "All value records that has not related property record",
-         new ValueRecordsRemover(jdbcDataContainer.getConnectionFactory(),
-            jdbcDataContainer.containerConfig.containerName, jdbcDataContainer.containerConfig.dbStructureType
-               .isMultiDatabase())));
+         new ValueRecordsRemover(jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.containerConfig)));
 
       // The differences in the queries by DB dialect.
       if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
@@ -587,7 +586,7 @@ public class JDBCWorkspaceDataContainerChecker
          + "' and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'" : "select * from " + itemTable
          + " I where I.ID = I.PARENT_ID and I.NAME <> '" + Constants.ROOT_PARENT_NAME + "'", new String[]{
          DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "An item is its own parent.",
-         new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory())));
+         new RootAsParentAssigner(jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.containerConfig)));
 
       itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from " + itemTable
          + " I where I.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
@@ -599,7 +598,7 @@ public class JDBCWorkspaceDataContainerChecker
          + " and I.VERSION != J.VERSION and I.I_CLASS = 2)", new String[]{DBConstants.COLUMN_ID,
          DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME, DBConstants.COLUMN_VERSION, DBConstants.COLUMN_CLASS,
          DBConstants.COLUMN_INDEX}, "Several versions of same item.", new EarlierVersionsRemover(jdbcDataContainer
-         .getConnectionFactory())));
+         .getConnectionFactory(), jdbcDataContainer.containerConfig)));
 
       itemsInspectionQuery.add(new InspectionQuery(singleDatabase ? "select * from " + itemTable + " P, " + valueTable
          + " V where P.ID=V.PROPERTY_ID and P.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
@@ -608,6 +607,6 @@ public class JDBCWorkspaceDataContainerChecker
             + " V where P.ID=V.PROPERTY_ID and P.P_TYPE=9 and NOT EXISTS " + "(select * from " + refTable
             + " R where P.ID=R.PROPERTY_ID)", new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID,
          DBConstants.COLUMN_NAME}, "Reference properties without reference records", new PropertyRemover(
-         jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
+         jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.containerConfig, nodeTypeManager)));
    }
 }

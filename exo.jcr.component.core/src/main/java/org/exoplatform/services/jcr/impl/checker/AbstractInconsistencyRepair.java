@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
@@ -42,12 +43,12 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
 {
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.AbstractInconsistencyRepair");
 
-   protected final WorkspaceStorageConnectionFactory connFactory;
+   private final WorkspaceStorageConnectionFactory connFactory;
 
    /**
     * AbstractInconsistencyRepair constructor.
     */
-   AbstractInconsistencyRepair(WorkspaceStorageConnectionFactory connFactory)
+   AbstractInconsistencyRepair(WorkspaceStorageConnectionFactory connFactory, JDBCDataContainerConfig containerConfig)
    {
       this.connFactory = connFactory;
    }
@@ -55,7 +56,7 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
    /**
     * {@inheritDoc}
     */
-   public void doRepair(ResultSet resultSet) throws SQLException
+   final public void doRepair(ResultSet resultSet) throws SQLException
    {
       WorkspaceStorageConnection conn = null;
       try
@@ -63,7 +64,7 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
          conn = connFactory.openConnection(false);
          if (!(conn instanceof JDBCStorageConnection))
          {
-            throw new SQLException("Connection is instance of " + conn);
+            throw new SQLException("Connection is instance of " + conn.getClass());
          }
 
          repairRow((JDBCStorageConnection)conn, resultSet);
@@ -82,8 +83,14 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
       }
    }
 
+   /**
+    * Do repair current row. 
+    */
    abstract void repairRow(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException;
 
+   /**
+    * Rollback data.
+    */
    protected void rollback(WorkspaceStorageConnection conn)
    {
       try
@@ -103,7 +110,11 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
       }
    }
 
-   protected String exctractId(ResultSet resultSet, String column) throws SQLException
+   /**
+    * Returns internal identifier (container name plus identifier) of item placed
+    * in {@link ResultSet}. 
+    */
+   protected String getIdentifier(ResultSet resultSet, String column) throws SQLException
    {
       String containerName = "";
       try
@@ -121,7 +132,10 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
       return resultSet.getString(column).substring(containerName.length());
    }
 
-   protected QPathEntry extractName(ResultSet resultSet) throws SQLException, IllegalNameException
+   /**
+    * Returns {@link QPathEntry} of item placed in {@link ResultSet}.
+    */
+   protected QPathEntry getQPathEntry(ResultSet resultSet) throws SQLException, IllegalNameException
    {
       return new QPathEntry(InternalQName.parse(resultSet.getString(DBConstants.COLUMN_NAME)),
          resultSet.getInt(DBConstants.COLUMN_INDEX));
