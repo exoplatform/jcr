@@ -37,6 +37,7 @@ import java.util.List;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.ItemExistsException;
+import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -421,5 +422,27 @@ public class TestSessionDataManager extends JcrImplBaseTest
       catch (InvalidItemStateException e)
       {
       }
+   }
+
+   /*
+    * This test is testing problem described in JCR-1864.
+    * We add 2 node to the system node and we check lastOrderNum for system node.
+    * Last orderNum from method SessionDataManager.getLastOrderNumber must be equal orderNum from last added node. 
+    */
+   public void testGetLastOrderNumFromSystemNode() throws RepositoryException
+   {
+      SessionImpl session2 = (SessionImpl)repository.login(credentials, "ws1");
+      SessionDataManager dataManager = session2.getTransientNodesManager();
+
+      Node systemNode = session2.getRootNode().getNode("jcr:system");
+      systemNode.addNode("node1");
+      NodeImpl node2 = (NodeImpl)systemNode.addNode("node2");
+
+      session2.save();
+
+      int lastOrderNum = dataManager.getLastOrderNumber((NodeData)dataManager.getItemData(Constants.SYSTEM_UUID));
+      int orderNum = ((NodeData)dataManager.getItemData(node2.getIdentifier())).getOrderNumber();
+
+      assertEquals(lastOrderNum, orderNum);
    }
 }

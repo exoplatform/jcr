@@ -132,6 +132,19 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
     * {@inheritDoc}
     */
    @Override
+   public int getLastOrderNumber(final NodeData parent) throws RepositoryException
+   {
+      if (isSystemDescendant(parent.getQPath()) && !this.equals(versionDataManager))
+      {
+         return versionDataManager.getLastOrderNumber(parent);
+      }
+      return super.getLastOrderNumber(parent);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public List<PropertyData> getChildPropertiesData(final NodeData nodeData) throws RepositoryException
    {
       if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
