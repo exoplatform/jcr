@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
+import org.exoplatform.services.jcr.impl.storage.jdbc.PrimaryTypeNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 
 import java.sql.ResultSet;
@@ -66,11 +67,18 @@ public class PropertyRemover extends AbstractInconsistencyRepair
          InternalQName propertyName = InternalQName.parse(resultSet.getString(DBConstants.COLUMN_NAME));
          boolean multiValued = resultSet.getBoolean(DBConstants.COLUMN_PMULTIVALUED);
 
-         NodeData parent = (NodeData)conn.getItemData(parentId);
-         
-         PropertyDefinitionDatas def =
-            nodeTypeManager.getPropertyDefinitions(propertyName, parent.getPrimaryTypeName(),
-               parent.getMixinTypeNames());
+         PropertyDefinitionDatas def = null;
+         try
+         {
+            NodeData parent = (NodeData)conn.getItemData(parentId);
+            def =
+               nodeTypeManager.getPropertyDefinitions(propertyName, parent.getPrimaryTypeName(),
+                  parent.getMixinTypeNames());
+         }
+         catch (PrimaryTypeNotFoundException e)
+         {
+            // It is possible.
+         }
          
          if (def == null || def.getDefinition(multiValued) == null || def.getDefinition(multiValued).isResidualSet())
          {

@@ -18,22 +18,29 @@
  */
 package org.exoplatform.services.jcr.impl.checker;
 
+import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
+import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
+import org.exoplatform.services.jcr.impl.storage.jdbc.PrimaryTypeNotFoundException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
 
 /**
@@ -45,12 +52,19 @@ public class NodeRemover extends AbstractInconsistencyRepair
    private final NodeTypeDataManager nodeTypeManager;
 
    /**
+    * JCR item table name.
+    */
+   private final String iTable;
+
+   /**
     * NodeRemover constructor.
     */
-   public NodeRemover(WorkspaceStorageConnectionFactory connFactory, NodeTypeDataManager nodeTypeManager)
+   public NodeRemover(WorkspaceStorageConnectionFactory connFactory, String iTable, NodeTypeDataManager nodeTypeManager)
    {
       super(connFactory);
+
       this.nodeTypeManager = nodeTypeManager;
+      this.iTable = iTable;
    }
 
    /**
@@ -60,30 +74,19 @@ public class NodeRemover extends AbstractInconsistencyRepair
    {
       try
       {
-         String parentId = exctractId(resultSet, DBConstants.COLUMN_PARENTID);
-         InternalQName nodeName = InternalQName.parse(resultSet.getString(DBConstants.COLUMN_NAME));
+         validateIfRequiredByParent(conn, resultSet);
 
-         NodeData parent = (NodeData)conn.getItemData(parentId);
-         
-         NodeDefinitionData def =
-            nodeTypeManager.getChildNodeDefinition(nodeName, parent.getPrimaryTypeName(),
-               parent.getMixinTypeNames());
-         
-         if (def == null || def.isResidualSet())
+         removeChildrenItems(conn, resultSet);
+
+         NodeData data = createNodeData(resultSet);
+         conn.delete(data);
+      }
+      catch (JCRInvalidItemStateException e)
+      {
+         // It is ok. Node already removed in previous check
+         if (LOG.isTraceEnabled())
          {
-            String nodeId = exctractId(resultSet, DBConstants.COLUMN_ID);
-            int orderNum = resultSet.getInt(DBConstants.COLUMN_NORDERNUM);
-            int version = resultSet.getInt(DBConstants.COLUMN_VERSION);
-            QPath path = QPath.makeChildPath(parent.getQPath(), extractName(resultSet));
-
-            NodeData data =
-               new TransientNodeData(path, nodeId, version, null, null, orderNum, Constants.ROOT_UUID, null);
-
-            deleteTree(conn, data);
-         }
-         else
-         {
-            throw new SQLException("Node is required by its parent.");
+            LOG.trace(e.getMessage(), e);
          }
       }
       catch (IllegalStateException e)
@@ -100,19 +103,99 @@ public class NodeRemover extends AbstractInconsistencyRepair
       }
    }
 
-   private void deleteTree(JDBCStorageConnection conn, NodeData data) throws IllegalStateException,
-      RepositoryException
+   /**
+    * Validates if node represented by instance of {@link ResultSet} is mandatory 
+    * for parent node. It means should not be removed. Throws {@link SQLException}
+    * in this case with appropriate message.
+    */
+   private void validateIfRequiredByParent(JDBCStorageConnection conn, ResultSet resultSet) throws RepositoryException,
+      SQLException, IllegalNameException
    {
-      for (NodeData child : conn.getChildNodesData(data))
+      String parentId = exctractId(resultSet, DBConstants.COLUMN_PARENTID);
+      InternalQName nodeName = InternalQName.parse(resultSet.getString(DBConstants.COLUMN_NAME));
+
+      NodeData parent = null;
+      try
       {
-         deleteTree(conn, child);
+         parent = (NodeData)conn.getItemData(parentId);
+      }
+      catch (PrimaryTypeNotFoundException e)
+      {
+         // It is possible, parent also without primaryType property
+         return;
       }
 
-      for (PropertyData prop : conn.getChildPropertiesData(data))
+      // parent already removed in previous check
+      if (parent == null)
+      {
+         return;
+      }
+
+      NodeDefinitionData def =
+         nodeTypeManager.getChildNodeDefinition(nodeName, parent.getPrimaryTypeName(), parent.getMixinTypeNames());
+
+      if (!def.isResidualSet())
+      {
+         throw new SQLException("Node is required by its parent.");
+      }
+   }
+
+   /**
+    * Removes all children items. 
+    */
+   private void removeChildrenItems(JDBCStorageConnection conn, ResultSet resultSet) throws SQLException,
+      IllegalNameException, IllegalStateException, UnsupportedOperationException, InvalidItemStateException,
+      RepositoryException
+   {
+      String parentId = resultSet.getString(DBConstants.COLUMN_ID);
+      String selectStatement = "select * from " + iTable + " where I_CLASS = 1 and PARENT_ID = '" + parentId + "'";
+      String deleteStatement = "delete from " + iTable + " where I_CLASS = 1 and PARENT_ID = '" + parentId + "'";
+
+      // traversing down to the bottom of the tree
+      PreparedStatement statement = conn.getJdbcConnection().prepareStatement(selectStatement);
+      ResultSet selResult = statement.executeQuery();
+      try
+      {
+         while (selResult.next())
+         {
+            removeChildrenItems(conn, selResult);
+         }
+      }
+      finally
+      {
+         JDBCUtils.freeResources(selResult, statement, null);
+      }
+
+      // remove properties
+      NodeData node = createNodeData(resultSet);
+      for (PropertyData prop : conn.getChildPropertiesData(node))
       {
          conn.delete(prop);
       }
 
-      conn.delete(data);
+      // remove nodes
+      statement = conn.getJdbcConnection().prepareStatement(deleteStatement);
+      try
+      {
+         statement.execute();
+      }
+      finally
+      {
+         JDBCUtils.freeResources(null, statement, null);
+      }
+   }
+
+   /**
+    * Restore {@link NodeData} represented by row in ITEM table.
+    */
+   private NodeData createNodeData(ResultSet resultSet) throws SQLException, IllegalPathException, IllegalNameException
+   {
+      String nodeId = exctractId(resultSet, DBConstants.COLUMN_ID);
+      int orderNum = resultSet.getInt(DBConstants.COLUMN_NORDERNUM);
+      int version = resultSet.getInt(DBConstants.COLUMN_VERSION);
+      QPath path = QPath.makeChildPath(QPath.parse("[]unknown-parent-node-remover"), extractName(resultSet));
+
+      return new TransientNodeData(path, nodeId, version, Constants.NT_UNSTRUCTURED, new InternalQName[0], orderNum,
+         Constants.ROOT_UUID, new AccessControlList());
    }
 }

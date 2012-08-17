@@ -61,9 +61,8 @@ import javax.jcr.RepositoryException;
 import javax.naming.NamingException;
 
 /**
- * @author <a href="mailto:skarpenko@exoplatform.com">Sergiy Karpenko</a>
- * @version $Id: exo-jboss-codetemplates.xml 34360 14 жовт. 2011 skarpenko $
- *
+ * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
+ * @version $Id: JDBCWorkspaceDataContainerChecker.java Aug 17, 2012 tolusha $
  */
 public class JDBCWorkspaceDataContainerChecker
 {
@@ -516,7 +515,8 @@ public class JDBCWorkspaceDataContainerChecker
             + "where P.I_CLASS=2 and P.PARENT_ID=N.ID and P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' "
             + "and P.CONTAINER_NAME='" + jdbcDataContainer.containerName + "')", new String[]{DBConstants.COLUMN_ID,
          DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME}, "A node that doesn't have primary type property",
-         new NodeRemover(jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
+         new NodeRemover(jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.multiDb ? "JCR_MITEM"
+            : "JCR_SITEM", nodeTypeManager)));
 
       itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MVALUE V where NOT EXISTS(select * from JCR_MITEM P "
