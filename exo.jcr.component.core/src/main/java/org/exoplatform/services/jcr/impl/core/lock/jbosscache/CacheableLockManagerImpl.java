@@ -505,6 +505,18 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    @Override
    public void stop()
    {
+      if (jmxManager != null)
+      {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               jmxManager.unregisterAllMBeans();
+               return null;
+            }
+         });
+      }
+      
       super.stop();
 
       if (shareable)
@@ -523,18 +535,6 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          LOG.error("Can not release cache instance", e);
       }
-
-      if (jmxManager != null)
-      {
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-         {
-            public Void run()
-            {
-               jmxManager.unregisterAllMBeans();
-               return null;
-            }
-         });
-      }      
    }
 
    /**
