@@ -757,8 +757,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          });
       }
 
-      cache.stop();
-
       if (shareable)
       {
          // The cache cannot be stopped since it can be shared so we evict the root node instead
@@ -799,10 +797,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          cache.getRegion(childPropsByPatternList, false).processEvictionQueues();
 
       }
-      else
-      {
-         PrivilegedJBossCacheHelper.stop(cache);
-      }
+
+      cache.stop();
    }
 
    /**

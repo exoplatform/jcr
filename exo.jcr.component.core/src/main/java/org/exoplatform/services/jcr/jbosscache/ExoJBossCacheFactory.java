@@ -271,9 +271,9 @@ public class ExoJBossCacheFactory<K, V>
          // The cache is not shareable         
          // Avoid potential naming collision by changing the cluster name
          cache.getConfiguration().setClusterName(
-            cache.getConfiguration().getClusterName() + rootFqn.toString().replace('/', '-'));
-         return cache;
+         cache.getConfiguration().getClusterName() + rootFqn.toString().replace('/', '-'));
       }
+
       ExoContainer container = ExoContainerContext.getCurrentContainer();
       Map<CacheType, Map<ConfigurationKey, CacheInstance>> allCacheTypes = CACHES.get(container);
       if (allCacheTypes == null)
