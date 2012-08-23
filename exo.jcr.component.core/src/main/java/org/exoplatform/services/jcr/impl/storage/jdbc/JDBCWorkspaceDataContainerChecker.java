@@ -569,12 +569,12 @@ public class JDBCWorkspaceDataContainerChecker
             jdbcDataContainer.multiDb
                ? "select * from JCR_MITEM I where EXISTS (select * from JCR_MITEM J"
                   + " WHERE I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
-                  + " and I.VERSION != J.VERSION)"
+                  + " and I.VERSION != J.VERSION and I.I_CLASS = 2)"
                : "select * from JCR_SITEM I where I.CONTAINER_NAME='"
                   + jdbcDataContainer.containerName
                   + "' and EXISTS (select * from JCR_SITEM J WHERE I.CONTAINER_NAME = J.CONTAINER_NAME and"
                   + " I.PARENT_ID = J.PARENT_ID AND I.NAME = J.NAME and I.I_INDEX = J.I_INDEX and I.I_CLASS = J.I_CLASS"
-                  + " and I.VERSION != J.VERSION)",
+                  + " and I.VERSION != J.VERSION and I.I_CLASS = 2)",
             new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME,
                DBConstants.COLUMN_VERSION, DBConstants.COLUMN_CLASS, DBConstants.COLUMN_INDEX},
             "Several versions of same item.", new EarlierVersionsRemover(jdbcDataContainer.getConnectionFactory())));

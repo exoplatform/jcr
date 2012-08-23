@@ -357,9 +357,13 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       {
          TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
 
-         Node node = addTestNode(repository);
-         PropertyImpl prop = (PropertyImpl)addTestProperty(repository, node);
+         NodeImpl node1 = (NodeImpl)addTestNode(repository);
+         NodeImpl node2 = (NodeImpl)addTestNode(repository);
+         PropertyImpl prop = (PropertyImpl)addTestProperty(repository, node1);
 
+         assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+
+         updateNodeRecord(repository, node2.getInternalIdentifier(), 1, 1);
          assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
          insertPropertyRecord(repository, prop.getInternalIdentifier(), prop.getParentIdentifier(), prop.getName());
@@ -948,6 +952,26 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
       conn.prepareStatement(
          "UPDATE " + vTable + " SET STORAGE_DESC = 'unexisted-desc' WHERE PROPERTY_ID = '" + propId + "'").execute();
+
+      conn.commit();
+      conn.close();
+   }
+
+   private void updateNodeRecord(ManageableRepository repository, String nodeId, int newPersistedVersion, int newIndex)
+      throws RepositoryConfigurationException, SQLException, NamingException
+   {
+      WorkspaceEntry wsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
+      boolean isMultiDb = wsEntry.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.MULTIDB);
+
+      String sourceName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
+
+      String iTable = "JCR_" + (isMultiDb ? "M" : "S") + "ITEM";
+      nodeId = (isMultiDb ? "" : wsEntry.getName()) + nodeId;
+
+      Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();
+      conn.prepareStatement(
+         "UPDATE " + iTable + " SET VERSION=" + newPersistedVersion + ", I_INDEX=" + newIndex + " WHERE ID = '"
+            + nodeId + "'").execute();
 
       conn.commit();
       conn.close();
