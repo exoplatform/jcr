@@ -1195,22 +1195,14 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       }
 
       repoPath = normalizePath(repoPath);
+      MimeTypeRecognizer mimeTypeRecognizer =
+         new MimeTypeRecognizer(TextUtil.nameOnly(repoPath), mimeTypeResolver, mediatype,
+            untrustedUserAgents.contains(userAgent));
+      String mimeType = mimeTypeRecognizer.getMimeType();
+      String encoding = mimeTypeRecognizer.getEncoding();
 
       try
       {
-         String mimeType = null;
-         String encoding = null;
-
-         if (mediatype == null || untrustedUserAgents.contains(userAgent))
-         {
-            mimeType = mimeTypeResolver.getMimeType(TextUtil.nameOnly(repoPath));
-         }
-         else
-         {
-            mimeType = mediatype.getType() + "/" + mediatype.getSubtype();
-            encoding = mediatype.getParameters().get("charset");
-         }
-
          List<String> tokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), tokens);
 
@@ -1225,8 +1217,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          NodeType nodeType = ntm.getNodeType(contentNodeType);
          NodeTypeUtil.checkContentResourceType(nodeType);
 
-         return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).put(
-            session, path(repoPath), inputStream, fileNodeType, contentNodeType,
+         return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName),
+            mimeTypeRecognizer).put(session, path(repoPath), inputStream, fileNodeType, contentNodeType,
             NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType, autoVersionType, tokens);
 
       }
