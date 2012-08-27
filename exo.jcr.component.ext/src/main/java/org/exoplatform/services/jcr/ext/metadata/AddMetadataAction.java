@@ -38,6 +38,7 @@ import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
@@ -138,7 +139,11 @@ public class AddMetadataAction implements Action
          }
          catch (DocumentReadException e)
          {
-            log.warn(e.getMessage(), e);
+            log.warn(e.getMessage());
+         }
+         catch (IOException e)
+         {
+            log.warn(e.getMessage());
          }
 
          Iterator entries = props.entrySet().iterator();
