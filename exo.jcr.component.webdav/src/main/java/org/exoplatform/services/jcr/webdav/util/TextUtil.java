@@ -232,7 +232,7 @@ public class TextUtil
     * Extracts the extension of the file.
     *  
     * @param filename file name
-    * @return extension or emtpy String if file has no extension
+    * @return extension or emtpy string if file has no extension
     */
    public static String getExtension(String filename)
    {

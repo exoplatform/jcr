@@ -1198,8 +1198,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       MimeTypeRecognizer mimeTypeRecognizer =
          new MimeTypeRecognizer(TextUtil.nameOnly(repoPath), mimeTypeResolver, mediatype,
             untrustedUserAgents.contains(userAgent));
-      String mimeType = mimeTypeRecognizer.getMimeType();
-      String encoding = mimeTypeRecognizer.getEncoding();
 
       try
       {
@@ -1219,7 +1217,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
          return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName),
             mimeTypeRecognizer).put(session, path(repoPath), inputStream, fileNodeType, contentNodeType,
-            NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding, updatePolicyType, autoVersionType, tokens);
+            NodeTypeUtil.getMixinTypes(mixinTypes), updatePolicyType, autoVersionType, tokens);
 
       }
       catch (NoSuchWorkspaceException exc)
