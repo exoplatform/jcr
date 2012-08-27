@@ -69,9 +69,7 @@ public class PutCommand
     */
    public PutCommand(NullResourceLocksHolder nullResourceLocks)
    {
-      this.nullResourceLocks = nullResourceLocks;
-      this.uriBuilder = null;
-      this.mimeTypeRecognizer = null;
+      this(nullResourceLocks, null);
    }
 
    /**
@@ -82,9 +80,7 @@ public class PutCommand
     */
    public PutCommand(NullResourceLocksHolder nullResourceLocks, UriBuilder uriBuilder)
    {
-      this.nullResourceLocks = nullResourceLocks;
-      this.uriBuilder = uriBuilder;
-      this.mimeTypeRecognizer = null;
+      this(nullResourceLocks, uriBuilder, null);
    }
 
    /**
@@ -112,6 +108,7 @@ public class PutCommand
     * @param contentNodeType the node type of content
     * @param mixins the list of mixins
     * @param mimeType content type
+    * @param encoding content encoding
     * @param updatePolicyType update policy
     * @param tokens tokens
     * @return the instance of javax.ws.rs.core.Response
@@ -205,6 +202,26 @@ public class PutCommand
    }
 
    /**
+    * Webdav Put method implementation.
+    * 
+    * @param session current session
+    * @param path resource path
+    * @param inputStream stream that contains resource content
+    * @param fileNodeType the node type of file node
+    * @param contentNodeType the node type of content
+    * @param mixins the list of mixins
+    * @param updatePolicyType update policy
+    * @param tokens tokens
+    * @return the instance of javax.ws.rs.core.Response
+    */
+   public Response put(Session session, String path, InputStream inputStream, String fileNodeType,
+      String contentNodeType, List<String> mixins, String updatePolicyType, String autoVersion, List<String> tokens)
+   {
+      return put(session, path, inputStream, fileNodeType, contentNodeType, mixins, null, null, updatePolicyType,
+         autoVersion, tokens);
+   }
+
+   /**
     * Creates the new version of file.
     * 
     * @param fileNode file node
@@ -252,7 +269,7 @@ public class PutCommand
    private void updateContent(Node node, InputStream inputStream, String mimeType, String encoding, List<String> mixins)
       throws RepositoryException
    {
-      Node content = node.getNode("jcr:content");;
+      Node content = node.getNode("jcr:content");
 
       if (mimeTypeRecognizer == null)
       {
