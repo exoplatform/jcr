@@ -27,20 +27,13 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConst;
-import org.exoplatform.services.jcr.webdav.WebDavConstants;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
 import org.exoplatform.services.rest.impl.ContainerResponse;
-import org.exoplatform.services.rest.impl.EnvironmentContext;
 import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
-import org.exoplatform.services.rest.impl.RequestHandlerImpl;
-import org.exoplatform.services.rest.tools.DummySecurityContext;
-import org.exoplatform.services.rest.tools.ResourceLauncher;
 import org.exoplatform.services.security.IdentityConstants;
-
-import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,18 +44,14 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URLDecoder;
-import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
-import javax.jcr.Credentials;
 import javax.jcr.Node;
 import javax.jcr.Session;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.SecurityContext;
 
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
@@ -324,4 +313,46 @@ public class TestGet extends BaseStandaloneTest
 
    }
    
+   public void testGetContentTypeWithEncoding() throws Exception
+   {
+      Node fileNode = session.getRootNode().addNode("node", "nt:file");
+      Node contentNode = fileNode.addNode("jcr:content", "nt:resource");
+      contentNode.setProperty("jcr:mimeType", "text/plain");
+      contentNode.setProperty("jcr:encoding", "test-encoding");
+      contentNode.setProperty("jcr:data", "There is no ignorance, there is knowledge.");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+
+      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + "/" + fileNode.getName(), "", null, null);
+
+      assertEquals("text/plain; charset=test-encoding", response.getHttpHeaders().getFirst(HttpHeaders.CONTENT_TYPE)
+         .toString());
+   }
+
+   public void testGetContentTypeWithNoEncoding() throws Exception
+   {
+      Node fileNode = session.getRootNode().addNode("node", "nt:file");
+      Node contentNode = fileNode.addNode("jcr:content", "nt:resource");
+      contentNode.setProperty("jcr:mimeType", "text/plain");
+      contentNode.setProperty("jcr:encoding", "");
+      contentNode.setProperty("jcr:data", "There is no passion, there is serenity.");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+
+      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + "/" + fileNode.getName(), "", null, null);
+
+      assertEquals("text/plain", response.getHttpHeaders().getFirst(HttpHeaders.CONTENT_TYPE)
+         .toString());
+
+      fileNode = session.getRootNode().addNode("node2", "nt:file");
+      contentNode = fileNode.addNode("jcr:content", "nt:resource");
+      contentNode.setProperty("jcr:mimeType", "text/plain");
+      contentNode.setProperty("jcr:data", "There is no passion, there is serenity.");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+
+      response = service(WebDAVMethods.GET, getPathWS() + "/" + fileNode.getName(), "", null, null);
+
+      assertEquals("text/plain", response.getHttpHeaders().getFirst(HttpHeaders.CONTENT_TYPE).toString());
+   }
 }
