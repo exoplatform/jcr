@@ -928,22 +928,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       }
 
       repoPath = normalizePath(repoPath);
+      MimeTypeRecognizer mimeTypeRecognizer =
+         new MimeTypeRecognizer(TextUtil.nameOnly(repoPath), mimeTypeResolver, mediaType, webDavServiceInitParams
+            .getUntrustedUserAgents().contains(userAgent));
 
       try
       {
-         String mimeType = null;
-         String encoding = null;
-
-         if (mediaType == null || webDavServiceInitParams.getUntrustedUserAgents().contains(userAgent))
-         {
-            mimeType = mimeTypeResolver.getMimeType(TextUtil.nameOnly(repoPath));
-         }
-         else
-         {
-            mimeType = mediaType.getType() + "/" + mediaType.getSubtype();
-            encoding = mediaType.getParameters().get("charset");
-         }
-
          List<String> tokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), tokens);
 
@@ -956,11 +946,10 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          NodeType nodeType = ntm.getNodeType(contentNodeType);
          NodeTypeUtil.checkContentResourceType(nodeType);
 
-         return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).put(
-            session, path(repoPath), inputStream, fileNodeType, contentNodeType,
-            NodeTypeUtil.getMixinTypes(mixinTypes), mimeType, encoding,
-            webDavServiceInitParams.getDefaultUpdatePolicyType(), webDavServiceInitParams.getDefaultAutoVersionType(),
-            tokens);
+         return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName),
+            mimeTypeRecognizer).put(session, path(repoPath), inputStream, fileNodeType, contentNodeType,
+            NodeTypeUtil.getMixinTypes(mixinTypes), webDavServiceInitParams.getDefaultUpdatePolicyType(),
+            webDavServiceInitParams.getDefaultAutoVersionType(), tokens);
 
       }
       catch (NoSuchWorkspaceException exc)

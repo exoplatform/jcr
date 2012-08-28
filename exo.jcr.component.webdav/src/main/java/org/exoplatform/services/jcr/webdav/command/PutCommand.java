@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.webdav.command;
 
 import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.services.jcr.webdav.MimeTypeRecognizer;
 import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 
@@ -57,26 +58,23 @@ public class PutCommand
    private final UriBuilder uriBuilder;
 
    /**
-    * Constructor.
-    * 
-    * @param nullResourceLocks resource locks.
+    * To access mime-type and encoding
     */
-   public PutCommand(final NullResourceLocksHolder nullResourceLocks)
-   {
-      this.nullResourceLocks = nullResourceLocks;
-      this.uriBuilder = null;
-   }
+   private final MimeTypeRecognizer mimeTypeRecognizer;
 
    /**
     * Constructor.
     * 
     * @param nullResourceLocks resource locks.
-    * @param uriBuilder - provide data used in 'location' header
+    * @param uriBuilder - provides data used in 'location' header
+    * @param mimeTypeRecognizer - provides mime-type recognizer
     */
-   public PutCommand(final NullResourceLocksHolder nullResourceLocks, UriBuilder uriBuilder)
+   public PutCommand(NullResourceLocksHolder nullResourceLocks, UriBuilder uriBuilder,
+      MimeTypeRecognizer mimeTypeRecognizer)
    {
       this.nullResourceLocks = nullResourceLocks;
       this.uriBuilder = uriBuilder;
+      this.mimeTypeRecognizer = mimeTypeRecognizer;
    }
 
    /**
@@ -88,14 +86,12 @@ public class PutCommand
     * @param fileNodeType the node type of file node
     * @param contentNodeType the node type of content
     * @param mixins the list of mixins
-    * @param mimeType content type
     * @param updatePolicyType update policy
     * @param tokens tokens
     * @return the instance of javax.ws.rs.core.Response
     */
    public Response put(Session session, String path, InputStream inputStream, String fileNodeType,
-      String contentNodeType, List<String> mixins, String mimeType, String encoding, String updatePolicyType,
-      String autoVersion, List<String> tokens)
+      String contentNodeType, List<String> mixins, String updatePolicyType, String autoVersion, List<String> tokens)
    {
 
       try
@@ -119,7 +115,7 @@ public class PutCommand
             node = session.getRootNode().addNode(TextUtil.relativizePath(path), fileNodeType);
 
             node.addNode("jcr:content", contentNodeType);
-            updateContent(node, inputStream, mimeType, encoding, mixins);
+            updateContent(node, inputStream, mixins);
          }
          else
          {
@@ -130,27 +126,27 @@ public class PutCommand
                {
                   node = session.getRootNode().addNode(TextUtil.relativizePath(path), fileNodeType);
                   node.addNode("jcr:content", contentNodeType);
-                  updateContent(node, inputStream, mimeType, encoding, mixins);
+                  updateContent(node, inputStream, mixins);
                }
                else
                {
-                  updateVersion(node, inputStream, mimeType, encoding, autoVersion, mixins);
+                  updateVersion(node, inputStream, autoVersion, mixins);
                }
 
             }
             else if ("create-version".equals(updatePolicyType))
             {
-               createVersion(node, inputStream, mimeType, encoding, mixins);
+               createVersion(node, inputStream, mixins);
             }
             else
             {
                if (!node.isNodeType("mix:versionable"))
                {
-                  updateContent(node, inputStream, mimeType, encoding, mixins);
+                  updateContent(node, inputStream, mixins);
                }
                else
                {
-                  updateVersion(node, inputStream, mimeType, encoding, autoVersion, mixins);
+                  updateVersion(node, inputStream, autoVersion, mixins);
                }
             }
          }
@@ -186,12 +182,10 @@ public class PutCommand
     * 
     * @param fileNode file node
     * @param inputStream input stream that contains the content of file
-    * @param mimeType content type
     * @param mixins list of mixins
     * @throws RepositoryException {@link RepositoryException}
     */
-   private void createVersion(Node fileNode, InputStream inputStream, String mimeType, String encoding,
-      List<String> mixins) throws RepositoryException
+   private void createVersion(Node fileNode, InputStream inputStream, List<String> mixins) throws RepositoryException
    {
       if (!fileNode.isNodeType("mix:versionable"))
       {
@@ -210,7 +204,7 @@ public class PutCommand
          fileNode.getSession().save();
       }
 
-      updateContent(fileNode, inputStream, mimeType, encoding, mixins);
+      updateContent(fileNode, inputStream, mixins);
       fileNode.getSession().save();
       fileNode.checkin();
       fileNode.getSession().save();
@@ -222,19 +216,22 @@ public class PutCommand
     * @param node parent node
     * @param inputStream inputStream input stream that contains the content of 
     *          file
-    * @param mimeType content type
     * @param mixins list of mixins
     * @throws RepositoryException  {@link RepositoryException}
     */
-   private void updateContent(Node node, InputStream inputStream, String mimeType, String encoding, List<String> mixins)
-      throws RepositoryException
+   private void updateContent(Node node, InputStream inputStream, List<String> mixins) throws RepositoryException
    {
 
       Node content = node.getNode("jcr:content");
-      content.setProperty("jcr:mimeType", mimeType);
-      if (encoding != null)
+
+      if (mimeTypeRecognizer.isMimeTypeRecognized() || !content.hasProperty("jcr:mimeType"))
       {
-         content.setProperty("jcr:encoding", encoding);
+         content.setProperty("jcr:mimeType", mimeTypeRecognizer.getMimeType());
+      }
+
+      if (mimeTypeRecognizer.isEncodingSet())
+      {
+         content.setProperty("jcr:encoding", mimeTypeRecognizer.getEncoding());
       }
       content.setProperty("jcr:lastModified", Calendar.getInstance());
       content.setProperty("jcr:data", inputStream);
@@ -256,13 +253,12 @@ public class PutCommand
     * @param fileNode Node to update
     * @param inputStream input stream that contains the content of
     *          file
-    * @param mimeType content type
     * @param autoVersion auto-version value
     * @param mixins list of mixins
     * @throws RepositoryException {@link RepositoryException}
     */
-   private void updateVersion(Node fileNode, InputStream inputStream, String mimeType, String encoding,
-      String autoVersion, List<String> mixins) throws RepositoryException
+   private void updateVersion(Node fileNode, InputStream inputStream, String autoVersion, List<String> mixins)
+      throws RepositoryException
    {
       if (!fileNode.isCheckedOut())
       {
@@ -271,11 +267,11 @@ public class PutCommand
       }
       if ("checkout".equals(autoVersion))
       {
-         updateContent(fileNode, inputStream, mimeType, encoding, mixins);
+         updateContent(fileNode, inputStream, mixins);
       }
       else if ("checkout-checkin".equals(autoVersion))
       {
-         updateContent(fileNode, inputStream, mimeType, encoding, mixins);
+         updateContent(fileNode, inputStream, mixins);
          fileNode.getSession().save();
          fileNode.checkin();
       }

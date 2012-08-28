@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.webdav.command;
 
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
 import org.exoplatform.services.jcr.webdav.WebDavServiceImpl;
@@ -261,6 +262,32 @@ public class TestPut extends BaseStandaloneTest
       service(WebDAVMethods.PUT, getPathWS() + path, "", headers, content.getBytes());
       // mime-type modified according to Content-Type header content
       assertEquals(MediaType.TEXT_XML, node.getNode("jcr:content").getProperty("jcr:mimeType").getString());
+   }
+
+   public void testMimeTypeDefinedCorrectIfNoExtensionSet() throws Exception
+   {
+      String filename = IdGenerator.generate();
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(HttpHeaders.CONTENT_TYPE, MediaType.TEXT_HTML);
+
+      ContainerResponse containerResponse =
+         service(WebDAVMethods.PUT, getPathWS() + "/" + filename, "", headers, "".getBytes());
+      assertEquals(HTTPStatus.CREATED, containerResponse.getStatus());
+
+      headers.clear();
+      containerResponse =
+         service(WebDAVMethods.PUT, getPathWS() + "/" + filename, "", headers, IdGenerator.generate().getBytes());
+
+      Node node = session.getRootNode().getNode(TextUtil.relativizePath(filename));
+      assertTrue(node.hasNode("jcr:content"));
+      Node node2 = node.getNode("jcr:content");
+      assertTrue(node2.hasProperty("jcr:mimeType"));
+      PropertyImpl property = (PropertyImpl)node2.getProperty("jcr:mimeType");
+      assertEquals(MediaType.TEXT_HTML, property.getString());
+
+      containerResponse = service(WebDAVMethods.GET, getPathWS() + "/" + filename, "", null, null);
+      assertEquals(MediaType.TEXT_HTML, containerResponse.getHttpHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
    }
 
    @Override

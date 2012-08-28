@@ -228,4 +228,19 @@ public class TextUtil
       return mimeType.contains("image");
    }
 
+   /**
+    * Extracts the extension of the file.
+    *  
+    * @param filename file name
+    * @return extension or emtpy string if file has no extension
+    */
+   public static String getExtension(String filename)
+   {
+      if (filename.contains("."))
+      {
+         return filename.substring(filename.lastIndexOf(".") + 1);
+      }
+
+      return "";
+   }
 }
