@@ -23,7 +23,7 @@
               &lt;property name="index-dir" value="${java.io.tmpdir}/temp/index/db1/ws" /&gt;
               &lt;property name="synonymprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.PropertiesSynonymProvider" /&gt;
               &lt;property name="synonymprovider-config-path" value="/synonyms.properties" /&gt;
-              &lt;property name="indexing-config-path" value="/indexing-configuration.xml" /&gt;
+              &lt;property name="indexing-configuration-path" value="/indexing-configuration.xml" /&gt;
               &lt;property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" /&gt;
             &lt;/properties&gt;
           &lt;/query-handler&gt;
@@ -535,7 +535,15 @@
       parameter to the query-handler element in your configuration
       file.</para>
 
-      <programlisting language="xml">&lt;param name="indexing-configuration-path" value="/indexing_configuration.xml"/&gt;</programlisting>
+      <programlisting language="xml">&lt;property name="indexing-configuration-path" value="/indexing_configuration.xml"/&gt;</programlisting>
+	  
+	  <para>Index configuration path can indicate any file located 
+	  on the file system, in the jar or war files.</para>
+	  
+	  <para>Please note that you have to declare the <phrase>namespace
+      prefixes</phrase> in the configuration element that you are using
+      throughout the XML file!</para>
+	  
     </section>
 
     <section id="JCR.SearchConfiguration.Indexing_Adjustments.Indexing_Rules">
@@ -560,9 +568,6 @@
   &lt;/index-rule&gt;
 &lt;/configuration&gt;</programlisting>
 
-        <para>Please note that you have to declare the <phrase>namespace
-        prefixes</phrase> in the configuration element that you are using
-        throughout the XML file!</para>
       </section>
 
       <section id="JCR.SearchConfiguration.Indexing_Adjustments.Indexing_Rules.Indexing_Boost_Value">
