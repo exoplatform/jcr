@@ -503,7 +503,8 @@ public class JDBCWorkspaceDataContainerChecker
        * related to dates or numbers or decimals. We have some problem when We try 
        * execute next query because query use P_MULTIVALUED field.
        */
-      if (jdbcDataContainer.dbDialect.equals(DBConstants.DB_DIALECT_DB2))
+      if (jdbcDataContainer.dbDialect.equals(DBConstants.DB_DIALECT_DB2)
+         || jdbcDataContainer.dbDialect.equals(DBConstants.DB_DIALECT_DB2V8))
       {
          itemsInspectionQuery
             .add(new InspectionQuery(
