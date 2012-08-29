@@ -496,16 +496,39 @@ public class JDBCWorkspaceDataContainerChecker
             "Items that do not have parent nodes", new RootAsParentAssigner(jdbcDataContainer
                .getConnectionFactory())));
 
-      itemsInspectionQuery
-         .add(new InspectionQueryFilteredMultivaluedProperties(
-            jdbcDataContainer.multiDb
-               ? "select * from JCR_MITEM P where P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_MVALUE V "
-                  + "where V.PROPERTY_ID=P.ID)" : "select * from JCR_SITEM P where P.CONTAINER_NAME='"
-                  + jdbcDataContainer.containerName + "' and P.I_CLASS=2"
-                  + " and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_SVALUE V where V.PROPERTY_ID=P.ID)",
-            new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
-            "A node that has a single valued properties with nothing declared in the VALUE table.",
-            new PropertyRemover(jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
+      /*   
+       * This checking need because In DB2 database P_MULTIVALUED fields type is integer
+       * but In HSQL this fields type is boolean. Our code working with both database. 
+       * There are differences in data type matching between java and DB2 and some problems 
+       * related to dates or numbers or decimals. We have some problem when We try 
+       * execute next query because query use P_MULTIVALUED field.
+       */
+      if (jdbcDataContainer.dbDialect.equals(DBConstants.DB_DIALECT_DB2))
+      {
+         itemsInspectionQuery
+            .add(new InspectionQuery(
+               jdbcDataContainer.multiDb
+                  ? "select * from JCR_MITEM P where P.I_CLASS=2 and P.P_MULTIVALUED=0 and NOT EXISTS(select * from JCR_MVALUE V "
+                     + "where V.PROPERTY_ID=P.ID)" : "select * from JCR_SITEM P where P.CONTAINER_NAME='"
+                     + jdbcDataContainer.containerName + "' and P.I_CLASS=2"
+                     + " and P.P_MULTIVALUED=0 and NOT EXISTS( select * from JCR_SVALUE V where V.PROPERTY_ID=P.ID)",
+               new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
+               "A node that has a single valued properties with nothing declared in the VALUE table.",
+               new PropertyRemover(jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
+      }
+      else
+      {
+         itemsInspectionQuery
+            .add(new InspectionQueryFilteredMultivaluedProperties(
+               jdbcDataContainer.multiDb
+                  ? "select * from JCR_MITEM P where P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS(select * from JCR_MVALUE V "
+                     + "where V.PROPERTY_ID=P.ID)" : "select * from JCR_SITEM P where P.CONTAINER_NAME='"
+                     + jdbcDataContainer.containerName + "' and P.I_CLASS=2"
+                     + " and P.P_MULTIVALUED=? and NOT EXISTS( select * from JCR_SVALUE V where V.PROPERTY_ID=P.ID)",
+               new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID, DBConstants.COLUMN_NAME},
+               "A node that has a single valued properties with nothing declared in the VALUE table.",
+               new PropertyRemover(jdbcDataContainer.getConnectionFactory(), nodeTypeManager)));
+      }
 
       itemsInspectionQuery.add(new InspectionQuery(jdbcDataContainer.multiDb
          ? "select * from JCR_MITEM N where N.I_CLASS=1 and NOT EXISTS "
