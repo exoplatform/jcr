@@ -224,7 +224,18 @@ public class FileResource extends GenericResource
       }
       else if (name.equals(GETCONTENTTYPE))
       {
-         return new HierarchicalProperty(name, contentNode().getProperty("jcr:mimeType").getString());
+         Node contentNode = contentNode();
+         String mimeType = contentNode.getProperty("jcr:mimeType").getString();
+         if (contentNode.hasProperty("jcr:encoding"))
+         {
+            String encoding = contentNode.getProperty("jcr:encoding").getString();
+            if (!encoding.isEmpty())
+            {
+               return new HierarchicalProperty(name, mimeType + "; charset=" + encoding);
+            }
+         }
+         return new HierarchicalProperty(name, mimeType);
+
       }
       else if (name.equals(GETLASTMODIFIED))
       {
