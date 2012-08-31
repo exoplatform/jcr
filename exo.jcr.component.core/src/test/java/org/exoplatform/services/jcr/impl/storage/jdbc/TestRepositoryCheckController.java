@@ -575,6 +575,35 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
    /**
     * Usecase: properties that have not value record.
     */
+   public void testDBUsecasesPrimaryTypePropertyHasNoValueRecord() throws Exception
+   {
+      checkDBUsecasesPrimaryTypePropertyHasNoValueRecor(helper.createRepository(container,
+         DatabaseStructureType.SINGLE, CACHE_DISABLED));
+      checkDBUsecasesPrimaryTypePropertyHasNoValueRecor(helper.createRepository(container, DatabaseStructureType.MULTI,
+         CACHE_DISABLED));
+   }
+
+   private void checkDBUsecasesPrimaryTypePropertyHasNoValueRecor(ManageableRepository repository) throws Exception
+   {
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(repository);
+
+      Node node = addTestNode(repository);
+      PropertyImpl prop = (PropertyImpl)node.getProperty("jcr:primaryType");
+
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+
+      removeValueRecord(repository, prop.getInternalIdentifier());
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
+
+      checkController.repairDataBase("yes");
+      assertTrue(checkController.checkDataBase().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+
+      helper.removeRepository(container, repository.getConfiguration().getName());
+   }
+
+   /**
+    * Usecase: properties that have not value record.
+    */
    public void testDBUsecasesPropertiesHasNoValueRecord() throws Exception
    {
       checkDBUsecasesPropertiesHasNoSingleValueRecord(helper.createRepository(container, DatabaseStructureType.SINGLE,
