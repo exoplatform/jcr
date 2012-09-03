@@ -29,7 +29,10 @@
          &lt;property name="hibernate.connection.autocommit" value="true"/&gt;
          &lt;property name="hibernate.connection.username" value="sa"/&gt;
          &lt;property name="hibernate.connection.password" value=""/&gt;
-         &lt;property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/&gt;
+         &lt;property name="hibernate.cache.region.factory_class" value="org.exoplatform.services.database.impl.ExoCacheRegionFactory"/&gt;
+         &lt;property name="hibernate.cache.use_second_level_cache" value="true"/&gt;
+         &lt;property name="hibernate.cache.use_query_cache" value="true"/&gt;
+         &lt;property name="hibernate.hbm2ddl.auto" value="update"/&gt;
          &lt;property name="hibernate.c3p0.min_size" value="5"/&gt;
          &lt;property name="hibernate.c3p0.max_size" value="20"/&gt;
          &lt;property name="hibernate.c3p0.timeout" value="1800"/&gt;
@@ -65,12 +68,15 @@
          &lt;description&gt;Default Hibernate Service&lt;/description&gt;
          &lt;property name="hibernate.show_sql" value="false"/&gt;
          &lt;property name="hibernate.cglib.use_reflection_optimizer" value="true"/&gt;
-         &lt;property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/exodb?relaxAutoCommit=true&amp;amp;amp;autoReconnect=true&amp;amp;amp;useUnicode=true&amp;amp;amp;characterEncoding=utf8"/&gt;
-         &lt;property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/&gt;
+         &lt;property name="hibernate.connection.url" value="jdbc:hsqldb:file:../temp/data/portal"/&gt;
+         &lt;property name="hibernate.connection.driver_class" value="org.hsqldb.jdbcDriver"/&gt;
          &lt;property name="hibernate.connection.autocommit" value="true"/&gt;
-         &lt;property name="hibernate.connection.username" value="exo"/&gt;
-         &lt;property name="hibernate.connection.password" value="exo"/&gt;
-         &lt;property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/&gt;
+         &lt;property name="hibernate.connection.username" value="sa"/&gt;
+         &lt;property name="hibernate.connection.password" value=""/&gt;
+         &lt;property name="hibernate.cache.region.factory_class" value="org.exoplatform.services.database.impl.ExoCacheRegionFactory"/&gt;
+         &lt;property name="hibernate.cache.use_second_level_cache" value="true"/&gt;
+         &lt;property name="hibernate.cache.use_query_cache" value="true"/&gt;
+         &lt;property name="hibernate.hbm2ddl.auto" value="update"/&gt;
          &lt;property name="hibernate.c3p0.min_size" value="5"/&gt;
          &lt;property name="hibernate.c3p0.max_size" value="20"/&gt;
          &lt;property name="hibernate.c3p0.timeout" value="1800"/&gt;
@@ -80,15 +86,34 @@
 &lt;/component&gt;</programlisting>
   </section>
 
+  <section id="Core.DatabaseConfigurationForHibernate.HibernateCaching">
+    <title>Caching configuration</title>
+
+    <para>Hibernate caching is enabled by default by this parameters</para>
+
+    <programlisting language="xml">
+         &lt;property name="hibernate.cache.region.factory_class" value="org.exoplatform.services.database.impl.ExoCacheRegionFactory"/&gt;
+         &lt;property name="hibernate.cache.use_second_level_cache" value="true"/&gt;
+         &lt;property name="hibernate.cache.use_query_cache" value="true"/&gt;
+    </programlisting>
+
+    <para>Hibernate caching parameters are well described in hibernate documentation.
+    There is no forced injection of eXo cache provider anymore. It's usage can be configured via standard hibernate
+    properties (in our xml) just like any other hibernate settings.</para>
+
+  </section>
+
   <section id="Core.DatabaseConfigurationForHibernate.RegisteringCustomHibernateXMLFilesIntoService">
-    <title>Registering custom Hibernate XML files into the service</title>
+    <title>Registering custom annotated classes and Hibernate XML files into the service</title>
 
     <para>It is possible to use the eXo hibernate service and register your
-    hibernate hbm.xml files to leverage some add-on features of the service
+    annotated classes or hibernate hbm.xml files to leverage some add-on features of the service
     such as the table automatic creation as well as the cache of the hibernate
     session in a ThreadLocal object during all the request lifecycle. To do
     so, you just have to add a plugin and indicate the location of your
     files.</para>
+
+    <para>Registering custom XML files can be done in this way:</para>
 
     <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration&gt;
@@ -111,5 +136,30 @@
     &lt;/component-plugin&gt;
   &lt;/external-component-plugins&gt;  
 &lt;/configuration&gt;</programlisting>
+
+    <para>Registering custom annotated classes can be done in this way:</para>
+
+    <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
+&lt;configuration&gt;
+  &lt;external-component-plugins&gt;
+    &lt;target-component&gt;org.exoplatform.services.database.HibernateService&lt;/target-component&gt;
+    &lt;component-plugin&gt; 
+      &lt;name&gt;add.hibernate.annotations&lt;/name&gt;
+      &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+      &lt;type&gt;org.exoplatform.services.database.impl.AddHibernateMappingPlugin&lt;/type&gt;
+      &lt;init-params&gt;
+        &lt;values-param&gt;
+          &lt;name&gt;hibernate.annotations&lt;/name&gt;
+          &lt;value&gt;org.exoplatform.services.organization.impl.UserProfileData&lt;/value&gt;
+          &lt;value&gt;org.exoplatform.services.organization.impl.MembershipImpl&lt;/value&gt;
+          &lt;value&gt;org.exoplatform.services.organization.impl.GroupImpl&lt;/value&gt;
+          &lt;value&gt;org.exoplatform.services.organization.impl.MembershipTypeImpl&lt;/value&gt;
+        &lt;/values-param&gt;
+      &lt;/init-params&gt;
+    &lt;/component-plugin&gt;
+  &lt;/external-component-plugins&gt;  
+&lt;/configuration&gt;</programlisting>
   </section>
+
+  
 </section>

@@ -118,7 +118,7 @@ workspace will be selected in current repository.
       <para>where repository is the name of the repository where the organization storage will be created
       storage-path - the relative path to the stored data</para>
 
-      <para>Register JCR Organization service namespace and nodetypes via RepositorySerive's plugins:</para>
+      <para>Register JCR Organization service namespace and nodetypes via RepositoryService's plugins:</para>
         <programlisting language="xml">
 &lt;component&gt;
 &lt;key&gt;org.exoplatform.services.jcr.RepositoryService&lt;/key&gt;
