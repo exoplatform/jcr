@@ -136,6 +136,7 @@ public class RepositoryContainer extends ExoContainer
     *           container initialization error
     * @throws RepositoryConfigurationException
     *           configuration error
+    * @throws PrivilegedActionException 
     */
    public RepositoryContainer(final ExoContainer parent, RepositoryEntry config, List<ComponentPlugin> addNamespacePlugins)
       throws RepositoryException, RepositoryConfigurationException
@@ -150,28 +151,43 @@ public class RepositoryContainer extends ExoContainer
       this.config = config;
       this.addNamespacePlugins = addNamespacePlugins;
       this.name = config.getName();
-      
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+
+      try
       {
-         public Void run()
+         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
          {
-            context.setName(parent.getContext().getName() + "-" + name);
-            try
+            public Void run() throws RepositoryConfigurationException
             {
-               parent.registerComponentInstance(name, RepositoryContainer.this);
-               initAllWorkspaceComponentEntries(parent);
-               registerComponents();
+               context.setName(parent.getContext().getName() + "-" + name);
+               try
+               {
+                  parent.registerComponentInstance(name, RepositoryContainer.this);
+                  initAllWorkspaceComponentEntries(parent);
+                  registerComponents();
+               }
+               catch (Throwable t)
+               {
+                  unregisterAllComponents();
+                  parent.unregisterComponent(name);
+                  throw new RepositoryConfigurationException("Can not register repository container " + name
+                     + " in parent container.", t);
+               }
+               return null;
             }
-            catch (Throwable t) //NOSONAR
-            {
-               unregisterAllComponents();
-               parent.unregisterComponent(name);
-               throw new IllegalStateException("Can not register repository container " + name
-                  + " in parent container.", t);
-            }
-            return null;
+         });
+      }
+      catch (PrivilegedActionException e)
+      {
+         Throwable ex = e.getCause();
+         if (ex instanceof RepositoryConfigurationException)
+         {
+            throw (RepositoryConfigurationException)ex;
          }
-      });
+         else
+         {
+            throw new RepositoryConfigurationException(ex.getMessage(), ex);
+         }
+      }
    }
 
    private void initAllWorkspaceComponentEntries(ExoContainer parent)
