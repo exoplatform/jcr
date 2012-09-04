@@ -29,6 +29,7 @@
          &lt;property name="hibernate.connection.autocommit" value="true"/&gt;
          &lt;property name="hibernate.connection.username" value="sa"/&gt;
          &lt;property name="hibernate.connection.password" value=""/&gt;
+         &lt;property name="exocache.config.maxsize" value="5000"/&gt;
          &lt;property name="hibernate.cache.region.factory_class" value="org.exoplatform.services.database.impl.ExoCacheRegionFactory"/&gt;
          &lt;property name="hibernate.cache.use_second_level_cache" value="true"/&gt;
          &lt;property name="hibernate.cache.use_query_cache" value="true"/&gt;
@@ -73,6 +74,7 @@
          &lt;property name="hibernate.connection.autocommit" value="true"/&gt;
          &lt;property name="hibernate.connection.username" value="sa"/&gt;
          &lt;property name="hibernate.connection.password" value=""/&gt;
+         &lt;property name="exocache.config.maxsize" value="5000"/&gt;
          &lt;property name="hibernate.cache.region.factory_class" value="org.exoplatform.services.database.impl.ExoCacheRegionFactory"/&gt;
          &lt;property name="hibernate.cache.use_second_level_cache" value="true"/&gt;
          &lt;property name="hibernate.cache.use_query_cache" value="true"/&gt;
@@ -95,11 +97,17 @@
          &lt;property name="hibernate.cache.region.factory_class" value="org.exoplatform.services.database.impl.ExoCacheRegionFactory"/&gt;
          &lt;property name="hibernate.cache.use_second_level_cache" value="true"/&gt;
          &lt;property name="hibernate.cache.use_query_cache" value="true"/&gt;
+         &lt;property name="exocache.config.maxsize" value="5000"/&gt;
     </programlisting>
 
     <para>Hibernate caching parameters are well described in hibernate documentation.
     There is no forced injection of eXo cache provider anymore. It's usage can be configured via standard hibernate
     properties (in our xml) just like any other hibernate settings.</para>
+
+    <para>Also it is possible to configure maximum size of every 
+    eXoCache instance using system property "exocache.config.maxsize".
+    This value will be used by ExoCacheRegionFactory in the process of
+    new regions creation</para>
 
   </section>
 
