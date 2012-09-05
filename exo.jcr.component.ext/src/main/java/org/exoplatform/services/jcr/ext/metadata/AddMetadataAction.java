@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.ext.metadata;
 
 import org.apache.commons.chain.Context;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.command.action.Action;
@@ -45,6 +46,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
@@ -59,11 +61,10 @@ import javax.jcr.ValueFormatException;
 public class AddMetadataAction implements Action
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.AddMetadataAction");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.AddMetadataAction");
 
    public boolean execute(Context ctx) throws Exception
    {
-
       PropertyImpl property = (PropertyImpl)ctx.get("currentItem");
       NodeImpl parent = property.getParent();
       if (!parent.isNodeType("nt:resource"))
@@ -131,15 +132,15 @@ public class AddMetadataAction implements Action
          }
          catch (HandlerNotFoundException e)
          {
-            log.debug(e.getMessage());
+            printWarning(property, e);
          }
          catch (DocumentReadException e)
          {
-            log.warn(e.getMessage());
+            printWarning(property, e);
          }
          catch (IOException e)
          {
-            log.warn(e.getMessage());
+            printWarning(property, e);
          }
 
          Iterator entries = props.entrySet().iterator();
@@ -173,6 +174,27 @@ public class AddMetadataAction implements Action
       {
          if (data != null)
             data.close();
+      }
+   }
+
+   /**
+    * Print warning message on the console
+    * 
+    * @param property property that has not been read
+    * @param exception the reason for which wasn't read property
+    * @throws RepositoryException
+    */
+   private void printWarning(PropertyImpl property, Exception exception) throws RepositoryException
+   {
+      if (PropertyManager.isDevelopping())
+      {
+         LOG.warn("Binary value reader error, content by path " + property.getPath() + ", property id "
+            + property.getData().getIdentifier() + " : " + exception.getMessage(), exception);
+      }
+      else
+      {
+         LOG.warn("Binary value reader error, content by path " + property.getPath() + ", property id "
+            + property.getData().getIdentifier() + " : " + exception.getMessage());
       }
    }
 
@@ -261,7 +283,7 @@ public class AddMetadataAction implements Action
          }
          catch (IOException e)
          {
-            log.error("Can't close input stream", e);
+            LOG.error("Can't close input stream", e);
          }
       }
    }
