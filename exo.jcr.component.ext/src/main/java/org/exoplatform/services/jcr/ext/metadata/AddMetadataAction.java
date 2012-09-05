@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.ext.metadata;
 
 import org.apache.commons.chain.Context;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.command.action.Action;
@@ -46,6 +47,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
@@ -79,21 +81,37 @@ public class AddMetadataAction implements Action
             Properties props = extractMetaInfoProperties(ctx, content);
             setJCRProperties(parent, props);
          }
-
-         return false;
+      }
+      catch (HandlerNotFoundException e)
+      {
+         printWarning(property, e);
+      }
+      catch (IOException e)
+      {
+         printWarning(property, e);
+      }
+      catch (DocumentReadException e)
+      {
+         printWarning(property, e);
       }
       finally
       {
          content.destroy();
       }
+      return false;
    }
 
    /**
     * Extracts some metainfo properties from content using {@link DocumentReaderService}. 
     * 
     * @throws IllegalArgumentException if {@link DocumentReaderService} not configured
+    * @throws RepositoryException 
+    * @throws HandlerNotFoundException 
+    * @throws DocumentReadException 
+    * @throws IOException 
     */
-   private Properties extractMetaInfoProperties(Context ctx, Content content) throws IllegalArgumentException
+   private Properties extractMetaInfoProperties(Context ctx, Content content) throws IllegalArgumentException,
+      RepositoryException, IOException, DocumentReadException, HandlerNotFoundException
    {
       DocumentReaderService readerService =
          (DocumentReaderService)((ExoContainer)ctx.get(InvocationContext.EXO_CONTAINER))
@@ -105,24 +123,30 @@ public class AddMetadataAction implements Action
       }
 
       Properties props = new Properties();
-      try
-      {
-         props = readerService.getDocumentReader(content.mimeType).getProperties(content.stream);
-      }
-      catch (HandlerNotFoundException e)
-      {
-         LOG.debug(e.getMessage());
-      }
-      catch (IOException e)
-      {
-         LOG.warn(e.getMessage());
-      }
-      catch (DocumentReadException e)
-      {
-         LOG.warn(e.getMessage());
-      }
+      props = readerService.getDocumentReader(content.mimeType).getProperties(content.stream);
 
       return props;
+   }
+
+   /**
+    * Print warning message on the console
+    * 
+    * @param property property that has not been read
+    * @param exception the reason for which wasn't read property
+    * @throws RepositoryException
+    */
+   private void printWarning(PropertyImpl property, Exception exception) throws RepositoryException
+   {
+      if (PropertyManager.isDevelopping())
+      {
+         LOG.warn("Binary value reader error, content by path " + property.getPath() + ", property id "
+            + property.getData().getIdentifier() + " : " + exception.getMessage(), exception);
+      }
+      else
+      {
+         LOG.warn("Binary value reader error, content by path " + property.getPath() + ", property id "
+            + property.getData().getIdentifier() + " : " + exception.getMessage());
+      }
    }
 
    /**

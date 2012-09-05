@@ -29,6 +29,11 @@
          &lt;property name="hibernate.connection.autocommit" value="true"/&gt;
          &lt;property name="hibernate.connection.username" value="sa"/&gt;
          &lt;property name="hibernate.connection.password" value=""/&gt;
+         &lt;property name="exocache.cache.maxsize" value="5000"/&gt;
+         &lt;property name="exocache.query.cache.size" value="5000"/&gt;
+         &lt;property name="exocache.entity.cache.size" value="5000"/&gt;
+         &lt;property name="exocache.collection.cache.size" value="5000"/&gt;
+         &lt;property name="exocache.naturalid.cache.size" value="5000"/&gt;
          &lt;property name="hibernate.cache.region.factory_class" value="org.exoplatform.services.database.impl.ExoCacheRegionFactory"/&gt;
          &lt;property name="hibernate.cache.use_second_level_cache" value="true"/&gt;
          &lt;property name="hibernate.cache.use_query_cache" value="true"/&gt;
@@ -68,11 +73,16 @@
          &lt;description&gt;Default Hibernate Service&lt;/description&gt;
          &lt;property name="hibernate.show_sql" value="false"/&gt;
          &lt;property name="hibernate.cglib.use_reflection_optimizer" value="true"/&gt;
-         &lt;property name="hibernate.connection.url" value="jdbc:hsqldb:file:../temp/data/portal"/&gt;
-         &lt;property name="hibernate.connection.driver_class" value="org.hsqldb.jdbcDriver"/&gt;
+         &lt;property name="hibernate.connection.url" value="jdbc:mysql://localhost:3306/exodb?relaxAutoCommit=true&amp;amp;amp;autoReconnect=true&amp;amp;amp;useUnicode=true&amp;amp;amp;characterEncoding=utf8"/&gt;
+         &lt;property name="hibernate.connection.driver_class" value="com.mysql.jdbc.Driver"/&gt;
          &lt;property name="hibernate.connection.autocommit" value="true"/&gt;
          &lt;property name="hibernate.connection.username" value="sa"/&gt;
          &lt;property name="hibernate.connection.password" value=""/&gt;
+         &lt;property name="exocache.cache.maxsize" value="5000"/&gt;
+         &lt;property name="exocache.query.cache.size" value="5000"/&gt;
+         &lt;property name="exocache.entity.cache.size" value="5000"/&gt;
+         &lt;property name="exocache.collection.cache.size" value="5000"/&gt;
+         &lt;property name="exocache.naturalid.cache.size" value="5000"/&gt;
          &lt;property name="hibernate.cache.region.factory_class" value="org.exoplatform.services.database.impl.ExoCacheRegionFactory"/&gt;
          &lt;property name="hibernate.cache.use_second_level_cache" value="true"/&gt;
          &lt;property name="hibernate.cache.use_query_cache" value="true"/&gt;
@@ -95,11 +105,23 @@
          &lt;property name="hibernate.cache.region.factory_class" value="org.exoplatform.services.database.impl.ExoCacheRegionFactory"/&gt;
          &lt;property name="hibernate.cache.use_second_level_cache" value="true"/&gt;
          &lt;property name="hibernate.cache.use_query_cache" value="true"/&gt;
+         &lt;property name="exocache.cache.maxsize" value="5000"/&gt;
+         &lt;property name="exocache.query.cache.size" value="5000"/&gt;
+         &lt;property name="exocache.entity.cache.size" value="5000"/&gt;
+         &lt;property name="exocache.collection.cache.size" value="5000"/&gt;
+         &lt;property name="exocache.naturalid.cache.size" value="5000"/&gt;
     </programlisting>
 
     <para>Hibernate caching parameters are well described in hibernate documentation.
     There is no forced injection of eXo cache provider anymore. It's usage can be configured via standard hibernate
     properties (in our xml) just like any other hibernate settings.</para>
+
+    <para>Also it is possible to configure maximum size of every 
+    eXoCache instance created by RegionFactory using system properties
+    "exocache.config.maxsize", "exocache.query.cache.size", "exocache.entity.cache.size",
+    "exocache.collection.cache.size", "exocache.naturalid.cache.size".
+    This values would be used by ExoCacheRegionFactory in the process of
+    new regions creation</para>
 
   </section>
 
