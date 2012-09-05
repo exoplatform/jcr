@@ -175,7 +175,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
          public Serializable execute(Serializable[] args) throws Throwable
          {
             String filePath = (String)args[0];
-            int offset = (Integer)args[1];
+            long offset = (Long)args[1];
 
             RandomAccessFile file = new RandomAccessFile(new File(indexDirectory, filePath), "r");
             file.seek(offset);
@@ -333,7 +333,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
    {
       private final String filePath;
 
-      private int fileOffset = 0;
+      private long fileOffset = 0;
 
       private int bufferOffset = 0;
 
