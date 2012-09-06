@@ -216,9 +216,11 @@ public class TextUtil
     */
    public static String getExtension(String filename)
    {
-      if (filename.contains("."))
+      int index = filename.lastIndexOf('.');
+
+      if (index >= 0)
       {
-         return filename.substring(filename.lastIndexOf(".") + 1);
+         return filename.substring(index + 1);
       }
 
       return "";

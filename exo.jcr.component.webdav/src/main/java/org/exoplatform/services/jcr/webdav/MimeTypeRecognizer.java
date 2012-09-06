@@ -47,15 +47,15 @@ public class MimeTypeRecognizer
     * @param fileName - short name of the resource
     * @param mimeTypeResolver - provides means to resolve mime-type 
     * @param mediaType - media type instance (stores mime-type and encoding)
-    * @param trustedAgent - shows if agent to provide resource and it's mime type is listed as trusted
+    * @param untrustedAgent - shows if agent to provide resource and it's mime type is listed as untrusted
     * (no mime-type change is allowed for untrusted agents)
     */
    public MimeTypeRecognizer(String fileName, MimeTypeResolver mimeTypeResolver, MediaType mediaType,
-      boolean trustedAgent)
+      boolean untrustedAgent)
    {
       this.mimeTypeResolver = mimeTypeResolver;
       this.mediaType = mediaType;
-      this.untrustedAgent = trustedAgent;
+      this.untrustedAgent = untrustedAgent;
       this.fileName = fileName;
    }
 
@@ -64,13 +64,7 @@ public class MimeTypeRecognizer
     */
    public boolean isMimeTypeRecognized()
    {
-      if (TextUtil.getExtension(fileName).isEmpty()
-         && mimeTypeResolver.getMimeType(fileName).equals(mimeTypeResolver.getDefaultMimeType()))
-      {
-         return false;
-      }
-      
-      return true;
+      return !(TextUtil.getExtension(fileName).isEmpty());
    }
 
    /**
@@ -78,7 +72,7 @@ public class MimeTypeRecognizer
     */
    public boolean isEncodingSet()
    {
-      return mediaType != null && mediaType.getParameters().get("charset") != null;
+      return !untrustedAgent && mediaType != null && mediaType.getParameters().get("charset") != null;
    }
       
 
@@ -102,6 +96,11 @@ public class MimeTypeRecognizer
     */
    public String getEncoding()
    {
-      return mediaType == null ? null : mediaType.getParameters().get("charset");
+      if (mediaType == null || untrustedAgent)
+      {
+         return null;
+      }
+
+      return mediaType.getParameters().get("charset");
    }
 }
