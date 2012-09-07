@@ -445,143 +445,147 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       // only do an initial index if there are no indexes at all
       boolean indexCreated = false;
 
-      if (doForceReindexing && !indexes.isEmpty())
+      setOnline(false, false);
+      try
       {
-         log.info("Removing stale indexes (" + handler.getContext().getWorkspacePath(true) + ").");
 
-         List<PersistentIndex> oldIndexes = new ArrayList<PersistentIndex>(indexes);
-         for (PersistentIndex persistentIndex : oldIndexes)
+         if (doForceReindexing && !indexes.isEmpty())
          {
-            deleteIndex(persistentIndex);
-         }
-         attemptDelete();
-      }
+            log.info("Removing stale indexes (" + handler.getContext().getWorkspacePath(true) + ").");
 
-      if (indexNames.size() == 0)
-      {
-         setOnline(false, false);
-
-         try
-         {
-            // isRecoveryFilterUsed returns true only if LocalIndex strategy used
-            if (handler.getContext().isRecoveryFilterUsed())
+            List<PersistentIndex> oldIndexes = new ArrayList<PersistentIndex>(indexes);
+            for (PersistentIndex persistentIndex : oldIndexes)
             {
-               // if "from-coordinator" index recovery configured 
-               if (SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR.equals(handler.getIndexRecoveryMode()))
-               {
-                  if (handler.getContext().getIndexRecovery() != null && handler.getContext().getRPCService() != null
-                     && !handler.getContext().getRPCService().isCoordinator())
-                  {
-                     log.info("Retrieving index from coordinator (" + handler.getContext().getWorkspacePath(true)
-                        + ")...");
-                     indexCreated = recoveryIndexFromCoordinator();
+               deleteIndex(persistentIndex);
+            }
+            attemptDelete();
+         }
 
-                     if (indexCreated)
+         if (indexNames.size() == 0)
+         {
+            try
+            {
+               // isRecoveryFilterUsed returns true only if LocalIndex strategy used
+               if (handler.getContext().isRecoveryFilterUsed())
+               {
+                  // if "from-coordinator" index recovery configured 
+                  if (SearchIndex.INDEX_RECOVERY_MODE_FROM_COORDINATOR.equals(handler.getIndexRecoveryMode()))
+                  {
+                     if (handler.getContext().getIndexRecovery() != null
+                        && handler.getContext().getRPCService() != null
+                        && !handler.getContext().getRPCService().isCoordinator())
                      {
-                        indexNames.read();
-                        refreshIndexList();
+                        log.info("Retrieving index from coordinator (" + handler.getContext().getWorkspacePath(true)
+                           + ")...");
+                        indexCreated = recoveryIndexFromCoordinator();
+
+                        if (indexCreated)
+                        {
+                           indexNames.read();
+                           refreshIndexList();
+                        }
+                        else
+                        {
+                           log.info("Index can'b be retrieved from coordinator now, because it is offline. "
+                              + "Possibly coordinator node performs reindexing now. Switching to local re-indexing.");
+                        }
                      }
                      else
                      {
-                        log.info("Index can'b be retrieved from coordinator now, because it is offline. "
-                           + "Possibly coordinator node performs reindexing now. Switching to local re-indexing.");
+                        if (handler.getContext().getRPCService() == null)
+                        {
+                           // logging an event, when RPCService is not configured in clustered mode
+                           log.error("RPC Service is not configured but required for copying the index "
+                              + "from coordinator node. Index will be created by re-indexing.");
+                        }
+                        else
+                        {
+                           if (handler.getContext().getIndexRecovery() == null)
+                           {
+                              // Should never occurs, but logging an event, when RPCService configured, but IndexRecovery
+                              // instance is missing
+                              log.error("Instance of IndexRecovery class is missing for unknown reason. Index will be"
+                                 + " created by re-indexing.");
+                           }
+                           if (handler.getContext().getRPCService().isCoordinator())
+                           {
+                              // logging an event when first node starts
+                              log.info("Copying the index from coordinator configured, but this node is the "
+                                 + "only one in a cluster. Index will be created by re-indexing.");
+                           }
+                        }
                      }
+                  }
+               }
+
+               if (!indexCreated)
+               {
+                  // traverse and index workspace
+                  executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
+
+                  long count;
+
+                  // check if we have deal with RDBMS reindexing mechanism
+                  Reindexable rdbmsReindexableComponent =
+                     (Reindexable)handler.getContext().getContainer().getComponent(Reindexable.class);
+
+                  if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
+                     && rdbmsReindexableComponent.isReindexingSupport())
+                  {
+                     count =
+                        createIndex(
+                           rdbmsReindexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
+                           indexingTree.getIndexingRoot());
                   }
                   else
                   {
-                     if (handler.getContext().getRPCService() == null)
-                     {
-                        // logging an event, when RPCService is not configured in clustered mode
-                        log.error("RPC Service is not configured but required for copying the index "
-                           + "from coordinator node. Index will be created by re-indexing.");
-                     }
-                     else
-                     {
-                        if (handler.getContext().getIndexRecovery() == null)
-                        {
-                           // Should never occurs, but logging an event, when RPCService configured, but IndexRecovery
-                           // instance is missing
-                           log.error("Instance of IndexRecovery class is missing for unknown reason. Index will be"
-                              + " created by re-indexing.");
-                        }
-                        if (handler.getContext().getRPCService().isCoordinator())
-                        {
-                           // logging an event when first node starts
-                           log.info("Copying the index from coordinator configured, but this node is the "
-                              + "only one in a cluster. Index will be created by re-indexing.");
-                        }
-                     }
+                     count = createIndex(indexingTree.getIndexingRoot(), stateMgr);
                   }
+
+                  executeAndLog(new Commit(getTransactionId()));
+                  log.info("Initial index for {} nodes created ({}).", new Long(count), handler.getContext()
+                     .getWorkspacePath(true));
+                  releaseMultiReader();
+                  scheduleFlushTask();
                }
             }
-
-            if (!indexCreated)
+            catch (IOException e)
             {
-               // traverse and index workspace
-               executeAndLog(new Start(Action.INTERNAL_TRANSACTION));
-
-               long count;
-
-               // check if we have deal with RDBMS reindexing mechanism
-               Reindexable rdbmsReindexableComponent =
-                  (Reindexable)handler.getContext().getContainer().getComponent(Reindexable.class);
-
-               if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
-                  && rdbmsReindexableComponent.isReindexingSupport())
-               {
-                  count =
-                     createIndex(
-                        rdbmsReindexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),
-                        indexingTree.getIndexingRoot());
-               }
-               else
-               {
-                  count = createIndex(indexingTree.getIndexingRoot(), stateMgr);
-               }
-
-               executeAndLog(new Commit(getTransactionId()));
-               log.info("Initial index for {} nodes created ({}).", new Long(count), handler.getContext()
-                  .getWorkspacePath(true));
-               releaseMultiReader();
-               scheduleFlushTask();
+               String msg = "Error indexing workspace.";
+               IOException ex = new IOException(msg);
+               ex.initCause(e);
+               throw ex;
+            }
+            catch (RPCException e)
+            {
+               String msg = "Error indexing workspace.";
+               IOException ex = new IOException(msg);
+               ex.initCause(e);
+               throw ex;
+            }
+            catch (RepositoryException e)
+            {
+               String msg = "Error indexing workspace.";
+               IOException ex = new IOException(msg);
+               ex.initCause(e);
+               throw ex;
+            }
+            catch (SuspendException e)
+            {
+               String msg = "Error indexing workspace.";
+               IOException ex = new IOException(msg);
+               ex.initCause(e);
+               throw ex;
             }
          }
-         catch (IOException e)
+         else
          {
-            String msg = "Error indexing workspace.";
-            IOException ex = new IOException(msg);
-            ex.initCause(e);
-            throw ex;
-         }
-         catch (RPCException e)
-         {
-            String msg = "Error indexing workspace.";
-            IOException ex = new IOException(msg);
-            ex.initCause(e);
-            throw ex;
-         }
-         catch (RepositoryException e)
-         {
-            String msg = "Error indexing workspace.";
-            IOException ex = new IOException(msg);
-            ex.initCause(e);
-            throw ex;
-         }
-         catch (SuspendException e)
-         {
-            String msg = "Error indexing workspace.";
-            IOException ex = new IOException(msg);
-            ex.initCause(e);
-            throw ex;
-         }
-         finally
-         {
-            setOnline(true, false);
+            throw new IllegalStateException("Index already present.");
          }
       }
-      else
+      finally
       {
-         throw new IllegalStateException("Index already present.");
+         setOnline(true, false);
       }
    }
 
