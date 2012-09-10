@@ -21,8 +21,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 
 import java.util.Collections;
 import java.util.List;
@@ -39,11 +38,10 @@ import javax.jcr.RepositoryException;
 public class LocalWorkspaceDataManagerStub extends VersionableWorkspaceDataManager
 {
 
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.LocalWorkspaceDataManagerStub");
-
-   public LocalWorkspaceDataManagerStub(CacheableWorkspaceDataManager persistentManager)
+   public LocalWorkspaceDataManagerStub(CacheableWorkspaceDataManager persistentManager,
+      TransactionableResourceManager txResourceManager)
    {
-      super(persistentManager);
+      super(persistentManager, txResourceManager);
    }
 
    /**

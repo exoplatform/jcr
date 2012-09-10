@@ -76,6 +76,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
 import javax.transaction.Status;
 import javax.transaction.TransactionManager;
@@ -931,6 +932,24 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void save(final ItemStateChangesLog changesLog) throws RepositoryException
    {
+      save(changesLog, txResourceManager);
+   }
+
+   /**
+    * Saves the list of changes from this storage using the given resource manager
+    * 
+    * @param changes
+    *          to commit
+    * @param txResourceManager
+    *          the resource manager to use
+    * @throws InvalidItemStateException
+    * @throws UnsupportedOperationException
+    *           if operation is not supported (it is container for level 1)
+    * @throws RepositoryException
+    *           if some exception occurred
+    */
+   void save(final ItemStateChangesLog changesLog, final TransactionableResourceManager txResourceManager) throws RepositoryException
+   {
       if (isSuspended.get())
       {
          try
@@ -950,7 +969,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          {
             public Void run() throws Exception
             {
-               doSave(changesLog);
+               doSave(changesLog, txResourceManager);
                return null;
             }
          });
@@ -984,8 +1003,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          }
       }
    }
-
-   private void doSave(final ItemStateChangesLog changesLog) throws RepositoryException
+   
+   private void doSave(final ItemStateChangesLog changesLog, TransactionableResourceManager txResourceManager) throws RepositoryException
    {
       if (isStopped.get())
       {
@@ -998,15 +1017,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          if (txResourceManager != null && txResourceManager.isGlobalTxActive())
          {
-            super.save(logWrapper);
-            registerListener(logWrapper);
+            super.save(logWrapper, txResourceManager);
+            registerListener(logWrapper, txResourceManager);
          }
          else
          {
             doBegin();
             try
             {
-               super.save(logWrapper);
+               super.save(logWrapper, txResourceManager);
             }
             catch (RepositoryException e)
             {
@@ -1026,7 +1045,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       else
       {
          // save normally 
-         super.save(logWrapper);
+         super.save(logWrapper, txResourceManager);
 
          // notify listeners after storage commit
          notifySaveItems(logWrapper.getChangesLog(), false);
@@ -1085,7 +1104,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @param logWrapper
     * @throws RepositoryException if any error occurs
     */
-   private void registerListener(final ChangesLogWrapper logWrapper) throws RepositoryException
+   private void registerListener(final ChangesLogWrapper logWrapper, TransactionableResourceManager txResourceManager) throws RepositoryException
    {
       try
       {
