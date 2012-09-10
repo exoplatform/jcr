@@ -70,6 +70,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.PropertyType;
@@ -200,6 +201,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected PreparedStatement findNodesAndProperties;
 
    /**
+    * Flag which is set to true if we closed connection.
+    */
+   private final AtomicBoolean closed = new AtomicBoolean(false);
+
+   /**
     * Exception instance for logging of call stack which called a closing of connection.
     */
    private Exception closedByCallStack;
@@ -317,7 +323,14 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    {
       if (!isOpened())
       {
-         throw new IllegalStateException("Connection is already closed", this.closedByCallStack);
+         if (closed.get())
+         {
+            throw new IllegalStateException("Connection is already closed", this.closedByCallStack);
+         }
+         else
+         {
+            throw new IllegalStateException("Connection is closed");
+         }
       }
    }
 
@@ -413,6 +426,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    public final void close() throws IllegalStateException, RepositoryException
    {
       checkIfOpened();
+      closed.set(true);
       this.closedByCallStack = new Exception("The connection has been closed by the following call stack");
 
       try
