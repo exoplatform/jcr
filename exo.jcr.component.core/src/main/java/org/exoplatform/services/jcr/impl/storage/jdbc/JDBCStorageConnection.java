@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
-import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -414,10 +413,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    public final void close() throws IllegalStateException, RepositoryException
    {
       checkIfOpened();
-      if (PropertyManager.isDevelopping())
-      {
-         this.closedByCallStack = new Exception("The connection has been closed by the following call stack");
-      }
+      this.closedByCallStack = new Exception("The connection has been closed by the following call stack");
 
       try
       {
