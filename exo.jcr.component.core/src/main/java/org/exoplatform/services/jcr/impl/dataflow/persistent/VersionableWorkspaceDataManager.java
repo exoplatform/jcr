@@ -34,9 +34,8 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.util.IdGenerator;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,14 +54,18 @@ import javax.jcr.RepositoryException;
 
 public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspaceDataManager
 {
-
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.VersionableWorkspaceDataManager");
-
    private ShareableSupportedWorkspaceDataManager versionDataManager;
+   
+   /**
+    * The resource manager
+    */
+   private final TransactionableResourceManager txResourceManager;
 
-   public VersionableWorkspaceDataManager(CacheableWorkspaceDataManager persistentManager)
+   public VersionableWorkspaceDataManager(CacheableWorkspaceDataManager persistentManager,
+      TransactionableResourceManager txResourceManager)
    {
       super(persistentManager);
+      this.txResourceManager = txResourceManager;
    }
 
    /**
@@ -323,7 +326,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
 
       if (versionLogs.getSize() > 0)
       {
-         versionDataManager.save(versionLogs);
+         versionDataManager.save(versionLogs, txResourceManager);
       }
 
       if (nonVersionLogs.getSize() > 0)

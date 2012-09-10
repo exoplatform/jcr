@@ -157,6 +157,49 @@ public class TestUserTransaction extends JcrAPIBaseTest
       }
    }
 
+   public void testVersionable() throws Exception
+   {
+      //System workspace
+      testVersionable("ws");
+   }
+
+   public void testVersionable2() throws Exception
+   {
+      //Normal workspace
+      testVersionable("ws1");
+   }
+  
+   private void testVersionable(String workspace) throws Exception
+   {   
+      assertNotNull(txService);
+      List<Session> someSessions = openSomeSessions();
+      UserTransaction ut = txService.getUserTransaction();
+      ut.begin();
+      // we need to create the session within the transaction to ensure that it will be enlisted
+      Session session = repository.login(credentials, workspace);
+      Node node = session.getRootNode().addNode("txcommit");
+      node.addMixin("mix:versionable");
+      session.save();
+      assertNotNull(session.getItem("/txcommit"));
+      Session s1 =
+         repository.login(new SimpleCredentials("admin", "admin".toCharArray()), session.getWorkspace().getName());
+      try
+      {
+         assertNotNull(s1.getItem("/txcommit"));
+         fail("PathNotFoundException should have be thrown");
+      }
+      catch (PathNotFoundException e)
+      {
+      }
+      node.checkin();
+      ut.commit();
+      assertNotNull(s1.getItem("/txcommit"));
+      Node txNode = (Node)s1.getItem("/txcommit");
+      txNode.checkout();
+      txNode.checkin();
+      txNode.checkout();
+      someSessions.clear();
+   }  
    // we don't have JNID for JBossTS in standalone now  
    public void _testUserTransactionFromJndi() throws Exception
    {

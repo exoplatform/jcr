@@ -302,7 +302,15 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   public void save(final ChangesLogWrapper logWrapper) throws RepositoryException
+   public void save(ChangesLogWrapper logWrapper) throws RepositoryException
+   {
+      save(logWrapper, txResourceManager);
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   void save(final ChangesLogWrapper logWrapper, TransactionableResourceManager txResourceManager) throws RepositoryException
    {
       final ItemStateChangesLog changesLog = logWrapper.optimizeAndGetChangesLog();
 
@@ -311,7 +319,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       // whole log will be reconstructed with persisted data 
       ItemStateChangesLog persistedLog;
       boolean failed = true;
-      ConnectionMode mode = getMode();
+      ConnectionMode mode = getMode(txResourceManager);
       try
       {
          if (changesLog instanceof TransactionChangesLog)
@@ -337,7 +345,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          logWrapper.setLog(persistedLog);
          persister.prepare();
          notifySaveItems(persistedLog, true);
-         onCommit(persister, mode);
+         onCommit(persister, mode, txResourceManager);
          failed = false;
       }
       catch (IOException e)
@@ -357,7 +365,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * @return the current tx mode
     */
-   private ConnectionMode getMode()
+   private ConnectionMode getMode(TransactionableResourceManager txResourceManager)
    {
       if (txResourceManager != null && txResourceManager.isGlobalTxActive())
       {
@@ -374,7 +382,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * @param persister
     * @throws RepositoryException
     */
-   private void onCommit(final ChangesLogPersister persister, ConnectionMode mode) throws RepositoryException
+   private void onCommit(final ChangesLogPersister persister, ConnectionMode mode, TransactionableResourceManager txResourceManager) throws RepositoryException
    {
       if (mode == ConnectionMode.NORMAL)
       {

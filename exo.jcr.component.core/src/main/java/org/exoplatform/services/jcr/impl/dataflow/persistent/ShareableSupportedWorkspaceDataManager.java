@@ -20,12 +20,14 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.SharedDataManager;
+import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -180,5 +182,24 @@ public class ShareableSupportedWorkspaceDataManager implements SharedDataManager
    public Calendar getCurrentTime()
    {
       return persistentManager.getCurrentTime();
+   }
+
+   /**
+    * Saves the list of changes from this storage using the given resource manager
+    * 
+    * @param changes
+    *          to commit
+    * @param txResourceManager
+    *          the resource manager to use
+    * @throws InvalidItemStateException
+    * @throws UnsupportedOperationException
+    *           if operation is not supported (it is container for level 1)
+    * @throws RepositoryException
+    *           if some exception occurred
+    */
+   void save(TransactionChangesLog changes, TransactionableResourceManager txResourceManager)
+      throws InvalidItemStateException, UnsupportedOperationException, RepositoryException
+   {
+      persistentManager.save(changes, txResourceManager);
    }
 }
