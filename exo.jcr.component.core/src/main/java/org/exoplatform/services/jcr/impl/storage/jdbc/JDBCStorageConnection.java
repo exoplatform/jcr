@@ -70,7 +70,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.PropertyType;
@@ -201,16 +200,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected PreparedStatement findNodesAndProperties;
 
    /**
-    * Flag which is set to true if we closed connection.
-    */
-   private final AtomicBoolean closed = new AtomicBoolean(false);
-
-   /**
-    * Exception instance for logging of call stack which called a closing of connection.
-    */
-   private Exception closedByCallStack;
-
-   /**
     * Read-only flag, if true the connection is marked as READ-ONLY.
     */
    protected final boolean readOnly;
@@ -323,14 +312,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    {
       if (!isOpened())
       {
-         if (closed.get())
-         {
-            throw new IllegalStateException("Connection is already closed", this.closedByCallStack);
-         }
-         else
-         {
-            throw new IllegalStateException("Connection is closed");
-         }
+         throw new IllegalStateException("Connection is closed");
       }
    }
 
@@ -364,7 +346,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          {
             try
             {
-               dbConnection.rollback();
+               dbConnection.rollback();               
             }
             finally
             {
@@ -387,7 +369,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                         LOG.error("Could not rollback value change", e1);
                      }
                   }
-               }
+               }               
                if (e != null)
                {
                   throw e;
@@ -416,7 +398,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             {
                LOG.warn("Could not close the connection", e);
             }
-         }
+         }         
       }
    }
 
@@ -426,9 +408,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    public final void close() throws IllegalStateException, RepositoryException
    {
       checkIfOpened();
-      closed.set(true);
-      this.closedByCallStack = new Exception("The connection has been closed by the following call stack");
-
       try
       {
          closeStatements();
@@ -620,7 +599,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          LOG.error("Can't close the statement: " + e);
       }
    }
-
+   
    /**
     * {@inheritDoc}
     */
@@ -1080,9 +1059,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
-         ResultSet count =
-            findMaxPropertyVersion(data.getParentIdentifier(), data.getQPath().getName().getAsString(), data.getQPath()
-               .getIndex());
+         ResultSet count = findMaxPropertyVersion(data.getParentIdentifier(), data.getQPath().getName().getAsString(), data.getQPath().getIndex());
          try
          {
             if (count.next())
@@ -1351,7 +1328,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          throw new RepositoryException(e);
       }
    }
-
+   
    /**
     * {@inheritDoc}
     */
@@ -2118,8 +2095,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                {
                   // use permissions from existed parent
                   acl =
-                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions()
-                        ? parentACL.getPermissionEntries() : null);
+                     new AccessControlList(readACLOwner(cid), parentACL.hasPermissions() ? parentACL
+                        .getPermissionEntries() : null);
                }
                else
                {
@@ -2154,8 +2131,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                {
                   // construct ACL from existed parent ACL
                   acl =
-                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions()
-                        ? parentACL.getPermissionEntries() : null);
+                     new AccessControlList(parentACL.getOwner(), parentACL.hasPermissions() ? parentACL
+                        .getPermissionEntries() : null);
                }
                else
                {
@@ -2332,8 +2309,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             final int orderNum = valueRecords.getInt(COLUMN_VORDERNUM);
             final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
             ValueData vdata =
-               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion,
-                  valueRecords.getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
+               valueRecords.wasNull() ? readValueData(cid, orderNum, cversion, valueRecords
+                  .getBinaryStream(COLUMN_VDATA)) : readValueData(identifier, orderNum, storageId);
             data.add(vdata);
          }
       }
@@ -2478,7 +2455,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     *           database error
     * @throws IOException
     *           I/O error
-    * @throws RepositoryException if Value data large of JDBC accepted (Integer.MAX_VALUE)
+    * @thorws RepositoryException if Value data large of JDBC accepted (Integer.MAX_VALUE)
     */
    protected void addValues(String cid, PropertyData data) throws IOException, SQLException, RepositoryException
    {
