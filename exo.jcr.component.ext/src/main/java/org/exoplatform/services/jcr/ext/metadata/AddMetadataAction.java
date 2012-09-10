@@ -212,7 +212,7 @@ public class AddMetadataAction implements Action
 
       if (property.getInternalName().equals(Constants.JCR_DATA))
       {
-         content.stream = new WrappedStream(((PropertyData)property.getData()).getValues().get(0).getAsStream());
+         content.stream = ((PropertyData)property.getData()).getValues().get(0).getAsStream();
          try
          {
             content.mimeType = parent.getProperty("jcr:mimeType").getString();
@@ -228,7 +228,7 @@ public class AddMetadataAction implements Action
          try
          {
             PropertyImpl propertyImpl = (PropertyImpl)parent.getProperty("jcr:data");
-            content.stream = new WrappedStream(((PropertyData)propertyImpl.getData()).getValues().get(0).getAsStream());
+            content.stream = ((PropertyData)propertyImpl.getData()).getValues().get(0).getAsStream();
          }
          catch (PathNotFoundException e)
          {
@@ -272,14 +272,14 @@ public class AddMetadataAction implements Action
    {
       String mimeType;
 
-      WrappedStream stream;
+      InputStream stream;
 
       /**
        * Returns true if class contains all needed data.
        */
       boolean isEmpty() throws IOException
       {
-         return mimeType == null || stream == null || stream.isEmpty();
+         return mimeType == null || stream == null || stream.available() == 0 ;
       }
 
       /**
@@ -289,79 +289,14 @@ public class AddMetadataAction implements Action
       {
          if (stream != null)
          {
-            stream.close();
-         }
-      }
-   }
-
-   /** 
-    * Simple implementation of {@link InputStream} with one 
-    * additional method {@link #isEmpty()} to check if delegated
-    * stream has bytes to read or doesn't. Might be useful don't pass 
-    * empty streams to read data from. Famous usecase is Windows 
-    * WebDAV client. First puts empty file and only then adds content.
-    */
-   private class WrappedStream extends InputStream
-   {
-      /**
-       * Delegated stream.
-       */
-      private final InputStream delegated;
-
-      /**
-       * True means not empty buffer to read from.
-       */
-      private boolean consumed = true;
-
-      /**
-       * Buffer. Contains one read byte.
-       */
-      private int buffer;
-
-      WrappedStream(InputStream delegated)
-      {
-         this.delegated = delegated;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public int read() throws IOException
-      {
-         if (consumed)
-         {
-            return delegated.read();
-         }
-         else
-         {
-            consumed = true;
-            return buffer;
-         }
-      }
-
-      /**
-       * Return true if stream is empty and false otherwise.
-       */
-      public boolean isEmpty() throws IOException
-      {
-         buffer = delegated.read();
-         consumed = false;
-
-         return buffer == -1;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public void close()
-      {
-         try
-         {
-            delegated.close();
-         }
-         catch (IOException e)
-         {
-            LOG.error("Can't close input stream", e);
+            try
+            {
+               stream.close();
+            }
+            catch (IOException e)
+            {
+               LOG.error("Can't close stream", e);
+            }
          }
       }
    }
