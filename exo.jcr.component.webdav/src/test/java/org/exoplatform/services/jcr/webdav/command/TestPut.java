@@ -289,6 +289,21 @@ public class TestPut extends BaseStandaloneTest
       containerResponse = service(WebDAVMethods.GET, getPathWS() + "/" + filename, "", null, null);
       assertEquals(MediaType.TEXT_HTML, containerResponse.getHttpHeaders().getFirst(HttpHeaders.CONTENT_TYPE));
    }
+   public void testPutContentTypeHeaderWithEncoding() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String fileName = TestUtils.getFileName();
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.CONTENT_TYPE, "webdav:goodres; charset=test-char-set");
+      ContainerResponse containerResponse =
+         service(WebDAVMethods.PUT, getPathWS() + fileName, "", headers, content.getBytes());
+
+      assertEquals(HTTPStatus.CREATED, containerResponse.getStatus());
+      assertTrue("Content node is expected to have 'jcr:encoding' property set during PUT method", TestUtils
+         .getContentNode(session, fileName).hasProperty("jcr:encoding"));
+      assertEquals("test-char-set", TestUtils.getContentNode(session, fileName).getProperty("jcr:encoding").getString());
+   }
 
    @Override
    protected String getRepositoryName()
