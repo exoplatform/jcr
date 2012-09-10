@@ -102,7 +102,17 @@
     properties (in our xml) just like any other hibernate settings.</para>
 
     <para>Also it is possible to configure size of eXoCache instances via cache service configuration.
-     Details about cache service configuration can be found in <link linkend="Kernel.Cache"> eXo Cache section</link>.</para>
+    Every region (eXoCache instance) created by RegionFactory has it's own prefix depending on it's
+    type. All prefixes are:
+    <programlisting language="xml">
+ExoCacheRegionFactory-Entity-
+ExoCacheRegionFactory-NaturalId-
+ExoCacheRegionFactory-Collection-
+ExoCacheRegionFactory-QueryResults-
+ExoCacheRegionFactory-Timestamps-
+    </programlisting>
+    So, names of eXoCache instances will look like "ExoCacheRegionFactory-Entity-org.exoplatform.services.organization.impl.GroupImpl", etc.
+    Details about cache service configuration can be found in <link linkend="Kernel.Cache"> eXo Cache section</link>.</para>
      
      <warning>Hibernate's second level cache is enabled by default. In case if you want to turn
      it off you must explicitly set property "hibernate.cache.use_second_level_cache" to false.</warning>
