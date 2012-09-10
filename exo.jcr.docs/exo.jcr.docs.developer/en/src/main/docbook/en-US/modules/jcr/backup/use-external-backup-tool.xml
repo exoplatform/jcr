@@ -2,15 +2,19 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.SearchIndexBackup">
-  <section id="JCR.SearchIndexBackup.Repository_suspending">
-    <title>Repository suspending</title>
+  <title>How to backup the data of your JCR using an external backup tool in 3 steps?</title>
 
-    <para>To have the repository content consistent with the search index and
-    value storage, the repository should be suspended. It means all working
-    threads are suspended until resume operation performed. Index will be
-    flushed.</para>
+  <section id="JCR.SearchIndexBackup.SuspendRepository">
+    <title>Step 1: Suspend the Repository</title>
 
-    <para>JCR provides ability to suspend repository via JMX.</para>
+    <para>To keep all the data of your repository consistent, you have to
+    suspend it which means that all the working threads will be suspended until 
+    the resume operation is performed. Indexes will be flushed during
+    the suspend operation.</para>
+
+    <para>You can suspend your repository by calling the suspend method
+    on the MBean of the RepositorySuspendController corresponding to
+    your repository as shown below:</para>
 
     <mediaobject>
       <imageobject>
@@ -18,46 +22,43 @@
       </imageobject>
     </mediaobject>
 
-    <para>To suspend repository just need to invoke suspend() operation. The
-    returned result will be "suspended" if everything passed
-    successfully.</para>
+    <para>The result of the suspend method will be "suspended" if everything worked
+    well otherwise you should get "undefined" which means that at least one component has not been 
+    suspended successfully, in that case you can check the log file to understand what happens.</para>
 
     <mediaobject>
       <imageobject>
         <imagedata fileref="images/repository-suspend-controller-suspended.png" />
       </imageobject>
     </mediaobject>
-
-    <para>The result "undefined" means not all components successfully
-    suspended, check console to see stacktraces.</para>
   </section>
 
   <section id="JCR.SearchIndexBackup.Backup">
-    <title>Backup</title>
+    <title>Step 2: Backup the data</title>
 
-    <para>Now we can backup content manually or using third part software. We
+    <para>Now we can backup the data manually or using third party softwares. We will
     need to backup:</para>
 
     <itemizedlist>
       <listitem>
-        <para>Database</para>
+        <para>The database content</para>
       </listitem>
 
       <listitem>
-        <para>Lucene index</para>
+        <para>The Lucene indexes</para>
       </listitem>
 
       <listitem>
-        <para>Value storage (if configured)</para>
+        <para>The value storages content (if configured)</para>
       </listitem>
     </itemizedlist>
   </section>
 
-  <section id="JCR.SearchIndexBackup.Repository_resuming">
-    <title>Repository resuming</title>
+  <section id="JCR.SearchIndexBackup.ResumeRepository">
+    <title>Step 3: Resume the Repository</title>
 
-    <para>Once backup is done need to invoke resume() operation to switch
-    repository back to online. The returned result will be "online".</para>
+    <para>Once the backup is done, we need to call the resume operation to resume
+    all the working threads that have been previously suspended. The expected return result is "online".</para>
 
     <mediaobject>
       <imageobject>
