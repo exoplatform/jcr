@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.webdav.command;
 
 import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.services.jcr.webdav.MimeTypeRecognizer;
 import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
 
@@ -57,26 +58,44 @@ public class PutCommand
    private final UriBuilder uriBuilder;
 
    /**
+    * To access mime-type and encoding
+    */
+   private final MimeTypeRecognizer mimeTypeRecognizer;
+
+   /**
     * Constructor.
     * 
     * @param nullResourceLocks resource locks.
     */
-   public PutCommand(final NullResourceLocksHolder nullResourceLocks)
+   public PutCommand(NullResourceLocksHolder nullResourceLocks)
    {
-      this.nullResourceLocks = nullResourceLocks;
-      this.uriBuilder = null;
+      this(nullResourceLocks, null);
    }
 
    /**
     * Constructor.
     * 
     * @param nullResourceLocks resource locks.
-    * @param uriBuilder - provide data used in 'location' header
+    * @param uriBuilder - provides data used in 'location' header
     */
-   public PutCommand(final NullResourceLocksHolder nullResourceLocks, UriBuilder uriBuilder)
+   public PutCommand(NullResourceLocksHolder nullResourceLocks, UriBuilder uriBuilder)
+   {
+      this(nullResourceLocks, uriBuilder, null);
+   }
+
+   /**
+    * Constructor.
+    * 
+    * @param nullResourceLocks resource locks.
+    * @param uriBuilder - provides data used in 'location' header
+    * @param mimeTypeRecognizer - provides mime-type recognizer
+    */
+   public PutCommand(NullResourceLocksHolder nullResourceLocks, UriBuilder uriBuilder,
+      MimeTypeRecognizer mimeTypeRecognizer)
    {
       this.nullResourceLocks = nullResourceLocks;
       this.uriBuilder = uriBuilder;
+      this.mimeTypeRecognizer = mimeTypeRecognizer;
    }
 
    /**
@@ -89,6 +108,7 @@ public class PutCommand
     * @param contentNodeType the node type of content
     * @param mixins the list of mixins
     * @param mimeType content type
+    * @param encoding content encoding
     * @param updatePolicyType update policy
     * @param tokens tokens
     * @return the instance of javax.ws.rs.core.Response
@@ -182,6 +202,26 @@ public class PutCommand
    }
 
    /**
+    * Webdav Put method implementation.
+    * 
+    * @param session current session
+    * @param path resource path
+    * @param inputStream stream that contains resource content
+    * @param fileNodeType the node type of file node
+    * @param contentNodeType the node type of content
+    * @param mixins the list of mixins
+    * @param updatePolicyType update policy
+    * @param tokens tokens
+    * @return the instance of javax.ws.rs.core.Response
+    */
+   public Response put(Session session, String path, InputStream inputStream, String fileNodeType,
+      String contentNodeType, List<String> mixins, String updatePolicyType, String autoVersion, List<String> tokens)
+   {
+      return put(session, path, inputStream, fileNodeType, contentNodeType, mixins, null, null, updatePolicyType,
+         autoVersion, tokens);
+   }
+
+   /**
     * Creates the new version of file.
     * 
     * @param fileNode file node
@@ -229,13 +269,29 @@ public class PutCommand
    private void updateContent(Node node, InputStream inputStream, String mimeType, String encoding, List<String> mixins)
       throws RepositoryException
    {
-
       Node content = node.getNode("jcr:content");
-      content.setProperty("jcr:mimeType", mimeType);
-      if (encoding != null)
+
+      if (mimeTypeRecognizer == null)
       {
-         content.setProperty("jcr:encoding", encoding);
+         content.setProperty("jcr:mimeType", mimeType);
+         if (encoding != null)
+         {
+            content.setProperty("jcr:encoding", encoding);
+         }
       }
+      else
+      {
+         if (mimeTypeRecognizer.isMimeTypeRecognized() || !content.hasProperty("jcr:mimeType"))
+         {
+            content.setProperty("jcr:mimeType", mimeTypeRecognizer.getMimeType());
+         }
+
+         if (mimeTypeRecognizer.isEncodingSet())
+         {
+            content.setProperty("jcr:encoding", mimeTypeRecognizer.getEncoding());
+         }
+      }
+
       content.setProperty("jcr:lastModified", Calendar.getInstance());
       content.setProperty("jcr:data", inputStream);
 
@@ -247,7 +303,6 @@ public class PutCommand
          }
       }
       node.getSession().save();
-
    }
 
    /**
