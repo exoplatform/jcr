@@ -22,7 +22,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.config</artifactId>
-      <version>1.15.0-Beta01-SNAPSHOT</version>
+      <version>1.15.0-Beta01</version>
       <relativePath>../exo.jcr.applications.config/pom.xml</relativePath>
    </parent>
 
@@ -41,7 +41,7 @@
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.connectors.jca</artifactId>
-        <version>1.15.0-Beta01-SNAPSHOT</version>
+        <version>1.15.0-Beta01</version>
         <type>rar</type>
         <scope>runtime</scope>
       </dependency>
@@ -159,7 +159,7 @@
                   <copy todir="${exo.projects.directory.working}/exo-jonas/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/../product-patches/as/jonas/" />
                   </copy>
-                  <replace dir="${exo.projects.directory.working}/exo-jonas/" token="@exo.deploy.profile@" value="${exo.deploy.profile}"/>
+                  <replace dir="${exo.projects.directory.working}/exo-jonas/" token="@exo.deploy.profile@" value="${exo.deploy.profile}" />
                   <move file="${exo.projects.directory.working}/exo-jonas/bin/nt/jonas.bat" tofile="${exo.projects.directory.working}/exo-jonas/bin/nt/jonas-${exo.deploy.profile}.bat" />
                   <move file="${exo.projects.directory.working}/exo-jonas/bin/unix/jonas" tofile="${exo.projects.directory.working}/exo-jonas/bin/unix/jonas-${exo.deploy.profile}" />
 

@@ -22,7 +22,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.config</artifactId>
-      <version>1.15.0-Beta01-SNAPSHOT</version>
+      <version>1.15.0-Beta01</version>
       <relativePath>../exo.jcr.applications.config/pom.xml</relativePath>
    </parent>
 
@@ -121,7 +121,7 @@
                   <copy todir="${exo.projects.directory.working}/exo-jetty/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/../product-patches/as/jetty/" />
                   </copy>
-                  <replace dir="${exo.projects.directory.working}/exo-jetty" token="@exo.deploy.profile@" value="${exo.deploy.profile}"/>
+                  <replace dir="${exo.projects.directory.working}/exo-jetty" token="@exo.deploy.profile@" value="${exo.deploy.profile}" />
                   <move todir="${exo.projects.directory.working}/exo-jetty/">
                     <fileset dir="${exo.projects.directory.working}/exo-jetty/">
                       <include name="**/eXo.*" />
