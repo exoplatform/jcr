@@ -4,21 +4,21 @@
 <section id="Kernel.ContainerConfiguration">
   <title>Container Configuration</title>
 
-    <para>eXo Portal uses PicoContainer, which implements the Inversion of
-    Control (IoC) design pattern. All eXo containers inherit from a
-    PicoContainer. There are mainly two eXo containers used, each of them can
-    provide one or several services. Each container service is delivered in a
-    JAR file. This JAR file may contain a default configuration. The use of
-    default configurations is recommended and most services provide it.</para>
+  <para>eXo Portal uses PicoContainer, which implements the Inversion of
+  Control (IoC) design pattern. All eXo containers inherit from a
+  PicoContainer. There are mainly two eXo containers used, each of them can
+  provide one or several services. Each container service is delivered in a
+  JAR file. This JAR file may contain a default configuration. The use of
+  default configurations is recommended and most services provide it.</para>
 
-    <para>When a Pico Container searches for services and its configurations,
-    each configurable service may be reconfigured to override default values
-    or set additional parameters. If the service is configured in two or more
-    places the configuration override mechanism will be used.</para>
+  <para>When a Pico Container searches for services and its configurations,
+  each configurable service may be reconfigured to override default values or
+  set additional parameters. If the service is configured in two or more
+  places the configuration override mechanism will be used.</para>
 
-    <para>Confused? - You might be interested in the <link
-    linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration
-    for Beginners</link> section to understand the basics.</para>
+  <para>Confused? - You might be interested in the <link
+  linkend="Kernel.ServiceConfigurationforBeginners">Service Configuration for
+  Beginners</link> section to understand the basics.</para>
 
   <section id="Kernel.ContainerConfiguration.ConfigurationNamespace">
     <title>Kernel configuration namespace</title>
@@ -157,7 +157,7 @@
               <listitem>
                 <para>if configuration URL was initialized to be added to
                 services defaults, as below:</para>
-                
+
                 <programlisting language="java">// add configuration to the default services configurations from JARs/WARs
 StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
 
@@ -568,7 +568,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
         <para>A new <envar>PortalContainerDefinition</envar> can be defined at
         the <envar>RootContainer</envar> level thanks to an external plugin,
         see an example below:</para>
-        
+
         <programlisting language="xml">  &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
@@ -1052,7 +1052,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
 
         <para>You can find below an example of how to use the
         variables:</para>
-        
+
         <programlisting language="xml">&lt;configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
   &lt;component&gt;
@@ -1935,9 +1935,8 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
       <title>Component request life cycle contract</title>
 
       <para>The component request life cycle is an interface that defines a
-      contract for a component for being involved into a
-      request:</para>
-      
+      contract for a component for being involved into a request:</para>
+
       <programlisting language="java">public interface ComponentRequestLifecycle
 {
    /**
@@ -1997,6 +1996,7 @@ finally
         components will be those of the container, when it is false then the
         scheduler will also look at the components in the ancestor
         containers.</para>
+
         <programlisting language="java">RequestLifeCycle.begin(container, local);
 try
 {
@@ -2027,6 +2027,74 @@ finally
         point of the system that may need component to have a request life
         cycle triggered.</para>
       </section>
+    </section>
+  </section>
+  <section id="Kernel.ContainerConfiguration.ThreadContextHolder">
+    <title>Thread Context Holder</title>
+
+    <section id="Kernel.ContainerConfiguration.ThreadContextHolder.ThreadContextHolderContract">
+      <title>Thread Context Holder contract</title>
+
+      <para>A thread context holder defines a component that holds variables
+      of type <emphasis>ThreadLocal</emphasis> whose value is required by the
+      component to work normally and cannot be recovered. This component is
+      mainly used when we want to do a task asynchronously, in that case to
+      ensure that the task will be executed in the same conditions as if it
+      would be executed synchronously we need to transfer the thread context
+      from the original thread to the executor thread.</para>
+
+      <programlisting language="java">public interface ThreadContextHolder
+{
+   /**
+    * Gives the value corresponding to the context of the thread
+    * @return a new instance of {@link ThreadContext} if there are some
+    * valuable {@link ThreadLocal} variables to share otherwise &lt;code&gt;null&lt;/code&gt;
+    * is expected
+    */
+   ThreadContext getThreadContext();
+}</programlisting>
+
+      <note>
+        <para>This interface must be used with caution, only the most
+        important components that have <emphasis>ThreadLocal</emphasis>
+        variables whose value cannot be recovered should implement this
+        interface.</para>
+      </note>
+    </section>
+
+    <section id="Kernel.ContainerConfiguration.ThreadContextHolder.ThreadContextHandler">
+      <title>Thread Context Handler</title>
+
+      <para>To be able to transfer the values of all the
+      <emphasis>ThreadLocal</emphasis> variables (provided thanks to a
+      ThreadContext instance) of all the registered components of type
+      <emphasis>ThreadContextHolder</emphasis>, you can simply use a thread
+      context handler as below:</para>
+
+      <programlisting language="java">////////////////////////////////////////////////////////
+// Steps to be done in the context of the initial thread
+////////////////////////////////////////////////////////
+
+// Create a new instance of ThreadContextHandler for a given ExoContainer
+ThreadContextHandler handler = new ThreadContextHandler(container);
+// Stores into memory the current values of all the Thread Local variables
+// of all the registered ThreadContextHolder of the eXo container.
+handler.store();
+
+...
+////////////////////////////////////////////////////////
+// Steps to be done in the context of the executor thread
+////////////////////////////////////////////////////////
+try {
+  // Pushes values stored into memory into all the Thread Local variables
+  // of all the registered ThreadContextHolder of the eXo Container
+  handler.push();
+  ...
+} finally {
+  // Restores all the Thread Local variables of all the registered ThreadContextHolder
+  // of the eXo Container
+  handler.restore();
+}</programlisting>
     </section>
   </section>
 </section>
