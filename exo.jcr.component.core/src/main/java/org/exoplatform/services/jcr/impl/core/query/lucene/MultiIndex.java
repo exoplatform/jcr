@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.core.query.IndexRecovery;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
@@ -37,6 +36,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.core.query.Reindexable;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.rpc.RPCException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -516,8 +516,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                         }
                         else
                         {
-                           LOG.info("Index can'b be retrieved from coordinator now, because it is offline. "
-                              + "Possibly coordinator node performs reindexing now. Switching to local re-indexing.");
+                           LOG.info("Switching to local re-indexing.");
                         }
                      }
                      else
@@ -602,13 +601,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                throw ex;
             }
             catch (RepositoryException e)
-            {
-               String msg = "Error indexing workspace.";
-               IOException ex = new IOException(msg);
-               ex.initCause(e);
-               throw ex;
-            }
-            catch (SuspendException e)
             {
                String msg = "Error indexing workspace.";
                IOException ex = new IOException(msg);
@@ -3770,16 +3762,14 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    }
 
    /** 
-    * Retrieve index from other node. 
-    * 
-    * @throws SuspendException 
-    * @throws IOException. 
-    * @throws RepositoryException. 
-    * @throws FileNotFoundException. 
+    * Retrieves index from other node.
+    *  
+    * @throws IOException if can't clean up directory after retrieving being failed 
     */
-   private boolean recoveryIndexFromCoordinator() throws FileNotFoundException, RepositoryException, IOException,
-      SuspendException
+   private boolean recoveryIndexFromCoordinator() throws IOException
    {
+      File indexDirectory = new File(handler.getContext().getIndexDirectory());
+
       try
       {
          IndexRecovery indexRecovery = handler.getContext().getIndexRecovery();
@@ -3790,7 +3780,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          indexRecovery.setIndexOffline();
 
-         File indexDirectory = new File(handler.getContext().getIndexDirectory());
          for (String filePath : indexRecovery.getIndexList())
          {
             File indexFile = new File(indexDirectory, filePath);
@@ -3804,33 +3793,33 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             OutputStream out = PrivilegedFileHelper.fileOutputStream(indexFile);
             try
             {
-               byte[] buf = new byte[2048];
-               int len;
-
-               while ((len = in.read(buf)) > 0)
-               {
-                  out.write(buf, 0, len);
-               }
+               DirectoryHelper.transfer(in, out);
             }
             finally
             {
-               if (in != null)
-               {
-                  in.close();
-               }
-
-               if (out != null)
-               {
-                  out.close();
-               }
+               DirectoryHelper.safeClose(in);
+               DirectoryHelper.safeClose(out);
             }
 
             indexRecovery.setIndexOnline();
          }
+
+         return true;
       }
-      finally
+      catch (RepositoryException e)
       {
+         LOG.error("Cannot retrieve the indexes from the coordinator, the indexes will then be created from indexing",
+            e);
       }
-      return true;
+      catch (IOException e)
+      {
+         LOG.error("Cannot retrieve the indexes from the coordinator, the indexes will then be created from indexing",
+            e);
+      }
+
+      LOG.info("Clean up index directory " + indexDirectory.getAbsolutePath());
+      DirectoryHelper.removeDirectory(indexDirectory);
+
+      return false;
    }
 }

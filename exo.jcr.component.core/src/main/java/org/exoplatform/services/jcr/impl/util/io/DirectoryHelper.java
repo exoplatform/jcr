@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.impl.util.io;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -43,6 +47,11 @@ import java.util.zip.ZipOutputStream;
  */
 public class DirectoryHelper
 {
+
+   /**
+    * The logger instance for this class
+    */
+   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.DirectoryHelper");
 
    /**
     * Returns the files list of whole directory including its sub directories. 
@@ -433,6 +442,22 @@ public class DirectoryHelper
 
          // delete the srcFile file.
          srcFile.delete();
+      }
+   }
+
+   /**
+    * Safely close {@link Closeable} instance. Log error
+    * in case of exception.
+    */
+   public static void safeClose(Closeable obj)
+   {
+      try
+      {
+         obj.close();
+      }
+      catch (IOException e)
+      {
+         LOG.error("Error while closing " + obj, e);
       }
    }
 }
