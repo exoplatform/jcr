@@ -2008,6 +2008,65 @@ sh run.sh -Dexo.profiles=foo,bar</programlisting>
   &lt;/object&gt;
 &lt;/object-param&gt;</programlisting>
         </section>
+
+        <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration.ProfilesCapableConfigurationElements.ContainerLifecyclePluginConfigurationElement">
+          <title>Container lifecycle plugin configuration element</title>
+
+          <para>The container lifecycle plugin is used to trigger an action on
+          container init/start/stop/destroy. Please note that profiles for
+          this element are available starting from kernel_1_3.xsd.</para>
+
+          <programlisting language="xml">&lt;container-lifecycle-plugin profiles="all,default,social"&gt;
+  &lt;type&gt;org.exoplatform.container.monitor.jvm.AddJVMComponentsToRootContainer&lt;/type&gt;
+&lt;/container-lifecycle-plugin&gt;</programlisting>
+        </section>
+
+        <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration.ProfilesCapableConfigurationElements.ExternalComponentPluginsConfigurationElement">
+          <title>External component plugins configuration element</title>
+
+          <para>The external component plugins is used to dynamically add
+          plugins to a component that has been configured in another
+          configuration file. Please note that profiles for this element are
+          available starting from kernel_1_3.xsd.</para>
+
+          <programlisting language="xml">&lt;external-component-plugins profiles="all,default,social"&gt;
+  &lt;target-component&gt;org.exoplatform.services.jcr.RepositoryService&lt;/target-component&gt;
+  &lt;component-plugin&gt;
+    &lt;name&gt;add.namespaces&lt;/name&gt;
+    &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+    &lt;type&gt;org.exoplatform.services.jcr.impl.AddNamespacesPlugin&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;properties-param&gt;
+        &lt;name&gt;namespaces&lt;/name&gt;
+        &lt;property name="plf" value="http://www.exoplatform.org/jcr/plf/1.0/" /&gt;
+      &lt;/properties-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+  &lt;component-plugin&gt;
+    &lt;name&gt;add.space.access.nodeType&lt;/name&gt;
+    &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+    &lt;type&gt;org.exoplatform.services.jcr.impl.AddNodeTypePlugin&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;values-param&gt;
+        &lt;name&gt;autoCreatedInNewRepository&lt;/name&gt;
+        &lt;description&gt;Node types configuration file&lt;/description&gt;
+        &lt;value&gt;jar:/conf/portal/space-access-chromattic-nodetypes.xml&lt;/value&gt;
+      &lt;/values-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+&lt;/external-component-plugins&gt;</programlisting>
+        </section>
+
+        <section id="Kernel.ContainerConfiguration.RuntimeConfigurationProfiles.ProfilesConfiguration.ProfilesCapableConfigurationElements.RemoveConfigurationElement">
+          <title>Remove configuration element</title>
+
+          <para>The remove configuration element is used when we want to
+          unregister a component that has been defined in another
+          configuration file. Please note that profiles for this element are
+          available starting from kernel_1_3.xsd.</para>
+
+          <programlisting language="xml">&lt;remove-configuration profiles="all,default,social"&gt;org.exoplatform.services.scheduler.JobSchedulerService&lt;/remove-configuration&gt;</programlisting>
+        </section>
       </section>
     </section>
   </section>
