@@ -62,8 +62,10 @@ import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.PropertyType;
@@ -1169,7 +1171,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
    private String[] getStringValues(InternalQName propertyName, String literal)
    {
       PropertyTypeRegistry.TypeMapping[] types = propRegistry.getPropertyTypes(propertyName);
-      List<String> values = new ArrayList<String>();
+      Set<String> values = new HashSet<String>();
       for (int i = 0; i < types.length; i++)
       {
          switch (types[i].type)
@@ -1202,7 +1204,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                try
                {
                   QPath p = session.getLocationFactory().parseJCRPath(literal).getInternalPath();
-                  values.add(resolver.createJCRPath(p).getAsString(true));
+                  values.add(resolver.createJCRPath(p).getAsString(false));
                   LOG.debug("Coerced " + literal + " into PATH.");
                }
                catch (RepositoryException e)
@@ -1280,7 +1282,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
             try
             {
                QPath p = session.getLocationFactory().parseJCRPath(literal).getInternalPath();
-               values.add(resolver.createJCRPath(p).getAsString(true));
+               values.add(resolver.createJCRPath(p).getAsString(false));
                LOG.debug("Coerced " + literal + " into PATH.");
             }
             catch (Exception e)

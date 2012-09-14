@@ -17,6 +17,8 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneQueryBuilder;
+import org.exoplatform.services.jcr.impl.core.query.lucene.NodeIndexer;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -28,8 +30,11 @@ import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
+import javax.jcr.ValueFactory;
 import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
@@ -1288,6 +1293,36 @@ public class TestQueryUsecases extends BaseQueryTest
          }
       }
       assertFalse("There is more rows than expected", rit.hasNext());
+   }
 
+   /**
+    * Represents usecase searching by {@link PropertyType.PATH} property. Reveals bug, when
+    * {@link NodeIndexer} addValues() method adds string representation of node path without
+    * index and {@link LuceneQueryBuilder} getStringValues() method return terms with them. 
+    */
+   public void testJCR_1910() throws Exception
+   {
+      Node rootNode = session.getRootNode();
+      Node aNode = rootNode.addNode("totmr_a", "exo:JCR_1910");
+      Node bNode = rootNode.addNode("totmr_b", "exo:JCR_1910");
+
+      ValueFactory valueFactory = rootNode.getSession().getValueFactory();
+      Value value = valueFactory.createValue(aNode.getPath(), PropertyType.PATH);
+      bNode.setProperty("ref", value);
+
+      Property ref = bNode.getProperty("ref");
+      assertEquals(PropertyType.PATH, ref.getType());
+
+      rootNode.getSession().save();
+
+      QueryManager mgr = rootNode.getSession().getWorkspace().getQueryManager();
+      Query query = mgr.createQuery("SELECT * FROM nt:base WHERE ref='" + aNode.getPath() + "'", Query.SQL);
+      QueryResult result = query.execute();
+      NodeIterator i = result.getNodes();
+
+      assertTrue(i.hasNext());
+      Node found = i.nextNode();
+      assertSame(bNode, found);
+      assertFalse(i.hasNext());
    }
 }

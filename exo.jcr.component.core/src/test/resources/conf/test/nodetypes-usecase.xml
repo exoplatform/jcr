@@ -346,4 +346,15 @@
     </childNodeDefinitions>
    </nodeType>
 
+    <nodeType name="exo:JCR_1910" isMixin="false" hasOrderableChildNodes="false">
+	<supertypes>
+	    <supertype>nt:base</supertype>
+        </supertypes>
+	<propertyDefinitions>
+	    <propertyDefinition name="ref" requiredType="Path" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+		<valueConstraints />
+    	</propertyDefinition>
+	</propertyDefinitions>
+        <childNodeDefinitions />
+    </nodeType>
 </nodeTypes>
