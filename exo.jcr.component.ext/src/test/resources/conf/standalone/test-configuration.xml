@@ -433,6 +433,25 @@
                                  </field>
                               </object>
                            </value>
+						   <value>
+                              <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
+                                 <field name="eventTypes">
+                                    <string>addProperty,changeProperty</string>
+                                 </field>
+                                 <field name="path">
+                                    <string>/MetaDataActionTest/testAddContent2</string>
+                                 </field>
+                                 <field name="isDeep">
+                                    <boolean>true</boolean>
+                                 </field>
+                                 <field name="nodeTypes">
+                                    <string>nt:resource</string>
+                                 </field>
+                                 <field name="actionClassName">
+                                    <string>org.exoplatform.services.jcr.ext.metadata.AddMetadataAction</string>
+                                 </field>
+                              </object>
+                           </value>
                            <value>
                               <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
                                  <field name="eventTypes">
