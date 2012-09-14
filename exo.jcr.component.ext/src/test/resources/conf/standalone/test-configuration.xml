@@ -433,7 +433,7 @@
                                  </field>
                               </object>
                            </value>
-						   <value>
+                           <value>
                               <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
                                  <field name="eventTypes">
                                     <string>addProperty,changeProperty</string>
