@@ -23,8 +23,12 @@ import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
+import java.util.HashMap;
 
 import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
+import javax.jcr.RepositoryException;
 
 public class MetaDataActionTest extends BaseStandaloneTest
 {
@@ -175,6 +179,57 @@ public class MetaDataActionTest extends BaseStandaloneTest
       //try set property
       contentNode.setProperty("jcr:mimeType", "image/jpeg");
       session.save();
+   }
+
+   /*
+    * This test checking use-case like use-case describe in issue JCR-1909.
+    * If we change content in node and this content has new mimeType then we have exception. 
+    * And also We checking metadata.
+    */
+   public void testCheckMetaDataIfChangeMimeTypeAndData() throws Exception
+   {
+      Node rootNode = session.getRootNode().addNode("MetaDataActionTest");
+      Node nodeWithDOC = rootNode.addNode("testAddContent", "nt:resource");
+      nodeWithDOC.setProperty("jcr:mimeType", "application/msword");
+      nodeWithDOC.setProperty("jcr:data", MetaDataActionTest.class.getResourceAsStream("/testDOC.doc"));
+      nodeWithDOC.setProperty("jcr:lastModified", Calendar.getInstance());
+
+      Node nodeWithPDF = rootNode.addNode("testAddContent2", "nt:resource");
+      nodeWithPDF.setProperty("jcr:mimeType", "application/pdf");
+      nodeWithPDF.setProperty("jcr:data", MetaDataActionTest.class.getResourceAsStream("/testPDF.pdf"));
+      nodeWithPDF.setProperty("jcr:lastModified", Calendar.getInstance());
+
+      session.save();
+
+      nodeWithDOC.setProperty("jcr:mimeType", "application/pdf");
+      nodeWithDOC.setProperty("jcr:data", MetaDataActionTest.class.getResourceAsStream("/testPDF.pdf"));
+
+      session.save();
+
+      HashMap<String, Property> map = new HashMap<String, Property>();
+      for (PropertyIterator props = nodeWithDOC.getProperties(); props.hasNext();)
+      {
+         Property prop = props.nextProperty();
+         map.put(prop.getName(), prop);
+      }
+
+      evalProps(nodeWithPDF.getProperties(), map);
+   }
+
+   private void evalProps(PropertyIterator etalon, HashMap<String, Property> testedProps) throws RepositoryException
+   {
+      while (etalon.hasNext())
+      {
+         Property prop = etalon.nextProperty();
+         String propertyName = prop.getName();
+         if (propertyName.startsWith("dc:"))
+         {
+            Property testProperty = testedProps.get(propertyName);
+            assertNotNull(propertyName + " property not founded. ", testProperty);
+            assertEquals(propertyName + " property value is incorrect", testProperty.getValues()[0],
+               prop.getValues()[0]);
+         }
+      }
    }
 
 }

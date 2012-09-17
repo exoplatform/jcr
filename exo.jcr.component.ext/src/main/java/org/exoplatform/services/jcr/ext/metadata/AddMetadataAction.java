@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.impl.core.JCRName;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -73,7 +74,7 @@ public class AddMetadataAction implements Action
       PropertyImpl property = (PropertyImpl)ctx.get(InvocationContext.CURRENT_ITEM);
       NodeImpl parent = getAndValidateParent(property);
 
-      Content content = getContent(parent, property);
+      Content content = getContent(parent, property, ctx);
       try
       {
          if (!content.isEmpty())
@@ -206,7 +207,7 @@ public class AddMetadataAction implements Action
       return parent;
    }
 
-   private Content getContent(NodeImpl parent, PropertyImpl property) throws Exception
+   private Content getContent(NodeImpl parent, PropertyImpl property, Context ctx) throws Exception
    {
       Content content = new Content();
 
@@ -224,6 +225,14 @@ public class AddMetadataAction implements Action
       }
       else if (property.getInternalName().equals(Constants.JCR_MIMETYPE))
       {
+         int evt = (Integer)ctx.get(InvocationContext.EVENT);
+         if (evt != ExtendedEvent.PROPERTY_ADDED)
+         {
+            // In case the mime type is modified we assume that the property jcr:data is modified too so to
+            // prevent issue like JCR-1909 we do the data extraction only on jcr:data change
+            return content;
+         }
+
          content.mimeType = property.getString();
          try
          {

@@ -192,6 +192,7 @@
           <include>**/*.pdf</include>
           <include>**/*.xml</include>
           <include>**/*.xls</include>
+          <include>**/*.doc</include>
           <include>**/*.groovy</include>
           <include>**/login.conf</include>
           <include>**/*.properties</include>
