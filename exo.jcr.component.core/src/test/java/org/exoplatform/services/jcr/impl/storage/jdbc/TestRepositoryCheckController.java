@@ -1082,8 +1082,8 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
          sourceName = lockManagerEntry.getParameterValue("infinispan-cl-cache.jdbc.datasource");
 
          queryStatement =
-            "DELETE FROM " + lockManagerEntry.getParameterValue("infinispan-cl-cache.jdbc.table.name") + "_" + "L"
-               + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_");
+            "DELETE FROM \"" + lockManagerEntry.getParameterValue("infinispan-cl-cache.jdbc.table.name") + "_" + "L"
+               + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_") + "\"";
       }
       else
       {

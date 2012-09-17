@@ -120,8 +120,8 @@
         <artifactId>exo.kernel.component.common</artifactId>
       </dependency>
       <dependency>
-        <groupId>jboss.jbossts</groupId>
-        <artifactId>jbossjts</artifactId>
+        <groupId>org.jboss.jbossts</groupId>
+        <artifactId>jbossjta</artifactId>
       </dependency>
       <dependency>
         <groupId>javax.jcr</groupId>

@@ -185,13 +185,9 @@
         <artifactId>xpp3</artifactId>
       </dependency>
       <dependency>
-         <groupId>jboss.jbossts</groupId>
-         <artifactId>jbossjts</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>jboss.jbossts</groupId>
-         <artifactId>jbossts-common</artifactId>
-      </dependency>
+         <groupId>org.jboss.jbossts</groupId>
+         <artifactId>jbossjta</artifactId>
+      </dependency>      
       <dependency>
          <groupId>org.apache.ws.commons</groupId>
          <artifactId>ws-commons-util</artifactId>

@@ -92,8 +92,8 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
    {
       try
       {
-         return lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME) + "_" + "L"
-            + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_");
+         return "\"" + lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME)
+            + "_" + "L" + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_") + "\"";
       }
       catch (RepositoryConfigurationException e)
       {
