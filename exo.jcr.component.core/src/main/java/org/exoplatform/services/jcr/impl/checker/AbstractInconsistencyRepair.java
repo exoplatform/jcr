@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -61,6 +62,11 @@ public abstract class AbstractInconsistencyRepair implements InconsistencyRepair
       try
       {
          conn = connFactory.openConnection();
+         if (conn instanceof StatisticsJDBCStorageConnection)
+         {
+            conn = ((StatisticsJDBCStorageConnection)conn).getNestedWorkspaceStorageConnection();
+         }
+
          if (!(conn instanceof JDBCStorageConnection))
          {
             throw new SQLException("Connection is instance of " + conn);
