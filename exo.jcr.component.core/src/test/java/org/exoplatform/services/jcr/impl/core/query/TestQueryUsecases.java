@@ -1348,6 +1348,6 @@ public class TestQueryUsecases extends BaseQueryTest
       query.setLimit(1);
       QueryResultImpl result = (QueryResultImpl)query.execute();
 
-      assertTrue(result.getTotalSize() == -1);
+      assertTrue(result.getTotalSize() != -1);
    }
 }
