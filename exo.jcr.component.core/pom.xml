@@ -956,6 +956,20 @@
          </dependencies>
       </profile>
       <profile>
+         <id>pgsql-9.1</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>postgresql</groupId>
+               <artifactId>postgresql</artifactId>
+               <version>9.1-902.jdbc4</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
          <id>cache-disabled</id>
          <properties>
             <cache.enabled>false</cache.enabled>

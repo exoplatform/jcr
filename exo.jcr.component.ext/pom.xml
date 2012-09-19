@@ -375,6 +375,26 @@
          </dependencies>
       </profile>
       <profile>
+         <id>oracle-11G-R2</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>ojdbc</artifactId>
+               <version>11.2.0.1.0</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>orai18n</artifactId>
+               <version>11.2.0.1.0</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
          <id>mysql-5.1</id>
          <properties>
             <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
@@ -384,6 +404,20 @@
                <groupId>mysql</groupId>
                <artifactId>mysql-connector-java</artifactId>
                <version>5.1.14</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>mysql-5.5</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>mysql</groupId>
+               <artifactId>mysql-connector-java</artifactId>
+               <version>5.1.18</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
@@ -446,6 +480,20 @@
                <groupId>postgresql</groupId>
                <artifactId>postgresql</artifactId>
                <version>8.3-606.jdbc3</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>pgsql-9.1</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>postgresql</groupId>
+               <artifactId>postgresql</artifactId>
+               <version>9.1-902.jdbc4</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
