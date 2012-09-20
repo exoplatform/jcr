@@ -1703,6 +1703,20 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       // 2. check cache - inside data requests
       if (!uncachedPatterns.isEmpty())
       {
+         if (uncachedPatterns.size() == 1)
+         {
+            QPathEntryFilter filter = uncachedPatterns.iterator().next();
+            if (filter.isExactName())
+            {
+               ItemData data = getItemData(nodeData, filter.getQPathEntry(), ItemType.PROPERTY);
+               if (data instanceof PropertyData)
+               {
+                  childPropsMap.put(data.getIdentifier(), (PropertyData)data);
+               }
+               return new ArrayList<PropertyData>(childPropsMap.values());
+            }
+         }
+
          List<DataRequest> requests = new ArrayList<DataRequest>();
          try
          {
