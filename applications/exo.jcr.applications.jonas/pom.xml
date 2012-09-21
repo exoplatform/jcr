@@ -97,7 +97,7 @@
                </execution>
             </executions>
             <configuration>
-               <tasks>
+               <target>
                   <!--copying the AS-->
                   <delete dir="${exo.projects.directory.working}/exo-jonas" includeEmptyDirs="true" quiet="yes" />
                   <copy todir="${exo.projects.directory.working}/exo-jonas" verbose="false" overwrite="true">
@@ -182,7 +182,7 @@
                   </copy>
                   
                   <delete file="${exo.projects.directory.working}/exo-jonas/lib/commons/jonas/carol/jgroups-all.jar" />
-               </tasks>
+               </target>
             </configuration>
             <dependencies>
                <dependency>

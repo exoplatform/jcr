@@ -91,7 +91,7 @@
                </execution>
             </executions>
             <configuration>
-               <tasks>
+               <target>
                   <delete>
                      <fileset dir="${basedir}/target/lib-binary.dir/">
                         <include name="ejb*.jar" />
@@ -151,7 +151,7 @@
                         <include name="**/*.war" />
                      </fileset>
                   </copy>
-               </tasks>
+               </target>
             </configuration>
             <dependencies>
                <dependency>

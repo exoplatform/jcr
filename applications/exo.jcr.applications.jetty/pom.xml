@@ -92,7 +92,7 @@
                </execution>
             </executions>
             <configuration>
-               <tasks>
+               <target>
                   <delete dir="${exo.projects.directory.working}/exo-jetty" includeEmptyDirs="true" quiet="yes" />
                   <copy todir="${exo.projects.directory.working}/exo-jetty" verbose="false" overwrite="true">
                      <fileset dir="${exo.projects.directory.dependencies}/${exo.projects.app.jetty.version}" />
@@ -151,7 +151,7 @@
                         <include name="**/*.war" />
                      </fileset>
                   </copy>
-               </tasks>
+               </target>
             </configuration>
             <dependencies>
                <dependency>
