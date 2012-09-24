@@ -32,8 +32,6 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.IdentityConstants;
 
-import sun.security.provider.SystemIdentity;
-
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -2209,7 +2207,7 @@ public class TestImport extends AbstractImportTest
       perm.put("any", new String[]{"read"});
       ((ExtendedNode)file).setPermissions(perm);
            
-      Node cont = (NodeImpl)file.addNode("jcr:content", "nt:resource");
+      Node cont = file.addNode("jcr:content", "nt:resource");
       cont.setProperty("jcr:mimeType", "text/plain");
       cont.setProperty("jcr:lastModified", Calendar.getInstance());
       cont.setProperty("jcr:data", new FileInputStream(createBLOBTempFile(1)));
@@ -2297,7 +2295,7 @@ public class TestImport extends AbstractImportTest
       assertEquals("john", ((ExtendedNode)file).getACL().getOwner());
       
            
-      Node cont = (NodeImpl)file.addNode("jcr:content", "nt:resource");
+      Node cont = file.addNode("jcr:content", "nt:resource");
       cont.setProperty("jcr:mimeType", "text/plain");
       cont.setProperty("jcr:lastModified", Calendar.getInstance());
       cont.setProperty("jcr:data", new FileInputStream(createBLOBTempFile(1)));
