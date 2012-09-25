@@ -150,10 +150,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
        */
       public int compareTo(ChangesContainer o)
       {
-         // We use the lock manager to sort the key in order to be able
-         // to use the lock stripping more details here https://issues.jboss.org/browse/ISPN-993
-         LockManager lm = cache.getLockManager();
-         int result = lm.getLockId(key) - lm.getLockId(o.getKey());
+         int result = key.compareTo(o.getKey());
          return result == 0 ? historicalIndex - o.getHistoricalIndex() : result;
       }
 

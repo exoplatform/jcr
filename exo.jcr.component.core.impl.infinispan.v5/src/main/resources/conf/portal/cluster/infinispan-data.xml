@@ -46,7 +46,7 @@
         <sync replTimeout="20000"/>
       </clustering>
 
-      <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true"/>
+      <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="false"/>
       <transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" transactionMode="TRANSACTIONAL"/>
       <jmxStatistics enabled="true"/>
       <eviction strategy="LIRS" threadPolicy="DEFAULT" maxEntries="1000000"/>
