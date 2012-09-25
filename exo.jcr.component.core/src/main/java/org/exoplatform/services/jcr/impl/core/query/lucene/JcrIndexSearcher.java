@@ -20,7 +20,6 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.search.IndexSearcher;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Sort;
-import org.apache.lucene.search.SortField;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
@@ -106,20 +105,12 @@ public class JcrIndexSearcher extends IndexSearcher implements EvaluationContext
             }
             if (hits == null)
             {
-               if (sort == null)
+               if (sort == null || sort.getSort().length == 0)
                {
                   hits = new LuceneQueryHits(reader, JcrIndexSearcher.this, query);
                }
                else
                {
-                  // To fit to same behavior as JCR 1.14 does: with no sort fields
-                  // SortedLuceneQueryHits has been created which could return the
-                  // the total size of query hints
-                  if (sort.getSort().length == 0)
-                  {
-                     sort.setSort(SortField.FIELD_DOC);
-                  }
-
                   hits = new SortedLuceneQueryHits(reader, JcrIndexSearcher.this, localQuery, sort, resultFetchHint);
                }
             }

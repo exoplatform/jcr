@@ -19,7 +19,6 @@ package org.exoplatform.services.jcr.impl.core.query;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneQueryBuilder;
 import org.exoplatform.services.jcr.impl.core.query.lucene.NodeIndexer;
-import org.exoplatform.services.jcr.impl.core.query.lucene.QueryResultImpl;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -1325,29 +1324,5 @@ public class TestQueryUsecases extends BaseQueryTest
       Node found = i.nextNode();
       assertSame(bNode, found);
       assertFalse(i.hasNext());
-   }
-
-   /**
-    * Suppose to have total size of query results even if query
-    * doen't contains "order by" clause.
-    */
-   public void testJCR_1911() throws Exception
-   {
-      Node testRoot1 = root.addNode("root1", "nt:folder");
-      Node testRoot2 = testRoot1.addNode("root2", "nt:folder");
-      Node testRoot3 = testRoot2.addNode("subdir1", "nt:folder");
-      testRoot3.addNode("node1", "nt:folder");
-      testRoot2.addNode("node2", "nt:folder");
-      session.save();
-
-      QueryManager qman = workspace.getQueryManager();
-
-      QueryImpl query =
-         (QueryImpl)qman.createQuery("SELECT * FROM nt:folder WHERE jcr:path LIKE '/root1/root2/%'", Query.SQL);
-      query.setOffset(0);
-      query.setLimit(1);
-      QueryResultImpl result = (QueryResultImpl)query.execute();
-
-      assertTrue(result.getTotalSize() == -1);
    }
 }
