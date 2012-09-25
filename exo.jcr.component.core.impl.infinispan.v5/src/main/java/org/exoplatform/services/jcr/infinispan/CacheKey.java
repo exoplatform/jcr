@@ -78,6 +78,7 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
       int result = 1;
       result = prime * result + ((id == null) ? 0 : id.hashCode());
       result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
+      result = prime * result + (this.getClass().getName().hashCode());
       this.hash = result;
       this.group = group;
    }
