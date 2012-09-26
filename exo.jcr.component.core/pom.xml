@@ -281,7 +281,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
-               <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+               <argLine>${env.MAVEN_OPTS} -Djava.net.preferIPv4Stack=true -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                <systemProperties>
                   <property>
                      <name>jcr.test.configuration.file</name>
@@ -310,12 +310,6 @@
                   <property>
                       <name>exo.properties.url</name>
                       <value>${properties.url.prefix}${properties.url.suffix}</value>
-                  </property>
-                  <!-- We add this system property due to some incompatibility between IPv6 and 
-						some JVM of Linux distributions such as Ubuntu and Fedora-->
-                  <property>
-                     <name>java.net.preferIPv4Stack</name>
-                     <value>true</value>
                   </property>
                   <!-- Avoid the firewall -->
                   <property>
@@ -580,7 +574,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                   <!-- TAKE CARE TO UPDATE ALSO run-all PROFILE -->
-                     <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+                     <argLine>${env.MAVEN_OPTS} -Djava.net.preferIPv4Stack=true -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>
@@ -617,12 +611,6 @@
                         <property>
                            <name>exo.properties.url</name>
                            <value>${properties.url.prefix}${properties.url.suffix}</value>
-                        </property>
-                     <!-- We add this system property due to some incompatibility between IPv6 and 
-						some JVM of Linux distributions such as Ubuntu and Fedora-->
-                        <property>
-                           <name>java.net.preferIPv4Stack</name>
-                           <value>true</value>
                         </property>
                         <!-- Avoid the firewall -->
                         <property>
@@ -671,7 +659,7 @@
                   <artifactId>maven-surefire-plugin</artifactId>
                   <configuration>
                      <!-- TAKE CARE TO UPDATE ALSO run-tck PROFILE -->
-                     <argLine>${env.MAVEN_OPTS} -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+                     <argLine>${env.MAVEN_OPTS} -Djava.net.preferIPv4Stack=true -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=${project.build.directory} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>
@@ -708,12 +696,6 @@
                         <property>
                            <name>exo.properties.url</name>
                            <value>${properties.url.prefix}${properties.url.suffix}</value>
-                        </property>
-                     <!-- We add this system property due to some incompatibility between IPv6 and 
-						some JVM of Linux distributions such as Ubuntu and Fedora-->
-                        <property>
-                           <name>java.net.preferIPv4Stack</name>
-                           <value>true</value>
                         </property>
                         <!-- Avoid the firewall -->
                         <property>
