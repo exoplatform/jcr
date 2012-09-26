@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConn
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MSSQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.PostgreConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.PostgreSCSConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.SybaseConnectionFactory;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
@@ -110,6 +111,11 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
          this.connFactory = new PostgreConnectionFactory(getDataSource(), containerConfig);
          dbInitializer =
             new PgSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
+      }
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_PGSQL_SCS)
+      {
+         this.connFactory = new PostgreSCSConnectionFactory(getDataSource(), containerConfig);
+         dbInitializer = new PgSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL
          || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8

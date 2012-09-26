@@ -513,7 +513,8 @@ public class JDBCWorkspaceDataContainerChecker
                + " P where P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS( select * from " + valueTable + " V "
                + "where V.PROPERTY_ID=P.ID)";
 
-      if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
+      if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL)
+         || jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL_SCS))
       {
          statement = statement.replace("?", "'f'");
       }

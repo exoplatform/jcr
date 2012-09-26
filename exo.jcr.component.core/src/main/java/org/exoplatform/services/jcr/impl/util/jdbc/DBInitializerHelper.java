@@ -129,6 +129,10 @@ public class DBInitializerHelper
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.pgsql.sql";
       }
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL_SCS))
+      {
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.pgsql.sql";
+      }
       else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql.sql";

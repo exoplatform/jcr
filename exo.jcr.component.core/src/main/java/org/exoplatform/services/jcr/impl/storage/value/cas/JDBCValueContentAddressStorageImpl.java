@@ -199,6 +199,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             sqlVCASIDX = tableName + "_IDX";
 
             if (DBConstants.DB_DIALECT_PGSQL.equalsIgnoreCase(dialect)
+               || DBConstants.DB_DIALECT_PGSQL_SCS.equalsIgnoreCase(dialect)
                || DBConstants.DB_DIALECT_INGRES.equalsIgnoreCase(dialect))
             {
                // use lowercase for postgres/ingres metadata.getTable(), HSQLDB wants UPPERCASE

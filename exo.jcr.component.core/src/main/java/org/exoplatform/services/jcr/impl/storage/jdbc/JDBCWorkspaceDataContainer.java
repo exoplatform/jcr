@@ -449,7 +449,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          this.connFactory = defaultConnectionFactory();
          dbInitializer = new OracleDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_PGSQL)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_PGSQL
+         || containerConfig.dbDialect == DBConstants.DB_DIALECT_PGSQL_SCS)
       {
          this.connFactory = defaultConnectionFactory();
          dbInitializer = new PgSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);

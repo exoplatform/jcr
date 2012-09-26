@@ -58,7 +58,8 @@ public class DBCleaningScriptsFactory
       {
          return new MSSQLCleaningScipts(dialect, wsEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_PGSQL))
+      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_PGSQL)
+         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_PGSQL_SCS))
       {
          return new PgSQLCleaningScipts(dialect, wsEntry);
       }
@@ -109,7 +110,8 @@ public class DBCleaningScriptsFactory
       {
          return new MSSQLCleaningScipts(dialect, rEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_PGSQL))
+      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_PGSQL)
+         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_PGSQL_SCS))
       {
          return new PgSQLCleaningScipts(dialect, rEntry);
       }

@@ -31,7 +31,8 @@ import java.sql.SQLException;
  */
 public class PostgreMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
-   protected String PATTERN_ESCAPE_STRING = "\\\\";
+
+   protected static final String PATTERN_ESCAPE_STRING = "\\\\";
 
    /**
     * @param dbConnection

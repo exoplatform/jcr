@@ -300,7 +300,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
             timeStampType = "NUMBER(19, 0)";
          }
          // POSTGRE SQL
-         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
+         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL)
+            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL_SCS))
          {
             blobType = "bytea";
          }

@@ -166,7 +166,8 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       {
          binType = "VARBINARY(1000000)"; // 1Mb
       }
-      else if (DBConstants.DB_DIALECT_PGSQL.equalsIgnoreCase(dialect))
+      else if (DBConstants.DB_DIALECT_PGSQL.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_PGSQL_SCS.equalsIgnoreCase(dialect))
       {
          configTableName = configTableName.toUpperCase().toLowerCase(); // postgres needs it
          binType = "BYTEA";
