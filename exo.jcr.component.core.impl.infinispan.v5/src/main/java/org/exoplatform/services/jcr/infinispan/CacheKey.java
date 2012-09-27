@@ -74,19 +74,14 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
    {
       this.ownerId = ownerId;
       this.id = id;
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((id == null) ? 0 : id.hashCode());
-      result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
-      result = prime * result + (this.getClass().getName().hashCode());
-      this.hash = result;
+      this.hash = calculateHash();
       this.group = group;
    }
    
    /**
     * @return the ownerId
     */
-   public String getOwnerId()
+   public final String getOwnerId()
    {
       return ownerId;
    }
@@ -95,7 +90,7 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
     * {@inheritDoc}
     */
    @Override
-   public int hashCode()
+   public final int hashCode()
    {
       return this.hash;
    }
@@ -112,7 +107,7 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
    /**
     * {@inheritDoc}
     */
-   public int compareTo(CacheKey o)
+   public final int compareTo(CacheKey o)
    {
       int result = getClass().getName().compareTo(o.getClass().getName());
       if (result == 0 && ownerId != null)
@@ -130,7 +125,7 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
     * @return the group
     */
    @Group
-   public String getGroup()
+   public final String getGroup()
    {
       if (fullGroupName != null)
       {
@@ -174,7 +169,6 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
       buf = id.getBytes(Constants.DEFAULT_ENCODING);
       out.writeInt(buf.length);
       out.write(buf);
-
    }
 
    /**
@@ -200,18 +194,14 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
       buf = new byte[in.readInt()];
       in.readFully(buf);
       id = new String(buf, Constants.DEFAULT_ENCODING);
-      final int prime = 31;
-      int result = 1;
-      result = prime * result + ((id == null) ? 0 : id.hashCode());
-      result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
-      hash = result;
+      hash = calculateHash();
    }
-
+   
    /**
     * {@inheritDoc}
     */
    @Override
-   public boolean equals(Object obj)
+   public final boolean equals(Object obj)
    {
       if (this == obj)
          return true;
@@ -225,5 +215,21 @@ public abstract class CacheKey implements Externalizable, Comparable<CacheKey>
          return ownerId != null ? ownerId.equals(cacheKey.ownerId) : true;
       }
       return false;
+   }
+   
+   /**
+    * Calculate the hash.
+    * 
+    * @return int 
+    *            return hash
+    */
+   private int calculateHash()
+   {
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((id == null) ? 0 : id.hashCode());
+      result = prime * result + ((ownerId == null) ? 0 : ownerId.hashCode());
+      result = prime * result + (getClass().getName().hashCode());
+      return result;
    }
 }
