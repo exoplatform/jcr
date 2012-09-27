@@ -41,6 +41,10 @@
       </listitem>
 
       <listitem>
+        <para>PostgresSQL 9.1.5 JDBC4 Driver, Version 9.1-902</para>
+      </listitem>
+
+      <listitem>
         <para>Oracle DB 10g R2 (10.2.0.4), JDBC Driver Oracle 10g R2
         (10.2.0.4)</para>
       </listitem>

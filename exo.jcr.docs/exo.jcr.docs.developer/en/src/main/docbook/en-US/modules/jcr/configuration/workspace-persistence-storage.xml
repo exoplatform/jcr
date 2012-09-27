@@ -96,7 +96,7 @@
 
     <listitem>
       <para><emphasis role="bold">dialect</emphasis>: Database dialect, one of
-      "hsqldb", "mysql", "mysql-utf8", "pgsql", "oracle", "oracle-oci",
+      "hsqldb", "mysql", "mysql-utf8", "pgsql", "pgsql-scs", "oracle", "oracle-oci",
       "mssql", "sybase", "derby", "db2", "db2v8". The default value is
       "auto".</para>
     </listitem>
@@ -178,4 +178,25 @@
 
   <para>It's recommended to store properties with large values in a file value
   storage only.</para>
+
+  <section id="JCR.WorkspacePersistenceStorage.DatabasesDialects">
+    <title>Database's dialects</title>
+
+    <section id="JCR.WorkspacePersistenceStorage.DatabasesDialects.PostgreSQLDatabase">
+      <title>PostgreSQL database</title>
+
+      <para>PostgreSQL's dialect is set automatically. The dialect depends on the version of database.
+      If you change default value of standard_conforming_strings than you must configure one of following dialects:<itemizedlist>
+        <listitem>
+          <para>PgSQL dialect. This dialect used if standard_conforming_strings is set to off. 
+          This is default value for version before 9.1.</para>
+        </listitem>
+
+        <listitem>
+          <para>PgSQL-SCS dialect. This dialect used if standard_conforming_strings is set to on. 
+            This is default value for version after 9.1.</para>
+        </listitem>
+      </itemizedlist></para>
+    </section>
+  </section>
 </section>
