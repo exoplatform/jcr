@@ -121,6 +121,9 @@
                   <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/conf/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/../product-patches/as/jboss/exoplatform.sar/META-INF/" includes="login*.xml" />
                   </copy>
+                  <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/conf/bootstrap/" verbose="true" overwrite="true">
+                     <fileset dir="${basedir}/../product-patches/as/jboss/" includes="profile.xml" />
+                  </copy>
                   <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/deploy/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/../product-patches/as/jboss/ds/" includes="*.xml" />
                   </copy>
