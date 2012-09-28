@@ -49,7 +49,11 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
    private FileCleaner testCleaner;
 
-   private CleanableFilePersistedValueData cleanableValueData;
+   private CleanableFilePersistedValueData cleanableValueData1;
+
+   private CleanableFilePersistedValueData cleanableValueData2;
+
+   private TransientValueData trvd;
 
    private static class TestSwapFile extends SwapFile
    {
@@ -85,13 +89,15 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       fout.close();
       sf.spoolDone();
 
-      cleanableValueData = new CleanableFilePersistedValueData(1, sf, SpoolConfig.getDefaultSpoolConfig());
+      cleanableValueData1 = new CleanableFilePersistedValueData(1, sf, SpoolConfig.getDefaultSpoolConfig());
    }
 
    @Override
    protected void tearDown() throws Exception
    {
-      cleanableValueData = null;
+      cleanableValueData1 = null;
+      cleanableValueData2 = null;
+      trvd = null;
 
       testCleaner.halt();
       testCleaner = null;
@@ -111,7 +117,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
    public void testFileCleaned() throws Exception
    {
       assertTrue(testFile.exists());
-      cleanableValueData = null; // CleanableVD dies
+      cleanableValueData1 = null; // CleanableVD dies
 
       assertReleasedFile(testFile);
    }
@@ -123,21 +129,18 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       System.gc();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
-      CleanableFilePersistedValueData cfvd2 =
+      cleanableValueData2 =
          new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), SpoolConfig.getDefaultSpoolConfig());
       assertTrue(testFile.exists());
 
-      cleanableValueData = null; // CleanableVD dies but another instance points swapped file
+      cleanableValueData1 = null; // CleanableVD dies but another instance points swapped file
 
       // allows GC to call finalize on vd
       sleepAndGC();
       assertTrue(testFile.exists());
 
-      // JCR-1924: fake usage to tell JDK instance is needed at this code line 
-      cfvd2.getOrderNumber();
-
       // clean ValueData
-      cfvd2 = null;
+      cleanableValueData2 = null;
       assertReleasedFile(testFile);
    }
 
@@ -149,8 +152,8 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       System.gc();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
-      TransientValueData trvd = new TransientValueData(false);
-      trvd.delegate(cleanableValueData);
+      trvd = new TransientValueData(false);
+      trvd.delegate(cleanableValueData1);
 
       trvd = null; // TransientVD dies
 
@@ -167,18 +170,24 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       System.gc();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
-      TransientValueData trvd = new TransientValueData(false);
-      trvd.delegate(cleanableValueData);
+      // file shared with third CleanableVD, i.e. file still exists (aquired by TransientVD)
+      cleanableValueData2 =
+         new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), SpoolConfig.getDefaultSpoolConfig());
+
+      trvd = new TransientValueData(false);
+      trvd.delegate(cleanableValueData2);
       
       assertTrue(testFile.exists());
 
-      cleanableValueData = null; // CleanableVD dies but TransientVD still uses swapped file
+      cleanableValueData2 = null; // CleanableVD dies but TransientVD still uses swapped file
 
       sleepAndGC();
       assertTrue(testFile.exists());
 
-      // JCR-1924: fake usage to tell JDK instance is needed at this code line 
-      trvd.getOrderNumber();
+      cleanableValueData1 = null; // CleanableVD dies but TransientVD still uses swapped file
+
+      sleepAndGC();
+      assertTrue(testFile.exists());
 
       trvd = null; // TransientVD dies
       assertReleasedFile(testFile);
@@ -193,33 +202,27 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
       // file shared with TransientVD
-      TransientValueData trvd = new TransientValueData(false);
-      trvd.delegate(cleanableValueData);
+      trvd = new TransientValueData(false);
+      trvd.delegate(cleanableValueData1);
 
       assertTrue(testFile.exists());
 
       // 1st CleanableVD die
-      cleanableValueData = null;
+      cleanableValueData1 = null;
 
       sleepAndGC();
 
       // file shared with third CleanableVD, i.e. file still exists (aquired by TransientVD)
-      CleanableFilePersistedValueData cfvd2 =
+      cleanableValueData2 =
          new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), SpoolConfig.getDefaultSpoolConfig());
       assertTrue(testFile.exists());
-
-      // JCR-1924: fake usage to tell JDK instance is needed at this code line 
-      trvd.getOrderNumber();
 
       trvd = null; // TransientVD dies
 
       sleepAndGC();
       assertTrue(testFile.exists()); // still exists, aquired by 2nd CleanableVD
 
-      // JCR-1924: fake usage to tell JDK instance is needed at this code line 
-      cfvd2.getOrderNumber();
-
-      cfvd2 = null; // 2nd CleanableVD dies
+      cleanableValueData2 = null; // 2nd CleanableVD dies
       assertReleasedFile(testFile);
    }
 
