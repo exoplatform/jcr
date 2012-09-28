@@ -19,7 +19,6 @@
 package org.exoplatform.services.jcr.ext.metadata;
 
 import org.apache.commons.chain.Context;
-import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.QName;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.command.action.Action;
@@ -37,7 +36,6 @@ import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.Calendar;
 import java.util.Date;
@@ -46,7 +44,6 @@ import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
@@ -61,10 +58,11 @@ import javax.jcr.ValueFormatException;
 public class AddMetadataAction implements Action
 {
 
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.AddMetadataAction");
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.ext.AddMetadataAction");
 
    public boolean execute(Context ctx) throws Exception
    {
+
       PropertyImpl property = (PropertyImpl)ctx.get("currentItem");
       NodeImpl parent = property.getParent();
       if (!parent.isNodeType("nt:resource"))
@@ -107,11 +105,6 @@ public class AddMetadataAction implements Action
             return false;
          }
 
-         if (data.available() == 0)
-         {
-            return false;
-         }
-
          if (!parent.isNodeType("dc:elementSet"))
          {
             parent.addMixin("dc:elementSet");
@@ -132,15 +125,11 @@ public class AddMetadataAction implements Action
          }
          catch (HandlerNotFoundException e)
          {
-            printWarning(property, e);
+            log.debug(e.getMessage());
          }
          catch (DocumentReadException e)
          {
-            printWarning(property, e);
-         }
-         catch (IOException e)
-         {
-            printWarning(property, e);
+            log.warn(e.getMessage(), e);
          }
 
          Iterator entries = props.entrySet().iterator();
@@ -177,27 +166,6 @@ public class AddMetadataAction implements Action
       }
    }
 
-   /**
-    * Print warning message on the console
-    * 
-    * @param property property that has not been read
-    * @param exception the reason for which wasn't read property
-    * @throws RepositoryException
-    */
-   private void printWarning(PropertyImpl property, Exception exception) throws RepositoryException
-   {
-      if (PropertyManager.isDevelopping())
-      {
-         LOG.warn("Binary value reader error, content by path " + property.getPath() + ", property id "
-            + property.getData().getIdentifier() + " : " + exception.getMessage(), exception);
-      }
-      else
-      {
-         LOG.warn("Binary value reader error, content by path " + property.getPath() + ", property id "
-            + property.getData().getIdentifier() + " : " + exception.getMessage());
-      }
-   }
-
    private Value createValue(Object obj, ValueFactory factory) throws ValueFormatException
    {
       if (obj instanceof String)
@@ -215,4 +183,5 @@ public class AddMetadataAction implements Action
          throw new ValueFormatException("Unsupported value type " + obj.getClass());
       }
    }
+
 }
