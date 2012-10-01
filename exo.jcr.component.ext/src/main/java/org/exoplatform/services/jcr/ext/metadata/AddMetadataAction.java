@@ -85,7 +85,8 @@ public class AddMetadataAction implements Action
       }
       catch (HandlerNotFoundException e)
       {
-         LOG.debug(e.getMessage());
+         LOG.debug("Binary value reader error, content by path " + property.getPath() + ", property id "
+            + property.getData().getIdentifier() + " : " + e.getMessage());
       }
       catch (IOException e)
       {
