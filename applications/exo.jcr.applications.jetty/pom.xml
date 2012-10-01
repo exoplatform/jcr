@@ -121,6 +121,9 @@
                   <copy todir="${exo.projects.directory.working}/exo-jetty/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/../product-patches/as/jetty/" />
                   </copy>
+                  <copy todir="${exo.projects.directory.working}/exo-jetty/resources" verbose="true" overwrite="true">
+                     <fileset dir="${basedir}/../product-patches/as/jetty/resources" includes="log4j.properties"/>
+                  </copy>
                   <replace dir="${exo.projects.directory.working}/exo-jetty" token="@exo.deploy.profile@" value="${exo.deploy.profile}" />
                   <move todir="${exo.projects.directory.working}/exo-jetty/">
                     <fileset dir="${exo.projects.directory.working}/exo-jetty/">
