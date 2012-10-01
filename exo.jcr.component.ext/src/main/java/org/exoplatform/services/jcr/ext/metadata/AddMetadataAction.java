@@ -142,7 +142,7 @@ public class AddMetadataAction implements Action
          }
          catch (HandlerNotFoundException e)
          {
-            printWarning(property, e);
+            LOG.debug(e.getMessage());
          }
          catch (DocumentReadException e)
          {
