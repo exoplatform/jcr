@@ -19,6 +19,7 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -29,7 +30,7 @@
   <artifactId>exo.jcr.connectors.jca</artifactId>
   <packaging>rar</packaging>
   <name>eXo JCR :: Connector :: JCA</name>
-  <description>JCA resource adapter for eXo JCR</description>
+  <description>Implementation of JCA resource adapter of Exoplatform SAS 'eXo JCR' project.</description>
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>

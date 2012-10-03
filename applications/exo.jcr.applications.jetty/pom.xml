@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     Copyright (C) 2009 eXo Platform SAS.
@@ -18,6 +19,7 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
@@ -30,7 +32,6 @@
    <artifactId>exo.jcrapplications.jetty</artifactId>
    <packaging>pom</packaging>
    <name>eXo JCR :: Applications :: Jetty AS</name>
-   <url>http://www.exoplatform.org</url>
    <description>eXo JCR Jetty Applications Server</description>
    
    <properties>

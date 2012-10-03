@@ -19,6 +19,7 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
@@ -28,7 +29,7 @@
   </parent>
   <artifactId>exo.jcr.component.ext</artifactId>
   <name>eXo JCR :: Component :: Extension Service</name>
-  <description>eXo JCR Services extension</description>
+  <description>Implementation of Extension Service of Exoplatform SAS 'eXo JCR' project.</description>
   <properties>
       <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
       <properties.url.suffix>.properties</properties.url.suffix>
