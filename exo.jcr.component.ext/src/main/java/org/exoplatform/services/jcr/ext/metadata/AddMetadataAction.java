@@ -25,6 +25,7 @@ import org.exoplatform.services.command.action.Action;
 import org.exoplatform.services.document.DocumentReadException;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.HandlerNotFoundException;
+import org.exoplatform.services.ext.action.InvocationContext;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionDatas;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
@@ -33,6 +34,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.JCRName;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -62,7 +64,6 @@ public class AddMetadataAction implements Action
 
    public boolean execute(Context ctx) throws Exception
    {
-
       PropertyImpl property = (PropertyImpl)ctx.get("currentItem");
       NodeImpl parent = property.getParent();
       if (!parent.isNodeType("nt:resource"))
@@ -89,6 +90,14 @@ public class AddMetadataAction implements Action
          }
          else if (property.getInternalName().equals(Constants.JCR_MIMETYPE))
          {
+            int evt = (Integer)ctx.get(InvocationContext.EVENT);
+            if (evt != ExtendedEvent.PROPERTY_ADDED)
+            {
+               // In case the mime type is modified we assume that the property jcr:data is modified too so to
+               // prevent issue like JCR-1873 we do the data extraction only on jcr:data change
+               return false;
+            }
+
             mimeType = property.getString();
             try
             {
