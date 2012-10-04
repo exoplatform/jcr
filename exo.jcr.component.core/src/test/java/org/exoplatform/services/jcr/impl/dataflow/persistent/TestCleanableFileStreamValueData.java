@@ -49,11 +49,11 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
    private FileCleaner testCleaner;
 
-   public CleanableFilePersistedValueData cleanableValueData1;
+   private CleanableFilePersistedValueData cleanableValueData1;
 
-   public CleanableFilePersistedValueData cleanableValueData2;
+   private CleanableFilePersistedValueData cleanableValueData2;
 
-   public TransientValueData trvd;
+   private TransientValueData trvd;
 
    private static class TestSwapFile extends SwapFile
    {
