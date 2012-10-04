@@ -61,7 +61,6 @@ import java.util.Set;
 import javax.jcr.Credentials;
 import javax.jcr.Node;
 import javax.jcr.Session;
-import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.SecurityContext;
 
@@ -268,48 +267,6 @@ public class TestGet extends BaseStandaloneTest
       XSLTout.write(byteOut);
 
       assertTrue("Response should contain parent collection href", byteOut.toString().contains(folderOne));
-   }
-
-   public void testGetContentTypeWithEncoding() throws Exception
-   {
-      Node fileNode = session.getRootNode().addNode("node", "nt:file");
-      Node contentNode = fileNode.addNode("jcr:content", "nt:resource");
-      contentNode.setProperty("jcr:mimeType", "text/plain");
-      contentNode.setProperty("jcr:encoding", "test-encoding");
-      contentNode.setProperty("jcr:data", "There is no ignorance, there is knowledge.");
-      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
-      session.save();
-
-      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + "/" + fileNode.getName(), "", null, null);
-
-      assertEquals("text/plain; charset=test-encoding", response.getHttpHeaders().getFirst(HttpHeaders.CONTENT_TYPE)
-         .toString());
-   }
-
-   public void testGetContentTypeWithNoEncoding() throws Exception
-   {
-      Node fileNode = session.getRootNode().addNode("node", "nt:file");
-      Node contentNode = fileNode.addNode("jcr:content", "nt:resource");
-      contentNode.setProperty("jcr:mimeType", "text/plain");
-      contentNode.setProperty("jcr:encoding", "");
-      contentNode.setProperty("jcr:data", "There is no passion, there is serenity.");
-      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
-      session.save();
-
-      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + "/" + fileNode.getName(), "", null, null);
-
-      assertEquals("text/plain", response.getHttpHeaders().getFirst(HttpHeaders.CONTENT_TYPE).toString());
-
-      fileNode = session.getRootNode().addNode("node2", "nt:file");
-      contentNode = fileNode.addNode("jcr:content", "nt:resource");
-      contentNode.setProperty("jcr:mimeType", "text/plain");
-      contentNode.setProperty("jcr:data", "There is no passion, there is serenity.");
-      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
-      session.save();
-
-      response = service(WebDAVMethods.GET, getPathWS() + "/" + fileNode.getName(), "", null, null);
-
-      assertEquals("text/plain", response.getHttpHeaders().getFirst(HttpHeaders.CONTENT_TYPE).toString());
    }
 
    @Override

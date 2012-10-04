@@ -222,12 +222,6 @@ public class TestUtils
 
    }
 
-   public static Node getContentNode(Session session, String path) throws PathNotFoundException, RepositoryException
-   {
-      Node node = session.getRootNode().getNode(TextUtil.relativizePath(path));
-      return node.getNode("jcr:content");
-   }
-
    public static NodeType[] getContentMixins(Session session, String path) throws PathNotFoundException,
       RepositoryException
    {
