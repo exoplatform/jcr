@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.exoplatform</groupId>
     <artifactId>foundation-parent</artifactId>
-    <version>11-SNAPSHOT</version>
+    <version>11</version>
   </parent>
 
   <groupId>org.exoplatform.jcr</groupId>
@@ -44,9 +44,9 @@
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.15</exo.product.specification>
-    <org.exoplatform.kernel.version>2.4.0-CR1-SNAPSHOT</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>2.5.0-CR1-SNAPSHOT</org.exoplatform.core.version>
-    <org.exoplatform.ws.version>2.3.0-CR1-SNAPSHOT</org.exoplatform.ws.version>
+    <org.exoplatform.kernel.version>2.4.0-CR1</org.exoplatform.kernel.version>
+    <org.exoplatform.core.version>2.5.0-CR1</org.exoplatform.core.version>
+    <org.exoplatform.ws.version>2.3.0-CR1</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
   </properties>
 
