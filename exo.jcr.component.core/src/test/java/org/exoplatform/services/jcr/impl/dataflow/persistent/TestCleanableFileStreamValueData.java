@@ -133,9 +133,6 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       sleepAndGC();
       assertTrue(testFile.exists());
 
-      // JCR-1924: fake usage to tell JDK instance is needed at this code line 
-      cfvd2.getOrderNumber();
-
       // clean ValueData
       cfvd2 = null;
       assertReleasedFile(testFile);
@@ -177,9 +174,6 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       sleepAndGC();
       assertTrue(testFile.exists());
 
-      // JCR-1924: fake usage to tell JDK instance is needed at this code line 
-      trvd.getOrderNumber();
-
       trvd = null; // TransientVD dies
       assertReleasedFile(testFile);
    }
@@ -208,16 +202,10 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
          new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), SpoolConfig.getDefaultSpoolConfig());
       assertTrue(testFile.exists());
 
-      // JCR-1924: fake usage to tell JDK instance is needed at this code line 
-      trvd.getOrderNumber();
-
       trvd = null; // TransientVD dies
 
       sleepAndGC();
       assertTrue(testFile.exists()); // still exists, aquired by 2nd CleanableVD
-
-      // JCR-1924: fake usage to tell JDK instance is needed at this code line 
-      cfvd2.getOrderNumber();
 
       cfvd2 = null; // 2nd CleanableVD dies
       assertReleasedFile(testFile);
