@@ -167,8 +167,8 @@ public interface NodeTypeDataManager
     * @param parentMixinNames
     * @return
     */
-   boolean isChildNodePrimaryTypeAllowed(InternalQName childNodeTypeName, InternalQName parentNodeType,
-      InternalQName[] parentMixinNames) throws RepositoryException;
+   boolean isChildNodePrimaryTypeAllowed(InternalQName childName, InternalQName childNodeTypeName,
+      InternalQName parentNodeType, InternalQName[] parentMixinNames) throws RepositoryException;
 
    /**
     * @param testTypeName

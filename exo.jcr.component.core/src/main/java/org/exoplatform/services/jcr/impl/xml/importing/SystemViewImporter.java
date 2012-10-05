@@ -469,7 +469,7 @@ public class SystemViewImporter extends BaseXmlImporter
          {
             //do nothing
          }
-         else if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(primaryTypeName,
+         else if (!nodeTypeDataManager.isChildNodePrimaryTypeAllowed(nodeData.getQName(), primaryTypeName,
             parentNodeData.getPrimaryTypeName(), parentNodeData.getMixinTypeNames()))
          {
             throw new ConstraintViolationException("Can't add node " + nodeData.getQName().getAsString() + " to "

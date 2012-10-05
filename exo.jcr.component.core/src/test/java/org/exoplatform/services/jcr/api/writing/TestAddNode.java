@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 import java.util.Calendar;
+import java.util.Date;
 
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
@@ -48,8 +49,8 @@ public class TestAddNode extends JcrAPIBaseTest
       Node file = root.addNode("TestNodesTree", "nt:folder").addNode("childNode2", "nt:file");
       Node contentNode = file.addNode("jcr:content", "nt:resource");
       contentNode = file.getNode("jcr:content");
-      contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
-         PropertyType.BINARY));
+      contentNode.setProperty("jcr:data",
+         session.getValueFactory().createValue("this is the content", PropertyType.BINARY));
       contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
       contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
@@ -288,6 +289,36 @@ public class TestAddNode extends JcrAPIBaseTest
 
       testNode.remove();
       session.save();
+   }
 
+   /**
+    * JCR-1934 usecase. Add child node to parent, which primary type or mixins
+    * does not allow this. But there was a but did not take in account child node
+    * name. 
+    */
+   public void testAddChildNodeWhenParentPrimaryTypeNotAllows() throws Exception
+   {
+      Node file = root.addNode("test", "nt:file");
+      Node content = file.addNode("jcr:content", "nt:resource");
+      content.setProperty("jcr:encoding", "UTF-8");
+      content.setProperty("jcr:mimeType", "text/html");
+      content.setProperty("jcr:lastModified", new Date().getTime());
+      content.setProperty("jcr:data", "This is the default.html file.");
+      file.addMixin("exo:JCR-1934-2");
+      session.save();
+
+      try
+      {
+         file.addNode("symlink", "exo:JCR-1934-1");
+         fail();
+      }
+      catch (ConstraintViolationException e)
+      {
+         // expected behavior
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
    }
 }
