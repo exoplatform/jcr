@@ -280,20 +280,4 @@
       </childNodeDefinition>
     </childNodeDefinitions>
   </nodeType>
-  
-    <nodeType name="exo:JCR-1934-1" isMixin="false" hasOrderableChildNodes="false" primaryItemName="exo:primaryType">
-	<supertypes>
-	    <supertype>nt:hierarchyNode</supertype>
-        </supertypes>
-    </nodeType>
-
-    <nodeType name="exo:JCR-1934-2" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
-	<childNodeDefinitions>
-	    <childNodeDefinition name="*" defaultPrimaryType="nt:unstructured" autoCreated="false" mandatory="false" onParentVersion="COPY"  protected="false" sameNameSiblings="false">
-		<requiredPrimaryTypes>
-		    <requiredPrimaryType>nt:unstructured</requiredPrimaryType>
-		</requiredPrimaryTypes>
-	    </childNodeDefinition>
-	</childNodeDefinitions>
-    </nodeType>
 </nodeTypes>
