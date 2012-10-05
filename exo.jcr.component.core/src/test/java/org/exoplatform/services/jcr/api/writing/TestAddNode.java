@@ -133,6 +133,53 @@ public class TestAddNode extends JcrAPIBaseTest
       catch (ConstraintViolationException e)
       {
       }
+
+      Node testNode = root.addNode("testNode", "exo:EXOJCR-1869");
+      try
+      {
+         testNode.addNode("node1", "exo:EXOJCR-1869-2");
+         fail("exception should have been thrown");
+      }
+      catch (ConstraintViolationException e)
+      {
+      }
+      testNode.addMixin("mix:EXOJCR-1869-1");
+      try
+      {
+         testNode.addNode("A1", "exo:EXOJCR-1869-3");
+      }
+      catch (ConstraintViolationException e)
+      {
+         fail("exception should not thrown");
+      }
+
+      try
+      {
+         testNode.addNode("A2", "exo:EXOJCR-1869-3");
+         fail("exception should have been thrown");
+      }
+      catch (ConstraintViolationException e)
+      {
+      }
+
+      testNode.addMixin("mix:EXOJCR-1869-2");
+      try
+      {
+         testNode.addNode("A2", "exo:EXOJCR-1869-4");
+      }
+      catch (ConstraintViolationException e)
+      {
+         fail("exception should not thrown");
+      }
+
+      try
+      {
+         testNode.addNode("A1", "exo:EXOJCR-1869-4");
+         fail("exception should have been thrown");
+      }
+      catch (ConstraintViolationException e)
+      {
+      }
    }
 
    public void testAddAndSaveNodeWithNodeType() throws RepositoryException

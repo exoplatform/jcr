@@ -115,7 +115,7 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
 
          NodeDefinitionData childNodeDef =
             nodeTypeDataManager.getChildNodeDefinition(cname, ntname, nodeTypeData.getName());
-         return !(childNodeDef == null || childNodeDef.isProtected()) && isChildNodePrimaryTypeAllowed(nodeTypeName);
+         return !(childNodeDef == null || childNodeDef.isProtected()) && isChildNodePrimaryTypeAllowed(cname, ntname);
       }
       catch (RepositoryException e)
       {
@@ -392,13 +392,12 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       return nodeTypeData.hasOrderableChildNodes();
    }
 
-   public boolean isChildNodePrimaryTypeAllowed(String typeName)
+   public boolean isChildNodePrimaryTypeAllowed(InternalQName nodeName, InternalQName typeName)
    {
       try
       {
-         InternalQName iname = locationFactory.parseJCRName(typeName).getInternalName();
-
-         return nodeTypeDataManager.isChildNodePrimaryTypeAllowed(iname, nodeTypeData.getName(), new InternalQName[0]);
+         return nodeTypeDataManager.isChildNodePrimaryTypeAllowed(nodeName, typeName, nodeTypeData.getName(),
+            new InternalQName[0]);
       }
       catch (RepositoryException e)
       {
