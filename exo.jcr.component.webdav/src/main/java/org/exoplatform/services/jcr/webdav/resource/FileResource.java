@@ -317,50 +317,44 @@ public class FileResource extends GenericResource
       {
          try
          {
-            Property property = node.getProperty(WebDavNamespaceContext.createName(name));
-            String propertyValue;
-            if (property.getDefinition().isMultiple())
-            {
-               if (property.getValues().length == 0)
-               {
-                  throw new PathNotFoundException();
-               }
-
-               propertyValue = property.getValues()[0].getString();
-            }
-            else
-            {
-               propertyValue = property.getString();
-            }
-            return new HierarchicalProperty(name, propertyValue);
+            return getProperty(node, name);
          }
          catch (PathNotFoundException e)
          {
-            Property property = contentNode().getProperty(WebDavNamespaceContext.createName(name));
-            String propertyValue;
-            if (property.getDefinition().isMultiple())
-            {
-               if (property.getValues().length >= 1)
-               {
-                  propertyValue = property.getValues()[0].getString();
-               }
-               else
-               {
-                  // this means that we return empty value, because according to WebDAV spec:
-                  // this is a property whose semantics and syntax are not enforced by the server
-                  // the server only records the value of a dead property;
-                  // the client is responsible for maintaining the consistency of the syntax and semantics of a dead property. 
-                  propertyValue = "";
-               }
-            }
-            else
-            {
-               propertyValue = property.getString();
-            }
-            return new HierarchicalProperty(name, propertyValue);
+            return getProperty(contentNode(), name);
          }
       }
    }
+
+   /**
+    * Returns node's property wrapped in {@link HierarchicalProperty}.
+    */
+   private HierarchicalProperty getProperty(Node node, QName name) throws PathNotFoundException, RepositoryException
+   {
+      Property property = node.getProperty(WebDavNamespaceContext.createName(name));
+      String propertyValue;
+      if (property.getDefinition().isMultiple())
+      {
+         if (property.getValues().length >= 1)
+         {
+            propertyValue = property.getValues()[0].getString();
+         }
+         else
+         {
+            // this means that we return empty value, because according to WebDAV spec:
+            // this is a property whose semantics and syntax are not enforced by the server
+            // the server only records the value of a dead property;
+            // the client is responsible for maintaining the consistency of the syntax and semantics of a dead property. 
+            propertyValue = "";
+         }
+      }
+      else
+      {
+         propertyValue = property.getString();
+      }
+      return new HierarchicalProperty(name, propertyValue);
+   }
+
 
    /**
     * {@inheritDoc}

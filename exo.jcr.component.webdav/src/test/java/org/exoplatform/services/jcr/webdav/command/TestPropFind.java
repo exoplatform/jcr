@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.webdav.Depth;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
 import org.exoplatform.services.jcr.webdav.command.acl.ACLProperties;
 import org.exoplatform.services.jcr.webdav.command.propfind.PropFindResponseEntity;
+import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.ext.provider.HierarchicalPropertyEntityProvider;
 import org.exoplatform.services.rest.impl.ContainerResponse;
@@ -556,6 +557,37 @@ public class TestPropFind extends BaseStandaloneTest
       ContainerResponse response =
          service(WebDAVMethods.PROPFIND, getPathWS() + "_" + file, "", null, null);
       assertEquals(HTTPStatus.CONFLICT, response.getStatus());
+   }
+
+   /**
+    * Checked JCR-1952.
+    */
+   public void testAllPropsWithEmptyMultiValuedProperty() throws Exception
+   {
+      String content = TestUtils.getFileContent();
+      String file = TestUtils.getFileName();
+      TestUtils.addContent(session, file, new ByteArrayInputStream(content.getBytes()), WEBDAV_NT_FILE, "");
+
+      // add empty multi-valued property
+      Node fileNode = session.getRootNode().getNode(TextUtil.relativizePath(file));
+      fileNode.addMixin("dc:elementSet");
+      fileNode.setProperty("dc:title", new String[]{});
+
+      Node contentNode = fileNode.getNode("jcr:content");
+      contentNode.addMixin("dc:elementSet");
+      contentNode.setProperty("dc:creator", new String[]{});
+      session.save();
+
+      ContainerResponse responseFind =
+         service(WebDAVMethods.PROPFIND, getPathWS() + file, "", null, allPropsXML.getBytes());
+      assertEquals(HTTPStatus.MULTISTATUS, responseFind.getStatus());
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      PropFindResponseEntity entity = (PropFindResponseEntity)responseFind.getEntity();
+      entity.write(outputStream);
+      String find = outputStream.toString();
+
+      assertTrue(find.contains("<dc:title xmlns:dc=\"http://purl.org/dc/elements/1.1/\"></dc:title>"));
+      assertTrue(find.contains("<dc:creator xmlns:dc=\"http://purl.org/dc/elements/1.1/\"></dc:creator>"));
    }
 
    @Override
