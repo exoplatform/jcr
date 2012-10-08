@@ -530,6 +530,7 @@
     <module>exo.jcr.framework.ftpclient</module>
     <module>applications</module>
     <module>exo.jcr.docs</module>
+    <module>packaging/module</module>
   </modules>
 
 </project>
