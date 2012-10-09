@@ -355,4 +355,57 @@ public class TestGet extends BaseStandaloneTest
 
       assertEquals("text/plain", response.getHttpHeaders().getFirst(HttpHeaders.CONTENT_TYPE).toString());
    }
+
+   public void testETag() throws Exception
+   {
+      Node fileNodeI = session.getRootNode().addNode("node1", "nt:file");
+      Node contentNode = fileNodeI.addNode("jcr:content", "nt:resource");
+      contentNode.setProperty("jcr:mimeType", "text/plain");
+      contentNode.setProperty("jcr:encoding", "");
+      contentNode.setProperty("jcr:data", "test1");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+
+      Node fileNodeII = session.getRootNode().addNode("node2", "nt:file");
+      contentNode = fileNodeII.addNode("jcr:content", "nt:resource");
+      contentNode.setProperty("jcr:mimeType", "text/plain");
+      contentNode.setProperty("jcr:encoding", "");
+      contentNode.setProperty("jcr:data", "test2");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+
+
+      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + "/node1", "", null, null);
+      assertEquals(HTTPStatus.OK, response.getStatus());
+
+      String eTag = (String)response.getHttpHeaders().getFirst(HttpHeaders.ETAG);
+      assertNotNull(eTag);
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.IF_NONE_MATCH, eTag);
+
+      response = service(WebDAVMethods.GET, getPathWS() + "/node1", "", headers, null);
+
+      assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
+
+      String destAbsPath = fileNodeI.getPath();
+      fileNodeI.remove();
+      session.save();
+
+      session.move(fileNodeII.getPath(), destAbsPath);
+      session.save();
+
+      response = service(WebDAVMethods.GET, getPathWS() + "/node1", "", headers, null);
+
+      assertEquals(HTTPStatus.OK, response.getStatus());
+      eTag = (String)response.getHttpHeaders().getFirst(HttpHeaders.ETAG);
+      headers.clear();
+      headers.add(ExtHttpHeaders.IF_NONE_MATCH, eTag);
+
+      session.move(destAbsPath, destAbsPath + "_");
+      session.save();
+
+      response = service(WebDAVMethods.GET, getPathWS() + "/node1_", "", headers, null);
+      assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
+   }
 }

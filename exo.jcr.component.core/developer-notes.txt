@@ -18,6 +18,7 @@
 * Not supported parameters driverClassName, url, username, password, sourceName in JDBC workspace datacontainer
 * "multi-db" parameter is deprecated in JDBC workspace datacontainer
 * Changed annotation for WebDavServiceImpl.mkcol() method parameter nodeTypeHeader
+* Change WebDavService.get() method signature
 * WebDavServiceImpl initial parameters names and default values moved to separate classes InitParamsDefaults and InitParamsNames
 * Added new initial parameters to define allowed file node types and folder node types
 * Support case insensitive order by

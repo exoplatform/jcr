@@ -18,11 +18,20 @@
  */
 package org.exoplatform.services.jcr.webdav.resource;
 
+import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.webdav.WebDavConst;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.UnsupportedRepositoryOperationException;
 
 /**
  * Created by The eXo Platform SARL .<br/>
@@ -109,6 +118,14 @@ public class ResourceUtil
          LOG.error(exc.getMessage(), exc);
          return false;
       }
+   }
+
+   public static String generateEntityTag(Node node, String lastModifiedProperty)
+      throws UnsupportedRepositoryOperationException, RepositoryException, ParseException
+   {
+      DateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.MODIFICATION, Locale.US);
+      Date lastModifiedDate = dateFormat.parse(lastModifiedProperty);
+      return ((NodeImpl)node).getIdentifier() + lastModifiedDate.getTime();
    }
 
 }
