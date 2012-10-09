@@ -480,12 +480,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          this.connFactory = defaultConnectionFactory();
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2)
-      {
-         this.connFactory = defaultConnectionFactory();
-         dbInitializer = defaultDBInitializer();
-      }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2V8)
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2
+         || containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2_MYS
+         || containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2V8)
       {
          this.connFactory = defaultConnectionFactory();
          dbInitializer = defaultDBInitializer();

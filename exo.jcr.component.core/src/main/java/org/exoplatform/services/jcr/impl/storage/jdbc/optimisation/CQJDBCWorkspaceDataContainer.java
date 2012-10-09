@@ -156,7 +156,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2V8)
       {
-         new DB2ConnectionFactory(getDataSource(), containerConfig);
+         this.connFactory = new DB2ConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_SYBASE)

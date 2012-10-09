@@ -359,7 +359,8 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          // most of supported dbs prints PK name in exception
          return true;
       }
-      else if (DBConstants.DB_DIALECT_DB2.equalsIgnoreCase(dialect))
+      else if (DBConstants.DB_DIALECT_DB2.equalsIgnoreCase(dialect)
+         || DBConstants.DB_DIALECT_DB2_MYS.equalsIgnoreCase(dialect))
       {
          return DB2_PK_CONSTRAINT_DETECT.matcher(err).find();
       }

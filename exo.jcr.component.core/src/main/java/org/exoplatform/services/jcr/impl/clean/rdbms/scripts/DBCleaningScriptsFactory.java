@@ -50,6 +50,7 @@ public class DBCleaningScriptsFactory
          return new MySQLCleaningScipts(dialect, wsEntry);
       }
       else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2)
+         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2_MYS)
          || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2V8))
       {
          return new DB2CleaningScipts(dialect, wsEntry);
@@ -102,6 +103,7 @@ public class DBCleaningScriptsFactory
          return new MySQLCleaningScipts(dialect, rEntry);
       }
       else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2)
+         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2_MYS)
          || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2V8))
       {
          return new DB2CleaningScipts(dialect, rEntry);

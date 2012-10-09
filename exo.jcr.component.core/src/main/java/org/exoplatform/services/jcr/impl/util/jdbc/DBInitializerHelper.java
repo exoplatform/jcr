@@ -157,7 +157,8 @@ public class DBInitializerHelper
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.derby.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2))
+      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2)
+         || dbDialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2_MYS))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.db2.sql";
       }
