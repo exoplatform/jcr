@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitialize
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DB2ConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DB2MYSConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DefaultOracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.GenericCQConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.HSQLDBConnectionFactory;
@@ -141,6 +142,11 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DERBY)
       {
          this.connFactory = defaultConnectionFactory();
+         dbInitializer = defaultDBInitializer();
+      }
+      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2_MYS)
+      {
+         this.connFactory = new DB2MYSConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
       else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2)

@@ -1,5 +1,4 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -27,20 +26,20 @@ import javax.jcr.RepositoryException;
 import javax.sql.DataSource;
 
 /**
- * Created by The eXo Platform SAS.
- *
- * Date: 8 02 2011
- * 
- * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
- * @version $Id: DB2ConnectionFactory.java 34360 2010-11-11 11:11:11Z tolusha $
+ * Is used to support queries with usage <code>select</code> and <code>offset</code>
+ * clauses. Supposed DB parameter <code>DB2_COMPATIBILITY_VECTOR</code> 
+ * is set to <code>MYS</code>.
+ *  
+ * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
+ * @version $Id: DB2MYSConnectionFactory.java Oct 9, 2012 tolusha $
  */
-public class DB2ConnectionFactory extends GenericCQConnectionFactory
+public class DB2MYSConnectionFactory extends GenericCQConnectionFactory
 {
 
    /**
-    * DB2ConnectionFactory  constructor.
+    * DB2MYSConnectionFactory  constructor.
     */
-   public DB2ConnectionFactory(DataSource dataSource, JDBCDataContainerConfig containerConfig)
+   public DB2MYSConnectionFactory(DataSource dataSource, JDBCDataContainerConfig containerConfig)
    {
       super(dataSource, containerConfig);
    }
@@ -55,10 +54,10 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
       {
          if (this.containerConfig.dbStructureType.isMultiDatabase())
          {
-            return new DB2MultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
+            return new DB2MYSMultiDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
          }
 
-         return new DB2SingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
+         return new DB2MYSSingleDbJDBCConnection(getJdbcConnection(readOnly), readOnly, containerConfig);
 
       }
       catch (SQLException e)
@@ -73,7 +72,7 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
    @Override
    public boolean isIDNeededForPaging()
    {
-      return false;
+      return true;
    }
 
    /**

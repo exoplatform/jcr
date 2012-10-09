@@ -30,7 +30,7 @@ import java.sql.SQLException;
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: DB2MultiDbJDBCConnection.ajva 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
+public class DB2MYSMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
    /**
     * DB2 Multidatabase JDBC Connection constructor.
@@ -42,7 +42,7 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
     * @param containerConfig
     *          Workspace Storage Container configuration
     */
-   public DB2MultiDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
+   public DB2MYSMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
       super(dbConnection, readOnly, containerConfig);
@@ -58,10 +58,9 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
       FIND_NODES_AND_PROPERTIES =
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from " + JCR_VALUE + " V, " + JCR_ITEM + " P"
-            + " join (select A.* from (select Row_Number() over (order by I.ID) as r__, I.ID,"
-            + " I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from " + JCR_ITEM
-            + " I where I.I_CLASS=1) as A where A.r__ <= ? and A.r__ > ?) J on P.PARENT_ID = J.ID"
-            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
+            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from " + JCR_ITEM + " I"
+            + " where I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ?,?) J on P.PARENT_ID = J.ID"
+            + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
    }
 
    /**
@@ -79,8 +78,9 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
          findNodesAndProperties.clearParameters();
       }
 
-      findNodesAndProperties.setInt(1, offset + limit);
+      findNodesAndProperties.setString(1, getInternalId(lastNodeId));
       findNodesAndProperties.setInt(2, offset);
+      findNodesAndProperties.setInt(3, limit);
 
       return findNodesAndProperties.executeQuery();
    }

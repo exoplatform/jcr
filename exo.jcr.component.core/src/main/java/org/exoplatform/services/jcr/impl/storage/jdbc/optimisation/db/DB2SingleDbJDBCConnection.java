@@ -28,12 +28,12 @@ import java.sql.SQLException;
  * Date: 8 02 2011
  * 
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
- * @version $Id: MSSQLSingleDbJDBCConnection.java 34360 2010-11-11 11:11:11Z tolusha $
+ * @version $Id: DB2SingleDbJDBCConnection.java 34360 2010-11-11 11:11:11Z tolusha $
  */
 public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
 {
    /**
-    * Sybase Singledatabase JDBC Connection constructor.
+    * DB2 Singledatabase JDBC Connection constructor.
     * 
     * @param dbConnection
     *          JDBC connection, should be opened before
@@ -58,8 +58,9 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
       FIND_NODES_AND_PROPERTIES =
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"
-            + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I"
-            + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ?,?) J on P.PARENT_ID = J.ID"
+            + " join (select A.* from (select Row_Number() over (order by I.ID) as r__, I.ID, I.PARENT_ID,"
+            + " I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I where I.CONTAINER_NAME=? and I.I_CLASS=1)"
+            + " as A where A.r__ <= ? and A.r__ > ? ) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
    }
    
@@ -79,10 +80,9 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
       }
 
       findNodesAndProperties.setString(1, this.containerConfig.containerName);
-      findNodesAndProperties.setString(2, getInternalId(lastNodeId));
+      findNodesAndProperties.setInt(2, offset + limit);
       findNodesAndProperties.setInt(3, offset);
-      findNodesAndProperties.setInt(4, limit);
-      findNodesAndProperties.setString(5, this.containerConfig.containerName);
+      findNodesAndProperties.setString(4, this.containerConfig.containerName);
 
       return findNodesAndProperties.executeQuery();
    }   
