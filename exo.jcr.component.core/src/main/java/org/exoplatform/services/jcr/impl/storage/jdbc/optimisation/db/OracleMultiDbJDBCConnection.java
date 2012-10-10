@@ -101,6 +101,12 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
       FIND_PROPERTIES_BY_PARENTID =
          FIND_PROPERTIES_BY_PARENTID.replaceFirst("select", "select /*+ INDEX(" + JCR_ITEM + " "
             + JCR_IDX_ITEM_PARENT_NAME + ")*/");
+      
+      FIND_ITEM_BY_NAME = FIND_ITEM_BY_NAME.replaceFirst("select", "select /*+ INDEX(I " + JCR_IDX_ITEM_PARENT + ") */"); 
+
+      FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
+         FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ.replaceFirst("select",
+            "select /*+ INDEX(I " + JCR_IDX_ITEM_PARENT_NAME + ") */"); 
    }
 
    /**
