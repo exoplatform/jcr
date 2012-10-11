@@ -384,6 +384,10 @@
             <groupId>jgroups</groupId>
             <artifactId>jgroups</artifactId>
           </exclusion>
+          <exclusion>
+            <groupId>org.jboss.logging</groupId>
+            <artifactId>jboss-logging-spi</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -443,6 +447,12 @@
          <groupId>org.codehaus.groovy</groupId>
          <artifactId>groovy-all</artifactId>
          <version>1.7.6</version>
+      </dependency>
+      <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging</artifactId>
+         <version>3.1.0.GA</version>
+         <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>

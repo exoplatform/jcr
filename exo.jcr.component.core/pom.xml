@@ -173,6 +173,10 @@
         <artifactId>commons-beanutils</artifactId>
       </dependency>
       <dependency>
+         <groupId>org.jboss.logging</groupId>
+         <artifactId>jboss-logging</artifactId>
+      </dependency>
+      <dependency>
         <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
         <version>2.6.20.Final</version>
