@@ -123,8 +123,8 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       FIND_ITEM_BY_ID = "select * from JCR_SITEM where ID=?";
 
-      FIND_ITEM_BY_NAME =
-         "select * from JCR_SITEM"
+      FIND_ITEM_BY_NAME = 
+         "select * from JCR_SITEM I"
             + " where CONTAINER_NAME=? and PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";
 
       FIND_PROPERTY_BY_NAME =
