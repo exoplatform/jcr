@@ -133,7 +133,7 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       FIND_ITEM_BY_ID = "select * from JCR_MITEM where ID=?";
 
       FIND_ITEM_BY_NAME =
-         "select * from JCR_MITEM" + " where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";
+         "select * from JCR_MITEM I where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS, VERSION DESC";
 
       FIND_PROPERTY_BY_NAME =
          "select V.DATA" + " from JCR_MITEM I, JCR_MVALUE V"
