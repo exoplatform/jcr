@@ -3,6 +3,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.WorkspacePersistenceStorage">
   <title>Workspace Data Container</title>
+
   <para>Each Workspace of JCR has its own persistent storage to hold
   workspace's items data. eXo Content Repository can be configured so that it
   can use one or more workspaces that are logical units of the repository
@@ -96,9 +97,9 @@
 
     <listitem>
       <para><emphasis role="bold">dialect</emphasis>: Database dialect, one of
-      "hsqldb", "mysql", "mysql-utf8", "pgsql", "pgsql-scs", "oracle", "oracle-oci",
-      "mssql", "sybase", "derby", "db2", "db2v8". The default value is
-      "auto".</para>
+      "hsqldb", "mysql", "mysql-utf8", "pgsql", "pgsql-scs", "oracle",
+      "oracle-oci", "mssql", "sybase", "derby", "db2" ,"db2-mys", "db2v8". The
+      default value is "auto".</para>
     </listitem>
 
     <listitem>
@@ -185,18 +186,53 @@
     <section id="JCR.WorkspacePersistenceStorage.DatabasesDialects.PostgreSQLDatabase">
       <title>PostgreSQL database</title>
 
-      <para>PostgreSQL's dialect is set automatically. The dialect depends on the version of database.
-      If you change default value of standard_conforming_strings than you must configure one of following dialects:<itemizedlist>
+      <para>PostgreSQL's dialect is set automatically. The dialect depends on
+      the version of database. If you change default value of
+      <emphasis>standard_conforming_strings</emphasis> parameter than you must
+      configure one of the following dialects manually:<itemizedlist>
+          <listitem>
+            <para>PgSQL - this dialect is used if
+            <emphasis>standard_conforming_strings</emphasis> is set to off.
+            This is default value for version before 9.1.</para>
+          </listitem>
+
+          <listitem>
+            <para>PgSQL-SCS - this dialect is used if
+            <emphasis>standard_conforming_strings</emphasis> is set to on.
+            This is default value for version after 9.1.</para>
+          </listitem>
+        </itemizedlist></para>
+    </section>
+
+    <section>
+      <title>DB2 database</title>
+
+      <para>As well as PostgreSQL, DB2's dialect is set automatically depends
+      on the version of database. If you change the default value of
+      DB2_COMPATIBILITY_VECTOR parameter than you must configure one of the
+      following dialects manually:</para>
+
+      <itemizedlist>
         <listitem>
-          <para>PgSQL dialect. This dialect used if standard_conforming_strings is set to off. 
-          This is default value for version before 9.1.</para>
+          <para>DB2V8 - this dialect is used if version of database is lower
+          than 9</para>
+        </listitem>
+      </itemizedlist>
+
+      <itemizedlist>
+        <listitem>
+          <para>DB2 - this dialect is used if version of database not lower
+          than 9 and <emphasis>DB2_COMPATIBILITY_VECTOR</emphasis> is se to
+          <emphasis>0</emphasis></para>
         </listitem>
 
         <listitem>
-          <para>PgSQL-SCS dialect. This dialect used if standard_conforming_strings is set to on. 
-            This is default value for version after 9.1.</para>
+          <para>DB2-MYS - this dialect is used if version of database not
+          lower than 9 and <emphasis>DB2_COMPATIBILITY_VECTOR</emphasis> is se
+          to <emphasis>MYS</emphasis>. This is default value for version
+          begining from 9.7.2.</para>
         </listitem>
-      </itemizedlist></para>
+      </itemizedlist>
     </section>
   </section>
 </section>
