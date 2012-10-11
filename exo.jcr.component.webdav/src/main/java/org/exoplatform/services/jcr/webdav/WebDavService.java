@@ -49,7 +49,7 @@ public interface WebDavService
     * @param range Range HTTP header
     * @param version version name
     * @param ifModifiedSince if-modified-since header
-    * @param ifModifiedSince if-none-match header
+    * @param ifNoneMatch if-none-match header
     * @param baseURI base URI info
     * @return the instance of javax.ws.rs.core.Response
     */
