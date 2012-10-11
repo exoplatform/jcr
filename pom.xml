@@ -241,6 +241,7 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
         <version>1.6.1</version>
+	      <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>javax.jcr</groupId>
@@ -296,7 +297,7 @@
         <groupId>org.apache.lucene</groupId>
         <artifactId>lucene-wordnet</artifactId>
         <version>3.3.0</version>
-      </dependency>
+      </dependency>            
       <dependency>
         <groupId>com.sun.xml.stream</groupId>
         <artifactId>sjsxp</artifactId>
@@ -449,6 +450,11 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-log4j12</artifactId>
       <scope>test</scope>
     </dependency>
   </dependencies>
