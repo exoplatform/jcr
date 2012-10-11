@@ -95,36 +95,32 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
    protected void initDatabase() throws NamingException, RepositoryException, IOException
    {
       DBInitializer dbInitializer = null;
-      if (containerConfig.dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
+      if (containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_ORACLEOCI))
       {
          LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
          this.connFactory = new DefaultOracleConnectionFactory(getDataSource(), containerConfig);
          dbInitializer =
             new OracleDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_ORACLE)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
       {
          this.connFactory = new DefaultOracleConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = new OracleDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_PGSQL)
+      else if (containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_PGSQL))
       {
          this.connFactory = new PostgreConnectionFactory(getDataSource(), containerConfig);
          dbInitializer =
             new PgSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_PGSQL_SCS)
+      else if (containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_PGSQL_SCS))
       {
          this.connFactory = new PostgreSCSConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = new PgSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL
-         || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8
-         || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM
-         || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
       {
-         if (containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM
-            || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+         if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MYSQL_MYISAM))
          {
             LOG.warn("MyISAM is not supported due to its lack of transaction support and integrity check, so use it only"
                + " if you don't expect any support and performances in read accesses are more important than the consistency"
@@ -134,44 +130,39 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
          this.connFactory = new MySQLConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_MSSQL)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
       {
          this.connFactory = new MSSQLConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DERBY)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DERBY))
       {
          this.connFactory = defaultConnectionFactory();
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2_MYS)
+      else if (containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_DB2_MYS))
       {
          this.connFactory = new DB2MYSConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DB2))
       {
          this.connFactory = new DB2ConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2V8)
-      {
-         this.connFactory = new DB2ConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
-      }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_SYBASE)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
          this.connFactory = new SybaseConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_INGRES)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_INGRES))
       {
          this.connFactory = defaultConnectionFactory();
          // using Postgres initializer
          dbInitializer =
             new IngresSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_HSQLDB)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
       {
          this.connFactory = new HSQLDBConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();

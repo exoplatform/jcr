@@ -29,7 +29,7 @@ import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
 import java.io.File;
@@ -162,7 +162,7 @@ public class ExportWorkspaceSystemViewTest extends BaseUsecasesTest
 
       try
       {
-         DatabaseStructureType databaseType = JDBCWorkspaceDataContainer.getDatabaseType(ws1e);
+         DatabaseStructureType databaseType = DBInitializerHelper.getDatabaseType(ws1e);
          return databaseType.isMultiDatabase();
       }
       catch (RepositoryConfigurationException e)

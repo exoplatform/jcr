@@ -513,12 +513,11 @@ public class JDBCWorkspaceDataContainerChecker
                + " P where P.I_CLASS=2 and P.P_MULTIVALUED=? and NOT EXISTS( select * from " + valueTable + " V "
                + "where V.PROPERTY_ID=P.ID)";
 
-      if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL)
-         || jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL_SCS))
+      if (jdbcDataContainer.containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_PGSQL))
       {
          statement = statement.replace("?", "'f'");
       }
-      else if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
+      else if (jdbcDataContainer.containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
       {
          statement = statement.replace("?", "FALSE");
       }
@@ -551,7 +550,7 @@ public class JDBCWorkspaceDataContainerChecker
          new ValueRecordsRemover(jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.containerConfig)));
 
       // The differences in the queries by DB dialect.
-      if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+      if (jdbcDataContainer.containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
          statement =
             singleDatabase ? "select V.* from " + valueTable + " V, " + itemTable
@@ -560,8 +559,7 @@ public class JDBCWorkspaceDataContainerChecker
                + "' AND ((STORAGE_DESC is not null and not DATA like null))" : "select * from " + valueTable
                + " where (STORAGE_DESC is not null and not DATA like null)";
       }
-      else if (jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
-         || jdbcDataContainer.containerConfig.dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
+      else if (jdbcDataContainer.containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
       {
          statement =
             singleDatabase ? "select V.* from " + valueTable + " V, " + itemTable

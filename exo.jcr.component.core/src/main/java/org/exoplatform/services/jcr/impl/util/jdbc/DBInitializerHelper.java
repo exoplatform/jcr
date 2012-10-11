@@ -83,7 +83,7 @@ public class DBInitializerHelper
       String valueTableSuffix = getValueTableSuffix(wsEntry);
       String refTableSuffix = getRefTableSuffix(wsEntry);
 
-      DatabaseStructureType dbType = JDBCWorkspaceDataContainer.getDatabaseType(wsEntry);
+      DatabaseStructureType dbType = DBInitializerHelper.getDatabaseType(wsEntry);
 
       boolean isolatedDB = dbType == DatabaseStructureType.ISOLATED;
       String initScriptPath = DBInitializerHelper.scriptPath(dialect, dbType.isMultiDatabase());
@@ -117,64 +117,55 @@ public class DBInitializerHelper
       String suffix = multiDb ? "m" : "s";
 
       String sqlPath = null;
-      if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
+      if (dbDialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.ora.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE))
-      {
-         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.ora.sql";
-      }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL))
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_PGSQL))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.pgsql.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL_SCS))
-      {
-         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.pgsql.sql";
-      }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL))
+      else if (dbDialect.equals(DBConstants.DB_DIALECT_MYSQL))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM))
+      else if (dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_MYISAM))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-myisam.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8))
+      else if (dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-utf8.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
+      else if (dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-myisam-utf8.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL))
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
       {
          sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mssql.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DERBY))
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_DERBY))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.derby.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2)
-         || dbDialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2_MYS))
-      {
-         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.db2.sql";
-      }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2V8))
+      else if (dbDialect.equals(DBConstants.DB_DIALECT_DB2V8))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.db2v8.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_DB2))
+      {
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.db2.sql";
+      }
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.sybase.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_INGRES))
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_INGRES))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.ingres.sql";
       }
-      else if (dbDialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.sql";
       }
@@ -217,41 +208,32 @@ public class DBInitializerHelper
 
    public static String getItemTableSuffix(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
    {
-      return getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
-         JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "ITEM");
+      return getTableSuffix(getDatabaseType(wsConfig), getDBTableSuffix(wsConfig), "ITEM");
    }
 
    public static String getValueTableSuffix(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
    {
-      return getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
-         JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "VALUE");
+      return getTableSuffix(getDatabaseType(wsConfig), getDBTableSuffix(wsConfig), "VALUE");
    }
 
    public static String getRefTableSuffix(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
    {
-      return getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
-         JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "REF");
+      return getTableSuffix(getDatabaseType(wsConfig), getDBTableSuffix(wsConfig), "REF");
    }
 
    public static String getItemTableName(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
    {
-      return JCR_TABLE_PREFIX
-         + getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
-            JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "ITEM");
+      return JCR_TABLE_PREFIX + getTableSuffix(getDatabaseType(wsConfig), getDBTableSuffix(wsConfig), "ITEM");
    }
 
    public static String getValueTableName(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
    {
-      return JCR_TABLE_PREFIX
-         + getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
-            JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "VALUE");
+      return JCR_TABLE_PREFIX + getTableSuffix(getDatabaseType(wsConfig), getDBTableSuffix(wsConfig), "VALUE");
    }
 
    public static String getRefTableName(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
    {
-      return JCR_TABLE_PREFIX
-         + getTableSuffix(JDBCWorkspaceDataContainer.getDatabaseType(wsConfig),
-            JDBCWorkspaceDataContainer.getDBTableSuffix(wsConfig), "REF");
+      return JCR_TABLE_PREFIX + getTableSuffix(getDatabaseType(wsConfig), getDBTableSuffix(wsConfig), "REF");
    }
 
    public static String getItemTableSuffix(JDBCDataContainerConfig containerConfig)
@@ -333,5 +315,62 @@ public class DBInitializerHelper
       }
 
       throw new RepositoryConfigurationException("Script for object creation is not found. Object name: " + objectName);
+   }
+
+   /**
+    * Returns {@link DatabaseStructureType} based on workspace configuration.
+    */
+   public static DatabaseStructureType getDatabaseType(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
+   {
+      try
+      {
+         if (wsConfig.getContainer().getParameterBoolean("multi-db"))
+         {
+            return JDBCDataContainerConfig.DatabaseStructureType.MULTI;
+         }
+         else
+         {
+            return JDBCDataContainerConfig.DatabaseStructureType.SINGLE;
+         }
+      }
+      catch (Exception e)
+      {
+         String dbStructureType =
+            wsConfig.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE).toUpperCase();
+         return JDBCDataContainerConfig.DatabaseStructureType.valueOf(dbStructureType);
+      }
+   }
+
+   /**
+    * Returns value of {@link JDBCWorkspaceDataContainer#DB_TABLENAME_SUFFIX} parameter 
+    * from workspace configuration.
+    */
+   public static String getDBTableSuffix(WorkspaceEntry wsConfig)
+   {
+      String defaultSuffix = replaceIncorrectChars(wsConfig.getName());
+
+      String suffix =
+         wsConfig.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_TABLENAME_SUFFIX, defaultSuffix);
+      return suffix;
+   }
+
+   /**
+    * Tries to fix name of the workspace if it is not corresponding to SQL table name specification.
+    */
+   private static String replaceIncorrectChars(String workspaceName)
+   {
+      return workspaceName.replaceAll("[^A-Za-z_0-9]", "").toUpperCase();
+   }
+
+   /**
+    * Returns database dialects stored in configuration and {@link DialectConstants#DB_DIALECT_AUTO}
+    * in other case. Always in upper register.
+    */
+   public static String getDatabaseDialect(WorkspaceEntry wsConfig)
+   {
+      String dialect =
+         wsConfig.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, DBConstants.DB_DIALECT_AUTO);
+
+      return dialect.toUpperCase();
    }
 }

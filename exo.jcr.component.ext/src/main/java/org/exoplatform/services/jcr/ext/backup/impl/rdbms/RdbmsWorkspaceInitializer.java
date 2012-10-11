@@ -35,7 +35,7 @@ import org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -104,7 +104,7 @@ public class RdbmsWorkspaceInitializer extends BackupWorkspaceInitializer
       try
       {
          // set state SUSPENDED to other workspaces if singledb
-         if (!JDBCWorkspaceDataContainer.getDatabaseType(workspaceEntry).isMultiDatabase())
+         if (!DBInitializerHelper.getDatabaseType(workspaceEntry).isMultiDatabase())
          {
             for (WorkspaceEntry we : repositoryEntry.getWorkspaceEntries())
             {

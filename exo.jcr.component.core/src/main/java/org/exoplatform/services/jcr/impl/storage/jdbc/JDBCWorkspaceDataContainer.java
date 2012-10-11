@@ -206,22 +206,14 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       this.containerConfig.containerName = wsConfig.getName();
       this.containerConfig.uniqueName = wsConfig.getUniqueName();
 
-      this.containerConfig.dbStructureType = getDatabaseType(wsConfig);
-      this.containerConfig.dbTableSuffix = getDBTableSuffix(wsConfig);
+      this.containerConfig.dbStructureType = DBInitializerHelper.getDatabaseType(wsConfig);
+      this.containerConfig.dbTableSuffix = DBInitializerHelper.getDBTableSuffix(wsConfig);
 
       this.containerConfig.valueStorageProvider = valueStorageProvider;
       this.containerConfig.dsProvider = dsProvider;
 
       // ------------- Database config ------------------
-      String pDbDialect = null;
-      try
-      {
-         pDbDialect = validateDialect(wsConfig.getContainer().getParameterValue(DB_DIALECT));
-      }
-      catch (RepositoryConfigurationException e)
-      {
-         pDbDialect = DBConstants.DB_DIALECT_GENERIC;
-      }
+      String pDbDialect = validateDialect(DBInitializerHelper.getDatabaseDialect(wsConfig));
 
       this.containerConfig.dbSourceName = wsConfig.getContainer().getParameterValue(SOURCE_NAME);
 
@@ -233,7 +225,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       // the data source cannot be managed if there is no transaction manager
       this.containerConfig.isManaged = dsProvider.isManaged(containerConfig.dbSourceName);
 
-      if (pDbDialect == DBConstants.DB_DIALECT_GENERIC)
+      if (pDbDialect.startsWith(DBConstants.DB_DIALECT_AUTO))
       {
          // try to detect via JDBC metadata
          final DataSource ds = getDataSource();
@@ -366,7 +358,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    protected void checkIntegrity(WorkspaceEntry wsConfig, RepositoryEntry repConfig)
       throws RepositoryConfigurationException
    {
-      DatabaseStructureType dbType = getDatabaseType(wsConfig);
+      DatabaseStructureType dbType = DBInitializerHelper.getDatabaseType(wsConfig);
 
       for (WorkspaceEntry wsEntry : repConfig.getWorkspaceEntries())
       {
@@ -377,10 +369,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             continue;
          }
 
-         if (!getDatabaseType(wsEntry).equals(dbType))
+         if (!DBInitializerHelper.getDatabaseType(wsEntry).equals(dbType))
          {
             throw new RepositoryConfigurationException("All workspaces must be of same DB type. But "
-               + wsEntry.getName() + "=" + getDatabaseType(wsEntry) + " and " + wsConfig.getName() + "=" + dbType);
+               + wsEntry.getName() + "=" + DBInitializerHelper.getDatabaseType(wsEntry) + " and " + wsConfig.getName()
+               + "=" + dbType);
          }
 
          // source name
@@ -437,31 +430,26 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    protected void initDatabase() throws NamingException, RepositoryException, IOException
    {
       DBInitializer dbInitializer = null;
-      if (containerConfig.dbDialect == DBConstants.DB_DIALECT_ORACLEOCI)
+      if (containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_ORACLEOCI))
       {
          LOG.warn(DBConstants.DB_DIALECT_ORACLEOCI + " dialect is experimental!");
 
          this.connFactory = defaultConnectionFactory();
          dbInitializer = new OracleDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_ORACLE)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
       {
          this.connFactory = defaultConnectionFactory();
          dbInitializer = new OracleDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_PGSQL
-         || containerConfig.dbDialect == DBConstants.DB_DIALECT_PGSQL_SCS)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_PGSQL))
       {
          this.connFactory = defaultConnectionFactory();
          dbInitializer = new PgSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL
-         || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_UTF8
-         || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM
-         || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
       {
-         if (containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM
-            || containerConfig.dbDialect == DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
+         if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MYSQL_MYISAM))
          {
             LOG.warn("MyISAM is not supported due to its lack of transaction support and integrity check, so use it only"
                + " if you don't expect any support and performances in read accesses are more important than the consistency"
@@ -470,35 +458,33 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          this.connFactory = new MySQLConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_MSSQL)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
       {
          this.connFactory = defaultConnectionFactory();
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DERBY)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DERBY))
       {
          this.connFactory = defaultConnectionFactory();
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2
-         || containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2_MYS
-         || containerConfig.dbDialect == DBConstants.DB_DIALECT_DB2V8)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DB2))
       {
          this.connFactory = defaultConnectionFactory();
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_SYBASE)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
          this.connFactory = defaultConnectionFactory();
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_INGRES)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_INGRES))
       {
          this.connFactory = defaultConnectionFactory();
          // using Postgres initializer
          dbInitializer = new IngresSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
-      else if (containerConfig.dbDialect == DBConstants.DB_DIALECT_HSQLDB)
+      else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
       {
          this.connFactory = new HSQLDBConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
@@ -1131,56 +1117,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    {
       for (String dbType : DBConstants.DB_DIALECTS)
       {
-         if (dbType.equalsIgnoreCase(confParam))
+         if (confParam.equals(dbType))
          {
             return dbType;
          }
       }
 
-      return DBConstants.DB_DIALECT_GENERIC; // by default
+      return DBConstants.DB_DIALECT_AUTO; // by default
    }
-
-   /**
-    * Returns {@link DatabaseStructureType} based on workspace configuration.
-    */
-   public static DatabaseStructureType getDatabaseType(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
-   {
-      try
-      {
-         if (wsConfig.getContainer().getParameterBoolean("multi-db"))
-         {
-            return JDBCDataContainerConfig.DatabaseStructureType.MULTI;
-         }
-         else
-         {
-            return JDBCDataContainerConfig.DatabaseStructureType.SINGLE;
-         }
-      }
-      catch (Exception e)
-      {
-         String dbStructureType = wsConfig.getContainer().getParameterValue(DB_STRUCTURE_TYPE).toUpperCase();
-         return JDBCDataContainerConfig.DatabaseStructureType.valueOf(dbStructureType);
-      }
-   }
-
-   /**
-    * Returns value of {@link #DB_TABLENAME_SUFFIX} parameter from workspace configuration.
-    */
-   public static String getDBTableSuffix(WorkspaceEntry wsConfig)
-   {
-      String defaultSuffix = replaceIncorrectChars(wsConfig.getName());
-
-      String suffix =
-         wsConfig.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_TABLENAME_SUFFIX, defaultSuffix);
-      return suffix;
-   }
-
-   /**
-    * Tries to fix name of the workspace if it is not corresponding to SQL table name specification.
-    */
-   private static String replaceIncorrectChars(String workspaceName)
-   {
-      return workspaceName.replaceAll("[^A-Za-z_0-9]", "").toUpperCase();
-   }
-
 }

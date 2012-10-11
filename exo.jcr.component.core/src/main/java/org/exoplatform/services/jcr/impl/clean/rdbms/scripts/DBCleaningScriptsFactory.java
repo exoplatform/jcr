@@ -42,38 +42,31 @@ public class DBCleaningScriptsFactory
     */
    public static DBCleaningScripts prepareScripts(String dialect, WorkspaceEntry wsEntry) throws DBCleanException
    {
-      if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MYSQL_MYISAM)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MYSQL_UTF8))
+      if (dialect.startsWith(DialectConstants.DB_DIALECT_MYSQL))
       {
          return new MySQLCleaningScipts(dialect, wsEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2_MYS)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2V8))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_DB2))
       {
          return new DB2CleaningScipts(dialect, wsEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MSSQL))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_MSSQL))
       {
          return new MSSQLCleaningScipts(dialect, wsEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_PGSQL)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_PGSQL_SCS))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_PGSQL))
       {
          return new PgSQLCleaningScipts(dialect, wsEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_SYBASE))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE))
       {
          return new SybaseCleaningScipts(dialect, wsEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_HSQLDB))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_HSQLDB))
       {
          return new HSQLDBCleaningScipts(dialect, wsEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_ORACLE)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_ORACLEOCI))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_ORACLE))
       {
          return new OracleCleaningScipts(dialect, wsEntry);
       }
@@ -95,38 +88,31 @@ public class DBCleaningScriptsFactory
     */
    public static DBCleaningScripts prepareScripts(String dialect, RepositoryEntry rEntry) throws DBCleanException
    {
-      if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MYSQL)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MYSQL_MYISAM)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MYSQL_MYISAM_UTF8)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MYSQL_UTF8))
+      if (dialect.startsWith(DialectConstants.DB_DIALECT_MYSQL))
       {
          return new MySQLCleaningScipts(dialect, rEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2_MYS)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_DB2V8))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_DB2))
       {
          return new DB2CleaningScipts(dialect, rEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_MSSQL))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_MSSQL))
       {
          return new MSSQLCleaningScipts(dialect, rEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_PGSQL)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_PGSQL_SCS))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_PGSQL))
       {
          return new PgSQLCleaningScipts(dialect, rEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_SYBASE))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE))
       {
          return new SybaseCleaningScipts(dialect, rEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_HSQLDB))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_HSQLDB))
       {
          return new HSQLDBCleaningScipts(dialect, rEntry);
       }
-      else if (dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_ORACLE)
-         || dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_ORACLEOCI))
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_ORACLE))
       {
          return new OracleCleaningScipts(dialect, rEntry);
       }

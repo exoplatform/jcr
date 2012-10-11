@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.scripts.DBCleaningScripts;
 import org.exoplatform.services.jcr.impl.clean.rdbms.scripts.DBCleaningScriptsFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -65,7 +66,8 @@ public class DBCleanService
       SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       Connection jdbcConn = getConnection(wsEntry);
-      boolean autoCommit = DialectConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(resolveDialect(jdbcConn, wsEntry));
+      String dialect = resolveDialect(jdbcConn, wsEntry);
+      boolean autoCommit = dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE);
 
       try
       {
@@ -115,7 +117,8 @@ public class DBCleanService
       else
       {
          Connection jdbcConn = getConnection(wsEntry);
-         boolean autoCommit = DialectConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(resolveDialect(jdbcConn, wsEntry));
+         String dialect = resolveDialect(jdbcConn, wsEntry);
+         boolean autoCommit = dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE);
 
          try
          {
@@ -167,7 +170,7 @@ public class DBCleanService
       }
 
       String dialect = resolveDialect(jdbcConn, wsEntry);
-      boolean autoCommit = dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_SYBASE);
+      boolean autoCommit = dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE);
 
       DBCleaningScripts scripts = DBCleaningScriptsFactory.prepareScripts(dialect, rEntry);
 
@@ -190,7 +193,7 @@ public class DBCleanService
       SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       String dialect = resolveDialect(jdbcConn, wsEntry);
-      boolean autoCommit = dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_SYBASE);
+      boolean autoCommit = dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE);
       
       DBCleaningScripts scripts = DBCleaningScriptsFactory.prepareScripts(dialect, wsEntry);
 
@@ -288,7 +291,7 @@ public class DBCleanService
    {
       try
       {
-         return JDBCWorkspaceDataContainer.getDatabaseType(wsEntry).isMultiDatabase();
+         return DBInitializerHelper.getDatabaseType(wsEntry).isMultiDatabase();
       }
       catch (RepositoryConfigurationException e)
       {
@@ -309,10 +312,9 @@ public class DBCleanService
     */
    private static String resolveDialect(Connection jdbcConn, WorkspaceEntry wsEntry) throws DBCleanException
    {
-      String dialect =
-         wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, DBConstants.DB_DIALECT_AUTO);
+      String dialect = DBInitializerHelper.getDatabaseDialect(wsEntry);
 
-      if (DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
+      if (dialect.startsWith(DBConstants.DB_DIALECT_AUTO))
       {
          try
          {

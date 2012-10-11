@@ -97,9 +97,9 @@
 
     <listitem>
       <para><emphasis role="bold">dialect</emphasis>: Database dialect, one of
-      "hsqldb", "mysql", "mysql-utf8", "pgsql", "pgsql-scs", "oracle",
-      "oracle-oci", "mssql", "sybase", "derby", "db2" ,"db2-mys", "db2v8". The
-      default value is "auto".</para>
+      "hsqldb", "mysql", "mysql-myisam", "mysql-utf8", "mysql-myisam-utf8",
+      "pgsql", "pgsql-scs", "oracle", "oracle-oci", "mssql", "sybase",
+      "derby", "db2" ,"db2-mys", "db2v8". The default value is "auto".</para>
     </listitem>
 
     <listitem>
@@ -231,6 +231,33 @@
           lower than 9 and <emphasis>DB2_COMPATIBILITY_VECTOR</emphasis> is se
           to <emphasis>MYS</emphasis>. This is default value for version
           begining from 9.7.2.</para>
+        </listitem>
+      </itemizedlist>
+    </section>
+
+    <section>
+      <title>MySQL database</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>mysql - this dialect is used if needed to create JCR tables
+          with InnoDB engine <emphasis role="bold">(by
+          default)</emphasis></para>
+        </listitem>
+
+        <listitem>
+          <para>mysql-utf8 - this dialect is used if needed to create JCR
+          tables with InnoDB engine with UTF-8 encoding support</para>
+        </listitem>
+
+        <listitem>
+          <para>mysql-myisam - this dialect is used if needed to create JCR
+          tables with MyISAM engine</para>
+        </listitem>
+
+        <listitem>
+          <para>mysql-myisam-utf8 - this dialect is used if needed to create
+          JCR tables with MyISAM engine with UTF-8 encoding support</para>
         </listitem>
       </itemizedlist>
     </section>

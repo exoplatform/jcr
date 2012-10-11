@@ -24,7 +24,6 @@ import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
-import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.RepositoryRestoreExeption;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
@@ -38,6 +37,7 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistent
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.io.File;
 import java.security.PrivilegedExceptionAction;
@@ -102,7 +102,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          // define one common database cleaner for all restores for single db case
          DBCleanerTool dbCleaner = null;
          
-         DatabaseStructureType dbType = JDBCWorkspaceDataContainer.getDatabaseType(wsEntry);
+         DatabaseStructureType dbType = DBInitializerHelper.getDatabaseType(wsEntry);
 
          if (dbType.isShareSameDatasource())
          {

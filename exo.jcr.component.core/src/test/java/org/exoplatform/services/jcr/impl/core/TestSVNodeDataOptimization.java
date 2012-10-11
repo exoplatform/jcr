@@ -25,7 +25,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -257,7 +257,7 @@ public class TestSVNodeDataOptimization extends JcrImplBaseTest
 
       try
       {
-         DatabaseStructureType databaseType = JDBCWorkspaceDataContainer.getDatabaseType(ws1e);
+         DatabaseStructureType databaseType = DBInitializerHelper.getDatabaseType(ws1e);
          return databaseType.isMultiDatabase();
       }
       catch (RepositoryConfigurationException e)

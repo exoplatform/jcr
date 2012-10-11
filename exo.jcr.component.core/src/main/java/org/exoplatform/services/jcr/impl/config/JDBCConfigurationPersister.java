@@ -128,7 +128,7 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       this.sourceName = sourceNameParam;
 
       String dialect = params.getProperty(PARAM_DIALECT);
-      if (dialect == null || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
+      if (dialect == null || dialect.startsWith(DBConstants.DB_DIALECT_AUTO))
       {
          Connection conn = null;
          try
@@ -161,34 +161,29 @@ public class JDBCConfigurationPersister implements ConfigurationPersister
       }
 
       String binType = "BLOB";
-      if (DBConstants.DB_DIALECT_GENERIC.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_HSQLDB.equalsIgnoreCase(dialect))
+      if (dialect.startsWith(DBConstants.DB_DIALECT_GENERIC) || dialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
       {
          binType = "VARBINARY(1000000)"; // 1Mb
       }
-      else if (DBConstants.DB_DIALECT_PGSQL.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_PGSQL_SCS.equalsIgnoreCase(dialect))
+      else if (dialect.startsWith(DBConstants.DB_DIALECT_PGSQL))
       {
          configTableName = configTableName.toUpperCase().toLowerCase(); // postgres needs it
          binType = "BYTEA";
       }
-      else if (DBConstants.DB_DIALECT_MSSQL.equalsIgnoreCase(dialect))
+      else if (dialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
       {
          binType = "VARBINARY(max)";
       }
-      else if (DBConstants.DB_DIALECT_SYBASE.equalsIgnoreCase(dialect))
+      else if (dialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
          binType = "IMAGE";
       }
-      else if (DBConstants.DB_DIALECT_INGRES.equalsIgnoreCase(dialect))
+      else if (dialect.startsWith(DBConstants.DB_DIALECT_INGRES))
       {
          configTableName = configTableName.toUpperCase().toLowerCase(); // ingres needs it
          binType = "LONG BYTE";
       }
-      else if (DBConstants.DB_DIALECT_MYSQL.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_MYSQL_MYISAM.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8.equalsIgnoreCase(dialect))
+      else if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
       {
          binType = "LONGBLOB";
       }

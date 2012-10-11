@@ -279,44 +279,39 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          String charType = "VARCHAR(512)";
          String timeStampType = "BIGINT";
          // HSSQL
-         if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_HSQLDB))
+         if (dialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
          {
             blobType = "VARBINARY(65535)";
          }
          // MYSQL
-         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_UTF8)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8))
+         else if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
          {
             blobType = "LONGBLOB";
          }
          // ORACLE
-         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLE)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_ORACLEOCI))
+         else if (dialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
          {
             // Oracle suggests the use VARCHAR2 instead of VARCHAR while declaring data type.
             charType = "VARCHAR2(512)";
             timeStampType = "NUMBER(19, 0)";
          }
          // POSTGRE SQL
-         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL)
-            || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL_SCS))
+         else if (dialect.startsWith(DBConstants.DB_DIALECT_PGSQL))
          {
             blobType = "bytea";
          }
          // Microsoft SQL
-         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_MSSQL))
+         else if (dialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
          {
             blobType = "VARBINARY(MAX)";
          }
          // SYBASE
-         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+         else if (dialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
          {
             blobType = "IMAGE";
          }
          // INGRES
-         else if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_INGRES))
+         else if (dialect.startsWith(DBConstants.DB_DIALECT_INGRES))
          {
             blobType = "long byte";
          }

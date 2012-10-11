@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.io.IOException;
@@ -74,7 +73,7 @@ public abstract class DBCleaningScripts
       {
          try
          {
-            if (JDBCWorkspaceDataContainer.getDatabaseType(wsEntry).isMultiDatabase())
+            if (DBInitializerHelper.getDatabaseType(wsEntry).isMultiDatabase())
             {
                throw new DBCleanException("Not supported operation.");
             }
@@ -102,7 +101,7 @@ public abstract class DBCleaningScripts
    {
       try
       {
-         this.multiDb = JDBCWorkspaceDataContainer.getDatabaseType(wsEntry).isMultiDatabase();
+         this.multiDb = DBInitializerHelper.getDatabaseType(wsEntry).isMultiDatabase();
       }
       catch (RepositoryConfigurationException e)
       {

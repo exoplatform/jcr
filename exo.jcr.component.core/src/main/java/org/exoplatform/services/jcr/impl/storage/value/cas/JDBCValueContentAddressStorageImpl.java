@@ -172,7 +172,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             DatabaseMetaData dbMetaData = conn.getMetaData();
 
             String dialect = props.getProperty(JDBC_DIALECT_PARAM);
-            if (dialect == null || DBConstants.DB_DIALECT_AUTO.equalsIgnoreCase(dialect))
+            if (dialect == null || dialect.startsWith(DBConstants.DB_DIALECT_AUTO))
             {
                dialect = DialectDetecter.detect(dbMetaData);
             }
@@ -198,9 +198,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
 
             sqlVCASIDX = tableName + "_IDX";
 
-            if (DBConstants.DB_DIALECT_PGSQL.equalsIgnoreCase(dialect)
-               || DBConstants.DB_DIALECT_PGSQL_SCS.equalsIgnoreCase(dialect)
-               || DBConstants.DB_DIALECT_INGRES.equalsIgnoreCase(dialect))
+            if (dialect.startsWith(DBConstants.DB_DIALECT_PGSQL) || dialect.startsWith(DBConstants.DB_DIALECT_INGRES))
             {
                // use lowercase for postgres/ingres metadata.getTable(), HSQLDB wants UPPERCASE
                // for other seems not matter
@@ -346,10 +344,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
       // "PRIMARY_KEY_4 ON PUBLIC.JCR_VCAS_TEST(PROPERTY_ID, ORDER_NUM)"; 
       //
       String err = e.toString();
-      if (DBConstants.DB_DIALECT_MYSQL.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_MYSQL_UTF8.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_MYSQL_MYISAM.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_MYSQL_MYISAM_UTF8.equalsIgnoreCase(dialect))
+      if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
       {
          // for MySQL will search
          return MYSQL_PK_CONSTRAINT_DETECT.matcher(err).find();
@@ -359,12 +354,11 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
          // most of supported dbs prints PK name in exception
          return true;
       }
-      else if (DBConstants.DB_DIALECT_DB2.equalsIgnoreCase(dialect)
-         || DBConstants.DB_DIALECT_DB2_MYS.equalsIgnoreCase(dialect))
+      else if (dialect.startsWith(DBConstants.DB_DIALECT_DB2))
       {
          return DB2_PK_CONSTRAINT_DETECT.matcher(err).find();
       }
-      else if (DBConstants.DB_DIALECT_H2.equalsIgnoreCase(dialect))
+      else if (dialect.startsWith(DBConstants.DB_DIALECT_H2))
       {
          return H2_PK_CONSTRAINT_DETECT.matcher(err).find();
       }

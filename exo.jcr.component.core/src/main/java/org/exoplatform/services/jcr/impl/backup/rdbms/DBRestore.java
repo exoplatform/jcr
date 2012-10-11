@@ -150,7 +150,7 @@ public class DBRestore implements DataRestore
       this.tables = tables;
       this.dbCleaner = dbCleaner;
       this.dialect = DialectDetecter.detect(jdbcConn.getMetaData());
-      this.dbCleanerInAutoCommit = dialect.equalsIgnoreCase(DialectConstants.DB_DIALECT_SYBASE);
+      this.dbCleanerInAutoCommit = dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE);
    }
 
    /**
@@ -276,8 +276,7 @@ public class DBRestore implements DataRestore
       ResultSet tableMetaData = null;
 
       // switch table name to lower case
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL)
-         || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL_SCS))
+      if (dialect.startsWith(DBConstants.DB_DIALECT_PGSQL))
       {
          tableName = tableName.toLowerCase();
       }
@@ -331,8 +330,7 @@ public class DBRestore implements DataRestore
             columnType.add(restoreRule.getNewColumnIndex(), restoreRule.getNewColumnType());
 
             String newColumnName =
-               (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL) || dialect
-                  .equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL_SCS)) ? restoreRule.getNewColumnName().toLowerCase()
+               dialect.startsWith(DBConstants.DB_DIALECT_PGSQL) ? restoreRule.getNewColumnName().toLowerCase()
                   : restoreRule.getNewColumnName();
             columnName.add(restoreRule.getNewColumnIndex(), newColumnName);
          }
@@ -468,8 +466,7 @@ public class DBRestore implements DataRestore
                      ba.read(readBuffer);
 
                      String value = new String(readBuffer);
-                     if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL)
-                        || dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_PGSQL_SCS))
+                     if (dialect.startsWith(DBConstants.DB_DIALECT_PGSQL))
                      {
                         insertNode.setBoolean(targetIndex + 1, value.equalsIgnoreCase("t"));
                      }
@@ -566,7 +563,7 @@ public class DBRestore implements DataRestore
    protected void commitBatch() throws SQLException
    {
       // commit every batch for sybase
-      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_SYBASE))
+      if (dialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
          jdbcConn.commit();
       }
