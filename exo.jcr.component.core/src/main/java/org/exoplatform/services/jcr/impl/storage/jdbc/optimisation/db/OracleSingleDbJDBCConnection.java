@@ -106,6 +106,11 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
                "select",
                "select /*+ USE_NL(V) INDEX(I JCR_IDX_SITEM_N_ORDER_NUM) INDEX(P JCR_IDX_SITEM_PARENT_FK)"
                + " INDEX(V JCR_IDX_SVALUE_PROPERTY) */ ");
+
+      FIND_ITEM_BY_NAME = FIND_ITEM_BY_NAME.replaceFirst("select", "select /*+ INDEX(I JCR_IDX_SITEM_PARENT) */");
+      FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
+         FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ.replaceFirst("select",
+            "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_NAME) */");
    }
     
    /**
