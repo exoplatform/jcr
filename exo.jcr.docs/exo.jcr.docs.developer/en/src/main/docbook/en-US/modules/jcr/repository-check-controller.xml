@@ -5,8 +5,8 @@
   <title>Checking and repairing repository integrity and consistency</title>
 
   <warning>
-    <para> It is highly recommended to back your data up before repairing
-    inconsustencies (either automatically or maually). It is also recommended
+    <para>It is highly recommended to back up your data before repairing
+    inconsistencies (either automatically or maually). It is also recommended
     to store the results of queries that check the data consistency. This may
     be useful for the support team in case of deeper restoration
     process.</para>
@@ -77,8 +77,8 @@
     </tgroup>
   </table>
 
-  <para>The list of Database inconsistencies which can be checked and repaired
-  automatically:</para>
+  <para>Among the list of known inconsistencies described in the next section,
+  see below what can be checked and repaired automatically::</para>
 
   <itemizedlist>
     <listitem>
