@@ -96,11 +96,6 @@
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>org.jboss.logging</groupId>
-      <artifactId>jboss-logging</artifactId>
-      <scope>runtime</scope>
-    </dependency>
-    <dependency>
        <groupId>commons-io</groupId>
        <artifactId>commons-io</artifactId>
        <scope>runtime</scope>
