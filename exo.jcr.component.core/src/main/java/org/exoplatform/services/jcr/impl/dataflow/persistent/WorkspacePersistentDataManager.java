@@ -313,7 +313,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    void save(final ChangesLogWrapper logWrapper, TransactionableResourceManager txResourceManager) throws RepositoryException
    {
       final ItemStateChangesLog changesLog = logWrapper.optimizeAndGetChangesLog();
-
       final ChangesLogPersister persister = new ChangesLogPersister();
 
       // whole log will be reconstructed with persisted data 

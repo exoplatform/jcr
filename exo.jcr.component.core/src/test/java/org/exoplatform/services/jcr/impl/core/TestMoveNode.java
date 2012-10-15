@@ -467,4 +467,23 @@ public class TestMoveNode extends JcrImplBaseTest
       assertEquals("/newtest/node1[2]/node2_1/jcr:primaryType", node2_1PRMoved.getPath());
       assertEquals("/newtest/node1[2]/node2_1/node3_1/jcr:primaryType", node3_1PRMoved.getPath());
    }
+
+   /**
+    * JCR-1960. Set property and move node. Reveals bug in cache, when actually property with old value
+    * has been moved.
+    */
+   public void testSetPropertyAndMoveNode() throws Exception
+   {
+      Node rootNode = session.getRootNode();
+      Node aNode = rootNode.addNode("foo");
+      aNode.setProperty("A", "B");
+      session.save();
+
+      rootNode = session.getRootNode();
+      aNode = rootNode.getNode("foo");
+      aNode.setProperty("A", "C");
+      session.move("/foo", "/bar");
+      session.save();
+      assertEquals("C", aNode.getProperty("A").getString());
+   }
 }

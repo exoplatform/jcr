@@ -54,7 +54,6 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
-import org.exoplatform.services.jcr.jbosscache.PrivilegedJBossCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.transaction.ActionNonTxAware;
@@ -214,6 +213,16 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          protected ItemData execute(String id) throws RuntimeException
          {
             return getFromCacheById(id);
+         }
+      };
+
+   private final CacheActionNonTxAware<ItemData, String> getFromBufferedCacheById =
+      new CacheActionNonTxAware<ItemData, String>()
+      {
+         @Override
+         protected ItemData execute(String id) throws RuntimeException
+         {
+            return getFromBufferedCacheById(id);
          }
       };
 
@@ -1163,7 +1172,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     */
    public void addChildPropertiesList(NodeData parent, List<PropertyData> childProperties)
    {
-
    }
 
    /**
@@ -1551,6 +1559,15 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    }
 
    /**
+    * Gets item data from buffered cache by item identifier.
+    */
+   protected ItemData getFromBufferedCacheById(String id)
+   {
+      // NullNodeData with id may be stored as ordinary NodeData or PropertyData
+      return (ItemData)cache.getFromBuffer(makeItemFqn(id), ITEM_DATA);
+   }
+
+   /**
     * Internal put Item.
     *
     * @param item ItemData, new data to put in the cache
@@ -1872,7 +1889,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    protected void renameItem(final ItemState renamedState, final ItemState deletedState)
    {
       ItemData data = renamedState.getData();
-      ItemData prevData = get(data.getIdentifier());
+      ItemData prevData = getFromBufferedCacheById.run(data.getIdentifier());
 
       if (data.isNode())
       {

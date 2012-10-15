@@ -171,6 +171,16 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          }
       };
 
+   private final CacheActionNonTxAware<ItemData, String> getFromBufferedCacheById =
+      new CacheActionNonTxAware<ItemData, String>()
+      {
+         @Override
+         protected ItemData execute(String id)
+         {
+            return id == null ? null : (ItemData)cache.getFromBuffer(new CacheId(getOwnerId(), id));
+         }
+      };
+
    private final CacheActionNonTxAware<List<NodeData>, NodeData> getChildNodes =
       new CacheActionNonTxAware<List<NodeData>, NodeData>()
       {
@@ -1485,7 +1495,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    protected void renameItem(final ItemState state, final ItemState lastDelete)
    {
       ItemData data = state.getData();
-      ItemData prevData = get(data.getIdentifier());
+      ItemData prevData = getFromBufferedCacheById.run(data.getIdentifier());
 
       if (data.isNode())
       {
