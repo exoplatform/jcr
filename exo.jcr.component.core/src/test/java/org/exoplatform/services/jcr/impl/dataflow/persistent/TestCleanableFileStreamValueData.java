@@ -103,7 +103,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       TestSwapFile.cleanShare();
 
-      sleepAndGC();
+      System.runFinalization();
 
       super.tearDown();
    }
@@ -112,7 +112,6 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
    {
       assertTrue(testFile.exists());
       cleanableValueData = null; // CleanableVD dies
-
       assertReleasedFile(testFile);
    }
 
@@ -120,7 +119,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
    {
       assertTrue(testFile.exists());
 
-      System.gc();
+      System.runFinalization();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
       CleanableFilePersistedValueData cfvd2 =
@@ -130,7 +129,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       cleanableValueData = null; // CleanableVD dies but another instance points swapped file
 
       // allows GC to call finalize on vd
-      sleepAndGC();
+      System.runFinalization();
       assertTrue(testFile.exists());
 
       // clean ValueData
@@ -143,7 +142,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       assertTrue(testFile.exists());
 
-      System.gc();
+      System.runFinalization();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
       TransientValueData trvd = new TransientValueData(false);
@@ -151,9 +150,8 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       trvd = null; // TransientVD dies
 
-      // allows GC to call finalize on vd
-      sleepAndGC();
-      assertTrue(testFile.exists()); // but Swapped CleanableVD lives and uses the file
+      System.runFinalization();
+      assertTrue(testFile.exists());
    }
 
    public void testTransientFileCleaned() throws Exception
@@ -161,17 +159,17 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       assertTrue(testFile.exists());
 
-      System.gc();
+      System.runFinalization();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
       TransientValueData trvd = new TransientValueData(false);
       trvd.delegate(cleanableValueData);
-      
+
       assertTrue(testFile.exists());
 
       cleanableValueData = null; // CleanableVD dies but TransientVD still uses swapped file
 
-      sleepAndGC();
+      System.runFinalization();
       assertTrue(testFile.exists());
 
       trvd = null; // TransientVD dies
@@ -183,7 +181,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       assertTrue(testFile.exists());
 
-      System.gc();
+      System.runFinalization();
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
       // file shared with TransientVD
@@ -195,7 +193,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       // 1st CleanableVD die
       cleanableValueData = null;
 
-      sleepAndGC();
+      System.runFinalization();
 
       // file shared with third CleanableVD, i.e. file still exists (aquired by TransientVD)
       CleanableFilePersistedValueData cfvd2 =
@@ -204,19 +202,11 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       trvd = null; // TransientVD dies
 
-      sleepAndGC();
+      System.runFinalization();
       assertTrue(testFile.exists()); // still exists, aquired by 2nd CleanableVD
 
       cfvd2 = null; // 2nd CleanableVD dies
       assertReleasedFile(testFile);
-   }
-
-   private void sleepAndGC() throws Exception
-   {
-      System.gc();
-      Thread.sleep(CLEANER_TIMEOUT + 500);
-      Thread.yield();
-      System.gc();
    }
 
    private void assertReleasedFile(File file) throws Exception
@@ -236,4 +226,5 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       assertFalse(file.exists()); // file released and deleted
    }
+
 }
