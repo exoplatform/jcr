@@ -336,12 +336,4 @@ public class TransientValueData implements ValueData
       return false;
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public void finalize() throws Throwable
-   {
-      super.finalize();
-   }
 }
