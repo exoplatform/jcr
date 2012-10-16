@@ -450,4 +450,19 @@ public abstract class AbstractSameNameSiblingsMoveTest extends JcrAPIBaseTest
       // check reordering
       assertEquals("Wrong node UUID found ", n1_2_id, testNode2.getNode("node-new").getUUID());
    }
+
+   /**
+    * JCR-1954. When changes log contains both update and rename states.
+    */
+   public void testSeveralMoveInRow() throws Exception
+   {
+      Node testRoot = root.addNode("testNode");
+      testRoot.addNode("foo");
+      testRoot.addNode("foo");
+      session.save();
+
+      workspace.move("/testNode/foo", "/testNode/bar");
+      workspace.move("/testNode/bar", "/testNode/foo");
+      workspace.move("/testNode/foo", "/testNode/bar");
+   }
 }

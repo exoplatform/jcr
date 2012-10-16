@@ -206,11 +206,20 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
             {
                if ((child.getQPath().getName()).getAsString().equals((node.getQPath().getName()).getAsString()))
                {
+                  int persistedVersion = child.getPersistedVersion();
+                  if (srcIndex == node.getQPath().getIndex() && persistedVersion == node.getPersistedVersion() - 1)
+                  {
+                     // applying update state it is possible to get unique constraint violation for 
+                     // index JCR_IDX_IWS_PARENT, thats why try to have different persisted version of SNS nodes
+                     persistedVersion++;
+                  }
+
                   QPath siblingPath = QPath.makeChildPath(srcParent.getQPath(), child.getQPath().getName(), srcIndex);
+                  
                   TransientNodeData sibling =
-                     new TransientNodeData(siblingPath, child.getIdentifier(), child.getPersistedVersion() + 1, child
-                        .getPrimaryTypeName(), child.getMixinTypeNames(), child.getOrderNumber(), child
-                        .getParentIdentifier(), child.getACL());
+                     new TransientNodeData(siblingPath, child.getIdentifier(), persistedVersion,
+                        child.getPrimaryTypeName(), child.getMixinTypeNames(), child.getOrderNumber(),
+                        child.getParentIdentifier(), child.getACL());
                   addStates.add(new ItemState(sibling, ItemState.UPDATED, true, ancestorToSave, false, true));
                   srcIndex++;
                }
