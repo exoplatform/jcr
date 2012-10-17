@@ -18,44 +18,22 @@
  */
 package org.exoplatform.services.jcr.ext.actions;
 
-import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
+import org.apache.commons.chain.Context;
+import org.exoplatform.services.command.action.Action;
 import org.exoplatform.services.jcr.impl.ext.action.JCRActionException;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
 /**
- * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
- * @version $Id: $
+ * Created by The eXo Platform SAS.
+ *
+ * @author Dmitriy Vyshinskiy
+ * @version $Id: ActionWithException.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class TestActions extends BaseStandaloneTest
+
+public class ActionWithException implements Action
 {
 
-   public void testAddMyAction() throws RepositoryException
+   public boolean execute(Context ctx) throws JCRActionException
    {
-      Node test = root.addNode("testPath");
-
-      assertTrue(test.getNode("myActionNode") != null);
-      assertTrue(test.getNode("myActionNode").getProperty("myProperty") != null);
-   }
-
-   /**
-    * https://jira.exoplatform.org/browse/JCR-1951
-    */
-   public void testActionWithException()
-   {
-      try
-      {
-         root.addNode("testpathexc");
-      }
-      catch (JCRActionException e)
-      {
-         return;
-      }
-      catch (Exception e)
-      {
-      }
-
-      fail("ActionWithException class must throw JCRActionException");
+      throw new JCRActionException("Test JCRActionException");
    }
 }

@@ -484,7 +484,7 @@ public class SessionActionInterceptor
       return nodeTypeNames;
    }
 
-   protected final void launch(Condition conditions, InvocationContext context)
+   protected final void launch(Condition conditions, InvocationContext context) throws JCRActionException
    {
       Set<Action> cond = catalog.getActions(conditions);
       if (cond != null)
@@ -495,6 +495,10 @@ public class SessionActionInterceptor
             try
             {
                i.next().execute(context);
+            }
+            catch (JCRActionException e)
+            {
+               throw e;
             }
             catch (Exception e)
             {
