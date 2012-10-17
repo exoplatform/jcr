@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.value.cas;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.util.ArrayList;
@@ -55,7 +56,7 @@ public class TestJDBCValueContentAddressStorageImpl extends JcrImplBaseTest
          if (wse.getName().equals(session.getWorkspace().getName()))
          {
             jdbcSourceName = wse.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-            jdbcDialect = wse.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, null);
+            jdbcDialect = DBInitializerHelper.getDatabaseDialect(wse);
          }
       }
 

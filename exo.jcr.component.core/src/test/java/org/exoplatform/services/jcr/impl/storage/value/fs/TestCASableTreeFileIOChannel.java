@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.util.Properties;
 
@@ -51,7 +52,7 @@ public class TestCASableTreeFileIOChannel extends CASableFileIOChannelTestBase
          if (wse.getName().equals(session.getWorkspace().getName()))
          {
             jdbcSourceName = wse.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-            jdbcDialect = wse.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, null);
+            jdbcDialect = DBInitializerHelper.getDatabaseDialect(wse);
          }
       }
 
