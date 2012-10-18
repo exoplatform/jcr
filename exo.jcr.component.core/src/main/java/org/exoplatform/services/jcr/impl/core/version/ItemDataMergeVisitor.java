@@ -81,29 +81,6 @@ public class ItemDataMergeVisitor extends AbstractItemDataCopyVisitor
 
    protected final SessionChangesLog changes;
 
-   private class VersionableState
-   {
-      private final int result;
-
-      private final QPath path;
-
-      private VersionableState(QPath path, int result)
-      {
-         this.path = path;
-         this.result = result;
-      }
-
-      public int getResult()
-      {
-         return result;
-      }
-
-      public QPath getPath()
-      {
-         return path;
-      }
-   }
-
    protected class RemoveVisitor extends ItemDataRemoveVisitor
    {
       RemoveVisitor() throws RepositoryException

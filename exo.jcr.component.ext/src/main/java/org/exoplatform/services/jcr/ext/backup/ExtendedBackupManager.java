@@ -18,7 +18,6 @@ package org.exoplatform.services.jcr.ext.backup;
 
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 
 import java.io.File;
 

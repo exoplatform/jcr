@@ -80,7 +80,6 @@ import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1327,7 +1326,7 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    {
       this.restoreRepository(rblog, repositoryEntry, workspaceNamesCorrespondMap, asynchronous, false);
    }
-   
+
    /**
     * Repository restore from backup.
     *
@@ -1351,8 +1350,9 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     *           will be generate the exception RepositoryConfigurationException 
     */
    private void restoreRepository(RepositoryBackupChainLog rblog, RepositoryEntry repositoryEntry,
-      Map<String, String> workspaceNamesCorrespondMap, boolean asynchronous, boolean removeJobOnceOver) throws BackupOperationException,
-      BackupConfigurationException, RepositoryException, RepositoryConfigurationException
+      Map<String, String> workspaceNamesCorrespondMap, boolean asynchronous, boolean removeJobOnceOver)
+      throws BackupOperationException, BackupConfigurationException, RepositoryException,
+      RepositoryConfigurationException
    {
       // Checking repository exists. 
       try
@@ -1645,8 +1645,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
 
       JobRepositoryRestore jobExistedRepositoryRestore =
          isSameConfigRestore ? new JobExistingRepositorySameConfigRestore(repoService, this, repositoryEntry,
-            workspacesMapping, new File(rblog.getLogFilePath())) : new JobExistingRepositoryRestore(repoService, this, repositoryEntry,
-            workspacesMapping, new File(rblog.getLogFilePath()));
+            workspacesMapping, new File(rblog.getLogFilePath())) : new JobExistingRepositoryRestore(repoService, this,
+            repositoryEntry, workspacesMapping, new File(rblog.getLogFilePath()));
 
       restoreRepositoryJobs.add(jobExistedRepositoryRestore);
       if (asynchronous)
@@ -1740,24 +1740,34 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       }
       catch (JsonException e)
       {
-         this.LOG.error("Can't get JSON object from wokrspace configuration", e);
+         LOG.error("Can't get JSON object from wokrspace configuration", e);
       }
       catch (RepositoryException e)
       {
-         this.LOG.error(e);
+         LOG.error(e);
       }
       catch (RepositoryConfigurationException e)
       {
-         this.LOG.error(e);
+         LOG.error(e);
       }
       catch (ClassNotFoundException e)
       {
-         this.LOG.error(e);
+         LOG.error(e);
       }
 
-      JobWorkspaceRestore jobRestore =
-         isSameConfigRestore ? new JobExistingWorkspaceSameConfigRestore(repoService, this, repositoryName, new File (log.getLogFilePath()),
-            workspaceEntry) : new JobExistingWorkspaceRestore(repoService, this, repositoryName, new File (log.getLogFilePath()), workspaceEntry);
+      JobWorkspaceRestore jobRestore;
+      if (isSameConfigRestore)
+      {
+         jobRestore =
+            new JobExistingWorkspaceSameConfigRestore(repoService, this, repositoryName,
+               new File(log.getLogFilePath()), workspaceEntry);
+      }
+      else
+      {
+         jobRestore =
+            new JobExistingWorkspaceRestore(repoService, this, repositoryName, new File(log.getLogFilePath()),
+               workspaceEntry);
+      }
       restoreJobs.add(jobRestore);
 
       if (asynchronous)

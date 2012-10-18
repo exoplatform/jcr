@@ -34,7 +34,6 @@ import org.infinispan.context.Flag;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.concurrent.NotifyingFuture;
-import org.infinispan.util.concurrent.locks.LockManager;
 
 import java.security.PrivilegedAction;
 import java.util.Collection;

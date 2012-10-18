@@ -198,7 +198,8 @@ public class SystemParameterUpdater
                {
                   LOG.warn("Parameter "
                      + parameterName
-                     + " is not overridden because workspace is already initialized and parameter is set to 'before-initialize' via system properties in the "
+                     + " is not overridden because workspace is already initialized and parameter is set to 'before-initialize'"
+                     + " via system properties in the "
                      + SystemParametersPersistenceConfigurator.class.getSimpleName());
                }
                return false;

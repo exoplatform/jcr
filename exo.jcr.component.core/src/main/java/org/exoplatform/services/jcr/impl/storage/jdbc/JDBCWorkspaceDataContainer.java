@@ -47,7 +47,6 @@ import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLo
 import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.core.query.Reindexable;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
@@ -77,7 +76,6 @@ import org.exoplatform.services.naming.InitialContextInitializer;
 import org.picocontainer.Startable;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -1007,12 +1005,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
       }
       return dbCleaner;
-   }
-
-   private ObjectReaderImpl getBackupInfoReader(File storageDir) throws FileNotFoundException
-   {
-      return new ObjectReaderImpl(PrivilegedFileHelper.fileInputStream(new File(storageDir,
-         "JDBCWorkspaceDataContainer.info")));
    }
 
    private File getStorageDir(DataRestoreContext context)

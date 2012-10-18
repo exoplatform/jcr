@@ -381,7 +381,8 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * @param persister
     * @throws RepositoryException
     */
-   private void onCommit(final ChangesLogPersister persister, ConnectionMode mode, TransactionableResourceManager txResourceManager) throws RepositoryException
+   private void onCommit(final ChangesLogPersister persister, ConnectionMode mode,
+      TransactionableResourceManager txResourceManager) throws RepositoryException
    {
       if (mode == ConnectionMode.NORMAL)
       {

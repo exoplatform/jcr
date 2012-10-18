@@ -226,8 +226,8 @@ public class JobRepositoryRestore extends Thread
             if (!(wsEntry.getName().equals(repositoryEntry.getSystemWorkspaceName())))
             {
                currennWorkspaceName = wsEntry.getName();
-               backupManager.restore(new BackupChainLog(workspacesMapping.get(wsEntry.getName())), repositoryEntry.getName(), wsEntry,
-                  false);
+               backupManager.restore(new BackupChainLog(workspacesMapping.get(wsEntry.getName())),
+                  repositoryEntry.getName(), wsEntry, false);
             }
          }
       }

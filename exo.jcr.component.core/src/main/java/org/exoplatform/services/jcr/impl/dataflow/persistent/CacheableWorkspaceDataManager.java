@@ -1020,7 +1020,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @throws RepositoryException
     *           if some exception occurred
     */
-   void save(final ItemStateChangesLog changesLog, final TransactionableResourceManager txResourceManager) throws RepositoryException
+   void save(final ItemStateChangesLog changesLog, final TransactionableResourceManager txResourceManager)
+      throws RepositoryException
    {
       if (isSuspended.get())
       {
@@ -1076,7 +1077,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
    }
    
-   private void doSave(final ItemStateChangesLog changesLog, TransactionableResourceManager txResourceManager) throws RepositoryException
+   private void doSave(final ItemStateChangesLog changesLog, TransactionableResourceManager txResourceManager)
+      throws RepositoryException
    {
       if (isStopped.get())
       {
@@ -1176,7 +1178,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * @param logWrapper
     * @throws RepositoryException if any error occurs
     */
-   private void registerListener(final ChangesLogWrapper logWrapper, TransactionableResourceManager txResourceManager) throws RepositoryException
+   private void registerListener(final ChangesLogWrapper logWrapper, TransactionableResourceManager txResourceManager)
+      throws RepositoryException
    {
       try
       {

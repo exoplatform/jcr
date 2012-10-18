@@ -150,8 +150,9 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
                   .getComponentInstancesOfType(Backupable.class);
 
             File fullBackupDir =
-               JCRRestore.getFullBackupFile(new BackupChainLog(workspacesMapping.get(wEntry.getName())).getBackupConfig().getBackupDir());
-            
+               JCRRestore.getFullBackupFile(new BackupChainLog(workspacesMapping.get(wEntry.getName()))
+                  .getBackupConfig().getBackupDir());
+
             DataRestoreContext context;
 
             if (jdbcConn != null)
@@ -226,7 +227,8 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
                   .getWorkspaceContainer(wEntry.getName()).getComponent(WorkspacePersistentDataManager.class);
 
             File storageDir =
-               JCRRestore.getFullBackupFile(new BackupChainLog(workspacesMapping.get(wEntry.getName())).getBackupConfig().getBackupDir());
+               JCRRestore.getFullBackupFile(new BackupChainLog(workspacesMapping.get(wEntry.getName()))
+                  .getBackupConfig().getBackupDir());
 
             FileCleanerHolder cleanerHolder =
                (FileCleanerHolder)repositoryService.getRepository(this.repositoryEntry.getName())
