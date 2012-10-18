@@ -409,12 +409,9 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      if (!forceRemove)
-      {
-         if (!canRemoveRepository(name))
-            throw new RepositoryException("Repository " + name + " in use. If you want to "
-               + " remove repository close all open sessions");
-      }
+      if (!forceRemove && !canRemoveRepository(name))
+         throw new RepositoryException("Repository " + name + " in use. If you want to "
+            + " remove repository close all open sessions");
 
       try
       {
