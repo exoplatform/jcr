@@ -100,6 +100,17 @@ public interface RepositoryService
    void removeRepository(String repositoryName) throws RepositoryException;
 
    /**
+    * Remove repository with name repositoryName.
+    *
+    * @param repositoryName
+    *          repository name
+    * @param forceRemove
+    *          will be closed without checking opened session on repository.
+    * @throws RepositoryException
+    */
+   void removeRepository(String repositoryName, boolean forceRemove) throws RepositoryException;
+
+   /**
     * Indicates if repository with name repositoryName can be removed.
     * 
     * @param repositoryName

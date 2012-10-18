@@ -523,6 +523,7 @@ public class TestWorkspaceManagement extends JcrImplBaseTest
       {
          fail("Exception should not be thrown, because 'before-initialize' parameter is initialized before initialization of workspace");
       }
+      manageableRepository.removeWorkspace(workspaceEntry.getName());
 
       clearProperty(PropertiesParser.EXO_JCR_CONFIG + PropertiesParser.FORCE_TYPE + PropertiesParser.WORKSPACE_SCOPE
          + workspaceEntry.getUniqueName() + "." + "value-storage" + "." + parameterName);

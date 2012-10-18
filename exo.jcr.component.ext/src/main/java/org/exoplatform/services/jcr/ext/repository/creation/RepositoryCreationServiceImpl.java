@@ -33,7 +33,6 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.backup.BackupConfigurationException;
 import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.BackupOperationException;
-import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChainLog;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
@@ -894,7 +893,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          }
 
          // remove repository from configuration
-         repositoryService.removeRepository(repositoryName);
+         repositoryService.removeRepository(repositoryName, true);
          repositoryService.getConfig().retain();
          
          // unbind datasource and close connections
