@@ -890,7 +890,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
          }
 
          // remove repository from configuration
-         repositoryService.removeRepository(repositoryName);
+         repositoryService.removeRepository(repositoryName, true);
          repositoryService.getConfig().retain();
          
          // unbind datasource and close connections
