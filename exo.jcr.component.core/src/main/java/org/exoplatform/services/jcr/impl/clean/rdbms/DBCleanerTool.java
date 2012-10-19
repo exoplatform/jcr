@@ -218,7 +218,7 @@ public class DBCleanerTool
       }
       catch (SQLException e)
       {
-         LOG.error("Query execution \"" + sql + "\" failed");
+         LOG.error("Query execution \"" + sql + "\" failed: " + JDBCUtils.getFullMessage(e), e);
          throw e;
       }
    }
