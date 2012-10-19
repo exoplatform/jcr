@@ -46,8 +46,8 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
@@ -76,7 +76,7 @@ import javax.sql.DataSource;
 public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 {
 
-   public int index = 0;
+   private static int index = 0;
 
    public void testBackupRestoreExistingRepositorySingleDB() throws Exception
    {
@@ -948,7 +948,6 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          try
          {
             Node rootNode = session.getRootNode().addNode("test" + index);
-
             rootNode.addNode("node1").setProperty("prop1", "value1");
             session.save();
          }
