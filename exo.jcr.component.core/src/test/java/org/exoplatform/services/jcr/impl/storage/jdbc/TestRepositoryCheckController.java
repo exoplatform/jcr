@@ -154,22 +154,22 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    public void testLockUsecases() throws Exception
    {
-      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_ENABLED,
+      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED,
          NOT_SHARED_CACHE));
-      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_ENABLED,
+      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED,
          NOT_SHARED_CACHE));
-      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_ENABLED,
+      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED,
          SHARED_CACHE));
-      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_ENABLED,
+      checkConsistentLocksInDataBase(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED,
          SHARED_CACHE));
 
-      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_ENABLED,
+      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED,
          NOT_SHARED_CACHE));
-      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_ENABLED,
+      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED,
          NOT_SHARED_CACHE));
-      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_ENABLED,
+      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED,
          SHARED_CACHE));
-      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_ENABLED,
+      checkInconsistentLocksInLockTable(helper.createRepository(container, DatabaseStructureType.MULTI, CACHE_DISABLED,
          SHARED_CACHE));
    }
 
