@@ -13,9 +13,9 @@
   <section id="Core.LDAPConfiguration.Quickstart">
     <title>Quickstart</title>
 
-    <para>If you just want to have a look at how eXo works with ldap. eXo
-    comes with a predefined ldap configuration. You just need to activate it
-    and eXo will create all it needs to work at startup.</para>
+    <para>If you just want to have a look at how eXo works with LDAP, eXo
+    comes with a predefined LDAP configuration. You just need to activate it
+    and eXo will create everything it needs to work at startup.</para>
 
     <para>You need to have a working LDAP server and a user with write
     permissions.</para>
@@ -78,7 +78,7 @@
     certainly be configured to meet your requirements.</para>
 
     <para>The configuration is done in <emphasis
-    role="bold">ldap-configuration.xml</emphasis> file, and this chapter will
+    role="bold">ldap-configuration.xml</emphasis> file, and this section will
     explain the numerous parameters it contains.</para>
 
     <section id="Core.LDAPConfiguration.Configuration.ConnectionSettings">
