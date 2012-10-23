@@ -165,6 +165,10 @@ public class DBInitializerHelper
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.ingres.sql";
       }
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_H2))
+      {
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.h2.sql";
+      }
       else if (dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.sql";

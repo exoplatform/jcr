@@ -227,6 +227,14 @@ public class SQLExceptionHandler
                throw new JCRInvalidItemStateException(message.toString(), item.getIdentifier(), ItemState.ADDED, e);
             }
 
+            // H2 violation
+            if (e.getClass().getName().indexOf("JdbcSQLException") >= 0
+               && errMessage.indexOf("Unique index or primary key violation") >= 0)
+            {
+               message.append("Item already exists.").append(itemInfo);
+               throw new JCRInvalidItemStateException(message.toString(), item.getIdentifier(), ItemState.ADDED, e);
+            }
+
             message.append("Error of item add. ").append(itemInfo);
             ownException = new RepositoryException(message.toString(), e);
             throw ownException;

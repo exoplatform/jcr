@@ -66,6 +66,10 @@ public class DBCleaningScriptsFactory
       {
          return new HSQLDBCleaningScipts(dialect, wsEntry);
       }
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_H2))
+      {
+         return new HSQLDBCleaningScipts(dialect, wsEntry);
+      }
       else if (dialect.startsWith(DialectConstants.DB_DIALECT_ORACLE))
       {
          return new OracleCleaningScipts(dialect, wsEntry);
@@ -109,6 +113,10 @@ public class DBCleaningScriptsFactory
          return new SybaseCleaningScipts(dialect, rEntry);
       }
       else if (dialect.startsWith(DialectConstants.DB_DIALECT_HSQLDB))
+      {
+         return new HSQLDBCleaningScipts(dialect, rEntry);
+      }
+      else if (dialect.startsWith(DialectConstants.DB_DIALECT_H2))
       {
          return new HSQLDBCleaningScipts(dialect, rEntry);
       }
