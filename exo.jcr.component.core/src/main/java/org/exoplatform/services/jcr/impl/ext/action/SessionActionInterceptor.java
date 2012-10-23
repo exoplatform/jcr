@@ -484,7 +484,7 @@ public class SessionActionInterceptor
       return nodeTypeNames;
    }
 
-   protected final void launch(Condition conditions, InvocationContext context) throws JCRActionException
+   protected final void launch(Condition conditions, InvocationContext context) throws AdvancedActionException
    {
       Set<Action> cond = catalog.getActions(conditions);
       if (cond != null)
@@ -492,17 +492,21 @@ public class SessionActionInterceptor
          Iterator<Action> i = cond.iterator();
          while (i.hasNext())
          {
+            Action action = i.next();
             try
             {
-               i.next().execute(context);
-            }
-            catch (JCRActionException e)
-            {
-               throw e;
+               action.execute(context);
             }
             catch (Exception e)
             {
-               LOG.error(e.getLocalizedMessage(), e);
+               if (action instanceof AdvancedAction)
+               {
+                  ((AdvancedAction)action).onError(e, context);
+               }
+               else
+               {
+                  LOG.error(e.getLocalizedMessage(), e);
+               }
             }
          }
       }

@@ -519,7 +519,7 @@
                                     <boolean>false</boolean>
                                  </field>
                                  <field name="action">
-                                    <object type="org.exoplatform.services.jcr.ext.actions.ActionWithException">
+                                    <object type="org.exoplatform.services.jcr.ext.actions.TestingAdvancedAction">
                                     </object>
                                  </field>
                               </object>

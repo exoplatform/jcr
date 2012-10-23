@@ -16,24 +16,25 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.ext.actions;
+
+package org.exoplatform.services.jcr.impl.ext.action;
 
 import org.apache.commons.chain.Context;
 import org.exoplatform.services.command.action.Action;
-import org.exoplatform.services.jcr.impl.ext.action.JCRActionException;
 
 /**
- * Created by The eXo Platform SAS.
- *
- * @author Dmitriy Vyshinskiy
- * @version $Id: ActionWithException.java 11907 2008-03-13 15:36:21Z ksm $
+ * @author <a href="mailto:dvishinskiy@exoplatform.com">Dmitriy Vyshinskiy</a>
+ * @version $Id: $
  */
-
-public class ActionWithException implements Action
+public interface AdvancedAction extends Action
 {
 
-   public boolean execute(Context ctx) throws JCRActionException
-   {
-      throw new JCRActionException("Test JCRActionException");
-   }
+   /**
+    * This method will be called in case an exception occurs while executing the AdvancedAction.
+    * This method will be called instead of exception logging (default behavior).
+    * @param parentException - is the Exception that occurred while executing the AdvancedAction
+    * @param context The {@link Context} that has been processed by the {@link AdvancedAction}
+    * @throws AdvancedActionException if error occurs.
+    */
+   void onError(Exception parentException, Context context) throws AdvancedActionException;
 }

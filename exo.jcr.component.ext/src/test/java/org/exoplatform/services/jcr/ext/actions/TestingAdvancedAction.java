@@ -16,36 +16,24 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
+package org.exoplatform.services.jcr.ext.actions;
 
-package org.exoplatform.services.jcr.impl.ext.action;
-
-import javax.jcr.RepositoryException;
+import org.apache.commons.chain.Context;
+import org.exoplatform.services.jcr.impl.ext.action.AbstractAdvancedAction;
+import org.exoplatform.services.jcr.impl.ext.action.AdvancedActionException;
 
 /**
- * @author <a href="mailto:dvishinskiy@exoplatform.com">Dmitriy Vyshinskiy</a>
- * @version $Id: $
+ * Created by The eXo Platform SAS.
+ *
+ * @author Dmitriy Vyshinskiy
+ * @version $Id: ActionWithException.java 11907 2008-03-13 15:36:21Z ksm $
  */
-public class JCRActionException extends RepositoryException
+
+public class TestingAdvancedAction extends AbstractAdvancedAction
 {
 
-   public JCRActionException()
+   public boolean execute(Context ctx) throws AdvancedActionException
    {
-      super();
+      throw new AdvancedActionException("AdvancedActionException");
    }
-
-   public JCRActionException(String message)
-   {
-      super(message);
-   }
-
-   public JCRActionException(Throwable rootCause)
-   {
-      super(rootCause);
-   }
-
-   public JCRActionException(String message, Throwable rootCause)
-   {
-      super(message, rootCause);
-   }
-
 }

@@ -16,40 +16,48 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.ext.actions;
 
-import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
-import org.exoplatform.services.jcr.impl.ext.action.AdvancedActionException;
+package org.exoplatform.services.jcr.impl.ext.action;
 
-import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
- * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
+ * @author <a href="mailto:dvishinskiy@exoplatform.com">Dmitriy Vyshinskiy</a>
  * @version $Id: $
  */
-public class TestActions extends BaseStandaloneTest
+public class AdvancedActionException extends RepositoryException
 {
 
-   public void testAddMyAction() throws RepositoryException
+   /**
+    * {@inheritDoc}
+    */
+   public AdvancedActionException()
    {
-      Node test = root.addNode("testPath");
-
-      assertTrue(test.getNode("myActionNode") != null);
-      assertTrue(test.getNode("myActionNode").getProperty("myProperty") != null);
+      super();
    }
 
-
-   public void testAdvancedActionWithException() throws RepositoryException
+   /**
+    * {@inheritDoc}
+    */
+   public AdvancedActionException(String message)
    {
-      try
-      {
-         root.addNode("testpathexc");
-         fail("AdvancedActionException expected");
-      }
-      catch(AdvancedActionException e){
-         //ok
-      }
+      super(message);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public AdvancedActionException(Throwable rootCause)
+   {
+      super(rootCause);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public AdvancedActionException(String message, Throwable rootCause)
+   {
+      super(message, rootCause);
    }
 
 }

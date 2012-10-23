@@ -21,6 +21,21 @@
       workspace (such as: Session.addNode(), Session.setProperty(),
       Workspace.move() etc.</para>
 
+      <para>By default when an action fails, the related exception is simply logged.
+       In case you would like to change the default exception handling, you can implement
+       the interface AdvancedAction. In case the JCR detects that your action is of type AdvancedAction,
+       it will call the method onError instead of simply logging it.
+       A default implementation of the onError method is available in the abstract class AbstractAdvancedAction.
+       It reverts all pending changes of the current JCR session for any kind of event corresponding to a write operation.
+       Then in case the provided exception is an instance of type AdvancedActionException, it will throw it otherwise it will log simply it.
+       An AdvancedActionException will be thrown in case the changes could not be reverted.</para>
+
+	  <warning>
+	    <para>
+	      AdvancedAction interface must be implemented with a lot of caution to avoid being a performance killer.
+	    </para>
+	  </warning>
+
       <para>One important recommendation should be applied for an extension
       action implementation. Each action will add its own execution time to
       standard JCR methods (Session.addNode(), Session.setProperty(),
@@ -33,6 +48,7 @@
       save these changes immediately after the JCR API method call is
       returned, the suggestion with Thread is not applicable for you in this
       case.</para>
+
     </section>
 
     <section id="JCR.Extensions.Implementation">
