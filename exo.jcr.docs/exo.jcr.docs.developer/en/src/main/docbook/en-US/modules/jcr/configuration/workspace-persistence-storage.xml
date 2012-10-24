@@ -97,7 +97,7 @@
 
     <listitem>
       <para><emphasis role="bold">dialect</emphasis>: Database dialect, one of
-      "hsqldb", "mysql", "mysql-myisam", "mysql-utf8", "mysql-myisam-utf8",
+      "hsqldb", "h2", "mysql", "mysql-myisam", "mysql-utf8", "mysql-myisam-utf8",
       "pgsql", "pgsql-scs", "oracle", "oracle-oci", "mssql", "sybase",
       "derby", "db2" ,"db2-mys", "db2v8". The default value is "auto".</para>
     </listitem>
