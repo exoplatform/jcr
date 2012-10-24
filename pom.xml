@@ -26,12 +26,12 @@
     <groupId>org.exoplatform</groupId>
     <artifactId>foundation-parent</artifactId>
     <version>12</version>
-    <relativePath/>
+    <relativePath />
   </parent>
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.15.0-CR2-SNAPSHOT</version>
+  <version>1.15.0-CR2</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
   <description>Exoplatform SAS 'eXo JCR'(JSR-170 implementation) project.</description>
