@@ -185,6 +185,23 @@
       </properties-param>
     </init-params>
   </component>
+
+  <component>
+    <key>org.exoplatform.services.jcr.impl.quota.QuotaManager</key>
+    <type>org.exoplatform.services.jcr.impl.quota.infinispan.ISPNQuotaManagerImpl</type>
+    <init-params>
+      <value-param>
+        <name>exceeded-quota-behaviour</name>
+        <value>exception</value>
+      </value-param>
+      <properties-param>
+        <name>cache-configuration</name>
+        <description>infinispan-configuration</description>
+        <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr"/>
+        <property name="infinispan-configuration" value="conf/standalone/test-infinispan-quota.xml" />
+      </properties-param>
+    </init-params>
+  </component>
   
   <component>
     <type>org.exoplatform.services.organization.impl.mock.DummyOrganizationService</type>
@@ -273,6 +290,7 @@
           <property name="url" value="${jdbcjcr.url:jdbc:hsqldb:file:target/temp/data/portal;hsqldb.tx=mvcc}"/>
           <property name="username" value="${jdbcjcr.username:sa}"/>
           <property name="password" value="${jdbcjcr.password:}"/>
+          <property name="maxActive" value="250" />
         </properties-param>
       </init-params>
     </component-plugin>
@@ -381,7 +399,7 @@
           <property name="url" value="jdbc:hsqldb:file:target/temp/data/jcrtest"/>
           <property name="username" value="sa"/>
           <property name="password" value=""/>
-          <property name="maxActive" value="100" />
+          <property name="maxActive" value="1000" />
         </properties-param>
       </init-params>
     </component-plugin>
@@ -625,7 +643,7 @@
           <property name="url" value="${testdbcleaner.url:jdbc:hsqldb:file:target/temp/data/testdbcleaner}"/>
           <property name="username" value="${testdbcleaner.username:sa}"/>
           <property name="password" value="${testdbcleaner.password:}"/>
-          <property name="maxActive" value="20" />
+          <property name="maxActive" value="200" />
         </properties-param>
       </init-params>
     </component-plugin>

@@ -64,18 +64,19 @@ public class ValueFileIOHelper
     *          File
     * @param value
     *          ValueData
+    * @return size of wrote content
     * @throws IOException
     *           if error occurs
     */
-   protected void writeValue(File file, ValueData value) throws IOException
+   protected long writeValue(File file, ValueData value) throws IOException
    {
       if (value.isByteArray())
       {
-         writeByteArrayValue(file, value);
+         return writeByteArrayValue(file, value);
       }
       else
       {
-         writeStreamedValue(file, value);
+         return writeStreamedValue(file, value);
       }
    }
 
@@ -86,15 +87,19 @@ public class ValueFileIOHelper
     *          File
     * @param value
     *          ValueData
+    * @return size of wrote content
     * @throws IOException
     *           if error occurs
     */
-   protected void writeByteArrayValue(File file, ValueData value) throws IOException
+   protected long writeByteArrayValue(File file, ValueData value) throws IOException
    {
       OutputStream out = new FileOutputStream(file);
       try
       {
-         out.write(value.getAsByteArray());
+         byte[] data = value.getAsByteArray();
+         out.write(data);
+
+         return data.length;
       }
       finally
       {
@@ -109,11 +114,14 @@ public class ValueFileIOHelper
     *          File
     * @param value
     *          ValueData
+    * @return size of wrote content
     * @throws IOException
     *           if error occurs
     */
-   protected void writeStreamedValue(File file, ValueData value) throws IOException
+   protected long writeStreamedValue(File file, ValueData value) throws IOException
    {
+      long size;
+
       // stream Value
       if (value instanceof StreamPersistedValueData)
       {
@@ -122,7 +130,7 @@ public class ValueFileIOHelper
          if (streamed.isPersisted())
          {
             // already persisted in another Value, copy it to this Value
-            copyClose(streamed.getAsStream(), new FileOutputStream(file));
+            size = copyClose(streamed.getAsStream(), new FileOutputStream(file));
          }
          else
          {
@@ -141,13 +149,17 @@ public class ValueFileIOHelper
                         + file.getAbsolutePath());
                   }
 
-                  copyClose(new FileInputStream(tempFile), new FileOutputStream(file));
+                  size = copyClose(new FileInputStream(tempFile), new FileOutputStream(file));
+               }
+               else
+               {
+                  size = file.length();
                }
             }
             else
             {
                // not spooled, use client InputStream
-               copyClose(streamed.getStream(), new FileOutputStream(file));
+               size = copyClose(streamed.getStream(), new FileOutputStream(file));
             }
 
             // link this Value to file in VS
@@ -157,8 +169,10 @@ public class ValueFileIOHelper
       else
       {
          // copy from Value stream to the file, e.g. from FilePersistedValueData to this Value
-         copyClose(value.getAsStream(), new FileOutputStream(file));
+         size = copyClose(value.getAsStream(), new FileOutputStream(file));
       }
+
+      return size;
    }
 
    /**
@@ -168,15 +182,19 @@ public class ValueFileIOHelper
     *          OutputStream
     * @param value
     *          ValueData
+    * @param return
+    *          size of wrote content
     * @throws IOException
     *           if error occurs
     */
-   protected void writeOutput(OutputStream out, ValueData value) throws IOException
+   protected long writeOutput(OutputStream out, ValueData value) throws IOException
    {
       if (value.isByteArray())
       {
          byte[] buff = value.getAsByteArray();
          out.write(buff);
+
+         return buff.length;
       }
       else
       {
@@ -206,7 +224,7 @@ public class ValueFileIOHelper
 
          try
          {
-            copy(in, out);
+            return copy(in, out);
          }
          finally
          {

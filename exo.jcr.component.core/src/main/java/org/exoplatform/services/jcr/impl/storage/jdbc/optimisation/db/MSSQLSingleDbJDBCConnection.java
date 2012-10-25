@@ -64,6 +64,28 @@ public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
+   protected void prepareQueries() throws SQLException
+   {
+      super.prepareQueries();
+
+      FIND_PROPERTY_BY_ID =
+         "select len(DATA), I.P_TYPE, V.STORAGE_DESC from JCR_SITEM I, JCR_SVALUE V where I.ID = ? and V.PROPERTY_ID = I.ID";
+
+      FIND_WORKSPACE_DATA_SIZE =
+         "select sum(len(DATA)) from JCR_SITEM I, JCR_SVALUE V where I.I_CLASS=2 and I.CONTAINER_NAME=?"
+            + " and I.ID=V.PROPERTY_ID";
+
+      FIND_NODE_DATA_SIZE =
+         "select sum(len(DATA)) from JCR_SITEM I, JCR_SVALUE V where I.PARENT_ID=? and I.I_CLASS=2"
+            + " and I.CONTAINER_NAME=? and I.ID=V.PROPERTY_ID";
+
+      FIND_VALUE_STORAGE_DESC_AND_SIZE = "select len(DATA), STORAGE_DESC from JCR_SVALUE where PROPERTY_ID=?";
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
    {
       if (findNodesAndProperties != null)

@@ -30,6 +30,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.SimpleChangedSizeHandler;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
@@ -174,7 +175,7 @@ public class NodeRemover extends AbstractInconsistencyRepair
       NodeData node = createNodeData(resultSet);
       for (PropertyData prop : conn.getChildPropertiesData(node))
       {
-         conn.delete(prop);
+         conn.delete(prop, new SimpleChangedSizeHandler());
       }
 
       // remove nodes

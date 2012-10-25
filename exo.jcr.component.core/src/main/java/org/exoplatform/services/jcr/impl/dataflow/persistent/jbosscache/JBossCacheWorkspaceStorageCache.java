@@ -50,8 +50,8 @@ import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.SimplePersistedSize;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory;
 import org.exoplatform.services.jcr.jbosscache.ExoJBossCacheFactory.CacheType;
 import org.exoplatform.services.log.ExoLogger;
@@ -826,7 +826,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       {
          cache.getNode(fqn).setResident(true);
       }
-
    }
 
    protected static String readJBCConfig(final WorkspaceEntry wsConfig) throws RepositoryConfigurationException
@@ -1914,7 +1913,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             PropertyData newProp =
                new PersistedPropertyData(prop.getIdentifier(), prop.getQPath(), prop.getParentIdentifier(),
                   prop.getPersistedVersion(), prop.getType(), prop.isMultiValued(),
-                  ((PropertyData)prevData).getValues());
+                  ((PropertyData)prevData).getValues(), new SimplePersistedSize(
+                     ((PersistedPropertyData)prevData).getPersistedSize()));
 
             // update item data with new name and old values only
             cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
@@ -2003,7 +2003,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
                PropertyData newProp =
                   new PersistedPropertyData(prevProp.getIdentifier(), newPath, prevProp.getParentIdentifier(),
-                     prevProp.getPersistedVersion(), prevProp.getType(), prevProp.isMultiValued(), prevProp.getValues());
+                     prevProp.getPersistedVersion(), prevProp.getType(), prevProp.isMultiValued(),
+                     prevProp.getValues(), new SimplePersistedSize(
+                        ((PersistedPropertyData)prevProp).getPersistedSize()));
                cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
             }
          }
@@ -2030,10 +2032,11 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
          }
          // recreate with new path for child Nodes only
-         TransientNodeData newNode =
-            new TransientNodeData(prevNode.getQPath(), prevNode.getIdentifier(), prevNode.getPersistedVersion(),
-               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
-                  .getParentIdentifier(), acl);
+         PersistedNodeData newNode =
+            new PersistedNodeData(prevNode.getIdentifier(), prevNode.getQPath(), prevNode.getParentIdentifier(),
+               prevNode.getPersistedVersion(), prevNode.getOrderNumber(), prevNode.getPrimaryTypeName(),
+               prevNode.getMixinTypeNames(), acl);
+
          // update this node
          cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
          // update childs recursive

@@ -185,6 +185,22 @@
       </properties-param>
     </init-params>
   </component>
+
+  <component>
+    <key>org.exoplatform.services.jcr.impl.quota.QuotaManager</key>
+    <type>org.exoplatform.services.jcr.impl.quota.jbosscache.JBCQuotaManagerImpl</type>
+    <init-params>
+      <value-param>
+        <name>exceeded-quota-behaviour</name>
+        <value>exception</value>
+      </value-param>
+      <properties-param>
+        <name>cache-configuration</name>
+        <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr"/>
+        <property name="jbosscache-configuration" value="conf/standalone/cluster/test-jbosscache-quota.xml" />
+      </properties-param>
+    </init-params>
+  </component>
   
   <component>
     <type>org.exoplatform.services.organization.impl.mock.DummyOrganizationService</type>
@@ -291,6 +307,7 @@
           <property name="url" value="${jdbcjcr.url:jdbc:hsqldb:file:target/temp/data/portal;hsqldb.tx=mvcc}"/>
           <property name="username" value="${jdbcjcr.username:sa}"/>
           <property name="password" value="${jdbcjcr.password:}"/>
+          <property name="maxActive" value="20" />
         </properties-param>
       </init-params>
     </component-plugin>

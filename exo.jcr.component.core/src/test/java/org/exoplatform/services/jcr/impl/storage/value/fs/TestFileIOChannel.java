@@ -23,6 +23,8 @@ import junit.framework.TestCase;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.TesterTransientValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ChangedSizeHandler;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.SimpleChangedSizeHandler;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
@@ -114,7 +116,8 @@ public class TestFileIOChannel extends TestCase
       // List <ValueData> values = channel.read("testReadFromIOChannel", 11);
 
       // assertEquals(2, values.size());
-      ValueData v0 = channel.read("testReadFromIOChannel", 0, PropertyType.BINARY, SpoolConfig.getDefaultSpoolConfig());
+      ValueData v0 =
+         channel.read("testReadFromIOChannel", 0, PropertyType.BINARY, SpoolConfig.getDefaultSpoolConfig()).value;
       assertEquals(10, v0.getLength());
       assertEquals(0, v0.getOrderNumber());
       assertEquals(10, v0.getAsByteArray().length);
@@ -124,7 +127,7 @@ public class TestFileIOChannel extends TestCase
       SpoolConfig spoolConfig = SpoolConfig.getDefaultSpoolConfig();
       spoolConfig.maxBufferSize = 11;
 
-      ValueData v1 = channel.read("testReadFromIOChannel", 1, PropertyType.BINARY, spoolConfig);
+      ValueData v1 = channel.read("testReadFromIOChannel", 1, PropertyType.BINARY, spoolConfig).value;
       assertEquals(20, v1.getLength());
       assertEquals(1, v1.getOrderNumber());
       assertFalse(v1.isByteArray());
@@ -152,9 +155,10 @@ public class TestFileIOChannel extends TestCase
       values.add(testerTransientValueData.getTransientValueData(buf, 1));
       values.add(testerTransientValueData.getTransientValueData(buf, 2));
 
+      ChangedSizeHandler sizeHandler = new SimpleChangedSizeHandler();
       for (ValueData valueData : values)
       {
-         channel.write("testWriteToIOChannel", valueData);
+         channel.write("testWriteToIOChannel", valueData, sizeHandler);
       }
       channel.commit();
 
@@ -163,19 +167,18 @@ public class TestFileIOChannel extends TestCase
       assertTrue(new File(rootDir, "testWriteToIOChannel2").exists());
 
       assertEquals(10, new File(rootDir, "testWriteToIOChannel0").length());
+      assertEquals(30, sizeHandler.getChangedSize());
 
       channel.delete("testWriteToIOChannel");
       channel.commit();
-      // try to read
-      // values = channel.read("testWriteToIOChannel", 5);
-      // assertEquals(3, values.size());
    }
 
    protected void writeUpdate(FileIOChannel channel) throws Exception
    {
-
       byte[] buf = "0123456789".getBytes();
-      channel.write("testWriteUpdate", testerTransientValueData.getTransientValueData(buf, 0));
+      channel
+.write("testWriteUpdate", testerTransientValueData.getTransientValueData(buf, 0),
+         new SimpleChangedSizeHandler());
       channel.commit();
 
       File f = channel.getFile("testWriteUpdate", 0);
@@ -183,7 +186,8 @@ public class TestFileIOChannel extends TestCase
       assertEquals(10, f.length());
 
       byte[] buf1 = "qwerty".getBytes();
-      channel.write("testWriteUpdate", testerTransientValueData.getTransientValueData(buf1, 0));
+      channel.write("testWriteUpdate", testerTransientValueData.getTransientValueData(buf1, 0),
+         new SimpleChangedSizeHandler());
       channel.commit();
 
       f = channel.getFile("testWriteUpdate", 0);
@@ -217,7 +221,7 @@ public class TestFileIOChannel extends TestCase
 
       for (ValueData valueData : values)
       {
-         channel.write("testDeleteFromIOChannel", valueData);
+         channel.write("testDeleteFromIOChannel", valueData, new SimpleChangedSizeHandler());
       }
       channel.commit();
 
@@ -255,7 +259,7 @@ public class TestFileIOChannel extends TestCase
       values.add(testerTransientValueData.getTransientValueData(buf, 0));
       for (ValueData valueData : values)
       {
-         channel.write("testConcurrentReadFromIOChannel", valueData);
+         channel.write("testConcurrentReadFromIOChannel", valueData, new SimpleChangedSizeHandler());
       }
       channel.commit();
 
@@ -303,7 +307,7 @@ public class TestFileIOChannel extends TestCase
       values.add(testerTransientValueData.getTransientValueData(buf, 0));
       for (ValueData valueData : values)
       {
-         channel.write("testDeleteLockedFileFromIOChannel", valueData);
+         channel.write("testDeleteLockedFileFromIOChannel", valueData, new SimpleChangedSizeHandler());
       }
       channel.commit();
 

@@ -59,6 +59,11 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected void prepareQueries() throws SQLException
    {
       super.prepareQueries();
+
+      FIND_PROPERTY_BY_ID =
+         "select len(DATA), I.P_TYPE, V.STORAGE_DESC from " + JCR_ITEM + " I, " + JCR_VALUE
+            + " V where I.ID = ? and V.PROPERTY_ID = I.ID";
+
       FIND_NODES_AND_PROPERTIES_TEMPLATE =
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from " + JCR_VALUE + " V WITH (INDEX (" + JCR_IDX_VALUE_PROPERTY
@@ -67,6 +72,14 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
             + JCR_ITEM + " I" + " WITH (INDEX (" + JCR_PK_ITEM
             + ")) where I.I_CLASS=1 AND I.ID > ? order by I.ID) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
+
+      FIND_WORKSPACE_DATA_SIZE = "select sum(len(DATA)) from " + JCR_VALUE;
+
+      FIND_NODE_DATA_SIZE =
+         "select sum(len(DATA)) from " + JCR_ITEM + " I, " + JCR_VALUE
+            + " V  where I.PARENT_ID=? and I.I_CLASS=2 and I.ID=V.PROPERTY_ID";
+
+      FIND_VALUE_STORAGE_DESC_AND_SIZE = "select len(DATA), STORAGE_DESC from " + JCR_VALUE + " where PROPERTY_ID=?";
    }
 
    /**

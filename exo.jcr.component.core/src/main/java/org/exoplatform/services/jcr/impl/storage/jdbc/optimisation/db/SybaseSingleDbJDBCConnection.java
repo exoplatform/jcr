@@ -120,6 +120,9 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
 
       super.prepareQueries();
 
+      FIND_PROPERTY_BY_ID =
+         "select datalength(DATA), I.P_TYPE, V.STORAGE_DESC from JCR_SITEM I, JCR_SVALUE V where I.ID = ? and V.PROPERTY_ID = I.ID";
+
       SELECT_LIMIT_OFFSET_NODES_INTO_TEMPORARY_TABLE =
          "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM into "
             + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + " from JCR_SITEM I (index JCR_PK_SITEM)"
@@ -144,6 +147,16 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
       DELETE_TEMPORARY_TABLE_A = "drop table " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
       DELETE_TEMPORARY_TABLE_B = "drop table " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME;
+
+      FIND_WORKSPACE_DATA_SIZE =
+         "select sum(datalength(DATA)) from JCR_SITEM I, JCR_SVALUE V where I.I_CLASS=2 and I.CONTAINER_NAME=?"
+            + " and I.ID=V.PROPERTY_ID";
+
+      FIND_NODE_DATA_SIZE =
+         "select sum(datalength(DATA)) from JCR_SITEM I, JCR_SVALUE V where I.PARENT_ID=? and I.I_CLASS=2"
+            + " and I.CONTAINER_NAME=? and I.ID=V.PROPERTY_ID";
+
+      FIND_VALUE_STORAGE_DESC_AND_SIZE = "select datalength(DATA), STORAGE_DESC from JCR_SVALUE where PROPERTY_ID=?";
    }
 
    /**

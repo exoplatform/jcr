@@ -18,11 +18,15 @@
  */
 package org.exoplatform.services.jcr.dataflow;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
+import org.exoplatform.services.jcr.dataflow.serialization.SerializationConstants;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ChangedSizeHandler;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ReadOnlyChangedSizeHandler;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -70,12 +74,12 @@ public class ItemState implements Externalizable
    private boolean isPersisted = true;
 
    /**
-    * Indicates that item is created internaly by system
+    * Indicates that item is created internally by system
     */
    private transient boolean internallyCreated = false;
 
    /**
-    * if storing of this state ahould cause event firing
+    * if storing of this state should cause event firing
     */
    protected transient boolean eventFire;
 
@@ -90,15 +94,12 @@ public class ItemState implements Externalizable
    private QPath oldPath;
 
    /**
-    * The constructor
-    * 
-    * @param data
-    *          underlying data
-    * @param state
-    * @param eventFire
-    *          - if the state cause some event firing
-    * @param ancestorToSave
-    *          - path of item which should be called in save (usually for session.move())
+    * Handler to manage changing in persisted content size.
+    */
+   private transient ChangedSizeHandler sizeHandler;
+
+   /**
+    * ItemState constructor.
     */
    public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave)
    {
@@ -106,15 +107,7 @@ public class ItemState implements Externalizable
    }
 
    /**
-    * @param data
-    *          underlying data
-    * @param state
-    * @param eventFire
-    *          - if the state cause some event firing
-    * @param ancestorToSave
-    *          - path of item which should be called in save (usually for session.move())
-    * @param isInternalCreated
-    *          - indicates that item is created internally by system
+    * ItemState constructor.
     */
    public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave, boolean isInternalCreated)
    {
@@ -122,17 +115,7 @@ public class ItemState implements Externalizable
    }
 
    /**
-    * @param data
-    *          underlying data
-    * @param state
-    * @param eventFire
-    *          - if the state cause some event firing
-    * @param ancestorToSave
-    *          - path of item which should be called in save (usually for session.move())
-    * @param isInternalCreated
-    *          - indicates that item is created internally by system
-    * @param oldPath
-    *          - store to old node path during Session.move() operation           
+    * ItemState constructor.
     */
    public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave, boolean isInternalCreated,
       boolean isPersisted, QPath oldPath)
@@ -141,32 +124,44 @@ public class ItemState implements Externalizable
       this.oldPath = oldPath;
    }
 
+   /**
+    * ItemState constructor.
+    */
+   public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave, boolean isInternalCreated,
+      boolean isPersisted, QPath oldPath, ChangedSizeHandler sizeHandler)
+   {
+      this(data, state, eventFire, ancestorToSave, isInternalCreated, isPersisted, oldPath);
+      this.sizeHandler = sizeHandler;
+
+
+   }
+
+   /**
+    * ItemState constructor.
+    */
    public ItemState(ItemData data, int state, boolean eventFire, QPath ancestorToSave, boolean isInternalCreated,
       boolean isPersisted)
    {
-      if (isInternalCreated)
-      {
-         // Need privileges
-         SecurityManager security = System.getSecurityManager();
-         if (security != null)
-         {
-            security.checkPermission(JCRRuntimePermissions.INVOKE_INTERNAL_API_PERMISSION);
-         }
-      }
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.INVOKE_INTERNAL_API_PERMISSION);
 
       this.data = data;
       this.state = state;
       this.eventFire = eventFire;
       if (ancestorToSave == null)
+      {
          this.ancestorToSave = data.getQPath();
+      }
       else
+      {
          this.ancestorToSave = ancestorToSave;
+      }
       this.internallyCreated = isInternalCreated;
       this.isPersisted = isPersisted;
 
       if (LOG.isDebugEnabled())
+      {
          LOG.debug(nameFromValue(state) + " " + data.getQPath().getAsString() + ",  " + data.getIdentifier());
-
+      }
    }
 
    public boolean isPersisted()
@@ -290,21 +285,6 @@ public class ItemState implements Externalizable
          && this.getState() == item.getState();
    }
 
-   /**
-    * Is two item states are same. Added for merger.
-    * 
-    * isSame.
-    * 
-    * @param src
-    * @param dst
-    * @return
-    */
-   public boolean isSame(String dstIdentifier, QPath dstPath, int dstState)
-   {
-      return this.getData().getIdentifier().hashCode() == dstIdentifier.hashCode()
-         && this.getData().getQPath().hashCode() == dstPath.hashCode() && this.getState() == dstState;
-   }
-
    public static ItemState createAddedAutoCreatedNodes(ItemData data)
    {
       return new ItemState(data, ADDED_AUTO_CREATED_NODES, false, null, false);
@@ -345,23 +325,6 @@ public class ItemState implements Externalizable
    }
 
    /**
-    * creates RENAMED item state shortcut for new ItemState(data, RENAMED, true, true, null)
-    * 
-    * @param data
-    * @param needValidation
-    * @return
-    */
-   public static ItemState createRenamedState(ItemData data)
-   {
-      return new ItemState(data, RENAMED, true, null);
-   }
-
-   public static ItemState createRenamedState(ItemData data, boolean isInternalCreated)
-   {
-      return new ItemState(data, RENAMED, true, null, isInternalCreated);
-   }
-
-   /**
     * creates DELETED item state shortcut for new ItemState(data, DELETED, true, true, null)
     * 
     * @param data
@@ -376,6 +339,23 @@ public class ItemState implements Externalizable
    public static ItemState createDeletedState(ItemData data, boolean isInternalCreated)
    {
       return new ItemState(data, DELETED, true, null, isInternalCreated);
+   }
+
+   /**
+    * creates RENAMED item state shortcut for new ItemState(data, RENAMED, true, true, null)
+    * 
+    * @param data
+    * @param needValidation
+    * @return
+    */
+   public static ItemState createRenamedState(ItemData data)
+   {
+      return new ItemState(data, RENAMED, true, null);
+   }
+
+   public static ItemState createRenamedState(ItemData data, boolean isInternalCreated)
+   {
+      return new ItemState(data, RENAMED, true, null, isInternalCreated);
    }
 
    /**
@@ -425,7 +405,35 @@ public class ItemState implements Externalizable
       return internallyCreated;
    }
 
+   /**
+    * @see {@link ChangedSizeHandler#getChangedSize()}
+    */
+   public long getChangedSize()
+   {
+      if (sizeHandler == null)
+      {
+         throw new IllegalStateException("Changed size value is undefine. May be it is not appropriate place to invoke");
+      }
+
+      return sizeHandler.getChangedSize();
+   }
+
+   /**
+    * Returns {@link ChangedSizeHandler} instance currently
+    * injected.
+    */
+   public ChangedSizeHandler getChangedSizeHandler()
+   {
+      if (sizeHandler == null || sizeHandler instanceof ReadOnlyChangedSizeHandler)
+      {
+         return sizeHandler;
+      }
+
+      return new ReadOnlyChangedSizeHandler(sizeHandler.getNewSize(), sizeHandler.getPrevSize());
+   }
+
    // Externalizable --------------------
+
    public ItemState()
    {
    }
@@ -438,10 +446,11 @@ public class ItemState implements Externalizable
 
       if (oldPath == null)
       {
-         out.writeInt(-1);
+         out.writeInt(SerializationConstants.NULL_DATA);
       }
       else
       {
+         out.writeInt(SerializationConstants.NOT_NULL_DATA);
          byte[] buf = oldPath.getAsString().getBytes(Constants.DEFAULT_ENCODING);
          out.writeInt(buf.length);
          out.write(buf);
@@ -456,14 +465,9 @@ public class ItemState implements Externalizable
       isPersisted = in.readBoolean();
       eventFire = in.readBoolean();
       
-      int len = in.readInt();
-      if (len == -1)
+      if (in.readInt() == SerializationConstants.NOT_NULL_DATA)
       {
-         oldPath = null;
-      }
-      else
-      {
-         byte[] buf = new byte[len];
+         byte[] buf = new byte[in.readInt()];
          in.readFully(buf);
 
          try
@@ -475,8 +479,7 @@ public class ItemState implements Externalizable
             throw new IOException("Data currupted.", e);
          }
       }
-      
+
       data = (ItemData)in.readObject();
    }
-
 }

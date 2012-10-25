@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ChangedSizeHandler;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.statistics.JCRStatisticsManager;
 import org.exoplatform.services.jcr.statistics.Statistics;
@@ -198,6 +199,18 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    private static final String HAS_ITEM_DATA_DESCR = "hasItemData";
 
    /**
+    * The description of the statistics corresponding to the method
+    * {@link WorkspaceStorageConnection#getWorkspaceDataSize()}.
+    */
+   private static final String GET_WORKSPACE_DATA_SIZE = "getWorkspaceDataSize";
+
+   /**
+    * The description of the statistics corresponding to the method
+    * {@link WorkspaceStorageConnection#getNodeDataSize(String)}.
+    */
+   private static final String GET_NODE_DATA_SIZE = "getNodeDataSize";
+
+   /**
     * The global statistics for all the database accesses
     */
    private final static Statistics GLOBAL_STATISTICS = new Statistics(null, "global");
@@ -251,6 +264,8 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       // Others
       ALL_STATISTICS.put(IS_OPENED_DESCR, new Statistics(null, IS_OPENED_DESCR));
       ALL_STATISTICS.put(CLOSE_DESCR, new Statistics(null, CLOSE_DESCR));
+      ALL_STATISTICS.put(GET_WORKSPACE_DATA_SIZE, new Statistics(null, GET_WORKSPACE_DATA_SIZE));
+      ALL_STATISTICS.put(GET_NODE_DATA_SIZE, new Statistics(null, GET_NODE_DATA_SIZE));
    }
 
    static
@@ -303,14 +318,15 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * {@inheritDoc}
     */
-   public void add(PropertyData data) throws RepositoryException, UnsupportedOperationException,
+   public void add(PropertyData data, ChangedSizeHandler sizeHandler) throws RepositoryException,
+      UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
    {
       Statistics s = ALL_STATISTICS.get(ADD_PROPERTY_DATA_DESCR);
       try
       {
          s.begin();
-         wcs.add(data);
+         wcs.add(data, sizeHandler);
       }
       finally
       {
@@ -373,14 +389,15 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * {@inheritDoc}
     */
-   public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
+   public void delete(PropertyData data, ChangedSizeHandler sizeHandler) throws RepositoryException,
+      UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
    {
       Statistics s = ALL_STATISTICS.get(DELETE_PROPERTY_DATA_DESCR);
       try
       {
          s.begin();
-         wcs.delete(data);
+         wcs.delete(data, sizeHandler);
       }
       finally
       {
@@ -670,14 +687,15 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * {@inheritDoc}
     */
-   public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
+   public void update(PropertyData data, ChangedSizeHandler sizeHandler) throws RepositoryException,
+      UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
    {
       Statistics s = ALL_STATISTICS.get(UPDATE_PROPERTY_DATA_DESCR);
       try
       {
          s.begin();
-         wcs.update(data);
+         wcs.update(data, sizeHandler);
       }
       finally
       {
@@ -732,6 +750,40 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
       {
          s.begin();
          return wcs.hasItemData(parentData, name, itemType);
+      }
+      finally
+      {
+         s.end();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public long getWorkspaceDataSize() throws RepositoryException
+   {
+      Statistics s = ALL_STATISTICS.get(GET_WORKSPACE_DATA_SIZE);
+      try
+      {
+         s.begin();
+         return wcs.getWorkspaceDataSize();
+      }
+      finally
+      {
+         s.end();
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public long getNodeDataSize(String parentId) throws RepositoryException
+   {
+      Statistics s = ALL_STATISTICS.get(GET_NODE_DATA_SIZE);
+      try
+      {
+         s.begin();
+         return wcs.getWorkspaceDataSize();
       }
       finally
       {

@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ChangedSizeHandler;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.storage.value.cas.RecordAlreadyExistsException;
@@ -82,26 +83,11 @@ public class CASableWriteValue extends WriteValue
 
    /**
     * CASableWriteValue constructor.
-    * 
-    * @param value
-    *          ValueData to be saved
-    * @param resources
-    *          ValueDataResourceHolder
-    * @param cleaner
-    *          FileCleaner
-    * @param tempDir
-    *          File
-    * @param propertyId
-    *          Affected Property Id.
-    * @param vcas
-    *          ValueContentAddressStorage
-    * @param cas
-    *          CASableIOSupport
     */
    public CASableWriteValue(ValueData value, ValueDataResourceHolder resources, FileCleaner cleaner, File tempDir,
-      String propertyId, ValueContentAddressStorage vcas, CASableIOSupport cas)
+      String propertyId, ValueContentAddressStorage vcas, CASableIOSupport cas, ChangedSizeHandler sizeHandler)
    {
-      super(null, value, resources, cleaner, tempDir);
+      super(null, value, resources, cleaner, tempDir, sizeHandler);
 
       this.vcas = vcas;
       this.cas = cas;
@@ -124,7 +110,8 @@ public class CASableWriteValue extends WriteValue
       FileDigestOutputStream out = cas.openFile(temp);
       try
       {
-         writeOutput(out, value);
+         long contentSize = writeOutput(out, value);
+         sizeHandler.accumulateNewSize(contentSize);
       }
       finally
       {

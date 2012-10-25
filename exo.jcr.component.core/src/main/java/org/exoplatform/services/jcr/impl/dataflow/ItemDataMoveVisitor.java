@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataTraversingVisitor;
 import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
@@ -30,6 +31,8 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ChangedSizeHandler;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ReadOnlyChangedSizeHandler;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.util.ArrayList;
@@ -278,10 +281,12 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    @Override
    protected void entering(PropertyData property, int level) throws RepositoryException
    {
-
       InternalQName qname = property.getQPath().getName();
 
       List<ValueData> values;
@@ -299,13 +304,40 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
          values = property.getValues();
       }
 
-      TransientPropertyData newProperty =
-         new TransientPropertyData(QPath.makeChildPath(curParent().getQPath(), qname), keepIdentifiers ? property
-            .getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(), property
-            .isMultiValued(), values);
+      PropertyData newProperty =
+         new TransientPropertyData(QPath.makeChildPath(curParent().getQPath(), qname), keepIdentifiers
+            ? property.getIdentifier() : IdGenerator.generate(), -1, property.getType(), curParent().getIdentifier(),
+            property.isMultiValued(), values);
 
-      addStates.add(new ItemState(newProperty, ItemState.RENAMED, false, ancestorToSave, false, false));
-      deleteStates.add(new ItemState(property, ItemState.DELETED, false, ancestorToSave, false, false));
+      createStates(property, newProperty);
+   }
+
+   /**
+    * Creates item states and adds them to changes log. If possible tries
+    * to inject {@link ChangedSizeHandler} to manage data size changes.
+    *
+    * @param prevProperty
+    *          {@link PropertyData} currently exists into storage.
+    * @param newProperty
+    *          {@link PropertyData} will be saved to the storage
+    */
+   private void createStates(PropertyData prevProperty, PropertyData newProperty)
+   {
+      ReadOnlyChangedSizeHandler delChangedSizeHandler = null;
+      ReadOnlyChangedSizeHandler addChangedSizeHandler = null;
+
+      if (prevProperty instanceof PersistedPropertyData)
+      {
+         PersistedPropertyData persistedPrevProp = (PersistedPropertyData)prevProperty;
+
+         delChangedSizeHandler = new ReadOnlyChangedSizeHandler(0, persistedPrevProp.getPersistedSize());
+         addChangedSizeHandler = new ReadOnlyChangedSizeHandler(persistedPrevProp.getPersistedSize(), 0);
+      }
+
+      addStates.add(new ItemState(newProperty, ItemState.RENAMED, false, ancestorToSave, false, false, null,
+         addChangedSizeHandler));
+      deleteStates.add(new ItemState(prevProperty, ItemState.DELETED, false, ancestorToSave, false, false, null,
+         delChangedSizeHandler));
    }
 
    public List<ItemState> getAllStates()

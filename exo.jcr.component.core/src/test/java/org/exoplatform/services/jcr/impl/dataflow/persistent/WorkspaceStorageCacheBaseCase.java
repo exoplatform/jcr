@@ -199,30 +199,34 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
       stringData.add(new ByteArrayPersistedValueData(1, "property data 2".getBytes()));
       stringData.add(new ByteArrayPersistedValueData(2, "property data 3".getBytes()));
       propertyData11 =
-         new PersistedPropertyData(propertyUuid11, propertyPath11, nodeUuid1, 1, PropertyType.STRING, false, stringData);
+         new PersistedPropertyData(propertyUuid11, propertyPath11, nodeUuid1, 1, PropertyType.STRING, false,
+            stringData, new SimplePersistedSize(0));
 
       List<ValueData> binData = new ArrayList<ValueData>();
       binData.add(new ByteArrayPersistedValueData(0, "property data bin 1".getBytes()));
       propertyData12 =
-         new PersistedPropertyData(propertyUuid12, propertyPath12, nodeUuid1, 1, PropertyType.BINARY, false, binData);
+         new PersistedPropertyData(propertyUuid12, propertyPath12, nodeUuid1, 1, PropertyType.BINARY, false, binData,
+            new SimplePersistedSize(0));
 
       List<ValueData> stringData1 = new ArrayList<ValueData>();
       stringData1.add(new ByteArrayPersistedValueData(0, "property data 1".getBytes()));
       stringData1.add(new ByteArrayPersistedValueData(1, "property data 2".getBytes()));
       stringData1.add(new ByteArrayPersistedValueData(2, "property data 3".getBytes()));
       propertyData21 =
-         new PersistedPropertyData(propertyUuid21, propertyPath21, nodeUuid2, 1, PropertyType.STRING, true, stringData);
+         new PersistedPropertyData(propertyUuid21, propertyPath21, nodeUuid2, 1, PropertyType.STRING, true, stringData,
+            new SimplePersistedSize(0));
 
       List<ValueData> booleanData = new ArrayList<ValueData>();
       booleanData.add(new ByteArrayPersistedValueData(0, "true".getBytes()));
       propertyData22 =
          new PersistedPropertyData(propertyUuid22, propertyPath22, nodeUuid2, 1, PropertyType.BOOLEAN, false,
-            booleanData);
+            booleanData, new SimplePersistedSize(0));
 
       List<ValueData> longData = new ArrayList<ValueData>();
       longData.add(new ByteArrayPersistedValueData(0, new Long(123456).toString().getBytes()));
       propertyData311 =
-         new PersistedPropertyData(propertyUuid311, propertyPath311, nodeUuid31, 1, PropertyType.LONG, false, longData);
+         new PersistedPropertyData(propertyUuid311, propertyPath311, nodeUuid31, 1, PropertyType.LONG, false, longData,
+            new SimplePersistedSize(0));
 
       List<ValueData> refData = new ArrayList<ValueData>();
       refData.add(new ByteArrayPersistedValueData(0, nodeUuid1.getBytes()));
@@ -230,7 +234,7 @@ public abstract class WorkspaceStorageCacheBaseCase extends JcrImplBaseTest
       refData.add(new ByteArrayPersistedValueData(2, nodeUuid3.getBytes()));
       propertyData312 =
          new PersistedPropertyData(propertyUuid312, propertyPath312, nodeUuid31, 1, PropertyType.REFERENCE, true,
-            refData);
+            refData, new SimplePersistedSize(0));
    }
 
    public void testGetItem_Persisted() throws Exception

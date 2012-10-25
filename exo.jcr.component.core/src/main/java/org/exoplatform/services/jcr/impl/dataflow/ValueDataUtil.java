@@ -80,9 +80,11 @@ public class ValueDataUtil
     * @throws IOException
     *           if any error is occurred
     */
-   public static PersistedValueData readValueData(String cid, int type, int orderNumber, int version,
+   public static ValueDataWrapper readValueData(String cid, int type, int orderNumber, int version,
       final InputStream content, SpoolConfig spoolConfig) throws IOException
    {
+      ValueDataWrapper vdDataWrapper = new ValueDataWrapper();
+
       byte[] buffer = new byte[0];
       byte[] spoolBuffer = new byte[ValueFileIOHelper.IOBUFFER_SIZE];
       
@@ -141,14 +143,17 @@ public class ValueDataUtil
          }
       }
 
+      vdDataWrapper.size = len;
       if (swapFile != null)
       {
-         return new CleanableFilePersistedValueData(orderNumber, swapFile, spoolConfig);
+         vdDataWrapper.value = new CleanableFilePersistedValueData(orderNumber, swapFile, spoolConfig);
       }
       else
       {
-         return createValueData(type, orderNumber, buffer);
+         vdDataWrapper.value = createValueData(type, orderNumber, buffer);
       }
+
+      return vdDataWrapper;
    }
 
    /**
@@ -166,14 +171,17 @@ public class ValueDataUtil
     * @throws IOException
     *           if any error is occurred
     */
-   public static PersistedValueData readValueData(int type, int orderNumber, File file, SpoolConfig spoolConfig)
+   public static ValueDataWrapper readValueData(int type, int orderNumber, File file, SpoolConfig spoolConfig)
       throws IOException
    {
+      ValueDataWrapper vdDataWrapper = new ValueDataWrapper();
+
       long fileSize = file.length();
+      vdDataWrapper.size = fileSize;
 
       if (fileSize > spoolConfig.maxBufferSize)
       {
-         return new FilePersistedValueData(orderNumber, file, spoolConfig);
+         vdDataWrapper.value = new FilePersistedValueData(orderNumber, file, spoolConfig);
       }
       else
       {
@@ -193,13 +201,15 @@ public class ValueDataUtil
                rpos += read;
             }
 
-            return createValueData(type, orderNumber, data);
+            vdDataWrapper.value = createValueData(type, orderNumber, data);
          }
          finally
          {
             is.close();
          }
       }
+
+      return vdDataWrapper;
    }
 
    /**
@@ -431,5 +441,19 @@ public class ValueDataUtil
    private static String getString(byte[] data) throws UnsupportedEncodingException
    {
       return new String(data, Constants.DEFAULT_ENCODING);
+   }
+
+   /**
+    * Simply wraps {@link ValueData} and its size at storage.
+    */
+   public static class ValueDataWrapper
+   {
+      public long size;
+
+      public PersistedValueData value;
+
+      private ValueDataWrapper()
+      {
+      }
    }
 }

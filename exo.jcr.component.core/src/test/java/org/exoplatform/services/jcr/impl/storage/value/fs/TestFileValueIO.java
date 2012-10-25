@@ -77,7 +77,7 @@ public class TestFileValueIO extends TestCase
          SpoolConfig spoolConfig = SpoolConfig.getDefaultSpoolConfig();
          spoolConfig.maxBufferSize = maxBufferSize;
 
-         return ValueDataUtil.readValueData(PropertyType.BINARY, orderNum, file, spoolConfig);
+         return ValueDataUtil.readValueData(PropertyType.BINARY, orderNum, file, spoolConfig).value;
       }
 
       static public void testWriteValue(File file, ValueData value) throws IOException

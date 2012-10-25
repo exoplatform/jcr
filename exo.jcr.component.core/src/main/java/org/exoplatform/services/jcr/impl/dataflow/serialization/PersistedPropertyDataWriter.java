@@ -63,6 +63,7 @@ public class PersistedPropertyDataWriter
 
       out.writeInt(propData.getType());
       out.writeBoolean(propData.isMultiValued());
+      out.writeLong(propData.getPersistedSize());
 
       List<ValueData> values = propData.getValues();
       if (values != null)

@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.storage.value.fs.operations;
 
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ChangedSizeHandler;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 
@@ -53,20 +54,21 @@ public class WriteValue extends ValueFileOperation
    protected ValueFileLock fileLock;
 
    /**
-    * WriteValue  constructor.
-    *
-    * @param file File
-    * @param value  ValueData
-    * @param resources ValueDataResourceHolder
-    * @param cleaner FileCleaner
-    * @param tempDir File
+    * Accumulates content size.
     */
-   public WriteValue(File file, ValueData value, ValueDataResourceHolder resources, FileCleaner cleaner, File tempDir)
+   protected final ChangedSizeHandler sizeHandler;
+
+   /**
+    * WriteValue  constructor.
+    */
+   public WriteValue(File file, ValueData value, ValueDataResourceHolder resources, FileCleaner cleaner, File tempDir,
+      ChangedSizeHandler sizeHandler)
    {
       super(resources, cleaner, tempDir);
 
       this.file = file;
       this.value = value;
+      this.sizeHandler = sizeHandler;
    }
 
    /**
@@ -94,7 +96,8 @@ public class WriteValue extends ValueFileOperation
             cleaner.removeFile(file);
          }
          // write value to the file
-         writeValue(file, value);
+         long contentSize = writeValue(file, value);
+         sizeHandler.accumulateNewSize(contentSize);
       }
    }
 

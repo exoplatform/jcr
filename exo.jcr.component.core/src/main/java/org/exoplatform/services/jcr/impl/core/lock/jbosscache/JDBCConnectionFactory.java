@@ -28,6 +28,8 @@ import org.jboss.cache.loader.ConnectionFactory;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -47,7 +49,7 @@ public class JDBCConnectionFactory implements ConnectionFactory
 
    private static final boolean trace = LOG.isTraceEnabled();
 
-   static final ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
+   static final ThreadLocal<Map<String, Connection>> connections = new ThreadLocal<Map<String, Connection>>();
 
    private DataSource dataSource;
 
@@ -134,22 +136,28 @@ public class JDBCConnectionFactory implements ConnectionFactory
          reportAndRethrowError("Failed to set auto-commit", e);
       }
 
-      /* Connection set in ThreadLocal, no reason to return. It was previously returned for legacy purpouses
+      /* Connection set in ThreadLocal, no reason to return. It was previously returned for legacy purposes
       and to trace log the connection opening in JDBCCacheLoader. */
-      connection.set(con);
+      Map<String, Connection> map = connections.get();
+      if (map == null)
+      {
+         map = new HashMap<String, Connection>();
+         connections.set(map);
+      }
+      map.put(datasourceName, con);
 
       if (trace)
       {
          LOG.trace("opened tx connection: tx=" + tx + ", con=" + con);
       }
-
    }
 
    public Connection getConnection()
    {
-      Connection con = connection.get();
+      Map<String, Connection> map = connections.get();
+      Connection con = null;
 
-      if (con == null)
+      if (map == null || (con = map.get(datasourceName)) == null)
       {
          try
          {
@@ -177,8 +185,10 @@ public class JDBCConnectionFactory implements ConnectionFactory
 
    public void commit(Object tx)
    {
-      Connection con = connection.get();
-      if (con == null)
+      Map<String, Connection> map = connections.get();
+      Connection con = null;
+
+      if (map == null || (con = map.get(datasourceName)) == null)
       {
          throw new IllegalStateException("Failed to commit: thread is not associated with the connection!");
       }
@@ -203,7 +213,13 @@ public class JDBCConnectionFactory implements ConnectionFactory
 
    public void rollback(Object tx)
    {
-      Connection con = connection.get();
+      Map<String, Connection> map = connections.get();
+      Connection con = null;
+
+      if (map == null || (con = map.get(datasourceName)) == null)
+      {
+         throw new IllegalStateException("Failed to rollback: thread is not associated with the connection!");
+      }
 
       try
       {
@@ -225,7 +241,8 @@ public class JDBCConnectionFactory implements ConnectionFactory
 
    public void close(Connection con)
    {
-      if (con != null && con != connection.get())
+      Map<String, Connection> map;
+      if (con != null && ((map = connections.get()) == null || con != map.get(datasourceName)))
       {
          try
          {
@@ -250,7 +267,16 @@ public class JDBCConnectionFactory implements ConnectionFactory
    private void closeTxConnection(Connection con)
    {
       safeClose(con);
-      connection.set(null);
+      Map<String, Connection> map = connections.get();
+      if (map == null)
+      {
+         return;
+      }
+      map.remove(datasourceName);
+      if (map.isEmpty())
+      {
+         connections.remove();
+      }
    }
 
    private void safeClose(Connection con)

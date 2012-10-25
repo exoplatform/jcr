@@ -446,6 +446,28 @@ public class DirectoryHelper
    }
 
    /**
+    * Returns the size of directory including all subfolders.
+    */
+   public static long getSize(File dir)
+   {
+      long size = 0;
+      for (File file : dir.listFiles())
+      {
+         if (file.isFile())
+         {
+            size += file.length();
+         }
+         else
+         {
+            size += getSize(file);
+         }
+      }
+
+      return size;
+   }
+
+
+   /**
     * Safely close {@link Closeable} instance. Log error
     * in case of exception.
     */

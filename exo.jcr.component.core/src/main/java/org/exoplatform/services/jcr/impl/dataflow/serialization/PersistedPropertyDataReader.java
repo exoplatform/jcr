@@ -26,6 +26,8 @@ import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedSize;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.SimplePersistedSize;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -106,6 +108,7 @@ public class PersistedPropertyDataReader
 
       int type = in.readInt();
       boolean multiValued = in.readBoolean();
+      PersistedSize persistedSizeHandler = new SimplePersistedSize(in.readLong());
 
       PersistedPropertyData prop;
 
@@ -121,12 +124,14 @@ public class PersistedPropertyDataReader
          }
 
          prop =
-            new PersistedPropertyData(identifier, qpath, parentIdentifier, persistedVersion, type, multiValued, values);
+            new PersistedPropertyData(identifier, qpath, parentIdentifier, persistedVersion, type, multiValued, values,
+               persistedSizeHandler);
       }
       else
       {
          prop =
-            new PersistedPropertyData(identifier, qpath, parentIdentifier, persistedVersion, type, multiValued, null);
+            new PersistedPropertyData(identifier, qpath, parentIdentifier, persistedVersion, type, multiValued, null,
+               persistedSizeHandler);
       }
 
       return prop;

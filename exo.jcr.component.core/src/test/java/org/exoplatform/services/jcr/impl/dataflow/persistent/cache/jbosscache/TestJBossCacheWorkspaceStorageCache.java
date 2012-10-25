@@ -40,6 +40,7 @@ import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ChangedSizeHandler;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspaceStorageCacheBaseCase;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
@@ -259,7 +260,8 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          childNodesCount++;
       }
 
-      public void add(PropertyData data) throws RepositoryException, UnsupportedOperationException,
+      public void add(PropertyData data, ChangedSizeHandler sizeHandler) throws RepositoryException,
+         UnsupportedOperationException,
          InvalidItemStateException, IllegalStateException
       {
       }
@@ -277,8 +279,8 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
       {
       }
 
-      public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-         InvalidItemStateException, IllegalStateException
+      public void delete(PropertyData data, ChangedSizeHandler sizeHandler) throws RepositoryException,
+         UnsupportedOperationException, InvalidItemStateException, IllegalStateException
       {
       }
 
@@ -364,8 +366,8 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
       {
       }
 
-      public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-         InvalidItemStateException, IllegalStateException
+      public void update(PropertyData data, ChangedSizeHandler sizeHandler) throws RepositoryException,
+         UnsupportedOperationException, InvalidItemStateException, IllegalStateException
       {
       }
 
@@ -409,6 +411,18 @@ public class TestJBossCacheWorkspaceStorageCache extends WorkspaceStorageCacheBa
          IllegalStateException
       {
          return getItemData(parentData, name, itemType) != null;
+      }
+
+      @Override
+      public long getWorkspaceDataSize() throws RepositoryException
+      {
+         return 0;
+      }
+
+      @Override
+      public long getNodeDataSize(String parentId) throws RepositoryException
+      {
+         return 0;
       }
 
    };

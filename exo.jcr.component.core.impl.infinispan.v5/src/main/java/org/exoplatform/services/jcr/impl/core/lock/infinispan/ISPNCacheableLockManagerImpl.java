@@ -17,13 +17,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
-import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
-import org.exoplatform.services.database.utils.DialectDetecter;
-import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
@@ -32,7 +29,6 @@ import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLo
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.CacheableSessionLockManager;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.log.ExoLogger;
@@ -43,10 +39,6 @@ import org.infinispan.Cache;
 import org.infinispan.lifecycle.ComponentStatus;
 
 import java.io.Serializable;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -54,6 +46,7 @@ import java.util.List;
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
 import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
@@ -116,8 +109,19 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          // create cache using custom factory
          ISPNCacheFactory<Serializable, Object> factory = new ISPNCacheFactory<Serializable, Object>(cfm, transactionManager);
 
+         try
+         {
+            String dataSourceName = config.getLockManager().getParameterValue(INFINISPAN_JDBC_CL_DATASOURCE);
+            dataSource = (DataSource)new InitialContext().lookup(dataSourceName);
+         }
+         catch (NamingException e)
+         {
+            throw new RepositoryException(e.getMessage(), e);
+         }
+
          // configure cache loader parameters with correct DB data-types
-         configureJDBCCacheLoader(config.getLockManager());
+         ISPNCacheFactory.configureJDBCCacheLoader(config.getLockManager(), INFINISPAN_JDBC_CL_DATASOURCE,
+            INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_ID_COLUMN, INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN);
 
          cache = factory.createCache("L" + config.getUniqueName().replace("_", ""), config.getLockManager());
       }
@@ -197,154 +201,6 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
             return locksData;
          }
       };
-   }
-
-   /**
-    * If JDBC cache loader is used, then fills-in column types. If column type configured from jcr-configuration file,
-    * then nothing is overridden. Parameters are injected into the given parameterEntry.
-    */
-   private void configureJDBCCacheLoader(MappedParametrizedObjectEntry parameterEntry) throws RepositoryException
-   {
-      String dataSourceName = parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DATASOURCE, null);
-      // if data source is defined, then inject correct data-types.
-      // Also it cans be not defined and nothing should be injected 
-      //(i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
-      if (dataSourceName != null)
-      {
-         String dialect;
-         // detect dialect of data-source
-         try
-         {
-            this.dataSource = (DataSource)new InitialContext().lookup(dataSourceName);
-            if (dataSource == null)
-            {
-               throw new RepositoryException("DataSource (" + dataSourceName + ") can't be null");
-            }
-
-            Connection jdbcConn = null;
-            try
-            {
-               PrivilegedExceptionAction<Connection> action = new PrivilegedExceptionAction<Connection>()
-               {
-                  public Connection run() throws Exception
-                  {
-                     return dataSource.getConnection();
-                  }
-               };
-               try
-               {
-                  jdbcConn = SecurityHelper.doPrivilegedExceptionAction(action);
-               }
-               catch (PrivilegedActionException pae)
-               {
-                  Throwable cause = pae.getCause();
-                  if (cause instanceof SQLException)
-                  {
-                     throw (SQLException)cause;//NOSONAR
-                  }
-                  else if (cause instanceof RuntimeException)
-                  {
-                     throw (RuntimeException)cause;
-                  }
-                  else
-                  {
-                     throw new RuntimeException(cause);//NOSONAR
-                  }
-               }
-
-               dialect = DialectDetecter.detect(jdbcConn.getMetaData());
-            }
-            finally
-            {
-               if (jdbcConn != null && !jdbcConn.isClosed())
-               {
-                  try
-                  {
-                     jdbcConn.close();
-                  }
-                  catch (SQLException e)
-                  {
-                     throw new RepositoryException("Error of connection close", e);
-                  }
-               }
-            }
-         }
-         catch (Exception e)//NOSONAR
-         {
-            throw new RepositoryException("Error configuring JDBC cache loader", e);
-         }
-
-         // default values, will be overridden with types suitable for concrete data base.
-         String blobType = "BLOB";
-         String charType = "VARCHAR(512)";
-         String timeStampType = "BIGINT";
-         // HSSQL
-         if (dialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
-         {
-            blobType = "VARBINARY(65535)";
-         }
-         // MYSQL
-         else if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
-         {
-            blobType = "LONGBLOB";
-         }
-         // ORACLE
-         else if (dialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
-         {
-            // Oracle suggests the use VARCHAR2 instead of VARCHAR while declaring data type.
-            charType = "VARCHAR2(512)";
-            timeStampType = "NUMBER(19, 0)";
-         }
-         // POSTGRE SQL
-         else if (dialect.startsWith(DBConstants.DB_DIALECT_PGSQL))
-         {
-            blobType = "bytea";
-         }
-         // Microsoft SQL
-         else if (dialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
-         {
-            blobType = "VARBINARY(MAX)";
-         }
-         // SYBASE
-         else if (dialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
-         {
-            blobType = "IMAGE";
-         }
-         // INGRES
-         else if (dialect.startsWith(DBConstants.DB_DIALECT_INGRES))
-         {
-            blobType = "long byte";
-         }
-         // else GENERIC, DB2 etc
-
-         // set parameters if not defined
-         // if parameter is missing in configuration, then 
-         // getParameterValue(INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_AUTO) 
-         // will return INFINISPAN_JDBC_CL_AUTO. If parameter is present in configuration and 
-         //equals to "auto", then it should be replaced 
-         // with correct value for given database
-         if (parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_AUTO)
-            .equalsIgnoreCase(INFINISPAN_JDBC_CL_AUTO))
-         {
-            parameterEntry.putParameterValue(INFINISPAN_JDBC_CL_DATA_COLUMN, blobType);
-         }
-
-         if (parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_ID_COLUMN, INFINISPAN_JDBC_CL_AUTO).equalsIgnoreCase(
-            INFINISPAN_JDBC_CL_AUTO))
-         {
-            parameterEntry.putParameterValue(INFINISPAN_JDBC_CL_ID_COLUMN, charType);
-         }
-
-         if (parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN, INFINISPAN_JDBC_CL_AUTO)
-            .equalsIgnoreCase(INFINISPAN_JDBC_CL_AUTO))
-         {
-            parameterEntry.putParameterValue(INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN, timeStampType);
-         }
-      }
-      else
-      {
-         LOG.warn("CacheLoader DataSource " + INFINISPAN_JDBC_CL_DATASOURCE + " is not configured.");
-      }
    }
    
    /**

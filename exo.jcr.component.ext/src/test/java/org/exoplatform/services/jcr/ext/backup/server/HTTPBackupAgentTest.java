@@ -139,7 +139,7 @@ public class HTTPBackupAgentTest extends AbstractBackupTestCase
       assertEquals(BackupManager.FULL_BACKUP_ONLY, info.getBackupType().intValue());
       assertNotNull(info.getStartedTime());
       assertNotNull(info.getFinishedTime());
-      assertEquals(ShortInfo.CURRENT, info.getType().intValue());
+      assertTrue((ShortInfo.CURRENT == info.getType().intValue() || ShortInfo.COMPLETED == info.getType().intValue()));
       assertEquals(BackupChain.FINISHED, info.getState().intValue());
       assertEquals(rInfo.wsName, info.getWorkspaceName());
    }

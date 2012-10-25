@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
@@ -52,9 +53,8 @@ import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.SimplePersistedSize;
 import org.exoplatform.services.jcr.infinispan.AbstractMapper;
 import org.exoplatform.services.jcr.infinispan.CacheKey;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
@@ -1520,8 +1520,9 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             PropertyData newProp =
                new PersistedPropertyData(prop.getIdentifier(), prop.getQPath(), prop.getParentIdentifier(),
                   prop.getPersistedVersion(), prop.getType(), prop.isMultiValued(),
-                  ((PropertyData)prevData).getValues());
-
+                  ((PropertyData)prevData).getValues(), new SimplePersistedSize(
+                     ((PersistedPropertyData)prevData).getPersistedSize()));
+            
             // update item data with new name and old values only
             cache.put(new CacheId(getOwnerId(), newProp.getIdentifier()), newProp, false);
          }
@@ -1778,10 +1779,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             // update node
             NodeData prevNode = (NodeData)data;
 
-            TransientNodeData newNode =
-               new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
-                  prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
-                  prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL());
+            PersistedNodeData newNode =
+               new PersistedNodeData(prevNode.getIdentifier(), newPath, prevNode.getParentIdentifier(),
+                  prevNode.getPersistedVersion(), prevNode.getOrderNumber(), prevNode.getPrimaryTypeName(),
+                  prevNode.getMixinTypeNames(), inheritACL ? acl : prevNode.getACL());
 
             // update this node
             cache.put(new CacheId(ownerId, newNode.getIdentifier()), newNode);
@@ -1798,9 +1799,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                inheritACL = false;
             }
 
-            TransientPropertyData newProp =
-               new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(),
-                  prevProp.getType(), prevProp.getParentIdentifier(), prevProp.isMultiValued(), prevProp.getValues());
+            PersistedPropertyData newProp =
+               new PersistedPropertyData(prevProp.getIdentifier(), newPath, prevProp.getParentIdentifier(),
+                  prevProp.getPersistedVersion(), prevProp.getType(), prevProp.isMultiValued(), prevProp.getValues(),
+                  new SimplePersistedSize(((PersistedPropertyData)prevProp).getPersistedSize()));
 
             // update this property
             cache.put(new CacheId(ownerId, newProp.getIdentifier()), newProp);
@@ -1882,10 +1884,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             }
 
             // recreate with new path for child Nodes only
-            TransientNodeData newNode =
-               new TransientNodeData(prevNode.getQPath(), prevNode.getIdentifier(), prevNode.getPersistedVersion(),
-                  prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
-                  prevNode.getParentIdentifier(), acl);
+            PersistedNodeData newNode =
+               new PersistedNodeData(prevNode.getIdentifier(), prevNode.getQPath(), prevNode.getParentIdentifier(),
+                  prevNode.getPersistedVersion(), prevNode.getOrderNumber(), prevNode.getPrimaryTypeName(),
+                  prevNode.getMixinTypeNames(), acl);
 
             // update this node
             cache.put(new CacheId(getOwnerId(), newNode.getIdentifier()), newNode);

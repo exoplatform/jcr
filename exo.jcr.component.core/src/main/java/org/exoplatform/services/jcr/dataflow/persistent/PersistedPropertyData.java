@@ -22,6 +22,8 @@ import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.PersistedSize;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.SimplePersistedSize;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -40,7 +42,6 @@ import javax.jcr.RepositoryException;
  * @author Gennady Azarenkov
  * @version $Id$
  */
-
 public class PersistedPropertyData extends PersistedItemData implements PropertyData, Externalizable
 {
 
@@ -57,6 +58,8 @@ public class PersistedPropertyData extends PersistedItemData implements Property
 
    protected boolean multiValued;
 
+   protected PersistedSize persitedSize;
+
    /**
     * Empty constructor to serialization.
     */
@@ -65,13 +68,17 @@ public class PersistedPropertyData extends PersistedItemData implements Property
       super();
    }
 
+   /**
+    * PersistedPropertyData constructor.
+    */
    public PersistedPropertyData(String id, QPath qpath, String parentId, int version, int type, boolean multiValued,
-      List<ValueData> values)
+      List<ValueData> values, PersistedSize persistedSize)
    {
       super(id, qpath, parentId, version);
       this.values = values;
       this.type = type;
       this.multiValued = multiValued;
+      this.persitedSize = persistedSize;
    }
 
    /**
@@ -107,6 +114,14 @@ public class PersistedPropertyData extends PersistedItemData implements Property
    }
 
    /**
+    * @see PersistedSize#getSize()
+    */
+   public long getPersistedSize()
+   {
+      return persitedSize.getSize();
+   }
+
+   /**
     * {@inheritDoc}
     */
    public void accept(ItemDataVisitor visitor) throws RepositoryException
@@ -125,6 +140,7 @@ public class PersistedPropertyData extends PersistedItemData implements Property
 
       out.writeInt(type);
       out.writeBoolean(multiValued);
+      out.writeLong(persitedSize.getSize());
 
       if (values != null)
       {
@@ -149,8 +165,8 @@ public class PersistedPropertyData extends PersistedItemData implements Property
       super.readExternal(in);
 
       type = in.readInt();
-
       multiValued = in.readBoolean();
+      persitedSize = new SimplePersistedSize(in.readLong());
 
       int listSize = in.readInt();
       if (listSize != NULL_VALUES)

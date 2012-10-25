@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.ispn.Utils;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -45,13 +46,18 @@ import java.io.InputStream;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
+import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import javax.jcr.RepositoryException;
 import javax.management.MBeanServer;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 import javax.transaction.TransactionManager;
 
 /**
@@ -270,6 +276,65 @@ public class ISPNCacheFactory<K, V>
             }
             return;
          }
+      }
+   }
+
+   /**
+    * If JDBC cache loader is used, then fills-in column types. If column type configured from jcr-configuration file,
+    * then nothing is overridden. Parameters are injected into the given parameterEntry.
+    */
+   public static void configureJDBCCacheLoader(MappedParametrizedObjectEntry parameterEntry,
+      String dataSourceParamName, String dataColumnParamName, String idColumnParamName, String timeColumnParamName)
+      throws RepositoryException
+   {
+      String dataSourceName = parameterEntry.getParameterValue(dataSourceParamName, null);
+
+      // if data source is defined, then inject correct data-types.
+      // Also it cans be not defined and nothing should be injected
+      // (i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
+      DataSource dataSource;
+      try
+      {
+         dataSource = (DataSource)new InitialContext().lookup(dataSourceName);
+      }
+      catch (NamingException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+
+      String blobType;
+      String charType;
+      String timeStampType;
+      try
+      {
+         blobType = JDBCUtils.getAppropriateBlobType(dataSource);
+         charType = JDBCUtils.getAppropriateCharType(dataSource);
+         timeStampType = JDBCUtils.getAppropriateTimestamp(dataSource);
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+
+      // set parameters if not defined
+      // if parameter is missing in configuration, then
+      // getParameterValue(INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_AUTO)
+      // will return INFINISPAN_JDBC_CL_AUTO. If parameter is present in configuration and
+      //equals to "auto", then it should be replaced
+      // with correct value for given database
+      if (parameterEntry.getParameterValue(dataColumnParamName, "auto").equalsIgnoreCase("auto"))
+      {
+         parameterEntry.putParameterValue(dataColumnParamName, blobType);
+      }
+
+      if (parameterEntry.getParameterValue(idColumnParamName, "auto").equalsIgnoreCase("auto"))
+      {
+         parameterEntry.putParameterValue(idColumnParamName, charType);
+      }
+
+      if (parameterEntry.getParameterValue(timeColumnParamName, "auto").equalsIgnoreCase("auto"))
+      {
+         parameterEntry.putParameterValue(timeColumnParamName, timeStampType);
       }
    }
 

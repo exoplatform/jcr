@@ -88,16 +88,14 @@ public class ItemStateReader
          boolean eventFire = in.readBoolean();
 
          QPath oldPath = null;
-         int len = in.readInt();
-         if (len != -1)
+         if (in.readInt() == SerializationConstants.NOT_NULL_DATA)
          {
-            byte[] buf = new byte[len];
+            byte[] buf = new byte[in.readInt()];
             in.readFully(buf);
             oldPath = QPath.parse(new String(buf, Constants.DEFAULT_ENCODING));
          }
 
          boolean isNodeData = in.readBoolean();
-
          if (isNodeData)
          {
             PersistedNodeDataReader rdr = new PersistedNodeDataReader();

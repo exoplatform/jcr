@@ -23,6 +23,8 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
 import org.exoplatform.services.jcr.datamodel.ItemData;
@@ -34,8 +36,6 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
@@ -1902,10 +1902,10 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
                         if (oldItemData.isNode())
                         {
                            NodeData nodeData = (NodeData)oldItemData;
-                           TransientNodeData newItemData =
-                              new TransientNodeData(newQPath, nodeData.getIdentifier(), nodeData.getPersistedVersion(),
-                                 nodeData.getPrimaryTypeName(), nodeData.getMixinTypeNames(),
-                                 nodeData.getOrderNumber(), nodeData.getParentIdentifier(), nodeData.getACL());
+                           PersistedNodeData newItemData =
+                              new PersistedNodeData(nodeData.getIdentifier(), newQPath, nodeData.getParentIdentifier(),
+                                 nodeData.getPersistedVersion(), nodeData.getOrderNumber(),
+                                 nodeData.getPrimaryTypeName(), nodeData.getMixinTypeNames(), nodeData.getACL());
                            cache.put(cacheKey, new CacheValue(newItemData, cacheValue.getExpiredTime()));
 
                            // update in children nodes 
@@ -1918,12 +1918,13 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
                         }
                         else
                         {
-                           PropertyData oldPropertyData = (PropertyData)oldItemData;
-                           TransientPropertyData newPropertyData =
-                              new TransientPropertyData(newQPath, oldPropertyData.getIdentifier(),
-                                 oldPropertyData.getPersistedVersion(), oldPropertyData.getType(),
-                                 oldPropertyData.getParentIdentifier(), oldPropertyData.isMultiValued(),
-                                 oldPropertyData.getValues());
+                           PersistedPropertyData oldPropertyData = (PersistedPropertyData)oldItemData;
+                           PersistedPropertyData newPropertyData =
+                              new PersistedPropertyData(oldPropertyData.getIdentifier(), newQPath,
+                                 oldPropertyData.getParentIdentifier(), oldPropertyData.getPersistedVersion(),
+                                 oldPropertyData.getType(), oldPropertyData.isMultiValued(),
+                                 oldPropertyData.getValues(), new SimplePersistedSize(
+                                    oldPropertyData.getPersistedSize()));
                            cache.put(cacheKey, new CacheValue(newPropertyData, cacheValue.getExpiredTime()));
 
                            // update in children properties 

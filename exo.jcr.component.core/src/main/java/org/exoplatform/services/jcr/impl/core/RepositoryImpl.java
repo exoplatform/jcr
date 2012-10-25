@@ -137,6 +137,11 @@ public class RepositoryImpl implements ManageableRepository
    private final RepositoryEntry config;
 
    /**
+    * List of {@link WorkspaceManagingListener}.
+    */
+   private final List<WorkspaceManagingListener> workspaceListeners = new ArrayList<WorkspaceManagingListener>();
+
+   /**
     * Repository authentication policy.
     */
    private final AuthenticationPolicy authenticationPolicy;
@@ -170,12 +175,7 @@ public class RepositoryImpl implements ManageableRepository
     */
    public void addItemPersistenceListener(String workspaceName, ItemsPersistenceListener listener)
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       PersistentDataManager pmanager =
          (PersistentDataManager)repositoryContainer.getWorkspaceContainer(workspaceName).getComponentInstanceOfType(
@@ -211,12 +211,7 @@ public class RepositoryImpl implements ManageableRepository
    public void configWorkspace(final WorkspaceEntry wsConfig) throws RepositoryConfigurationException,
       RepositoryException
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       if (isWorkspaceInitialized(wsConfig.getName()))
       {
@@ -279,13 +274,9 @@ public class RepositoryImpl implements ManageableRepository
     */
    public synchronized void createWorkspace(String workspaceName) throws RepositoryException
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
 
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
+      
       final WorkspaceContainer wsContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
 
       if (wsContainer == null)
@@ -331,12 +322,7 @@ public class RepositoryImpl implements ManageableRepository
     */
    public RepositoryEntry getConfiguration()
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       return config;
    }
@@ -540,12 +526,7 @@ public class RepositoryImpl implements ManageableRepository
     */
    public void internalRemoveWorkspace(final String workspaceName) throws RepositoryException
    {
-      // Need privileges to manage repository.
-      SecurityManager security = System.getSecurityManager();
-      if (security != null)
-      {
-         security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
-      }
+      SecurityHelper.validateSecurityPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
 
       final WorkspaceContainer workspaceContainer = repositoryContainer.getWorkspaceContainer(workspaceName);
       try
@@ -572,6 +553,13 @@ public class RepositoryImpl implements ManageableRepository
             return null;
          }
       });
+
+      config.getWorkspaceEntries().remove(repositoryContainer.getWorkspaceEntry(workspaceName));
+
+      for (WorkspaceManagingListener listener : workspaceListeners)
+      {
+         listener.onWorkspaceRemove(workspaceName);
+      }
    }
 
    /**
@@ -712,7 +700,6 @@ public class RepositoryImpl implements ManageableRepository
             + " remove workspace close all open sessions");
 
       internalRemoveWorkspace(workspaceName);
-      config.getWorkspaceEntries().remove(repositoryContainer.getWorkspaceEntry(workspaceName));
    }
 
    /**
@@ -805,5 +792,21 @@ public class RepositoryImpl implements ManageableRepository
       return String.format(
          "Repository {\n name: %s;\n system workspace: %s;\n default workspace: %s;\n workspaces: %s;\n state: %s \n}",
          name, systemWorkspaceName, defaultWorkspaceName, Arrays.toString(getWorkspaceNames()), getStateTitle());
+   }
+
+   /**
+    * Adds {@link WorkspaceManagingListener}.
+    */
+   public void addWorkspaceManagingListener(WorkspaceManagingListener listener)
+   {
+      workspaceListeners.add(listener);
+   }
+
+   /**
+    * Removes {@link WorkspaceManagingListener}.
+    */
+   public void removeWorkspaceManagingListener(WorkspaceManagingListener listener)
+   {
+      workspaceListeners.remove(listener);
    }
 }

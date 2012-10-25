@@ -32,7 +32,7 @@ import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipReaderImpl;
+import org.exoplatform.services.jcr.impl.dataflow.serialization.ZipObjectReader;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
@@ -269,8 +269,8 @@ public class DBRestore implements DataRestore
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      ObjectZipReaderImpl contentReader = null;
-      ObjectZipReaderImpl contentLenReader = null;
+      ZipObjectReader contentReader = null;
+      ZipObjectReader contentLenReader = null;
 
       PreparedStatement insertNode = null;
       ResultSet tableMetaData = null;
@@ -288,24 +288,24 @@ public class DBRestore implements DataRestore
          // check old style backup format, when for every table was dedicated zip file 
          if (PrivilegedFileHelper.exists(contentFile))
          {
-            contentReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(contentFile));
+            contentReader = new ZipObjectReader(PrivilegedFileHelper.zipInputStream(contentFile));
             contentReader.getNextEntry();
 
             File contentLenFile =
                new File(storageDir, restoreRule.getSrcTableName() + DBBackup.CONTENT_LEN_FILE_SUFFIX);
 
-            contentLenReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(contentLenFile));
+            contentLenReader = new ZipObjectReader(PrivilegedFileHelper.zipInputStream(contentLenFile));
             contentLenReader.getNextEntry();
          }
          else
          {
             contentFile = new File(storageDir, DBBackup.CONTENT_ZIP_FILE);
-            contentReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(contentFile));
+            contentReader = new ZipObjectReader(PrivilegedFileHelper.zipInputStream(contentFile));
 
             while (!contentReader.getNextEntry().getName().equals(restoreRule.getSrcTableName()));
 
             File contentLenFile = new File(storageDir, DBBackup.CONTENT_LEN_ZIP_FILE);
-            contentLenReader = new ObjectZipReaderImpl(PrivilegedFileHelper.zipInputStream(contentLenFile));
+            contentLenReader = new ZipObjectReader(PrivilegedFileHelper.zipInputStream(contentLenFile));
 
             while (!contentLenReader.getNextEntry().getName().equals(restoreRule.getSrcTableName()));
          }

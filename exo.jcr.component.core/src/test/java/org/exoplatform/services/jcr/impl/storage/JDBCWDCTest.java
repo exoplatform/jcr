@@ -20,23 +20,13 @@ package org.exoplatform.services.jcr.impl.storage;
 
 import junit.framework.TestCase;
 
-import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.ContainerEntry;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.ValueData;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.value.StandaloneStoragePluginProvider;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
-import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.log.LogConfigurationInitializer;
@@ -46,7 +36,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 
-import javax.jcr.PropertyType;
 import javax.naming.InitialContext;
 import javax.naming.Reference;
 import javax.naming.StringRefAddr;
@@ -129,51 +118,5 @@ public class JDBCWDCTest extends TestCase
 
       Connection conn = ds.getConnection();
       assertNotNull(conn);
-      // conn = ds.getConnection();
-      // conn = ds.getConnection();
-      // conn = ds.getConnection();
-      // conn = ds.getConnection();
-      // conn = ds.getConnection();
-      // conn = ds.getConnection();
-
-      // // COMMONS-DBCP ///////
-      // BasicDataSource bds = (BasicDataSource)ds;
-      // System.out.println("getMaxActive: "+bds.getMaxActive());
-      // System.out.println("getInitialSize: "+bds.getInitialSize());
-      // System.out.println("getNumActive: "+bds.getNumActive());
-      // System.out.println("getNumIdle: "+bds.getNumIdle());
-
-      // System.out.println("getMaxWait: "+bds.getMaxWait());
-
-      // //////////////
-
-      // (conn instanceof PooledConnection)
-      // System.out.println("CONN: "+conn);
-      // System.out.println("Container "+container);
-
-   }
-
-   public void _testAddRoot() throws Exception
-   {
-
-      InternalQName nt = Constants.NT_UNSTRUCTURED;
-      QPath rootPath = QPath.parse(Constants.ROOT_URI);
-      WorkspaceStorageConnection conn = container.openConnection();
-      NodeData node =
-         new TransientNodeData(rootPath, Constants.ROOT_UUID, 1, nt, new InternalQName[0], 0, null,
-            new AccessControlList());
-
-      ValueData vd = new TransientValueData(Constants.NT_UNSTRUCTURED.getAsString());
-      TransientPropertyData ntProp =
-         new TransientPropertyData(QPath.makeChildPath(rootPath, Constants.JCR_PRIMARYTYPE), "1", 1, PropertyType.NAME,
-            Constants.ROOT_UUID, false, vd);
-
-      conn.add(node);
-      conn.add(ntProp);
-      conn.commit();
-      // assertNotNull(root);
-      // assertEquals(Constants.ROOT_URI, root.getQPath().getAsString());
-      // assertEquals("nt:unstructured",
-      // locationFactory.createJCRName(root.getPrimaryTypeName()).getAsString());
    }
 }

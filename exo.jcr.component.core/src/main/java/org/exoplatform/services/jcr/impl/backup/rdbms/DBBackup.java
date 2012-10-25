@@ -23,7 +23,7 @@ import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
-import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipWriterImpl;
+import org.exoplatform.services.jcr.impl.dataflow.serialization.ZipObjectWriter;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -88,16 +88,16 @@ public class DBBackup
    {
       Exception exc = null;
 
-      ObjectZipWriterImpl contentWriter = null;
-      ObjectZipWriterImpl contentLenWriter = null;
+      ZipObjectWriter contentWriter = null;
+      ZipObjectWriter contentLenWriter = null;
 
       try
       {
          contentWriter =
-            new ObjectZipWriterImpl(PrivilegedFileHelper.zipOutputStream(new File(storageDir, CONTENT_ZIP_FILE)));
+            new ZipObjectWriter(PrivilegedFileHelper.zipOutputStream(new File(storageDir, CONTENT_ZIP_FILE)));
 
          contentLenWriter =
-            new ObjectZipWriterImpl(PrivilegedFileHelper.zipOutputStream(new File(storageDir, CONTENT_LEN_ZIP_FILE)));
+            new ZipObjectWriter(PrivilegedFileHelper.zipOutputStream(new File(storageDir, CONTENT_LEN_ZIP_FILE)));
 
          for (Entry<String, String> entry : scripts.entrySet())
          {
@@ -170,7 +170,7 @@ public class DBBackup
     * @throws SQLException 
     */
    private static void dumpTable(Connection jdbcConn, String tableName, String script, File storageDir,
-      ObjectZipWriterImpl contentWriter, ObjectZipWriterImpl contentLenWriter) throws IOException, SQLException
+      ZipObjectWriter contentWriter, ZipObjectWriter contentLenWriter) throws IOException, SQLException
    {
       // Need privileges
       SecurityManager security = System.getSecurityManager();

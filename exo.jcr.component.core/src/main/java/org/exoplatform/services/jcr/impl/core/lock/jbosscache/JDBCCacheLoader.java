@@ -43,6 +43,7 @@ public class JDBCCacheLoader extends org.jboss.cache.loader.JDBCCacheLoader
    {
       return JDBCUtils.tableExists(tableName, con);
    }
+
    @Override
    public void setConfig(IndividualCacheLoaderConfig base)
    {

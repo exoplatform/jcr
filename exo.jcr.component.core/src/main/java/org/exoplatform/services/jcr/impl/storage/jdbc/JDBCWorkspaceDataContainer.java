@@ -52,7 +52,9 @@ import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.db.MSSQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.db.SybaseConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.indexing.JdbcNodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
@@ -468,7 +470,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
       {
-         this.connFactory = defaultConnectionFactory();
+         this.connFactory = new MSSQLConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DERBY))
@@ -483,13 +485,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
-         this.connFactory = defaultConnectionFactory();
+         this.connFactory = new SybaseConnectionFactory(getDataSource(), containerConfig);
          dbInitializer = defaultDBInitializer();
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_INGRES))
       {
          this.connFactory = defaultConnectionFactory();
-         // using Postgres initializer
          dbInitializer = new IngresSQLDBInitializer(this.connFactory.getJdbcConnection(), containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))

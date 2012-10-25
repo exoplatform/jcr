@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.dataflow.ItemState;
@@ -38,8 +38,11 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
+import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil.ValueDataWrapper;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.ChangedSizeHandler;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.SimplePersistedSize;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
@@ -61,6 +64,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -91,9 +95,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
        * {@inheritDoc}
        */
       @Override
-      public void writeStreamedValue(File file, ValueData value) throws IOException
+      public long writeStreamedValue(File file, ValueData value) throws IOException
       {
-         super.writeStreamedValue(file, value);
+         return super.writeStreamedValue(file, value);
       }
    }
 
@@ -142,8 +146,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected PreparedStatement findValuesByPropertyId;
 
-   protected PreparedStatement findValuesStorageDescriptorsByPropertyId;
-
    protected PreparedStatement findValuesDataByPropertyId;
 
    protected PreparedStatement findNodesByParentId;
@@ -179,6 +181,16 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected PreparedStatement findNodesAndProperties;
 
    protected PreparedStatement findNodesCount;
+
+   protected PreparedStatement findWorkspaceDataSize;
+
+   protected PreparedStatement findNodeDataSize;
+
+   protected PreparedStatement findNodePropertiesOnValueStorage;
+
+   protected PreparedStatement findWorkspacePropertiesOnValueStorage;
+
+   protected PreparedStatement findValueStorageDescAndSize;
 
    /**
     * Exception instance for logging of call stack which called a closing of connection.
@@ -514,11 +526,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             findValuesByPropertyId.close();
          }
 
-         if (findValuesStorageDescriptorsByPropertyId != null)
-         {
-            findValuesStorageDescriptorsByPropertyId.close();
-         }
-
          if (findValuesDataByPropertyId != null)
          {
             findValuesDataByPropertyId.close();
@@ -607,6 +614,31 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (findNodesCount != null)
          {
             findNodesCount.close();
+         }
+
+         if (findWorkspaceDataSize != null)
+         {
+            findWorkspaceDataSize.close();
+         }
+
+         if (findNodeDataSize != null)
+         {
+            findNodeDataSize.close();
+         }
+
+         if (findNodePropertiesOnValueStorage != null)
+         {
+            findNodePropertiesOnValueStorage.close();
+         }
+
+         if (findWorkspacePropertiesOnValueStorage != null)
+         {
+            findWorkspacePropertiesOnValueStorage.close();
+         }
+
+         if (findValueStorageDescAndSize != null)
+         {
+            findValueStorageDescAndSize.close();
          }
       }
       catch (SQLException e)
@@ -713,8 +745,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * {@inheritDoc}
     */
-   public void add(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-      InvalidItemStateException, IllegalStateException
+   public void add(PropertyData data, ChangedSizeHandler sizeHandler) throws RepositoryException,
+      UnsupportedOperationException, InvalidItemStateException, IllegalStateException
    {
       checkIfOpened();
 
@@ -735,7 +767,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
          }
 
-         addValues(getInternalId(data.getIdentifier()), data);
+         addValues(getInternalId(data.getIdentifier()), data, sizeHandler);
 
          if (LOG.isDebugEnabled())
          {
@@ -829,8 +861,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * {@inheritDoc}
     */
-   public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-      InvalidItemStateException, IllegalStateException
+   public void delete(PropertyData data, ChangedSizeHandler sizeHandler) throws RepositoryException,
+      UnsupportedOperationException, InvalidItemStateException, IllegalStateException
    {
       checkIfOpened();
 
@@ -838,7 +870,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
       try
       {
-         deleteValues(cid, data, false);
+         deleteValues(cid, data, false, sizeHandler);
 
          // delete references
          deleteReference(cid);
@@ -915,8 +947,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * {@inheritDoc}
     */
-   public void update(PropertyData data) throws RepositoryException, UnsupportedOperationException,
-      InvalidItemStateException, IllegalStateException
+   public void update(PropertyData data, ChangedSizeHandler sizeHandler) throws RepositoryException,
+      UnsupportedOperationException, InvalidItemStateException, IllegalStateException
    {
       checkIfOpened();
 
@@ -949,8 +981,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          }
 
          // do Values update: delete all and add all
-         deleteValues(cid, data, true);
-         addValues(cid, data);
+         deleteValues(cid, data, true, sizeHandler);
+         addValues(cid, data, sizeHandler);
 
          if (LOG.isDebugEnabled())
          {
@@ -1439,21 +1471,143 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     */
    public long getNodesCount() throws RepositoryException
    {
-      ResultSet countNodes;
       try
       {
-         countNodes = findNodesCount();
-         if (countNodes.next())
+         ResultSet countNodes = findNodesCount();
+         try
          {
-            return countNodes.getLong(1);
+            if (countNodes.next())
+            {
+               return countNodes.getLong(1);
+            }
+            else
+            {
+               throw new SQLException("ResultSet has't records.");
+            }
+         }
+         finally
+         {
+            JDBCUtils.freeResources(countNodes, null, null);
          }
       }
       catch (SQLException e)
       {
+         throw new RepositoryException("Can not calculate nodes count", e);
+      }
+   }
+
+   /**
+    * Calculates workspace data size.
+    *
+    * @throws RepositoryException
+    *           if a database access error occurs
+    */
+   public long getWorkspaceDataSize() throws RepositoryException
+   {
+      long dataSize = 0;
+
+      ResultSet result = null;
+      try
+      {
+         result = findWorkspaceDataSize();
+         try
+         {
+            if (result.next())
+            {
+               dataSize += result.getLong(1);
+            }
+         }
+         finally
+         {
+            JDBCUtils.freeResources(result, null, null);
+         }
+
+         result = findWorkspacePropertiesOnValueStorage();
+         try
+         {
+            while (result.next())
+            {
+               String storageDesc = result.getString(DBConstants.COLUMN_VSTORAGE_DESC);
+               String propertyId = result.getString(DBConstants.COLUMN_VPROPERTY_ID);
+               int orderNum = result.getInt(DBConstants.COLUMN_VORDERNUM);
+
+               ValueIOChannel channel = containerConfig.valueStorageProvider.getChannel(storageDesc);
+
+               dataSize += channel.getValueSize(getIdentifier(propertyId), orderNum);
+            }
+         }
+         finally
+         {
+            JDBCUtils.freeResources(result, null, null);
+         }
+      }
+      catch (IOException e)
+      {
          throw new RepositoryException(e);
       }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
 
-      throw new RepositoryException("Can not calculate nodes count");
+      return dataSize;
+   }
+
+   /**
+    * Calculates node data size.
+    *
+    * @throws RepositoryException
+    *           if a database access error occurs
+    */
+   public long getNodeDataSize(String nodeIdentifier) throws RepositoryException
+   {
+      long dataSize = 0;
+
+      ResultSet result = null;
+      try
+      {
+         result = findNodeDataSize(getInternalId(nodeIdentifier));
+         try
+         {
+            if (result.next())
+            {
+               dataSize += result.getLong(1);
+            }
+         }
+         finally
+         {
+            JDBCUtils.freeResources(result, null, null);
+         }
+
+         result = findNodePropertiesOnValueStorage(getInternalId(nodeIdentifier));
+         try
+         {
+            while (result.next())
+            {
+               String storageDesc = result.getString(DBConstants.COLUMN_VSTORAGE_DESC);
+               String propertyId = result.getString(DBConstants.COLUMN_VPROPERTY_ID);
+               int orderNum = result.getInt(DBConstants.COLUMN_VORDERNUM);
+
+               ValueIOChannel channel = containerConfig.valueStorageProvider.getChannel(storageDesc);
+
+               dataSize += channel.getValueSize(getIdentifier(propertyId), orderNum);
+            }
+         }
+         finally
+         {
+            JDBCUtils.freeResources(result, null, null);
+         }
+      }
+      catch (IOException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e.getMessage(), e);
+      }
+
+      return dataSize;
    }
 
    // ------------------ Private methods ---------------
@@ -1830,7 +1984,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
          PersistedPropertyData pdata =
             new PersistedPropertyData(getIdentifier(cid), qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued,
-               new ArrayList<ValueData>());
+               new ArrayList<ValueData>(), new SimplePersistedSize(0));
 
          return pdata;
       }
@@ -2292,9 +2446,20 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             QPath.makeChildPath(parentPath == null ? traverseQPath(cpid) : parentPath, InternalQName.parse(cname));
 
          String identifier = getIdentifier(cid);
-         List<ValueData> values = readValues(cid, cptype, identifier, cversion);
+
+         List<ValueDataWrapper> data = readValues(cid, cptype, identifier, cversion);
+
+         long size = 0;
+         List<ValueData> values = new ArrayList<ValueData>();
+         for (ValueDataWrapper vdDataWrapper : data)
+         {
+            values.add(vdDataWrapper.value);
+            size += vdDataWrapper.size;
+         }
+
          PersistedPropertyData pdata =
-            new PersistedPropertyData(identifier, qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued, values);
+            new PersistedPropertyData(identifier, qpath, getIdentifier(cpid), cversion, cptype, cpmultivalued, values,
+               new SimplePersistedSize(size));
 
          return pdata;
       }
@@ -2313,6 +2478,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     *          PropertyData
     * @param update
     *          boolean true if it's delete-add sequence (update operation)
+    * @param sizeHandler
+    *          accumulates changed size
     * @throws IOException
     *           i/O error
     * @throws SQLException
@@ -2320,48 +2487,54 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws RepositoryException 
     * @throws InvalidItemStateException 
     */
-   private void deleteValues(String cid, PropertyData pdata, boolean update) throws IOException, SQLException,
-      InvalidItemStateException, RepositoryException
+   private void deleteValues(String cid, PropertyData pdata, boolean update, ChangedSizeHandler sizeHandler)
+      throws IOException, SQLException, ValueStorageNotFoundException
    {
+      Set<String> storages = new HashSet<String>();
 
-      final ResultSet valueRecords = findValuesStorageDescriptorsByPropertyId(cid);
+      final ResultSet valueRecords = findValueStorageDescAndSize(cid);
       try
       {
          if (valueRecords.next())
          {
-            // delete all Values in database
-            deleteValueData(cid);
-
             do
             {
                final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
                if (!valueRecords.wasNull())
                {
-                  final ValueIOChannel channel = this.containerConfig.valueStorageProvider.getChannel(storageId);
-                  try
-                  {
-                     channel.delete(pdata.getIdentifier());
-                     valueChanges.add(channel);
-                  }
-                  finally
-                  {
-                     channel.close();
-                  }
+                  storages.add(storageId);
+               }
+               else
+               {
+                  sizeHandler.accumulatePrevSize(valueRecords.getLong(1));
                }
             }
             while (valueRecords.next());
          }
+
+         // delete all values in value storage
+         for (String storageId : storages)
+         {
+            final ValueIOChannel channel = this.containerConfig.valueStorageProvider.getChannel(storageId);
+            try
+            {
+               sizeHandler.accumulatePrevSize(channel.getValueSize(pdata.getIdentifier()));
+
+               channel.delete(pdata.getIdentifier());
+               valueChanges.add(channel);
+            }
+            finally
+            {
+               channel.close();
+            }
+         }
+
+         // delete all Values in database
+         deleteValueData(cid);
       }
       finally
       {
-         try
-         {
-            valueRecords.close();
-         }
-         catch (SQLException e)
-         {
-            LOG.error("Can't close the ResultSet: " + e.getMessage());
-         }
+         JDBCUtils.freeResources(valueRecords, null, null);
       }
    }
 
@@ -2382,11 +2555,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws ValueStorageNotFoundException
     *           if no such storage found with Value storageId
     */
-   private List<ValueData> readValues(String cid, int cptype, String identifier, int cversion) throws IOException,
-      SQLException, ValueStorageNotFoundException
+   private List<ValueDataWrapper> readValues(String cid, int cptype, String identifier, int cversion)
+      throws IOException, SQLException, ValueStorageNotFoundException
    {
-
-      List<ValueData> data = new ArrayList<ValueData>();
+      List<ValueDataWrapper> data = new ArrayList<ValueDataWrapper>();
 
       final ResultSet valueRecords = findValuesByPropertyId(cid);
       try
@@ -2395,11 +2567,13 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          {
             final int orderNum = valueRecords.getInt(COLUMN_VORDERNUM);
             final String storageId = valueRecords.getString(COLUMN_VSTORAGE_DESC);
-            ValueData vdata =
+
+            ValueDataWrapper vdWrapper =
                valueRecords.wasNull() ? ValueDataUtil.readValueData(cid, cptype, orderNum, cversion,
                   valueRecords.getBinaryStream(COLUMN_VDATA), containerConfig.spoolConfig) : readValueData(identifier,
                   orderNum, cptype, storageId);
-            data.add(vdata);
+
+            data.add(vdWrapper);
          }
       }
       finally
@@ -2436,7 +2610,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws ValueStorageNotFoundException
     *           if no such storage found with Value storageId
     */
-   protected ValueData readValueData(String identifier, int orderNumber, int type, String storageId)
+   protected ValueDataWrapper readValueData(String identifier, int orderNumber, int type, String storageId)
       throws SQLException, IOException, ValueStorageNotFoundException
    {
       ValueIOChannel channel = this.containerConfig.valueStorageProvider.getChannel(storageId);
@@ -2455,13 +2629,16 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * 
     * @param data
     *          PropertyData
+    * @param sizeHandler
+    *          accumulates size changing
     * @throws SQLException
     *           database error
     * @throws IOException
     *           I/O error
     * @throws RepositoryException if Value data large of JDBC accepted (Integer.MAX_VALUE)
     */
-   protected void addValues(String cid, PropertyData data) throws IOException, SQLException, RepositoryException
+   protected void addValues(String cid, PropertyData data, ChangedSizeHandler sizeHandler) throws IOException,
+      SQLException, RepositoryException
    {
       List<ValueData> vdata = data.getValues();
 
@@ -2469,9 +2646,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          ValueData vd = vdata.get(i);
          ValueIOChannel channel = this.containerConfig.valueStorageProvider.getApplicableChannel(data, i);
+
          InputStream stream;
          int streamLength;
          String storageId;
+
          if (channel == null)
          {
             // prepare write of Value in database
@@ -2490,33 +2669,32 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                      cid + i + "." + data.getPersistedVersion());
                try
                {
-                  writeValueHelper.writeStreamedValue(swapFile, streamData);
+                  long vlen = writeValueHelper.writeStreamedValue(swapFile, streamData);
+                  if (vlen <= Integer.MAX_VALUE)
+                  {
+                     streamLength = (int)vlen;
+                  }
+                  else
+                  {
+                     throw new RepositoryException("Value data large of allowed by JDBC (Integer.MAX_VALUE) " + vlen
+                        + ". Property " + data.getQPath().getAsString());
+                  }
                }
                finally
                {
                   swapFile.spoolDone();
                }
 
-               long vlen = PrivilegedFileHelper.length(swapFile);
-               if (vlen <= Integer.MAX_VALUE)
-               {
-                  streamLength = (int)vlen;
-               }
-               else
-               {
-                  throw new RepositoryException("Value data large of allowed by JDBC (Integer.MAX_VALUE) " + vlen
-                     + ". Property " + data.getQPath().getAsString());
-               }
-
                stream = streamData.getAsStream();
             }
             storageId = null;
+            sizeHandler.accumulateNewSize(streamLength);
          }
          else
          {
             // write Value in external VS
-            channel.write(data.getIdentifier(), vd);
             valueChanges.add(channel);
+            channel.write(data.getIdentifier(), vd, sizeHandler);
             storageId = channel.getStorageId();
             stream = null;
             streamLength = 0;
@@ -2527,12 +2705,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    /**
     * Build node data and its properties data from temporary stored info.
-    * 
-    * @return NodeDataIndexing
-    * @throws RepositoryException
-    * @throws IOException 
-    * @throws SQLException 
-    * @throws IllegalNameException 
     */
    protected NodeDataIndexing createNodeDataIndexing(TempNodeData tempNode) throws RepositoryException, SQLException,
       IOException, IllegalNameException
@@ -2554,19 +2726,15 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
 
       // primary type if exists in the list of properties
-      InternalQName ptName = null;
-      ValueData ptValue = null;
-
       SortedSet<TempPropertyData> ptTempProp = tempNode.properties.get(Constants.JCR_PRIMARYTYPE.getAsString());
-      if (ptTempProp != null)
-      {
-         ptValue = ptTempProp.first().getValueData();
-         ptName = InternalQName.parse(ValueDataUtil.getString(ptValue));
-      }
+      ValueData ptValueData = ptTempProp.first().getValueData();
+      long ptSize = ptTempProp.first().getSize();
+      InternalQName ptName = InternalQName.parse(ValueDataUtil.getString(ptValueData));
 
       // mixins if exist in the list of properties
       List<ValueData> mixinsData = new ArrayList<ValueData>();
       List<InternalQName> mixins = new ArrayList<InternalQName>();
+      long mixinsSize = 0;
 
       Set<TempPropertyData> mixinsTempProps = tempNode.properties.get(Constants.JCR_MIXINTYPES.getAsString());
       if (mixinsTempProps != null)
@@ -2577,6 +2745,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
             mixinsData.add(vdata);
             mixins.add(InternalQName.parse(ValueDataUtil.getString(vdata)));
+
+            mixinsSize += mxnb.getSize();
          }
       }
 
@@ -2593,15 +2763,18 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          String identifier = getIdentifier(prop.id);
          QPath qpath = QPath.makeChildPath(parentPath, InternalQName.parse(prop.name));
 
-         List<ValueData> valueData = new ArrayList<ValueData>();
+         List<ValueData> values = new ArrayList<ValueData>();
+         long size = 0;
 
          if (propName.equals(Constants.JCR_PRIMARYTYPE.getAsString()))
          {
-            valueData.add(ptValue);
+            values.add(ptValueData);
+            size = ptSize;
          }
          else if (propName.equals(Constants.JCR_MIXINTYPES.getAsString()))
          {
-            valueData = mixinsData;
+            values = mixinsData;
+            size = mixinsSize;
          }
          else
          {
@@ -2609,13 +2782,15 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             {
                ExtendedTempPropertyData exTempProp = (ExtendedTempPropertyData)tempProp;
 
-               valueData.add(exTempProp.getValueData());
+               values.add(exTempProp.getValueData());
+               size += exTempProp.getSize();
             }
          }
 
          // build property data
          PropertyData pdata =
-            new PersistedPropertyData(identifier, qpath, tempNode.cid, prop.version, prop.type, prop.multi, valueData);
+            new PersistedPropertyData(identifier, qpath, tempNode.cid, prop.version, prop.type, prop.multi, values,
+               new SimplePersistedSize(size));
 
          childProps.put(propName, pdata);
       }
@@ -2662,18 +2837,23 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
       protected ValueData data;
 
-      public TempPropertyData(ResultSet item) throws SQLException, IOException
-      {
-         this(item, true);
-      }
+      protected long size;
 
       /**
        * Constructor TempPropertyData.
        */
-      public TempPropertyData(ResultSet item, boolean readValue) throws SQLException, IOException
+      public TempPropertyData(ResultSet item) throws SQLException, IOException, ValueStorageNotFoundException
       {
          orderNum = item.getInt(COLUMN_VORDERNUM);
-         data = readValue ? new ByteArrayPersistedValueData(orderNum, item.getBytes(COLUMN_VDATA)) : null;
+         readData(item);
+      }
+
+      protected void readData(ResultSet item) throws SQLException, ValueStorageNotFoundException, IOException
+      {
+         byte[] internalData = item.getBytes(COLUMN_VDATA);
+
+         data = new ByteArrayPersistedValueData(orderNum, internalData);
+         size = internalData.length;
       }
 
       public int compareTo(TempPropertyData o)
@@ -2684,6 +2864,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       public ValueData getValueData()
       {
          return data;
+      }
+
+      public long getSize()
+      {
+         return size;
       }
    }
 
@@ -2706,17 +2891,26 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
       public ExtendedTempPropertyData(ResultSet item) throws SQLException, ValueStorageNotFoundException, IOException
       {
-         super(item, false);
+         super(item);
+
          id = item.getString("P_ID");
          name = item.getString("P_NAME");
          version = item.getInt("P_VERSION");
          type = item.getInt(COLUMN_PTYPE);
          multi = item.getBoolean("P_MULTIVALUED");
          storage_desc = item.getString(COLUMN_VSTORAGE_DESC);
+      }
+
+      protected void readData(ResultSet item) throws SQLException, ValueStorageNotFoundException, IOException
+      {
          InputStream is = item.getBinaryStream(COLUMN_VDATA);
-         data =
+
+         ValueDataWrapper vdWrapper =
             storage_desc == null ? ValueDataUtil.readValueData(id, type, orderNum, version, is,
                containerConfig.spoolConfig) : readValueData(getIdentifier(id), orderNum, type, storage_desc);
+
+         data = vdWrapper.value;
+         size = vdWrapper.size;
       }
    }
 
@@ -2795,8 +2989,15 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected abstract ResultSet findValuesByPropertyId(String cid) throws SQLException;
 
-   protected abstract ResultSet findValuesStorageDescriptorsByPropertyId(String cid) throws SQLException;
-
    protected abstract ResultSet findMaxPropertyVersion(String parentId, String name, int index) throws SQLException;
 
+   protected abstract ResultSet findWorkspaceDataSize() throws SQLException;
+
+   protected abstract ResultSet findWorkspacePropertiesOnValueStorage() throws SQLException;
+
+   protected abstract ResultSet findNodeDataSize(String nodeIdentifier) throws SQLException;
+
+   protected abstract ResultSet findNodePropertiesOnValueStorage(String parentId) throws SQLException;
+
+   protected abstract ResultSet findValueStorageDescAndSize(String cid) throws SQLException;
 }

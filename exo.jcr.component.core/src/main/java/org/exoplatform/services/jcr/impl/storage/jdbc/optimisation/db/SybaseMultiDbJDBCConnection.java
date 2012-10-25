@@ -120,6 +120,10 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
 
       super.prepareQueries();
 
+      FIND_PROPERTY_BY_ID =
+         "select datalength(DATA), I.P_TYPE, V.STORAGE_DESC from " + JCR_ITEM + " I, " + JCR_VALUE
+            + " V where I.ID = ? and V.PROPERTY_ID = I.ID";
+
       SELECT_LIMIT_OFFSET_NODES_INTO_TEMPORARY_TABLE =
          "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM into "
             + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + " from " + JCR_ITEM
@@ -143,6 +147,14 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
       DELETE_TEMPORARY_TABLE_A = "drop table " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
       DELETE_TEMPORARY_TABLE_B = "drop table " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME;
+
+      FIND_WORKSPACE_DATA_SIZE = "select sum(datalength(DATA)) from " + JCR_VALUE;
+
+      FIND_NODE_DATA_SIZE =
+         "select sum(datalength(DATA)) from " + JCR_ITEM + " I, " + JCR_VALUE
+            + " V  where I.PARENT_ID=? and I.I_CLASS=2 and I.ID=V.PROPERTY_ID";
+
+      FIND_VALUE_STORAGE_DESC_AND_SIZE = "select datalength(DATA), STORAGE_DESC from " + JCR_VALUE + " where PROPERTY_ID=?";
    }
 
    /**

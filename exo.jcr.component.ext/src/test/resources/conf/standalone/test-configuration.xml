@@ -134,6 +134,22 @@
     <type>org.exoplatform.services.jcr.ext.repository.RestRepositoryService</type>
   </component>
 
+  <component>
+    <key>org.exoplatform.services.jcr.impl.quota.QuotaManager</key>
+    <type>org.exoplatform.services.jcr.impl.quota.jbosscache.JBCQuotaManagerImpl</type>
+    <init-params>
+      <value-param>
+        <name>exceeded-quota-behaviour</name>
+        <value>warning</value>
+      </value-param>
+      <properties-param>
+        <name>cache-configuration</name>
+        <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr"/>
+        <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-quota.xml" />
+      </properties-param>
+    </init-params>
+  </component>
+
    <!--  backup -->
    <component>
       <key>org.exoplatform.services.jcr.ext.backup.BackupManager</key>

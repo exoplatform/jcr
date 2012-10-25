@@ -74,6 +74,17 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
          "select count(ID) from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
       FIND_PROPERTIES_BY_PARENTID =
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=2 and CONTAINER_NAME=?" + " order by ID";
+
+      FIND_WORKSPACE_DATA_SIZE =
+         "select sum(bit_length(DATA)/8) from JCR_SITEM I, JCR_SVALUE V where I.I_CLASS=2 and I.CONTAINER_NAME=?"
+            + " and I.ID=V.PROPERTY_ID";
+
+      FIND_NODE_DATA_SIZE =
+         "select sum(bit_length(DATA)/8) from JCR_SITEM I, JCR_SVALUE V where I.PARENT_ID=? and I.I_CLASS=2"
+            + " and I.CONTAINER_NAME=? and I.ID=V.PROPERTY_ID";
+
+      FIND_VALUE_STORAGE_DESC_AND_SIZE = "select bit_length(DATA)/8, STORAGE_DESC from JCR_SVALUE where PROPERTY_ID=?";
+
    }
 
    /**

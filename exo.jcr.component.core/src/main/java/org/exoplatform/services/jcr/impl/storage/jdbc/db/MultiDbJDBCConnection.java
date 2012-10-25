@@ -110,9 +110,6 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
          "select PROPERTY_ID, ORDER_NUM, DATA, STORAGE_DESC from " + JCR_VALUE
             + " where PROPERTY_ID=? order by ORDER_NUM";
 
-      FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID =
-         "select distinct STORAGE_DESC from " + JCR_VALUE + " where PROPERTY_ID=?";
-
       FIND_NODES_BY_PARENTID =
          "select * from " + JCR_ITEM + " where I_CLASS=1 and PARENT_ID=?" + " order by N_ORDER_NUM";
 
@@ -149,6 +146,21 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
       DELETE_REF = "delete from " + JCR_REF + " where PROPERTY_ID=?";
 
       FIND_NODES_COUNT = "select count(*) from " + JCR_ITEM + " I where I.I_CLASS=1";
+
+      FIND_WORKSPACE_DATA_SIZE = "select sum(length(DATA)) from " + JCR_VALUE;
+
+      FIND_WORKSPACE_PROPERTIES_ON_VALUE_STORAGE =
+         "select PROPERTY_ID, STORAGE_DESC, ORDER_NUM from " + JCR_VALUE + " where STORAGE_DESC is not null";
+
+      FIND_NODE_DATA_SIZE =
+         "select sum(length(DATA)) from " + JCR_ITEM + " I, " + JCR_VALUE
+            + " V  where I.PARENT_ID=? and I.I_CLASS=2 and I.ID=V.PROPERTY_ID";
+
+      FIND_NODE_PROPERTIES_ON_VALUE_STORAGE =
+         "select V.PROPERTY_ID, V.STORAGE_DESC, V.ORDER_NUM from " + JCR_ITEM + " I, " + JCR_VALUE + " V  "
+            + "where I.PARENT_ID=? and I.I_CLASS=2 and I.ID=V.PROPERTY_ID and V.STORAGE_DESC is not null";
+
+      FIND_VALUE_STORAGE_DESC_AND_SIZE = "select length(DATA), STORAGE_DESC from " + JCR_VALUE + " where PROPERTY_ID=?";
    }
 
    /**
@@ -594,26 +606,6 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findValuesStorageDescriptorsByPropertyId(String cid) throws SQLException
-   {
-      if (findValuesStorageDescriptorsByPropertyId == null)
-      {
-         findValuesStorageDescriptorsByPropertyId =
-            dbConnection.prepareStatement(FIND_VALUES_VSTORAGE_DESC_BY_PROPERTYID);
-      }
-      else
-      {
-         findValuesStorageDescriptorsByPropertyId.clearParameters();
-      }
-
-      findValuesStorageDescriptorsByPropertyId.setString(1, cid);
-      return findValuesStorageDescriptorsByPropertyId.executeQuery();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
    protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
    {
       throw new UnsupportedOperationException(
@@ -699,5 +691,77 @@ public class MultiDbJDBCConnection extends JDBCStorageConnection
       findMaxPropertyVersions.setInt(3, index);
 
       return findMaxPropertyVersions.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findWorkspaceDataSize() throws SQLException
+   {
+      if (findWorkspaceDataSize == null)
+      {
+         findWorkspaceDataSize = dbConnection.prepareStatement(FIND_WORKSPACE_DATA_SIZE);
+      }
+
+      return findWorkspaceDataSize.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findWorkspacePropertiesOnValueStorage() throws SQLException
+   {
+      if (findWorkspacePropertiesOnValueStorage == null)
+      {
+         findWorkspacePropertiesOnValueStorage =
+            dbConnection.prepareStatement(FIND_WORKSPACE_PROPERTIES_ON_VALUE_STORAGE);
+      }
+
+      return findWorkspacePropertiesOnValueStorage.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findNodeDataSize(String parentId) throws SQLException
+   {
+      if (findNodeDataSize == null)
+      {
+         findNodeDataSize = dbConnection.prepareStatement(FIND_NODE_DATA_SIZE);
+      }
+
+      findNodeDataSize.setString(1, parentId);
+
+      return findNodeDataSize.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findNodePropertiesOnValueStorage(String parentId) throws SQLException
+   {
+      if (findNodePropertiesOnValueStorage == null)
+      {
+         findNodePropertiesOnValueStorage = dbConnection.prepareStatement(FIND_NODE_PROPERTIES_ON_VALUE_STORAGE);
+      }
+
+      findNodePropertiesOnValueStorage.setString(1, parentId);
+
+      return findNodePropertiesOnValueStorage.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected ResultSet findValueStorageDescAndSize(String cid) throws SQLException
+   {
+      if (findValueStorageDescAndSize == null)
+      {
+         findValueStorageDescAndSize = dbConnection.prepareStatement(FIND_VALUE_STORAGE_DESC_AND_SIZE);
+      }
+
+      findValueStorageDescAndSize.setString(1, cid);
+
+      return findValueStorageDescAndSize.executeQuery();
    }
 }

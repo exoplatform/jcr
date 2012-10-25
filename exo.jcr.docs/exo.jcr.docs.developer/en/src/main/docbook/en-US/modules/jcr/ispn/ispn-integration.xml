@@ -56,7 +56,7 @@
     own transport and has to be configured in a proper way. As usual,
     workspaces have similar configuration. The simplest way to configure them
     is to define their own configuration files for each component in each
-    workspace. There are several commons parameters. <abbrev></abbrev></para>
+    workspace. There are several commons parameters. <abbrev/></para>
 
     <para><abbrev>"infinispan-configuration"</abbrev> defines path to template
     based configuration for Infinispan Cache instance.</para>
@@ -510,5 +510,106 @@
         </tgroup>
       </table>
     </section>
+  </section>
+
+  <section id="ISPN.integration.QuotaManagerConfiguration">
+    <title>Quota Manager configuration based on ISPN</title>
+
+    <para>To use Quota Manager along with ISPN you need to configure it
+    explicitely. An example of the configuration:</para>
+
+    <programlisting>  &lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.jcr.impl.quota.QuotaManager&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.jcr.impl.quota.infinispan.ISPNQuotaManagerImpl&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;exceeded-quota-behaviour&lt;/name&gt;
+        &lt;value&gt;exception&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;properties-param&gt;
+        &lt;name&gt;cache-configuration&lt;/name&gt;
+        &lt;description&gt;infinispan-configuration&lt;/description&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr"/&gt;
+        &lt;property name="infinispan-configuration" value="conf/standalone/test-infinispan-quota.xml" /&gt;
+        &lt;property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" /&gt;
+      &lt;/properties-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;</programlisting>
+
+    <para>Here in <emphasis role="bold">cache-configuration</emphasis> section
+    you can define ISPN parameters:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis>infinispan-cl-cache.jdbc.datasource</emphasis> —
+        mandatory property</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-configuration</emphasis> — mandatory
+        property</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>jgroups-configuration </emphasis>— mandatory
+        property</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-cl-cache.jdbc.connectionFactory
+        </emphasis>— dafault value —
+        org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-cluster-name</emphasis> — dafault value —
+        JCR-cluster-quota</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-cl-cache.jdbc.table.name</emphasis> —
+        dafault value — jcr</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-cl-cache.jdbc.table.create</emphasis> —
+        dafault value — true</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-cl-cache.jdbc.table.drop</emphasis> —
+        dafault value — false</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-cl-cache.jdbc.data.type </emphasis>—
+        dafault value — auto</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-cl-cache.jdbc.data.column </emphasis>—
+        dafault value — data</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-cl-cache.jdbc.id.type </emphasis>— dafault
+        value — auto</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-cl-cache.jdbc.id.column </emphasis>—
+        dafault value — id</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-cl-cache.jdbc.timestamp.type</emphasis> —
+        dafault value — auto</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>infinispan-cl-cache.jdbc.timestamp.column </emphasis>—
+        dafault value — timestamp</para>
+      </listitem>
+    </itemizedlist>
   </section>
 </section>

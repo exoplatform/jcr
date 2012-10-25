@@ -61,10 +61,11 @@ public class ItemStateWriter
 
       if (itemState.getOldPath() == null)
       {
-         out.writeInt(-1);
+         out.writeInt(SerializationConstants.NULL_DATA);
       }
       else
       {
+         out.writeInt(SerializationConstants.NOT_NULL_DATA);
          byte[] buf = itemState.getOldPath().getAsString().getBytes(Constants.DEFAULT_ENCODING);
          out.writeInt(buf.length);
          out.write(buf);

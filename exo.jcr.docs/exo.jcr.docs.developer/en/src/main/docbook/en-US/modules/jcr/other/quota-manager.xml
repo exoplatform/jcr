@@ -1,0 +1,288 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.QuotaManager">
+  <title>Quota Manager</title>
+
+  <para>Quota manager is designed to provide the ability to manage qoutas of
+  eXo jcr entities, which can be very useful for administration purposes. In
+  general the major features are:</para>
+
+  <orderedlist>
+    <listitem>
+      <para>Getting the size and setting the qouta of a node, workspace,
+      repository, JCR instance etc.</para>
+    </listitem>
+
+    <listitem>
+      <para>Setting the behavior on exceeding the quota.</para>
+    </listitem>
+
+    <listitem>
+      <para>Getting the size of the Lucene index (per workspace and
+      total).</para>
+    </listitem>
+  </orderedlist>
+
+  <para>You can define to use QuotaManager based on JbossCache or <link
+  linkend="ISPN.integration.QuotaManagerConfiguration">ISPN</link> in the
+  configuration of QuotaManager component.</para>
+
+  <section>
+    <title>Quota Manager configuration based on JBossCache</title>
+
+    <para>To use Quota Manager along with JbossCache you need to configure it.
+    An example of the configuration:</para>
+
+    <programlisting>&lt;component&gt;
+  &lt;key&gt;org.exoplatform.services.jcr.impl.quota.QuotaManager&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.impl.quota.jbosscache.JBCQuotaManagerImpl&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;exceeded-quota-behaviour&lt;/name&gt;
+      &lt;value&gt;exception&lt;/value&gt;
+    &lt;/value-param&gt;
+    &lt;properties-param&gt;
+      &lt;name&gt;cache-configuration&lt;/name&gt;
+      &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr"/&gt;
+      &lt;property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-quota.xml" /&gt;
+      &lt;property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" /&gt;
+    &lt;/properties-param&gt;
+  &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis role="bold">exceeded-quota-behaviour</emphasis> —
+        defines the behaviour of quota manager on exceeding the limits. Can be
+        warning or exception. Default value is warning. This parameter is
+        common for JbossCache based and ISPN based configuration.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">cache-configuration</emphasis> — in this
+        section you can define explicitely jboss cache parameters:</para>
+
+        <itemizedlist>
+          <listitem>
+            <para><emphasis>jbosscache-cl-cache.jdbc.datasource</emphasis> —
+            mandatory property</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jbosscache-configuration</emphasis> — mandatory
+            property</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jgroups-configuration</emphasis> — mandatory
+            property</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jbosscache-cluster-name</emphasis> — dafault value
+            — JCR-cluster-quota</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jbosscache-cl-cache.jdbc.table.name</emphasis> —
+            dafault value — jcr_quota</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jbosscache-cl-cache.jdbc.table.create</emphasis> —
+            dafault value — true</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jbosscache-cl-cache.jdbc.table.drop </emphasis>—
+            dafault value — false</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jbosscache-cl-cache.jdbc.table.primarykey</emphasis>
+            — dafault value — jcrquota_pk</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jbosscache-cl-cache.jdbc.node.type</emphasis> —
+            dafault value — auto</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jbosscache-cl-cache.jdbc.node.column</emphasis> —
+            dafault value — node</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jbosscache-cl-cache.jdbc.fqn.type</emphasis> —
+            dafault value — auto</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jbosscache-cl-cache.jdbc.fqn.column </emphasis>—
+            dafault value — fqn</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>jbosscache-cl-cache.jdbc.parent.column
+            </emphasis>— dafault value — parent</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
+  </section>
+
+  <section>
+    <title>Quota manager interface overview</title>
+
+    <para>Quota manager interface declares the following methods:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para><emphasis>getNodeDataSize(String repositoryName, String
+        workspaceName, String nodePath)</emphasis> — returns the size of a
+        Node. The size of a node is the length of its content, if a node has
+        child nodes — the size is the sum of all child nodes sizes + size of
+        the current node.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>getNodeQuota(String repositoryName, String
+        workspaceName, String nodePath) </emphasis>— returns the node's quota
+        limit, the maximum allowed node data size of this node. First will be
+        tried to check if quota limit was explicitly set for this path.
+        Otherwise will be tried to find pattern quota that matches for defined
+        node path.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>setNodeQuota(String repositoryName, String
+        workspaceName, String nodePath, long quotaLimit, boolean asyncUpdate)
+        </emphasis>— sets the quota of a Node. For
+        <emphasis>asyncUpdate</emphasis> parameter: true means checking if
+        node exceeds quota limit will be performed asynchronously, i.e. for
+        some period of time difference between new and old content size will
+        be accumulated and only then send for validation.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>removeNodeQuota(String repositoryName, String
+        workspaceName, String nodePath) </emphasis>— removes the node's quota
+        limit, the maximum allowed node data size of this node.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>setGroupOfNodesQuota(String repositoryName, String
+        workspaceName, String patternPath, long quotaLimit, boolean
+        asyncUpdate)</emphasis> — sets the quota of the group of Nodes. This
+        method will set one quota value for many nodes. For patternPath
+        parameter: the pattern indicates bunch of nodes, allowed * as any node
+        name in a path and % as any character in name.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>removeGroupOfNodesQuota(String repositoryName, String
+        workspaceName, String patternPath) </emphasis>— removes the node's
+        quota limit for a bunch of nodes at the same time.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>getWorkspaceDataSize(String repositoryName, String
+        workspaceName) </emphasis>— returns the size of a Workspace. The size
+        of a workspace is the size of all nodes, stored in it.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>getWorkspaceQuota(String repositoryName, String
+        workspaceName)</emphasis> — returns the quota of a Workspace. The
+        quota of a workspace is a maximum allowed size of the
+        workspace.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>setWorkspaceQuota(String repositoryName, String
+        workspaceName, long quotaLimit) </emphasis>— set the quota of a
+        Workspace. The quota of a workspace is the maximum allowed size of the
+        workspace.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>removeWorkspaceQuota(String repositoryName, String
+        workspaceName)</emphasis> — removes the workspace's quota limit, the
+        maximum allowed workspace data size.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>getWorkspaceIndexSize(String repositoryName, String
+        workspaceName) </emphasis>— gets the size of a Workspace's Lucene
+        index. The size of a workspace's Lucene is the size of the Lucene
+        index directory in file system.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>getRepositoryDataSize(String repositoryName)
+        </emphasis>— returns the size of a Repository. The size of a
+        repository is the sum of sizes of all workspaces stored in it.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>getRepositoryQuota(String repositoryName)</emphasis> —
+        returns the quota of a Repository. The quota of a repository is a
+        maximum allowed size of the repository.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>setRepositoryQuota(String repositoryName, long
+        quotaLimit) </emphasis>— sets the quota of a Repository. The quota of
+        a repository is a maximum allowed size of the repository.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>removeRepositoryQuota(String repositoryName)
+        </emphasis>— Removes a repository quota limit, a maximum allowed
+        repository data size.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>getRepositoryIndexSize(String
+        repositoryName)</emphasis> — gets the size of a Repository's Lucene
+        index. The size of a repository's Lucene is the sum of sizes of all
+        workspaces Lucene indexes sizes.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>getGlobalDataSize() </emphasis>— returns the size of
+        the whole JCR instance. The size of a jcr is the sum of sizes of all
+        repositories stored in it.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>getGlobalQuota() </emphasis>— returns the quota of the
+        whole JCR instance. The quota of a jcr is a maximum allowed size of
+        the jcr.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>setGlobalQuota(long quotaLimit)</emphasis> — sets the
+        quota of the whole JCR instance. The quota of a jcr is a maximum
+        allowed size of the jcr.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>removeGlobalQuota() </emphasis>— Removes global quota
+        limit, a maximum allowed global data size.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis>getGlobalIndexSize()</emphasis> — gets the size of the
+        whole JCR instance's Lucene index. The size of a jcr's Lucene is the
+        sum of sizes of all repositories Lucene indexes sizes.</para>
+      </listitem>
+    </itemizedlist>
+
+    <note>
+      <para>All mentioned methods are available via JMX technology.</para>
+    </note>
+  </section>
+</section>

@@ -418,11 +418,11 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
          RepositoryImpl repo = (RepositoryImpl)getRepository(name);
          repo.setState(ManageableRepository.OFFLINE);
 
-         for (WorkspaceEntry wsEntry : repconfig.getWorkspaceEntries())
+         List<WorkspaceEntry> workspaces = new ArrayList<WorkspaceEntry>(repconfig.getWorkspaceEntries());
+         for (WorkspaceEntry entry : workspaces)
          {
-            repo.internalRemoveWorkspace(wsEntry.getName());
+            repo.internalRemoveWorkspace(entry.getName());
          }
-         repconfig.getWorkspaceEntries().clear();
          final RepositoryContainer repositoryContainer = repositoryContainers.get(name);
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
          {

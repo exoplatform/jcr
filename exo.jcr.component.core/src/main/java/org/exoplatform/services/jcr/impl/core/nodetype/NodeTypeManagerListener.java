@@ -24,8 +24,8 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  * The <code>NodeTypeRegistryListener</code> interface allows an implementing object to be informed
  * about node type (un)registration.
  * 
- * @see NodeTypeRegistry#addListener(NodeTypeRegistryListener)
- * @see NodeTypeRegistry#removeListener(NodeTypeRegistryListener)
+ * @see NodeTypeRegistry#addWorkspaceManagingListener(NodeTypeRegistryListener)
+ * @see NodeTypeRegistry#removeWorkspaceManagingListener(NodeTypeRegistryListener)
  */
 public interface NodeTypeManagerListener
 {
