@@ -196,6 +196,9 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
    // Need for Externalizable
    // ------------------ [ BEGIN ] ------------------
 
+   /**
+    * {@inheritDoc}
+    */
    public void writeExternal(ObjectOutput out) throws IOException
    {
       // write -1 if systemId == null
@@ -222,6 +225,10 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       }
    }
 
+
+   /**
+    * {@inheritDoc}
+    */
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
 
@@ -235,7 +242,7 @@ public class TransactionChangesLog implements CompositeChangesLog, Externalizabl
       int listSize = in.readInt();
       for (int i = 0; i < listSize; i++)
       {
-         changesLogs.add((PlainChangesLogImpl)in.readObject());
+         changesLogs.add((PlainChangesLog)in.readObject());
       }
    }
 
