@@ -571,5 +571,26 @@
       end users to change implementation classes of Lucene internals, but
       doesn't guarantee it's stability and functionality.</para>
     </section>
+
+    <section>
+      <title>Index optimization</title>
+
+      <para>From time to time, the Lucene index needs to be optimized. The
+      process is essentially a defragmentation. Until an optimization is
+      triggered Lucene only marks deleted documents as such, no physical
+      deletions are applied. During the optimization process the deletions
+      will be applied. Optimizing the Lucene index speeds up searches but has
+      no effect on the indexation (update) performance. First of all ensure
+      repository is suspended to avoid any possible inconsistency. It is
+      recommended to schedule optimization. Also checking for pending
+      deletions is supported. If it is so, it is a first signal to index
+      optimization. All operation are available via JMX:</para>
+
+      <mediaobject>
+        <imageobject>
+          <imagedata fileref="images/search-manager-optimize.png" />
+        </imageobject>
+      </mediaobject>
+    </section>
   </section>
 </section>

@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
@@ -1240,6 +1241,106 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       {
          resumeLocally();
       }
+   }
+
+   /**
+    * Public method, designed to be called via JMX. Optimizes lucene index.
+    * See {@link IndexWriter#forceMerge(int)} for details.
+    */
+   @Managed
+   @ManagedDescription("Index optimization ")
+   public void optimize()
+   {
+      if (handler instanceof SearchIndex)
+      {
+         try
+         {
+            if (isSuspended.get())
+            {
+               resume();
+
+               try
+               {
+                  ((SearchIndex)handler).getIndex().optimize();
+               }
+               finally
+               {
+                  suspend();
+               }
+            }
+            else
+            {
+               ((SearchIndex)handler).getIndex().optimize();
+            }
+         }
+         catch (IOException e)
+         {
+            LOG.error(e.getMessage(), e);
+         }
+         catch (ResumeException e)
+         {
+            LOG.error(e.getMessage(), e);
+         }
+         catch (SuspendException e)
+         {
+            LOG.error(e.getMessage(), e);
+         }
+      }
+      else
+      {
+         LOG.error("This kind of QuerHandler class doesn't support index optimization.");
+      }
+   }
+
+   /**
+    * Public method, designed to be called via JMX. Checks if index has deletions. 
+    * If it is true, it is recommended to call optimize to complete them.
+    */
+   @Managed
+   @ManagedDescription("Checks if index has deletions.")
+   public boolean hasDeletions()
+   {
+      if (handler instanceof SearchIndex)
+      {
+         try
+         {
+            if (isSuspended.get())
+            {
+               resume();
+
+               try
+               {
+                  return ((SearchIndex)handler).getIndex().hasDeletions();
+               }
+               finally
+               {
+                  suspend();
+               }
+            }
+            else
+            {
+               return ((SearchIndex)handler).getIndex().hasDeletions();
+            }
+         }
+         catch (IOException e)
+         {
+            LOG.error(e.getMessage(), e);
+         }
+         catch (ResumeException e)
+         {
+            LOG.error(e.getMessage(), e);
+         }
+         catch (SuspendException e)
+         {
+            LOG.error(e.getMessage(), e);
+         }
+      }
+      else
+      {
+         LOG.error("This kind of QuerHandler class doesn't support 'hasDeletions' checking.");
+      }
+
+      return false;
    }
 
    /**

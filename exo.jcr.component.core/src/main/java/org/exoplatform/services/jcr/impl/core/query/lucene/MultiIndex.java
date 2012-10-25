@@ -17,7 +17,9 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.document.Document;
+import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.store.Directory;
@@ -3821,5 +3823,33 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       DirectoryHelper.removeDirectory(indexDirectory);
 
       return false;
+   }
+
+   /**
+    * Index optimization using {@link IndexWriter#optimize()} method.
+    */
+   public void optimize() throws CorruptIndexException, IOException
+   {
+      for (PersistentIndex index : indexes)
+      {
+         IndexWriter writer = index.getIndexWriter();
+         writer.optimize();
+      }
+   }
+
+   /**
+    * Checks if index has deletions.
+    */
+   public boolean hasDeletions() throws CorruptIndexException, IOException
+   {
+      boolean result = false;
+
+      for (PersistentIndex index : indexes)
+      {
+         IndexWriter writer = index.getIndexWriter();
+         result |= writer.hasDeletions();
+      }
+
+      return result;
    }
 }

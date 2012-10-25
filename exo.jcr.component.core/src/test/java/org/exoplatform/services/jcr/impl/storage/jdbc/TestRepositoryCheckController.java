@@ -90,8 +90,6 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
    private static boolean NOT_SHARED_CACHE = false;
 
-   private static boolean CACHE_ENABLED = true;
-
    private static boolean CACHE_DISABLED = false;
 
    private final TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
@@ -338,6 +336,85 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
          if (repository != null)
          {
             helper.removeRepository(container, repository.getConfiguration().getName());
+         }
+      }
+   }
+
+   /**
+    * Ensure index has pending deletions, then call optimize to get rid of it. 
+    */
+   public void testOptimizeIndexUsecase() throws Exception
+   {
+      ManageableRepository repository =
+         helper.createRepository(container, DatabaseStructureType.SINGLE, CACHE_DISABLED);
+
+      makeIndexContaingDeletions(repository);
+
+      boolean hasDeletions = hasDeletions(repository);
+      if (hasDeletions)
+      {
+         optimize(repository);
+         assertFalse(hasDeletions(repository));
+      }
+
+      helper.removeRepository(container, repository.getConfiguration().getName());
+   }
+
+   /**
+    * Ensures index contains deletions.
+    */
+   private void makeIndexContaingDeletions(ManageableRepository repository) throws Exception
+   {
+      SessionImpl session =
+         (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
+      Node testRoot = session.getRootNode().addNode("test");
+      for (int i = 0; i < 200; i++)
+      {
+         Node node = testRoot.addNode("test" + i);
+         node.addMixin("mix:versionable");
+         session.save();
+
+         node.checkin();
+         node.checkout();
+      }
+
+      testRoot.remove();
+      session.save();
+   }
+
+   /**
+    * Checks if index has deletions.
+    */
+   private boolean hasDeletions(ManageableRepository repository)
+   {
+      boolean hasDeletions = false;
+
+      for (String wsName : repository.getWorkspaceNames())
+      {
+         List<SearchManager> searches =
+            repository.getWorkspaceContainer(wsName).getComponentInstancesOfType(SearchManager.class);
+
+         for (SearchManager search : searches)
+         {
+            hasDeletions |= search.hasDeletions();
+         }
+      }
+      return hasDeletions;
+   }
+
+   /**
+    * Checks if index has deletions.
+    */
+   private void optimize(ManageableRepository repository)
+   {
+      for (String wsName : repository.getWorkspaceNames())
+      {
+         List<SearchManager> searches =
+            repository.getWorkspaceContainer(wsName).getComponentInstancesOfType(SearchManager.class);
+
+         for (SearchManager search : searches)
+         {
+            search.optimize();
          }
       }
    }
@@ -867,6 +944,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
       NodeImpl node = (NodeImpl)parent.addNode("testNode");
       node.addMixin("mix:referenceable");
+      node.addMixin("mix:versionable");
       session.save();
 
       return node;
