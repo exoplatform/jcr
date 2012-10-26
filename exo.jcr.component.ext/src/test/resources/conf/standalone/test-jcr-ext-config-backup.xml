@@ -49,10 +49,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+              <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="max-size" value="10k" />
-                     <property name="live-time" value="1h" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="true" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -101,10 +101,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="max-size" value="10k" />
-                     <property name="live-time" value="1h" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="true" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -160,10 +160,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+              <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="max-size" value="10k" />
-                     <property name="live-time" value="1h" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="true" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -212,10 +212,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+              <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="max-size" value="10k" />
-                     <property name="live-time" value="1h" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="true" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -271,10 +271,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="max-size" value="10k" />
-                     <property name="live-time" value="1h" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="true" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -323,10 +323,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl">
+               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="max-size" value="10k" />
-                     <property name="live-time" value="1h" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="true" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
