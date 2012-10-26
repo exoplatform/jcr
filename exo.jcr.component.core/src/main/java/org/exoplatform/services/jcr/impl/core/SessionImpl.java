@@ -115,7 +115,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    /**
     * Indicates if it must fail in case we use a closed session.
     */
-   private static final boolean ALLOW_CLOSED_SESSION_USAGE = Boolean.valueOf(PropertyManager
+   public static final boolean ALLOW_CLOSED_SESSION_USAGE = Boolean.valueOf(PropertyManager
       .getProperty("exo.jcr.allow.closed.session.usage"));
 
    protected static boolean FORCE_USE_GET_NODES_LAZILY = Boolean.valueOf(PropertyManager

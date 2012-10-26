@@ -16,6 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.impl.core.SessionDataManager;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -25,10 +28,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
-
-
-import org.exoplatform.services.jcr.impl.core.SessionDataManager;
-import org.exoplatform.services.jcr.impl.core.SessionImpl;
 
 /**
  * This class implements the {@link QueryManager} interface.
@@ -113,7 +112,7 @@ public class QueryManagerImpl implements QueryManager
     */
    private void sanityCheck() throws RepositoryException
    {
-      if (!session.isLive())
+      if (!session.isLive() && !SessionImpl.ALLOW_CLOSED_SESSION_USAGE)
       {
          throw new RepositoryException("corresponding session has been closed");
       }
