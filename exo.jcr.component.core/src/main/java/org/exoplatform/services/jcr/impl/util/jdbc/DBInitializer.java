@@ -284,7 +284,7 @@ public class DBInitializer
          }
 
          postInit(connection);
-         LOG.info("The DB schema of the workspace '" + containerConfig.containerName + "' has been initialized succesfully.");
+         LOG.info("DB schema of the workspace '" + containerConfig.containerName + "' has been initialized succesfully");
       }
       catch (SQLException e)
       {
@@ -292,8 +292,8 @@ public class DBInitializer
          {
             LOG.error("An error occurs while creating the tables.", e);
          }
-         LOG.warn("An error occurs while creating the tables it could be due to some existing tables that have not been properly created earlier. "
-            + "Please drop manually the tables of the workspace '" + containerConfig.containerName + "' and try again.");
+         LOG.warn("Some tables were created and not rolled back. Please make sure to drop them manually in workspace : '"
+            + containerConfig.containerName + "'");
 
          boolean isAlreadyCreated = false;
          try
@@ -302,18 +302,18 @@ public class DBInitializer
          }
          catch (SQLException ce)
          {
-            LOG.warn("Could not check if objects corresponding to the query '" + sql + "' exist.");
+            LOG.warn("Can not check if objects corresponding to the query '" + sql + "' exist");
          }
 
          if (isAlreadyCreated)
          {
-            LOG.warn("Could not create the DB schema of the workspace '" + containerConfig.containerName
-               + "'. Reason: Objects form '" + sql + "' already exist.");
+            LOG.warn("Could not create DB schema of the workspace '" + containerConfig.containerName
+               + "'. Reason: Objects form '" + sql + "' already exist");
          }
          else
          {
             String msg =
-               "Could not create the DB schema of the workspace '" + containerConfig.containerName + "'. Reason: "
+               "Could not create DB schema of the workspace '" + containerConfig.containerName + "'. Reason: "
                   + e.getMessage() + "; " + JDBCUtils.getFullMessage(e) + ". Last command: " + sql;
 
             throw new DBInitializerException(msg, e);
