@@ -284,7 +284,7 @@ public class DBInitializer
          }
 
          postInit(connection);
-         LOG.info("DB schema of the workspace '" + containerConfig.containerName + "' has been initialized succesfully");
+         LOG.info("DB schema of DataSource: '" + containerConfig.containerName + "' initialized succesfully");
       }
       catch (SQLException e)
       {
@@ -292,7 +292,7 @@ public class DBInitializer
          {
             LOG.error("Problem creating database structure.", e);
          }
-         LOG.warn("Some tables were created and not rolled back. Please make sure to drop them manually in workspace : '"
+         LOG.warn("Some tables were created and not rolled back. Please make sure to drop them manually in datasource : '"
             + containerConfig.containerName + "'");
 
          boolean isAlreadyCreated = false;
@@ -302,18 +302,18 @@ public class DBInitializer
          }
          catch (SQLException ce)
          {
-            LOG.warn("Can not check if objects corresponding to the query '" + sql + "' exist");
+            LOG.warn("Can not check does the objects from " + sql + " exists");
          }
 
          if (isAlreadyCreated)
          {
-            LOG.warn("Could not create DB schema of the workspace '" + containerConfig.containerName
-               + "'. Reason: Objects form '" + sql + "' already exist");
+            LOG.warn("Could not create db schema of DataSource: '" + containerConfig.containerName
+               + "'. Reason: Objects form " + sql + " already exists");
          }
          else
          {
             String msg =
-               "Could not create DB schema of the workspace '" + containerConfig.containerName + "'. Reason: "
+               "Could not create db schema of DataSource: '" + containerConfig.containerName + "'. Reason: "
                   + e.getMessage() + "; " + JDBCUtils.getFullMessage(e) + ". Last command: " + sql;
 
             throw new DBInitializerException(msg, e);
