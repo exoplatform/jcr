@@ -187,18 +187,12 @@ public class ChangesListener implements ExtendedMandatoryItemsPersistenceListene
     */
    private void addPathsWithUnknownChangedSize(ChangesItem changesItem, ItemState state)
    {
-      if (state.isPathChanged())
+      if (!state.isPersisted() && (state.isDeleted() || state.isRenamed()))
       {
          String itemPath = getPath(state.getData().getQPath());
-         String oldPath = getPath(state.getOldPath());
 
          for (String trackedPath : quotaPersister.getAllTrackedNodes(rName, wsName))
          {
-            if (oldPath.startsWith(trackedPath))
-            {
-               changesItem.addPathWithUnknownChangedSize(oldPath);
-            }
-
             if (itemPath.startsWith(trackedPath))
             {
                changesItem.addPathWithUnknownChangedSize(itemPath);
