@@ -132,7 +132,7 @@ public class DBInitializer
             {
                if (LOG.isDebugEnabled())
                {
-                  LOG.debug("Table is already exists " + tableName);
+                  LOG.debug("The table '" + tableName+ "' already exists.");
                }
                existingTables.add(tableName);
                return true;
@@ -151,7 +151,7 @@ public class DBInitializer
             {
                if (LOG.isDebugEnabled())
                {
-                  LOG.debug("View is already exists " + tableName);
+                  LOG.debug("The view '" + tableName+ "' already exists.");
                }
                existingTables.add(tableName);
                return true;
@@ -176,25 +176,25 @@ public class DBInitializer
                   {
                      if (LOG.isDebugEnabled())
                      {
-                        LOG.debug("The table " + tableName + " already exists so we assume that the index " + indexName
-                           + " exists also.");
+                        LOG.debug("The table '" + tableName + "' already exists so we assume that the index '" + indexName
+                           + "' exists also.");
                      }
                      return true;
                   }
                }
                else
                {
-                  LOG.warn("Index found but $TABLE_NAME is not detected '" + sql + "'");
+                  LOG.warn("Could not detect the $TABLE_NAME from the query '" + sql + "'.");
                }
             }
             else
             {
-               LOG.warn("Index found but ON $TABLE_NAME clause is not detected '" + sql + "'");
+               LOG.warn("Could not detect the clause ON $TABLE_NAME from the query '" + sql + "'.");
             }
          }
          else
          {
-            LOG.warn("Create index clause found but $INDEX_NAME is not detected '" + sql + "'");
+            LOG.warn("Could not detect the $INDEX_NAME from the query '" + sql + "'.");
          }
       }
       else if ((tMatcher = creatSequencePattern.matcher(sql)).find())
@@ -208,7 +208,7 @@ public class DBInitializer
             {
                if (LOG.isDebugEnabled())
                {
-                  LOG.debug("Sequence is already exists " + sequenceName);
+                  LOG.debug("The sequence '" + sequenceName + "' already exists.");
                }
                return true;
             }
@@ -225,8 +225,8 @@ public class DBInitializer
             {
                if (LOG.isDebugEnabled())
                {
-                  LOG.debug("At least one table has been created so we assume that the trigger " + triggerName
-                     + " exists also");
+                  LOG.debug("At least one table has been created so we assume that the trigger '" + triggerName
+                     + "' exists also.");
                }
                return true;
             }
@@ -236,7 +236,7 @@ public class DBInitializer
       {
          if (LOG.isDebugEnabled())
          {
-            LOG.debug("Command is not detected for check '" + sql + "'");
+            LOG.debug("Could not detect the command type of the query '" + sql + "', it will be ignored.");
          }
       }
 
@@ -284,16 +284,16 @@ public class DBInitializer
          }
 
          postInit(connection);
-         LOG.info("DB schema of DataSource: '" + containerConfig.containerName + "' initialized succesfully");
+         LOG.info("The DB schema of the workspace '" + containerConfig.containerName + "' has been initialized succesfully.");
       }
       catch (SQLException e)
       {
          if (LOG.isDebugEnabled())
          {
-            LOG.error("Problem creating database structure.", e);
+            LOG.error("An error occurs while creating the tables.", e);
          }
-         LOG.warn("Some tables were created and not rolled back. Please make sure to drop them manually in datasource : '"
-            + containerConfig.containerName + "'");
+         LOG.warn("An error occurs while creating the tables it could be due to some existing tables that have not been properly created earlier. "
+            + "Please drop manually the tables of the workspace '" + containerConfig.containerName + "' and try again.");
 
          boolean isAlreadyCreated = false;
          try
@@ -302,18 +302,18 @@ public class DBInitializer
          }
          catch (SQLException ce)
          {
-            LOG.warn("Can not check does the objects from " + sql + " exists");
+            LOG.warn("Could not check if objects corresponding to the query '" + sql + "' exist.");
          }
 
          if (isAlreadyCreated)
          {
-            LOG.warn("Could not create db schema of DataSource: '" + containerConfig.containerName
-               + "'. Reason: Objects form " + sql + " already exists");
+            LOG.warn("Could not create the DB schema of the workspace '" + containerConfig.containerName
+               + "'. Reason: Objects form '" + sql + "' already exist.");
          }
          else
          {
             String msg =
-               "Could not create db schema of DataSource: '" + containerConfig.containerName + "'. Reason: "
+               "Could not create the DB schema of the workspace '" + containerConfig.containerName + "'. Reason: "
                   + e.getMessage() + "; " + JDBCUtils.getFullMessage(e) + ". Last command: " + sql;
 
             throw new DBInitializerException(msg, e);
@@ -329,7 +329,7 @@ public class DBInitializer
             }
             catch (SQLException e)
             {
-               LOG.error("Can't close the Statement: " + e.getMessage());
+               LOG.debug("Could not close the Statement: " + e.getMessage());
             }
          }
 
@@ -339,7 +339,7 @@ public class DBInitializer
          }
          catch (SQLException e)
          {
-            LOG.error("Error of a connection closing. " + e, e);
+            LOG.warn("Could not close the Connection: " + e.getMessage(), e);
          }
       }
    }
