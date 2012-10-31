@@ -259,7 +259,23 @@
           <para>mysql-myisam-utf8 - this dialect is used if needed to create
           JCR tables with MyISAM engine with UTF-8 encoding support</para>
         </listitem>
+        
+        <listitem>
+          <para>mysql-ndb - this dialect is used if needed to create JCR tables
+          with NDB engine (mysql cluster)</para>
+        </listitem>
+        
+        <listitem>
+          <para>mysql-ndb-utf8 - this dialect is used if needed to create JCR tables
+          with NDB engine (mysql cluster) with UTF-8 encoding support</para>
+        </listitem>
       </itemizedlist>
+      <note>
+          <para>Since MySQL NDB engine does not support foreign keys, 
+          which may lead to improper item removal and as consequence to
+          InvalidItemStateException. In this case you will need to use
+          consistency checker tool.</para>
+      </note>
     </section>
   </section>
 </section>

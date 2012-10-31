@@ -129,6 +129,14 @@ public class DBInitializerHelper
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql.sql";
       }
+      else if (dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_NDB))
+      {
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-ndb.sql";
+      }
+      else if (dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_NDB_UTF8))
+      {
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-ndb-utf8.sql";
+      }
       else if (dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_MYISAM))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-myisam.sql";
@@ -143,7 +151,7 @@ public class DBInitializerHelper
       }
       else if (dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
       {
-         sqlPath = "/conf/storage/jcr-" + (multiDb ? "m" : "s") + "jdbc.mssql.sql";
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mssql.sql";
       }
       else if (dbDialect.startsWith(DBConstants.DB_DIALECT_DERBY))
       {

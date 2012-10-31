@@ -31,6 +31,10 @@
       <listitem>
         <para>MySQL 5.1.36 MYSQL Connector/J 5.1.14</para>
       </listitem>
+      
+      <listitem>
+        <para>MySQL Cluster (NDB engine)</para>
+      </listitem>
 
       <listitem>
         <para>PostgresSQL 8.2.4 JDBC4 Driver, Version 8.2-507</para>
@@ -126,6 +130,18 @@
 
       <td>jcr-sjdbc.mysql-myisam-utf8.sql</td>
     </tr>
+    
+    <tr>
+      <td>MySQL DB with NDB engine</td>
+
+      <td>jcr-sjdbc.mysql-ndb.sql</td>
+    </tr>
+    
+    <tr>
+      <td>MySQL DB with NDB engine and utf-8</td>
+
+      <td>jcr-sjdbc.mysql-ndb-utf8.sql</td>
+    </tr>
 
     <tr>
       <td>PostgresSQL</td>
@@ -197,6 +213,18 @@
       <td>jcr-mjdbc.mysql-myisam-utf8.sql</td>
     </tr>
 
+    <tr>
+      <td>MySQL DB with NDB engine</td>
+
+      <td>jcr-mjdbc.mysql-ndb.sql</td>
+    </tr>
+    
+    <tr>
+      <td>MySQL DB with NDB engine and utf-8</td>
+
+      <td>jcr-mjdbc.mysql-ndb-utf8.sql</td>
+    </tr>
+    
     <tr>
       <td>PostgresSQL</td>
 
@@ -316,7 +344,7 @@ $ db2start</programlisting></para>
           consistency in your use-case. This dialect is only dedicated to the
           community.</para>
         </listitem>
-
+        
         <listitem>
           <para>MySQL relies on collected statistics for keeping track of data
           distribution in tables and for optimizing join statements, but you
