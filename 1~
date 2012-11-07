@@ -1,0 +1,87 @@
+diff --git a/exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java b/exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java
+index e829b9e..6066086 100644
+--- a/exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java
++++ b/exo.jcr.component.core/src/main/java/org/exoplatform/services/jcr/impl/storage/jdbc/JDBCWorkspaceDataContainer.java
+@@ -141,7 +141,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
+     */
+    public final static String BATCH_SIZE = "batch-size";
+ 
+-   public final static int DEFAULT_BATCH_SIZE = 1000;
++   public final static int DEFAULT_BATCHING_DISABLED = -1;
+ 
+    protected JDBCDataContainerConfig containerConfig;
+ 
+@@ -217,7 +217,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
+       this.containerConfig.valueStorageProvider = valueStorageProvider;
+       this.containerConfig.dsProvider = dsProvider;
+ 
+-      this.containerConfig.batchSize = wsConfig.getContainer().getParameterInteger(BATCH_SIZE, DEFAULT_BATCH_SIZE);
++      this.containerConfig.batchSize =
++         wsConfig.getContainer().getParameterInteger(BATCH_SIZE, DEFAULT_BATCHING_DISABLED);
+ 
+       // ------------- Database config ------------------
+       String pDbDialect = validateDialect(DBInitializerHelper.getDatabaseDialect(wsConfig));
+@@ -707,6 +708,49 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
+       {
+          LOG.error("Can't remove lock properties because of " + e.getMessage(), e);
+       }
++
++      if (containerConfig.batchSize > 1)
++      {
++         if (LOG.isDebugEnabled())
++         {
++            LOG.debug("Batching update is enabled with batch size " + containerConfig.batchSize);
++         }
++
++         try
++         {
++            con = getConnectionFactory().getJdbcConnection();
++            if (!con.getMetaData().supportsBatchUpdates())
++            {
++               containerConfig.batchSize = -1;
++               LOG.info("Batching update is disabled since DB does not support it.");
++            }
++         }
++         catch (SQLException e)
++         {
++            LOG.error("Error checking isolation level configuration.", e);
++         }
++         catch (RepositoryException e)
++         {
++            LOG.error("Error checking isolation level configuration.", e);
++         }
++         finally
++         {
++            if (con != null)
++            {
++               try
++               {
++                  con.close();
++               }
++               catch (SQLException e)
++               {
++                  if (LOG.isTraceEnabled())
++                  {
++                     LOG.trace("An exception occurred: " + e.getMessage());
++                  }
++               }
++            }
++         }
++      }
+    }
+ 
+    /**
+diff --git a/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/workspace-persistence-storage.xml b/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/workspace-persistence-storage.xml
+index 75f43b6..97078bf 100644
+--- a/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/workspace-persistence-storage.xml
++++ b/exo.jcr.docs/exo.jcr.docs.developer/en/src/main/docbook/en-US/modules/jcr/configuration/workspace-persistence-storage.xml
+@@ -144,8 +144,7 @@
+     </listitem>
+ 
+     <listitem>
+-      <para><emphasis role="bold">batch-size:</emphasis> the batch size.
+-      Default value is 1000. To disable batching simply set to 0.</para>
++      <para><emphasis role="bold">batch-size:</emphasis> the batch size. Default value is -1 (disabled)</para>
+     </listitem>
+   </itemizedlist>
+ 
