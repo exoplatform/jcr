@@ -32,6 +32,9 @@ import java.util.Set;
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
 
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS
  * 

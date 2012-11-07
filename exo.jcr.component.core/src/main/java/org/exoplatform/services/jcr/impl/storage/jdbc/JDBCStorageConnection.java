@@ -2488,7 +2488,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws InvalidItemStateException 
     */
    private void deleteValues(String cid, PropertyData pdata, boolean update, ChangedSizeHandler sizeHandler)
-      throws IOException, SQLException, ValueStorageNotFoundException
+      throws IOException, SQLException, RepositoryException, InvalidItemStateException
    {
       Set<String> storages = new HashSet<String>();
 

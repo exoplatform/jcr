@@ -750,7 +750,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   protected int renameNode(NodeData data) throws SQLException
+   protected int renameNode(NodeData data) throws SQLException, InvalidItemStateException, RepositoryException
    {
       if (renameNode == null)
       {

@@ -143,7 +143,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public final static String BATCH_SIZE = "batch-size";
 
-   public final static int DEFAULT_BATCHING_DISABLED = -1;
+   public final static int DEFAULT_BATCH_SIZE = 1000;
 
    protected JDBCDataContainerConfig containerConfig;
 
@@ -219,8 +219,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       this.containerConfig.valueStorageProvider = valueStorageProvider;
       this.containerConfig.dsProvider = dsProvider;
 
-      this.containerConfig.batchSize =
-         wsConfig.getContainer().getParameterInteger(BATCH_SIZE, DEFAULT_BATCHING_DISABLED);
+      this.containerConfig.batchSize = wsConfig.getContainer().getParameterInteger(BATCH_SIZE, DEFAULT_BATCH_SIZE);
 
       // ------------- Database config ------------------
       String pDbDialect = validateDialect(DBInitializerHelper.getDatabaseDialect(wsConfig));
