@@ -144,8 +144,7 @@
     </listitem>
 
     <listitem>
-      <para><emphasis role="bold">batch-size:</emphasis> the batch size.
-      Default value is 1000. To disable batching simply set to 0.</para>
+      <para><emphasis role="bold">batch-size:</emphasis> the batch size. Default value is -1 (disabled)</para>
     </listitem>
   </itemizedlist>
 

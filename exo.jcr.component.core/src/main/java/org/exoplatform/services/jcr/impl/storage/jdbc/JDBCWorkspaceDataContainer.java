@@ -141,7 +141,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public final static String BATCH_SIZE = "batch-size";
 
-   public final static int DEFAULT_BATCH_SIZE = 1000;
+   public final static int DEFAULT_BATCHING_DISABLED = -1;
 
    protected JDBCDataContainerConfig containerConfig;
 
@@ -217,7 +217,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       this.containerConfig.valueStorageProvider = valueStorageProvider;
       this.containerConfig.dsProvider = dsProvider;
 
-      this.containerConfig.batchSize = wsConfig.getContainer().getParameterInteger(BATCH_SIZE, DEFAULT_BATCH_SIZE);
+      this.containerConfig.batchSize =
+         wsConfig.getContainer().getParameterInteger(BATCH_SIZE, DEFAULT_BATCHING_DISABLED);
 
       // ------------- Database config ------------------
       String pDbDialect = validateDialect(DBInitializerHelper.getDatabaseDialect(wsConfig));
@@ -706,6 +707,49 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       catch (RepositoryException e)
       {
          LOG.error("Can't remove lock properties because of " + e.getMessage(), e);
+      }
+
+      if (containerConfig.batchSize > 1)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Batching update is enabled with batch size " + containerConfig.batchSize);
+         }
+
+         try
+         {
+            con = getConnectionFactory().getJdbcConnection();
+            if (!con.getMetaData().supportsBatchUpdates())
+            {
+               containerConfig.batchSize = -1;
+               LOG.info("Batching update is disabled since DB does not support it.");
+            }
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Error checking isolation level configuration.", e);
+         }
+         catch (RepositoryException e)
+         {
+            LOG.error("Error checking isolation level configuration.", e);
+         }
+         finally
+         {
+            if (con != null)
+            {
+               try
+               {
+                  con.close();
+               }
+               catch (SQLException e)
+               {
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
+               }
+            }
+         }
       }
    }
 
