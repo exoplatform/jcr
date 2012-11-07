@@ -136,6 +136,13 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
    public final static String DB_FORCE_QUERY_HINTS = "force.query.hints";
 
+   /**
+    * Batch size value parameter name.
+    */
+   public final static String BATCH_SIZE = "batch-size";
+
+   public final static int DEFAULT_BATCH_SIZE = 1000;
+
    protected JDBCDataContainerConfig containerConfig;
 
    public GenericConnectionFactory connFactory;
@@ -209,6 +216,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
       this.containerConfig.valueStorageProvider = valueStorageProvider;
       this.containerConfig.dsProvider = dsProvider;
+
+      this.containerConfig.batchSize = wsConfig.getContainer().getParameterInteger(BATCH_SIZE, DEFAULT_BATCH_SIZE);
 
       // ------------- Database config ------------------
       String pDbDialect = validateDialect(DBInitializerHelper.getDatabaseDialect(wsConfig));

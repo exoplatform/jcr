@@ -26,6 +26,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS
  * 
@@ -79,7 +82,7 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected int addNodeRecord(NodeData data) throws SQLException
+   protected int addNodeRecord(NodeData data) throws SQLException, InvalidItemStateException, RepositoryException
    {
       // check if parent exists
       if (data.getParentIdentifier() != null)
@@ -111,7 +114,8 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected int addPropertyRecord(PropertyData data) throws SQLException
+   protected int addPropertyRecord(PropertyData data) throws SQLException, InvalidItemStateException,
+      RepositoryException
    {
       // check if parent exists
       if (data.getParentIdentifier() != null)

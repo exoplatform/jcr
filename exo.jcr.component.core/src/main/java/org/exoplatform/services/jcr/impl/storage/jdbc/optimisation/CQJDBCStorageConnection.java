@@ -26,7 +26,9 @@ import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.IllegalACLException;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
+import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
@@ -35,6 +37,8 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
+import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ACLHolder;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
@@ -42,7 +46,6 @@ import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.jdbc.PrimaryTypeNotFoundException;
-import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundException;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.log.ExoLogger;
@@ -51,6 +54,7 @@ import org.exoplatform.services.log.Log;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.BatchUpdateException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -132,9 +136,19 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected String DELETE_VALUE_BY_ORDER_NUM;
 
    /**
+    * DELETE_REFERENCE_BY_ORDER_NUM.
+    */
+   protected String DELETE_REFERENCE_BY_ORDER_NUM;
+
+   /**
     * UPDATE_VALUE.
     */
    protected String UPDATE_VALUE;
+
+   /**
+    * UPDATE_REFERENCE.
+    */
+   protected String UPDATE_REFERENCE;
 
    /**
     * FIND_ACL_HOLDERS.
@@ -156,13 +170,93 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected PreparedStatement findNodesByParentIdLazilyCQ;
 
    protected PreparedStatement deleteValueDataByOrderNum;
+   
+   protected PreparedStatement deleteReferenceByOrderNum;
 
+   protected PreparedStatement updateReference;
+   
    protected PreparedStatement updateValue;
 
    protected Statement findPropertiesByParentIdAndComplexPatternCQ;
 
    protected Statement findNodesByParentIdAndComplexPatternCQ;
+   
+   private int changeStatus;
+   
+   private int changeCount;
+   
+   private static final NodeData FAKE_NODE;
+   static
+   {
+      try
+      {
+         FAKE_NODE = new TransientNodeData(QPath.parse("[]unknown"), "unknown", -1, null, null, -1, "unknwon", null);
+      }
+      catch (IllegalPathException e)
+      {
+         throw new RuntimeException(e);
+      }
+   }
+   
+   private static final PropertyData FAKE_PROPERTY;
+   static
+   {
+      try
+      {
+         FAKE_PROPERTY = new TransientPropertyData(QPath.parse("[]unknown"), "unknown", -1, -1, "unknwon", false);
+      }
+      catch (IllegalPathException e)
+      {
+         throw new RuntimeException(e);
+      }      
+   }
+   
+   private static final int TYPE_ADD = 1 << 0;
+   
+   private static final int TYPE_UPDATE = 1 << 1;
+   
+   private static final int TYPE_DELETE = 1 << 2;
+   
+   private static final int TYPE_RENAME = 1 << 3;
+   
+   protected static final int TYPE_DELETE_LOCK = 1 << 4;
 
+   protected static final int TYPE_INSERT_NODE = 1 << 5;
+
+   protected static final int TYPE_INSERT_PROPERTY = 1 << 6;
+
+   protected static final int TYPE_INSERT_REFERENCE = 1 << 7;
+
+   protected static final int TYPE_INSERT_VALUE = 1 << 8;
+
+   protected static final int TYPE_UPDATE_NODE = 1 << 9;
+
+   protected static final int TYPE_UPDATE_PROPERTY = 1 << 10;
+
+   protected static final int TYPE_UPDATE_VALUE = 1 << 11;
+
+   protected static final int TYPE_UPDATE_REFERENCE = 1 << 12;
+
+   protected static final int TYPE_DELETE_ITEM = 1 << 13;
+
+   protected static final int TYPE_DELETE_REFERENCE = 1 << 14;
+
+   protected static final int TYPE_DELETE_VALUE = 1 << 15;
+
+   protected static final int TYPE_DELETE_VALUE_BY_ORDER_NUM = 1 << 16;
+
+   protected static final int TYPE_DELETE_REFERENCE_BY_ORDER_NUM = 1 << 17;
+
+   protected static final int TYPE_RENAME_NODE = 1 << 18;
+
+   private ItemData currentItem;
+   
+   /**
+    * The map containing the list of items currently modified using batch update
+    */
+   private Map<Integer, List<ItemData>> currentItems;
+
+   
    /**
     * JDBCStorageConnection constructor.
     * 
@@ -494,8 +588,10 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    {
       checkIfOpened();
       ResultSet rs = null;
+      currentItem = data;
       try
       {
+         setOperationType(TYPE_UPDATE);
          String cid = getInternalId(data.getIdentifier());
 
          // get existing definition first
@@ -516,7 +612,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                storageDescs.add(storageId);
             }
          }
-
+         
          // then update type
          if (updatePropertyByIdentifier(data.getPersistedVersion(), data.getType(), cid) <= 0)
          {
@@ -528,13 +624,21 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          // update reference
          try
          {
-            if (prevType == PropertyType.REFERENCE)
+            if (prevType == PropertyType.REFERENCE && data.getType() == PropertyType.REFERENCE)
             {
+               // We replace the references
+               replaceReference(data, cid, totalOldValues);
+            }
+            else if (prevType == PropertyType.REFERENCE)
+            {
+               // We remove the references as the property type has changed and it is no
+               // more of type PropertyType.REFERENCE
                deleteReference(cid);
             }
-
-            if (data.getType() == PropertyType.REFERENCE)
+            else if (data.getType() == PropertyType.REFERENCE)
             {
+               // We add the references as the property type has changed and it is now
+               // of type PropertyType.REFERENCE
                addReference(data);
             }
          }
@@ -565,6 +669,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       }
       finally
       {
+         currentItem = null;
          if (rs != null)
          {
             try
@@ -576,6 +681,152 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                LOG.error("Can't close the ResultSet: " + e.getMessage());
             }
          }
+      }
+   }
+
+   private void replaceReference(PropertyData data, String cid, int totalOldValues) throws SQLException,
+      InvalidItemStateException, RepositoryException, IOException
+   {
+      List<ValueData> vdata = data.getValues();
+      if (vdata.size() < totalOldValues)
+      {
+         // Remove the extra values
+         deleteReferenceByOrderNum(cid, data.getValues().size());
+      }
+      for (int i = 0; i < vdata.size(); i++)
+      {
+         ValueData vd = vdata.get(i);
+         String refNodeIdentifier;
+         try
+         {
+            refNodeIdentifier = ValueDataUtil.getString(vd);
+         }
+         catch (RepositoryException e)
+         {
+            throw new IOException(e.getMessage(), e);
+         }
+         if (i < totalOldValues)
+         {
+            updateReference(cid, i, getInternalId(refNodeIdentifier));
+         }
+         else
+         {
+            addReference(cid, i, getInternalId(refNodeIdentifier));
+         }
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void add(NodeData data) throws RepositoryException, UnsupportedOperationException, InvalidItemStateException,
+      IllegalStateException
+   {
+      currentItem = data;
+      try
+      {
+         setOperationType(TYPE_ADD);
+         super.add(data);
+      }
+      finally
+      {
+         currentItem = null;
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void add(PropertyData data) throws RepositoryException, UnsupportedOperationException,
+      InvalidItemStateException, IllegalStateException
+   {
+      currentItem = data;
+      try
+      {
+         setOperationType(TYPE_ADD);
+         super.add(data);
+      }
+      finally
+      {
+         currentItem = null;
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void rename(NodeData data) throws RepositoryException, UnsupportedOperationException,
+      InvalidItemStateException, IllegalStateException
+   {
+      currentItem = data;
+      try
+      {
+         setOperationType(TYPE_RENAME);
+         super.rename(data);
+      }
+      finally
+      {
+         currentItem = null;
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
+      InvalidItemStateException, IllegalStateException
+   {
+      currentItem = data;
+      try
+      {
+         setOperationType(TYPE_DELETE);
+         super.delete(data);
+      }
+      finally
+      {
+         currentItem = null;
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void delete(PropertyData data) throws RepositoryException, UnsupportedOperationException,
+      InvalidItemStateException, IllegalStateException
+   {
+      currentItem = data;
+      try
+      {
+         setOperationType(TYPE_DELETE);
+         super.delete(data);
+      }
+      finally
+      {
+         currentItem = null;
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void update(NodeData data) throws RepositoryException, UnsupportedOperationException,
+      InvalidItemStateException, IllegalStateException
+   {
+      currentItem = data;
+      try
+      {
+         setOperationType(TYPE_UPDATE);
+         super.update(data);
+      }
+      finally
+      {
+         currentItem = null;
       }
    }
 
@@ -661,7 +912,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    }
 
    private void deleteValues(String cid, PropertyData pdata, Set<String> storageDescs, int totalOldValues)
-      throws ValueStorageNotFoundException, IOException, SQLException
+      throws IOException, SQLException, InvalidItemStateException, RepositoryException
    {
       for (String storageId : storageDescs)
       {
@@ -1306,7 +1557,396 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       }
       return new QPath(qentries);
    }
+   
+   private void endChanges() throws InvalidItemStateException, RepositoryException
+   {
+      addChange(-1, -1);
+   }
+   
+   protected void addChange(int changeType) throws InvalidItemStateException, RepositoryException
+   {
+      addChange(changeStatus & 31, changeType);
+   }
+   
+   private void setOperationType(int operationType) throws InvalidItemStateException, RepositoryException
+   {
+      addChange(operationType, -1);
+   }
+   
+   private boolean updateBatchingEnabled()
+   {
+      return containerConfig.batchSize > 1;
+   }
+   
+   private void addChange(int operationType, int changeType) throws InvalidItemStateException, RepositoryException
+   {
+      if (!updateBatchingEnabled())
+      {
+         return;
+      }
+      boolean executeBatch = false;
+      int currentChangeStatus = changeStatus;
+      List<ItemData> pendingChanges = null;
+      if (operationType != -1)
+      {
+         // We add a new change
+         if (currentChangeStatus == 0)
+         {
+            // Initialization of the change status
+            changeStatus = operationType;
+            return;
+         }
+         else if (operationType == (currentChangeStatus & 31))
+         {
+            // We have no current change or the changes are of the same type
+            // so we have no risk to get a collision between changes
+            if (changeType == -1)
+            {
+               // no change to be processed
+               return;
+            }
+            executeBatch = ++changeCount >= containerConfig.batchSize;
+            if (executeBatch)
+            {
+               changeStatus = currentChangeStatus & 31;
+               changeCount = 0;
+            }
+            else
+            {
+               changeStatus |= changeType;
+            }
+         }
+         else
+         {
+            // We change of operation type so we need to
+            // execute the pending changes to prevent collisions
+            executeBatch = true;
+            changeStatus = operationType;
+            changeCount = 0;
+            pendingChanges = currentItems.get(changeType);
+         }
+      }
+      else
+      {
+         // we are about to close the statements so we need to check if there are pending changes
+         executeBatch = changeCount > 0;
+         if (executeBatch)
+         {
+            changeStatus = 0;
+            changeCount = 0;
+         }
+      }
+      if (executeBatch)
+      {
+         int currentChange = 0;
+         try
+         {
+            // Delete commands
+            if ((currentChangeStatus & TYPE_DELETE_VALUE) > 0)
+            {
+               currentChange = TYPE_DELETE_VALUE;
+               int[] results = deleteValue.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+            }
+            if ((currentChangeStatus & TYPE_DELETE_VALUE_BY_ORDER_NUM) > 0)
+            {
+               currentChange = TYPE_DELETE_VALUE_BY_ORDER_NUM;
+               int[] results = deleteValueDataByOrderNum.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+            }
+            if ((currentChangeStatus & TYPE_DELETE_REFERENCE) > 0)
+            {
+               currentChange = TYPE_DELETE_REFERENCE;
+               int[] results = deleteReference.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+            }
+            if ((currentChangeStatus & TYPE_DELETE_REFERENCE_BY_ORDER_NUM) > 0)
+            {
+               currentChange = TYPE_DELETE_REFERENCE_BY_ORDER_NUM;
+               int[] results = deleteReferenceByOrderNum.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+            }
+            if ((currentChangeStatus & TYPE_DELETE_ITEM) > 0)
+            {
+               currentChange = TYPE_DELETE_ITEM;
+               int[] results = deleteItem.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               for (int i = 0; i < results.length; i++)
+               {
+                  if (results[i] == 0)
+                  {
+                     ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
+                     if (data == FAKE_NODE)
+                     {
+                        throw new RepositoryException("Current item cannot be found");                           
+                     }
+                     throw new JCRInvalidItemStateException("(delete) " + (data.isNode() ? "Node" : "Property")+ " not found "
+                        + data.getQPath().getAsString() + " " + data.getIdentifier()
+                        + ". Probably was deleted by another session ", data.getIdentifier(), ItemState.DELETED);
+                  }
+               }
+            }
+            // Update commands
+            if ((currentChangeStatus & TYPE_UPDATE_REFERENCE) > 0)
+            {
+               currentChange = TYPE_UPDATE_REFERENCE;
+               int[] results = updateReference.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+            }
+            if ((currentChangeStatus & TYPE_UPDATE_VALUE) > 0)
+            {
+               currentChange = TYPE_UPDATE_VALUE;
+               int[] results = updateValue.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+            }
+            if ((currentChangeStatus & TYPE_UPDATE_PROPERTY) > 0)
+            {
+               currentChange = TYPE_UPDATE_PROPERTY;
+               int[] results = updateProperty.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               for (int i = 0; i < results.length; i++)
+               {
+                  if (results[i] == 0)
+                  {
+                     ItemData data = getCurrentItem(currentChange, i, FAKE_PROPERTY);
+                     if (data == FAKE_PROPERTY)
+                     {
+                        throw new RepositoryException("Current item cannot be found");                           
+                     }
+                     throw new JCRInvalidItemStateException("(update) Property not found " + data.getQPath().getAsString() + " "
+                              + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
+                              ItemState.UPDATED);
+                  }
+               }
+            }
+            if ((currentChangeStatus & TYPE_UPDATE_NODE) > 0)
+            {
+               currentChange = TYPE_UPDATE_NODE;
+               int[] results = updateNode.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               for (int i = 0; i < results.length; i++)
+               {
+                  if (results[i] == 0)
+                  {
+                     ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
+                     if (data == FAKE_NODE)
+                     {
+                        throw new RepositoryException("Current item cannot be found");                           
+                     }
+                     throw new JCRInvalidItemStateException("(update) Node not found " + data.getQPath().getAsString() + " "
+                              + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
+                              ItemState.UPDATED);
+                  }
+               }
+            } 
+            // Rename commands
+            if ((currentChangeStatus & TYPE_RENAME_NODE) > 0)
+            {
+               currentChange = TYPE_RENAME_NODE;
+               int[] results = renameNode.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               for (int i = 0; i < results.length; i++)
+               {
+                  if (results[i] == 0)
+                  {
+                     ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
+                     if (data == FAKE_NODE)
+                     {
+                        throw new RepositoryException("Current item cannot be found");                           
+                     }
+                     throw new JCRInvalidItemStateException("(rename) Node not found " + data.getQPath().getAsString() + " "
+                              + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
+                              ItemState.RENAMED);
+                  }
+               }
+            }
+            // Add commands
+            if ((currentChangeStatus & TYPE_INSERT_NODE) > 0)
+            {
+               currentChange = TYPE_INSERT_NODE;
+               int[] results = insertNode.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+            }
+            if ((currentChangeStatus & TYPE_INSERT_PROPERTY) > 0)
+            {
+               currentChange = TYPE_INSERT_PROPERTY;
+               int[] results = insertProperty.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+            }
+            if ((currentChangeStatus & TYPE_INSERT_REFERENCE) > 0)
+            {
+               currentChange = TYPE_INSERT_REFERENCE;
+               int[] results = insertReference.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+            }
+            if ((currentChangeStatus & TYPE_INSERT_VALUE) > 0)
+            {
+               currentChange = TYPE_INSERT_VALUE;
+               int[] results = insertValue.executeBatch();
+               if (currentItems.get(currentChange).size() != results.length)
+                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+            }
+         }
+         catch (SQLException e)
+         {            
+            int index = -1;
+            if (e instanceof BatchUpdateException)
+            {
+               int[] results = ((BatchUpdateException)e).getUpdateCounts();
+               index = results.length;
+            }
+            switch (currentChange)
+            {
+               case TYPE_INSERT_NODE :
+               {
+                  exceptionHandler.handleAddException(e, getCurrentItem(currentChange, index, FAKE_NODE));
+                  break;
+               }
+               case TYPE_INSERT_PROPERTY :
+               {
+                  exceptionHandler.handleAddException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
+                  break;                  
+               }
+               case TYPE_INSERT_REFERENCE :
+               {
+                  ItemData data = getCurrentItem(currentChange, index, FAKE_PROPERTY);
+                  throw new RepositoryException("Can't read REFERENCE property (" + data.getQPath() + " "
+                     + data.getIdentifier() + ") value: " + e.getMessage(), e);
+               }
+               case TYPE_INSERT_VALUE :
+               {
+                  exceptionHandler.handleAddException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
+                  break;
+               }
+               case TYPE_DELETE_VALUE :
+               {
+                  exceptionHandler.handleDeleteException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
+                  break;
+               }
+               case TYPE_DELETE_VALUE_BY_ORDER_NUM :
+               {
+                  exceptionHandler.handleUpdateException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
+                  break;
+               }
+               case TYPE_DELETE_REFERENCE :
+               {
+                  exceptionHandler.handleDeleteException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
+                  break;
+               }
+               case TYPE_DELETE_REFERENCE_BY_ORDER_NUM :
+               {
+                  exceptionHandler.handleDeleteException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
+                  break;
+               }
+               case TYPE_DELETE_ITEM :
+               {
+                  exceptionHandler.handleDeleteException(e, getCurrentItem(currentChange, index, FAKE_NODE));
+                  break;
+               }
+               case TYPE_UPDATE_VALUE :
+               {
+                  exceptionHandler.handleUpdateException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
+                  break;
+               }
+               case TYPE_UPDATE_PROPERTY :
+               {
+                  exceptionHandler.handleUpdateException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
+                  break;
+               }
+               case TYPE_UPDATE_NODE :
+               {
+                  exceptionHandler.handleUpdateException(e, getCurrentItem(currentChange, index, FAKE_NODE));
+                  break;
+               }
+               case TYPE_RENAME_NODE :
+               {
+                  exceptionHandler.handleAddException(e, getCurrentItem(currentChange, index, FAKE_NODE));
+                  break;
+               }
+            }
+            throw new RepositoryException(e);
+         }
+         finally
+         {
+            currentItems.clear();
+            if (pendingChanges != null)
+            {
+               // re-add the pending changes
+               currentItems.put(changeType, pendingChanges);
+            }
+         }
+      }
+   }
+   
+   protected void addCurrentItem(int changeType)
+   {
+      if (updateBatchingEnabled())
+      {
+         if (currentItems == null)
+         {
+            currentItems = new HashMap<Integer, List<ItemData>>();
+         }
+         List<ItemData> items = currentItems.get(changeType);
+         if (items == null)
+         {
+            items = new ArrayList<ItemData>();
+            currentItems.put(changeType, items);
+         }
+         items.add(currentItem);
+      }
+   }
 
+   protected ItemData getCurrentItem(int operationType, int index, ItemData defaultValue)
+   {
+      if (currentItems != null && !currentItems.isEmpty() && index >= 0)
+      {
+         List<ItemData> items = currentItems.get(operationType);
+         if (items != null && !items.isEmpty())
+         {
+            return items.get(index);
+         }
+      }
+      return defaultValue;
+   }
+   
+   protected int executeUpdate(PreparedStatement ps, int changeType) throws SQLException, InvalidItemStateException,
+      RepositoryException
+   {
+      if (updateBatchingEnabled())
+      {
+         addCurrentItem(changeType);
+         ps.addBatch();
+         addChange(changeType);
+         return 1;
+      }
+      else
+      {
+         return ps.executeUpdate();
+      }
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void prepare() throws IllegalStateException, RepositoryException
+   {   
+      endChanges();
+      super.prepare();
+   }
+   
    /**
     * {@inheritDoc}
     */
@@ -1352,6 +1992,16 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             deleteValueDataByOrderNum.close();
          }
 
+         if (deleteReferenceByOrderNum != null)
+         {
+            deleteReferenceByOrderNum.close();
+         }
+         
+         if (updateReference != null)
+         {
+            updateReference.close();
+         }
+         
          if (updateValue != null)
          {
             updateValue.close();
@@ -1396,8 +2046,18 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
 
    protected abstract ResultSet findPropertyById(String id) throws SQLException;
 
-   protected abstract int deleteValueDataByOrderNum(String id, int orderNum) throws SQLException;
+   protected abstract int deleteValueDataByOrderNum(String id, int orderNum) throws SQLException,
+      InvalidItemStateException, RepositoryException;
 
+   protected abstract int deleteReferenceByOrderNum(String id, int orderNum) throws SQLException,
+      InvalidItemStateException, RepositoryException;
+   
    protected abstract int updateValueData(String cid, int i, InputStream stream, int streamLength, String storageId)
-      throws SQLException;
+      throws SQLException, InvalidItemStateException, RepositoryException;
+   
+   protected abstract int addReference(String cid, int i, String refNodeIdentifier) throws SQLException,
+      InvalidItemStateException, RepositoryException;
+
+   protected abstract int updateReference(String cid, int i, String refNodeIdentifier) throws SQLException,
+      InvalidItemStateException, RepositoryException;
 }

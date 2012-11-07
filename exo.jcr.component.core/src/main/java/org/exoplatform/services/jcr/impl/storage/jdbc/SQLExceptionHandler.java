@@ -99,7 +99,7 @@ public class SQLExceptionHandler
     * @throws InvalidItemStateException
     *           if <code>InvalidItemStateException</code> should be thrown
     */
-   protected String handleAddException(SQLException e, ItemData item) throws RepositoryException,
+   public String handleAddException(SQLException e, ItemData item) throws RepositoryException,
       InvalidItemStateException
    {
       StringBuilder message = new StringBuilder("[");
@@ -338,7 +338,7 @@ public class SQLExceptionHandler
     * @throws InvalidItemStateException
     *           if <code>InvalidItemStateException</code> should be thrown
     */
-   protected String handleDeleteException(SQLException e, ItemData item) throws RepositoryException,
+   public String handleDeleteException(SQLException e, ItemData item) throws RepositoryException,
       InvalidItemStateException
    {
       StringBuilder message = new StringBuilder("[");

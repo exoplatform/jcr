@@ -26,6 +26,9 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.jcr.InvalidItemStateException;
+import javax.jcr.RepositoryException;
+
 /**
  * Created by The eXo Platform SAS
  * 
@@ -73,8 +76,7 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
          FIND_NODES_AND_PROPERTIES.replace("from JCR_SITEM I", "from JCR_SITEM I force index (PRIMARY)");
 
       FIND_ITEM_BY_NAME =
-         "select * from JCR_SITEM"
-            + " where CONTAINER_NAME=? and PARENT_ID=? and NAME=? and I_INDEX=?"
+         "select * from JCR_SITEM" + " where CONTAINER_NAME=? and PARENT_ID=? and NAME=? and I_INDEX=?"
             + " order by I_CLASS";
    }
 
@@ -82,7 +84,7 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected int addNodeRecord(NodeData data) throws SQLException
+   protected int addNodeRecord(NodeData data) throws SQLException, InvalidItemStateException, RepositoryException
    {
       // check if parent exists
       if (data.getParentIdentifier() != null)
@@ -114,7 +116,8 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected int addPropertyRecord(PropertyData data) throws SQLException
+   protected int addPropertyRecord(PropertyData data) throws SQLException, InvalidItemStateException,
+      RepositoryException
    {
       // check if parent exists
       if (data.getParentIdentifier() != null)

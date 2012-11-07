@@ -25,6 +25,7 @@
     &lt;property name="acl-bloomfilter-false-positive-probability" value="0.1d"/&gt;
     &lt;property name="acl-bloomfilter-elements-number" value="1000000"/&gt;
     &lt;property name="check-sns-new-connection" value="false"/&gt;
+    &lt;property name="batch-size" value="1000"/&gt;
   &lt;/properties&gt;</programlisting>
 
   <para><emphasis role="bold">Workspace Data Container specific
@@ -140,6 +141,11 @@
           suitable.</para>
         </listitem>
       </itemizedlist>
+    </listitem>
+
+    <listitem>
+      <para><emphasis role="bold">batch-size:</emphasis> the batch size.
+      Default value is 1000. To disable batching simply set to 0.</para>
     </listitem>
   </itemizedlist>
 

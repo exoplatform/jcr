@@ -165,4 +165,9 @@ public class JDBCDataContainerConfig
     */
    public String initScriptPath;
 
+   /**
+    * Batch size.
+    */
+   public int batchSize;
+
 }
