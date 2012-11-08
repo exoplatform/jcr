@@ -289,6 +289,10 @@
                            <name>exo.properties.url</name>
                            <value>${properties.url.prefix}${properties.url.suffix}</value>
                        </property>
+                       <property>
+                         <name>exo.jcr.config.default.all.container.batch-size</name>
+                         <value>1000</value>
+                       </property>
                      </systemProperties>
                      <includes>
                        <include>org/exoplatform/services/jcr/ext/backup/usecase/TestBackupRestore.java</include>

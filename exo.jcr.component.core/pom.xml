@@ -321,6 +321,10 @@
                      <name>jgroups.stack</name>
                      <value>udp</value>
                   </property>
+                  <property>
+                     <name>exo.jcr.config.default.all.container.batch-size</name>
+                     <value>1000</value>
+                  </property>
                </systemProperties>
                <includes>
                   <include>org/exoplatform/services/jcr/api/**/Test*.java</include>
@@ -627,6 +631,10 @@
                            <name>exo.jcr.allow.closed.session.usage</name>
                            <value>true</value>
                         </property>
+                        <property>
+	                   <name>exo.jcr.config.default.all.container.batch-size</name>
+    	                   <value>1000</value>
+        	        </property>
                      </systemProperties>
                      <includes>
                         <include>org/apache/jackrabbit/test/api/*Test.java</include>
@@ -712,6 +720,10 @@
                            <name>exo.jcr.allow.closed.session.usage</name>
                            <value>true</value>
                         </property>
+                        <property>
+	                   <name>exo.jcr.config.default.all.container.batch-size</name>
+    	                   <value>1000</value>
+        	        </property>
                      </systemProperties>
                      <includes>
                         <!-- From default tests -->
