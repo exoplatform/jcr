@@ -108,6 +108,16 @@ public class FileNameProducer
       {
          PrivilegedFileHelper.mkdirs(fBackupSetDir);
       }
+      else
+      {
+         int i = 2;
+         do
+         {
+            fBackupSetDir =
+               new File(backupDir + File.separator + repositoryName + "_" + workspaceName + sTime + "_" + i++);
+         }
+         while (PrivilegedFileHelper.exists(fBackupSetDir));
+      }
 
       return fBackupSetDir;
    }
