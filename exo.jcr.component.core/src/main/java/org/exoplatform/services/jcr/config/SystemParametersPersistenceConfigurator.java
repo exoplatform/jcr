@@ -210,6 +210,11 @@ public class SystemParametersPersistenceConfigurator
                {
                   File file = new File(filePath);
 
+                  if (!file.getParentFile().exists())
+                  {
+                     file.getParentFile().mkdirs();
+                  }
+
                   if (properties.isEmpty())
                   {
                      file.delete();
