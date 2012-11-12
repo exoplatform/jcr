@@ -25,6 +25,8 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -39,6 +41,11 @@ import javax.jcr.RepositoryException;
  */
 public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
+   /**
+    * Keeping identifiers of deleted nodes in memory for improving perfomance
+    * and avoiding issue with batching update.
+    */
+   protected Set<String> addedNodes = new HashSet<String>();
 
    protected String PATTERN_ESCAPE_STRING = "\\\\";
 
@@ -85,7 +92,7 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected int addNodeRecord(NodeData data) throws SQLException, InvalidItemStateException, RepositoryException
    {
       // check if parent exists
-      if (data.getParentIdentifier() != null)
+      if (data.getParentIdentifier() != null && !addedNodes.contains(data.getParentIdentifier()))
       {
          ResultSet item = findItemByIdentifier(data.getParentIdentifier());
          try
@@ -107,7 +114,19 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
             }
          }
       }
+
+      addedNodes.add(data.getIdentifier());
       return super.addNodeRecord(data);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
+      InvalidItemStateException, IllegalStateException
+   {
+      addedNodes.remove(data.getIdentifier());
+      super.delete(data);
    }
 
    /**
@@ -118,7 +137,7 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
       RepositoryException
    {
       // check if parent exists
-      if (data.getParentIdentifier() != null)
+      if (data.getParentIdentifier() != null && !addedNodes.contains(data.getParentIdentifier()))
       {
          ResultSet item = findItemByIdentifier(data.getParentIdentifier());
          try
@@ -148,5 +167,15 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
    {
       // must be .. LIKE 'prop\\_name' ESCAPE '\\\\'
       return this.PATTERN_ESCAPE_STRING;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void close() throws IllegalStateException, RepositoryException
+   {
+      addedNodes.clear();
+      super.close();
    }
 }

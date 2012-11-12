@@ -1805,8 +1805,21 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             int index = -1;
             if (e instanceof BatchUpdateException)
             {
+               // try to found amount of successfully executed updates
                int[] results = ((BatchUpdateException)e).getUpdateCounts();
-               index = results.length;
+               for (int i = 0, length = results.length; i < length; i++)
+               {
+                  int res = results[i];
+                  if (res == Statement.EXECUTE_FAILED)
+                  {
+                     index = i;
+                     break;
+                  }
+               }
+               if (index == -1)
+               {
+                  index = results.length - 1;
+               }
             }
             switch (currentChange)
             {

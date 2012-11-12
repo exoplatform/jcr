@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.impl.storage.JCRInvalidItemStateException;
 import org.exoplatform.services.jcr.impl.storage.JCRItemExistsException;
 
 import java.io.IOException;
+import java.sql.BatchUpdateException;
 import java.sql.SQLException;
 
 import javax.jcr.InvalidItemStateException;
@@ -210,7 +211,12 @@ public class SQLExceptionHandler
                   throw ownException;
             }
 
-            // MySQL violation
+            if (e instanceof BatchUpdateException)
+            {
+               e = (SQLException)e.getCause();
+            }
+
+            // MySQL violation 
             if (e.getClass().getName().indexOf("MySQLIntegrityConstraintViolationException") >= 0
                && errMessage.indexOf(item.getIdentifier()) >= 0)
             {

@@ -25,6 +25,8 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
@@ -39,6 +41,11 @@ import javax.jcr.RepositoryException;
  */
 public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
 {
+   /**
+    * Keeping identifiers of deleted nodes in memory for improving perfomance
+    * and avoiding issue with batching update.
+    */
+   protected Set<String> addedNodes = new HashSet<String>();
 
    protected static final String PATTERN_ESCAPE_STRING = "\\\\";
 
@@ -87,7 +94,7 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected int addNodeRecord(NodeData data) throws SQLException, InvalidItemStateException, RepositoryException
    {
       // check if parent exists
-      if (data.getParentIdentifier() != null)
+      if (data.getParentIdentifier() != null && !addedNodes.contains(data.getParentIdentifier()))
       {
          ResultSet item = findItemByIdentifier(getInternalId(data.getParentIdentifier()));
          try
@@ -109,7 +116,19 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
             }
          }
       }
+
+      addedNodes.add(data.getIdentifier());
       return super.addNodeRecord(data);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
+      InvalidItemStateException, IllegalStateException
+   {
+      addedNodes.remove(data.getIdentifier());
+      super.delete(data);
    }
 
    /**
@@ -120,7 +139,7 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
       RepositoryException
    {
       // check if parent exists
-      if (data.getParentIdentifier() != null)
+      if (data.getParentIdentifier() != null && !addedNodes.contains(data.getParentIdentifier()))
       {
          ResultSet item = findItemByIdentifier(getInternalId(data.getParentIdentifier()));
          try
@@ -142,6 +161,7 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
             }
          }
       }
+
       return super.addPropertyRecord(data);
    }
 
@@ -149,5 +169,15 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    {
       // must be .. LIKE 'prop\\_name' ESCAPE '\\\\'
       return this.PATTERN_ESCAPE_STRING;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public void close() throws IllegalStateException, RepositoryException
+   {
+      addedNodes.clear();
+      super.close();
    }
 }
