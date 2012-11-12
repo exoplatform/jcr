@@ -18,22 +18,19 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.RepositoryException;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
+import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
 /**
  * Created by The eXo Platform SAS
@@ -49,7 +46,7 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
     * Keeping identifiers of deleted nodes in memory for improving performance
     * and avoiding issue with batching update.
     */
-   protected final Set<String> addedNodes = new HashSet<String>();
+   protected Set<String> addedNodes = new HashSet<String>();
 
    /**
     * Indicates if we have deal with MySQL innoDB engine, which supports foreign keys.
@@ -142,11 +139,7 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
    {
-      if (!innoDBEngine)
-      {
-         addedNodes.remove(data.getIdentifier());
-      }
-
+      addedNodes.remove(data.getIdentifier());
       super.delete(data);
    }
 
@@ -196,17 +189,13 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    @Override
    public void close() throws IllegalStateException, RepositoryException
    {
-      if (!innoDBEngine)
-      {
-         addedNodes.clear();
-      }
-
+      addedNodes.clear();
       super.close();
    }
 
    /**
-    * Returns true if parent validation is needed. Some MySQL engines does not support
-    * foreign keys, such as MyISAM or NDB, that is why it is needed to execute additional
+    * Returns if parent validation is needed. Some MySQL engines does not support
+    * foreign keys, such as MyISAM or NDP, that why is need to execute additional
     * query. 
     */
    protected boolean isParentValidationNeeded(String parentIdentifier)

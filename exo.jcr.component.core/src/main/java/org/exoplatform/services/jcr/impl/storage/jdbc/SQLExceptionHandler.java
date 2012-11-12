@@ -224,6 +224,11 @@ public class SQLExceptionHandler
                   throw ownException;
             }
 
+            if (e instanceof BatchUpdateException)
+            {
+               e = (SQLException)e.getCause();
+            }
+
             // MySQL violation 
             if (e.getClass().getName().indexOf("MySQLIntegrityConstraintViolationException") >= 0
                && errMessage.indexOf(item.getIdentifier()) >= 0)
