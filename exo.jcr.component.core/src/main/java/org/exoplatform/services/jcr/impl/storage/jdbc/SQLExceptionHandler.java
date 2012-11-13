@@ -103,6 +103,19 @@ public class SQLExceptionHandler
    public String handleAddException(SQLException e, ItemData item) throws RepositoryException,
       InvalidItemStateException
    {
+      if (e instanceof BatchUpdateException)
+      {
+         // gets original exception
+         if (e.getNextException() != null)
+         {
+            e = e.getNextException();
+         }
+         else if (e.getCause() != null)
+         {
+            e = (SQLException)e.getCause();
+         }
+      }
+
       StringBuilder message = new StringBuilder("[");
       message.append(containerName).append("] ADD ").append(item.isNode() ? "NODE. " : "PROPERTY. ");
 
@@ -209,11 +222,6 @@ public class SQLExceptionHandler
                // item not found or other things but error of item reading
                if (ownException != null)
                   throw ownException;
-            }
-
-            if (e instanceof BatchUpdateException)
-            {
-               e = (SQLException)e.getCause();
             }
 
             // MySQL violation 

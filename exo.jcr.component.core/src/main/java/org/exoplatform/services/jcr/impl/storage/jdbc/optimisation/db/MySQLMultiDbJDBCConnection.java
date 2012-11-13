@@ -137,7 +137,11 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
    public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
    {
-      addedNodes.remove(data.getIdentifier());
+      if (!innoDBEngine)
+      {
+         addedNodes.remove(data.getIdentifier());
+      }
+
       super.delete(data);
    }
 
@@ -187,13 +191,17 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
    @Override
    public void close() throws IllegalStateException, RepositoryException
    {
-      addedNodes.clear();
+      if (!innoDBEngine)
+      {
+         addedNodes.clear();
+      }
+
       super.close();
    }
 
    /**
-    * Returns if parent validation is needed. Some MySQL engines does not support
-    * foreign keys, such as MyISAM or NDP, that why is need to execute additional
+    * Returns true if parent validation is needed. Some MySQL engines does not support
+    * foreign keys, such as MyISAM or NDB, that is why it is needed to execute additional
     * query. 
     */
    protected boolean isParentValidationNeeded(String parentIdentifier)

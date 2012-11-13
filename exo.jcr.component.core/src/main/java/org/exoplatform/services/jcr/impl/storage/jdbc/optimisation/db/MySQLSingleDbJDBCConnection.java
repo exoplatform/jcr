@@ -46,7 +46,7 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
     * Keeping identifiers of deleted nodes in memory for improving performance
     * and avoiding issue with batching update.
     */
-   protected Set<String> addedNodes = new HashSet<String>();
+   protected final Set<String> addedNodes = new HashSet<String>();
 
    /**
     * Indicates if we have deal with MySQL innoDB engine, which supports foreign keys.
@@ -69,7 +69,10 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
       throws SQLException
    {
       super(dbConnection, readOnly, containerConfig);
-      this.innoDBEngine = containerConfig.equals(DBConstants.DB_DIALECT_MYSQL);
+
+      this.innoDBEngine =
+         containerConfig.equals(DBConstants.DB_DIALECT_MYSQL)
+            || containerConfig.equals(DBConstants.DB_DIALECT_MYSQL_UTF8);
    }
 
    /**
@@ -136,7 +139,11 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    public void delete(NodeData data) throws RepositoryException, UnsupportedOperationException,
       InvalidItemStateException, IllegalStateException
    {
-      addedNodes.remove(data.getIdentifier());
+      if (!innoDBEngine)
+      {
+         addedNodes.remove(data.getIdentifier());
+      }
+
       super.delete(data);
    }
 
@@ -186,13 +193,17 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    @Override
    public void close() throws IllegalStateException, RepositoryException
    {
-      addedNodes.clear();
+      if (!innoDBEngine)
+      {
+         addedNodes.clear();
+      }
+
       super.close();
    }
 
    /**
-    * Returns if parent validation is needed. Some MySQL engines does not support
-    * foreign keys, such as MyISAM or NDP, that why is need to execute additional
+    * Returns true if parent validation is needed. Some MySQL engines does not support
+    * foreign keys, such as MyISAM or NDB, that is why it is needed to execute additional
     * query. 
     */
    protected boolean isParentValidationNeeded(String parentIdentifier)
