@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
 import java.sql.Connection;
@@ -42,10 +43,15 @@ import javax.jcr.RepositoryException;
 public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
 {
    /**
-    * Keeping identifiers of deleted nodes in memory for improving perfomance
+    * Keeping identifiers of deleted nodes in memory for improving performance
     * and avoiding issue with batching update.
     */
    protected Set<String> addedNodes = new HashSet<String>();
+
+   /**
+    * Indicates if we have deal with MySQL innoDB engine, which supports foreign keys.
+    */
+   protected final boolean innoDBEngine;
 
    protected static final String PATTERN_ESCAPE_STRING = "\\\\";
 
@@ -62,8 +68,8 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    public MySQLSingleDbJDBCConnection(Connection dbConnection, boolean readOnly, JDBCDataContainerConfig containerConfig)
       throws SQLException
    {
-
       super(dbConnection, readOnly, containerConfig);
+      this.innoDBEngine = containerConfig.equals(DBConstants.DB_DIALECT_MYSQL);
    }
 
    /**
@@ -94,7 +100,7 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected int addNodeRecord(NodeData data) throws SQLException, InvalidItemStateException, RepositoryException
    {
       // check if parent exists
-      if (data.getParentIdentifier() != null && !addedNodes.contains(data.getParentIdentifier()))
+      if (isParentValidationNeeded(data.getParentIdentifier()))
       {
          ResultSet item = findItemByIdentifier(getInternalId(data.getParentIdentifier()));
          try
@@ -117,7 +123,10 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
          }
       }
 
-      addedNodes.add(data.getIdentifier());
+      if (!innoDBEngine)
+      {
+         addedNodes.add(data.getIdentifier());
+      }
       return super.addNodeRecord(data);
    }
 
@@ -139,7 +148,7 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
       RepositoryException
    {
       // check if parent exists
-      if (data.getParentIdentifier() != null && !addedNodes.contains(data.getParentIdentifier()))
+      if (isParentValidationNeeded(data.getParentIdentifier()))
       {
          ResultSet item = findItemByIdentifier(getInternalId(data.getParentIdentifier()));
          try
@@ -179,5 +188,15 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    {
       addedNodes.clear();
       super.close();
+   }
+
+   /**
+    * Returns if parent validation is needed. Some MySQL engines does not support
+    * foreign keys, such as MyISAM or NDP, that why is need to execute additional
+    * query. 
+    */
+   protected boolean isParentValidationNeeded(String parentIdentifier)
+   {
+      return !innoDBEngine && parentIdentifier != null && !addedNodes.contains(parentIdentifier);
    }
 }
