@@ -36,11 +36,12 @@
       <cache.enabled>true</cache.enabled>
       <value.storage.enabled>true</value.storage.enabled>
       <statistics.enabled>false</statistics.enabled>
+      <batch-size>-1</batch-size>
       <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <test.cache.all>**/persistent/cache/**</test.cache.all>
-      <!-- ispn specific exclude by default -->
-      <test.cache.exclude>**/persistent/cache/foo/**</test.cache.exclude>
+      <test.cache.exclude>**/foo/foo/**</test.cache.exclude>
+      <test.exclude>**/foo/foo/**</test.exclude>
    </properties>
    <dependencies>
       <dependency>
@@ -323,7 +324,7 @@
                   </property>
                   <property>
                      <name>exo.jcr.config.default.all.container.batch-size</name>
-                     <value>1000</value>
+                     <value>${batch-size}</value>
                   </property>
                </systemProperties>
                <includes>
@@ -340,6 +341,7 @@
                   <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
                   <!-- Implementation Specific Excludes -->
                   <exclude>${test.cache.exclude}</exclude>
+                  <exclude>${test.exclude}</exclude>
                </excludes>
             </configuration>
          </plugin>
@@ -633,7 +635,7 @@
                         </property>
                         <property>
 	                   <name>exo.jcr.config.default.all.container.batch-size</name>
-    	                   <value>1000</value>
+    	                   <value>${batch-size}</value>
         	        </property>
                      </systemProperties>
                      <includes>
@@ -649,6 +651,9 @@
                         <exclude>org/apache/jackrabbit/test/api/**/Abstract*.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/FrozenNodeTest.java</exclude>
                         <exclude>org/exoplatform/services/jcr/impl/core/security/Test*.java</exclude>
+                        <!-- Implementation Specific Excludes -->
+	                <exclude>${test.cache.exclude}</exclude>
+	                <exclude>${test.exclude}</exclude>
                      </excludes>
                   </configuration>
                </plugin>
@@ -722,7 +727,7 @@
                         </property>
                         <property>
 	                   <name>exo.jcr.config.default.all.container.batch-size</name>
-    	                   <value>1000</value>
+    	                   <value>${batch-size}</value>
         	        </property>
                      </systemProperties>
                      <includes>
@@ -751,6 +756,7 @@
                         <exclude>org/apache/jackrabbit/test/api/**/FrozenNodeTest.java</exclude>
                         <!-- Implementation Specific Excludes -->
                         <exclude>${test.cache.exclude}</exclude>
+                        <exclude>${test.exclude}</exclude>
                      </excludes>
                   </configuration>
                </plugin>
@@ -1017,6 +1023,22 @@
             <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-ijdbc-jbc.xml</jcr.test.configuration.file>
          </properties>
       </profile>      
+      <profile>
+         <id>batch-update</id>
+         <properties>
+            <batch-size>1000</batch-size>
+         </properties>
+      </profile>
+      <profile>
+         <id>oracle-batch-update</id>
+         <properties>
+            <batch-size>1000</batch-size>
+            <test.exclude>org/apache/jackrabbit/test/**/**/NodeTest.java,
+			  org/exoplatform/services/jcr/**/**/TestLockImpl.java,
+			  org/exoplatform/services/jcr/**/**/TestRemove.java,
+			  org/exoplatform/services/jcr/**/**/TestInvalidItemState.java</test.exclude>
+         </properties>
+      </profile>
       <profile>
          <id>gunit</id>
          <build>

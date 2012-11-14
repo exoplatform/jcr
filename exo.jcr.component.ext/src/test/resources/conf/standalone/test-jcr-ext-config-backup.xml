@@ -32,7 +32,6 @@
                      <property name="db-structure-type" value="single" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db3ws" />
-                     <property name="batch-size" value="1000" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -85,7 +84,6 @@
                      <property name="db-structure-type" value="single" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db3ws1" />
-                     <property name="batch-size" value="1000" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -145,7 +143,6 @@
                      <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db4ws" />
-                     <property name="batch-size" value="1000" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -198,7 +195,6 @@
                      <property name="db-structure-type" value="isolated" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db4ws1" />
-                     <property name="batch-size" value="1000" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -258,7 +254,6 @@
                      <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db4ws" />
-                     <property name="batch-size" value="1000" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -311,7 +306,6 @@
                      <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/db8ws1" />
-                     <property name="batch-size" value="1000" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">

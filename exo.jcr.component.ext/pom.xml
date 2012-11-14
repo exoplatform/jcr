@@ -34,6 +34,7 @@
       <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
       <properties.url.suffix>.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
+      <batch-size>-1</batch-size>
   </properties>
   <dependencies>
     <dependency>
@@ -289,6 +290,10 @@
                            <name>exo.properties.url</name>
                            <value>${properties.url.prefix}${properties.url.suffix}</value>
                        </property>
+                        <property>
+	                   <name>exo.jcr.config.default.all.container.batch-size</name>
+    	                   <value>${batch-size}</value>
+        	        </property>
                      </systemProperties>
                      <includes>
                        <include>org/exoplatform/services/jcr/ext/backup/usecase/TestBackupRestore.java</include>
@@ -553,6 +558,12 @@
               <version>1.3.161</version>
             </dependency>
          </dependencies>
+      </profile>
+      <profile>
+         <id>batch-update</id>
+         <properties>
+            <batch-size>1000</batch-size>
+         </properties>
       </profile>
   </profiles>
 </project>

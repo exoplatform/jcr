@@ -91,6 +91,17 @@
       </component-plugins>
    </component>
 
+  <component>
+    <key>org.exoplatform.services.jcr.config.SystemParametersPersistenceConfigurator</key>
+    <type>org.exoplatform.services.jcr.config.SystemParametersPersistenceConfigurator</type>
+    <init-params>
+      <value-param>
+        <name>file-path</name>
+        <value>target/temp</value>
+      </value-param>
+    </init-params>
+  </component>
+
    <component>
       <key>org.exoplatform.services.jcr.config.RepositoryServiceConfiguration</key>
       <type>org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl</type>
