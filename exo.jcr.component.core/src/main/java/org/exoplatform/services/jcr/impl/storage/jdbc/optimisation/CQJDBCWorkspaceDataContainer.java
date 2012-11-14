@@ -47,6 +47,8 @@ import org.exoplatform.services.naming.InitialContextInitializer;
 import org.picocontainer.Startable;
 
 import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
 
 import javax.jcr.RepositoryException;
 import javax.naming.NamingException;
@@ -180,6 +182,8 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
          dbInitializer = defaultDBInitializer();
       }
 
+      validateBatchingUpdate();
+
       // database type
       try
       {
@@ -188,6 +192,59 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       catch (DBInitializerException e)
       {
          LOG.error("Error of init db " + e, e);
+      }
+   }
+
+   private void validateBatchingUpdate()
+   {
+      Connection con = null;
+
+      if (containerConfig.batchSize > 1)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("Batching update is enabled with batch size " + containerConfig.batchSize);
+         }
+
+         try
+         {
+            con = getConnectionFactory().getJdbcConnection();
+            if (!con.getMetaData().supportsBatchUpdates())
+            {
+               containerConfig.batchSize = -1;
+               LOG.info("Batching update is disabled since DB does not support it.");
+            }
+            else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
+            {
+               containerConfig.batchSize = -1;
+               LOG.info("Batching update is disabled on Sybase DB.");
+            }
+         }
+         catch (SQLException e)
+         {
+            LOG.error("Error checking isolation level configuration.", e);
+         }
+         catch (RepositoryException e)
+         {
+            LOG.error("Error checking isolation level configuration.", e);
+         }
+         finally
+         {
+            if (con != null)
+            {
+               try
+               {
+                  con.close();
+               }
+               catch (SQLException e)
+               {
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
+               }
+            }
+         }
       }
    }
 
