@@ -209,24 +209,24 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
          try
          {
             con = getConnectionFactory().getJdbcConnection();
-            if (!con.getMetaData().supportsBatchUpdates())
-            {
-               containerConfig.batchSize = -1;
-               LOG.info("Batching update is disabled since DB does not support it.");
-            }
-            else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
+            if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
             {
                containerConfig.batchSize = -1;
                LOG.info("Batching update is disabled on Sybase DB.");
             }
+            else if (!con.getMetaData().supportsBatchUpdates())
+            {
+               containerConfig.batchSize = -1;
+               LOG.info("Batching update is disabled since DB does not support it.");
+            }
          }
          catch (SQLException e)
          {
-            LOG.error("Error checking isolation level configuration.", e);
+            LOG.error("Error checking batching update support.", e);
          }
          catch (RepositoryException e)
          {
-            LOG.error("Error checking isolation level configuration.", e);
+            LOG.error("Error checking batching update support.", e);
          }
          finally
          {

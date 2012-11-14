@@ -1645,37 +1645,27 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             if ((currentChangeStatus & TYPE_DELETE_VALUE) > 0)
             {
                currentChange = TYPE_DELETE_VALUE;
-               int[] results = deleteValue.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               deleteValue.executeBatch();
             }
             if ((currentChangeStatus & TYPE_DELETE_VALUE_BY_ORDER_NUM) > 0)
             {
                currentChange = TYPE_DELETE_VALUE_BY_ORDER_NUM;
-               int[] results = deleteValueDataByOrderNum.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               deleteValueDataByOrderNum.executeBatch();
             }
             if ((currentChangeStatus & TYPE_DELETE_REFERENCE) > 0)
             {
                currentChange = TYPE_DELETE_REFERENCE;
-               int[] results = deleteReference.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               deleteReference.executeBatch();
             }
             if ((currentChangeStatus & TYPE_DELETE_REFERENCE_BY_ORDER_NUM) > 0)
             {
                currentChange = TYPE_DELETE_REFERENCE_BY_ORDER_NUM;
-               int[] results = deleteReferenceByOrderNum.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               deleteReferenceByOrderNum.executeBatch();
             }
             if ((currentChangeStatus & TYPE_DELETE_ITEM) > 0)
             {
                currentChange = TYPE_DELETE_ITEM;
                int[] results = deleteItem.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
                for (int i = 0; i < results.length; i++)
                {
                   if (results[i] == 0)
@@ -1695,23 +1685,17 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             if ((currentChangeStatus & TYPE_UPDATE_REFERENCE) > 0)
             {
                currentChange = TYPE_UPDATE_REFERENCE;
-               int[] results = updateReference.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               updateReference.executeBatch();
             }
             if ((currentChangeStatus & TYPE_UPDATE_VALUE) > 0)
             {
                currentChange = TYPE_UPDATE_VALUE;
-               int[] results = updateValue.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               updateValue.executeBatch();
             }
             if ((currentChangeStatus & TYPE_UPDATE_PROPERTY) > 0)
             {
                currentChange = TYPE_UPDATE_PROPERTY;
                int[] results = updateProperty.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
                for (int i = 0; i < results.length; i++)
                {
                   if (results[i] == 0)
@@ -1731,8 +1715,6 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             {
                currentChange = TYPE_UPDATE_NODE;
                int[] results = updateNode.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
                for (int i = 0; i < results.length; i++)
                {
                   if (results[i] == 0)
@@ -1753,8 +1735,6 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             {
                currentChange = TYPE_RENAME_NODE;
                int[] results = renameNode.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
                for (int i = 0; i < results.length; i++)
                {
                   if (results[i] == 0)
@@ -1774,30 +1754,22 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             if ((currentChangeStatus & TYPE_INSERT_NODE) > 0)
             {
                currentChange = TYPE_INSERT_NODE;
-               int[] results = insertNode.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               insertNode.executeBatch();
             }
             if ((currentChangeStatus & TYPE_INSERT_PROPERTY) > 0)
             {
                currentChange = TYPE_INSERT_PROPERTY;
-               int[] results = insertProperty.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               insertProperty.executeBatch();
             }
             if ((currentChangeStatus & TYPE_INSERT_REFERENCE) > 0)
             {
                currentChange = TYPE_INSERT_REFERENCE;
-               int[] results = insertReference.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               insertReference.executeBatch();
             }
             if ((currentChangeStatus & TYPE_INSERT_VALUE) > 0)
             {
                currentChange = TYPE_INSERT_VALUE;
-               int[] results = insertValue.executeBatch();
-               if (currentItems.get(currentChange).size() != results.length)
-                  throw new RepositoryException("Different size currentItems.get(currentChange).size() = " + currentItems.get(currentChange).size() + " results.length =" + results.length);
+               insertValue.executeBatch();
             }
          }
          catch (SQLException e)

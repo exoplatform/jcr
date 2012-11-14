@@ -34,7 +34,7 @@
       <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>
       <properties.url.suffix>.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
-      <batch-size>-1</batch-size>
+      <batch.size>-1</batch.size>
   </properties>
   <dependencies>
     <dependency>
@@ -292,7 +292,7 @@
                        </property>
                         <property>
 	                   <name>exo.jcr.config.default.all.container.batch-size</name>
-    	                   <value>${batch-size}</value>
+    	                   <value>${batch.size}</value>
         	        </property>
                      </systemProperties>
                      <includes>
@@ -562,7 +562,7 @@
       <profile>
          <id>batch-update</id>
          <properties>
-            <batch-size>1000</batch-size>
+            <batch.size>1000</batch.size>
          </properties>
       </profile>
   </profiles>
