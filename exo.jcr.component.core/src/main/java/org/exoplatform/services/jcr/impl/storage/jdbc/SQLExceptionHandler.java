@@ -1,5 +1,5 @@
 /*
-[ * Copyright (C) 2009 eXo Platform SAS.
+ * Copyright (C) 2009 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -110,7 +110,7 @@ public class SQLExceptionHandler
          {
             e = e.getNextException();
          }
-         else if (e.getCause() != null)
+         else if (e.getCause() instanceof SQLException)
          {
             e = (SQLException)e.getCause();
          }
