@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+[ * Copyright (C) 2009 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -226,6 +226,15 @@ public class SQLExceptionHandler
 
             // MySQL violation 
             if (e.getClass().getName().indexOf("MySQLIntegrityConstraintViolationException") >= 0
+               && errMessage.indexOf(item.getIdentifier()) >= 0)
+            {
+               // it's JCR_PK_ITEM violation 
+               message.append("Item already exists. Condition: ID. ").append(itemInfo);
+               throw new JCRInvalidItemStateException(message.toString(), item.getIdentifier(), ItemState.ADDED, e);
+            }
+
+            // MySQL 5.1 violation with batching update
+            if (e.getClass().getName().indexOf("BatchUpdateException") >= 0
                && errMessage.indexOf(item.getIdentifier()) >= 0)
             {
                // it's JCR_PK_ITEM violation 
