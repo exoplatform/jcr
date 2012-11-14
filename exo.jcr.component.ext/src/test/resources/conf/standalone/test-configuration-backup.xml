@@ -102,6 +102,7 @@
     </init-params>
   </component>
 
+
    <component>
       <key>org.exoplatform.services.jcr.config.RepositoryServiceConfiguration</key>
       <type>org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl</type>
