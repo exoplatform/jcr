@@ -35,13 +35,13 @@
       <cache.enabled>true</cache.enabled>
       <value.storage.enabled>true</value.storage.enabled>
       <statistics.enabled>false</statistics.enabled>
-      <batch-size>-1</batch-size>
+      <batch.size>-1</batch.size>
       <use.distributed.cache>false</use.distributed.cache>
       <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <test.cache.all>**/persistent/cache/**</test.cache.all>
       <!-- ispn specific exclude by default -->
-      <test.cache.exclude>**/foo/foo/**</test.cache.exclude>
+      <test.cache.exclude>**/persistent/cache/jbosscache/**</test.cache.exclude>
       <test.exclude>**/foo/foo/**</test.exclude>
    </properties>
    <dependencies>
@@ -202,7 +202,7 @@
                   </property>
                   <property>
                      <name>exo.jcr.config.default.all.container.batch-size</name>
-                     <value>${batch-size}</value>
+                     <value>${batch.size}</value>
                   </property>
                </systemProperties>
                <includes>
@@ -417,7 +417,7 @@
                         </property>
                         <property>
 	                   <name>exo.jcr.config.default.all.container.batch-size</name>
-    	                   <value>${batch-size}</value>
+    	                   <value>${batch.size}</value>
         	        </property>
                      </systemProperties>
                      <includes>
@@ -505,7 +505,7 @@
                         </property>
                         <property>
 	                   <name>exo.jcr.config.default.all.container.batch-size</name>
-    	                   <value>${batch-size}</value>
+    	                   <value>${batch.size}</value>
         	        </property>
                      </systemProperties>
                      <includes>
@@ -777,13 +777,13 @@
       <profile>
          <id>batch-update</id>
          <properties>
-            <batch-size>1000</batch-size>
+            <batch.size>1000</batch.size>
          </properties>
       </profile>
       <profile>
          <id>oracle-batch-update</id>
          <properties>
-            <batch-size>1000</batch-size>
+            <batch.size>1000</batch.size>
             <test.exclude>org/apache/jackrabbit/test/**/**/NodeTest.java,
 			  org/exoplatform/services/jcr/**/**/TestLockImpl.java,
 			  org/exoplatform/services/jcr/**/**/TestRemove.java,
