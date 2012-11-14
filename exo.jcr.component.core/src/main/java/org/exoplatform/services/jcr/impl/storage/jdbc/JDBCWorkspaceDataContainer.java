@@ -709,49 +709,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          LOG.error("Can't remove lock properties because of " + e.getMessage(), e);
       }
-
-      if (containerConfig.batchSize > 1)
-      {
-         if (LOG.isDebugEnabled())
-         {
-            LOG.debug("Batching update is enabled with batch size " + containerConfig.batchSize);
-         }
-
-         try
-         {
-            con = getConnectionFactory().getJdbcConnection();
-            if (!con.getMetaData().supportsBatchUpdates())
-            {
-               containerConfig.batchSize = -1;
-               LOG.info("Batching update is disabled since DB does not support it.");
-            }
-         }
-         catch (SQLException e)
-         {
-            LOG.error("Error checking isolation level configuration.", e);
-         }
-         catch (RepositoryException e)
-         {
-            LOG.error("Error checking isolation level configuration.", e);
-         }
-         finally
-         {
-            if (con != null)
-            {
-               try
-               {
-                  con.close();
-               }
-               catch (SQLException e)
-               {
-                  if (LOG.isTraceEnabled())
-                  {
-                     LOG.trace("An exception occurred: " + e.getMessage());
-                  }
-               }
-            }
-         }
-      }
    }
 
 
