@@ -3,7 +3,9 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.SearchConfiguration">
   <title>Search Configuration</title>
-  <para>Search is an important function in eXo JCR, so it is very necessary for you to know how to configure the eXo JCR Search tool.</para>
+
+  <para>Search is an important function in eXo JCR, so it is very necessary
+  for you to know how to configure the eXo JCR Search tool.</para>
 
   <section id="JCR.SearchConfiguration.XMLConfig">
     <title>XML Configuration</title>
@@ -39,7 +41,7 @@
     <title>Configuration parameters</title>
 
     <table>
-      <title></title>
+      <title/>
 
       <tgroup cols="4">
         <thead>
@@ -389,8 +391,8 @@
       you automatically. If you don't like the StandardAnalyzer configured by
       default, just replace it by your own.</para>
 
-      <para>If you don't have a handy QueryHandler, you should learn how
-      to create a customized Handler in 5 minutes.</para>
+      <para>If you don't have a handy QueryHandler, you should learn how to
+      create a customized Handler in 5 minutes.</para>
     </section>
 
     <section id="JCR.SearchConfiguration.Global_Search_Index.Customized_Search_Indexes_Analyzers">
@@ -399,7 +401,7 @@
       <para>By default Exo JCR uses the Lucene standard Analyzer to index
       contents. This analyzer uses some standard filters in the method that
       analyzes the content:</para>
-      
+
       <programlisting language="java">public TokenStream tokenStream(String fieldName, Reader reader) {
     StandardTokenizer tokenStream = new StandardTokenizer(reader, replaceInvalidAcronym);
     tokenStream.setMaxTokenLength(maxTokenLength);
@@ -408,24 +410,23 @@
     result = new StopFilter(result, stopSet);
     return result;
   }</programlisting>
-  
-  <itemizedlist>
-          <listitem>
-            <para>The first one (StandardFilter) removes 's (as 's in
-            "Peter's") from the end of words and removes dots from
-            acronyms.</para>
-          </listitem>
 
-          <listitem>
-            <para>The second one (LowerCaseFilter) normalizes token text to
-            lower case.</para>
-          </listitem>
+      <itemizedlist>
+        <listitem>
+          <para>The first one (StandardFilter) removes 's (as 's in "Peter's")
+          from the end of words and removes dots from acronyms.</para>
+        </listitem>
 
-          <listitem>
-            <para>The last one (StopFilter) removes stop words from a token
-            stream. The stop set is defined in the analyzer.</para>
-          </listitem>
-        </itemizedlist>
+        <listitem>
+          <para>The second one (LowerCaseFilter) normalizes token text to
+          lower case.</para>
+        </listitem>
+
+        <listitem>
+          <para>The last one (StopFilter) removes stop words from a token
+          stream. The stop set is defined in the analyzer.</para>
+        </listitem>
+      </itemizedlist>
 
       <para>For specific cases, you may wish to use additional filters like
       <phrase>ISOLatin1AccentFilter</phrase>, which replaces accented
@@ -442,8 +443,9 @@
         <para>The ISOLatin1AccentFilter is not present in the current Lucene
         version used by eXo. You can use the attached file. You can also
         create your own filter, the relevant method is</para>
-        
-        <programlisting language="java">public final Token next(final Token reusableToken) throws java.io.IOException</programlisting> 
+
+        <programlisting language="java">public final Token next(final Token reusableToken) throws java.io.IOException</programlisting>
+
         <para>which defines how chars are read and used by the filter.</para>
       </section>
 
@@ -455,7 +457,9 @@
         method</para>
 
         <programlisting language="java">public TokenStream tokenStream(String fieldName, Reader reader)</programlisting>
-        <para>to put your own filters. You can have a glance at the example analyzer attached to this article.</para>
+
+        <para>to put your own filters. You can have a glance at the example
+        analyzer attached to this article.</para>
       </section>
 
       <section id="JCR.SearchConfiguration.Global_Search_Index.Customized_Search_Indexes_Analyzers.Creating_Search_Index">
@@ -466,10 +470,12 @@
         org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex. You
         have to write the constructor, to set the right analyzer, and the
         method</para>
+
         <programlisting language="java">public Analyzer getAnalyzer() {
     return MyAnalyzer;
-  }</programlisting> 
-  <para>to return your analyzer. You can see the attached
+  }</programlisting>
+
+        <para>to return your analyzer. You can see the attached
         SearchIndex.</para>
 
         <note>
@@ -485,11 +491,12 @@
         <para>In
         <filename>portal/WEB-INF/conf/jcr/repository-configuration.xml</filename>,
         you have to replace each</para>
-        
+
         <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
         </programlisting>
+
         <para>by your own class</para>
-        
+
         <programlisting language="xml">&lt;query-handler class="mypackage.indexation.MySearchIndex"&gt;
         </programlisting>
       </section>
@@ -501,7 +508,7 @@
         <filename>portal/WEB-INF/conf/jcr/repository-configuration.xml</filename>,
         you have to add parameter "analyzer" to each query-handler
         config:</para>
-        
+
         <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
    &lt;properties&gt;
       ...
@@ -536,14 +543,13 @@
       file.</para>
 
       <programlisting language="xml">&lt;property name="indexing-configuration-path" value="/indexing_configuration.xml"/&gt;</programlisting>
-	  
-	  <para>Index configuration path can indicate any file located 
-	  on the file system, in the jar or war files.</para>
-	  
-	  <para>Please note that you have to declare the <phrase>namespace
+
+      <para>Index configuration path can indicate any file located on the file
+      system, in the jar or war files.</para>
+
+      <para>Please note that you have to declare the <phrase>namespace
       prefixes</phrase> in the configuration element that you are using
       throughout the XML file!</para>
-	  
     </section>
 
     <section id="JCR.SearchConfiguration.Indexing_Adjustments.Indexing_Rules">
@@ -567,7 +573,6 @@
     &lt;property&gt;Text&lt;/property&gt;
   &lt;/index-rule&gt;
 &lt;/configuration&gt;</programlisting>
-
       </section>
 
       <section id="JCR.SearchConfiguration.Indexing_Adjustments.Indexing_Rules.Indexing_Boost_Value">
@@ -590,7 +595,7 @@
         <para>If you do not wish to boost the complete node but only certain
         properties, you can also provide a boost value for the listed
         properties:</para>
-        
+
         <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
@@ -607,9 +612,8 @@
 
         <para>You may also add a <phrase>condition</phrase> to the index rule
         and have multiple rules with the same nodeType. The first index rule
-        that matches will apply and all remain ones are
-        ignored:</para>
-        
+        that matches will apply and all remain ones are ignored:</para>
+
         <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
@@ -631,7 +635,7 @@
 
         <para>You may also refer properties in the condition that are not on
         the current node:</para>
-        
+
         <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
@@ -681,7 +685,7 @@
         jcr:contains(., 'foo') returns all nodes that have a string property
         containing the word 'foo'. You can exclude explicitly a property from
         the node scope index:</para>
-        
+
         <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
@@ -690,6 +694,27 @@
   &lt;/index-rule&gt;
 &lt;/configuration&gt;
 </programlisting>
+      </section>
+
+      <section id="JCR.SearchConfiguration.Indexing_Adjustments.Indexing_Rules.Nodes_exclusion_From_Query_Results">
+        <title>Nodes exclusion From Query Results</title>
+
+        <para>You have an ability to disable the indexing on nodes that are
+        sub nodes of excluded paths and/or that are of a given type. To get
+        this done you simply need to add some lines to the configuration
+        file:</para>
+
+        <programlisting language="xml">&lt;?xml version="1.0"?&gt;
+&lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.3.dtd"&gt;
+&lt;configuration xmlns:exo="http://www.exoplatform.com/jcr/exo/1.0"&gt;
+  &lt;exclude nodeType="exo:hiddenable"/&gt;
+  &lt;exclude path="/my[2]/path"/&gt;
+  &lt;exclude nodeType="exo:foo" path="/my/other[2]/path"/&gt;
+&lt;/configuration&gt;</programlisting>
+
+        <para>This will exclude nodes of type "exo:hiddenable" and nodes with
+        the path "/my[2]/path" from the results. As you see you can also
+        combine exclusions.</para>
       </section>
     </section>
 
@@ -705,7 +730,7 @@
 
       <para>The following example creates an indexed aggregate on nt:file that
       includes the content of the jcr:content node:</para>
-      
+
       <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
@@ -716,9 +741,8 @@
 &lt;/configuration&gt;
 </programlisting>
 
-      <para>You can also restrict the included nodes to a certain
-      type:</para>
-      
+      <para>You can also restrict the included nodes to a certain type:</para>
+
       <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
@@ -730,7 +754,6 @@
 
       <para>You may also use the * to match all child nodes:</para>
 
-      
       <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
@@ -742,9 +765,8 @@
 
       <para>If you wish to include nodes up to a certain depth below the
       current node, you can add multiple include elements. E.g. the nt:file
-      node may contain a complete XML document under
-      jcr:content:</para>
-      
+      node may contain a complete XML document under jcr:content:</para>
+
       <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
@@ -768,7 +790,7 @@
         be analyzed. If there is an analyzer configuration for a property,
         this analyzer is used for indexing and searching of this property. For
         example:</para>
-        
+
         <programlisting language="xml">&lt;?xml version="1.0"?&gt;
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
@@ -806,7 +828,7 @@
         SearchIndex).</para>
 
         <para>If your query is for example:</para>
-        
+
         <programlisting>xpath = "//*[jcr:contains(mytext,'analyzer')]"
         </programlisting>
 
@@ -814,33 +836,33 @@
         above and default analyzers.</para>
 
         <para>Also a search on the node scope</para>
-        
+
         <programlisting>xpath = "//*[jcr:contains(.,'analyzer')]"</programlisting>
-        
-        <para>won't give a hit. Realize that you can only set specific analyzers 
-        on a node property, and that the node scope indexing/analyzing is always 
-        done with the globally defined analyzer in the SearchIndex element.</para>
+
+        <para>won't give a hit. Realize that you can only set specific
+        analyzers on a node property, and that the node scope
+        indexing/analyzing is always done with the globally defined analyzer
+        in the SearchIndex element.</para>
 
         <para>Now, if you change the analyzer used to index the "mytext"
         property above to</para>
-        
+
         <programlisting language="xml">&lt;analyzer class="org.apache.lucene.analysis.Analyzer.GermanAnalyzer"&gt;
      &lt;property&gt;mytext&lt;/property&gt;
 &lt;/analyzer&gt;
 </programlisting>
 
-        <para>and you do the same search again, then for 
-        <programlisting>xpath = "//*[jcr:contains(mytext,'analyzer')]"</programlisting>you
+        <para>and you do the same search again, then for <programlisting>xpath = "//*[jcr:contains(mytext,'analyzer')]"</programlisting>you
         would get a hit because of the word stemming (analyzers -
         analyzer).</para>
 
         <para>The other search,</para>
-        
+
         <programlisting>xpath = "//*[jcr:contains(.,'analyzer')]"
         </programlisting>
-        
-        <para>still would not give a result, since the node scope is indexed 
-        with the global analyzer, which in this case does not take into 
+
+        <para>still would not give a result, since the node scope is indexed
+        with the global analyzer, which in this case does not take into
         account any word stemming.</para>
 
         <para>In conclusion, be aware that when using analyzers for specific
