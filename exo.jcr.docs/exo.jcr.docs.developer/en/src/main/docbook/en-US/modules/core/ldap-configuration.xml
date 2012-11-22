@@ -13,40 +13,376 @@
   <section id="Core.LDAPConfiguration.Quickstart">
     <title>Quickstart</title>
 
-    <para>If you just want to have a look at how eXo works with ldap. eXo
-    comes with a predefined ldap configuration. You just need to activate it
-    and eXo will create all it needs to work at startup.</para>
+    <para>If you just want to have a look at how eXo works with LDAP, eXo
+    comes with a predefined LDAP configuration. You just need to activate it
+    and eXo will create everything it needs to work at startup.</para>
 
     <para>You need to have a working LDAP server and a user with write
-    permissions.</para>
+    permissions.</para>     
 
     <itemizedlist>
       <listitem>
-        <para>Open <emphasis
-        role="bold">exo-tomcat/webapps/portal/WEB-INF/conf/configuration.xml</emphasis>
-        and replace:</para>
+        <para>0pen <filename>idm-configuration.xml</filename> located in this path <emphasis role="bold">eXo-PLF-3.5.x-tomcat-bundle/webapps/platform-extension/WEB-INF/conf/organization</emphasis> comment this tag:
+        </para>
+        <programlisting language="xml">&lt;value&gt;war:/conf/organization/picketlink-idm/picketlink-idm-config.xml&lt;/value&gt;
+        </programlisting>
+        <para>
+        and add this tag:
+        </para>
+        <programlisting language="xml">&lt;value&gt;war:/conf/organization/picketlink-idm/picketlink-idm-ldap-config.xml&lt;/value&gt;
+        </programlisting>
       </listitem>
     </itemizedlist>
-
-    <programlisting language="xml">&lt;import&gt;war:/conf/organization/hibernate-configuration.xml&lt;/import&gt;</programlisting>
-
-    <para>With</para>
-
-    <programlisting language="xml">&lt;import&gt;war:/conf/organization/ldap-configuration.xml&lt;/import&gt;</programlisting>
-
+       <itemizedlist>
+      <listitem>
+        <para>
+         Under <emphasis role="bold">eXo-PLF-3.5.x-tomcat-bundle/webapps/platform-extension/WEB-INF/conf/organization/picketlink-idm</emphasis> add the <filename>picketlink-idm-ldap-config.xml</filename> file.
+        </para>
+        <para>
+		The content of this file is as follows:
+        </para>
+		<programlisting language="xml">
+&lt;?xml version="1.0" encoding="UTF-8"?&gt;
+&lt;jboss-identity xmlns="urn:picketlink:idm:config:v1_0_0_ga"
+                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                xsi:schemaLocation="urn:picketlink:idm:config:v1_0_0_ga identity-config.xsd"&gt;
+  &lt;realms&gt;
+    &lt;realm&gt;
+      &lt;id&gt;idm_realm_sample-portal&lt;/id&gt;
+      &lt;repository-id-ref&gt;DefaultPortalRepository&lt;/repository-id-ref&gt;
+      &lt;identity-type-mappings&gt;
+        &lt;user-mapping&gt;USER&lt;/user-mapping&gt;
+      &lt;/identity-type-mappings&gt;
+      &lt;options&gt;
+        &lt;option&gt;
+          &lt;name&gt;cache.providerRegistryName&lt;/name&gt;
+          &lt;value&gt;apiCacheProvider&lt;/value&gt;
+        &lt;/option&gt;
+      &lt;/options&gt;
+    &lt;/realm&gt;
+    &lt;realm&gt;
+      &lt;id&gt;idm_realm&lt;/id&gt;
+      &lt;repository-id-ref&gt;PortalRepository&lt;/repository-id-ref&gt;
+      &lt;identity-type-mappings&gt;
+        &lt;user-mapping&gt;USER&lt;/user-mapping&gt;
+      &lt;/identity-type-mappings&gt;
+      &lt;options&gt;
+        &lt;option&gt;
+          &lt;name&gt;template&lt;/name&gt;
+          &lt;value&gt;true&lt;/value&gt;
+        &lt;/option&gt;
+        &lt;option&gt;
+          &lt;name&gt;cache.providerRegistryName&lt;/name&gt;
+          &lt;value&gt;apiCacheProvider&lt;/value&gt;
+        &lt;/option&gt;
+      &lt;/options&gt;
+    &lt;/realm&gt;
+  &lt;/realms&gt;
+  &lt;repositories&gt;
+    &lt;repository&gt;
+      &lt;id&gt;PortalRepository&lt;/id&gt;
+      &lt;class&gt;org.picketlink.idm.impl.repository.FallbackIdentityStoreRepository&lt;/class&gt;
+      &lt;external-config/&gt;
+      &lt;default-identity-store-id&gt;HibernateStore&lt;/default-identity-store-id&gt;
+      &lt;default-attribute-store-id&gt;HibernateStore&lt;/default-attribute-store-id&gt;
+      &lt;identity-store-mappings&gt;
+        &lt;identity-store-mapping&gt;
+          &lt;identity-store-id&gt;PortalLDAPStore&lt;/identity-store-id&gt;
+          &lt;identity-object-types&gt;
+            &lt;identity-object-type&gt;USER&lt;/identity-object-type&gt;
+            &lt;identity-object-type&gt;platform_type&lt;/identity-object-type&gt;
+            &lt;identity-object-type&gt;organization_type&lt;/identity-object-type&gt;
+          &lt;/identity-object-types&gt;
+          &lt;options/&gt;
+        &lt;/identity-store-mapping&gt;
+      &lt;/identity-store-mappings&gt;
+      &lt;options&gt;
+        &lt;option&gt;
+          &lt;name&gt;allowNotDefinedAttributes&lt;/name&gt;
+          &lt;value&gt;true&lt;/value&gt;
+        &lt;/option&gt;
+      &lt;/options&gt;
+    &lt;/repository&gt;
+    &lt;repository&gt;
+      &lt;id&gt;DefaultPortalRepository&lt;/id&gt;
+      &lt;class&gt;org.picketlink.idm.impl.repository.WrapperIdentityStoreRepository&lt;/class&gt;
+      &lt;external-config/&gt;
+      &lt;default-identity-store-id&gt;HibernateStore&lt;/default-identity-store-id&gt;
+      &lt;default-attribute-store-id&gt;HibernateStore&lt;/default-attribute-store-id&gt;
+    &lt;/repository&gt;
+  &lt;/repositories&gt;
+  &lt;stores&gt;
+    &lt;attribute-stores/&gt;
+    &lt;identity-stores&gt;
+      &lt;identity-store&gt;
+        &lt;id&gt;HibernateStore&lt;/id&gt;
+        &lt;class&gt;org.picketlink.idm.impl.store.hibernate.HibernateIdentityStoreImpl&lt;/class&gt;
+        &lt;external-config/&gt;
+        &lt;supported-relationship-types&gt;
+          &lt;relationship-type&gt;JBOSS_IDENTITY_MEMBERSHIP&lt;/relationship-type&gt;
+          &lt;relationship-type&gt;JBOSS_IDENTITY_ROLE&lt;/relationship-type&gt;
+        &lt;/supported-relationship-types&gt;
+        &lt;supported-identity-object-types&gt;
+          &lt;identity-object-type&gt;
+            &lt;name&gt;USER&lt;/name&gt;
+            &lt;relationships/&gt;
+            &lt;credentials&gt;
+              &lt;credential-type&gt;PASSWORD&lt;/credential-type&gt;
+            &lt;/credentials&gt;
+            &lt;attributes/&gt;
+            &lt;options/&gt;
+          &lt;/identity-object-type&gt;
+        &lt;/supported-identity-object-types&gt;
+        &lt;options&gt;
+          &lt;option&gt;
+            &lt;name&gt;hibernateSessionFactoryRegistryName&lt;/name&gt;
+            &lt;value&gt;hibernateSessionFactory&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;populateRelationshipTypes&lt;/name&gt;
+            &lt;value&gt;true&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;populateIdentityObjectTypes&lt;/name&gt;
+            &lt;value&gt;true&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;allowNotDefinedIdentityObjectTypes&lt;/name&gt;
+            &lt;value&gt;true&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;allowNotDefinedAttributes&lt;/name&gt;
+            &lt;value&gt;true&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;isRealmAware&lt;/name&gt;
+            &lt;value&gt;true&lt;/value&gt;
+          &lt;/option&gt;
+        &lt;/options&gt;
+      &lt;/identity-store&gt;
+      &lt;identity-store&gt;
+        &lt;id&gt;PortalLDAPStore&lt;/id&gt;
+        &lt;class&gt;org.picketlink.idm.impl.store.ldap.LDAPIdentityStoreImpl&lt;/class&gt;
+        &lt;external-config/&gt;
+        &lt;supported-relationship-types&gt;
+          &lt;relationship-type&gt;JBOSS_IDENTITY_MEMBERSHIP&lt;/relationship-type&gt;
+        &lt;/supported-relationship-types&gt;
+        &lt;supported-identity-object-types&gt;
+          &lt;identity-object-type&gt;
+            &lt;name&gt;USER&lt;/name&gt;
+            &lt;relationships/&gt;
+            &lt;credentials&gt;
+              &lt;credential-type&gt;PASSWORD&lt;/credential-type&gt;
+            &lt;/credentials&gt;
+            &lt;attributes&gt;
+              &lt;attribute&gt;
+                &lt;name&gt;firstName&lt;/name&gt;
+                &lt;mapping&gt;cn&lt;/mapping&gt;
+                &lt;type&gt;text&lt;/type&gt;
+                &lt;isRequired&gt;false&lt;/isRequired&gt;
+                &lt;isMultivalued&gt;false&lt;/isMultivalued&gt;
+                &lt;isReadOnly&gt;false&lt;/isReadOnly&gt;
+              &lt;/attribute&gt;
+              &lt;attribute&gt;
+                &lt;name&gt;lastName&lt;/name&gt;
+                &lt;mapping&gt;sn&lt;/mapping&gt;
+                &lt;type&gt;text&lt;/type&gt;
+                &lt;isRequired&gt;false&lt;/isRequired&gt;
+                &lt;isMultivalued&gt;false&lt;/isMultivalued&gt;
+                &lt;isReadOnly&gt;false&lt;/isReadOnly&gt;
+              &lt;/attribute&gt;
+              &lt;attribute&gt;
+                &lt;name&gt;email&lt;/name&gt;
+                &lt;mapping&gt;mail&lt;/mapping&gt;
+                &lt;type&gt;text&lt;/type&gt;
+                &lt;isRequired&gt;false&lt;/isRequired&gt;
+                &lt;isMultivalued&gt;false&lt;/isMultivalued&gt;
+                &lt;isReadOnly&gt;false&lt;/isReadOnly&gt;
+                &lt;isUnique&gt;true&lt;/isUnique&gt;
+              &lt;/attribute&gt;
+            &lt;/attributes&gt;
+            &lt;options&gt;
+              &lt;option&gt;
+                &lt;name&gt;idAttributeName&lt;/name&gt;
+                &lt;value&gt;uid&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;passwordAttributeName&lt;/name&gt;
+                &lt;value&gt;userPassword&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;ctxDNs&lt;/name&gt;
+                &lt;value&gt;ou=People,o=portal,o=gatein,dc=example,dc=com&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;allowCreateEntry&lt;/name&gt;
+                &lt;value&gt;true&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;createEntryAttributeValues&lt;/name&gt;
+                &lt;value&gt;objectClass=top&lt;/value&gt;
+                &lt;value&gt;objectClass=inetOrgPerson&lt;/value&gt;
+                &lt;value&gt;sn= &lt;/value&gt;
+                &lt;value&gt;cn= &lt;/value&gt;
+              &lt;/option&gt;
+            &lt;/options&gt;
+          &lt;/identity-object-type&gt;
+          &lt;identity-object-type&gt;
+            &lt;name&gt;platform_type&lt;/name&gt;
+            &lt;relationships&gt;
+              &lt;relationship&gt;
+                &lt;relationship-type-ref&gt;JBOSS_IDENTITY_MEMBERSHIP&lt;/relationship-type-ref&gt;
+                &lt;identity-object-type-ref&gt;USER&lt;/identity-object-type-ref&gt;
+              &lt;/relationship&gt;
+              &lt;relationship&gt;
+                &lt;relationship-type-ref&gt;JBOSS_IDENTITY_MEMBERSHIP&lt;/relationship-type-ref&gt;
+                &lt;identity-object-type-ref&gt;platform_type&lt;/identity-object-type-ref&gt;
+              &lt;/relationship&gt;
+            &lt;/relationships&gt;
+            &lt;credentials/&gt;
+            &lt;attributes/&gt;
+            &lt;options&gt;
+              &lt;option&gt;
+                &lt;name&gt;idAttributeName&lt;/name&gt;
+                &lt;value&gt;cn&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;ctxDNs&lt;/name&gt;
+                &lt;value&gt;ou=Platform,o=portal,o=gatein,dc=example,dc=com&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;!--&lt;option&gt;--&gt;
+              &lt;!--&lt;name&gt;entrySearchFilter&lt;/name&gt;--&gt;
+              &lt;!--&lt;value&gt;&lt;/value&gt;--&gt;
+              &lt;!--&lt;/option&gt;--&gt;
+              &lt;option&gt;
+                &lt;name&gt;allowCreateEntry&lt;/name&gt;
+                &lt;value&gt;true&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;parentMembershipAttributeName&lt;/name&gt;
+                &lt;value&gt;member&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;isParentMembershipAttributeDN&lt;/name&gt;
+                &lt;value&gt;true&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;allowEmptyMemberships&lt;/name&gt;
+                &lt;value&gt;true&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;createEntryAttributeValues&lt;/name&gt;
+                &lt;value&gt;objectClass=top&lt;/value&gt;
+                &lt;value&gt;objectClass=groupOfNames&lt;/value&gt;
+              &lt;/option&gt;
+            &lt;/options&gt;
+          &lt;/identity-object-type&gt;
+          &lt;identity-object-type&gt;
+            &lt;name&gt;organization_type&lt;/name&gt;
+            &lt;relationships&gt;
+              &lt;relationship&gt;
+                &lt;relationship-type-ref&gt;JBOSS_IDENTITY_MEMBERSHIP&lt;/relationship-type-ref&gt;
+                &lt;identity-object-type-ref&gt;USER&lt;/identity-object-type-ref&gt;
+              &lt;/relationship&gt;
+              &lt;relationship&gt;
+                &lt;relationship-type-ref&gt;JBOSS_IDENTITY_MEMBERSHIP&lt;/relationship-type-ref&gt;
+                &lt;identity-object-type-ref&gt;organization_type&lt;/identity-object-type-ref&gt;
+              &lt;/relationship&gt;
+            &lt;/relationships&gt;
+            &lt;credentials/&gt;
+            &lt;attributes/&gt;
+            &lt;options&gt;
+              &lt;option&gt;
+                &lt;name&gt;idAttributeName&lt;/name&gt;
+                &lt;value&gt;cn&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;ctxDNs&lt;/name&gt;
+                &lt;value&gt;ou=Organization,o=portal,o=gatein,dc=example,dc=com&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;!--&lt;option&gt;--&gt;
+              &lt;!--&lt;name&gt;entrySearchFilter&lt;/name&gt;--&gt;
+              &lt;!--&lt;value&gt;&lt;/value&gt;--&gt;
+              &lt;!--&lt;/option&gt;--&gt;
+              &lt;option&gt;
+                &lt;name&gt;allowCreateEntry&lt;/name&gt;
+                &lt;value&gt;true&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;parentMembershipAttributeName&lt;/name&gt;
+                &lt;value&gt;member&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;isParentMembershipAttributeDN&lt;/name&gt;
+                &lt;value&gt;true&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;allowEmptyMemberships&lt;/name&gt;
+                &lt;value&gt;true&lt;/value&gt;
+              &lt;/option&gt;
+              &lt;option&gt;
+                &lt;name&gt;createEntryAttributeValues&lt;/name&gt;
+                &lt;value&gt;objectClass=top&lt;/value&gt;
+                &lt;value&gt;objectClass=groupOfNames&lt;/value&gt;
+              &lt;/option&gt;
+            &lt;/options&gt;
+          &lt;/identity-object-type&gt;
+        &lt;/supported-identity-object-types&gt;
+        &lt;options&gt;
+          &lt;option&gt;
+            &lt;name&gt;providerURL&lt;/name&gt;
+            &lt;value&gt;ldap://localhost:1389&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;adminDN&lt;/name&gt;
+            &lt;value&gt;cn=admin&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;adminPassword&lt;/name&gt;
+            &lt;value&gt;admin&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;searchTimeLimit&lt;/name&gt;
+            &lt;value&gt;10000&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;createMissingContexts&lt;/name&gt;
+            &lt;value&gt;true&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;customJNDIConnectionParameters&lt;/name&gt;
+            &lt;value&gt;com.sun.jndi.ldap.connect.pool=true&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;customSystemProperties&lt;/name&gt;
+            &lt;value&gt;com.sun.jndi.ldap.connect.pool.maxsize=300000&lt;/value&gt;
+            &lt;value&gt;com.sun.jndi.ldap.connect.pool.protocol=plain ssl&lt;/value&gt;
+          &lt;/option&gt;
+          &lt;option&gt;
+            &lt;name&gt;cache.providerRegistryName&lt;/name&gt;
+            &lt;value&gt;storeCacheProvider&lt;/value&gt;
+          &lt;/option&gt;
+        &lt;/options&gt;
+      &lt;/identity-store&gt;
+    &lt;/identity-stores&gt;
+  &lt;/stores&gt;
+  &lt;options&gt;
+      &lt;option&gt;
+         &lt;name&gt;defaultTemplate&lt;/name&gt;
+         &lt;value&gt;idm_realm&lt;/value&gt;
+      &lt;/option&gt;
+  &lt;/options&gt;
+&lt;/jboss-identity&gt;
+        </programlisting> 	
+      </listitem>
+    </itemizedlist>
     <itemizedlist>
       <listitem>
-        <para>0pen <emphasis role="bold">ldap-configuration.xml</emphasis> and
-        update the <emphasis role="bold">providerURL</emphasis>, <emphasis
-        role="bold">rootdn</emphasis> and password settings according to your
-        environment</para>
+        <para>
+          Change the configuration corresponding to the configuration you put when configuring your LDAP server. You have to update the values of options <emphasis role="bold">providerURL</emphasis>, <emphasis role="bold">adminDN</emphasis>, <emphasis role="bold">adminPassword</emphasis> and all instances of <emphasis role="bold">ctxDNs</emphasis> according to your LDAP server configuration.
+        </para>          
       </listitem>
     </itemizedlist>
-
-    <programlisting language="xml">&lt;field name="providerURL"&gt;&lt;string&gt;ldap://127.0.0.1:389&lt;/string&gt;&lt;/field&gt;
-&lt;field name="rootdn"&gt;&lt;string&gt;CN=Manager,DC=MyCompany,DC=com&lt;/string&gt;&lt;/field&gt;
-&lt;field name="password"&gt;&lt;string&gt;secret&lt;/string&gt;&lt;/field&gt;</programlisting>
-
     <itemizedlist>
       <listitem>
         <para>Delete <emphasis role="bold">exo-tomcat/temp/</emphasis>* to
