@@ -19,8 +19,8 @@
     has several limitations that greatly reduce possibilities and limits the
     usage of cluster advantages. That's why eXo JCR offers three strategies
     that are suitable for it's own usecases. They are standalone, clustered
-    with shared index and clustered with local indexes. Each one has it's pros
-    and cons.</para>
+    with shared index, clustered with local indexes and RSync-based. Each one
+    has it's pros and cons.</para>
 
     <para>Stanadlone strategy provides a stack of indexes to achieve greater
     performance within single JVM.</para>
@@ -28,7 +28,7 @@
     <mediaobject>
       <imageobject>
         <imagedata align="center"
-                   fileref="images/diagram-standalone-index.png" />
+                   fileref="images/diagram-standalone-index.png"/>
       </imageobject>
     </mediaobject>
 
@@ -44,7 +44,7 @@
 
     <mediaobject>
       <imageobject>
-        <imagedata align="center" fileref="images/diagram-local-index.png" />
+        <imagedata align="center" fileref="images/diagram-local-index.png"/>
       </imageobject>
     </mediaobject>
 
@@ -67,7 +67,7 @@
 
     <mediaobject>
       <imageobject>
-        <imagedata align="center" fileref="images/diagram-shared-index.png" />
+        <imagedata align="center" fileref="images/diagram-shared-index.png"/>
       </imageobject>
     </mediaobject>
 
@@ -83,6 +83,26 @@
     strategy in some extremely rare cases can have a bit different volatile
     indexes within cluster instances for a while. In a few seconds they will
     be up2date.</para>
+
+    <para>Shared index is consistent and stable enough, but slow, while local
+    index is fast, but requires much time for re-synchronization, when cluster
+    node is leaving a cluster for a small period of time. RSync-based index
+    solves this problem along with local file system advantages in term of
+    speed.</para>
+
+    <mediaobject>
+      <imageobject>
+        <imagedata align="center" fileref="images/diagram-rsync-index.png"/>
+      </imageobject>
+    </mediaobject>
+
+    <para>This strategy is the same shared index, but stores actual data on
+    local file system, instead of shared. Eventually triggering a
+    synchronization job, that woks on the level of file blocks, synchronizing
+    only modified data. Diagram shows it in action. Only single node in the
+    cluster is responsible for modifying index files, this is the Coordinator
+    node. When data persisted, corresponding command fired, starting
+    synchronization jobs all over the cluster.</para>
 
     <para>See more about <link linkend="JCR.SearchConfiguration">Search
     Configuration</link>.</para>
@@ -269,137 +289,222 @@
     <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies">
       <title>Cluster-ready indexing strategies</title>
 
-      <para>For both cluster-ready implementations JBoss Cache, JGroups and
-      Changes Filter values must be defined. Shared index requires some kind
-      of remote or shared file system to be attached in a system (i.e. NFS,
-      SMB or etc). Indexing directory ("indexDir" value) must point to it.
-      Setting "changesfilter-class" to
-      "org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"
-      will enable shared index implementation.</para>
+      <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies.SharedIndex">
+        <title>Shared Index</title>
 
-      <programlisting language="xml">&lt;workspace name="ws"&gt;
-   &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
-      &lt;properties&gt;
-         &lt;property name="index-dir" value="/mnt/nfs_drive/index/db1/ws" /&gt;
-         &lt;property name="changesfilter-class"
-            value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" /&gt;
-         &lt;property name="jbosscache-configuration" value="jbosscache-indexer.xml" /&gt;
-         &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-         &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
-         &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer" /&gt;
-         &lt;property name="max-volatile-time" value="60" /&gt;
-         &lt;property name="rdbms-reindexing" value="true" /&gt;
-         &lt;property name="reindexing-page-size" value="1000" /&gt;
-         &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
-         &lt;property name="jbosscache-shareable" value="true" /&gt;
-      &lt;/properties&gt;
-   &lt;/query-handler&gt;
-&lt;/workspace&gt;</programlisting>
+        <para>For both cluster-ready implementations JBoss Cache, JGroups and
+        Changes Filter values must be defined. Shared index requires some kind
+        of remote or shared file system to be attached in a system (i.e. NFS,
+        SMB or etc). Indexing directory ("indexDir" value) must point to it.
+        Setting "changesfilter-class" to
+        "org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"
+        will enable shared index implementation.</para>
 
-      <para>In order to use cluster-ready strategy based on local indexes,
-      when each node has own copy of index on local file system, the following
-      configuration must be applied. Indexing directory must point to any
-      folder on local file system and "changesfilter-class" must be set to
-      "org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter".</para>
+        <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+   &lt;properties&gt;
+      &lt;property name="index-dir" value="/mnt/nfs_drive/index/db1/ws" /&gt;
+      &lt;property name="changesfilter-class"
+         value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" /&gt;
+      &lt;property name="jbosscache-configuration" value="jbosscache-indexer.xml" /&gt;
+      &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
+      &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
+      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-ws" /&gt;
+      &lt;property name="max-volatile-time" value="60" /&gt;
+      &lt;property name="rdbms-reindexing" value="true" /&gt;
+      &lt;property name="reindexing-page-size" value="1000" /&gt;
+      &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
+   &lt;/properties&gt;
+&lt;/query-handler&gt;
+</programlisting>
+      </section>
 
-      <programlisting language="xml">&lt;workspace name="ws"&gt;
-   &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
-      &lt;properties&gt;
-         &lt;property name="index-dir" value="/mnt/nfs_drive/index/db1/ws" /&gt;
-         &lt;property name="changesfilter-class"
-            value="org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter" /&gt;
-         &lt;property name="jbosscache-configuration" value="jbosscache-indexer.xml" /&gt;
-         &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-         &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
-         &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer" /&gt;
-         &lt;property name="max-volatile-time" value="60" /&gt;
-         &lt;property name="rdbms-reindexing" value="true" /&gt;
-         &lt;property name="reindexing-page-size" value="1000" /&gt;
-         &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
-         &lt;property name="jbosscache-shareable" value="true" /&gt;
-      &lt;/properties&gt;
-   &lt;/query-handler&gt;
-&lt;/workspace&gt;
+      <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies.RSyncIndex">
+        <title>RSync Index</title>
+
+        <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies.RSyncIndex.SystemRequirements">
+          <title>System requirements</title>
+
+          <para>Mandatory requirement for Rsync-based indexing strategy is an
+          installed and properly configured RSync utility. It must be
+          accessible by calling "rsync" without defining it's full path, in
+          addition each cluster node should have a running RSync Server
+          supporting "rsync://" protocol. For more details, please refer to
+          RSync and operation system documentations. Sample RSync Server
+          configuration will be shown below. There are some additional
+          limitations also. Path for index for each workspace must be the same
+          across the cluster, i.e.
+          "/var/data/index/&lt;repository-name&gt;/&lt;workspace-name&gt;".
+          Next limitation is RSync Server configuration. It must share some of
+          index's parent folders. For example, "/var/data/index". In other
+          words, index is stored inside of RSync Server shared folder.
+          Configuration details are give below.</para>
+        </section>
+
+        <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies.RSyncIndex.Configuration">
+          <title>Configuration</title>
+
+          <para>Configuration has much in common with Shared Index, it just
+          requires some additional parameters for RSync options. If they are
+          present, JCR switches from shared to RSync-based index. Here is an
+          example configuration:</para>
+
+          <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+   &lt;properties&gt;
+      &lt;property name="index-dir" value="/var/data/index/repository1/production" /&gt;
+      &lt;property name="changesfilter-class"
+         value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" /&gt;
+      &lt;property name="jbosscache-configuration" value="jar:/conf/portal/cluster/jbosscache-indexer.xml" /&gt;
+      &lt;property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" /&gt;
+      &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
+      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer" /&gt;
+      &lt;property name="jbosscache-shareable" value="true" /&gt;
+      &lt;property name="max-volatile-time" value="60" /&gt; 
+      &lt;property name="rsync-entry-name" value="index" /&gt;
+      &lt;property name="rsync-entry-path" value="/var/data/index" /&gt;
+      &lt;property name="rsync-port" value="8085" /&gt;
+      &lt;property name="rsync-user" value="rsyncexo" /&gt;
+      &lt;property name="rsync-password" value="exo" /&gt;
+   &lt;/properties&gt;
+&lt;/query-handler&gt;
 </programlisting>
 
-      <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies.LocalIndexRecoveryFilters">
-        <title>Local Index Recovery Filters</title>
+          <para>Let's start with authentication: "rsync-user" and
+          "rsync-password". They are optional and can be skipped if RSync
+          Server configured to accept anonymous identity. Before reviewing
+          other RSync index options need to have a look at RSync Server
+          configuration. Sample RSync Server (rsyncd) Configuration</para>
 
-        <para>Common usecase for all cluster-ready applications is a hot
-        joining and leaving of processing units. Node that is joining cluster
-        for the first time or node joining after some downtime, they all must
-        be in a synchronized state. When having a deal with shared value
-        storages, databases and indexes, cluster nodes are synchronized
-        anytime. But it's an issue when local index strategy used. If new node
-        joins cluster, having no index it is retrieved or recreated. Node can
-        be restarted also and thus index not empty. Usually existing index is
-        thought to be actual, but can be outdated. JCR offers a mechanism
-        called RecoveryFilters that will automatically retrieve index for the
-        joining node on startup. This feature is a set of filters that can be
-        defined via QueryHandler configuration:</para>
+          <programlisting>uid = nobody
+gid = nobody
+use chroot = no
+port = 8085
+log file = rsyncd.log
+pid file = rsyncd.pid
+[index]
+        path = /var/data/index
+        comment = indexes
+        read only = true
+        auth users = rsyncexo
+        secrets file= rsyncd.secrets
+</programlisting>
 
-        <programlisting language="xml">&lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter" /&gt;</programlisting>
+          <para>This sample configuration shares folder "/var/data/index" as
+          an entry "index". Those parameters should match corresponding
+          properties in JCR configuration. Respectively "rsync-entry-name",
+          "rsync-entry-path", "rsync-port" properties. Notice! Make sure
+          "index-dir" is a descendant folder of RSync shared folder and those
+          paths are the same on each cluster node.</para>
+        </section>
+      </section>
 
-        <para>Filter number is not limited so they can be combined:</para>
+      <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies.LocalIndex">
+        <title>Local Index</title>
 
-        <programlisting language="xml">&lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter" /&gt;
+        <para>In order to use cluster-ready strategy based on local indexes,
+        when each node has own copy of index on local file system, the
+        following configuration must be applied. Indexing directory must point
+        to any folder on local file system and "changesfilter-class" must be
+        set to
+        "org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter".</para>
+
+        <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
+   &lt;properties&gt;
+      &lt;property name="index-dir" value="/mnt/nfs_drive/index/db1/ws" /&gt;
+      &lt;property name="changesfilter-class"
+         value="org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter" /&gt;
+      &lt;property name="jbosscache-configuration" value="jbosscache-indexer.xml" /&gt;
+      &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
+      &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
+      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-ws" /&gt;
+      &lt;property name="max-volatile-time" value="60" /&gt;
+      &lt;property name="rdbms-reindexing" value="true" /&gt;
+      &lt;property name="reindexing-page-size" value="1000" /&gt;
+      &lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
+   &lt;/properties&gt;
+&lt;/query-handler&gt;
+</programlisting>
+
+        <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies.LocalIndex.LocalIndexRecoverFilters">
+          <title>Local Index Recover Filters</title>
+
+          <para>Common usecase for all cluster-ready applications is a hot
+          joining and leaving of processing units. Node that is joining
+          cluster for the first time or node joining after some downtime, they
+          all must be in a synchronized state. When having a deal with shared
+          value storages, databases and indexes, cluster nodes are
+          synchronized anytime. But it's an issue when local index strategy
+          used. If new node joins cluster, having no index it is retrieved or
+          recreated. Node can be restarted also and thus index not empty. By
+          default existing index is thought to be actual, but can be outdated.
+          JCR offers a mechanism called RecoveryFilters that will
+          automatically retrieve index for the joining node on startup. This
+          feature is a set of filters that can be defined via QueryHandler
+          configuration:</para>
+
+          <programlisting language="xml">&lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter" /&gt;</programlisting>
+
+          <para>Filter number is not limited so they can be combined:</para>
+
+          <programlisting language="xml">&lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter" /&gt;
 &lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.SystemPropertyRecoveryFilter" /&gt;
 </programlisting>
 
-        <para>If any one fires, the index is re-synchronized. Please take in
-        account, that DocNumberRecoveryFilter is used in cases when no filter
-        configured. So, if resynchronization should be blocked, or strictly
-        required on start, then ConfigurationPropertyRecoveryFilter can be
-        used.</para>
+          <para>If any one fires, the index is re-synchronized. Please take in
+          account, that DocNumberRecoveryFilter is used in cases when no
+          filter configured. So, if resynchronization should be blocked, or
+          strictly required on start, then ConfigurationPropertyRecoveryFilter
+          can be used.</para>
 
-        <para>This feature uses standard index recovery mode defined by
-        previously described parameter (can be "from-indexing" or
-        "from-coordinator" (default value))</para>
+          <para>This feature uses standard index recovery mode defined by
+          previously described parameter (can be "from-indexing" or
+          "from-coordinator" (default value))</para>
 
-        <programlisting language="xml">&lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
+          <programlisting language="xml">&lt;property name="index-recovery-mode" value="from-coordinator" /&gt;
 </programlisting>
 
-        <para>There are couple implementations of filters:</para>
+          <para>There are couple implementations of filters:</para>
 
-        <itemizedlist>
-          <listitem>
-            <para>org.exoplatform.services.jcr.impl.core.query.lucene.DummyRecoveryFilter:
-            always returns true, for cases when index must be force
-            resynchronized (recovered) each time;</para>
-          </listitem>
+          <itemizedlist>
+            <listitem>
+              <para>org.exoplatform.services.jcr.impl.core.query.lucene.DummyRecoveryFilter:
+              always returns true, for cases when index must be force
+              resynchronized (recovered) each time;</para>
+            </listitem>
 
-          <listitem>
-            <para>org.exoplatform.services.jcr.impl.core.query.lucene.SystemPropertyRecoveryFilter
-            : return value of system property
-            "org.exoplatform.jcr.recoveryfilter.forcereindexing". So index
-            recovery can be controlled from the top without changing
-            documentation using system properties;</para>
-          </listitem>
+            <listitem>
+              <para>org.exoplatform.services.jcr.impl.core.query.lucene.SystemPropertyRecoveryFilter
+              : return value of system property
+              "org.exoplatform.jcr.recoveryfilter.forcereindexing". So index
+              recovery can be controlled from the top without changing
+              documentation using system properties;</para>
+            </listitem>
 
-          <listitem>
-            <para>org.exoplatform.services.jcr.impl.core.query.lucene.ConfigurationPropertyRecoveryFilter
-            : return value of QueryHandler configuration property
-            "index-recovery-filter-forcereindexing". So index recovery can be
-            controlled from configuration separately for each workspace.
-            I.e:</para>
+            <listitem>
+              <para>org.exoplatform.services.jcr.impl.core.query.lucene.ConfigurationPropertyRecoveryFilter
+              : return value of QueryHandler configuration property
+              "index-recovery-filter-forcereindexing". So index recovery can
+              be controlled from configuration separately for each workspace.
+              I.e:</para>
 
-            <programlisting language="xml">&lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.ConfigurationPropertyRecoveryFilter" /&gt;
+              <programlisting language="xml">&lt;property name="index-recovery-filter" value="org.exoplatform.services.jcr.impl.core.query.lucene.ConfigurationPropertyRecoveryFilter" /&gt;
 &lt;property name="index-recovery-filter-forcereindexing" value="true" /&gt;
 </programlisting>
-          </listitem>
+            </listitem>
 
-          <listitem>
-            <para>org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter
-            : checks number of documents in index on coordinator side and
-            self-side. Return true if differs. Advantage of this filter
-            comparing to other, it will skip reindexing for workspaces where
-            index wasn't modified. I.e. there is 10 repositories with 3
-            workspaces in each one. Only one is really heavily used in cluster
-            : frontend/production. So using this filter will only reindex
-            those workspaces that are really changed, without affecting other
-            indexes thus greatly reducing startup time.</para>
-          </listitem>
-        </itemizedlist>
+            <listitem>
+              <para>org.exoplatform.services.jcr.impl.core.query.lucene.DocNumberRecoveryFilter
+              : checks number of documents in index on coordinator side and
+              self-side. Return true if differs. Advantage of this filter
+              comparing to other, it will skip reindexing for workspaces where
+              index wasn't modified. I.e. there is 10 repositories with 3
+              workspaces in each one. Only one is really heavily used in
+              cluster : frontend/production. So using this filter will only
+              reindex those workspaces that are really changed, without
+              affecting other indexes thus greatly reducing startup
+              time.</para>
+            </listitem>
+          </itemizedlist>
+        </section>
       </section>
     </section>
 
@@ -494,7 +599,7 @@
       blocking whole application by using any JMX-compatible console (see
       screenshot below, "JConsole in action").<mediaobject>
           <imageobject>
-            <imagedata align="center" fileref="images/jmx-jconsole.png" />
+            <imagedata align="center" fileref="images/jmx-jconsole.png"/>
           </imageobject>
         </mediaobject>Server can continue working as expected while index is
       recreated. This depends on the flag "allow queries", passed via JMX
@@ -588,7 +693,7 @@
 
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/search-manager-optimize.png" />
+          <imagedata fileref="images/search-manager-optimize.png"/>
         </imageobject>
       </mediaobject>
     </section>
