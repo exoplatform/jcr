@@ -442,8 +442,8 @@ pid file = rsyncd.pid
 &lt;/query-handler&gt;
 </programlisting>
 
-        <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies.LocalIndex.LocalIndexRecoverFilters">
-          <title>Local Index Recover Filters</title>
+        <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies.LocalIndexRecoveryFilters">
+          <title>Local Index Recovery Filters</title>
 
           <para>Common usecase for all cluster-ready applications is a hot
           joining and leaving of processing units. Node that is joining
@@ -452,8 +452,8 @@ pid file = rsyncd.pid
           value storages, databases and indexes, cluster nodes are
           synchronized anytime. But it's an issue when local index strategy
           used. If new node joins cluster, having no index it is retrieved or
-          recreated. Node can be restarted also and thus index not empty. By
-          default existing index is thought to be actual, but can be outdated.
+          recreated. Node can be restarted also and thus index not empty.
+          Usually existing index is thought to be actual, but can be outdated.
           JCR offers a mechanism called RecoveryFilters that will
           automatically retrieve index for the joining node on startup. This
           feature is a set of filters that can be defined via QueryHandler
