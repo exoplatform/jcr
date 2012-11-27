@@ -392,6 +392,20 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
       return nodeTypeData.hasOrderableChildNodes();
    }
 
+   @Deprecated
+   public boolean isChildNodePrimaryTypeAllowed(String typeName)
+   {
+      try
+      {
+         InternalQName iname = locationFactory.parseJCRName(typeName).getInternalName();
+         return isChildNodePrimaryTypeAllowed(null, iname);
+      }
+      catch (RepositoryException e)
+      {
+         return false;
+      }
+   }
+
    public boolean isChildNodePrimaryTypeAllowed(InternalQName nodeName, InternalQName typeName)
    {
       try
