@@ -163,6 +163,16 @@ public interface NodeTypeDataManager
 
 
    /**
+    * @param childNodeTypeName
+    * @param parentNodeType
+    * @param parentMixinNames
+    * @return
+    */
+   @Deprecated
+   boolean isChildNodePrimaryTypeAllowed(InternalQName childNodeTypeName, InternalQName parentNodeType,
+      InternalQName[] parentMixinNames) throws RepositoryException;
+
+   /**
     * @param childNodeName
     * @param childNodeTypeName
     * @param parentNodeType

@@ -492,6 +492,15 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    /**
     * {@inheritDoc}
     */
+   public boolean isChildNodePrimaryTypeAllowed(final InternalQName childNodeType, final InternalQName parentNodeType,
+      final InternalQName[] parentMixinNames) throws RepositoryException
+   {
+      return isChildNodePrimaryTypeAllowed(null, childNodeType, parentNodeType, parentMixinNames);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public boolean isChildNodePrimaryTypeAllowed(final InternalQName childName, final InternalQName childNodeType,
       final InternalQName parentNodeType, final InternalQName[] parentMixinNames) throws RepositoryException
    {
@@ -551,7 +560,8 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    private boolean isChildAllowed(final InternalQName childName, final InternalQName childNodeType,
       final NodeDefinitionData cnd, InternalQName reqName, final InternalQName reqNodeType)
    {
-      return childNodeType.equals(reqNodeType) && (cnd.isResidualSet() || reqName.equals(childName));
+      return childNodeType.equals(reqNodeType)
+         && (childName == null || cnd.isResidualSet() || reqName.equals(childName));
    }
 
    /**
