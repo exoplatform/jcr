@@ -98,6 +98,8 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
       FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
          FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ.replaceFirst("select",
             "select /*+ INDEX(I JCR_IDX_SITEM_PARENT_NAME) */");
+
+      DELETE_ITEM = "delete /*+ INDEX(I JCR_PK_SITEM)*/ from JCR_SITEM I where I.ID=?";
    }
     
    /**
