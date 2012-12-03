@@ -41,7 +41,7 @@
     <title>Configuration parameters</title>
 
     <table>
-      <title/>
+      <title></title>
 
       <tgroup cols="4">
         <thead>
@@ -758,7 +758,7 @@
 &lt;!DOCTYPE configuration SYSTEM "http://www.exoplatform.org/dtd/indexing-configuration-1.0.dtd"&gt;
 &lt;configuration xmlns:jcr="http://www.jcp.org/jcr/1.0"
                xmlns:nt="http://www.jcp.org/jcr/nt/1.0"&gt;
-  &lt;aggregate primaryType="nt:file"&gt;http://wiki.exoplatform.com/xwiki/bin/edit/JCR/Search+Configuration
+  &lt;aggregate primaryType="nt:file"&gt;
     &lt;include primaryType="nt:resource"&gt;*&lt;/include&gt;
   &lt;/aggregate&gt;
 &lt;/configuration&gt;</programlisting>
