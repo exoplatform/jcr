@@ -331,12 +331,8 @@ public class NodeIndexer
                {
                   if (propData == null || (data = propData.getValues()) == null || data.isEmpty())
                   {
-                     if (LOG.isDebugEnabled())
-                     {
-                        LOG.debug("No value found for the property located at " + prop.getQPath().getAsString());
-                     }
+                     LOG.warn("null value found at property " + prop.getQPath().getAsString());
                      return;
-
                   }
 
                   DocumentReader dreader =
@@ -485,10 +481,7 @@ public class NodeIndexer
 
             if (propData == null || (data = propData.getValues()) == null || data.isEmpty())
             {
-               if (LOG.isDebugEnabled())
-               {
-                  LOG.debug("No value found for the property located at " + prop.getQPath().getAsString());
-               }
+               LOG.warn("null value found at property " + prop.getQPath().getAsString());
                return;
             }
 
