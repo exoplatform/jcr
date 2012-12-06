@@ -25,6 +25,7 @@ import org.apache.lucene.store.LockObtainFailedException;
 import java.io.IOException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Wraps an <code>IndexReader</code> and allows to commit changes without
@@ -37,7 +38,7 @@ class CommittableIndexReader extends FilterIndexReader {
      * {@link IndexReader#getVersion()} and incremented with every call to
      * {@link #doDelete(int)}.
      */
-    private volatile long modCount;
+    private final AtomicLong modCount;
 
     /**
      * If reader is created with flag transientDeletions, then reader 
@@ -58,7 +59,7 @@ class CommittableIndexReader extends FilterIndexReader {
      */
     CommittableIndexReader(IndexReader in, boolean transientDeletions) {
         super(in);
-        modCount = in.getVersion();
+        modCount = new AtomicLong(in.getVersion());
         this.transientDeletions = transientDeletions;
         // no need to initialize Set if transientDeletions = false
         this.deletedDocs = transientDeletions? new CopyOnWriteArraySet<Integer>() : null;
@@ -73,7 +74,7 @@ class CommittableIndexReader extends FilterIndexReader {
      */
     protected void doDelete(int n) throws CorruptIndexException, IOException {
         super.doDelete(n);
-        modCount++;
+        modCount.incrementAndGet();
     }
 
     /**
@@ -86,7 +87,7 @@ class CommittableIndexReader extends FilterIndexReader {
        if (transientDeletions)
        {
            deletedDocs.add(docNum);
-           modCount++; // doDelete won't be executed, so incrementing modCount
+           modCount.incrementAndGet(); // doDelete won't be executed, so incrementing modCount
        }
        else
        {
@@ -112,6 +113,6 @@ class CommittableIndexReader extends FilterIndexReader {
      * @return the modification count of this index reader.
      */
     long getModificationCount() {
-        return modCount;
+        return modCount.get();
     }
 }

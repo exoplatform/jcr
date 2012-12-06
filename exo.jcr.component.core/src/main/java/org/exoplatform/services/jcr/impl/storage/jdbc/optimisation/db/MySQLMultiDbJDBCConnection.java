@@ -53,8 +53,6 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
     */
    protected final boolean innoDBEngine;
 
-   protected String PATTERN_ESCAPE_STRING = "\\\\";
-
    /**
     * MySQL Multidatabase JDBC Connection constructor.
     * 
@@ -71,8 +69,9 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
       super(dbConnection, readOnly, containerConfig);
 
       this.innoDBEngine =
-         containerConfig.equals(DBConstants.DB_DIALECT_MYSQL)
-            || containerConfig.equals(DBConstants.DB_DIALECT_MYSQL_UTF8);
+         containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_MYSQL)
+            || containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8);
+      PATTERN_ESCAPE_STRING = "\\\\";
    }
 
    /**

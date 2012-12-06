@@ -337,6 +337,7 @@ public class NodeIndexer
                   if (data == null)
                   {
                      LOG.warn("null value found at property " + prop.getQPath().getAsString());
+                     return;
                   }
 
                   // check the jcr:encoding property
@@ -468,6 +469,7 @@ public class NodeIndexer
             if (data == null)
             {
                LOG.warn("null value found at property " + prop.getQPath().getAsString());
+               return;
             }
 
             InternalQName name = prop.getQPath().getName();

@@ -190,6 +190,11 @@ public class JobRepositoryRestore extends Thread
          }
       }
 
+      if (systemWorkspaceEntry == null)
+      {
+         throw new RepositoryRestoreExeption("Can not restore workspace \"" + repositoryEntry.getSystemWorkspaceName()
+            + " in repository \"" + repositoryEntry.getName() + "\"." + " The related configuration cannot be found.");
+      }
       WorkspaceInitializerEntry wieOriginal = systemWorkspaceEntry.getInitializer();
 
       //getting backup chail log to system workspace.

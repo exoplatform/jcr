@@ -68,7 +68,7 @@ public class EntityCollection implements NodeIterator, PropertyIterator, NodeTyp
       else
          this.list = list;
 
-      this.iter = list.iterator();
+      this.iter = this.list.iterator();
       this.pos = 0;
    }
 

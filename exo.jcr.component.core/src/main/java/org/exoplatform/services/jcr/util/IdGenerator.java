@@ -32,11 +32,20 @@ public class IdGenerator
 {
    public static final int IDENTIFIER_LENGTH = IDGeneratorService.ID_LENGTH;
 
-   private static IDGeneratorService idGenerator;
+   private static volatile IDGeneratorService idGenerator;
 
    public IdGenerator(IDGeneratorService idGenerator)
    {
-      IdGenerator.idGenerator = idGenerator;
+      if (IdGenerator.idGenerator == null)
+      {
+         synchronized (IdGenerator.class)
+         {
+            if (IdGenerator.idGenerator == null)
+            {
+               IdGenerator.idGenerator = idGenerator;               
+            }
+         }
+      }
    }
 
    public Identifier generateId(String path)

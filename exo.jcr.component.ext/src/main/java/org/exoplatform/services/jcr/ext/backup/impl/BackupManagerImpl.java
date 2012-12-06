@@ -520,10 +520,8 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
       this.restoreRepositoryJobs = new CopyOnWriteArrayList<JobRepositoryRestore>();
 
       this.workspaceBackupStopper = new WorkspaceBackupAutoStopper(ctx);
-      this.workspaceBackupStopper.start();
 
       this.repositoryBackupStopper = new RepositoryBackupAutoStopper(ctx);
-      this.repositoryBackupStopper.start();
    }
 
    /**
@@ -830,6 +828,9 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
     */
    public void start()
    {
+      this.workspaceBackupStopper.start();
+      this.repositoryBackupStopper.start();
+
       if (!PrivilegedFileHelper.exists(tempDir))
       {
          throw new IllegalStateException("Directory " + tempDir.getAbsolutePath() + " not found. Please create it.");

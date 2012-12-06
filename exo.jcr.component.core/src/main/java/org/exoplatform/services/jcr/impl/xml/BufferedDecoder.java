@@ -158,13 +158,13 @@ public class BufferedDecoder extends Base64.Decoder
          }
          catch (IOException e)
          {
-            return null;
+            return "";
          }
 
       }
       else
       {
-         return null;
+         return "";
       }
    }
 

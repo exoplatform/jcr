@@ -32,19 +32,8 @@ import org.exoplatform.services.jcr.ext.common.SessionProvider;
 public class ThreadLocalSessionProviderService implements SessionProviderService
 {
 
-   private static ThreadLocal<SessionProvider> sessionProviderKeeper;
-
-   private static ThreadLocal<SessionProvider> systemSessionProviderKeeper;
-
-   /**
-    * ThreadLocalSessionProviderService constructor.
-    * 
-    */
-   public ThreadLocalSessionProviderService()
-   {
-      sessionProviderKeeper = new ThreadLocal<SessionProvider>();
-      systemSessionProviderKeeper = new ThreadLocal<SessionProvider>();
-   }
+   private static final ThreadLocal<SessionProvider> sessionProviderKeeper = new ThreadLocal<SessionProvider>();
+   private static final ThreadLocal<SessionProvider> systemSessionProviderKeeper = new ThreadLocal<SessionProvider>();
 
    /**
     * {@inheritDoc}

@@ -436,6 +436,6 @@ public class ValueConstraintsMatcher extends ValueConstraintsValidator
          knownPath = parsePath(path, locFactory);
       }
 
-      return new JCRPathMatcher(knownPath.getInternalPath(), forDescendants, forAncestors);
+      return new JCRPathMatcher(knownPath == null ? null : knownPath.getInternalPath(), forDescendants, forAncestors);
    }
 }

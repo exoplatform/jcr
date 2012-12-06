@@ -1966,6 +1966,12 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                }
             }
 
+            if (relativePath == null)
+            {
+               LOG.error("Could not get the relative path of the node " + nodeQPath + " with "
+                  + (nodeQPath.getDepth() - prevRootPath.getDepth()) + " as relative degree");
+               continue;
+            }
             // make new path - no matter  node or property
             QPath newPath = QPath.makeChildPath(newRootPath, relativePath);
 

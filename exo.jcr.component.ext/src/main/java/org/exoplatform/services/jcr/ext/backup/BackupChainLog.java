@@ -84,8 +84,6 @@ public class BackupChainLog
 
    private File log;
 
-   private String configInfo;
-
    private final List<JobEntryInfo> jobEntries;
 
    private LogWriter logWriter;
@@ -330,7 +328,7 @@ public class BackupChainLog
     */
    public String getConfigInfo()
    {
-      return configInfo;
+      return null;
    }
 
    /**

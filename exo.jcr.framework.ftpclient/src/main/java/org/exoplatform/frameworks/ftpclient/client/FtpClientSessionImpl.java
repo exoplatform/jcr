@@ -96,7 +96,7 @@ public class FtpClientSessionImpl implements FtpClientSession
             BufferedReader br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
 
             String reply = "";
-            while (!reply.startsWith("220 "))
+            while (reply != null && !reply.startsWith("220 "))
             {
                reply = br.readLine();
                // log.info("REPLY - " + reply);

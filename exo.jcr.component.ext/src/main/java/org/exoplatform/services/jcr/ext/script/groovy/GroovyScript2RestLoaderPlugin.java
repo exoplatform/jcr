@@ -42,7 +42,7 @@ public class GroovyScript2RestLoaderPlugin extends BaseComponentPlugin
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.GroovyScript2RestLoaderPlugin");
 
    /** Repository service **/
-   private static RepositoryService repositoryService;
+   private final RepositoryService repositoryService;
 
    /** Configurations for scripts what were got from XML. */
    private List<XMLGroovyScript2Rest> l = new ArrayList<XMLGroovyScript2Rest>();

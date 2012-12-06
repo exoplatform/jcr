@@ -153,7 +153,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
       session.checkLive();
       // get source session
       SessionImpl srcSession = null;
-      if (getName() != srcWorkspace)
+      if (!getName().equals(srcWorkspace))
       {
          srcSession = repository().internalLogin(session.getUserState(), srcWorkspace);
       }

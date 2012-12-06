@@ -2077,7 +2077,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       for (NodeDataIndexing node : iterator.next())
       {
          processed.incrementAndGet();
-         if (stopped.get())
+         if (stopped.get() || Thread.interrupted())
          {
             throw new InterruptedException();
          }
@@ -3615,7 +3615,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          public void run()
          {
-            while (exception.get() == null)
+            while (!Thread.currentThread().isInterrupted() && exception.get() == null)
             {
                Callable<Void> task;
                while (exception.get() == null && (task = tasks.poll()) != null)
@@ -3643,7 +3643,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                }
                synchronized (runningThreads)
                {
-                  if (exception.get() == null && (runningThreads.get() > 0))
+                  if (!Thread.currentThread().isInterrupted() && exception.get() == null && (runningThreads.get() > 0))
                   {
                      try
                      {

@@ -31,12 +31,6 @@ import java.sql.SQLException;
 public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
 
-   protected String FIND_NODES_BY_PARENTID_CQ_QUERY;
-
-   protected String FIND_PROPERTIES_BY_PARENTID_CQ_QUERY;
-
-   protected String FIND_ITEM_QPATH_BY_ID_CQ_QUERY;
-
    /**
     * Oracle Multidatabase JDBC Connection constructor.
     * 

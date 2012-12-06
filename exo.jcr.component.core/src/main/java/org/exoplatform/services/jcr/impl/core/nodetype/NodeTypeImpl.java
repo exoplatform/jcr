@@ -605,7 +605,7 @@ public class NodeTypeImpl extends NodeTypeDefinitionImpl implements NodeType
                   // or has an index
                   return false;
                }
-               else if (!pathParts.equals("/") && pathParts.length == 1 && pathString.indexOf("[") < 0)
+               else if (!pathString.equals("/") && pathParts.length == 1 && pathString.indexOf("[") < 0)
                {
                   // Path is relative
                   // TRUE if it is one element long

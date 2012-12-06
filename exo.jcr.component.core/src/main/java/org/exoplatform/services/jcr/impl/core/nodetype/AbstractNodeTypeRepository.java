@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeData;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.NodeTypeDataPersister;
 import org.exoplatform.services.jcr.impl.core.nodetype.registration.UpdateNodeTypeObserver;
 
@@ -101,17 +102,16 @@ public abstract class AbstractNodeTypeRepository implements NodeTypeRepository
                   throw new RepositoryException("NodeTypeData object " + updatetNodetype + " is null");
                }
 
-               if (accessControlPolicy.equals(AccessControlPolicy.DISABLE)
-                  && updatetNodetype.getName().equals("exo:privilegeable"))
-               {
-                  throw new RepositoryException("NodeType exo:privilegeable is DISABLED");
-               }
-
                final InternalQName qname = updatetNodetype.getName();
                if (qname == null)
                {
                   throw new RepositoryException("NodeType implementation class " + updatetNodetype.getClass().getName()
                      + " is not supported in this method");
+               }
+               if (accessControlPolicy.equals(AccessControlPolicy.DISABLE)
+                  && qname.equals(Constants.EXO_PRIVILEGEABLE))
+               {
+                  throw new RepositoryException("NodeType exo:privilegeable is DISABLED");
                }
 
                final NodeTypeData registeredNodeType = getNodeType(qname);

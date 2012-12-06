@@ -53,6 +53,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.WeakHashMap;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
@@ -189,12 +190,12 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    /**
     * Statistic miss current value.
     */
-   private volatile long miss = 0;
+   private final AtomicLong miss = new AtomicLong();
 
    /**
     * Statistic hits current value.
     */
-   private volatile long hits = 0;
+   private final AtomicLong hits = new AtomicLong();
 
    /**
     * Statistic totalGetTime current value.
@@ -816,7 +817,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    private void gatherStatistic()
    {
       final CacheStatistic st =
-         new CacheStatistic(miss, hits, cache.size(), nodesCache.size(), propertiesCache.size(), maxSize, liveTime,
+         new CacheStatistic(miss.get(), hits.get(), cache.size(), nodesCache.size(), propertiesCache.size(), maxSize, liveTime,
             totalGetTime);
 
       if (showStatistic)
@@ -853,8 +854,8 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
 
       if (cleanStatistics)
       {
-         miss = 0;
-         hits = 0;
+         miss.set(0);
+         hits.set(0);
          totalGetTime = 0;
       }
    }
@@ -1360,7 +1361,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
                      + (c != null ? c.getQPath().getAsString() + " parent:" + c.getParentIdentifier() : "[null]"));
                }
 
-               hits++;
+               hits.incrementAndGet();
                return c;
             }
 
@@ -1386,7 +1387,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
             }
          }
 
-         miss++;
+         miss.incrementAndGet();
          return null;
       }
       finally
@@ -1420,7 +1421,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
                      + (c != null ? c.getIdentifier() + " parent:" + c.getParentIdentifier() : "[null]"));
                }
 
-               hits++;
+               hits.incrementAndGet();
                return c;
             }
 
@@ -1446,7 +1447,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
             }
          }
 
-         miss++;
+         miss.incrementAndGet();
          return null;
       }
       finally
@@ -1490,11 +1491,11 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
 
             if (cn != null)
             {
-               hits++;
+               hits.incrementAndGet();
             }
             else
             {
-               miss++;
+               miss.incrementAndGet();
             }
             return cn;
          }
@@ -1547,11 +1548,11 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
 
             if (cn != null)
             {
-               hits++;
+               hits.incrementAndGet();
             }
             else
             {
-               miss++;
+               miss.incrementAndGet();
             }
             return cn != null ? cn.size() : -1;
          }
@@ -1605,12 +1606,12 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
             if (cp != null && cp.get(0).getValues().size() > 0)
             {
                // don't return list of empty-valued props (but listChildProperties() can)
-               hits++;
+               hits.incrementAndGet();
                return cp;
             }
             else
             {
-               miss++;
+               miss.incrementAndGet();
             }
          }
          catch (Exception e)
@@ -1676,11 +1677,11 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
 
             if (cp != null)
             {
-               hits++;
+               hits.incrementAndGet();
             }
             else
             {
-               miss++;
+               miss.incrementAndGet();
             }
             return cp;
          }

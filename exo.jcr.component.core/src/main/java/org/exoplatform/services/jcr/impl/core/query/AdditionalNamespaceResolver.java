@@ -106,7 +106,7 @@ public class AdditionalNamespaceResolver implements NamespaceAccessor {
    public String[] getAllNamespacePrefixes() throws RepositoryException
    {
       Set keySet = prefixToURI.keySet();
-      return (String[])keySet.toArray();
+      return (String[])keySet.toArray(new String[keySet.size()]);
    }
 
    public String getNamespacePrefixByURI(String uri) throws NamespaceException, RepositoryException

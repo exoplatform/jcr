@@ -227,7 +227,7 @@ public class SystemParameterUpdater
 
             throw new IllegalStateException("Unable to override parameter '" + mapEntry.getKey()
                + "' set in system property because this operation is allowed only for non initialized workspaces",
-               parametersToValidate.get(mapEntry.getValue()));
+               mapEntry.getValue());
          }
       }
    }

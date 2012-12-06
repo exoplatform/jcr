@@ -109,7 +109,7 @@ public class ExcludingRuleImpl implements ExcludingRule
       {
          return false;
       }
-      else if (!excludeNodeType.equals(other.excludeNodeType))
+      else if (excludeNodeType != null && !excludeNodeType.equals(other.excludeNodeType))
       {
          return false;
       }
@@ -118,7 +118,7 @@ public class ExcludingRuleImpl implements ExcludingRule
       {
          return false;
       }
-      else if (!excludePath.equals(other.excludePath))
+      else if (excludePath != null && !excludePath.equals(other.excludePath))
       {
          return false;
       }

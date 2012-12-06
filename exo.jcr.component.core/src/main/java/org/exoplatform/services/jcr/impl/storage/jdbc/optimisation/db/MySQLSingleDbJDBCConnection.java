@@ -71,8 +71,8 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
       super(dbConnection, readOnly, containerConfig);
 
       this.innoDBEngine =
-         containerConfig.equals(DBConstants.DB_DIALECT_MYSQL)
-            || containerConfig.equals(DBConstants.DB_DIALECT_MYSQL_UTF8);
+         containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_MYSQL)
+            || containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8);
    }
 
    /**

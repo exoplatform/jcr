@@ -508,6 +508,10 @@ public class BackupClientImpl
 
             response = transport.executePOST(sURL, json.toString());
          }
+         else
+         {
+            response = new BackupAgentResponse("The workspace configuration cannot be found".getBytes("UTF-8"), 500);
+         }
       }
       else if (repositoryName != null)
       {
@@ -553,6 +557,10 @@ public class BackupClientImpl
    
             response = transport.executePOST(sURL, json.toString());
          } 
+         else
+         {
+            response = new BackupAgentResponse("The workspace configuration cannot be found".getBytes("UTF-8"), 500);
+         }
       }
       else
       {

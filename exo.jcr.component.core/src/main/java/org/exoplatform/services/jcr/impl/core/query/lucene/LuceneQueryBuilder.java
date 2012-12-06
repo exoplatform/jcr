@@ -1052,6 +1052,10 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
                            throw new IllegalPathException(
                               "Path can not contains a property as the intermediate element");
                      }
+                     if (item == null)
+                     {
+                        throw new IllegalStateException("The item cannot be found");
+                     }
                      uuid = item.getIdentifier();
                   }
 

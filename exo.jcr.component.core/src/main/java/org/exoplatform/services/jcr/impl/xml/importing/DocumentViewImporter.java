@@ -606,7 +606,7 @@ public class DocumentViewImporter extends BaseXmlImporter
       HashMap<InternalQName, String> props, InternalQName nodeName) throws PathNotFoundException, RepositoryException
    {
       // default primary type
-      if (!atts.containsKey("jcr:primaryType"))
+      if (atts != null && !atts.containsKey("jcr:primaryType"))
       {
          NodeData parent = getParent();
 

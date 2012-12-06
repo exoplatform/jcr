@@ -231,7 +231,7 @@ public final class NodeTypeValue
          else if (strList.get(i) != null)
          {
             String s = strList.get(i);
-            s.trim();
+            s = s.trim();
             if (s.length() <= 0)
             {
                strList.remove(i);
