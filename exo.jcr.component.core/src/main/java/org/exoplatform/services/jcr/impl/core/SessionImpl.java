@@ -259,12 +259,12 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.lastAccessTime = System.currentTimeMillis();
 
       this.triggerEventsForDescendantsOnRename =
-         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME,
+         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME,
             WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME_DEFAULT);
 
       // check bad spelled
       this.triggerEventsForDescendantsOnRename =
-         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME,
+         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME,
             triggerEventsForDescendantsOnRename);
 
       this.lazyNodeIteatorPageSize =
