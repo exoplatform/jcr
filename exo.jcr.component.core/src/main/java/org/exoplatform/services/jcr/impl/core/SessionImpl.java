@@ -258,7 +258,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       sessionRegistry.registerSession(this);
       this.lastAccessTime = System.currentTimeMillis();
 
-      // check bad spelled
+      // first check the parameter misspelled
       this.triggerEventsForDescendantsOnRename =
          wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME,
             WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME_DEFAULT);
