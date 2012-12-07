@@ -176,7 +176,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    private long lastAccessTime;
 
-   private boolean triggerEventsForDescendentsOnRename;
+   private boolean triggerEventsForDescendantsOnRename;
 
    private int lazyNodeIteatorPageSize;
 
@@ -258,9 +258,14 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       sessionRegistry.registerSession(this);
       this.lastAccessTime = System.currentTimeMillis();
 
-      this.triggerEventsForDescendentsOnRename =
+      this.triggerEventsForDescendantsOnRename =
+         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME,
+            WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME_DEFAULT);
+
+      // check bad spelled
+      this.triggerEventsForDescendantsOnRename =
          wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME,
-            WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME_DEFAULT);
+            triggerEventsForDescendantsOnRename);
 
       this.lazyNodeIteatorPageSize =
          wsConfig.getContainer().getParameterInteger(WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE,
@@ -1056,7 +1061,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       ItemDataMoveVisitor initializer =
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
             (NodeData)srcParentNode.getData(), nodeTypeManager, getTransientNodesManager(), true,
-            triggerEventsForDescendentsOnRename || srcParentNode != destParentNode); // NOSONAR
+            triggerEventsForDescendantsOnRename || srcParentNode != destParentNode); // NOSONAR
 
       getTransientNodesManager().rename((NodeData)srcNode.getData(), initializer);
    }
