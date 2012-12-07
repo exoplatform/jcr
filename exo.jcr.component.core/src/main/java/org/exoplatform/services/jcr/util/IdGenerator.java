@@ -60,6 +60,6 @@ public class IdGenerator
 
    public static String generate()
    {
-      return idGenerator.generateStringID("" + System.currentTimeMillis());
+      return idGenerator.generateStringID(Long.toString(System.currentTimeMillis()));
    }
 }
