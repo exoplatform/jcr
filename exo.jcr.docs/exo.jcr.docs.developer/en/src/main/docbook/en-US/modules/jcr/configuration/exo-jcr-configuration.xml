@@ -261,7 +261,7 @@
       <tgroup cols="2">
         <tbody>
           <row>
-            <entry>trigger_events_for_descendents_on_rename</entry>
+            <entry>trigger-events-for-descendants-on-rename</entry>
 
             <entry>indicates if need to trigger events for descendents on
             rename or not. It allows to increase performance on rename

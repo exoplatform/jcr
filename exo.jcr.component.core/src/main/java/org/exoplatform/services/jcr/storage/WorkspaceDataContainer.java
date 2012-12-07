@@ -40,7 +40,9 @@ public interface WorkspaceDataContainer extends DataContainer
    // configuration params
    public static final String TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME = "trigger-events-for-descendents-on-rename";
 
-   public static final boolean TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME_DEFAULT = true;
+   public static final String TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME = "trigger-events-for-descendants-on-rename";
+
+   public static final boolean TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME_DEFAULT = true;
 
    public static final String LAZY_NODE_ITERATOR_PAGE_SIZE = "lazy-node-iterator-page-size";
 
