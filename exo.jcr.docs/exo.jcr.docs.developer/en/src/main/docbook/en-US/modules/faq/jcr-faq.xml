@@ -157,18 +157,18 @@
         internal tests the best choice is Oracle 11G R2 even when we store the
         binary data in the db, on other db it is recommended to store the
         binary data on the file system unless you have only small file content
-        to store. MySQL and PostgreSQL also demonstrated in our benchmark
-        results that they could provide good performance.. DB2 and MSSQL are
-        slower in default configurations. Default configuration of Sybase
-        leader of slowness. But in this question, take the database server
-        maintenance in account. MySQL and PostgreSQL are simple in
-        installation and can work even on limited hardware. Oracle, DB2, MSSQL
-        or Sybase need more efforts. The same actual for maintenance during
-        the work. Note for Sybase: "check-sns-new-connection" data container
-        configuration parameter should be set to "true". For testing purpose,
-        embedded database such as HSQLDB is the best choice. Apache Derby and
-        H2 also supported. But H2 surprisingly needs "beta" feature enabled -
-        MVCC=TRUE in JDBC url.</para>
+        to store. MySQL and PostgreSQL are also demonstrate good performance.
+        DB2 and MSSQL are slower in default configurations. Default
+        configuration of Sybase leader of slowness. But in this question, take
+        the database server maintenance in account. MySQL and PostgreSQL are
+        simple in installation and can work even on limited hardware. Oracle,
+        DB2, MSSQL or Sybase need more efforts. The same actual for
+        maintenance during the work. Note for Sybase:
+        "check-sns-new-connection" data container configuration parameter
+        should be set to "true". For testing purpose, embedded database such
+        as HSQLDB is the best choice. Apache Derby and H2 also supported. But
+        H2 surprisingly needs "beta" feature enabled - MVCC=TRUE in JDBC url.
+        </para>
       </section>
 
       <section id="JCR.FAQ.JCR.Core.HowToSetUpeXoJCRForMutilingialContentOnMySQL">
