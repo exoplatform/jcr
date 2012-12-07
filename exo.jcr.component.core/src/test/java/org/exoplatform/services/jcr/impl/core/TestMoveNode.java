@@ -362,6 +362,39 @@ public class TestMoveNode extends JcrImplBaseTest
       TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
       WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
       wsEntry.getContainer().getParameters()
+         .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME, "false"));
+
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      helper.addWorkspace(repository, wsEntry);
+
+      SessionImpl session = (SessionImpl)repository.login(credentials, wsEntry.getName());
+
+      Node nodeA = session.getRootNode().addNode("A");
+      Node nodeB = nodeA.addNode("B");
+      session.save();
+
+      assertEquals("/A/B", nodeB.getPath());
+
+      session.move("/A", "/C");
+
+      assertEquals("/C/B", nodeB.getPath());
+      assertEquals("/C", nodeA.getPath());
+
+      session.refresh(false);
+
+      assertEquals("/A/B", nodeB.getPath());
+      assertEquals("/A", nodeA.getPath());
+   }
+
+   /**
+    * We have A/B moved to C/B without generation events for B.
+    * Will checked if B reloaded its data.
+    */
+   public void testMoveWithoutGenerationChangesForAllSubTreeBadSpelled() throws Exception
+   {
+      TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
+      wsEntry.getContainer().getParameters()
          .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME, "false"));
 
       ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);

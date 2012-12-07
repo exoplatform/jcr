@@ -176,7 +176,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    private long lastAccessTime;
 
-   private boolean triggerEventsForDescendentsOnRename;
+   private boolean triggerEventsForDescendantsOnRename;
 
    private int lazyNodeIteatorPageSize;
 
@@ -259,9 +259,14 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       sessionRegistry.registerSession(this);
       this.lastAccessTime = System.currentTimeMillis();
 
-      this.triggerEventsForDescendentsOnRename =
+      this.triggerEventsForDescendantsOnRename =
+         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME,
+            WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME_DEFAULT);
+
+      // check bad spelled
+      this.triggerEventsForDescendantsOnRename =
          wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME,
-            WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME_DEFAULT);
+            triggerEventsForDescendantsOnRename);
 
       this.lazyNodeIteatorPageSize =
          wsConfig.getContainer().getParameterInteger(WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE,
@@ -974,7 +979,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void move(String srcAbsPath, String destAbsPath) throws ItemExistsException, PathNotFoundException,
       VersionException, LockException, RepositoryException
    {
-      move(srcAbsPath, destAbsPath, triggerEventsForDescendentsOnRename);
+      move(srcAbsPath, destAbsPath, triggerEventsForDescendantsOnRename);
    }
 
    /**
