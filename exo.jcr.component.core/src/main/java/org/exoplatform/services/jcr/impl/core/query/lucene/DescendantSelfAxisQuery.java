@@ -669,7 +669,8 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
          // traverse
          while (pDocs.length != 0)
          {
-            if (pDocs[0] >= 0 && ancestorCount >= minLevels && contextHits.get(pDocs[0]))
+            int pDoci = pDocs[0];
+            if (pDoci >= 0 && pDoci <= contextHits.size() && ancestorCount >= minLevels && contextHits.get(pDoci))
             {
                break;
             }
