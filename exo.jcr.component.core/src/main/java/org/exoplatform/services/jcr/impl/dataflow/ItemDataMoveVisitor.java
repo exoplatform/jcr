@@ -31,8 +31,6 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.ChangedSizeHandler;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.ReadOnlyChangedSizeHandler;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.util.ArrayList;
