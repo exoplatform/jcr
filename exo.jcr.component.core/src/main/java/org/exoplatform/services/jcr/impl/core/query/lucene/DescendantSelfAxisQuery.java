@@ -657,8 +657,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
 
          // check if doc is a descendant of one of the context nodes
          pDocs = hResolver.getParents(doc, pDocs);
-
-         if (pDocs.length == 0)
+         if (pDocs.length == 0 || pDocs[0] < 0)
          {
             return false;
          }
@@ -670,36 +669,30 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
          // traverse
          while (pDocs.length != 0)
          {
-            boolean valid = false;
-            for (int pDoc : pDocs)
-            {
-               if (ancestorCount >= minLevels && contextHits.get(pDoc))
-               {
-                  valid = true;
-                  break;
-               }
-            }
-            if (valid)
+            if (pDocs[0] >= 0 && ancestorCount >= minLevels && contextHits.get(pDocs[0]))
             {
                break;
             }
-            else
+            
+            // load next level
+            pDocs = getParents(pDocs, singleDoc);
+            if (pDocs.length == 0 || pDocs[0] < 0)
             {
-               // load next level
-               pDocs = getParents(pDocs, singleDoc);
-               // resize array if needed
-               if (ancestorCount == ancestorDocs.length)
-               {
-                  // double the size of the new array
-                  int[] copy = new int[ancestorDocs.length * 2];
-                  System.arraycopy(ancestorDocs, 0, copy, 0, ancestorDocs.length);
-                  ancestorDocs = copy;
-               }
-               if (pDocs.length != 0)
-               {
-                  // can only remember one parent doc per level
-                  ancestorDocs[ancestorCount++] = pDocs[0];
-               }
+               return false;
+            }
+
+            // resize array if needed
+            if (ancestorCount == ancestorDocs.length)
+            {
+               // double the size of the new array
+               int[] copy = new int[ancestorDocs.length * 2];
+               System.arraycopy(ancestorDocs, 0, copy, 0, ancestorDocs.length);
+               ancestorDocs = copy;
+            }
+            if (pDocs.length != 0)
+            {
+               // can only remember one parent doc per level
+               ancestorDocs[ancestorCount++] = pDocs[0];
             }
          }
 
