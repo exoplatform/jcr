@@ -263,7 +263,7 @@
           <row>
             <entry>trigger-events-for-descendants-on-rename</entry>
 
-            <entry>indicates if need to trigger events for descendents on
+            <entry>indicates if need to trigger events for descendants on
             rename or not. It allows to increase performance on rename
             operation but in same time Observation'll not notified, has
             default value true</entry>
