@@ -647,7 +647,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
        * @return <code>true</code> if <code>doc</code> is valid.
        * @throws IOException if an error occurs while reading from the index.
        */
-      private boolean isValid(int doc) throws IOException
+      rivate boolean isValid(int doc) throws IOException
       {
          // check self if necessary
          if (minLevels == 0 && contextHits.get(doc))
@@ -669,8 +669,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
          // traverse
          while (pDocs.length != 0)
          {
-            int pDoci = pDocs[0];
-            if (pDoci >= 0 && pDoci <= contextHits.size() && ancestorCount >= minLevels && contextHits.get(pDoci))
+            if (pDocs[0] >= 0 && ancestorCount >= minLevels && contextHits.get(pDocs[0]))
             {
                break;
             }
