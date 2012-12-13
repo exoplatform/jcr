@@ -299,7 +299,7 @@
 
           <tbody>
             <row>
-              <entry>jbosscache-cluster-name</entry>
+              <entry>jbosscache-cluster-name : cluster name (must be unique)</entry>
             </row>
           </tbody>
         </tgroup>

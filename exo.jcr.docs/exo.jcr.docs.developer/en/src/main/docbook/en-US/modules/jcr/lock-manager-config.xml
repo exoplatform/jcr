@@ -16,11 +16,11 @@
 
     <itemizedlist>
       <listitem>
-        <para><classname>org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl</classname>;</para>
+        <para><classname>org.exoplatform.services.jcr.impl.core.lock.LockManagerImpl</classname></para>
       </listitem>
 
       <listitem>
-        <para><classname>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl</classname>;</para>
+        <para><classname>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl</classname></para>
       </listitem>
     </itemizedlist>
 

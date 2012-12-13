@@ -86,7 +86,7 @@
 
       <para>Firstly, start by connection settings which will tell eXo how to
       connect to your directory server. These settings are very close to
-      <ulink url="http://java.sun.com/products/jndi">JNDI API</ulink> context
+      <ulink url="http://www.oracle.com/technetwork/java/index.html">JNDI API</ulink> context
       parameters. This configuration is activated by the init-param
       ldap.config of service LDAPServiceImpl.</para>
 
@@ -117,7 +117,7 @@
         <listitem>
           <para><emphasis role="bold">providerURL</emphasis>: LDAP server URL
           (see <ulink
-          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#PROVIDER_URL">PROVIDER_URL</ulink>).
+          url="http://docs.oracle.com/cd/E13211_01/wle/wle50/javadoc/j2ee/jndi/javax/naming/Context.html#PROVIDER_URL">PROVIDER_URL</ulink>).
           For multiple ldap servers, use comma separated list of host:port
           (Ex. ldap://127.0.0.1:389,10.0.0.1:389).</para>
         </listitem>
@@ -125,33 +125,33 @@
         <listitem>
           <para><emphasis role="bold">rootdn</emphasis>: dn of user that will
           be used by the service to authenticate on the server (see <ulink
-          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_PRINCIPAL">SECURITY_PRINCIPAL</ulink>).</para>
+          url="http://docs.oracle.com/cd/E13211_01/wle/wle50/javadoc/j2ee/jndi/javax/naming/Context.html#SECURITY_PRINCIPAL">SECURITY_PRINCIPAL</ulink>).</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">password</emphasis>: password for user
           rootdn (see <ulink
-          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_CREDENTIALS">SECURITY_CREDENTIALS</ulink>).</para>
+          url="http://docs.oracle.com/cd/E13211_01/wle/wle50/javadoc/j2ee/jndi/javax/naming/Context.html#SECURITY_CREDENTIALS">SECURITY_CREDENTIALS</ulink>).</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">authenticationType</emphasis>: type of
           authentication to be used (see <ulink
-          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_AUTHENTICATION">SECURITY_AUTHENTICATION</ulink>).
+          url="http://docs.oracle.com/cd/E13211_01/wle/wle50/javadoc/j2ee/jndi/javax/naming/Context.html#SECURITY_AUTHENTICATION">SECURITY_AUTHENTICATION</ulink>).
           Use one of none, simple, strong. Default is simple.</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">version</emphasis>: LDAP protocol
           version (see <ulink
-          url="http://java.sun.com/products/jndi/tutorial/ldap/misc/version.html">java.naming.ldap.version</ulink>).
+          url="http://docs.oracle.com/javase/jndi/tutorial/ldap/misc/version.html">java.naming.ldap.version</ulink>).
           Set to 3 if your server supports LDAP V3.</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">referalMode</emphasis>: one of follow,
           ignore,throw (see <ulink
-          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#REFERRAL">REFERRAL</ulink>).</para>
+          url="http://docs.oracle.com/cd/E13211_01/wle/wle50/javadoc/j2ee/jndi/javax/naming/Context.html#REFERRAL">REFERRAL</ulink>).</para>
         </listitem>
 
         <listitem>
@@ -525,7 +525,7 @@ l=London,dc=sites,dc=mycompany,dc=com
         <para>Example : If membershipTypeNameAttr is 'cn', then role name is
         'manager' for the following membership type entry :</para>
 
-        <programlisting>cn=manager,ou=roles,ou=portal,dc=exoplatform,dc=org &lt;/pre&gt;</programlisting>
+        <programlisting>cn=manager,ou=roles,ou=portal,dc=exoplatform,dc=org</programlisting>
       </section>
 
       <section id="Core.LDAPConfiguration.Configuration.OrganizationServiceConfiguration.Memberships">
@@ -570,9 +570,9 @@ l=London,dc=sites,dc=mycompany,dc=com
   objectClass: groupOfNames
   …</programlisting>
 
-        <para>&lt;pre&gt;
+        <para>
         cn=validator,ou=human-resources,ou=groups,ou=portal,dc=exoplatform,dc=org
-        objectclass: top objectClass: groupOfNames ... &lt;/pre&gt;</para>
+        objectclass: top objectClass: groupOfNames</para>
 
         <itemizedlist>
           <listitem>
@@ -602,9 +602,7 @@ l=London,dc=sites,dc=mycompany,dc=com
 
         <para>Example : In the following membership entry:</para>
 
-        <para>&lt;pre&gt;
-        cn=manager,ou=human-resources,ou=groups,ou=portal,dc=exoplatform,dc=org
-        &lt;/pre&gt;</para>
+        <para>cn=manager,ou=human-resources,ou=groups,ou=portal,dc=exoplatform,dc=org</para>
 
         <para>'cn' attribute is used to designate the 'manager' membership
         type. Which could also be said : The name of the role is given by 'cn'

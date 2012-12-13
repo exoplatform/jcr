@@ -417,11 +417,11 @@
         <tgroup cols="1">
           <tbody>
             <row>
-              <entry>infinispan-cluster-name</entry>
+              <entry>infinispan-cluster-name : This defines the name of the cluster. Needs to be the same for all nodes in a cluster in order to find each other.</entry>
             </row>
 
             <row>
-              <entry>jgroups-configuration</entry>
+              <entry>jgroups-configuration : jgroups-configuration is template configuration for all components (search, cache, locks)</entry>
             </row>
           </tbody>
         </tgroup>

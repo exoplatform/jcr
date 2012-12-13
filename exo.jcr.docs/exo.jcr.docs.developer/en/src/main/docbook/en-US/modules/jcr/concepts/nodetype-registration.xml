@@ -24,16 +24,17 @@ public static final int FAIL_IF_EXISTS    = 2;
 
 public static final int REPLACE_IF_EXISTS = 4;
 
+public static final int IGNORE_IF_EXISTS = 0;
 
 /**
  * Registers node type using value object.
  */
 void registerNodeType(NodeTypeValue nodeTypeValue, int alreadyExistsBehaviour) throws RepositoryException;
 
-/**
+ /**
  * Registers all node types using XML binding value objects from xml stream.
  */
-void registerNodeTypes(InputStream xml, int alreadyExistsBehaviour) throws RepositoryException;
+NodeTypeIterator registerNodeTypes(InputStream xml, int alreadyExistsBehaviour, String contentType) throws RepositoryException;
 
 /**
  * Return &lt;code&gt;NodeTypeValue&lt;/code&gt; for a given nodetype name. Used for
@@ -43,12 +44,16 @@ void registerNodeTypes(InputStream xml, int alreadyExistsBehaviour) throws Repos
 NodeTypeValue getNodeTypeValue(String ntName) throws NoSuchNodeTypeException, RepositoryException;
 
 /**
- * Registers or updates the specified &lt;code&gt;Collection&lt;/code&gt; of
+* Get the NodeTypeDataManager.
+*/
+NodeTypeDataManager getNodeTypesHolder() throws RepositoryException;
+
+/**
+ * Registers or updates the specified &lt;code&gt;List&lt;/code&gt; of
  * &lt;code&gt;NodeTypeValue&lt;/code&gt; objects.
  */
-public NodeTypeIterator registerNodeTypes(Collection&lt;NodeTypeValue&gt; values,
-                                            int alreadyExistsBehaviour) throws UnsupportedRepositoryOperationException,
-                                                                       RepositoryException;
+NodeTypeIterator registerNodeTypes(List&lt;NodeTypeValue&gt; values, int alreadyExistsBehaviour)
+          throws UnsupportedRepositoryOperationException, RepositoryException;
 
 /**
  * Unregisters the specified node type.
@@ -154,82 +159,47 @@ public void setDeclaredPropertyDefinitionValues(List&lt;PropertyDefinitionValue&
       the addition of writing methods, enabling the characteristics of a child
       node definition to be set, after that  the NodeDefinitionValue is added
       to a NodeTypeValue.</para>
-      <programlisting language="java">/**
- * @return Returns the declaredSupertypeNames.
+      <programlisting language="java">
+ /**
+ * Constructor of NodeDefinitionValue.
  */
-public List&lt;String&gt; getDeclaredSupertypeNames();
+public NodeDefinitionValue(String name, boolean autoCreate, boolean mandatory, int onVersion, boolean readOnly,
+          String defaultNodeTypeName, List&lt;String&gt; requiredNodeTypeNames, boolean sameNameSiblings)
 
-/**
- * @param declaredSupertypeNames
- *The declaredSupertypeNames to set.
- */
-public void setDeclaredSupertypeNames(List&lt;String&gt; declaredSupertypeNames);
+ /**
+  * Constructor of NodeDefinitionValue.
+  */
+public NodeDefinitionValue(NodeDefinition nodeDefinition)
 
-/**
- * @return Returns the mixin.
- */
-public boolean isMixin();
+  /**
+  *Return the default node type name.
+  */
+public String getDefaultNodeTypeName()
 
-/**
- * @param mixin
- *The mixin to set.
- */
-public void setMixin(boolean mixin);
+  /**
+  *set the default node type name.
+  */
+public void setDefaultNodeTypeName(String defaultNodeTypeName)
 
-/**
- * @return Returns the name.
- */
-public String getName();
+   /**
+   * Return the state of SameNameSibling.
+   */
+public boolean isSameNameSiblings()
 
-/**
- * @param name
- *The name to set.
- */
-public void setName(String name);
+   /**
+   * Set the state of SameNameSibling.
+   */
+public void setSameNameSiblings(boolean multiple)
 
-/**
- * @return Returns the orderableChild.
- */
-public boolean isOrderableChild();
+   /**
+   * Return the list of requiredNodeTypeNames.
+   */
+public List&lt;String&gt;getRequiredNodeTypeNames()
 
-/**
- * @param orderableChild
- *The orderableChild to set.
- */
-public void setOrderableChild(boolean orderableChild);
-
-/**
- * @return Returns the primaryItemName.
- */
-public String getPrimaryItemName();
-
-/**
- * @param primaryItemName
- *The primaryItemName to set.
- */
-public void setPrimaryItemName(String primaryItemName);
-
-/**
- * @return Returns the declaredChildNodeDefinitionNames.
- */
-public List&lt;NodeDefinitionValue&gt; getDeclaredChildNodeDefinitionValues();
-
-/**
- * @param declaredChildNodeDefinitionNames
- *The declaredChildNodeDefinitionNames to set.
- */
-public void setDeclaredChildNodeDefinitionValues(List&lt;NodeDefinitionValue&gt; declaredChildNodeDefinitionValues);
-
-/**
- * @return Returns the declaredPropertyDefinitionNames.
- */
-public List&lt;PropertyDefinitionValue&gt; getDeclaredPropertyDefinitionValues();
-
-/**
- * @param declaredPropertyDefinitionNames
- *The declaredPropertyDefinitionNames to set.
- */
-public void setDeclaredPropertyDefinitionValues(List&lt;PropertyDefinitionValue&gt; declaredPropertyDefinitionValues);
+   /**
+   * Set the requiredNodeTypeNames.
+   */
+public void setRequiredNodeTypeNames(List&lt;String&gt; requiredNodeTypeNames)
 
 </programlisting>
     </section>

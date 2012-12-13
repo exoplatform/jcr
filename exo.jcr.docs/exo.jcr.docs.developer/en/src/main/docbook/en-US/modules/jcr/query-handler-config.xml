@@ -154,15 +154,16 @@
               <entry>jgroups-configuration</entry>
 
               <entry>jgroups-configuration is template configuration for all
-              components (search, cache, locks) [Add link to document
-              describing template configurations]</entry>
+              components (search, cache, locks)</entry>
             </row>
 
             <row>
               <entry>jgroups-multiplexer-stack</entry>
 
-              <entry>[TODO about jgroups-multiplexer-stack - add link to JBoss
-              doc]</entry>
+              <entry>if set to true, it will indicate that the file corresponding to the parameter jgroups-configuration is a actually a file defining a set of jgroups multiplexer stacks.
+                  In the XML tag jgroupsConfig within the jboss cache configuration, you will then be able to set the name of the multiplexer stack to use thanks to the attribute multiplexerStack.
+                  Please note that the jgroups multiplexer has been deprecated by the jgroups Team and has been replaced by the shared transport so it is highly recommended to not use it anymore.
+              </entry>
             </row>
 
             <row>
