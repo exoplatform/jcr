@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.core.nodetype;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeExistsException;
 
 import java.io.InputStream;
 import java.util.List;
@@ -86,8 +87,9 @@ public interface ExtendedNodeTypeManager extends NodeTypeManager
       throws RepositoryException;
 
    /**
-    * @return
-    * @throws RepositoryException
+    * Gives the {@link NodeTypeManager}
+    * 
+    * @throws RepositoryException if another error occurs.
     */
    NodeTypeDataManager getNodeTypesHolder() throws RepositoryException;
 
