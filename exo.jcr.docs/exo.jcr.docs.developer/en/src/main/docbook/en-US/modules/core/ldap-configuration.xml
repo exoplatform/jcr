@@ -4,12 +4,12 @@
 <section id="Core.LDAPConfiguration">
   <title>LDAP Configuration</title>
 
-    <para>You may decide to make eXo users to be mapped to an existing
-    directory. eXo provides a flexible implementation of its
-    OrganizationService on top of LDAP. It can be used on any LDAP compliant
-    directory and even Active Directory. This page will guide you how to
-    configure eXo Platform to work with your directory.</para>
-    
+  <para>You may decide to make eXo users to be mapped to an existing
+  directory. eXo provides a flexible implementation of its OrganizationService
+  on top of LDAP. It can be used on any LDAP compliant directory and even
+  Active Directory. This page will guide you how to configure eXo Platform to
+  work with your directory.</para>
+
   <section id="Core.LDAPConfiguration.Quickstart">
     <title>Quickstart</title>
 
@@ -86,9 +86,10 @@
 
       <para>Firstly, start by connection settings which will tell eXo how to
       connect to your directory server. These settings are very close to
-      <ulink url="http://www.oracle.com/technetwork/java/index.html">JNDI API</ulink> context
-      parameters. This configuration is activated by the init-param
-      ldap.config of service LDAPServiceImpl.</para>
+      <ulink
+      url="http://www.oracle.com/technetwork/java/jndi/docs/index.html">JNDI
+      API</ulink> context parameters. This configuration is activated by the
+      init-param ldap.config of service LDAPServiceImpl.</para>
 
       <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.ldap.LDAPService&lt;/key&gt;
@@ -570,8 +571,7 @@ l=London,dc=sites,dc=mycompany,dc=com
   objectClass: groupOfNames
   …</programlisting>
 
-        <para>
-        cn=validator,ou=human-resources,ou=groups,ou=portal,dc=exoplatform,dc=org
+        <para>cn=validator,ou=human-resources,ou=groups,ou=portal,dc=exoplatform,dc=org
         objectclass: top objectClass: groupOfNames</para>
 
         <itemizedlist>
