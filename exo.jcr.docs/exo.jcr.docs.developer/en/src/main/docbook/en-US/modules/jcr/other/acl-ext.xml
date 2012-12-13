@@ -6,30 +6,30 @@
 
   <para>An extended Access Control system consists of:</para>
 
-    <itemizedlist>
-      <listitem>
-        <para>Specifically configured custom <emphasis
-        role="bold">ExtendedAccessManager</emphasis> which is called by eXo
-        JCR internals to check if user's Session (user) has some privilege to
-        perform some operation or not.</para>
-      </listitem>
+  <itemizedlist>
+    <listitem>
+      <para>Specifically configured custom <emphasis
+      role="bold">ExtendedAccessManager</emphasis> which is called by eXo JCR
+      internals to check if user's Session (user) has some privilege to
+      perform some operation or not.</para>
+    </listitem>
 
-      <listitem>
-        <para>The <emphasis role="bold">Action</emphasis> sets a thread local
-        <emphasis role="bold">InvocationContext</emphasis> at runtime, the
-        InvocationContext instance is then used by the ExtendedAccessManager
-        in handling permissions of the current Session.</para>
-      </listitem>
+    <listitem>
+      <para>The <emphasis role="bold">Action</emphasis> sets a thread local
+      <emphasis role="bold">InvocationContext</emphasis> at runtime, the
+      InvocationContext instance is then used by the ExtendedAccessManager in
+      handling permissions of the current Session.</para>
+    </listitem>
 
-      <listitem>
-        <para><emphasis role="bold">InvocationContext</emphasis> is a
-        collection of properties which reflect the state of a current Session.
-        At present, it contains: the type of the current operation on Session
-        (event), current Item (javax.jcr.Item) on which this operation is
-        performed and the current eXo Container</para>
-      </listitem>
-    </itemizedlist>
-    
+    <listitem>
+      <para><emphasis role="bold">InvocationContext</emphasis> is a collection
+      of properties which reflect the state of a current Session. At present,
+      it contains: the type of the current operation on Session (event),
+      current Item (javax.jcr.Item) on which this operation is performed and
+      the current eXo Container</para>
+    </listitem>
+  </itemizedlist>
+
   <section id="JCR.AccessControlExtension.Prerequisites">
     <title>Prerequisites</title>
 
@@ -63,18 +63,30 @@
     <title>The Invocation Context</title>
 
     <para>The <emphasis role="bold">InvocationContext</emphasis> contains the
-    current Item, the previous Item, the current ExoContainer and the current EventType is like
-    below:</para>
+    current Item, the previous Item, the current ExoContainer and the current
+    EventType is like below:</para>
 
     <programlisting language="java">public class InvocationContext extends HashMap implements Context {
 
-  ExoContainer getContainer()
+ /**
+  * @return The related eXo container.
+  */
+  public final ExoContainer getContainer()
 
-  Item getCurrentItem()
+  /**
+  * @return The current item.
+  */
+  public final Item getCurrentItem()
 
-  Item getPreviousItem();
+  /**
+  * @return The previous item before the change.
+  */
+  public final Item getPreviousItem()
 
-  int getEventType();
+  /**
+  * @return The type of the event.
+  */
+  public final int getEventType()
 }</programlisting>
   </section>
 

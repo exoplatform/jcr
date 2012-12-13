@@ -3,8 +3,9 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Kernel.UnderstandingtheListenerService">
   <title>Understanding the ListenerService</title>
+
   <para>This section will first describe how the ListenerService works and
-    then it will show you how to configure the ListenerService.</para>
+  then it will show you how to configure the ListenerService.</para>
 
   <para><emphasis role="bold">Related documents</emphasis></para>
 
@@ -39,54 +40,7 @@
     <para>Listeners must be subclasses of
     org.exoplatform.services.listener.Listener registered by the
     ListenerService.</para>
-      <section id="Kernel.UnderstandingtheListenerService.HowItWorks.ListenerService">
-          <title>ListenerService</title>
 
-          <para>Basicaly, ListenerService used to store Listeners and broadcast
-              events to them.</para>
-
-          <para>ListenerService event broadcasting works in next way - it takes a
-              destination listeners and executes event on those listeners.</para>
-
-          <para>But, some events may take a lot of time, so idea to make event
-              processing asynchronous is useful.</para>
-
-          <blockquote>
-              What do I need to make my listener asynchronous?
-          </blockquote>
-
-          <para>- It's very simple, just mark your Listener implementation as
-              <classname>@Asynchronous</classname>.</para>
-
-          <programlisting language="java">@Asynchronous
-              class AsynchListenerWithException&lt;S,D&gt; extends Listener&lt;S,D&gt;
-              {
-              @Override
-              public void onEvent(Event&lt;S,D&gt; event) throws Exception
-              {
-              // some expensive operation
-              }
-              }</programlisting>
-
-          <para>Now, our AsynchListener will be executed in separate thread by
-              <classname>ExecutorService</classname>.</para>
-
-          <para>By default, <classname>ExecutoreService</classname> configured with
-              thread pool size 1, you can change it in configuration:</para>
-
-          <programlisting language="xml">   &lt;component&gt;
-              &lt;key&gt;org.exoplatform.services.listener.ListenerService&lt;/key&gt;
-              &lt;type&gt;org.exoplatform.services.listener.ListenerService&lt;/type&gt;
-
-              &lt;init-params&gt;
-              &lt;value-param&gt;
-              &lt;name&gt;asynchPoolSize&lt;/name&gt;
-              &lt;value&gt;5&lt;/value&gt;
-              &lt;/value-param&gt;
-              &lt;/init-params&gt;
-
-              &lt;/component&gt;</programlisting>
-      </section>
     <section id="Kernel.UnderstandingtheListenerService.HowItWorks.RegisteringListener">
       <title>Registering a listener</title>
 
@@ -94,16 +48,29 @@
       method.</para>
 
       <programlisting language="java">/**
- * This method is used to register a listener with the service. The method
- * should: 1. Check to see if there is a list of listener with the listener
- * name, create one if the listener list doesn't exit 2. Add the new listener
- * to the listener list
+ * This method is used to register a {@link Listener} to the events of the same
+ * name. It is similar to addListener(listener.getName(), listener)
  * 
- * @param listener
-*/
-          public void addListener(String eventName, Listener listener){
-   ...
-}</programlisting>
+ * @param listener the listener to notify any time an even of the same name is
+ * triggered
+ */
+public void addListener(Listener listener)
+
+/**
+ * This method is used to register a new {@link Listener}. Any time an
+ * event of the given event name has been triggered, the {@link Listener} will be
+ * notified.
+ * This method will:
+ * &lt;ol&gt;
+ * &lt;li&gt;Check if it exists a list of listeners that have been registered for the
+ * given event name, create a new list if no list exists&lt;/li&gt;
+ * &lt;li&gt;Add the listener to the list&lt;/li&gt;
+ * &lt;/ol&gt;
+ * @param eventName The name of the event to listen to
+ * @param listener The Listener to notify any time the event with the given
+ * name is triggered
+ */
+public void addListener(String eventName, Listener listener)</programlisting>
 
       <para>By convention, we use the listener name as the name of the event
       to listen to.</para>
@@ -186,6 +153,45 @@ public &lt;T extends Event&gt; void broadcast(T event) throws Exception {
 
    public void setDescription(String description);
 }</programlisting>
+    </section>
+
+    <section id="Kernel.UnderstandingtheListenerService.HowItWorks.ListenerService">
+      <title>Asynchnous mode</title>
+
+      <para>Some events may take a lot of time and you don't necessary need to
+      process them immediately, in that particular case, you can decide to
+      make your listener asynchronous. To do so it's very simple, just mark
+      your Listener implementation with the annotation
+      <classname>@Asynchronous</classname>.</para>
+
+      <programlisting language="java">@Asynchronous
+public class AsynchListenerWithException&lt;S,D&gt; extends Listener&lt;S,D&gt;
+{
+   @Override
+   public void onEvent(Event&lt;S,D&gt; event) throws Exception
+   {
+     // some expensive operation
+   }
+}</programlisting>
+
+      <para>Now, our AsynchListener will be executed in separate thread thanks
+      to an <classname>ExecutorService</classname>.</para>
+
+      <para>By default, the pool size of the
+      <classname>ExecutoreService</classname> is 1, you can change it by
+      configuration as next:</para>
+
+      <programlisting language="xml">   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.services.listener.ListenerService&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.services.listener.ListenerService&lt;/type&gt;
+
+      &lt;init-params&gt;
+         &lt;value-param&gt;
+            &lt;name&gt;asynchPoolSize&lt;/name&gt;
+            &lt;value&gt;5&lt;/value&gt;
+         &lt;/value-param&gt;
+      &lt;/init-params&gt;
+   &lt;/component&gt;</programlisting>
     </section>
   </section>
 

@@ -425,7 +425,7 @@ public class LDAPConnectionConfig {
       </itemizedlist>
 
       <para>Have a look on this type test xml file: <ulink
-      url="https://github.com/exodev/kernel/blob/master/exo.kernel.container/src/test/resources/object.xml">object.xml</ulink>.</para>
+      url="https://github.com/exoplatform/kernel/tree/stable/2.3.x/exo.kernel.container/src/test/resources/object.xml">object.xml</ulink>.</para>
     </section>
 
     <section id="Kernel.ServiceConfigurationinDetail.Parameters.Collection">
@@ -651,7 +651,7 @@ public class LDAPConnectionConfig {
     <para>As these are system properties you use the -D command: <emphasis
     role="bold">java -DconnectionUrl=jdbc:hsqldb:file:../temp/data/exodb
     -DdriverClass=org.hsqldb.jdbcDriver</emphasis> Or better use the
-    parameters of eXo.bat / eXo.sh when you start eXo Portal: <emphasis
+    parameters of eXo.bat / eXo.sh when you start GateIn: <emphasis
     role="bold">set
     EXO_OPTS="-DconnectionUrl=jdbc:hsqldb:file:../temp/data/exodb
     -DdriverClass=org.hsqldb.jdbcDriver"</emphasis></para>
