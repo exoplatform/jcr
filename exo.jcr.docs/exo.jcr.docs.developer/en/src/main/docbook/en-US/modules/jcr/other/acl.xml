@@ -85,7 +85,7 @@
         <listitem>
           <para><emphasis role="bold">anonim</emphasis> : represents a
           principal for non authenticated sessions. (No error, it&apos;s really
-          &quot;\_\_anonim&quot;.)</para>
+          &quot;anonim&quot;.)</para>
         </listitem>
         <listitem>
           <para><emphasis role="bold">system</emphasis> : represents a

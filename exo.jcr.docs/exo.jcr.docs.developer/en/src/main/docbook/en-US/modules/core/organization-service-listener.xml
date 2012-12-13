@@ -50,9 +50,7 @@
     <section id="Core.OrganizationListener.WritingOwnListeners.UserEventListener">
       <title>UserEventListener</title>
 
-      <para>To listen to user changes, you need to extend
-      &lt;&gt;org.exoplatform.services.organization.UserEventListener&lt;/&gt;
-      :</para>
+      <para>To listen to user changes, you need to extend "org.exoplatform.services.organization.UserEventListener"</para>
 
       <programlisting language="java">public class MyUserListener extends UserEventListener {
 
@@ -96,7 +94,7 @@
     System.out.println("Before deleting group " + group.getName());
   }
 
-  public void preDelete(Group group) throws Exception {
+  public void postDelete(Group group) throws Exception {
     System.out.println("After deleting group " + group.getName());
   }
 }</programlisting>
@@ -123,7 +121,7 @@
     System.out.println("Before deleting membership");
   }
 
-  public void preDelete(Membership membership) throws Exception {
+  public void postDelete(Membership membership) throws Exception {
     System.out.println("After deleting membership");
   }
 }</programlisting>

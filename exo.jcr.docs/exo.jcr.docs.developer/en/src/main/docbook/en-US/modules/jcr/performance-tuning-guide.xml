@@ -220,7 +220,7 @@
       increase maximum amount of threads that can be launched in AS instance.
       This can improve performance if you need a high level of concurrency.
       also you can use <code>-XX:+UseParallelGC</code> java directory to use
-      paralel garbage collector.</para>
+      parallel garbage collector.</para>
 
       <tip>
         <para>Beware of setting <parameter>maxThreads</parameter> too big,
@@ -268,8 +268,7 @@
 
       <para>Using short timeout for long transactions such as Export/Import,
       removing huge subtree defined timeout may cause
-      <exceptionname>TransactionTimeoutException</exceptionname>. [TODO] put
-      recomended timeout value</para>
+      <exceptionname>TransactionTimeoutException</exceptionname>.</para>
     </section>
 
     <section id="JCR.PerformanceTuningGuide.PerformanceTuningGuide.Clustering">

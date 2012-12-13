@@ -163,7 +163,7 @@
     *          if some exception occurred during repository creation or repository name is absent in reserved list
     */
    void createRepository(String backupId, RepositoryEntry rEntry, StorageCreationProperties creationProps)
-      throws RepositoryConfigurationException, RepositoryCreationException;n
+      throws RepositoryConfigurationException, RepositoryCreationException;
 
    /**
     * Reserves, validates and creates repository in a simplified form. 

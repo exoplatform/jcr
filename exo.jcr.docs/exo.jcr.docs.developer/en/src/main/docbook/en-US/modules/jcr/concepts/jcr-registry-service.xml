@@ -70,26 +70,25 @@
   /**
    * Returns the existing RegistryEntry which wraps the Node of the "exo:registryEntry" type  
    */
-  public abstract RegistryEntry getEntry(SessionProvider sessionProvider, String groupName,
-      String entryName) throws RepositoryException;
+ public abstract RegistryEntry getEntry(SessionProvider sessionProvider, String entryPath)
+        throws PathNotFoundException, RepositoryException;
 
   /**
    * Creates a new RegistryEntry
    */
-  public abstract void createEntry(SessionProvider sessionProvider,
-      String groupName, RegistryEntry entry) throws RepositoryException;
+public abstract void createEntry(SessionProvider sessionProvider, String groupPath, RegistryEntry entry)
+        throws RepositoryException;
 
   /**
    * Replaces a RegistryEntry
    */
-  public abstract void recreateEntry(SessionProvider sessionProvider,
-      String groupName, RegistryEntry entry) throws RepositoryException;
+public abstract void recreateEntry(SessionProvider sessionProvider, String groupPath, RegistryEntry entry)
+        throws RepositoryException;
 
   /**
    * Removes a RegistryEntry
    */
-  public abstract void removeEntry(SessionProvider sessionProvider,
-      String groupName, String entryName) throws RepositoryException;</programlisting>
+ public abstract void removeEntry(SessionProvider sessionProvider, String entryPath) throws RepositoryException;</programlisting>
 
     <para>As you can see it looks like a simple CRUD interface for the
     RegistryEntry object which wraps registry data for some Consumer as a
@@ -108,12 +107,16 @@
     <programlisting language="java">    RegistryService regService = (RegistryService) container
     .getComponentInstanceOfType(RegistryService.class);
 
-    RegistryEntry registryEntry = regService.getEntry(sessionProvider,
-            RegistryService.EXO_SERVICES, "my-service");
+    regService.createEntry(sessionProviderService.getSessionProvider(null), RegistryService.EXO_USERS, RegistryEntry
+        .parse(new ByteArrayInputStream(SERVICE_XML.getBytes())));
 
-    Document doc = registryEntry.getDocument();
-    
-    String mySetting = getElementsByTagName("tagname").item(index).getTextContent();
+    RegistryEntry entry =regService.getEntry(sessionProviderService.getSessionProvider(null), RegistryService.EXO_USERS
+        + "/exo_service");
+    regService.recreateEntry(sessionProviderService.getSessionProvider(null), RegistryService.EXO_USERS,
+        RegistryEntry.parse(new ByteArrayInputStream(SERVICE_XML.getBytes())));
+
+    regService.removeEntry(sessionProviderService.getSessionProvider(null), RegistryService.EXO_USERS
+        + "/exo_service");
      .....</programlisting>
   </section>
 
