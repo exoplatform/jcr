@@ -36,10 +36,8 @@
         <para>Create <emphasis
         role="bold">WorkspaceStorageConnection</emphasis> dummy implementation
         class. It's freeform class, but to be close to the eXo JCR, check how
-        to implement JDBC or SimpleDB containers ( <emphasis
-        role="bold">org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection</emphasis>
-        and <emphasis
-        role="bold">org.exoplatform.services.jcr.aws.storage.sdb.SDBWorkspaceStorageConnection</emphasis>).
+        to implement JDBC ( <emphasis
+        role="bold">org.exoplatform.services.jcr.impl.storage.jdbc.JDBCStorageConnection</emphasis>.
         Take in account usage of <emphasis
         role="bold">ValueStoragePluginProvider</emphasis> in both
         implementations.Value storage is an useful option for production

@@ -67,7 +67,7 @@ while(rowIterator.hasNext()){
 
       <para>eXo JCR Scoring is a mapping of Lucene scoring. For a more
       in-depth understanding, please study <ulink
-      url="http://lucene.apache.org/java/2_4_1/scoring.html">Lucene
+      url="http://lucene.apache.org/core/old_versioned_docs/versions/2_9_4/scoring.html">Lucene
       documentation</ulink>.</para>
 
       <para>jcr:score counted in next way - (lucene score)*1000f.</para>

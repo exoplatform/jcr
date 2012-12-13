@@ -13,8 +13,7 @@
 
       <listitem>
         <para><phrase>Single-database</phrase>: All workspaces persisted in
-        one database (used in embedded eXo JCR service mode, e.g. in eXo
-        portal)</para>
+        one database (used in embedded eXo JCR service mode, e.g. in GateIn)</para>
       </listitem>
     </itemizedlist></para>
 
@@ -235,7 +234,7 @@
   <para>By default, the configuration files are located in service jars
   <filename>/conf/portal/configuration.xml</filename> (eXo services including
   JCR Repository Service) and <filename>exo-jcr-config.xml</filename>
-  (repositories configuration). In eXo portal product, JCR is configured in
+  (repositories configuration). In GateIn product, JCR is configured in
   portal web application
   <filename>portal/WEB-INF/conf/jcr/jcr-configuration.xml</filename> (JCR
   Repository Service and related serivces) and repository-configuration.xml

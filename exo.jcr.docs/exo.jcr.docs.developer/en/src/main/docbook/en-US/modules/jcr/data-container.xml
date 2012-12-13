@@ -159,7 +159,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting language="java">ItemData getItemData(String identifier) throws RepositoryException, IllegalStateException;
+      <programlisting language="java">ItemData getItemData(String identifier) throws RepositoryException;
 </programlisting>
 
       <itemizedlist>
@@ -169,8 +169,28 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting language="java">ItemData getItemData(NodeData parentData, QPathEntry name) throws RepositoryException,IllegalStateException;
-</programlisting>
+      <programlisting language="java">ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException;
+      </programlisting>
+
+        <itemizedlist>
+            <listitem>
+                <para>Find Item by parent (id) and name (with path index) of define type.</para>
+            </listitem>
+        </itemizedlist>
+
+        <programlisting language="java">ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException;
+        </programlisting>
+
+        <itemizedlist>
+            <listitem>
+                <para>Find Item by parent (id) and name (with path index) of defined type and create
+                    or not (defined by createNullItemData) null item data.</para>
+            </listitem>
+        </itemizedlist>
+
+        <programlisting language="java">ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType, boolean createNullItemData)
+            throws RepositoryException;
+        </programlisting>
 
       <itemizedlist>
         <listitem>
@@ -179,7 +199,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting language="java">List&lt;NodeData&gt; getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException;
+      <programlisting language="java">List&lt;NodeData&gt; getChildNodesData(NodeData parent) throws RepositoryException;
 </programlisting>
 
       <itemizedlist>
@@ -189,8 +209,18 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting language="java">List&lt;PropertyData&gt; getChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException;
+      <programlisting language="java">List&lt;PropertyData&gt; getChildPropertiesData(NodeData parent) throws RepositoryException;
 </programlisting>
+
+      <itemizedlist>
+          <listitem>
+              <para>Get child Properties of the parent node. ItemDataFilter used to reduce count of returned items.
+                  But not guarantee that only items matching filter will be returned.</para>
+          </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">List&lt;PropertyData&gt; getChildPropertiesData(NodeData parent, List&lt;QPathEntryFilter&gt; itemDataFilters) throws RepositoryException;
+      </programlisting>
 
       <itemizedlist>
         <listitem>
@@ -202,7 +232,7 @@
       <para>This methiod specially dedicated for non-content modification
       operations (e.g. Items delete).</para>
 
-      <programlisting language="java">List&lt;PropertyData&gt; listChildPropertiesData(NodeData parent) throws RepositoryException, IllegalStateException;
+      <programlisting language="java">List&lt;PropertyData&gt; listChildPropertiesData(NodeData parent) throws RepositoryException;
 </programlisting>
 
       <itemizedlist>
@@ -215,8 +245,36 @@
       <para>It's REFERENCE type: Properties referencing Node with given
       nodeIdentifier. See more in javax.jcr.Node.getReferences()</para>
 
-      <programlisting language="java">List&lt;PropertyData&gt; getReferencesData(String nodeIdentifier) throws RepositoryException,IllegalStateException,UnsupportedOperationException;
+      <programlisting language="java">List&lt;PropertyData&gt; getReferencesData(String nodeIdentifier) throws RepositoryException;
 </programlisting>
+
+        <itemizedlist>
+            <listitem>
+                <para>Return true if there are data to retrieve for next request and false in other case.</para>
+            </listitem>
+        </itemizedlist>
+
+        <programlisting language="java">boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List&lt;NodeData&gt; childs)
+            throws RepositoryException;
+        </programlisting>
+
+        <itemizedlist>
+            <listitem>
+                <para>Get children nodes count of the parent node.</para>
+            </listitem>
+        </itemizedlist>
+
+        <programlisting language="java">int getChildNodesCount(NodeData parent) throws RepositoryException;
+        </programlisting>
+
+        <itemizedlist>
+            <listitem>
+                <para>Get order number of parent's last child node.</para>
+            </listitem>
+        </itemizedlist>
+
+        <programlisting language="java">int getLastOrderNumber(NodeData parent) throws RepositoryException;
+        </programlisting>
     </section>
 
     <section id="JCR.WorkspaceDataContainer.Requirements.WriteOperations">
@@ -535,6 +593,22 @@
 
       <programlisting language="java">void rollback() throws IOException;
 </programlisting>
+        <itemizedlist>
+            <listitem>
+                <para>Prepare Value content.</para>
+            </listitem>
+        </itemizedlist>
+
+        <programlisting language="java">void prepare() throws IOException;
+        </programlisting>
+        <itemizedlist>
+            <listitem>
+                <para>Commit Value content (two phases).</para>
+            </listitem>
+        </itemizedlist>
+
+        <programlisting language="java">void twoPhaseCommit() throws IOException;
+        </programlisting>
     </section>
   </section>
 </section>

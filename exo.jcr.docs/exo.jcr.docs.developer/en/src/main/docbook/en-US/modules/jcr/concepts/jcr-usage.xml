@@ -103,13 +103,13 @@
       is responsible for caching/obtaining your JCR Sessions and closing all
       opened sessions at once.</para>
 
-      <programlisting language="java">public class SessionProvider {
+      <programlisting language="java">public class SessionProvider implements SessionLifecycleListener {
 
   /**
    * Creates a SessionProvider for a certain identity
    * @param cred
    */
-  public SessionProvider(Credentials cred) 
+  public SessionProvider(Credentials cred)
   
   /**
    * Gets the session from internal cache or creates and caches a new one 
@@ -132,7 +132,39 @@
    * a Helper for creating an Anonimous session provider
    * @return System session
    */
-  public static SessionProvider createAnonimProvider() 
+  public static SessionProvider createAnonimProvider()
+
+    /**
+    * Helper for creating  session provider from AccessControlEntry.
+    *
+    * @return System session
+    */
+  SessionProvider createProvider(List&lt;AccessControlEntry&gt; accessList)
+
+    /**
+    * Remove the session from the cache
+    */
+  void onCloseSession(ExtendedSession session)
+
+    /**
+    * Gets the current repository used
+    */
+  ManageableRepository getCurrentRepository()
+
+     /**
+     * Gets the current workspace used
+     */
+  String getCurrentWorkspace()
+
+     /**
+     * Set the current repository to use
+     */
+  void setCurrentRepository(ManageableRepository currentRepository)
+
+     /**
+     * Set the current workspace to use
+     */
+  void setCurrentWorkspace(String currentWorkspace)
 
 }</programlisting>
 
