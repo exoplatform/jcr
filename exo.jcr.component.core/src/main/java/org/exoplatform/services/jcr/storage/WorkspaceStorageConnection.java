@@ -71,7 +71,7 @@ public interface WorkspaceStorageConnection
 
    /**
     * Reads <code>ItemData</code> from the storage using item's parent and name relative the parent
-    * location of define type.
+    * location of a given type.
     * 
     * @param parentData
     *          - the item's parent NodeData

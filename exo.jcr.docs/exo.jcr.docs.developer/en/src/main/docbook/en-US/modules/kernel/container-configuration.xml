@@ -4,7 +4,7 @@
 <section id="Kernel.ContainerConfiguration">
   <title>Container Configuration</title>
 
-  <para>eXo Portal uses PicoContainer, which implements the Inversion of
+  <para>GateIn uses PicoContainer, which implements the Inversion of
   Control (IoC) design pattern. All eXo containers inherit from a
   PicoContainer. There are mainly two eXo containers used, each of them can
   provide one or several services. Each container service is delivered in a
@@ -60,7 +60,7 @@
   <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded">
     <title>Understanding how configuration files are loaded</title>
 
-    <para>eXo Portal uses PicoContainer, which implements the Inversion of
+    <para>GateIn uses PicoContainer, which implements the Inversion of
     Control (IoC) design pattern. All eXo containers inherit from a
     PicoContainer. There are mainly two eXo containers used, each of them can
     provide one or several services. Each container service is delivered in a

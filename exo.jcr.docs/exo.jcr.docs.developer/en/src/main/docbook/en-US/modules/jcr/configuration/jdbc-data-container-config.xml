@@ -85,8 +85,8 @@
 
   <para>SQL-scripts you can obtain from jar-file
   exo.jcr.component.core-XXX.XXX.jar:conf/storage/. They also can be found at
-  SVN <ulink
-  url="https://anonsvn.jboss.org/repos/exo-jcr/jcr/trunk/exo.jcr.component.core/src/main/resources/conf/storage/">here.</ulink></para>
+  GitHub <ulink
+  url="https://github.com/exoplatform/jcr/tree/stable/1.14.x/exo.jcr.component.core/src/main/resources/conf/storage/">here.</ulink></para>
 
   <para>In the next two tables correspondence between the scripts and
   databases is shown.</para>
