@@ -12,14 +12,14 @@
     shortly describes the principles of work DBCleaner under all
     databases</para>
 
-    <section id="JCR.DBCleanerService.Methods_of_DBCleanerService">
-      <title>Methods of DBCleanerService </title>
+    <section id="JCR.DBCleanService.Methods_of_DBCleanService">
+      <title>Methods of DBCleanService </title>
      <note>
       <para>Code that invokes the methods of DBCleanService must have
       JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION permission.</para>
     </note>
 
-    <para>There are several methods of <emphasis>DBCleanerService</emphasis> :</para>
+    <para>There are several methods of <emphasis>DBCleanService</emphasis> :</para>
 
     <table>
       <title>API</title>
@@ -102,7 +102,7 @@ connection.commit();</programlisting></entry>
     database and JCR configuration.</para>
   </section>
 
-  <section id="JCR.DBCleanerService.Clean_Only_Single_Workspace">
+  <section id="JCR.DBCleanService.Clean_Only_Single_Workspace">
     <title>Need to clean only single workspace</title>
 
     <para>Simple cleaning records from JCR table is used in case of single-db
@@ -219,7 +219,7 @@ connection.commit();</programlisting></entry>
     </table>
   </section>
 
-  <section id="JCR.DBCleanerService.Clean_Whole_Reposistory">
+  <section id="JCR.DBCleanService.Clean_Whole_Reposistory">
     <title>Need to clean the whole repository</title>
 
     <para>In case of single-db all workspaces will be processed simultaneously

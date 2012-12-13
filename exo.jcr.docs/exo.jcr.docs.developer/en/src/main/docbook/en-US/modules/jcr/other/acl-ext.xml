@@ -63,16 +63,18 @@
     <title>The Invocation Context</title>
 
     <para>The <emphasis role="bold">InvocationContext</emphasis> contains the
-    current Item, the current ExoContainer and the current EventType is like
+    current Item, the previous Item, the current ExoContainer and the current EventType is like
     below:</para>
 
-    <programlisting language="java">public interface InvocationContext extends ContextBase {
+    <programlisting language="java">public class InvocationContext extends HashMap implements Context {
 
-  Item getCurrentItem();
+  ExoContainer getContainer()
+
+  Item getCurrentItem()
+
+  Item getPreviousItem();
 
   int getEventType();
-  
-  ExoContainer getContainer();
 }</programlisting>
   </section>
 

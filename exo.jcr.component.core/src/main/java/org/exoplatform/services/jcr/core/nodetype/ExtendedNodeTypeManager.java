@@ -46,6 +46,14 @@ public interface ExtendedNodeTypeManager extends NodeTypeManager
 
    public static final int REPLACE_IF_EXISTS = 4;
 
+    /**
+     * Return NodeType for a given InternalQName.
+     *
+     * @param qname nodetype name
+     * @return NodeType
+     * @throws NoSuchNodeTypeException if no nodetype found with the name
+     * @throws RepositoryException Repository error
+     */
    NodeType findNodeType(InternalQName qname) throws NoSuchNodeTypeException, RepositoryException;
 
    /**

@@ -53,7 +53,7 @@ NLS_NCHAR_CONV_EXCP      FALSE
 NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
 
     <warning>
-      <para>JCR 1.12.x doesn't use NVARCHAR columns, so that the value of the
+      <para>JCR doesn't use NVARCHAR columns, so that the value of the
       parameter NLS_NCHAR_CHARACTERSET does not matter for JCR.</para>
     </warning>
 
