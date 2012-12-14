@@ -156,6 +156,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          TransactionChangesLog orig = (TransactionChangesLog)log;
          ChangesLogIterator changesLogIterator = orig.getLogIterator();
 
+         boolean skipOptimizeChangesLog = true;
          while (changesLogIterator.hasNextLog())
          {
             PlainChangesLog changesLog = changesLogIterator.nextLog();
@@ -173,109 +174,116 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                      removeItemStates = new LinkedList<RemovableItemState>();
                      persistedCheckedStates.put(pId, removeItemStates);
                   }
+                  else
+                  {
+                     skipOptimizeChangesLog = false;
+                  }
                   removeItemStates.add(new RemovableItemState(itemState, changesLog));
                }
             }
          }
 
-         Map<PlainChangesLog, Set<ItemState>> itemsToBeRemoved = new HashMap<PlainChangesLog, Set<ItemState>>();
-         for (LinkedList<RemovableItemState> removableStates : persistedCheckedStates.values())
+         if (!skipOptimizeChangesLog)
          {
-            // Perform optimizations while list of property states contains more than one state.
-            while (removableStates.size() > 1)
+            Map<PlainChangesLog, Set<ItemState>> itemsToBeRemoved = new HashMap<PlainChangesLog, Set<ItemState>>();
+            for (LinkedList<RemovableItemState> removableStates : persistedCheckedStates.values())
             {
-               // Get last state and remove it, since there is no need to review this items once more
-               RemovableItemState lastRemovableState = removableStates.removeLast();
-               ItemState lastState = lastRemovableState.getState();
-
-               if (lastState.isUpdated() || lastState.isDeleted())
+               // Perform optimizations while list of property states contains more than one state.
+               while (removableStates.size() > 1)
                {
-                  // iterate from the head to the end
-                  Iterator<RemovableItemState> iterator = removableStates.iterator();
-                  while (iterator.hasNext())
-                  {
-                     RemovableItemState removableCheckedState = iterator.next();
-                     ItemState checkedState = removableCheckedState.getState();
-                     // remove updated state, because delete, add or update state 
-                     if ((checkedState.isAdded() || checkedState.isUpdated()) && lastState.isDeleted())
-                     {
-                        removableCheckedState.markAsToBeRemoved();
-                        // Usecase when property was added and removed within the transaction or save. 
-                        // So make all related changes logical 
-                        if (checkedState.isAdded())
-                        {
-                           lastRemovableState.markAsToBeRemoved();
-                        }
-                     }
-                     else if (checkedState.isAdded() && lastState.isUpdated())
-                     {
-                        // Usecase when property was added many times within the transaction or save. 
-                        // So make last update to add and make all related changes logical
-                        removableCheckedState.markAsToBeRemoved();
-                        lastState.makeStateAdded();
-                     }
-                     else if (checkedState.isUpdated())
-                     {
-                        removableCheckedState.markAsToBeRemoved();
-                     }
+                  // Get last state and remove it, since there is no need to review this items once more
+                  RemovableItemState lastRemovableState = removableStates.removeLast();
+                  ItemState lastState = lastRemovableState.getState();
 
-                     if (removableCheckedState.toBeRemoved() || lastRemovableState.toBeRemoved())
+                  if (lastState.isUpdated() || lastState.isDeleted())
+                  {
+                     // iterate from the head to the end
+                     Iterator<RemovableItemState> iterator = removableStates.iterator();
+                     while (iterator.hasNext())
                      {
-                        List<RemovableItemState> rItemStates = new ArrayList<RemovableItemState>(2);
-                        if (removableCheckedState.toBeRemoved())
+                        RemovableItemState removableCheckedState = iterator.next();
+                        ItemState checkedState = removableCheckedState.getState();
+                        // remove updated state, because delete, add or update state 
+                        if ((checkedState.isAdded() || checkedState.isUpdated()) && lastState.isDeleted())
                         {
-                           rItemStates.add(removableCheckedState);
-                        }
-                        if (lastRemovableState.toBeRemoved())
-                        {
-                           rItemStates.add(lastRemovableState);
-                        }
-                        for (int i = 0, length = rItemStates.size(); i < length; i++)
-                        {
-                           RemovableItemState ris = rItemStates.get(i);
-                           Set<ItemState> items = itemsToBeRemoved.get(ris.getPlainChangesLog());
-                           if (items == null)
+                           removableCheckedState.markAsToBeRemoved();
+                           // Usecase when property was added and removed within the transaction or save. 
+                           // So make all related changes logical 
+                           if (checkedState.isAdded())
                            {
-                              items = new HashSet<ItemState>();
-                              itemsToBeRemoved.put(ris.getPlainChangesLog(), items);
+                              lastRemovableState.markAsToBeRemoved();
                            }
-                           items.add(ris.getState());
+                        }
+                        else if (checkedState.isAdded() && lastState.isUpdated())
+                        {
+                           // Usecase when property was added many times within the transaction or save. 
+                           // So make last update to add and make all related changes logical
+                           removableCheckedState.markAsToBeRemoved();
+                           lastState.makeStateAdded();
+                        }
+                        else if (checkedState.isUpdated())
+                        {
+                           removableCheckedState.markAsToBeRemoved();
+                        }
+
+                        if (removableCheckedState.toBeRemoved() || lastRemovableState.toBeRemoved())
+                        {
+                           List<RemovableItemState> rItemStates = new ArrayList<RemovableItemState>(2);
+                           if (removableCheckedState.toBeRemoved())
+                           {
+                              rItemStates.add(removableCheckedState);
+                           }
+                           if (lastRemovableState.toBeRemoved())
+                           {
+                              rItemStates.add(lastRemovableState);
+                           }
+                           for (int i = 0, length = rItemStates.size(); i < length; i++)
+                           {
+                              RemovableItemState ris = rItemStates.get(i);
+                              Set<ItemState> items = itemsToBeRemoved.get(ris.getPlainChangesLog());
+                              if (items == null)
+                              {
+                                 items = new HashSet<ItemState>();
+                                 itemsToBeRemoved.put(ris.getPlainChangesLog(), items);
+                              }
+                              items.add(ris.getState());
+                           }
                         }
                      }
+                     removableStates.clear();
                   }
-                  removableStates.clear();
                }
             }
-         }
 
-         TransactionChangesLog compressed = new TransactionChangesLog();
-         compressed.setSystemId(orig.getSystemId());
-         for (ChangesLogIterator iter = orig.getLogIterator(); iter.hasNextLog();)
-         {
-            PlainChangesLog changesLog = iter.nextLog();
-            Set<ItemState> statesToRemove = itemsToBeRemoved.get(changesLog);
-            if (statesToRemove != null)
+            TransactionChangesLog compressed = new TransactionChangesLog();
+            compressed.setSystemId(orig.getSystemId());
+            for (ChangesLogIterator iter = orig.getLogIterator(); iter.hasNextLog();)
             {
-               PlainChangesLog newLog = FastAddPlainChangesLog.getInstance(changesLog);
-               List<ItemState> states = changesLog.getAllStates();
-               for (int i = 0, length = states.size(); i < length; i++)
+               PlainChangesLog changesLog = iter.nextLog();
+               Set<ItemState> statesToRemove = itemsToBeRemoved.get(changesLog);
+               if (statesToRemove != null)
                {
-                  ItemState is = states.get(i);
-                  if (!statesToRemove.isEmpty() && statesToRemove.contains(is))
+                  PlainChangesLog newLog = FastAddPlainChangesLog.getInstance(changesLog);
+                  List<ItemState> states = changesLog.getAllStates();
+                  for (int i = 0, length = states.size(); i < length; i++)
                   {
-                     statesToRemove.remove(is);
+                     ItemState is = states.get(i);
+                     if (!statesToRemove.isEmpty() && statesToRemove.contains(is))
+                     {
+                        statesToRemove.remove(is);
+                     }
+                     else
+                     {
+                        newLog.add(is);
+                     }
                   }
-                  else
-                  {
-                     newLog.add(is);
-                  }
+                  changesLog = newLog;
                }
-               changesLog = newLog;
+               compressed.addLog(changesLog);
             }
-            compressed.addLog(changesLog);
+            return log = compressed;
          }
-
-         return log = compressed;
+         return log;
       }
 
       /**
@@ -337,8 +345,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          return toBeRemoved;
       }
    }
-
-
 
    /**
     * WorkspacePersistentDataManager constructor.
