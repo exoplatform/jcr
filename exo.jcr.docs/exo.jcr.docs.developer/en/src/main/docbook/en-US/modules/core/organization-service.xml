@@ -117,7 +117,7 @@
       <itemizedlist>
         <listitem>
           <para><ulink
-          url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/User.java">org.exoplatform.services.organization.User</ulink></para>
+          url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/User.java">org.exoplatform.services.organization.User</ulink></para>
 
           <para>This is the interface for a User data model. The
           OrganizationService implementor can use the different strategy to
@@ -127,7 +127,7 @@
 
         <listitem>
           <para><ulink
-          url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserProfile.java">org.exoplatform.services.organization.UserProfile</ulink></para>
+          url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserProfile.java">org.exoplatform.services.organization.UserProfile</ulink></para>
 
           <para>This is the interface for a UserProfile data model. The
           implementor should have an user map info in the implementation. The
@@ -137,21 +137,21 @@
 
         <listitem>
           <para><ulink
-          url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/Group.java">org.exoplatform.services.organization.Group</ulink></para>
+          url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/Group.java">org.exoplatform.services.organization.Group</ulink></para>
 
           <para>This is the interface for the group data model.</para>
         </listitem>
 
         <listitem>
           <para><ulink
-          url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/Membership.java">org.exoplatform.services.organization.Membership</ulink></para>
+          url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/Membership.java">org.exoplatform.services.organization.Membership</ulink></para>
 
           <para>This is the interface for the membership data model.</para>
         </listitem>
 
         <listitem>
           <para><ulink
-          url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipType.java">org.exoplatform.services.organization.MembershipType</ulink></para>
+          url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipType.java">org.exoplatform.services.organization.MembershipType</ulink></para>
 
           <para>This is the interface for the membership type data
           model.</para>
@@ -171,27 +171,27 @@
       <itemizedlist>
         <listitem>
           <para><ulink
-          url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/UserImpl.java">UserImpl</ulink></para>
+          url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/main/java/org/exoplatform/services/jcr/ext/organization/UserImpl.java">UserImpl</ulink></para>
         </listitem>
 
         <listitem>
           <para><ulink
-          url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/UserProfileImpl.java">UserProfileImpl</ulink></para>
+          url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/main/java/org/exoplatform/services/jcr/ext/organization/UserProfileImpl.java">UserProfileImpl</ulink></para>
         </listitem>
 
         <listitem>
           <para><ulink
-          url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/GroupImpl.java">GroupImpl</ulink></para>
+          url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/main/java/org/exoplatform/services/jcr/ext/organization/GroupImpl.java">GroupImpl</ulink></para>
         </listitem>
 
         <listitem>
           <para><ulink
-          url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/MembershipImpl.java">MembershipImpl</ulink></para>
+          url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/main/java/org/exoplatform/services/jcr/ext/organization/MembershipImpl.java">MembershipImpl</ulink></para>
         </listitem>
 
         <listitem>
           <para><ulink
-          url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/MembershipTypeImpl.java">MembershipTypeImpl</ulink></para>
+          url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/main/java/org/exoplatform/services/jcr/ext/organization/MembershipTypeImpl.java">MembershipTypeImpl</ulink></para>
         </listitem>
       </itemizedlist>
     </section>
@@ -211,7 +211,7 @@
           <itemizedlist>
             <listitem>
               <para><ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserHandler.java">org.exoplatform.services.organization.UserHandler</ulink></para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserHandler.java">org.exoplatform.services.organization.UserHandler</ulink></para>
 
               <para>This class is acted as a sub component of the organization
               service. It is used to manage the user account and broadcast the
@@ -225,7 +225,7 @@
 
             <listitem>
               <para><ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/ExtendedUserHandler.java">org.exoplatform.services.organization.ExtendedUserHandler</ulink></para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/ExtendedUserHandler.java">org.exoplatform.services.organization.ExtendedUserHandler</ulink></para>
 
               <para><emphasis role="bold">Optional</emphasis>. Implement it if
               you want to be able to use <ulink
@@ -236,14 +236,14 @@
 
             <listitem>
               <para><ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserEventListenerHandler.java">org.exoplatform.services.organization.UserEventListenerHandler</ulink></para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserEventListenerHandler.java">org.exoplatform.services.organization.UserEventListenerHandler</ulink></para>
 
               <para><emphasis role="bold">Optional</emphasis>. Provides the
               ability to get the list of <ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserEventListener.java">org.exoplatform.services.organization.UserEventListener</ulink>.
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserEventListener.java">org.exoplatform.services.organization.UserEventListener</ulink>.
               List should be unmodifiable to prevent modification outside of
               <ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserHandler.java">org.exoplatform.services.organization.UserHandler</ulink>.</para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserHandler.java">org.exoplatform.services.organization.UserHandler</ulink>.</para>
             </listitem>
           </itemizedlist>
         </listitem>
@@ -254,7 +254,7 @@
           <itemizedlist>
             <listitem>
               <para><ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserProfileHandler.java">org.exoplatform.services.organization.UserProfileHandler</ulink></para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserProfileHandler.java">org.exoplatform.services.organization.UserProfileHandler</ulink></para>
 
               <para>This interface is acted as a sub interface of the
               organization service. It is used to manage the the UserProfile
@@ -266,14 +266,14 @@
 
             <listitem>
               <para><ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserProfileEventListenerHandler.java">org.exoplatform.services.organization.UserProfileEventListenerHandler</ulink></para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserProfileEventListenerHandler.java">org.exoplatform.services.organization.UserProfileEventListenerHandler</ulink></para>
 
               <para><emphasis role="bold">Optional</emphasis>. Provides the
               ability to get the list of <ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserProfileEventListener.java">org.exoplatform.services.organization.UserProfileEventListener</ulink>.
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserProfileEventListener.java">org.exoplatform.services.organization.UserProfileEventListener</ulink>.
               List should be unmodifiable to prevent modification outside of
               <ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserProfileHandler.java">org.exoplatform.services.organization.UserProfileHandler</ulink>.</para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/UserProfileHandler.java">org.exoplatform.services.organization.UserProfileHandler</ulink>.</para>
             </listitem>
           </itemizedlist>
         </listitem>
@@ -284,7 +284,7 @@
           <itemizedlist>
             <listitem>
               <para><ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/GroupHandler.java">org.exoplatform.services.organization.GroupHandler</ulink></para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/GroupHandler.java">org.exoplatform.services.organization.GroupHandler</ulink></para>
 
               <para>This class is acted as a sub component of the organization
               service. It is used to manage the group and broadcast the group
@@ -298,14 +298,14 @@
 
             <listitem>
               <para><ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/GroupEventListenerHandler.java">org.exoplatform.services.organization.GroupEventListenerHandler</ulink></para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/GroupEventListenerHandler.java">org.exoplatform.services.organization.GroupEventListenerHandler</ulink></para>
 
               <para><emphasis role="bold">Optional</emphasis>. Provides the
               ability to get the of <ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/GroupEventListener.java">org.exoplatform.services.organization.GroupEventListener</ulink>.
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/GroupEventListener.java">org.exoplatform.services.organization.GroupEventListener</ulink>.
               List should be unmodifiable to prevent modification outside of
               <ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/GroupHandler.java">org.exoplatform.services.organization.GroupHandler</ulink>.</para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/GroupHandler.java">org.exoplatform.services.organization.GroupHandler</ulink>.</para>
             </listitem>
           </itemizedlist>
         </listitem>
@@ -316,7 +316,7 @@
           <itemizedlist>
             <listitem>
               <para><ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipHandler.java">org.exoplatform.services.organization.MembershipHandler</ulink></para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipHandler.java">org.exoplatform.services.organization.MembershipHandler</ulink></para>
 
               <para>This class is acted as a sub component of the organization
               service. It is used to manage the membership - the relation of
@@ -331,14 +331,14 @@
 
             <listitem>
               <para><ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipEventListenerHandler.java">org.exoplatform.services.organization.MembershipEventListenerHandler</ulink></para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipEventListenerHandler.java">org.exoplatform.services.organization.MembershipEventListenerHandler</ulink></para>
 
               <para><emphasis role="bold">Optional</emphasis>. Provides the
               ability to get the of <ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipEventListener.java">org.exoplatform.services.organization.MembershipEventListener</ulink>.
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipEventListener.java">org.exoplatform.services.organization.MembershipEventListener</ulink>.
               List should be unmodifiable to prevent modification outside of
               <ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipHandler.java">org.exoplatform.services.organization.MembershipHandler</ulink>.</para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipHandler.java">org.exoplatform.services.organization.MembershipHandler</ulink>.</para>
             </listitem>
           </itemizedlist>
         </listitem>
@@ -349,7 +349,7 @@
           <itemizedlist>
             <listitem>
               <para><ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipTypeHandler.java">org.exoplatform.services.organization.MembershipTypeHandler</ulink></para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipTypeHandler.java">org.exoplatform.services.organization.MembershipTypeHandler</ulink></para>
 
               <para>This class is acted as a sub component of the organization
               service. It is used to manage the membership type
@@ -361,14 +361,14 @@
 
             <listitem>
               <para><ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipTypeEventListenerHandler.java">org.exoplatform.services.organization.MembershipTypeEventListenerHandler</ulink></para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipTypeEventListenerHandler.java">org.exoplatform.services.organization.MembershipTypeEventListenerHandler</ulink></para>
 
               <para><emphasis role="bold">Optional</emphasis>. Provides the
               ability to get the list of <ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipTypeEventListener.java">org.exoplatform.services.organization.MembershipTypeEventListener</ulink>.
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipTypeEventListener.java">org.exoplatform.services.organization.MembershipTypeEventListener</ulink>.
               List should be unmodifiable to prevent modification outside of
               <ulink
-              url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipTypeHandler.java">org.exoplatform.services.organization.MembershipTypeHandler</ulink>.</para>
+              url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/MembershipTypeHandler.java">org.exoplatform.services.organization.MembershipTypeHandler</ulink>.</para>
             </listitem>
           </itemizedlist>
         </listitem>
@@ -380,27 +380,27 @@
       <itemizedlist>
         <listitem>
           <para><ulink
-          url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/UserHandlerImpl.java">UserHandlerImpl</ulink></para>
+          url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/main/java/org/exoplatform/services/jcr/ext/organization/UserHandlerImpl.java">UserHandlerImpl</ulink></para>
         </listitem>
 
         <listitem>
           <para><ulink
-          url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/UserProfileHandlerImpl.java">UserProfileHandlerImpl</ulink></para>
+          url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/main/java/org/exoplatform/services/jcr/ext/organization/UserProfileHandlerImpl.java">UserProfileHandlerImpl</ulink></para>
         </listitem>
 
         <listitem>
           <para><ulink
-          url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/GroupHandlerImpl.java">GroupHandlerImpl</ulink></para>
+          url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/main/java/org/exoplatform/services/jcr/ext/organization/GroupHandlerImpl.java">GroupHandlerImpl</ulink></para>
         </listitem>
 
         <listitem>
           <para><ulink
-          url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/MembershipHandlerImpl.java">MembershipHandlerImpl</ulink></para>
+          url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/main/java/org/exoplatform/services/jcr/ext/organization/MembershipHandlerImpl.java">MembershipHandlerImpl</ulink></para>
         </listitem>
 
         <listitem>
           <para><ulink
-          url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/MembershipTypeHandlerImpl.java">MembershipTypeHandlerImpl</ulink></para>
+          url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/main/java/org/exoplatform/services/jcr/ext/organization/MembershipTypeHandlerImpl.java">MembershipTypeHandlerImpl</ulink></para>
         </listitem>
       </itemizedlist>
     </section>
@@ -410,17 +410,17 @@
 
       <para>Finally you need to create your main custom organization service
       class. It must extend <ulink
-      url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/BaseOrganizationService.java">org.exoplatform.services.organization.BaseOrganizationService</ulink>.
+      url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/BaseOrganizationService.java">org.exoplatform.services.organization.BaseOrganizationService</ulink>.
       BaseOrganizationService class contains organization service unit
       handlers as protected fields, so you can initialize them in accordance
       to your purposes. It also has <ulink
-      url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/OrganizationService.java">org.exoplatform.services.organization.OrganizationService</ulink>
+      url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.api/src/main/java/org/exoplatform/services/organization/OrganizationService.java">org.exoplatform.services.organization.OrganizationService</ulink>
       interface methods' implementations. This is the class you need to
       mention in the configuration file if you want to use your custom
       organization service.</para>
 
       <para>You can find example of such class at subversion server: <ulink
-      url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/src/main/java/org/exoplatform/services/jcr/ext/organization/JCROrganizationServiceImpl.java">JCROrganizationServiceImpl</ulink>.</para>
+      url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/main/java/org/exoplatform/services/jcr/ext/organization/JCROrganizationServiceImpl.java">JCROrganizationServiceImpl</ulink>.</para>
     </section>
 
     <section id="Core.OrganizationService.CustomOrganizationServiceImplementationInstructions.VerificationOfCompliance">
@@ -436,7 +436,7 @@
       <emphasis>exo.core.component.organization.tests</emphasis></para>
 
       <para>You can find TCK tests package source code <ulink
-      url="https://anonsvn.jboss.org/repos/exo-jcr/core/tags/2.4.5-GA/exo.core.component.organization.tests/">here</ulink></para>
+      url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.tests/">here</ulink></para>
 
       <note>
         <para>In order to be able to run unit tests you may need to configure
@@ -456,53 +456,11 @@
               url="http://maven.apache.org/plugins/maven-surefire-plugin/">maven-surefire-plugin</ulink></para>
             </listitem>
           </itemizedlist> Check <ulink
-        url="http://svn.exoplatform.org/projects/jcr-services/tags/1.14.5-GA/pom.xml">pom.xml</ulink>
+        url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/pom.xml">pom.xml</ulink>
         file to find out one of the ways to configure maven project object
         model. More detailed description you can find in the dedicated section
         called "Organization Service TCK tests configuration"</para>
       </note>
     </section>
-  </section>
-
-  <section id="Core.OrganizationService.RelatedArticlesAndHowTo">
-    <title>Related articles and how-tos</title>
-
-    <itemizedlist>
-      <listitem>
-        <para><ulink
-        url="http://wiki.exoplatform.org/xwiki/bin/view/JCR/Organization+Service">JCR
-        Organization Service</ulink></para>
-      </listitem>
-    </itemizedlist>
-
-    <itemizedlist>
-      <listitem>
-        <para><ulink
-        url="http://wiki.exoplatform.org/xwiki/bin/view/Core/Update+ConversationState+when+user's+Membership+changed">Update
-        ConversationState when user's Membership changed</ulink></para>
-      </listitem>
-
-      <listitem>
-        <para><ulink url="Organization Service Initializer">Organization
-        Service Initializer</ulink></para>
-      </listitem>
-
-      <listitem>
-        <para><ulink
-        url="http://wiki.exoplatform.org/xwiki/bin/view/Portal/Accessing+User+Profile">How
-        to Access User Profile in your code</ulink></para>
-      </listitem>
-
-      <listitem>
-        <para><ulink url="CoreOrganizationListener">How to create your own
-        Organization Listener</ulink></para>
-      </listitem>
-
-      <listitem>
-        <para><ulink
-        url="How to manipulate Users and Memberships Programmatically">How to
-        manipulate Users and Memberships Programmatically</ulink></para>
-      </listitem>
-    </itemizedlist>
   </section>
 </section>

@@ -67,22 +67,9 @@
     <title>Configuration</title>
 
     <programlisting language="xml">&lt;component&gt;
-  &lt;key&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/key&gt;
-  &lt;type&gt;org.exoplatform.services.webdav.WebDavServiceImpl&lt;/type&gt;
+  &lt;key&gt;org.exoplatform.services.jcr.webdav.WebDavServiceImpl&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.webdav.WebDavServiceImpl&lt;/type&gt;
   &lt;init-params&gt;
-
-    &lt;!-- this parameter indicates the default login and password values
-         used as credentials for accessing the repository --&gt;
-    &lt;!-- value-param&gt;
-      &lt;name&gt;default-identity&lt;/name&gt;
-      &lt;value&gt;admin:admin&lt;/value&gt;    
-    &lt;/value-param --&gt;
-
-    &lt;!-- this is the value of WWW-Authenticate header --&gt;
-    &lt;value-param&gt;
-      &lt;name&gt;auth-header&lt;/name&gt;
-      &lt;value&gt;Basic realm="eXo-Platform Webdav Server 1.6.1"&lt;/value&gt;
-    &lt;/value-param&gt;
 
     &lt;!-- default node type which is used for the creation of collections --&gt;
     &lt;value-param&gt;
@@ -195,7 +182,7 @@
     <para>At present, eXo JCR WebDav server is tested by using MS Internet
     Explorer, <ulink url="http://www.ics.uci.edu/~webdav">Dav
     Explorer</ulink>, <ulink
-    url="http://www.xythos.com/home/xythos/products/xythos_drive.html">Xythos
+    url="http://www.blackboard.com/Platforms/Learn/Products/Blackboard-Learn/Blackboard-Xythos/Xythos-Drive.aspx">Xythos
     Drive</ulink>, Microsoft Office 2003 (as client), and Ubuntu Linux.</para>
 
     <section id="JCR.WebDAV.Screenshots.MSInternetExplorer">
@@ -347,12 +334,6 @@
           </row>
 
           <row>
-            <entry>RESTORE</entry>
-
-            <entry>Node.restore(...)</entry>
-          </row>
-
-          <row>
             <entry>UNCHECKOUT</entry>
 
             <entry>Node.restore(...)</entry>
@@ -387,6 +368,11 @@
 
             <entry>Workspace.getQueryManager(); QueryManager.createQuery();
             Query.execute()</entry>
+          </row>
+          <row>
+            <entry>ACL</entry>
+
+             <entry>Node.setPermission(...)</entry>
           </row>
         </tbody>
       </tgroup>

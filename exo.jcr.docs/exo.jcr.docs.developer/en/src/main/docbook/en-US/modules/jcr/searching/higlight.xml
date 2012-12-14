@@ -124,9 +124,7 @@ while (rit.hasNext())
 
         <tbody>
           <row>
-            <entry>\&lt;div\&gt;\&lt;span\&gt;\&lt;strong\&gt;eXo\&lt;/strong\&gt;
-            is a JCR
-            \&lt;strong\&gt;implementation\&lt;/strong\&gt;\&lt;/span\&gt;\&lt;/div\&gt;</entry>
+            <entry>&lt;div&gt;&lt;span&gt;&lt;strong&gt;eXo&lt;strong&gt;is JCR&lt;strong&gt;implementation&lt;strong&gt;&lt;span&gt;&lt;div&gt;</entry>
 
             <entry>/testroot/node1</entry>
 

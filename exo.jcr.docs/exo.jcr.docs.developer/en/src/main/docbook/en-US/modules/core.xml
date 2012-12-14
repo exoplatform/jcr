@@ -15,9 +15,6 @@
   <xi:include href="core/security-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="core/spring-security-integration.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
   <xi:include href="core/organization-service.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 

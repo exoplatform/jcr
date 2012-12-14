@@ -14,7 +14,7 @@
     <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Motivations">
       <title>Motivations</title>
 
-      <para>Up to now, to create an application over an eXo portal such as
+      <para>Up to now, to create an application over an GateIn such as
       DMS, WCM, CS and KS, we need to modify files into the "portal.war". This
       has many painful consequences, such as:</para>
 
@@ -584,8 +584,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
@@ -750,8 +750,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;component&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;type&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/type&gt;
@@ -1011,8 +1011,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
@@ -1190,8 +1190,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the PortalContainerConfig --&gt;
     &lt;target-component&gt;org.exoplatform.container.definition.PortalContainerConfig&lt;/target-component&gt;
@@ -1326,8 +1326,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;import&gt;war:/conf/sample-ext/common/common-configuration.xml&lt;/import&gt;
   &lt;import&gt;war:/conf/sample-ext/jcr/jcr-configuration.xml&lt;/import&gt;
   &lt;import&gt;war:/conf/sample-ext/portal/portal-configuration.xml&lt;/import&gt;
@@ -1351,8 +1351,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+   xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.database.HibernateService&lt;/key&gt;
     &lt;jmx-name&gt;database:type=HibernateService&lt;/jmx-name&gt;
@@ -1409,8 +1409,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the RepositoryServiceConfiguration --&gt;
     &lt;target-component&gt;org.exoplatform.services.jcr.config.RepositoryServiceConfiguration&lt;/target-component&gt;
@@ -1525,8 +1525,8 @@ public class GadgetRegister implements ServletContextListener {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the ResourceBundleService --&gt;
     &lt;target-component&gt;org.exoplatform.services.resources.ResourceBundleService&lt;/target-component&gt;
@@ -1647,8 +1647,8 @@ UIHomePagePortlet.Label.SampleKey=This is a new key that has been added to the R
       <programlisting language="xml">&lt;?xml version="1.0" encoding="ISO-8859-1"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the UserPortalConfigService --&gt;
     &lt;target-component&gt;org.exoplatform.portal.config.UserPortalConfigService&lt;/target-component&gt;
@@ -1739,8 +1739,8 @@ UIHomePagePortlet.Label.SampleKey=This is a new key that has been added to the R
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the ExtensibleFilter --&gt;
     &lt;target-component&gt;org.exoplatform.web.filter.ExtensibleFilter&lt;/target-component&gt;
@@ -1863,8 +1863,8 @@ public class SampleFilter implements Filter
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
 &lt;configuration
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;external-component-plugins&gt;
     &lt;!-- The full qualified name of the ListenerService --&gt;
     &lt;target-component&gt;org.exoplatform.services.listener.ListenerService&lt;/target-component&gt;
@@ -1974,7 +1974,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
 
       <para>We added an example of portal extension (i.e. ability to customize
       a portal without changing anything in the portal.ear) that you can find
-      in the svn of gatein at gatein/sample/extension.</para>
+      in the git repository of gatein at https://github.com/gatein/gatein-portal/tree/master/examples.</para>
     </section>
 
     <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySampleExtension">
@@ -2127,7 +2127,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
 
       <para>We added an example of new portal (i.e. ability to create a new
       portal from another portal without changing anything in the portal.ear)
-      that you can find in the svn of gatein at gatein/sample/portal.</para>
+      that you can find in the git repository of gatein at https://github.com/gatein/gatein-portal/tree/master/examples.</para>
     </section>
 
     <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySamplePortal">

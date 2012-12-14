@@ -146,16 +146,18 @@
       <table>
         <title>Template variables</title>
 
-        <tgroup cols="1">
+        <tgroup cols="2">
           <thead>
             <row>
               <entry align="center">Variable</entry>
+              <entry align="center">Description</entry>
             </row>
           </thead>
 
           <tbody>
             <row>
-              <entry>jbosscache-cluster-name</entry>
+                <entry>jbosscache-cluster-name</entry>
+                <entry>cluster name (must be unique)</entry>
             </row>
           </tbody>
         </tgroup>
@@ -284,16 +286,18 @@
       <table>
         <title>Template variables</title>
 
-        <tgroup cols="1">
+        <tgroup cols="2">
           <thead>
             <row>
               <entry align="center">Variable</entry>
+              <entry align="center">Description</entry>
             </row>
           </thead>
 
           <tbody>
             <row>
               <entry>jbosscache-cluster-name</entry>
+              <entry>cluster name (must be unique)</entry>
             </row>
           </tbody>
         </tgroup>

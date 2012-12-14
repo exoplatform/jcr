@@ -42,7 +42,7 @@
     <title>Portal and Standalone configuration</title>
 
     <para>Like other eXo services, eXo JCR can be configured and used in the
-    portal or embedded mode (as a service embedded in eXo Portal) and in
+    portal or embedded mode (as a service embedded in GateIn) and in
     standalone mode.</para>
 
     <para>In Embedded mode, JCR services are registered in the Portal

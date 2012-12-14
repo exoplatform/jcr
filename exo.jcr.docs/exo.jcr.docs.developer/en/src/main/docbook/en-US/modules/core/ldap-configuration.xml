@@ -4,11 +4,11 @@
 <section id="Core.LDAPConfiguration">
   <title>LDAP Configuration</title>
 
-    <para>You may decide to make eXo users to be mapped to an existing
-    directory. eXo provides a flexible implementation of its
-    OrganizationService on top of LDAP. It can be used on any LDAP compliant
-    directory and even Active Directory. This page will guide you how to
-    configure eXo Platform to work with your directory.</para>
+     <para>You may decide to make eXo users to be mapped to an existing
+    directory. eXo provides a flexible implementation of its OrganizationService
+    on top of LDAP. It can be used on any LDAP compliant directory and even
+    Active Directory. This page will guide you how to configure eXo Platform to
+    work with your directory.</para>
     
   <section id="Core.LDAPConfiguration.Quickstart">
     <title>Quickstart</title>
@@ -422,9 +422,10 @@
 
       <para>Firstly, start by connection settings which will tell eXo how to
       connect to your directory server. These settings are very close to
-      <ulink url="http://java.sun.com/products/jndi">JNDI API</ulink> context
-      parameters. This configuration is activated by the init-param
-      ldap.config of service LDAPServiceImpl.</para>
+      <ulink
+      url="http://www.oracle.com/technetwork/java/jndi/docs/index.html">JNDI
+      API</ulink> context parameters. This configuration is activated by the
+      init-param ldap.config of service LDAPServiceImpl.</para>
 
       <programlisting language="xml">&lt;component&gt;
   &lt;key&gt;org.exoplatform.services.ldap.LDAPService&lt;/key&gt;
@@ -453,7 +454,7 @@
         <listitem>
           <para><emphasis role="bold">providerURL</emphasis>: LDAP server URL
           (see <ulink
-          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#PROVIDER_URL">PROVIDER_URL</ulink>).
+          url="http://docs.oracle.com/cd/E13211_01/wle/wle50/javadoc/j2ee/jndi/javax/naming/Context.html#PROVIDER_URL">PROVIDER_URL</ulink>).
           For multiple ldap servers, use comma separated list of host:port
           (Ex. ldap://127.0.0.1:389,10.0.0.1:389).</para>
         </listitem>
@@ -461,33 +462,33 @@
         <listitem>
           <para><emphasis role="bold">rootdn</emphasis>: dn of user that will
           be used by the service to authenticate on the server (see <ulink
-          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_PRINCIPAL">SECURITY_PRINCIPAL</ulink>).</para>
+          url="http://docs.oracle.com/cd/E13211_01/wle/wle50/javadoc/j2ee/jndi/javax/naming/Context.html#SECURITY_PRINCIPAL">SECURITY_PRINCIPAL</ulink>).</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">password</emphasis>: password for user
           rootdn (see <ulink
-          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_CREDENTIALS">SECURITY_CREDENTIALS</ulink>).</para>
+          url="http://docs.oracle.com/cd/E13211_01/wle/wle50/javadoc/j2ee/jndi/javax/naming/Context.html#SECURITY_CREDENTIALS">SECURITY_CREDENTIALS</ulink>).</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">authenticationType</emphasis>: type of
           authentication to be used (see <ulink
-          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#SECURITY_AUTHENTICATION">SECURITY_AUTHENTICATION</ulink>).
+          url="http://docs.oracle.com/cd/E13211_01/wle/wle50/javadoc/j2ee/jndi/javax/naming/Context.html#SECURITY_AUTHENTICATION">SECURITY_AUTHENTICATION</ulink>).
           Use one of none, simple, strong. Default is simple.</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">version</emphasis>: LDAP protocol
           version (see <ulink
-          url="http://java.sun.com/products/jndi/tutorial/ldap/misc/version.html">java.naming.ldap.version</ulink>).
+          url="http://docs.oracle.com/javase/jndi/tutorial/ldap/misc/version.html">java.naming.ldap.version</ulink>).
           Set to 3 if your server supports LDAP V3.</para>
         </listitem>
 
         <listitem>
           <para><emphasis role="bold">referalMode</emphasis>: one of follow,
           ignore,throw (see <ulink
-          url="http://java.sun.com/products/jndi/1.2/javadoc/javax/naming/Context.html#REFERRAL">REFERRAL</ulink>).</para>
+          url="http://docs.oracle.com/cd/E13211_01/wle/wle50/javadoc/j2ee/jndi/javax/naming/Context.html#REFERRAL">REFERRAL</ulink>).</para>
         </listitem>
 
         <listitem>
@@ -861,7 +862,7 @@ l=London,dc=sites,dc=mycompany,dc=com
         <para>Example : If membershipTypeNameAttr is 'cn', then role name is
         'manager' for the following membership type entry :</para>
 
-        <programlisting>cn=manager,ou=roles,ou=portal,dc=exoplatform,dc=org &lt;/pre&gt;</programlisting>
+        <programlisting>cn=manager,ou=roles,ou=portal,dc=exoplatform,dc=org</programlisting>
       </section>
 
       <section id="Core.LDAPConfiguration.Configuration.OrganizationServiceConfiguration.Memberships">
@@ -906,9 +907,8 @@ l=London,dc=sites,dc=mycompany,dc=com
   objectClass: groupOfNames
   …</programlisting>
 
-        <para>&lt;pre&gt;
-        cn=validator,ou=human-resources,ou=groups,ou=portal,dc=exoplatform,dc=org
-        objectclass: top objectClass: groupOfNames ... &lt;/pre&gt;</para>
+        <para>cn=validator,ou=human-resources,ou=groups,ou=portal,dc=exoplatform,dc=org
+        objectclass: top objectClass: groupOfNames</para>
 
         <itemizedlist>
           <listitem>
@@ -938,9 +938,7 @@ l=London,dc=sites,dc=mycompany,dc=com
 
         <para>Example : In the following membership entry:</para>
 
-        <para>&lt;pre&gt;
-        cn=manager,ou=human-resources,ou=groups,ou=portal,dc=exoplatform,dc=org
-        &lt;/pre&gt;</para>
+        <para>cn=manager,ou=human-resources,ou=groups,ou=portal,dc=exoplatform,dc=org</para>
 
         <para>'cn' attribute is used to designate the 'manager' membership
         type. Which could also be said : The name of the role is given by 'cn'
@@ -1092,7 +1090,6 @@ l=London,dc=sites,dc=mycompany,dc=com
         &lt;object type="org.exoplatform.services.ldap.impl.LDAPConnectionConfig"&gt;         
          &lt;!-- for multiple ldap servers, use comma seperated list of host:port (Ex. ldap://127.0.0.1:389,10.0.0.1:389) --&gt;
     &lt;!-- whether or not to enable ssl, if ssl is used ensure that the javax.net.ssl.keyStore &amp; java.net.ssl.keyStorePassword properties are set --&gt;
-    &lt;!-- exo portal default installed javax.net.ssl.trustStore with file is java.home/lib/security/cacerts--&gt;
     &lt;!-- ldap service will check protocol, if protocol is ldaps, ssl is enable (Ex. for enable ssl: ldaps://10.0.0.3:636 ;for disable ssl: ldap://10.0.0.3:389 ) --&gt;
     &lt;!-- when enable ssl, ensure server name is *.directory and port (Ex. active.directory) --&gt;        
     &lt;field  name="providerURL"&gt;&lt;string&gt;ldaps://10.0.0.3:636&lt;/string&gt;&lt;/field&gt;

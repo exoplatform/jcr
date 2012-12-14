@@ -19,7 +19,7 @@
         <note>
           <para>If you need more profound information you can find Organization
           Service TCK test sources at <ulink
-          url="https://anonsvn.jboss.org/repos/exo-jcr/core/trunk/exo.core.component.organization.tests/">svn</ulink></para>
+          url="https://github.com/exoplatform/core/tree/stable/2.5.x/exo.core.component.organization.tests">Git</ulink></para>
         </note>
       </listitem>
     </itemizedlist>
@@ -134,7 +134,7 @@
     <para>As a result you should have TCK being launched during your next
     <emphasis>maven clean install</emphasis>. Example of configured pom.xml
     file you can find at <ulink
-    url="http://svn.exoplatform.org/projects/jcr-services/trunk/pom.xml">svn
+    url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/pom.xml">Git
     server</ulink></para>
   </section>
 
@@ -411,6 +411,6 @@
     standalone container and consists of Organization Service configuration
     and initialization data. You can find prepared test-configuration.xml file
     at <ulink
-    url="http://svn.exoplatform.org/projects/jcr-services/trunk/src/test/java/conf/standalone/test-configuration.xml">svn</ulink></para>
+    url="https://github.com/exoplatform/jcr-services/tree/stable/1.15.x/src/test/java/conf/standalone/test-configuration.xml">Git</ulink></para>
   </section>
 </section>

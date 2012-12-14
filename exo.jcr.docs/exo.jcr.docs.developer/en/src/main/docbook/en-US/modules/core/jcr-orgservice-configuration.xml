@@ -36,8 +36,8 @@
           <programlisting language="xml">
 &lt;configuration
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"
-   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_2.xsd"&gt;
+   xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_3.xsd http://www.exoplaform.org/xml/ns/kernel_1_3.xsd"
+   xmlns="http://www.exoplaform.org/xml/ns/kernel_1_3.xsd"&gt;
        
   &lt;component&gt;
     &lt;key&gt;org.exoplatform.services.organization.OrganizationService&lt;/key&gt;

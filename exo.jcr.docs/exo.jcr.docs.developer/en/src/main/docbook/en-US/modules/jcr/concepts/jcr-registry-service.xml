@@ -59,37 +59,40 @@
     straightforward, it is described in the Registry abstract class as the
     following:</para>
 
-    <programlisting language="java">public abstract class Registry {
-  
-  /**
-   * Returns the Registry object which wraps the Node of the "exo:registry" type
-   */
-  public abstract RegistryNode getRegistry(SessionProvider sessionProvider) 
-      throws RepositoryConfigurationException, RepositoryException;
-  
-  /**
-   * Returns the existing RegistryEntry which wraps the Node of the "exo:registryEntry" type  
-   */
-  public abstract RegistryEntry getEntry(SessionProvider sessionProvider, String groupName,
-      String entryName) throws RepositoryException;
+    <programlisting language="java">public abstract class Registry
+{
 
-  /**
-   * Creates a new RegistryEntry
-   */
-  public abstract void createEntry(SessionProvider sessionProvider,
-      String groupName, RegistryEntry entry) throws RepositoryException;
+   /**
+    * Returns Registry node object which wraps Node of "exo:registry" type (the whole registry tree)
+    */
+   public abstract RegistryNode getRegistry(SessionProvider sessionProvider) throws RepositoryConfigurationException,
+      RepositoryException;
 
-  /**
-   * Replaces a RegistryEntry
-   */
-  public abstract void recreateEntry(SessionProvider sessionProvider,
-      String groupName, RegistryEntry entry) throws RepositoryException;
+   /**
+    * Returns existed RegistryEntry which wraps Node of "exo:registryEntry" type
+    */
+   public abstract RegistryEntry getEntry(SessionProvider sessionProvider, String entryPath)
+      throws PathNotFoundException, RepositoryException;
 
-  /**
-   * Removes a RegistryEntry
-   */
-  public abstract void removeEntry(SessionProvider sessionProvider,
-      String groupName, String entryName) throws RepositoryException;</programlisting>
+   /**
+    * creates an entry in the group. In a case if the group does not exist it will be silently
+    * created as well
+    */
+   public abstract void createEntry(SessionProvider sessionProvider, String groupPath, RegistryEntry entry)
+      throws RepositoryException;
+
+   /**
+    * updates an entry in the group
+    */
+   public abstract void recreateEntry(SessionProvider sessionProvider, String groupPath, RegistryEntry entry)
+      throws RepositoryException;
+
+   /**
+    * removes entry located on entryPath (concatenation of group path / entry name)
+    */
+   public abstract void removeEntry(SessionProvider sessionProvider, String entryPath) throws RepositoryException;
+
+}</programlisting>
 
     <para>As you can see it looks like a simple CRUD interface for the
     RegistryEntry object which wraps registry data for some Consumer as a
@@ -109,7 +112,7 @@
     .getComponentInstanceOfType(RegistryService.class);
 
     RegistryEntry registryEntry = regService.getEntry(sessionProvider,
-            RegistryService.EXO_SERVICES, "my-service");
+            RegistryService.EXO_SERVICES + "/my-service");
 
     Document doc = registryEntry.getDocument();
     

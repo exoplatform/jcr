@@ -34,8 +34,8 @@ import javax.jcr.RepositoryException;
  * 
  *          Basic (Level 1) data flow inmemory operations<br/>
  * 
- *          Common Rule for Read : If there is some storage in this manager � try to get the data
- *          from here first, if not found � call super.someMethod
+ *          Common Rule for Read : If there is some storage in this manager try to get the data
+ *          from here first, if not found call super.someMethod
  *          
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id$
@@ -57,7 +57,7 @@ public interface ItemDataConsumer
    boolean hasItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException;
 
    /**
-    * Find Item by parent (id) and name (with path index) of define type.
+    * Find Item by parent (id) and name (with path index) of a given type.
     * 
     * @param parent 
     *          NodeData
@@ -71,7 +71,7 @@ public interface ItemDataConsumer
    ItemData getItemData(NodeData parent, QPathEntry name, ItemType itemType) throws RepositoryException;
 
    /**
-     * Find Item by parent (id) and name (with path index) of defined type and create 
+     * Find Item by parent (id) and name (with path index) of a given type and create
      * or not (defined by createNullItemData) null item data.
      * 
      * @param parent 
@@ -105,7 +105,7 @@ public interface ItemDataConsumer
    List<NodeData> getChildNodesData(NodeData parent) throws RepositoryException;
 
    /**
-    * Get child Nodes of the parent node.
+    * Get child Nodes of the parent node whose value of order number is between fromOrderNum and toOrderNum.
     * 
     * @param parent 
     *          the parent data

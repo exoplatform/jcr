@@ -16,7 +16,7 @@
 
     <itemizedlist>
       <listitem>
-        <para><classname>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl</classname>;</para>
+        <para><classname>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl</classname></para>
       </listitem>
     </itemizedlist>
 

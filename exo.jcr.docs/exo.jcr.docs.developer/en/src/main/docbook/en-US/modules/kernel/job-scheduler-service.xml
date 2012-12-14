@@ -100,8 +100,8 @@
       <programlisting language="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;configuration
   xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-  xsi:schemaLocation=&quot;http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd&quot;
-  xmlns=&quot;http://www.exoplatform.org/xml/ns/kernel_1_2.xsd&quot;&gt;
+  xsi:schemaLocation=&quot;http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd&quot;
+  xmlns=&quot;http://www.exoplatform.org/xml/ns/kernel_1_3.xsd&quot;&gt;
 
   &lt;component&gt;
     &lt;type&gt;org.exoplatform.services.scheduler.impl.QuartzSheduler&lt;/type&gt;
@@ -264,8 +264,8 @@ public class DumbJob implements Job {
         <programlisting language="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
 &lt;configuration
   xmlns:xsi=&quot;http://www.w3.org/2001/XMLSchema-instance&quot;
-  xsi:schemaLocation=&quot;http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd&quot;
-  xmlns=&quot;http://www.exoplatform.org/xml/ns/kernel_1_2.xsd&quot;&gt;
+  xsi:schemaLocation=&quot;http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd&quot;
+  xmlns=&quot;http://www.exoplatform.org/xml/ns/kernel_1_3.xsd&quot;&gt;
 
   &lt;component&gt;
     &lt;type&gt;org.exoplatform.services.scheduler.impl.QuartzSheduler&lt;/type&gt;

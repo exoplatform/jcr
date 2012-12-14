@@ -50,9 +50,7 @@
     <section id="Core.OrganizationListener.WritingOwnListeners.UserEventListener">
       <title>UserEventListener</title>
 
-      <para>To listen to user changes, you need to extend
-      &lt;&gt;org.exoplatform.services.organization.UserEventListener&lt;/&gt;
-      :</para>
+      <para>To listen to user changes, you need to extend "org.exoplatform.services.organization.UserEventListener"</para>
 
       <programlisting language="java">public class MyUserListener extends UserEventListener {
 

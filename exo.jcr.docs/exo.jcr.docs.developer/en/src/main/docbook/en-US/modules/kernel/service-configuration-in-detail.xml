@@ -96,8 +96,8 @@ public interface ArticleStatsService {
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF8"?&gt;
 &lt;configuration
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
-    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"&gt;
+    xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+    xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"&gt;
   &lt;component&gt;
     &lt;key&gt;com.laverdad.services.ArticleStatsService&lt;/key&gt;
     &lt;type&gt;com.laverdad.services.ArticleStatsServiceImpl&lt;/type&gt;
@@ -106,7 +106,7 @@ public interface ArticleStatsService {
 
       <note>
         <para>You are correctly using the namespace of the configuration
-        schema ( <uri>http://www.exoplatform.org/xml/ns/kernel_1_2.xsd</uri>).
+        schema ( <uri>http://www.exoplatform.org/xml/ns/kernel_1_3.xsd</uri>).
         Most of the configuration schema is explained in this article,
         therefore you do not need to open and understand the schema. For
         backward compatibility it is not necessary to declare the
@@ -425,7 +425,7 @@ public class LDAPConnectionConfig {
       </itemizedlist>
 
       <para>Have a look on this type test xml file: <ulink
-      url="https://anonsvn.jboss.org/repos/exo-jcr/kernel/trunk/exo.kernel.container/src/test/resources/object.xml">object.xml</ulink>.</para>
+      url="https://github.com/exoplatform/kernel/tree/stable/2.4.x/exo.kernel.container/src/test/resources/object.xml">object.xml</ulink>.</para>
     </section>
 
     <section id="Kernel.ServiceConfigurationinDetail.Parameters.Collection">
@@ -651,7 +651,7 @@ public class LDAPConnectionConfig {
     <para>As these are system properties you use the -D command: <emphasis
     role="bold">java -DconnectionUrl=jdbc:hsqldb:file:../temp/data/exodb
     -DdriverClass=org.hsqldb.jdbcDriver</emphasis> Or better use the
-    parameters of eXo.bat / eXo.sh when you start eXo Portal: <emphasis
+    parameters of eXo.bat / eXo.sh when you start GateIn: <emphasis
     role="bold">set
     EXO_OPTS="-DconnectionUrl=jdbc:hsqldb:file:../temp/data/exodb
     -DdriverClass=org.hsqldb.jdbcDriver"</emphasis></para>

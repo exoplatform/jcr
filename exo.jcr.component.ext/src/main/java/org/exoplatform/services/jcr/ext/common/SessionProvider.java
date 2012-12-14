@@ -129,7 +129,12 @@ public class SessionProvider implements SessionLifecycleListener
       Identity id = new Identity(IdentityConstants.ANONIM, new HashSet<MembershipEntry>());
       return new SessionProvider(new ConversationState(id));
    }
-
+    /**
+     * Return SessionProvider for a given list of AccessControlEntry.
+     *
+     * @param accessList list of AccessControlEntry
+     * @return SessionProvider
+     */
    public static SessionProvider createProvider(List<AccessControlEntry> accessList)
    {
       if (accessList == null || accessList.isEmpty())
@@ -249,22 +254,34 @@ public class SessionProvider implements SessionLifecycleListener
       String repositoryName = repository.getConfiguration().getName();
       return repositoryName + workspaceName;
    }
-
+    /**
+     * Return Current Repository.
+     * @return ManageableRepository
+     */
    public ManageableRepository getCurrentRepository()
    {
       return currentRepository;
    }
-
+    /**
+     * Return Current Workspace used.
+     * @return String
+     */
    public String getCurrentWorkspace()
    {
       return currentWorkspace;
    }
-
+    /**
+     * Set  Repository.
+     * @param  currentRepository
+     */
    public void setCurrentRepository(ManageableRepository currentRepository)
    {
       this.currentRepository = currentRepository;
    }
-
+    /**
+     * Set  Workspace.
+     * @param  currentWorkspace
+     */
    public void setCurrentWorkspace(String currentWorkspace)
    {
       this.currentWorkspace = currentWorkspace;

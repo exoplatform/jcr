@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.core.nodetype;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeExistsException;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeExistsException; //NOSONAR
 
 import java.io.InputStream;
@@ -47,6 +48,14 @@ public interface ExtendedNodeTypeManager extends NodeTypeManager
 
    public static final int REPLACE_IF_EXISTS = 4;
 
+    /**
+     * Return NodeType for a given InternalQName.
+     *
+     * @param qname nodetype name
+     * @return NodeType
+     * @throws NoSuchNodeTypeException if no nodetype found with the name
+     * @throws RepositoryException Repository error
+     */
    NodeType findNodeType(InternalQName qname) throws NoSuchNodeTypeException, RepositoryException;
 
    /**
@@ -69,8 +78,9 @@ public interface ExtendedNodeTypeManager extends NodeTypeManager
       throws RepositoryException;
 
    /**
-    * @return
-    * @throws RepositoryException
+    * Gives the {@link NodeTypeManager}
+    *
+    * @throws RepositoryException if another error occurs.
     */
    NodeTypeDataManager getNodeTypesHolder() throws RepositoryException;
 
