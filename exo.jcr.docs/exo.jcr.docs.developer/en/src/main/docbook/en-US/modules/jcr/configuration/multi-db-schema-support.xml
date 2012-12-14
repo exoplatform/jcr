@@ -61,7 +61,7 @@
 &lt;/jbosscache&gt;</programlisting>
 
     <para>You can also obtain file example from <ulink
-    url="https://github.com/exoplatform/jcr/tree/stable/1.15.x/exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-lock.xml">GitHub</ulink>.</para>
+    url="https://github.com/exoplatform/jcr/tree/stable/1.16.x/exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-lock.xml">GitHub</ulink>.</para>
   </section>
 
   <section id="JCR.MultiDBSchemaSupport.HibernateService_Configuration">

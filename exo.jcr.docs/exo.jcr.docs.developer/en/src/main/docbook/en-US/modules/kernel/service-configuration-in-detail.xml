@@ -425,7 +425,7 @@ public class LDAPConnectionConfig {
       </itemizedlist>
 
       <para>Have a look on this type test xml file: <ulink
-      url="https://github.com/exoplatform/kernel/tree/stable/2.4.x/exo.kernel.container/src/test/resources/object.xml">object.xml</ulink>.</para>
+      url="https://github.com/exoplatform/kernel/tree/stable/2.5.x/exo.kernel.container/src/test/resources/object.xml">object.xml</ulink>.</para>
     </section>
 
     <section id="Kernel.ServiceConfigurationinDetail.Parameters.Collection">

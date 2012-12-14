@@ -52,6 +52,31 @@ NodeType findNodeType(InternalQName qname) throws NoSuchNodeTypeException, Repos
  */
 NodeType registerNodeType(NodeTypeValue nodeTypeValue, int alreadyExistsBehaviour) throws RepositoryException;
 
+ /**public static final int IGNORE_IF_EXISTS = 0;
+
+public static final int FAIL_IF_EXISTS = 2;
+
+public static final int REPLACE_IF_EXISTS = 4;
+
+ /**
+  * Return NodeType for a given InternalQName.
+  *
+  * @param qname nodetype name
+  * @return NodeType
+  * @throws NoSuchNodeTypeException if no nodetype found with the name
+  * @throws RepositoryException Repository error
+  */
+NodeType findNodeType(InternalQName qname) throws NoSuchNodeTypeException, RepositoryException;
+
+/**
+ * Registers node type using value object.
+ * 
+ * @param nodeTypeValue
+ * @param alreadyExistsBehaviour
+ * @throws RepositoryException
+ */
+NodeType registerNodeType(NodeTypeValue nodeTypeValue, int alreadyExistsBehaviour) throws RepositoryException;
+
 /**
  * Registers all node types using XML binding value objects from xml stream.
  * 

@@ -6,7 +6,7 @@
   <para>eXo Webservice provides a framework to cross-domain AJAX. This section shows you how to use this framework.</para>
 
   <para>You can checkout the source code at <ulink
-  url="https://github.com/exoplatform/ws/tree/stable/2.3.x/exo.ws.frameworks.javascript.cross-domain-ajax">https://github.com/exoplatform/ws/tree/stable/2.3.x/exo.ws.frameworks.javascript.cross-domain-ajax</ulink>.</para>
+  url="https://github.com/exoplatform/ws/tree/stable/2.4.x/exo.ws.frameworks.javascript.cross-domain-ajax">https://github.com/exoplatform/ws/tree/stable/2.4.x/exo.ws.frameworks.javascript.cross-domain-ajax</ulink>.</para>
 
   <section id="WS.CrossDomainAJAX.Motivation">
     <title>Motivation</title>
