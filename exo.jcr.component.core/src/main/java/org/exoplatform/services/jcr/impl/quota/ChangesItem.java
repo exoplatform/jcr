@@ -62,7 +62,7 @@ class ChangesItem implements Externalizable
 
    /**
     * Set of absolute nodes paths for which changes were made but changed size is unknown. Most
-    * famous case when {@link WorkspaceDataContainer#TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME} is
+    * famous case when {@link WorkspaceDataContainer#TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME} is
     * set to false and move operation is performed.
     */
    private Set<String> unknownChangedNodesSize = new HashSet<String>();

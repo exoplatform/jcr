@@ -207,7 +207,7 @@ public class TestQuotas extends AbstractQuotaManagerTest
       TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
       WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.ISOLATED, null);
       wsEntry.getContainer().getParameters()
-         .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME, "false"));
+         .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME, "false"));
 
       ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.ISOLATED, null);
       helper.addWorkspace(repository, wsEntry);
