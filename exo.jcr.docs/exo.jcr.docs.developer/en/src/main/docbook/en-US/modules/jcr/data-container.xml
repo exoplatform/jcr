@@ -176,7 +176,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting language="java">getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException;</programlisting>
+      <programlisting language="java">List&lt;NodeData&gt; getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException;</programlisting>
 
       <itemizedlist>
         <listitem>

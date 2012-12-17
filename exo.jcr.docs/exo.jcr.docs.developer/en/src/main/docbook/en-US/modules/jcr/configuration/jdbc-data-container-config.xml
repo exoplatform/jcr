@@ -816,11 +816,11 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
 </programlisting>
 
     <para>Complex queries will be used if you chose
-    <classname>org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer</classname>:</para>
+    <classname>org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer</classname>:</para>
 
     <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws"&gt;
-    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
     ...
   &lt;/workspace&gt;
 &lt;/worksapces&gt;</programlisting>
