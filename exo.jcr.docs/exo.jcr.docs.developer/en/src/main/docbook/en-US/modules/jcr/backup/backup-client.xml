@@ -690,7 +690,7 @@ body:
             "value" : "../temp/swap/production"
           }
         ],
-      "type" : "org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
+      "type" : "org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer",
       "valueStorages" : [ { "filters" : [ { "ancestorPath" : null,
                   "minValueSize" : 0,
                   "propertyName" : null,
@@ -828,7 +828,7 @@ failure message in response  - the description of failure</programlisting>
             "value" : "../temp/swap/production"
           }
         ],
-      "type" : "org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
+      "type" : "org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer",
       "valueStorages" : [ { "filters" : [ { "ancestorPath" : null,
                   "minValueSize" : 0,
                   "propertyName" : null,
@@ -1582,7 +1582,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
       &lt;workspaces&gt;
         
         &lt;workspace name="backup"&gt;
-          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcjcr" /&gt;
               &lt;property name="dialect" value="pgsql" /&gt;
