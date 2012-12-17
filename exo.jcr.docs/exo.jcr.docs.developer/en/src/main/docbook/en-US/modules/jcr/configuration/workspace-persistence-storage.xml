@@ -75,7 +75,7 @@
     <listitem>
       <para><emphasis
       role="bold">trigger-events-for-descendants-on-rename:</emphasis>
-      indicates if need to trigger events for descendents on rename or not. It
+      indicates if need to trigger events for descendants on rename or not. It
       allows to increase performance on- rename operation but in same time
       Observation'll not notified, has default value true</para>
     </listitem>

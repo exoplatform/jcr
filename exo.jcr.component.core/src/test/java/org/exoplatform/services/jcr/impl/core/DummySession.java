@@ -267,7 +267,7 @@ public class DummySession implements ExtendedSession
    {
    }
 
-   public void move(String srcAbsPath, String destAbsPath, boolean triggerEventsForDescendentsOnRename)
+   public void move(String srcAbsPath, String destAbsPath, boolean triggerEventsForDescendantsOnRename)
       throws ItemExistsException, PathNotFoundException, VersionException, ConstraintViolationException, LockException,
       RepositoryException
    {

@@ -985,7 +985,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    /**
     * {@inheritDoc}
     */
-   public void move(String srcAbsPath, String destAbsPath, boolean triggerEventsForDescendentsOnRename)
+   public void move(String srcAbsPath, String destAbsPath, boolean triggerEventsForDescendantsOnRename)
       throws ItemExistsException, PathNotFoundException, VersionException, LockException, RepositoryException
 
    {
@@ -1047,7 +1047,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       ItemDataMoveVisitor initializer =
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
             (NodeData)srcParentNode.getData(), nodeTypeManager, getTransientNodesManager(), true,
-            triggerEventsForDescendentsOnRename || srcParentNode != destParentNode);//NOSONAR
+            triggerEventsForDescendantsOnRename || srcParentNode != destParentNode);//NOSONAR
 
       getTransientNodesManager().rename((NodeData)srcNode.getData(), initializer);
    }
