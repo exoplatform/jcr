@@ -30,6 +30,9 @@
       <listitem>
         <para>MySQL 5.1.36 MYSQL Connector/J 5.1.14</para>
       </listitem>
+       <listitem>
+            <para>MySQL 5.5.17 MYSQL Connector/J 5.1.18</para>
+         </listitem>
 
       <listitem>
               <para>MySQL 5.5.17 MYSQL Connector/J 5.1.18</para>
@@ -43,13 +46,12 @@
         <para>PostgresSQL 8.2.4 JDBC4 Driver, Version 8.2-507</para>
       </listitem>
 
-       <listitem>
-              <para>PostgresSQL 8.3.7 JDBC4 Driver, Version 8.3-606</para>
-       </listitem>
-
-       <listitem>
-              <para>PostgresSQL 8.4.14 JDBC4 Driver, Version 8.4-702</para>
-       </listitem>
+      <listitem>
+        <para>PostgresSQL 8.3.7 JDBC4 Driver, Version 8.3-606</para>
+      </listitem>
+            <listitem>
+                    <para>PostgresSQL 8.4.14 JDBC4 Driver, Version 8.4-702</para>
+          </listitem>
 
       <listitem>
         <para>PostgresSQL 9.1.5 JDBC4 Driver, Version 9.1-902</para>
@@ -82,6 +84,9 @@
       <listitem>
         <para>MS SQL Server 2008 JDBC Driver 3.0</para>
       </listitem>
+         <listitem>
+           <para>MS SQL Server 2008 R2 JDBC Driver 3.0</para>
+        </listitem>
 
        <listitem>
               <para>MS SQL Server 2008 R2 JDBC Driver 3.0</para>
@@ -91,7 +96,9 @@
         <para>Sybase 15.0.3 ASE Driver: Sybase jConnect JDBC driver v7 (Build
         26502)</para>
       </listitem>
-
+       <listitem>
+              <para>Sybase ASE 15.7 Driver: Sybase jConnect JDBC driver v7 (build 26666)</para>
+         </listitem>
       <listitem>
               <para>Sybase ASE 15.7 Driver: Sybase jConnect JDBC driver v7 (build 26666)</para>
       </listitem>
@@ -284,7 +291,7 @@
   </table>
 
   <para>In case the non-ANSI node name is used, it's necessary to use a
-  database with <link linkend="JCR.MultilanguageSupport">MultiLanguage support</link>. Some JDBC
+      database with <link linkend="JCR.MultilanguageSupport">MultiLanguage support</link>. Some JDBC
   drivers need additional parameters for establishing a Unicode friendly
   connection. E.g. under mysql it's necessary to add an additional parameter
   for the JDBC driver at the end of JDBC URL. For instance:
@@ -816,11 +823,11 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
 </programlisting>
 
     <para>Complex queries will be used if you chose
-    <classname>org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer</classname>:</para>
+    <classname>org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer</classname>:</para>
 
     <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws"&gt;
-    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
     ...
   &lt;/workspace&gt;
 &lt;/worksapces&gt;</programlisting>

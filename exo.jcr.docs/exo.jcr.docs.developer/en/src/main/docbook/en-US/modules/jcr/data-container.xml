@@ -176,7 +176,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting language="java">List&lt;NodeData&gt; getChildNodesData(NodeData parent, List&lt;QPathEntryFilter&gt; pattern) throws RepositoryException, IllegalStateException;</programlisting>
+      <programlisting language="java">getChildNodesData(NodeData parent) throws RepositoryException, IllegalStateException;</programlisting>
 
       <itemizedlist>
         <listitem>
@@ -186,7 +186,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting language="java">List&lt;NodeData&gt; getChildNodesData(NodeData parent, List&lt;QPathEntryFilter&gt; patternFilters) throws RepositoryException;</programlisting>
+      <programlisting language="java">List&lt;NodeData&gt; getChildNodesData(NodeData parent, ListList&lt;QPathEntryFilter&gt; pattern) throws RepositoryException, IllegalStateException;</programlisting>
 
       <itemizedlist>
         <listitem>
