@@ -1442,7 +1442,7 @@ public class GadgetRegister implements ServletContextListener {
       &lt;authentication-policy&gt;org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator&lt;/authentication-policy&gt;
       &lt;workspaces&gt;
         &lt;workspace name="sample-ws"&gt;
-          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcexo${container.name.suffix}" /&gt;
               &lt;property name="dialect" value="hsqldb" /&gt;

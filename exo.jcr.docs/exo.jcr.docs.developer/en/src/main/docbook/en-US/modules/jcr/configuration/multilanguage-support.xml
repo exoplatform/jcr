@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="JCRMultilanguageSupport">
+<section id="JCR.MultilanguageSupport">
   <title>Multi-language support in eXo JCR RDB backend</title>
 
 
@@ -19,7 +19,7 @@
       component.</para>
     </note>
 
-  <section id="JCRMultilanguageSupport.Oracle">
+  <section id="JCR.MultilanguageSupport.Oracle">
     <title>Oracle</title>
 
     <para>In order to run multilanguage JCR on an Oracle backend Unicode
@@ -61,7 +61,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     Workspace Container:</para>
 
     <programlisting language="xml">&lt;workspace name="collaboration"&gt;
-          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcjcr" /&gt;
               &lt;property name="dialect" value="oracle" /&gt;
@@ -72,7 +72,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
           .....</programlisting>
   </section>
 
-  <section id="JCRMultilanguageSupport.DB2">
+  <section id="JCR.MultilanguageSupport.DB2">
     <title>DB2</title>
 
     <para>DB2 Universal Database (DB2 UDB) supports <ulink
@@ -87,7 +87,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     Workspace Container on DB2 v.9 and higher:</para>
     
     <programlisting language="xml">&lt;workspace name="collaboration"&gt;
-          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcjcr" /&gt;
               &lt;property name="dialect" value="db2" /&gt;
@@ -103,7 +103,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     </note>
   </section>
 
-  <section id="JCRMultilanguageSupport.MySQL">
+  <section id="JCR.MultilanguageSupport.MySQL">
     <title>MySQL</title>
 
     <para>JCR MySQL-backend requires special dialect <ulink
@@ -120,7 +120,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     example:</para>
     
     <programlisting language="xml">&lt;workspace name="collaboration"&gt;
-          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcjcr" /&gt;
               &lt;property name="dialect" value="mysql-utf8" /&gt;
@@ -131,7 +131,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
           .....</programlisting>
   </section>
 
-  <section id="JCRMultilanguageSupport.PostgreSQL">
+  <section id="JCR.MultilanguageSupport.PostgreSQL">
     <title>PostgreSQL</title>
 
     <para>On PostgreSQL-backend, multilingual support can be enabled in <ulink
@@ -158,7 +158,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     Workspace Container:</para>
     
     <programlisting language="java">&lt;workspace name="collaboration"&gt;
-          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcjcr" /&gt;
               &lt;property name="dialect" value="pgsql" /&gt;

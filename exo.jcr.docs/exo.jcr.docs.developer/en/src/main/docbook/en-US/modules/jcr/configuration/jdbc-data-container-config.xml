@@ -220,7 +220,7 @@
   </table>
 
   <para>In case the non-ANSI node name is used, it's necessary to use a
-  database with MultiLanguage support[TODO link to MultiLanguage]. Some JDBC
+  database with <link linkend="JCR.MultilanguageSupport">MultiLanguage support</link>. Some JDBC
   drivers need additional parameters for establishing a Unicode friendly
   connection. E.g. under mysql it's necessary to add an additional parameter
   for the JDBC driver at the end of JDBC URL. For instance:
@@ -557,7 +557,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
 
     <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
-    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="source-name" value="jdbcjcr"/&gt;
       &lt;property name="dialect" value="hsqldb"/&gt;
@@ -587,7 +587,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     &lt;/lock-manager&gt;
   &lt;/workspace&gt;
   &lt;workspace name="ws1" auto-init-root-nodetype="nt:unstructured"&gt;
-    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="source-name" value="jdbcjcr1"/&gt;
       &lt;property name="dialect" value="mysql"/&gt;
@@ -714,7 +714,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
 
     <programlisting language="xml">&lt;workspaces&gt;
   &lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
-    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="source-name" value="jdbcjcr"/&gt;
       &lt;property name="dialect" value="pgsql"/&gt;
@@ -744,7 +744,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     &lt;/lock-manager&gt;
   &lt;/workspace&gt;
   &lt;workspace name="ws1" auto-init-root-nodetype="nt:unstructured"&gt;
-    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+    &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="source-name" value="jdbcjcr"/&gt;
       &lt;property name="dialect" value="pgsql"/&gt;
@@ -804,7 +804,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
       </note>
 
       <programlisting language="xml">&lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
-  &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+  &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="dialect" value="hsqldb"/&gt;
       &lt;property name="driverClassName" value="org.hsqldb.jdbcDriver"/&gt;
@@ -888,7 +888,7 @@ ANALYZE INDEX JCR_PK_SCONTAINER COMPUTE STATISTICS</programlisting>
     <para>To enable this option put next configuration property:</para>
 
     <programlisting language="xml">&lt;workspace name="ws" auto-init-root-nodetype="nt:unstructured"&gt;
-  &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+  &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
     &lt;properties&gt;
       &lt;property name="dialect" value="oracle"/&gt;
       &lt;property name="force.query.hints" value="true" /&gt;
