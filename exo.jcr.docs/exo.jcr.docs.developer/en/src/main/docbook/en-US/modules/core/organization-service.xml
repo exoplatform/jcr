@@ -166,7 +166,7 @@
       </note>
 
       <para>You can find examples of the mentioned above implementations at
-      subversion server:</para>
+      github server:</para>
 
       <itemizedlist>
         <listitem>
@@ -378,7 +378,7 @@
       </itemizedlist>
 
       <para>You can find examples of the mentioned above implementations at
-      subversion server:</para>
+      github server:</para>
 
       <itemizedlist>
         <listitem>
@@ -422,7 +422,7 @@
       mention in the configuration file if you want to use your custom
       organization service.</para>
 
-      <para>You can find example of such class at subversion server: <ulink
+      <para>You can find example of such class at github server: <ulink
       url="https://github.com/exoplatform/jcr-services/tree/stable/1.14.x/src/main/java/org/exoplatform/services/jcr/ext/organization/JCROrganizationServiceImpl.java">JCROrganizationServiceImpl</ulink>.</para>
     </section>
 

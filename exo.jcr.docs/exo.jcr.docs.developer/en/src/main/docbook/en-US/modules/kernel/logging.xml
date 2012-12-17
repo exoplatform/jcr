@@ -53,17 +53,6 @@
           respectively) Look at the configuration examples below.</para>
         </listitem>
 
-        <listitem>
-          <para><firstterm>logger</firstterm> - an implementation of
-          commons-logging Log interface. It is possible to use commons
-          wrappers but to support buffering required by the log portlet three
-          kinds of loggers were added:
-          <classname>BufferedSimpleLog</classname>,
-          <classname>BufferedLog4JLogger</classname> and
-          <classname>BufferedJdk14Logger</classname> (they contain BufferedLog
-          and extend SimpleLog, Log4JLogger and Jdk14Logger commons-logging
-          wrappers respectively).</para>
-        </listitem>
       </itemizedlist></para>
   </section>
 
