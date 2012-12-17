@@ -14,7 +14,7 @@
   org.exoplatform.services.jcr.storage.WorkspaceDataContainer subclass
   like</para>
 
-  <programlisting language="xml">&lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+  <programlisting language="xml">&lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
   &lt;properties&gt;
     &lt;property name="source-name" value="jdbcjcr1"/&gt;
     &lt;property name="dialect" value="hsqldb"/&gt;

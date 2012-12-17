@@ -212,56 +212,77 @@
       <table>
         <title>Template variables</title>
 
-        <tgroup cols="1">
-          <thead>
-            <row>
-              <entry align="center">Variable</entry>
-            </row>
-          </thead>
+          <tgroup cols="2">
+              <thead>
+                  <row>
+                      <entry align="center">Variable</entry>
+                      <entry align="center">Description</entry>
+                  </row>
+              </thead>
 
-          <tbody>
+
+              <tbody>
             <row>
               <entry>jbosscache-cluster-name</entry>
+              <entry>cluster name (must be unique)</entry>
             </row>
 
             <row>
               <entry>jbosscache-cl-cache.jdbc.table.name</entry>
+              <entry>the name of the table.</entry>
             </row>
 
             <row>
               <entry>jbosscache-cl-cache.jdbc.table.create</entry>
+                <entry>can be true or false. Indicates whether to create the
+                   able during startup. If true, the table is created if it
+                   doesn't already exist. The default value is true.</entry>
             </row>
 
             <row>
               <entry>jbosscache-cl-cache.jdbc.table.drop</entry>
+                <entry>can be true or false. Indicates whether to drop the table
+                 during shutdown. The default value is true.</entry>
             </row>
 
             <row>
               <entry>jbosscache-cl-cache.jdbc.table.primarykey</entry>
+                <entry>the name of the primary key for the table.</entry>
             </row>
 
             <row>
               <entry>jbosscache-cl-cache.jdbc.fqn.column</entry>
+                <entry>FQN column name. The default value is 'fqn'.</entry>
             </row>
 
             <row>
               <entry>jbosscache-cl-cache.jdbc.fqn.type</entry>
+                <entry>FQN column type. The default value is
+                    'varchar(255)'.</entry>
             </row>
 
             <row>
               <entry>jbosscache-cl-cache.jdbc.node.column</entry>
+                <entry>node contents column name. The default value is
+                    'node'.</entry>
             </row>
 
             <row>
               <entry>jbosscache-cl-cache.jdbc.node.type</entry>
+                <entry>node contents column type. The default value is 'blob'.
+                    This type must specify a valid binary data type for the database
+                    being used.</entry>
             </row>
 
             <row>
               <entry>jbosscache-cl-cache.jdbc.parent.column</entry>
+                <entry>Parent column name. The default value is
+                    'parent'.</entry>
             </row>
 
             <row>
               <entry>jbosscache-cl-cache.jdbc.datasource</entry>
+                <entry>JNDI name of the DataSource.</entry>
             </row>
           </tbody>
         </tgroup>

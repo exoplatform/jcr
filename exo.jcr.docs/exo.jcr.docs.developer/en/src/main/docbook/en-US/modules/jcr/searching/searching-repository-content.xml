@@ -59,7 +59,7 @@ while (iter.hasNext()) {
     <title>Fuzzy Searches (since 1.0)</title>
 
     <para>JCR supports such features as Lucene Fuzzy Searches <ulink
-    url="http://lucene.apache.org/core/old_versioned_docs/versions/2_9_4/queryparsersyntax.html">Apache
+    url="http://lucene.apache.org/core/old_versioned_docs/versions/3_5_0/queryparsersyntax.html">Apache
     Lucene - Query Parser Syntax</ulink>.</para>
 
     <para>To use it, you have to form a query like the one described

@@ -1,53 +1,223 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
-"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id="JCR.DBCleanerTool">
-  <title>DBCleanerTool</title>
+        "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="JCR.DBCleanService">
+    <title>DBCleanService</title>
 
     <para>It is a special service for data removal from database. The section
-    shortly describes the principles of work <emphasis>DBCleaner</emphasis> under all
-    databases.</para>
+        shortly describes the principles of work <emphasis>DBCleanerTool</emphasis> under all
+        databases.</para>
 
     <para>It is special service for data removal from database. The article
-    shortly describes the principles of work DBCleaner under all
-    databases</para>
+        shortly describes the principles of work DBCleanerTool under all
+        databases</para>
 
-    <section id="JCR.DBCleanerTool.Methods_of_DBCleanerTool">
-      <title>Methods of DBCleanerTool </title>
-     <note>
-      <para>Code that invokes the methods of DBCleanerTool must have
-      JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION permission.</para>
-    </note>
+    <section id="JCR.DBCleanService.Methods_of_DBCleanService">
+        <title>Methods of DBCleanService </title>
+        <note>
+            <para>Code that invokes the methods of DBCleanService must have
+                JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION permission.</para>
+        </note>
 
-    <para>There are several methods of <emphasis>DBCleanerTool</emphasis> :</para>
+        <para>There are several methods of <emphasis>DBCleanService</emphasis> :</para>
 
-    <table>
-      <title>API</title>
+        <table>
+            <title>API</title>
 
-      <tgroup cols="2">
-        <tbody>
-          <row>
-            <entry>public void clean() throws DBCleanException</entry>
+            <tgroup cols="2">
+                <tbody>
+                    <row>
+                        <entry>public static void cleanWorkspaceData(WorkspaceEntry wsEntry) throws DBCleanException</entry>
 
-            <entry>Clean JCR tables, can't contain some indexes or constraints.</entry>
-          </row>
+                        <entry>Clean workspace data from database</entry>
+                    </row>
 
-          <row>
-            <entry>public void commit() throws DBCleanException</entry>
+                    <row>
+                        <entry>public static void cleanRepositoryData(RepositoryEntry rEntry) throws DBCleanException</entry>
 
-            <entry>Executes SQL scripts for finishing clean operations if needed.</entry>
-          </row>
+                        <entry>Cleanup repository data from database</entry>
+                    </row>
 
-          <row>
-            <entry>public void rollback() throws DBCleanException</entry>
+                    <row>
+                        <entry>public static DBCleanerTool getWorkspaceDBCleaner(Connection jdbcConn, WorkspaceEntry wsEntry) throws DBCleanException</entry>
 
-            <entry>Tries to restore previous data by renaming tables.</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
+                        <entry>Returns database cleaner of workspace.</entry>
+                    </row>
 
-    <para>Different approaches are used for database cleaning depending on
-    database and JCR configuration.</para>
-  </section>
+                    <row>
+                        <entry>public static DBCleanerTool getRepositoryDBCleaner(Connection jdbcConn, RepositoryEntry rEntry)</entry>
+
+                        <entry>Returns database cleaner of repository. Returns null in
+                            case of multi-db configuration.</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+
+        <para>The cleaning is a part of restoring from backup and it is used in
+            the following restore phases: </para>
+
+        <table>
+            <title>Relations between restore phases and what is called on
+                DBCleanerTool</title>
+
+            <tgroup cols="2">
+                <tbody>
+                    <row>
+                        <entry>clean</entry>
+
+                        <entry><programlisting language="java">DBCleanerTool.clean();</programlisting></entry>
+                    </row>
+
+                    <row>
+                        <entry>restore</entry>
+
+                        <entry>does nothing with DBCleanerTool</entry>
+                    </row>
+
+                    <row>
+                        <entry>commit</entry>
+
+                        <entry><programlisting language="java">DBCleanerTool.commit();</programlisting></entry>
+                    </row>
+
+                    <row>
+                        <entry>rollback</entry>
+
+                        <entry><programlisting language="java">DBCleanerTool.rollback();
+                        </programlisting></entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+
+        <para>Different approaches are used for database cleaning depending on
+            database and JCR configuration.</para>
+    </section>
+
+    <section id="JCR.DBCleanService.Clean_Only_Single_Workspace">
+        <title>Need to clean only single workspace</title>
+
+        <para>Simple cleaning records from JCR table is used in case of single-db
+            configuration. </para>
+
+        <table>
+            <title>PostgreSQL, DB2 and MSSQL </title>
+
+            <tgroup cols="2">
+                <tbody>
+                    <row>
+                        <entry>clean()</entry>
+
+                        <entry>removing all records from the database. Foreign key of
+                            JCR_SITEM table is also removed</entry>
+                    </row>
+
+                    <row>
+                        <entry>commit()</entry>
+
+                        <entry>adding foreign key</entry>
+                    </row>
+
+                    <row>
+                        <entry>rollback()</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+
+        <table>
+            <title>Oracle, Sybase, HSQLDB, MySQL</title>
+
+            <tgroup cols="2">
+                <tbody>
+                    <row>
+                        <entry>clean()</entry>
+
+                        <entry>removing all records from the database. Foreign key of
+                            JCR_SITEM table is also removed</entry>
+                    </row>
+
+                    <row>
+                        <entry>commit()</entry>
+
+                        <entry>adding foreign key</entry>
+                    </row>
+
+                    <row>
+                        <entry>rollback()</entry>
+
+                        <entry>adding foreign key</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+
+        <para>Either removing or renaming JCR tables are used in case of mult-db
+            configuration.</para>
+
+        <table>
+            <title>PostgreSQL, DB2 and MSSQL</title>
+
+            <tgroup cols="2">
+                <tbody>
+                    <row>
+                        <entry>clean()</entry>
+
+                        <entry>removing tables JCR_MVALUE, JCR_MREF, JCR_MITEM,
+                            initializing new tables without foreign key of JCR_MITEM table,
+                            adding root</entry>
+                    </row>
+
+                    <row>
+                        <entry>commit()</entry>
+
+                        <entry>adding foreign key</entry>
+                    </row>
+
+                    <row>
+                        <entry>rollback()</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+
+        <table>
+            <title>Oracle, Sybase, HSQLDB, MySQL</title>
+
+            <tgroup cols="2">
+                <tbody>
+                    <row>
+                        <entry>clean()</entry>
+
+                        <entry>renaming current tables, initializing new tables without
+                            foreign key of JCR_MITEM table, adding root node, removing indexes
+                            for some databases</entry>
+                    </row>
+
+                    <row>
+                        <entry>commit()</entry>
+
+                        <entry>renaming tables, adding indexes</entry>
+                    </row>
+
+                    <row>
+                        <entry>rollback()</entry>
+
+                        <entry>removing previously renamed tables, adding indexes, adding
+                            foreign key</entry>
+                    </row>
+                </tbody>
+            </tgroup>
+        </table>
+    </section>
+
+    <section id="JCR.DBCleanService.Clean_Whole_Reposistory">
+        <title>Need to clean the whole repository</title>
+
+        <para>In case of single-db all workspaces will be processed simultaneously
+            as in case of single workspace multi-db configuration. For multi-db every
+            workspace will be processed separately as in case of single workspace
+            multi-db configuration.</para>
+    </section>
 </section>

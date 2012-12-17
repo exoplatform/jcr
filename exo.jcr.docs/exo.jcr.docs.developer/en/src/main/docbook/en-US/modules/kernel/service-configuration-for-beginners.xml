@@ -196,7 +196,7 @@
 
     <para>In order to access to a service you need to use a Container. Just
     open <ulink
-    url="https://github.com/exoplatform/kernel/tree/stable/2.3.x/exo.kernel.container/src/main/java/org/exoplatform/container">https://github.com/exoplatform/kernel/tree/stable/2.3.x/exo.kernel.container/src/main/java/org/exoplatform/container</ulink>.</para>
+    url="https://github.com/exoplatform/kernel/tree/stable/2.4.x/exo.kernel.container/src/main/java/org/exoplatform/container">https://github.com/exoplatform/kernel/tree/stable/2.4.x/exo.kernel.container/src/main/java/org/exoplatform/container</ulink>.</para>
 
     <para>Among the classes you see in this directory, you only will be
     interested in these three container types:</para>
