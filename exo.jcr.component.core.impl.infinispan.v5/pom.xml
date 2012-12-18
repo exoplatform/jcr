@@ -58,6 +58,7 @@
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.commons.test</artifactId>
+         <scope>test</scope>
       </dependency>     
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
@@ -103,41 +104,9 @@
          </exclusions>
       </dependency>
       <dependency>
-        <groupId>org.exoplatform.core</groupId>
-        <artifactId>exo.core.component.database</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>org.exoplatform.kernel</groupId>
-        <artifactId>exo.kernel.container</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>org.exoplatform.kernel</groupId>
-        <artifactId>exo.kernel.commons</artifactId>
-      </dependency>
-      <dependency>
         <groupId>org.ow2.spec.ee</groupId>
         <artifactId>ow2-jta-1.1-spec</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>org.exoplatform.kernel</groupId>
-        <artifactId>exo.kernel.component.common</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>org.jboss.jbossts</groupId>
-        <artifactId>jbossjta</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>javax.jcr</groupId>
-        <artifactId>jcr</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>javax.transaction</groupId>
-        <artifactId>jta</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.cache</groupId>
-         <artifactId>jbosscache-core</artifactId>
-      </dependency>         
+      </dependency>        
       <!-- TCK binaries and deps for repo stub, some eXo API test -->
       <dependency>
         <groupId>org.infinispan</groupId>

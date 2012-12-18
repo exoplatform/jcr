@@ -41,6 +41,7 @@
     <dependency>
       <groupId>org.exoplatform.kernel</groupId>
       <artifactId>exo.kernel.commons.test</artifactId>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <build>

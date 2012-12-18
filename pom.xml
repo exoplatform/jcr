@@ -62,7 +62,6 @@
         <groupId>org.exoplatform.kernel</groupId>
         <artifactId>exo.kernel.commons.test</artifactId>
         <version>${org.exoplatform.kernel.version}</version>
-        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.kernel</groupId>
@@ -242,7 +241,6 @@
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-log4j12</artifactId>
         <version>1.6.1</version>
-	<scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>javax.jcr</groupId>
@@ -431,19 +429,16 @@
         <groupId>org.antlr</groupId>
         <artifactId>gunit</artifactId>
         <version>3.2</version>
-        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.ow2.spec.ee</groupId>
         <artifactId>ow2-jta-1.1-spec</artifactId>
         <version>1.0-M1</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>org.jboss.javaee</groupId>
         <artifactId>jboss-transaction-api</artifactId>
         <version>1.0.1.GA</version>
-        <scope>provided</scope>
       </dependency>
       <dependency>
         <groupId>javax.xml.stream</groupId>
@@ -531,7 +526,6 @@
     <module>exo.jcr.framework.ftpclient</module>
     <module>applications</module>
     <module>exo.jcr.docs</module>
-    <module>packaging/module</module>
   </modules>
 
 </project>
