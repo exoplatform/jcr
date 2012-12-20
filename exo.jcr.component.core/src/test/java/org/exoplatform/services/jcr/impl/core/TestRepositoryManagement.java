@@ -56,7 +56,6 @@ import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 
 import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
@@ -286,50 +285,6 @@ public class TestRepositoryManagement extends JcrImplBaseTest
          assertFalse(service.canRemoveRepository(repository.getConfiguration().getName()));
          session.logout();
          assertTrue(service.canRemoveRepository(repository.getConfiguration().getName()));
-      }
-      finally
-      {
-         if (repository != null)
-         {
-            helper.removeRepository(container, repository.getConfiguration().getName());
-         }
-      }
-   }
-   
-   public void testForceRemove() throws Exception
-   {
-      ManageableRepository repository = null;
-      try
-      {
-         repository = helper.createRepository(container, false, null);
-
-         RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
-
-         SessionImpl session =
-            (SessionImpl)repository.login(credentials, repository.getConfiguration().getSystemWorkspaceName());
-
-         assertFalse(service.canRemoveRepository(repository.getConfiguration().getName()));
-         
-         try
-         {
-            service.removeRepository(repository.getConfiguration().getName(), false);
-            fail();
-         }
-         catch (RepositoryException e)
-         {
-            //ok
-         }
-         
-         try
-         {
-            service.removeRepository(repository.getConfiguration().getName(), true);
-            repository = null;   
-         }
-         catch (RepositoryException e)
-         {
-            fail("Repository should be removed with opened sessions.");
-         }
-         
       }
       finally
       {
