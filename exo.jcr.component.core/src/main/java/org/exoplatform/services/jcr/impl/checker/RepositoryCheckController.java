@@ -171,6 +171,15 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
          }
       });
    }
+   
+   /**
+    * @return absolute path to report or null if it doesn't exist.
+    */
+   public String getLastReportPath()
+   {
+      return lastReport != null ? lastReport.getReportPath() : null;
+   }
+
 
    protected String checkAndRepairAction(DataStorage[] storages, boolean autoRepair)
    {

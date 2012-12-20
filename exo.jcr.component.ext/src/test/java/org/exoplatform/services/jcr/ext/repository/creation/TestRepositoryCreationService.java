@@ -26,13 +26,19 @@ import org.exoplatform.services.jcr.ext.backup.BackupManager;
 import org.exoplatform.services.jcr.ext.backup.ExtendedBackupManager;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupChain;
 import org.exoplatform.services.jcr.ext.backup.RepositoryBackupConfig;
+import org.exoplatform.services.jcr.impl.checker.RepositoryCheckController;
+import org.exoplatform.services.jcr.impl.proccess.WorkerThread;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS.
@@ -390,6 +396,158 @@ public class TestRepositoryCreationService extends AbstractBackupTestCase
       catch (RepositoryConfigurationException e)
       {
          // ok
+      }
+   }
+   
+   /**
+    * Create repository and add content. Meantime read content. Then stop repository using
+    * <code>forceRemove</code> is set to true. Check consistency at the end. 
+    */
+   public void testRepositoryConsistencyAfterForceRemove() throws Exception
+   {
+      // prepare
+      String dsName = helper.createDatasource();
+      ManageableRepository repository = helper.createRepository(container, false, dsName);
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(false  , dsName);
+      helper.addWorkspace(repository, wsEntry);
+      addConent(repository, wsEntry.getName());
+      RepositoryEntry repoEntry = repository.getConfiguration();
+      WorkspaceEntry sysWsEntry = repository.getConfiguration().getWorkspaceEntries().get(0);
+
+      ContentReader reader = new ContentReader(repository);
+      ContentWriter writer = new ContentWriter(repository);
+      try
+      {
+         writer.start();
+         reader.start();
+
+         Thread.sleep(15 * 1000);
+
+         // remove repository
+         repositoryService.removeRepository(repository.getConfiguration().getName(), true);
+
+         try
+         {
+            repositoryService.getConfig().getRepositoryConfiguration(repository.getConfiguration().getName());
+            fail();
+         }
+         catch (Exception e)
+         {
+            //ok
+         }
+      }
+      finally
+      {
+         reader.halt();
+         writer.halt();
+      }
+
+      repoEntry.addWorkspace(sysWsEntry);
+      repoEntry.addWorkspace(wsEntry);;
+
+      repositoryService.createRepository(repoEntry);
+      assertNotNull(repositoryService.getConfig().getRepositoryConfiguration(repoEntry.getName()));
+
+      // check
+      RepositoryCheckController controller = null;
+      try
+      {
+         controller = new RepositoryCheckController(repository);
+         String report = controller.checkAll();
+         assertFalse(report.contains("NOT consistent"));
+      }
+      finally
+      {
+         if (controller != null)
+         {
+            if (controller.getLastReportPath() != null)
+            {
+               File lastReport = new File(controller.getLastReportPath());
+               if (!lastReport.delete())
+               {
+                  lastReport.deleteOnExit();
+               }
+            }
+         }
+      }
+   }
+
+   /**
+    * Read what already were wrote
+    */
+   class ContentReader extends WorkerThread
+   {
+      ManageableRepository repository;
+
+      String workspaceName;
+
+      long iterator = 0;
+
+      public ContentReader(ManageableRepository repository)
+      {
+         super(1);
+         this.repository = repository;
+         this.workspaceName = repository.getConfiguration().getWorkspaceEntries().get(1).getName();
+      }
+
+      public void callPeriodically()
+      {
+         try
+         {
+            Session session = repository.getSystemSession(workspaceName);
+            Node file = session.getRootNode().getNode("testNode-" + iterator);
+
+            iterator++;
+
+            file.getVersionHistory();
+            file.getNode("jcr:content").getProperty("jcr:data");
+
+         }
+         catch (Exception e)
+         {
+            // ignoring
+         }
+      }
+   }
+
+   /**
+    * Adds content to none system workspace. Every opened session keep alive.
+    */
+   class ContentWriter extends WorkerThread
+   {
+      ManageableRepository repository;
+
+      String workspaceName;
+
+      long iterator = 0;
+
+      public ContentWriter(ManageableRepository repository)
+      {
+         super(1);
+         this.repository = repository;
+         this.workspaceName = repository.getConfiguration().getWorkspaceEntries().get(1).getName();
+      }
+
+      public void callPeriodically()
+      {
+         try
+         {
+            Session session = repository.getSystemSession(workspaceName);
+
+            Node file = session.getRootNode().addNode("testNode-" + iterator++, "nt:file");
+            Node content = file.addNode("jcr:content", "nt:resource");
+            content.setProperty("jcr:data", new FileInputStream(createBLOBTempFile(10)));
+            content.setProperty("jcr:mimeType", "text/plain");
+            content.setProperty("jcr:lastModified", Calendar.getInstance());
+            session.save();
+            
+            file.checkin();
+            file.checkout();
+         }
+         catch (Exception e)
+         {
+            // ignoring
+         }
       }
    }
 
