@@ -293,6 +293,11 @@ public class NodeIndexer
     */
    private void addValues(final Document doc, final PropertyData prop) throws RepositoryException
    {
+      if (prop.getValues() == null)
+      {
+         return;
+      }
+
       int propType = prop.getType();
       String fieldName = resolver.createJCRName(prop.getQPath().getName()).getAsString();
       if (propType == PropertyType.BINARY)
@@ -320,6 +325,11 @@ public class NodeIndexer
                   prop.getValues().size() > 0 ? prop : ((PropertyData)stateProvider.getItemData(node, new QPathEntry(
                      Constants.JCR_DATA, 0), ItemType.PROPERTY));
 
+               if (propData == null)
+               {
+                  return;
+               }
+
                // index if have jcr:mimeType sibling for this binary property only
                try
                {
@@ -332,6 +342,7 @@ public class NodeIndexer
                   if (data == null)
                   {
                      LOG.warn("null value found at property " + prop.getQPath().getAsString());
+                     return;
                   }
 
                   // check the jcr:encoding property
@@ -456,13 +467,20 @@ public class NodeIndexer
             // read prop with values from DM
             // WARN. DON'T USE access item BY PATH - it's may be a node in case of
             // residual definitions in NT
-            List<ValueData> data =
-               prop.getValues().size() > 0 ? prop.getValues() : ((PropertyData)stateProvider.getItemData(prop
-                  .getIdentifier())).getValues();
+            PropertyData propData =
+               prop.getValues().size() > 0 ? prop : (PropertyData)stateProvider.getItemData(prop.getIdentifier());
+
+            if (propData == null)
+            {
+               return;
+            }
+
+            List<ValueData> data = propData.getValues();
 
             if (data == null)
             {
                LOG.warn("null value found at property " + prop.getQPath().getAsString());
+               return;
             }
 
             ExtendedValue val = null;
