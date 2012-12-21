@@ -325,7 +325,10 @@ public class NodeIndexer
                {
                   if (propData == null || (data = propData.getValues()) == null || data.isEmpty())
                   {
-                     LOG.warn("No value found for the property located at " + prop.getQPath().getAsString());
+                     if (LOG.isDebugEnabled())
+                     {
+                        LOG.debug("No value found for the property located at " + prop.getQPath().getAsString());
+                     }
                      return;
                   }
 
@@ -469,7 +472,10 @@ public class NodeIndexer
                
             if (propData == null || (data = propData.getValues()) == null || data.isEmpty())
             {
-               LOG.warn("No value found for the property located at " + prop.getQPath().getAsString());
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("No value found for the property located at " + prop.getQPath().getAsString());
+               }
                return;
             }
 
