@@ -331,7 +331,10 @@ public class NodeIndexer
                {
                   if (propData == null || (data = propData.getValues()) == null || data.isEmpty())
                   {
-                     LOG.warn("null value found at property " + prop.getQPath().getAsString());
+                     if (LOG.isDebugEnabled())
+                     {
+                        LOG.debug("No value found for the property located at " + prop.getQPath().getAsString());
+                     }
                      return;
                   }
 
@@ -460,7 +463,7 @@ public class NodeIndexer
             {
                if (LOG.isDebugEnabled())
                {
-                  LOG.debug("No mime type found for the node located at " + node.getQPath().getAsString());
+                  LOG.debug("no mime type found for the node located at " + node.getQPath().getAsString());
                }
             }
          }
@@ -478,10 +481,12 @@ public class NodeIndexer
                   .getItemData(prop.getIdentifier());
 
             List<ValueData> data;
-
             if (propData == null || (data = propData.getValues()) == null || data.isEmpty())
             {
-               LOG.warn("null value found at property " + prop.getQPath().getAsString());
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.warn("null value found at property " + prop.getQPath().getAsString());
+               }
                return;
             }
 
