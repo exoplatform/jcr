@@ -311,28 +311,27 @@ public class NodeIndexer
                      ItemType.PROPERTY);
             }
 
-            if (pmime != null)
+            if (pmime != null && pmime.getValues() != null && !pmime.getValues().isEmpty())
             {
                // ok, have a reader
                // if the prop obtainer from cache it will contains a values,
                // otherwise read prop with values from DM
                PropertyData propData =
-                  prop.getValues().size() > 0 ? prop : ((PropertyData)stateProvider.getItemData(node, new QPathEntry(
-                     Constants.JCR_DATA, 0), ItemType.PROPERTY));
+                  prop.getValues() != null && !prop.getValues().isEmpty() ? prop : ((PropertyData)stateProvider
+                     .getItemData(node, new QPathEntry(Constants.JCR_DATA, 0), ItemType.PROPERTY));
 
                // index if have jcr:mimeType sibling for this binary property only
                try
                {
+                  if (propData == null || (data = propData.getValues()) == null || data.isEmpty())
+                  {
+                     LOG.warn("No value found for the property located at " + prop.getQPath().getAsString());
+                     return;
+                  }
+
                   DocumentReader dreader =
                      extractor.getDocumentReader(new String(pmime.getValues().get(0).getAsByteArray(),
                         Constants.DEFAULT_ENCODING));
-
-                  data = propData.getValues();
-
-                  if (data == null)
-                  {
-                     LOG.warn("null value found at property " + prop.getQPath().getAsString());
-                  }
 
                   // check the jcr:encoding property
                   PropertyData encProp = node.getProperty(Constants.JCR_ENCODING.getAsString());
@@ -344,7 +343,7 @@ public class NodeIndexer
                   }
 
                   String encoding = null;
-                  if (encProp != null)
+                  if (encProp != null && encProp.getValues() != null && !encProp.getValues().isEmpty())
                   {
                      // encoding parameter used
                      encoding = new String(encProp.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING);
@@ -445,8 +444,14 @@ public class NodeIndexer
                      + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                }
             }
+            else
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("no mime type found for the node located at " + node.getQPath().getAsString());
+               }
+            }
          }
-
       }
       else
       {
@@ -456,13 +461,16 @@ public class NodeIndexer
             // read prop with values from DM
             // WARN. DON'T USE access item BY PATH - it's may be a node in case of
             // residual definitions in NT
-            List<ValueData> data =
-               prop.getValues().size() > 0 ? prop.getValues() : ((PropertyData)stateProvider.getItemData(prop
-                  .getIdentifier())).getValues();
+            PropertyData propData =
+               prop.getValues() != null && !prop.getValues().isEmpty() ? prop : (PropertyData)stateProvider
+                  .getItemData(prop.getIdentifier());
 
-            if (data == null)
+            List<ValueData> data;
+               
+            if (propData == null || (data = propData.getValues()) == null || data.isEmpty())
             {
-               LOG.warn("null value found at property " + prop.getQPath().getAsString());
+               LOG.warn("No value found for the property located at " + prop.getQPath().getAsString());
+               return;
             }
 
             ExtendedValue val = null;
