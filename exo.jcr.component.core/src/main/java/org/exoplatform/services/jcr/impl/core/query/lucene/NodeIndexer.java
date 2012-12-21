@@ -351,6 +351,13 @@ public class NodeIndexer
                      // encoding parameter used
                      encoding = new String(encProp.getValues().get(0).getAsByteArray(), Constants.DEFAULT_ENCODING);
                   }
+                  else
+                  {
+                     if (LOG.isDebugEnabled())
+                     {
+                        LOG.debug("No encoding found for the node located at " + node.getQPath().getAsString());
+                     }
+                  }
 
                   if (dreader instanceof AdvancedDocumentReader)
                   {
