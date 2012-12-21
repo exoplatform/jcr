@@ -139,30 +139,48 @@
             <row>
               <entry>changesfilter-class</entry>
 
-              <entry>template of JBoss-cache configuration for all
-              query-handlers in repository</entry>
+              <entry>The FQN of the class to use to indicate the policy to use
+              to manage the lucene indexes changes. This class must extend
+              <emphasis>org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter</emphasis>.
+              This must be set in cluster environment to define the clustering
+              strategy to adopt. To use the Shared Indexes Strategy, you can
+              set it to
+              org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter.
+              I you prefer the Local Indexes Strategy, you can set it to
+              org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter.</entry>
             </row>
 
             <row>
               <entry>jbosscache-configuration</entry>
 
               <entry>template of JBoss-cache configuration for all
-              query-handlers in repository</entry>
+              query-handlers in repository (search, cache, locks)</entry>
             </row>
 
             <row>
               <entry>jgroups-configuration</entry>
 
-              <entry>jgroups-configuration is template configuration for all
-              components (search, cache, locks) [Add link to document
-              describing template configurations]</entry>
+              <entry>This is the path to JGroups configuration that should not
+              be anymore jgroups' stack definitions but a normal jgroups
+              configuration format with the shared transport configured by
+              simply setting the jgroups property singleton_name to a unique
+              name (it must remain unique from one portal container to
+              another). This file is also pre-bundled with templates and is
+              recommended for use.</entry>
             </row>
 
             <row>
               <entry>jgroups-multiplexer-stack</entry>
 
-              <entry>[TODO about jgroups-multiplexer-stack - add link to JBoss
-              doc]</entry>
+              <entry>if set to true, it will indicate that the file
+              corresponding to the parameter jgroups-configuration is a
+              actually a file defining a set of jgroups multiplexer stacks. In
+              the XML tag jgroupsConfig within the jboss cache configuration,
+              you will then be able to set the name of the multiplexer stack
+              to use thanks to the attribute multiplexerStack. Please note
+              that the jgroups multiplexer has been deprecated by the jgroups
+              Team and has been replaced by the shared transport so it is
+              highly recommended to not use it anymore.</entry>
             </row>
 
             <row>

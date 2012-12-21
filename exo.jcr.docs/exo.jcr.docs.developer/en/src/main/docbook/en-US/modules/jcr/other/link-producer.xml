@@ -13,8 +13,8 @@
   <para>Link Producer has a simple configuration like described below:</para>
 
   <programlisting language="xml">&lt;component&gt;
-  &lt;key&gt;org.exoplatform.services.webdav.lnkproducer.LnkProducer&lt;/key&gt;
-  &lt;type&gt;org.exoplatform.services.webdav.lnkproducer.LnkProducer&lt;/type&gt;
+  &lt;key&gt;org.exoplatform.services.jcr.webdav.lnkproducer.LnkProducer&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.jcr.webdav.lnkproducer.LnkProducer&lt;/type&gt;
 &lt;/component&gt;</programlisting>
 
   <para>When using JCR the resource can be addressed by WebDav reference

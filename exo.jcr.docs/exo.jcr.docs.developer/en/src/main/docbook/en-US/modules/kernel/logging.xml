@@ -53,17 +53,6 @@
           respectively) Look at the configuration examples below.</para>
         </listitem>
 
-        <listitem>
-          <para><firstterm>logger</firstterm> - an implementation of
-          commons-logging Log interface. It is possible to use commons
-          wrappers but to support buffering required by the log portlet three
-          kinds of loggers were added:
-          <classname>BufferedSimpleLog</classname>,
-          <classname>BufferedLog4JLogger</classname> and
-          <classname>BufferedJdk14Logger</classname> (they contain BufferedLog
-          and extend SimpleLog, Log4JLogger and Jdk14Logger commons-logging
-          wrappers respectively).</para>
-        </listitem>
       </itemizedlist></para>
   </section>
 
@@ -79,10 +68,6 @@
       <programlisting language="xml">  &lt;component&gt;
     &lt;type&gt;org.exoplatform.services.log.LogConfigurationInitializer&lt;/type&gt;
     &lt;init-params&gt;
-      &lt;value-param&gt;
-        &lt;name&gt;logger&lt;/name&gt;
-        &lt;value&gt;org.exoplatform.services.log.impl.BufferedLog4JLogger&lt;/value&gt;
-      &lt;/value-param&gt;
       &lt;value-param&gt;
         &lt;name&gt;configurator&lt;/name&gt;
         &lt;value&gt;org.exoplatform.services.log.impl.Log4JConfigurator&lt;/value&gt;
@@ -107,7 +92,7 @@
 
         <para>You can set logger level for class or group of classes by
         setting next property:</para>
-        
+
         <programlisting language="xml">&lt;property name="log4j.category.{component or class name}" value="DEBUG"/&gt;</programlisting>
 
         <para>For example:</para>
@@ -119,29 +104,29 @@
               component</para>
             </listitem>
           </itemizedlist>
-              
+
               <programlisting language="xml">&lt;property name="log4j.category.exo.jcr.component.core.SessionDataManager" value="DEBUG"/&gt;</programlisting>
-            
+
           <itemizedlist>
             <listitem>
               <para>Or we want to log all debug messages for all classes in
               <package>exo.jcr.component.core</package>
               component</para>
             </listitem>
-          </itemizedlist>    
-          
+          </itemizedlist>
+
               <programlisting language="xml">&lt;property name="log4j.category.exo.jcr.component.core" value="DEBUG"/&gt;</programlisting>
-            
+
           <itemizedlist>
             <listitem>
               <para>Or we want to log all messages for all kernel
               components</para>
             </listitem>
-          </itemizedlist>  
-              
+          </itemizedlist>
+
         <programlisting language="xml">&lt;property name="log4j.category.exo.kernel" value="DEBUG"/&gt;</programlisting>
-          
-          
+
+
       </section>
     </section>
 
@@ -158,7 +143,7 @@
           </listitem>
           </itemizedlist>
         <programlisting>LOG_OPTS="-Dorg.apache.commons.logging.Log=org.apache.commons.logging.impl.Jdk14Logger"</programlisting>
-          
+
         <itemizedlist>
           <listitem>
             <para>Edit your <filename>logs-configuration.xml:</filename></para>
@@ -167,10 +152,6 @@
             <programlisting language="xml">&lt;component&gt;
     &lt;type&gt;org.exoplatform.services.log.LogConfigurationInitializer&lt;/type&gt;
     &lt;init-params&gt;
-      &lt;value-param&gt;
-        &lt;name&gt;logger&lt;/name&gt;
-        &lt;value&gt;org.exoplatform.services.log.impl.BufferedJdk14Logger&lt;/value&gt;
-      &lt;/value-param&gt;
       &lt;value-param&gt;
         &lt;name&gt;configurator&lt;/name&gt;
         &lt;value&gt;org.exoplatform.services.log.impl.Jdk14Configurator&lt;/value&gt;
@@ -184,7 +165,7 @@
       &lt;/properties-param&gt;
     &lt;/init-params&gt;
   &lt;/component&gt;</programlisting>
-          
+
     </section>
 
     <section id="Kernel.LogConfiguration.ConfigurationExamples.CommonsLoggingSimpleLogs">
@@ -197,12 +178,8 @@
     &lt;type&gt;org.exoplatform.services.log.LogConfigurationInitializer&lt;/type&gt;
     &lt;init-params&gt;
       &lt;value-param&gt;
-        &lt;name&gt;logger&lt;/name&gt;
-        &lt;value&gt;org.exoplatform.services.log.impl.BufferedSimpleLog&lt;/value&gt;
-      &lt;/value-param&gt;
-      &lt;value-param&gt;
         &lt;name&gt;configurator&lt;/name&gt;
-        &lt;value&gt;org.exoplatform.services.log.impl.SimpleLogConfigurator&lt;/value&gt;
+        &lt;value&gt;org.exoplatform.services.log.impl.SimpleExoLogConfigurator&lt;/value&gt;
       &lt;/value-param&gt;
       &lt;properties-param&gt;
         &lt;name&gt;properties&lt;/name&gt;

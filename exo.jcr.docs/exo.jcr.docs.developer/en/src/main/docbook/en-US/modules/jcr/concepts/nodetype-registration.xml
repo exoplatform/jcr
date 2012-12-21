@@ -1,76 +1,160 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<!-- This document was created with Syntext Serna Free. --><!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" []>
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- This document was created with Syntext Serna Free. -->
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.NodeTypeRegistration">
-<title>NodeType Registration</title>
+  <title>NodeType Registration</title>
+
   <para>eXo JCR implementation supports two ways of Nodetypes
   registration:</para>
+
   <itemizedlist>
     <listitem>
       <para>From a NodeTypeValue POJO</para>
     </listitem>
+
     <listitem>
       <para>From an XML document (stream)</para>
     </listitem>
   </itemizedlist>
+
   <section id="JCR.NodeTypeRegistration.InterfacesAndMethods">
     <title>Interfaces and methods</title>
+
     <section id="JCR.NodeTypeRegistration.InterfacesAndMethods.ExtendedNodeTypeManager">
       <title>ExtendedNodeTypeManager</title>
+
       <para>The ExtendedNodeTypeManager (from JCR 1.11) interface provides the
       following methods related to registering node types:</para>
+
       <programlisting language="java">public static final int IGNORE_IF_EXISTS  = 0;
 
 public static final int FAIL_IF_EXISTS    = 2;
 
 public static final int REPLACE_IF_EXISTS = 4;
 
+ /**
+  * Return NodeType for a given InternalQName.
+  *
+  * @param qname nodetype name
+  * @return NodeType
+  * @throws NoSuchNodeTypeException if no nodetype found with the name
+  * @throws RepositoryException Repository error
+  */
+NodeType findNodeType(InternalQName qname) throws NoSuchNodeTypeException, RepositoryException;
 
 /**
  * Registers node type using value object.
+ * 
+ * @param nodeTypeValue
+ * @param alreadyExistsBehaviour
+ * @throws RepositoryException
  */
-void registerNodeType(NodeTypeValue nodeTypeValue, int alreadyExistsBehaviour) throws RepositoryException;
+NodeType registerNodeType(NodeTypeValue nodeTypeValue, int alreadyExistsBehaviour) throws RepositoryException;
 
 /**
  * Registers all node types using XML binding value objects from xml stream.
+ * 
+ * @param xml a InputStream
+ * @param alreadyExistsBehaviour a int
+ * @throws RepositoryException
  */
-void registerNodeTypes(InputStream xml, int alreadyExistsBehaviour) throws RepositoryException;
+NodeTypeIterator registerNodeTypes(InputStream xml, int alreadyExistsBehaviour, String contentType)
+   throws RepositoryException;
+
+/**
+ * Gives the {@link NodeTypeManager}
+ * 
+ * @throws RepositoryException if another error occurs.
+ */
+NodeTypeDataManager getNodeTypesHolder() throws RepositoryException;
 
 /**
  * Return &lt;code&gt;NodeTypeValue&lt;/code&gt; for a given nodetype name. Used for
  * nodetype update. Value can be edited and registered via
  * &lt;code&gt;registerNodeType(NodeTypeValue nodeTypeValue, int alreadyExistsBehaviour)&lt;/code&gt;
+ * .
+ * 
+ * @param ntName nodetype name
+ * @return NodeTypeValue
+ * @throws NoSuchNodeTypeException if no nodetype found with the name
+ * @throws RepositoryException Repository error
  */
 NodeTypeValue getNodeTypeValue(String ntName) throws NoSuchNodeTypeException, RepositoryException;
 
 /**
  * Registers or updates the specified &lt;code&gt;Collection&lt;/code&gt; of
- * &lt;code&gt;NodeTypeValue&lt;/code&gt; objects.
+ * &lt;code&gt;NodeTypeValue&lt;/code&gt; objects. This method is used to register or
+ * update a set of node types with mutual dependencies. Returns an iterator
+ * over the resulting &lt;code&gt;NodeType&lt;/code&gt; objects. &lt;p/&gt; The effect of the
+ * method is "all or nothing"; if an error occurs, no node types are
+ * registered or updated. &lt;p/&gt; Throws an
+ * &lt;code&gt;InvalidNodeTypeDefinitionException&lt;/code&gt; if a
+ * &lt;code&gt;NodeTypeDefinition&lt;/code&gt; within the &lt;code&gt;Collection&lt;/code&gt; is
+ * invalid or if the &lt;code&gt;Collection&lt;/code&gt; contains an object of a type
+ * other than &lt;code&gt;NodeTypeDefinition&lt;/code&gt; . &lt;p/&gt; Throws a
+ * &lt;code&gt;NodeTypeExistsException&lt;/code&gt; if &lt;code&gt;allowUpdate&lt;/code&gt; is
+ * &lt;code&gt;false&lt;/code&gt; and a &lt;code&gt;NodeTypeDefinition&lt;/code&gt; within the
+ * &lt;code&gt;Collection&lt;/code&gt; specifies a node type name that is already
+ * registered. &lt;p/&gt; Throws an
+ * &lt;code&gt;UnsupportedRepositoryOperationException&lt;/code&gt; if this implementation
+ * does not support node type registration.
+ * 
+ * @param values a collection of &lt;code&gt;NodeTypeValue&lt;/code&gt;s
+ * @param alreadyExistsBehaviour a int
+ * @return the registered node types.
+ * @throws InvalidNodeTypeDefinitionException if a
+ *           &lt;code&gt;NodeTypeDefinition&lt;/code&gt; within the
+ *           &lt;code&gt;Collection&lt;/code&gt; is invalid or if the
+ *           &lt;code&gt;Collection&lt;/code&gt; contains an object of a type other than
+ *           &lt;code&gt;NodeTypeDefinition&lt;/code&gt;.
+ * @throws NodeTypeExistsException if &lt;code&gt;allowUpdate&lt;/code&gt; is
+ *           &lt;code&gt;false&lt;/code&gt; and a &lt;code&gt;NodeTypeDefinition&lt;/code&gt; within
+ *           the &lt;code&gt;Collection&lt;/code&gt; specifies a node type name that is
+ *           already registered.
+ * @throws UnsupportedRepositoryOperationException if this implementation does
+ *           not support node type registration.
+ * @throws RepositoryException if another error occurs.
  */
-public NodeTypeIterator registerNodeTypes(Collection&lt;NodeTypeValue&gt; values,
-                                            int alreadyExistsBehaviour) throws UnsupportedRepositoryOperationException,
-                                                                       RepositoryException;
+public NodeTypeIterator registerNodeTypes(List&lt;NodeTypeValue&gt; values, int alreadyExistsBehaviour)
+   throws UnsupportedRepositoryOperationException, RepositoryException;
 
 /**
  * Unregisters the specified node type.
+ * 
+ * @param name a &lt;code&gt;String&lt;/code&gt;.
+ * @throws UnsupportedRepositoryOperationException if this implementation does
+ *           not support node type registration.
+ * @throws NoSuchNodeTypeException if no registered node type exists with the
+ *           specified name.
+ * @throws RepositoryException if another error occurs.
  */
-public void unregisterNodeType(String name) throws UnsupportedRepositoryOperationException,
-                                             NoSuchNodeTypeException,
-                                             RepositoryException;
+public void unregisterNodeType(String name) throws UnsupportedRepositoryOperationException, NoSuchNodeTypeException,
+   RepositoryException;
 
 /**
  * Unregisters the specified set of node types.&lt;p/&gt; Used to unregister a set
  * of node types with mutual dependencies.
+ * 
+ * @param names a &lt;code&gt;String&lt;/code&gt; array
+ * @throws UnsupportedRepositoryOperationException if this implementation does
+ *           not support node type registration.
+ * @throws NoSuchNodeTypeException if one of the names listed is not a
+ *           registered node type.
+ * @throws RepositoryException if another error occurs.
  */
 public void unregisterNodeTypes(String[] names) throws UnsupportedRepositoryOperationException,
-                                                 NoSuchNodeTypeException,
-                                                 RepositoryException;</programlisting>
+   NoSuchNodeTypeException, RepositoryException;</programlisting>
     </section>
+
     <section id="JCR.NodeTypeRegistration.InterfacesAndMethods.NodeTypeValue">
       <title>NodeTypeValue</title>
+
       <para>The NodeTypeValue interface represents a simple container
       structure used to define node types which are then registered through
-      the ExtendedNodeTypeManager.registerNodeType method. The implementation of
-      this interface does not contain any validation logic.</para>
+      the ExtendedNodeTypeManager.registerNodeType method. The implementation
+      of this interface does not contain any validation logic.</para>
+
       <programlisting language="java">/**
  * @return Returns the declaredSupertypeNames.
  */
@@ -148,97 +232,54 @@ public List&lt;PropertyDefinitionValue&gt; getDeclaredPropertyDefinitionValues()
  */
 public void setDeclaredPropertyDefinitionValues(List&lt;PropertyDefinitionValue&gt; declaredPropertyDefinitionValues);</programlisting>
     </section>
+
     <section id="JCR.NodeTypeRegistration.InterfacesAndMethods.NodeDefinitionValue">
       <title>NodeDefinitionValue</title>
+
       <para>The NodeDefinitionValue interface extends ItemDefinitionValue with
       the addition of writing methods, enabling the characteristics of a child
-      node definition to be set, after that  the NodeDefinitionValue is added
+      node definition to be set, after that the NodeDefinitionValue is added
       to a NodeTypeValue.</para>
+
       <programlisting language="java">/**
- * @return Returns the declaredSupertypeNames.
+ * @return Returns the defaultNodeTypeName.
  */
-public List&lt;String&gt; getDeclaredSupertypeNames();
+public String getDefaultNodeTypeName()
 
 /**
- * @param declaredSupertypeNames
- *The declaredSupertypeNames to set.
+ * @param defaultNodeTypeName The defaultNodeTypeName to set.
  */
-public void setDeclaredSupertypeNames(List&lt;String&gt; declaredSupertypeNames);
+public void setDefaultNodeTypeName(String defaultNodeTypeName)
 
 /**
- * @return Returns the mixin.
+ * @return Returns the sameNameSiblings.
  */
-public boolean isMixin();
+public boolean isSameNameSiblings()
 
 /**
- * @param mixin
- *The mixin to set.
+ * @param sameNameSiblings The sameNameSiblings to set.
  */
-public void setMixin(boolean mixin);
+public void setSameNameSiblings(boolean multiple)
 
 /**
- * @return Returns the name.
+ * @return Returns the requiredNodeTypeNames.
  */
-public String getName();
+public List&lt;String&gt; getRequiredNodeTypeNames()
 
 /**
- * @param name
- *The name to set.
+ * @param requiredNodeTypeNames The requiredNodeTypeNames to set.
  */
-public void setName(String name);
-
-/**
- * @return Returns the orderableChild.
- */
-public boolean isOrderableChild();
-
-/**
- * @param orderableChild
- *The orderableChild to set.
- */
-public void setOrderableChild(boolean orderableChild);
-
-/**
- * @return Returns the primaryItemName.
- */
-public String getPrimaryItemName();
-
-/**
- * @param primaryItemName
- *The primaryItemName to set.
- */
-public void setPrimaryItemName(String primaryItemName);
-
-/**
- * @return Returns the declaredChildNodeDefinitionNames.
- */
-public List&lt;NodeDefinitionValue&gt; getDeclaredChildNodeDefinitionValues();
-
-/**
- * @param declaredChildNodeDefinitionNames
- *The declaredChildNodeDefinitionNames to set.
- */
-public void setDeclaredChildNodeDefinitionValues(List&lt;NodeDefinitionValue&gt; declaredChildNodeDefinitionValues);
-
-/**
- * @return Returns the declaredPropertyDefinitionNames.
- */
-public List&lt;PropertyDefinitionValue&gt; getDeclaredPropertyDefinitionValues();
-
-/**
- * @param declaredPropertyDefinitionNames
- *The declaredPropertyDefinitionNames to set.
- */
-public void setDeclaredPropertyDefinitionValues(List&lt;PropertyDefinitionValue&gt; declaredPropertyDefinitionValues);
-
-</programlisting>
+public void setRequiredNodeTypeNames(List&lt;String&gt; requiredNodeTypeNames)</programlisting>
     </section>
+
     <section id="JCR.NodeTypeRegistration.InterfacesAndMethods.PropertyDefinitionValue">
       <title>PropertyDefinitionValue</title>
+
       <para>The PropertyDefinitionValue interface extends ItemDefinitionValue
       with the addition of writing methods, enabling the characteristics of a
       child property definition to be set, after that the
       PropertyDefinitionValue is added to a NodeTypeValue.</para>
+
       <programlisting language="java">/**
  * @return Returns the defaultValues.
  */
@@ -279,8 +320,10 @@ public List&lt;String&gt; getValueConstraints();
  */
 public void setValueConstraints(List&lt;String&gt; valueConstraints);</programlisting>
     </section>
+
     <section id="JCR.NodeTypeRegistration.InterfacesAndMethods.ItemDefinitionValue">
       <title>ItemDefinitionValue</title>
+
       <programlisting language="java"> /**
  * @return Returns the autoCreate.
  */
@@ -332,30 +375,36 @@ public boolean isReadOnly();
 public void setReadOnly(boolean readOnly);</programlisting>
     </section>
   </section>
+
   <section id="JCR.NodeTypeRegistration.NodeTypeRegistration">
     <title>Node type registration</title>
+
     <para>eXo JCR implementation supports various methods of the node-type
     registration.</para>
+
     <section id="JCR.NodeTypeRegistration.NodeTypeRegistration.RunTimeRegistrationFromXmlFile">
       <title>Run time registration from xml file</title>
+
       <programlisting language="java">ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
                                                              .getNodeTypeManager();
-InputStream is = MyClass.class.getResourceAsStream(&quot;mynodetypes.xml&quot;);
+InputStream is = MyClass.class.getResourceAsStream("mynodetypes.xml");
 nodeTypeManager.registerNodeTypes(is,ExtendedNodeTypeManager.IGNORE_IF_EXISTS );</programlisting>
     </section>
+
     <section id="JCR.NodeTypeRegistration.NodeTypeRegistration.RunTimeRegistrationUsingNodeTypeValue">
       <title>Run time registration using NodeTypeValue</title>
+
       <programlisting language="java">ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
                                                              .getNodeTypeManager();
 NodeTypeValue testNValue = new NodeTypeValue();
 
 List&lt;String&gt; superType = new ArrayList&lt;String&gt;();
-superType.add(&quot;nt:base&quot;);
-testNValue.setName(&quot;exo:myNodeType&quot;);
-testNValue.setPrimaryItemName(&quot;&quot;);
+superType.add("nt:base");
+testNValue.setName("exo:myNodeType");
+testNValue.setPrimaryItemName("");
 testNValue.setDeclaredSupertypeNames(superType);
 List&lt;PropertyDefinitionValue&gt; props = new ArrayList&lt;PropertyDefinitionValue&gt;();
-props.add(new PropertyDefinitionValue(&quot;*&quot;,
+props.add(new PropertyDefinitionValue("*",
                                       false,
                                       false,
                                       1,
@@ -369,33 +418,42 @@ testNValue.setDeclaredPropertyDefinitionValues(props);
 nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.FAIL_IF_EXISTS);</programlisting>
     </section>
   </section>
+
   <section id="JCR.NodeTypeRegistration.ChangingExistingNodeType">
     <title>Changing existing node type</title>
+
     <para>If you want to replace existing node type definition, you should
     pass ExtendedNodeTypeManager.REPLACE_IF_EXISTS as a second parameter for
     the method ExtendedNodeTypeManager.registerNodeType.</para>
+
     <programlisting language="java">ExtendedNodeTypeManager nodeTypeManager = (ExtendedNodeTypeManager) session.getWorkspace()
                                                                            .getNodeTypeManager();
-InputStream is = MyClass.class.getResourceAsStream(&quot;mynodetypes.xml&quot;);
+InputStream is = MyClass.class.getResourceAsStream("mynodetypes.xml");
 .....
 nodeTypeManager.registerNodeTypes(is,ExtendedNodeTypeManager.REPLACE_IF_EXISTS );</programlisting>
   </section>
+
   <section id="JCR.NodeTypeRegistration.RemovingNodeType">
     <title>Removing node type</title>
+
     <note>
       <para>Node type is possible to remove only when the repository does not
       contain nodes of this type.</para>
     </note>
-    <programlisting language="java">nodeTypeManager.unregisterNodeType(&quot;myNodeType&quot;);</programlisting>
+
+    <programlisting language="java">nodeTypeManager.unregisterNodeType("myNodeType");</programlisting>
   </section>
+
   <section id="JCR.NodeTypeRegistration.PracticalHowto">
     <title>Practical How to</title>
+
     <section id="JCR.NodeTypeRegistration.PracticalHowto.AddingNewPropertyDefinition">
       <title>Adding new PropertyDefinition</title>
+
       <programlisting language="java">
 NodeTypeValue myNodeTypeValue = nodeTypeManager.getNodeTypeValue(myNodeTypeName);
 List&lt;PropertyDefinitionValue&gt; props = new ArrayList&lt;PropertyDefinitionValue&gt;();
-props.add(new PropertyDefinitionValue(&quot;tt&quot;,
+props.add(new PropertyDefinitionValue("tt",
                                       true,
                                       true,
                                       1,
@@ -408,69 +466,86 @@ myNodeTypeValue.setDeclaredPropertyDefinitionValues(props);
 
 nodeTypeManager.registerNodeType(myNodeTypeValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);</programlisting>
     </section>
+
     <section id="JCR.NodeTypeRegistration.PracticalHowto.AddingNewChildNodeDefinition">
       <title>Adding new child NodeDefinition</title>
+
       <programlisting language="java">NodeTypeValue myNodeTypeValue = nodeTypeManager.getNodeTypeValue(myNodeTypeName);
 
 List&lt;NodeDefinitionValue&gt; nodes = new ArrayList&lt;NodeDefinitionValue&gt;();
-nodes.add(new NodeDefinitionValue(&quot;child&quot;,
+nodes.add(new NodeDefinitionValue("child",
                                       false,
                                       false,
                                       1,
                                       false,
-                                      &quot;nt:base&quot;,
+                                      "nt:base",
                                       new ArrayList&lt;String&gt;(),
                                       false));
 testNValue.setDeclaredChildNodeDefinitionValues(nodes);
 
 nodeTypeManager.registerNodeType(myNodeTypeValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);</programlisting>
     </section>
+
     <section id="JCR.NodeTypeRegistration.PracticalHowto.ChangingRemovingExistingPropertyDefinitionChildNodeDefinition">
-      <title>Changing or removing existing PropertyDefinition or child NodeDefinition</title>
-      <para>Note that the existing data must be consistent  before changing or removing a existing definition . JCR
-      <emphasis role="bold">does not allow</emphasis> you to change the node
-      type in the way in which the existing data would be incompatible
-      with a new node type. But if these changes are needed, you can do it in
-      several phases, consistently changing the node type and the existing
-      data.</para>
+      <title>Changing or removing existing PropertyDefinition or child
+      NodeDefinition</title>
+
+      <para>Note that the existing data must be consistent before changing or
+      removing a existing definition . JCR <emphasis role="bold">does not
+      allow</emphasis> you to change the node type in the way in which the
+      existing data would be incompatible with a new node type. But if these
+      changes are needed, you can do it in several phases, consistently
+      changing the node type and the existing data.</para>
+
       <para>For example:</para>
-      <para>Add a  new residual property definition with name &quot;downloadCount&quot; to
-      the existing node type &quot;myNodeType&quot;.</para>
+
+      <para>Add a new residual property definition with name "downloadCount"
+      to the existing node type "myNodeType".</para>
+
       <para>There are two limitations that do not allow us to make the task
       with a single call of registerNodeType method.</para>
+
       <itemizedlist>
         <listitem>
-          <para>Existing nodes of the type &quot;myNodeType&quot;, which does not
-          contain properties &quot;downloadCount&quot; that conflicts with node type
+          <para>Existing nodes of the type "myNodeType", which does not
+          contain properties "downloadCount" that conflicts with node type
           what we need.</para>
         </listitem>
+
         <listitem>
-          <para>Registered node type &quot;myNodeType&quot; will not allow us to add
-          properties &quot;downloadCount&quot; because it has no such specific
+          <para>Registered node type "myNodeType" will not allow us to add
+          properties "downloadCount" because it has no such specific
           properties.</para>
         </listitem>
       </itemizedlist>
+
       <para>To complete the task, we need to make 3 steps:</para>
+
       <itemizedlist>
         <listitem>
-          <para>Change the existing node type &quot;myNodeType&quot; by adding the 
-          mandatory property &quot;downloadCount&quot;.</para>
+          <para>Change the existing node type "myNodeType" by adding the
+          mandatory property "downloadCount".</para>
         </listitem>
+
         <listitem>
-          <para>Add  the node type &quot;myNodeType&quot; with the property &quot;downloadCount&quot; to all the existing node types.</para>
+          <para>Add the node type "myNodeType" with the property
+          "downloadCount" to all the existing node types.</para>
         </listitem>
+
         <listitem>
-          <para>Change the definition of the property &quot;downloadCount&quot; of the
-          node type &quot;myNodeType&quot; to mandatory.</para>
+          <para>Change the definition of the property "downloadCount" of the
+          node type "myNodeType" to mandatory.</para>
         </listitem>
       </itemizedlist>
     </section>
+
     <section id="JCR.NodeTypeRegistration.PracticalHowto.ChangingListOfSuperTypes">
       <title>Changing the list of super types</title>
-      <programlisting language="java">NodeTypeValue testNValue = nodeTypeManager.getNodeTypeValue(&quot;exo:myNodeType&quot;);
+
+      <programlisting language="java">NodeTypeValue testNValue = nodeTypeManager.getNodeTypeValue("exo:myNodeType");
 
 List&lt;String&gt; superType  = testNValue.getDeclaredSupertypeNames();
-superType.add(&quot;mix:versionable&quot;);
+superType.add("mix:versionable");
 testNValue.setDeclaredSupertypeNames(superType);
 
 nodeTypeManager.registerNodeType(testNValue, ExtendedNodeTypeManager.REPLACE_IF_EXISTS);</programlisting>

@@ -77,7 +77,7 @@ public class InvocationContext extends HashMap implements Context
    }
 
    /**
-    * @return Exo container
+    * @return The related eXo container.
     */
    public final ExoContainer getContainer()
    {
@@ -85,7 +85,7 @@ public class InvocationContext extends HashMap implements Context
    }
 
    /**
-    * @return Current item.
+    * @return The current item.
     */
    public final Item getCurrentItem()
    {
@@ -93,7 +93,7 @@ public class InvocationContext extends HashMap implements Context
    }
 
    /**
-    * @return Previous item.
+    * @return The previous item before the change.
     */
    public final Item getPreviousItem()
    {
@@ -101,7 +101,7 @@ public class InvocationContext extends HashMap implements Context
    }
 
    /**
-    * @return Context event
+    * @return The type of the event.
     */
    public final int getEventType()
    {

@@ -32,7 +32,7 @@
     <title>How it works</title>
 
     <para>Make sure you understand the <ulink
-    url="http://java.sun.com/products/jndi/1.2/javadoc/index.html">Java Naming
+    url="http://www.oracle.com/technetwork/java/jndi/docs/index.html">Java Naming
     and Directory InterfaceTM (JNDI)</ulink> concepts before using this
     service.</para>
 
@@ -200,66 +200,5 @@
           the Application Server.</para>
         </listitem>
       </itemizedlist></para>
-  </section>
-
-  <section id="Kernel.JNDINaming.InitialContextInitializer">
-    <title>InitialContextInitializer API</title>
-
-    <para><envar>InitialContextInitalizer</envar> also provides feature of
-    references binding in runtime. References have bind in runtime will be
-    persisted and automatically rebinded on a next system start.</para>
-
-    <para>Service provides methods for binding reference.</para>
-
-    <programlisting language="java">
-     public void bind(String bindName, 
-                      String className, 
-                      String factory, 
-                      String factoryLocation, 
-                      Map&lt;String, String&gt; refAddr) 
-                 throws NamingException, FileNotFoundException, XMLStreamException;</programlisting>
-
-    <itemizedlist>
-      <listitem>
-        <para><envar>bindName</envar>: name of binding.</para>
-      </listitem>
-
-      <listitem>
-        <para><envar>className</envar>: the fully-qualified name of the class
-        of the object to which this Reference refers.</para>
-      </listitem>
-
-      <listitem>
-        <para><envar>factory</envar>: the name of the factory class for
-        creating an instance of the object to which this Reference
-        refers.</para>
-      </listitem>
-
-      <listitem>
-        <para><envar>factoryLocation</envar>: the location of the factory
-        class.</para>
-      </listitem>
-
-      <listitem>
-        <para><envar>refAddr</envar>: object's properties map.</para>
-      </listitem>
-    </itemizedlist>
-
-    <para>Example of usage:</para>
-
-    <programlisting language="java">
-      // obtain InitialContextInitializer instance from ExoContainer (e.g. PortalContainer)
-      InitialContextInitializer initContext = (InitialContextInitializer)container.getComponentInstanceOfType(InitialContextInitializer.class);
-  
-      Map&lt;String, String&gt; refAddr = new HashMap&lt;String, String&gt;();
-      refAddr.put("driverClassName", "oracle.jdbc.OracleDriver");
-      refAddr.put("url", "jdbc:oracle:thin:@oraclehost:1521:orcl");
-      refAddr.put("username", "exouser");
-      refAddr.put("password", "exopassword");
-
-      initContext.bind("jdbcexco", "javax.sql.DataSource", "org.apache.commons.dbcp.BasicDataSourceFactory", null, refAddr);
-
-      // try to get just bound DataSource
-      DataSource ds = (DataSource)new InitialContext().lookup("jdbcexo");</programlisting>
   </section>
 </section>
