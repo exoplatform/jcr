@@ -259,8 +259,9 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             public Serializable execute(Serializable[] args) throws Throwable
             {
                String repositoryName = (String)args[0];
+               Boolean forceRemove = (Boolean)args[1];
 
-               removeRepositoryLocally(repositoryName);
+               removeRepositoryLocally(repositoryName, forceRemove);
 
                return null;
             }
@@ -820,7 +821,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
                }
             }
 
-            List<Object> results = rpcService.executeCommandOnAllNodes(removeRepository, true, repositoryName);
+            List<Object> results = rpcService.executeCommandOnAllNodes(removeRepository, true, repositoryName, new Boolean(forceRemove));
             for (Object result : results)
             {
                if (result != null)
@@ -861,7 +862,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
             }
          }
 
-         removeRepositoryLocally(repositoryName);
+         removeRepositoryLocally(repositoryName, forceRemove);
       }
    }
 
@@ -872,7 +873,7 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
     *          the repository name
     * @throws RepositoryCreationException
     */
-   protected void removeRepositoryLocally(String repositoryName) throws RepositoryCreationException
+   protected void removeRepositoryLocally(String repositoryName, boolean forceRemove) throws RepositoryCreationException
    {
       try
       {
@@ -888,9 +889,9 @@ public class RepositoryCreationServiceImpl implements RepositoryCreationService,
 
             sessionRegistry.closeSessions(workspaceName);
          }
-
+         
          // remove repository from configuration
-         repositoryService.removeRepository(repositoryName);
+         repositoryService.removeRepository(repositoryName, forceRemove);
          repositoryService.getConfig().retain();
          
          // unbind datasource and close connections

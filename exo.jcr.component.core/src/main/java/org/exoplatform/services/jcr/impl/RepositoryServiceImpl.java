@@ -400,7 +400,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
    /**
     * {@inheritDoc}
     */
-   public void removeRepository(String name) throws RepositoryException
+   public void removeRepository(String name, boolean forceRemove) throws RepositoryException
    {
       // Need privileges to manage repository.
       SecurityManager security = System.getSecurityManager();
@@ -409,7 +409,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      if (!canRemoveRepository(name))
+      if (!forceRemove && !canRemoveRepository(name))
          throw new RepositoryException("Repository " + name + " in use. If you want to "
             + " remove repository close all open sessions");
 
@@ -417,6 +417,8 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
       {
          RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
          RepositoryImpl repo = (RepositoryImpl)getRepository(name);
+         repo.setState(ManageableRepository.OFFLINE);
+         
          for (WorkspaceEntry wsEntry : repconfig.getWorkspaceEntries())
          {
             repo.internalRemoveWorkspace(wsEntry.getName());
@@ -451,7 +453,15 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
          throw new RepositoryException(e);
       }
    }
-
+   
+   /**
+    * {@inheritDoc}
+    */
+   public void removeRepository(String name) throws RepositoryException
+   {
+      this.removeRepository(name, false);
+   }
+   
    /**
     * {@inheritDoc}
     */
