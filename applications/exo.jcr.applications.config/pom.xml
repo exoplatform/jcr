@@ -34,7 +34,6 @@
 
   <properties>
     <exo.deploy.profile>jbc</exo.deploy.profile>
-    <tomcat.deploy.version>tomcat7</tomcat.deploy.version>
   </properties>
 
   <dependencies>
@@ -115,12 +114,6 @@
          </dependencies>
          <properties>
            <exo.deploy.profile>ispn</exo.deploy.profile>
-         </properties>
-      </profile>
-      <profile>
-         <id>tomcat6</id>
-         <properties>
-           <tomcat.deploy.version>tomcat6</tomcat.deploy.version>
          </properties>
       </profile>
   </profiles>
