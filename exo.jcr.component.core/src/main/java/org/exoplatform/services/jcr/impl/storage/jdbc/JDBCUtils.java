@@ -55,9 +55,26 @@ public class JDBCUtils
       {
          String dialect = DialectDetecter.detect(con.getMetaData());
          String query;
-         if (DBConstants.DB_DIALECT_MYSQL.equals(dialect))
+         if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL) || dialect.equals(DBConstants.DB_DIALECT_PGSQL))
          {
             query = "SELECT count(*) from (SELECT 1 FROM " + tableName + " LIMIT 1) T";
+         }
+         else if (dialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
+         {
+            query = "SELECT count(*) from (SELECT 1 FROM " + tableName + " WHERE ROWNUM = 1) T";
+         }
+         else if (dialect.startsWith(DBConstants.DB_DIALECT_DB2) || dialect.equals(DBConstants.DB_DIALECT_DERBY)
+            || dialect.equals(DBConstants.DB_DIALECT_INGRES))
+         {
+            query = "SELECT count(*) from (SELECT 1 FROM " + tableName + " FETCH FIRST 1 ROWS ONLY) T";
+         }
+         else if (dialect.equals(DBConstants.DB_DIALECT_MSSQL))
+         {
+            query = "SELECT count(*) from (SELECT TOP (1) 1 as C FROM " + tableName + ") T";
+         }
+         else if (dialect.equals(DBConstants.DB_DIALECT_SYBASE))
+         {
+            query = "SELECT count(*) from (SELECT TOP 1 1 FROM " + tableName + ") T";
          }
          else
          {
