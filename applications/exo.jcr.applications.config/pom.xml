@@ -31,8 +31,10 @@
   <packaging>pom</packaging>
   <name>eXo JCR :: Applications :: Config</name>
   <description>eXo JCR applications parent pom.</description>
+
   <properties>
     <exo.deploy.profile>jbc</exo.deploy.profile>
+    <tomcat.deploy.version>tomcat7</tomcat.deploy.version>
   </properties>
 
   <dependencies>
@@ -111,9 +113,14 @@
              <version>${project.version}</version>
            </dependency>
          </dependencies>
-
          <properties>
            <exo.deploy.profile>ispn</exo.deploy.profile>
+         </properties>
+      </profile>
+      <profile>
+         <id>tomcat6</id>
+         <properties>
+           <tomcat.deploy.version>tomcat6</tomcat.deploy.version>
          </properties>
       </profile>
   </profiles>

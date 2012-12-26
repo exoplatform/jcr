@@ -116,11 +116,19 @@
                      <fileset dir="${basedir}/target/lib-binary.dir/" includes="**/*.jar" />
                   </copy>
                   <copy todir="${exo.projects.directory.working}/exo-tomcat/lib/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/tomcat/conf/" includes="log4j.properties" />
+                     <fileset dir="${basedir}/../product-patches/as/tomcat-common/conf/" includes="log4j.properties" />
                   </copy>
+
+                  <!-- copying common resources for any tomcat as version -->
                   <copy todir="${exo.projects.directory.working}/exo-tomcat/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/tomcat/" />
+                     <fileset dir="${basedir}/../product-patches/as/tomcat-common/" excludes="**/log4j.properties" />
                   </copy>
+
+                  <!-- copying resources depending of tomcat as version -->
+                  <copy todir="${exo.projects.directory.working}/exo-tomcat/" verbose="true" overwrite="true">
+                     <fileset dir="${basedir}/../product-patches/as/${tomcat.deploy.version}/" />
+                  </copy>
+
                   <replace dir="${exo.projects.directory.working}/exo-tomcat/bin" token="@exo.deploy.profile@" value="${exo.deploy.profile}" />
                   <move todir="${exo.projects.directory.working}/exo-tomcat/bin/">
                     <fileset dir="${exo.projects.directory.working}/exo-tomcat/bin/">
