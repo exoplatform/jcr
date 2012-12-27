@@ -46,12 +46,6 @@
          <type>ear</type>
          <scope>runtime</scope>
       </dependency>
-
-      <dependency>
-         <groupId>org.hsqldb</groupId>
-         <artifactId>hsqldb</artifactId>
-         <scope>runtime</scope>
-      </dependency>
    </dependencies>
 
    <profiles>
@@ -112,29 +106,17 @@
                      </mapper>
                   </move>
                   <!--copying the ear-->
-                  <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/deploy/" verbose="true" overwrite="true">
+                  <copy todir="${exo.projects.directory.working}/exo-jboss/standalone/deployments/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/target/lib-binary.dir/" includes="**/*.ear" />
                   </copy>
-                  <!--copying exo-configuration.xml-->
+                  <!--copying patched files-->
                   <copy todir="${exo.projects.directory.working}/exo-jboss/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/jboss/" includes="exo-*.*" />
-                  </copy>
-                  <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/conf/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/jboss/exoplatform.sar/META-INF/" includes="login*.xml" />
-                  </copy>
-                  <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/conf/bootstrap/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/jboss/" includes="profile.xml" />
-                  </copy>
-                  <copy todir="${exo.projects.directory.working}/exo-jboss/server/default/deploy/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/jboss/ds/" includes="*.xml" />
-                  </copy>
-                  <copy todir="${exo.projects.directory.working}/exo-jboss/bin/" verbose="true" overwrite="true">
-                     <fileset dir="${basedir}/../product-patches/as/jboss/bin/" includes="*.*" />
+                     <fileset dir="${basedir}/../product-patches/as/jboss/" />
                   </copy>
 
                   <replace dir="${exo.projects.directory.working}/exo-jboss/bin" token="-Dexo.profiles=jbc" value="-Dexo.profiles=${exo.deploy.profile}" />
-                  <move file="${exo.projects.directory.working}/exo-jboss/bin/run.bat" tofile="${exo.projects.directory.working}/exo-jboss/bin/run-${exo.deploy.profile}.bat" />
-                  <move file="${exo.projects.directory.working}/exo-jboss/bin/run.sh" tofile="${exo.projects.directory.working}/exo-jboss/bin/run-${exo.deploy.profile}.sh" />
+                  <move file="${exo.projects.directory.working}/exo-jboss/bin/standalone.bat" tofile="${exo.projects.directory.working}/exo-jboss/bin/standalone-${exo.deploy.profile}.bat" />
+                  <move file="${exo.projects.directory.working}/exo-jboss/bin/standalone.sh" tofile="${exo.projects.directory.working}/exo-jboss/bin/standalone-${exo.deploy.profile}.sh" />
                </target>
             </configuration>
          </plugin>
@@ -142,6 +124,4 @@
    </build>
     </profile>
    </profiles>
-   
-
 </project>

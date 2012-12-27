@@ -71,4 +71,20 @@ public class RepositoryResourceAdapter implements ResourceAdapter
    public void stop()
    {
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   public int hashCode()
+   {
+      return 0;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean equals(Object obj)
+   {
+      return this == obj;
+   }
 }

@@ -123,6 +123,11 @@
       <artifactId>commons-io</artifactId>
       <scope>runtime</scope>
     </dependency>
+    <dependency>
+       <groupId>org.hsqldb</groupId>
+       <artifactId>hsqldb</artifactId>
+       <scope>runtime</scope>
+    </dependency>
   </dependencies>
   <profiles>
     <profile>
@@ -136,7 +141,7 @@
          </dependencies>
 
          <properties>
-           <exo.deploy.profile>jbc</exo.deploy.profile>
+           <exo.deploy.profile>ispn</exo.deploy.profile>
          </properties>
       </profile>
   </profiles>
@@ -159,7 +164,7 @@
           <defaultLibBundleDir>APP-INF/lib</defaultLibBundleDir>
           <archive>
             <manifest>
-              <addClasspath>true</addClasspath>
+              <addClasspath>false</addClasspath>
             </manifest>
           </archive>
           <modules>
