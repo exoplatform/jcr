@@ -157,14 +157,6 @@
             available from
             <emphasis>TikaConfig.getDefaultConfig()</emphasis>.</entry>
           </row>
-
-          <row>
-            <entry>content-extractor-pool-size</entry>
-
-            <entry>The total amount of threads to use for the content
-            extractor. The default value is the value of
-            <emphasis>Runtime.getRuntime().availableProcessors()</emphasis>.</entry>
-          </row>
         </tbody>
       </tgroup>
     </table>
