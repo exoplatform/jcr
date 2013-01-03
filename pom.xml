@@ -46,7 +46,7 @@
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.15</exo.product.specification>
     <org.exoplatform.kernel.version>2.4.1-GA</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>2.5.1-GA</org.exoplatform.core.version>
+    <org.exoplatform.core.version>2.5.1-CP01</org.exoplatform.core.version>
     <org.exoplatform.ws.version>2.3.1-GA</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
   </properties>
