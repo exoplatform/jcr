@@ -4,11 +4,11 @@
 <section id="Core.TikaDocumentReaderService">
   <title>Tika Document Reader Service</title>
 
-  <para>DocumentReaderService provides API to retrieve DocumentReader by
-  mimetype.</para>
+    <para>DocumentReaderService provides API to retrieve DocumentReader by
+    mimetype.</para>
 
-  <para>DocumentReader lets the user fetch content of document as String or,
-  in case of TikaDocumentReader, as Reader.</para>
+    <para>DocumentReader lets the user fetch content of document as String or,
+    in case of TikaDocumentReader, as Reader.</para>
 
   <section id="Core.TikaDocumentReaderService.Architecture">
     <title>Architecture</title>
@@ -34,8 +34,8 @@
   <section id="Core.TikaDocumentReaderService.Configuration">
     <title>Configuration</title>
 
-    <para>How TikaDocumentReaderService Impl configuration looks like:</para>
-
+    <para>How TikaDocumentReaderService Impl configuration looks
+    like:</para>
     <programlisting language="xml">&lt;component&gt;
       &lt;key&gt;org.exoplatform.services.document.DocumentReaderService&lt;/key&gt;
       &lt;type&gt;org.exoplatform.services.document.impl.tika.TikaDocumentReaderServiceImpl&lt;/type&gt;
@@ -144,33 +144,7 @@
    &lt;/component&gt;
 &lt;/configuration&gt;</programlisting>
 
-    <table>
-      <title>Fields description</title>
-
-      <tgroup cols="2">
-        <tbody>
-          <row>
-            <entry>tika-configuration</entry>
-
-            <entry>This parameter refers to the path of the tika configuration
-            file to use. By default it uses the default configuration of tika
-            available from
-            <emphasis>TikaConfig.getDefaultConfig()</emphasis>.</entry>
-          </row>
-
-          <row>
-            <entry>content-extractor-pool-size</entry>
-
-            <entry>The total amount of threads to use for the content
-            extractor. The default value is the value of
-            <emphasis>Runtime.getRuntime().availableProcessors()</emphasis>.</entry>
-          </row>
-        </tbody>
-      </tgroup>
-    </table>
-
     <para>tika-config.xml example:</para>
-
     <programlisting language="xml">&lt;properties&gt;
 
   &lt;mimeTypeRepository magic="false"/&gt;
@@ -339,15 +313,14 @@
 
       <para>You can make you own DocumentReader in two ways.</para>
 
-      <para><emphasis role="bold">Old-Style Document Reader</emphasis>:</para>
-
+      <para><emphasis role="bold">Old-Style Document
+      Reader</emphasis>:</para>
       <itemizedlist>
         <listitem>
           <para>extend BaseDocumentReader</para>
         </listitem>
       </itemizedlist>
-
-      <programlisting language="java">public class MyDocumentReader extends BaseDocumentReader
+  <programlisting language="java">public class MyDocumentReader extends BaseDocumentReader
 {
    public String[] getMimeTypes()
    {
@@ -356,42 +329,42 @@
    ...
 }</programlisting>
 
-      <itemizedlist>
-        <listitem>
-          <para>register it as component-plugin</para>
-        </listitem>
-      </itemizedlist>
-
-      <programlisting language="xml">&lt;component-plugin&gt;
+        <itemizedlist>
+          <listitem>
+            <para>register it as component-plugin</para>
+          </listitem>
+        </itemizedlist>
+            <programlisting language="xml">&lt;component-plugin&gt;
    &lt;name&gt;my.DocumentReader&lt;/name&gt;
    &lt;set-method&gt;addDocumentReader&lt;/set-method&gt;
    &lt;type&gt;com.mycompany.document.MyDocumentReader&lt;/type&gt;
    &lt;description&gt;to read my own file format&lt;/description&gt;
 &lt;/component-plugin&gt;</programlisting>
 
-      <para><emphasis role="bold">Tika Parser</emphasis>:</para>
 
+
+      <para><emphasis role="bold">Tika Parser</emphasis>:</para>
       <itemizedlist>
         <listitem>
           <para>implement Parser</para>
         </listitem>
       </itemizedlist>
-
       <programlisting language="java">public class MyParser implements Parser
 {
    ...
 }</programlisting>
 
-      <itemizedlist>
-        <listitem>
-          <para>register it in tika-config.xml</para>
-        </listitem>
-      </itemizedlist>
-
-      <programlisting language="xml"> &lt;parser name="parse-mydocument" class="com.mycompany.document.MyParser"&gt;
+        <itemizedlist>
+          <listitem>
+            <para>register it in tika-config.xml</para>
+          </listitem>
+        </itemizedlist>
+<programlisting language="xml"> &lt;parser name="parse-mydocument" class="com.mycompany.document.MyParser"&gt;
       &lt;mime&gt;mymimetype&lt;/mime&gt;
  &lt;/parser&gt;
 </programlisting>
+
+
     </section>
   </section>
 
