@@ -4,6 +4,7 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="ISPN.integration">
   <title>Infinispan integration</title>
+
   <para>eXo JCR can rely on distributed cache such as Infinispan. This article
   describes the required configuration.</para>
 
@@ -58,7 +59,7 @@
     workspace. There are several commons parameters. <abbrev></abbrev></para>
 
     <para><abbrev>"infinispan-configuration"</abbrev> defines path to template
-    based configuration for Infinispan Cache instance. </para>
+    based configuration for Infinispan Cache instance.</para>
 
     <para>JGroups is used by Infinispan Cache for network communications and
     transport in a clustered environment. If property
@@ -80,8 +81,7 @@
         &lt;property name="jgroups-configuration" value="jar:/conf/udp-mux-v3.xml" /&gt;
         &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
     &lt;/properties&gt;
-&lt;/cache&gt;
-</programlisting>
+&lt;/cache&gt;</programlisting>
       </listitem>
 
       <listitem>
@@ -96,8 +96,7 @@
         &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
         &lt;property name="max-volatile-time" value="60" /&gt;
     &lt;/properties&gt;
-&lt;/query-handler&gt;
-</programlisting>
+&lt;/query-handler&gt;</programlisting>
 
         <itemizedlist>
           <listitem>
@@ -167,13 +166,12 @@
 
           <listitem>
             <para><abbrev>infinispan-cl-cache.jdbc.datasource</abbrev> - name
-            of configured in Container datasource, where you want to store
-            locks. The best idea is to use the same as for workspace.</para>
+            of the datasource to use to store locks.</para>
           </listitem>
 
           <listitem>
             <para><abbrev>infinispan-cl-cache.jdbc.connectionFactory</abbrev>
-            - connection factories for use with the JDBC Cache Store.</para>
+            - connection factory to use with the JDBC Cache Store.</para>
           </listitem>
         </itemizedlist>
       </listitem>
@@ -184,7 +182,7 @@
     <title>Shipped Infinispan Cache configuration templates</title>
 
     <para>eXo JCR implementation is shipped with ready-to-use Infinispan Cache
-    configuration templates for JCR's components. </para>
+    configuration templates for JCR's components.</para>
 
     <section id="ISPN.integration.ShippedInfinispanCacheConfigurationTemplates.DataContainerTemplate">
       <title>Data container template</title>
@@ -224,20 +222,39 @@
       &lt;eviction strategy="LRU" threadPolicy="DEFAULT" maxEntries="1000000"/&gt;
       &lt;expiration wakeUpInterval="5000"/&gt;
    &lt;/default&gt;
-&lt;/infinispan&gt;
-</programlisting>
+&lt;/infinispan&gt;</programlisting>
 
       <table>
         <title>Template variables</title>
 
-        <tgroup cols="1">
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry align="center">Variable</entry>
+
+              <entry align="center">Description</entry>
+            </row>
+          </thead>
+
           <tbody>
             <row>
-              <entry>infinispan-cluster-name</entry>
+              <entry>jgroups-configuration</entry>
+
+              <entry>This is the path to JGroups configuration that should not
+              be anymore jgroups' stack definitions but a normal jgroups
+              configuration format with the shared transport configured by
+              simply setting the jgroups property singleton_name to a unique
+              name (it must remain unique from one portal container to
+              another). This file is also pre-bundled with templates and is
+              recommended for use.</entry>
             </row>
 
             <row>
-              <entry>jgroups-configuration</entry>
+              <entry>infinispan-cluster-name</entry>
+
+              <entry>This defines the name of the cluster. Needs to be the
+              same for all nodes in a cluster in order to find each
+              other.</entry>
             </row>
           </tbody>
         </tgroup>
@@ -307,58 +324,104 @@
       <table>
         <title>Template variables</title>
 
-        <tgroup cols="1">
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry align="center">Variable</entry>
+
+              <entry align="center">Description</entry>
+            </row>
+          </thead>
+
           <tbody>
             <row>
-              <entry>infinispan-cluster-name</entry>
+              <entry>jgroups-configuration</entry>
+
+              <entry>This is the path to JGroups configuration that should not
+              be anymore jgroups' stack definitions but a normal jgroups
+              configuration format with the shared transport configured by
+              simply setting the jgroups property singleton_name to a unique
+              name (it must remain unique from one portal container to
+              another). This file is also pre-bundled with templates and is
+              recommended for use.</entry>
             </row>
 
             <row>
-              <entry>jgroups-configuration</entry>
+              <entry>infinispan-cluster-name</entry>
+
+              <entry>This defines the name of the cluster. Needs to be the
+              same for all nodes in a cluster in order to find each
+              other.</entry>
             </row>
 
             <row>
               <entry>infinispan-cl-cache.jdbc.table.name</entry>
+
+              <entry>The table name.</entry>
             </row>
 
             <row>
               <entry>infinispan-cl-cache.jdbc.id.column</entry>
+
+              <entry>The name of the column id.</entry>
             </row>
 
             <row>
               <entry>infinispan-cl-cache.jdbc.data.column</entry>
+
+              <entry>The name of the column data.</entry>
             </row>
 
             <row>
               <entry>infinispan-cl-cache.jdbc.timestamp.column</entry>
+
+              <entry>The name of the column timestamp.</entry>
             </row>
 
             <row>
               <entry>infinispan-cl-cache.jdbc.id.type</entry>
+
+              <entry>The type of the column id.</entry>
             </row>
 
             <row>
               <entry>infinispan-cl-cache.jdbc.data.type</entry>
+
+              <entry>The type of the column data.</entry>
             </row>
 
             <row>
               <entry>infinispan-cl-cache.jdbc.timestamp.type</entry>
+
+              <entry>The type of the column timestamp.</entry>
             </row>
 
             <row>
               <entry>infinispan-cl-cache.jdbc.table.drop</entry>
+
+              <entry>Can be set to true or false. Indicates whether to drop
+              the table at stop phase.</entry>
             </row>
 
             <row>
               <entry>infinispan-cl-cache.jdbc.table.create</entry>
+
+              <entry>Can be set to true or false. Indicates whether to create
+              table at start phase. If true, the table is created if it does
+              not already exist.</entry>
             </row>
 
             <row>
               <entry>infinispan-cl-cache.jdbc.connectionFactory</entry>
+
+              <entry>The connection factory to use with the JDBC Cache
+              Store.</entry>
             </row>
 
             <row>
               <entry>infinispan-cl-cache.jdbc.datasource</entry>
+
+              <entry>The name of the datasource to use to store locks.</entry>
             </row>
           </tbody>
         </tgroup>
@@ -412,16 +475,36 @@
 </programlisting>
 
       <table>
-        <title>Template variable</title>
+        <title>Template variables</title>
 
-        <tgroup cols="1">
+        <tgroup cols="2">
+          <thead>
+            <row>
+              <entry align="center">Variable</entry>
+
+              <entry align="center">Description</entry>
+            </row>
+          </thead>
+
           <tbody>
             <row>
-              <entry>infinispan-cluster-name</entry>
+              <entry>jgroups-configuration</entry>
+
+              <entry>This is the path to JGroups configuration that should not
+              be anymore jgroups' stack definitions but a normal jgroups
+              configuration format with the shared transport configured by
+              simply setting the jgroups property singleton_name to a unique
+              name (it must remain unique from one portal container to
+              another). This file is also pre-bundled with templates and is
+              recommended for use.</entry>
             </row>
 
             <row>
-              <entry>jgroups-configuration</entry>
+              <entry>infinispan-cluster-name</entry>
+
+              <entry>This defines the name of the cluster. Needs to be the
+              same for all nodes in a cluster in order to find each
+              other.</entry>
             </row>
           </tbody>
         </tgroup>

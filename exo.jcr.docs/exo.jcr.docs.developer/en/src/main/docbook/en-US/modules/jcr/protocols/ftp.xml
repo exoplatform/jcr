@@ -4,13 +4,13 @@
 <section id="JCR.FTP">
   <title>FTP</title>
 
-    <para>The JCR-FTP Server represents the standard eXo service, operates as
-    an FTP server with an access to a content stored in JCR repositories in
-    the form of <emphasis role="bold">nt:file/nt:folder</emphasis> nodes or
-    their successors. The client of an executed Server can be any FTP client.
-    The FTP server is supported by a standard configuration which can be
-    changed as required.</para>
-    
+  <para>The JCR-FTP Server represents the standard eXo service, operates as an
+  FTP server with an access to a content stored in JCR repositories in the
+  form of <emphasis role="bold">nt:file/nt:folder</emphasis> nodes or their
+  successors. The client of an executed Server can be any FTP client. The FTP
+  server is supported by a standard configuration which can be changed as
+  required.</para>
+
   <section id="JCR.FTP.ConfigurationParameters">
     <title>Configuration Parameters</title>
 
@@ -160,6 +160,41 @@
 &lt;/value-param&gt;</programlisting>
 
       <para>Defines the value of a timeout.</para>
+    </section>
+
+    <section id="JCR.FTP.ConfigurationParameters.replace-forbidden-chars">
+      <title>replace-forbidden-chars</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;replace-forbidden-chars&lt;/name&gt;
+   &lt;value&gt;true&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>Indicates whether or not the forbidden characters must be
+      replaced.</para>
+    </section>
+
+    <section id="JCR.FTP.ConfigurationParameters.forbidden-chars">
+      <title>forbidden-chars</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;forbidden-chars&lt;/name&gt;
+   &lt;value&gt;:[]*'"|&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>Defines the list of forbidden characters.</para>
+    </section>
+
+    <section id="JCR.FTP.ConfigurationParameters.replace-char">
+      <title>replace-char</title>
+
+      <programlisting language="xml">&lt;value-param&gt;
+   &lt;name&gt;replace-char&lt;/name&gt;
+   &lt;value&gt;_&lt;/value&gt;
+&lt;/value-param&gt;</programlisting>
+
+      <para>Defines the character that will be used to replace the forbidden
+      characters.</para>
     </section>
   </section>
 </section>

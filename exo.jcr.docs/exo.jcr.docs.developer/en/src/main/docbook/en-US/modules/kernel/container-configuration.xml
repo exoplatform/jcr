@@ -4,7 +4,7 @@
 <section id="Kernel.ContainerConfiguration">
   <title>Container Configuration</title>
 
-  <para>eXo Portal uses PicoContainer, which implements the Inversion of
+  <para>GateIn uses PicoContainer, which implements the Inversion of
   Control (IoC) design pattern. All eXo containers inherit from a
   PicoContainer. There are mainly two eXo containers used, each of them can
   provide one or several services. Each container service is delivered in a
@@ -60,7 +60,7 @@
   <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded">
     <title>Understanding how configuration files are loaded</title>
 
-    <para>eXo Portal uses PicoContainer, which implements the Inversion of
+    <para>GateIn uses PicoContainer, which implements the Inversion of
     Control (IoC) design pattern. All eXo containers inherit from a
     PicoContainer. There are mainly two eXo containers used, each of them can
     provide one or several services. Each container service is delivered in a
@@ -303,28 +303,6 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
         i.e. whose configuration will be used. In the second case, it's no
         matter who is the first and who is the last (if the parameter objects
         are independent).</para>
-      </section>
-
-      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.ConfigurationRetrieval.Log">
-        <title>Configuration retrieval log</title>
-
-        <para>In case of problems with service configuration, it's important
-        to know from which JAR/WAR it comes. For that purpose, the JVM system
-        property
-        <emphasis>org.exoplatform.container.configuration.debug</emphasis> can
-        be used.<programlisting>java -Dorg.exoplatform.container.configuration.debug ...</programlisting></para>
-
-        <para>If the property is enabled, the container configuration manager
-        will log the configuration adding process at <emphasis>INFO</emphasis>
-        level.<programlisting>......
-   Add configuration jar:file:/D:/Projects/eXo/dev/exo-working/exo-tomcat/lib/exo.kernel.container-trunk.jar!/conf/portal/configuration.xml
-   Add configuration jar:file:/D:/Projects/eXo/dev/exo-working/exo-tomcat/lib/exo.kernel.component.cache-trunk.jar!/conf/portal/configuration.xml
-   Add configuration jndi:/localhost/portal/WEB-INF/conf/configuration.xml
-        import jndi:/localhost/portal/WEB-INF/conf/common/common-configuration.xml
-        import jndi:/localhost/portal/WEB-INF/conf/database/database-configuration.xml
-        import jndi:/localhost/portal/WEB-INF/conf/ecm/jcr-component-plugins-configuration.xml
-        import jndi:/localhost/portal/WEB-INF/conf/jcr/jcr-configuration.xml 
-   ......</programlisting></para>
       </section>
 
       <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.ConfigurationRetrieval.EffectiveConfigurationAtRuntime">

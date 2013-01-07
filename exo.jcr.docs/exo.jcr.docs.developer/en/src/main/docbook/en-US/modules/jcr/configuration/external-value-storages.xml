@@ -166,7 +166,7 @@
 
     <programlisting language="xml">&lt;workspaces&gt;
         &lt;workspace name="ws"&gt;
-          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcjcr"/&gt;
               &lt;property name="dialect" value="oracle"/&gt;

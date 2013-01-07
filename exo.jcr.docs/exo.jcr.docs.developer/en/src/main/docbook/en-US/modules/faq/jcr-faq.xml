@@ -32,7 +32,7 @@
         See the daily tests results for such comparisons, e.g.</para>
 
         <para><ulink
-        url="http://tests.exoplatform.org/JCR/1.12.2-GA/rev.2442/daily-performance-testing-results/jcr.core./index.html">http://tests.exoplatform.org/JCR/1.12.2-GA/rev.2442/daily-performance-testing-results/jcr.core./index.html</ulink></para>
+        url="http://tests.exoplatform.org/jcr.html">http://tests.exoplatform.org/jcr.html</ulink></para>
       </section>
 
       <section id="JCR.FAQ.JCR.Core.UsegetNodeByUUID">

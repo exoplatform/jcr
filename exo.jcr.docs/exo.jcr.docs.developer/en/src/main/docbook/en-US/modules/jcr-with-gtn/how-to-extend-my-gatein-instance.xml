@@ -14,7 +14,7 @@
     <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Motivations">
       <title>Motivations</title>
 
-      <para>Up to now, to create an application over an eXo portal such as
+      <para>Up to now, to create an application over an GateIn such as
       DMS, WCM, CS and KS, we need to modify files into the "portal.war". This
       has many painful consequences, such as:</para>
 
@@ -1442,7 +1442,7 @@ public class GadgetRegister implements ServletContextListener {
       &lt;authentication-policy&gt;org.exoplatform.services.jcr.impl.core.access.JAASAuthenticator&lt;/authentication-policy&gt;
       &lt;workspaces&gt;
         &lt;workspace name="sample-ws"&gt;
-          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer"&gt;
+          &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
               &lt;property name="source-name" value="jdbcexo${container.name.suffix}" /&gt;
               &lt;property name="dialect" value="hsqldb" /&gt;
@@ -1968,7 +1968,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
 
       <para>We added an example of portal extension (i.e. ability to customize
       a portal without changing anything in the portal.ear) that you can find
-      in the svn of gatein at gatein/sample/extension.</para>
+      in the git repository of gatein at https://github.com/gatein/gatein-portal/tree/master/examples.</para>
     </section>
 
     <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySampleExtension">
@@ -2121,7 +2121,7 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
 
       <para>We added an example of new portal (i.e. ability to create a new
       portal from another portal without changing anything in the portal.ear)
-      that you can find in the svn of gatein at gatein/sample/portal.</para>
+      that you can find in the git repository of gatein at https://github.com/gatein/gatein-portal/tree/master/examples.</para>
     </section>
 
     <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySamplePortal">
