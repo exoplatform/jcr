@@ -74,7 +74,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
        */
       static void cleanShare()
       {
-         inShare.clear();
+         CURRENT_SWAP_FILES.clear();
       }
    }
 

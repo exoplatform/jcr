@@ -24,9 +24,10 @@ import org.exoplatform.commons.utils.SecurityHelper;
 import java.io.File;
 import java.io.IOException;
 import java.security.PrivilegedAction;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -49,14 +50,20 @@ public class SwapFile extends SpoolFile
 {
 
    /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 4048760909657109754L;
+
+   /**
     * In-share files database.
     */
-   protected static Map<String, SwapFile> inShare = new HashMap<String, SwapFile>();
+   protected static final ConcurrentMap<String, SwapFile> CURRENT_SWAP_FILES =
+      new ConcurrentHashMap<String, SwapFile>();
 
    /**
     * Spool latch.
     */
-   protected CountDownLatch spoolLatch = null;
+   protected final AtomicReference<CountDownLatch> spoolLatch = new AtomicReference<CountDownLatch>();
 
    /**
     * SwapFile constructor.
@@ -90,15 +97,17 @@ public class SwapFile extends SpoolFile
     */
    public static SwapFile get(final File parent, final String child) throws IOException
    {
-      synchronized (inShare)
-      {
-         SwapFile newsf = new SwapFile(parent, child);
-         String absPath = PrivilegedFileHelper.getAbsolutePath(newsf);
+      SwapFile newsf = new SwapFile(parent, child);
+      String absPath = PrivilegedFileHelper.getAbsolutePath(newsf);
 
-         SwapFile swapped = inShare.get(absPath);
-         if (swapped != null)
+      SwapFile swapped = CURRENT_SWAP_FILES.get(absPath);
+      if (swapped != null)
+      {
+         // The swap file has been registered already
+         do
          {
-            CountDownLatch spoolLatch = swapped.spoolLatch;
+            // We loop until the spoolLatch is null
+            CountDownLatch spoolLatch = swapped.spoolLatch.get();
             if (spoolLatch != null)
             {
                try
@@ -119,14 +128,19 @@ public class SwapFile extends SpoolFile
                   };
                }
             }
-            swapped.spoolLatch = new CountDownLatch(1);
-            return swapped;
          }
-
-         newsf.spoolLatch = new CountDownLatch(1);
-         inShare.put(absPath, newsf);
-         return newsf;
+         while (!swapped.spoolLatch.compareAndSet(null, new CountDownLatch(1)));
+         return swapped;
       }
+      newsf.spoolLatch.set(new CountDownLatch(1));
+
+      SwapFile currentValue = CURRENT_SWAP_FILES.putIfAbsent(absPath, newsf);
+      if (currentValue != null)
+      {
+         // the swap file has been put already so we need to loop
+         return get(parent, child);
+      }
+      return newsf;
    }
 
    /**
@@ -136,7 +150,7 @@ public class SwapFile extends SpoolFile
     */
    public boolean isSpooled()
    {
-      return spoolLatch == null;
+      return spoolLatch.get() == null;
    }
 
    /**
@@ -144,8 +158,8 @@ public class SwapFile extends SpoolFile
     */
    public void spoolDone()
    {
-      final CountDownLatch sl = this.spoolLatch;
-      this.spoolLatch = null;
+      final CountDownLatch sl = this.spoolLatch.get();
+      this.spoolLatch.set(null);
       sl.countDown();
    }
 
@@ -157,34 +171,26 @@ public class SwapFile extends SpoolFile
    @Override
    public boolean delete()
    {
-      synchronized (inShare)
+      final SpoolFile sf = this;
+
+      PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
       {
-         final SpoolFile sf = this;
-
-         PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
+         public Boolean run()
          {
-            public Boolean run()
+            if (sf.exists())
             {
-               return sf.exists() ? SwapFile.super.delete() : true;
+               return SwapFile.super.delete();
             }
-         };
-         boolean res = SecurityHelper.doPrivilegedAction(action);
-
-         if (res)
-         {
-            // remove from shared files list
-            inShare.remove(PrivilegedFileHelper.getAbsolutePath(this));
-
-            // make sure that the file doesn't make any other thread await in 'get' method
-            // impossible case as 'delete' and 'get' which may waiting for, synchronized by inShare map.
-            // spoolDone();
-
             return true;
-
          }
-
-         return false;
+      };
+      boolean res = SecurityHelper.doPrivilegedAction(action);
+      if (res)
+      {
+         // remove from shared files list
+         CURRENT_SWAP_FILES.remove(PrivilegedFileHelper.getAbsolutePath(this));
       }
+      return res;
    }
 
    /**

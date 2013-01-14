@@ -388,10 +388,30 @@
                   </properties>
                </lock-manager>  
             </workspace>
+            <workspace name="ws-no-cache-n-vs">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
+                  <properties>
+                     <property name="source-name" value="jdbcjcr" />
+                     <property name="dialect" value="auto" />
+                     <property name="multi-db" value="false" />
+                     <property name="update-storage" value="false" />
+                     <property name="max-buffer-size" value="200k" />
+                     <property name="swap-directory" value="target/temp/swap/ws-no-cache-n-vs" />
+                  </properties>
+               </container>
+               <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
+                  <properties>
+                     <property name="root-nodetype" value="nt:unstructured" />
+                  </properties>
+               </initializer>
+               <cache enabled="false" class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
+                  <properties>
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                  </properties>
+               </cache>
+            </workspace>            
          </workspaces>
       </repository>
-
-
       <repository name="db1tck" system-workspace="ws" default-workspace="ws">
          <security-domain>exo-domain</security-domain>
          <!-- access-control>optional</access-control -->

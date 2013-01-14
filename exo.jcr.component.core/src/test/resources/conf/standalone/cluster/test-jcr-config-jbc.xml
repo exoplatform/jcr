@@ -332,8 +332,6 @@
                   </properties>
                </lock-manager>
             </workspace>
-
-
          </workspaces>
       </repository>
 
@@ -485,6 +483,33 @@
                   </properties>
                </lock-manager>
             </workspace>
+            <workspace name="ws-no-cache-n-vs">
+               <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
+                  <properties>
+                     <property name="source-name" value="jdbcjcr" />
+                     <property name="multi-db" value="true" />
+                     <property name="update-storage" value="false" />
+                     <property name="max-buffer-size" value="200k" />
+                     <property name="swap-directory" value="target/temp/swap/ws-no-cache-n-vs" />
+                     <property name="dialect" value="auto" />
+                  </properties>
+               </container>
+               <initializer class="org.exoplatform.services.jcr.impl.core.ScratchWorkspaceInitializer">
+                  <properties>
+                     <property name="root-nodetype" value="nt:unstructured" />
+                  </properties>
+               </initializer>
+               <cache enabled="false"
+                  class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+                  <properties>
+                     <property name="jbosscache-configuration" value="test-jbosscache-data.xml" />
+                     <property name="jgroups-configuration" value="udp-mux.xml" />
+                     <property name="jgroups-multiplexer-stack" value="false" />
+                     <property name="jbosscache-cluster-name" value="JCR-cluster-data" />
+                     <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
+                  </properties>
+               </cache>
+            </workspace>            
          </workspaces>
       </repository>
 
