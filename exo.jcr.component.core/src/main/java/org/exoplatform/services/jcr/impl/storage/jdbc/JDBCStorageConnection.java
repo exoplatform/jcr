@@ -88,15 +88,15 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * Helper.
     */
-   protected class WriteValueHelper extends ValueFileIOHelper
+   protected static class WriteValueHelper extends ValueFileIOHelper
    {
       /**
        * {@inheritDoc}
        */
       @Override
-      public void writeStreamedValue(File file, ValueData value) throws IOException
+      public void writeStreamedValue(File file, ValueData value, FileCleaner cleaner) throws IOException
       {
-         super.writeStreamedValue(file, value);
+         super.writeStreamedValue(file, value, cleaner);
       }
    }
 
@@ -131,7 +131,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected final List<ValueIOChannel> valueChanges;
 
-   protected final WriteValueHelper writeValueHelper = new WriteValueHelper();
+   protected static final WriteValueHelper WRITE_VALUE_HELPER = new WriteValueHelper();
 
    // All statements should be closed in closeStatements() method.
 
@@ -2484,7 +2484,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion());
                try
                {
-                  writeValueHelper.writeStreamedValue(swapFile, streamData);
+                  WRITE_VALUE_HELPER.writeStreamedValue(swapFile, streamData, swapCleaner);
                }
                finally
                {

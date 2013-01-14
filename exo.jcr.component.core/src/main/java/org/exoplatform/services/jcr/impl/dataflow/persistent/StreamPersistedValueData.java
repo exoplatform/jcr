@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
+import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
@@ -45,6 +46,8 @@ public class StreamPersistedValueData extends FilePersistedValueData
    protected InputStream stream;
 
    protected SpoolFile tempFile;
+   
+   protected FileCleaner cleaner;
 
    /**
     * StreamPersistedValueData  constructor for stream data.
@@ -158,6 +161,14 @@ public class StreamPersistedValueData extends FilePersistedValueData
    }
 
    /**
+    * Sets the {@link FileCleaner} to use in case the swap file cannot be removed
+    */
+   public void setFileCleaner(FileCleaner cleaner)
+   {
+      this.cleaner = cleaner;
+   }
+   
+   /**
     * Return status of persisted state.
     * 
     * @return boolean, true if the ValueData was persisted to a storage, false otherwise.
@@ -231,9 +242,22 @@ public class StreamPersistedValueData extends FilePersistedValueData
    {
       try
       {
-         if (file != null && file instanceof SwapFile)
+         if (file instanceof SwapFile)
          {
             ((SwapFile)file).release(this);
+            if (!PrivilegedFileHelper.delete(file))
+            {
+               if (cleaner != null)
+               {
+                  cleaner.addFile(file);
+
+                  if (LOG.isDebugEnabled())
+                  {
+                     LOG.debug("Could not remove temporary file on finalize: inUse=" + (((SwapFile)file).inUse()) + ", "
+                        + PrivilegedFileHelper.getAbsolutePath(file));
+                  }
+               }
+            }
          }
 
          if (tempFile != null)

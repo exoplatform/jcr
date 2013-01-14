@@ -124,6 +124,12 @@ public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceL
       root.getNode("childNodeDefNode").remove();
       session.save();
 
+      // Unregister the listener in order to make it available to the GC
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(session.getWorkspace().getName());
+      CacheableWorkspaceDataManager dm =
+         (CacheableWorkspaceDataManager)wsc.getComponent(CacheableWorkspaceDataManager.class);
+      dm.removeItemPersistenceListener(this);
+
       super.tearDown();
    }
 
