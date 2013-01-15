@@ -113,6 +113,8 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       super.setUp();// this
 
       backup = getBackupManager();
+      forceStopAutoStopperThreads();
+
       blob = createBLOBTempFile(300);
 
       backupDir = new File("target/temp/backup/" + System.currentTimeMillis());
@@ -124,6 +126,11 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
          (SessionProviderService)container.getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
       assertNotNull(sessionProviderService);
       sessionProviderService.setSessionProvider(null, new SessionProvider(new ConversationState(new Identity("root"))));
+   }
+
+   private void forceStopAutoStopperThreads()
+   {
+      ((BackupManagerImpl)backup).stop();
    }
 
    /**
