@@ -19,10 +19,12 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -37,42 +39,48 @@ import javax.jcr.Session;
  */
 public class TestWriteOperations extends JcrAPIBaseTest
 {
-   private static final int CLEANER_TIMEOUT = 4000; // 4sec
-
+   private TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
    private ManageableRepository repo;
+   private WorkspaceEntry wsEntry;
    
    public void setUp() throws Exception
    {
       super.setUp();
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(repository.getSystemWorkspaceName());
+      JDBCWorkspaceDataContainer dataContainer =
+         (JDBCWorkspaceDataContainer)wsc.getComponent(JDBCWorkspaceDataContainer.class);
+      boolean isMultiDb = dataContainer.multiDb;
+      repo = helper.createRepository(container, isMultiDb, null);
+      wsEntry = helper.createWorkspaceEntry(isMultiDb, null, null, false, true);
+      helper.addWorkspace(repo, wsEntry);
 
-      repo = repositoryService.getRepository("db2");
-      Session s = (SessionImpl)repo.login(credentials, "ws-no-cache-n-vs");
+      Session s = (SessionImpl)repo.login(credentials, wsEntry.getName());
       s.getRootNode().addNode("TestWriteOperations");
       s.save();
    }
 
    public void tearDown() throws Exception
    {
-      Session s = (SessionImpl)repo.login(credentials, "ws-no-cache-n-vs");
+      Session s = (SessionImpl)repo.login(credentials, wsEntry.getName());
       if (s.getRootNode().hasNode("TestWriteOperations"))
       {
          s.getRootNode().getNode("TestWriteOperations").remove();
          s.save();
       }
-
+      helper.removeRepository(container, repo.getConfiguration().getName());
       super.tearDown();
    }
 
    public void testCleanupSwapDirectory() throws Exception
    {
-      Session s = (SessionImpl)repo.login(credentials, "ws-no-cache-n-vs");
+      Session s = (SessionImpl)repo.login(credentials, wsEntry.getName());
       Node testNode = s.getRootNode().getNode("TestWriteOperations");
       PropertyImpl property = (PropertyImpl)testNode.setProperty("name", new ByteArrayInputStream("test".getBytes()));
       testNode.save();
       WorkspaceContainerFacade wsc = repo.getWorkspaceContainer(s.getWorkspace().getName());
       JDBCWorkspaceDataContainer dataContainer =
          (JDBCWorkspaceDataContainer)wsc.getComponent(JDBCWorkspaceDataContainer.class);
-      JDBCStorageConnection con = (JDBCStorageConnection)dataContainer.openConnection(true);
+      JDBCStorageConnection con = (JDBCStorageConnection)dataContainer.openConnection();
       File file = new File(dataContainer.swapDirectory, con.getInternalId(property.getInternalIdentifier()) + "0.0");
       con.close();
 
@@ -83,12 +91,24 @@ public class TestWriteOperations extends JcrAPIBaseTest
       testNode = null;
       property = null;
 
-      // allows GC to call finalize on StreamPersistedValueData
-      System.gc();
-      Thread.sleep(CLEANER_TIMEOUT + 500);
-      Thread.yield();
-      System.gc();
+      assertReleasedFile(file);
+   }
+   
+   private void assertReleasedFile(File file) throws Exception
+   {
+      long purgeStartTime = System.currentTimeMillis();
+      while (file.exists() && (System.currentTimeMillis() - purgeStartTime < 2 * 60 * 1000))
+      {
+         System.gc();
+         try
+         {
+            Thread.sleep(500);
+         }
+         catch (InterruptedException e)
+         {
+         }
+      }
 
-      assertFalse(file.exists());
+      assertFalse(file.exists()); // file released and deleted
    }
 }
