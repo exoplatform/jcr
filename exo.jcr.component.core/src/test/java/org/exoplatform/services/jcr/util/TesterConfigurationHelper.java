@@ -86,7 +86,7 @@ public class TesterConfigurationHelper
          SessionRegistry sessionRegistry = (SessionRegistry)wc.getComponent(SessionRegistry.class);
          sessionRegistry.closeSessions(wsName);
       }
-      
+
       service.removeRepository(repositoryName);
    }
 
@@ -144,7 +144,7 @@ public class TesterConfigurationHelper
 
       return service.getRepository(repoEntry.getName());
    }
-   
+
    public RepositoryContainer getRepositoryContainer(ExoContainer container, String repositoryName) throws Exception
    {
       RepositoryServiceImpl service =
@@ -285,7 +285,6 @@ public class TesterConfigurationHelper
       QueryHandlerEntry qEntry =
          new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", params);
 
-
       // Cache
       CacheEntry cacheEntry = null;
 
@@ -296,11 +295,12 @@ public class TesterConfigurationHelper
 
          //TODO EXOJCR-1784
          ArrayList cacheParams = new ArrayList();
-         cacheParams.add(new SimpleParameterEntry("maxSize", "2000"));
-         cacheParams.add(new SimpleParameterEntry("liveTime", "20m"));
+         cacheParams.add(new SimpleParameterEntry("infinispan-configuration",
+            "conf/standalone/test-infinispan-config.xml"));
          cacheEntry = new CacheEntry(cacheParams);
          cacheEntry.setEnabled(cacheEnabled);
-         cacheEntry.setType("org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl");
+         cacheEntry
+            .setType("org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache");
       }
       catch (ClassNotFoundException e)
       {
