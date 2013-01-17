@@ -77,6 +77,7 @@ import org.picocontainer.Startable;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
@@ -312,7 +313,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          PrivilegedFileHelper.mkdirs(this.containerConfig.spoolConfig.tempDirectory);
       }
-
+      else
+      {
+         cleanupSwapDirectory();
+      }
+      
       this.containerConfig.initScriptPath =
          DBInitializerHelper.scriptPath(containerConfig.dbDialect, containerConfig.dbStructureType.isMultiDatabase());
 
@@ -321,6 +326,33 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       initDatabase();
    }
 
+   /**
+    * Deletes all the files from the swap directory 
+    */
+   private void cleanupSwapDirectory()
+   {
+      PrivilegedAction<Void> action = new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            File[] files = containerConfig.spoolConfig.tempDirectory.listFiles();
+            if (files != null && files.length > 0)
+            {
+               LOG.info("Some files have been found in the swap directory and will be deleted");
+               for (int i = 0; i < files.length; i++)
+               {
+                  File file = files[i];
+                  // We don't use the file cleaner in case the deletion failed to ensure
+                  // that the file won't be deleted while it is currently re-used
+                  file.delete();
+               }
+            }
+            return null;
+         }
+      };
+      SecurityHelper.doPrivilegedAction(action);
+   }
+   
    /**
     * Prepare default connection factory.
     * 

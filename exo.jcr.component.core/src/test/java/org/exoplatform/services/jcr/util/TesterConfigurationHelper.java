@@ -125,10 +125,10 @@ public class TesterConfigurationHelper
       RepositoryServiceImpl service =
          (RepositoryServiceImpl)container.getComponentInstanceOfType(RepositoryService.class);
       return service.getRepositoryContainer(repositoryName);
-   }   
-   
-   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType, String dsName)
-      throws Exception
+   }
+
+   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType,
+      String dsName) throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       RepositoryEntry repoEntry = createRepositoryEntry(dbStructureType, null, dsName, true);
@@ -138,8 +138,8 @@ public class TesterConfigurationHelper
       return service.getRepository(repoEntry.getName());
    }
 
-   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType, boolean cacheEnabled,
-      boolean cacheShared) throws Exception
+   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType,
+      boolean cacheEnabled, boolean cacheShared) throws Exception
    {
       RepositoryService service = (RepositoryService)container.getComponentInstanceOfType(RepositoryService.class);
       RepositoryEntry repoEntry = createRepositoryEntry(dbStructureType, null, null, cacheEnabled, cacheShared);
@@ -149,8 +149,8 @@ public class TesterConfigurationHelper
       return service.getRepository(repoEntry.getName());
    }
 
-   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType, boolean cacheEnabled)
-      throws Exception
+   public ManageableRepository createRepository(ExoContainer container, DatabaseStructureType dbStructureType,
+      boolean cacheEnabled) throws Exception
    {
       return createRepository(container, dbStructureType, cacheEnabled, false);
    }
@@ -166,8 +166,8 @@ public class TesterConfigurationHelper
    /**
     * Create workspace entry. 
     */
-   public RepositoryEntry createRepositoryEntry(DatabaseStructureType dbStructureType, String systemWSName, String dsName,
-      boolean cacheEnabled) throws Exception
+   public RepositoryEntry createRepositoryEntry(DatabaseStructureType dbStructureType, String systemWSName,
+      String dsName, boolean cacheEnabled) throws Exception
    {
       return createRepositoryEntry(dbStructureType, systemWSName, dsName, cacheEnabled, false);
    }
@@ -175,8 +175,8 @@ public class TesterConfigurationHelper
    /**
    * Create workspace entry. 
    */
-   public RepositoryEntry createRepositoryEntry(DatabaseStructureType dbStructureType, String systemWSName, String dsName,
-      boolean cacheEnabled, boolean cacheShared) throws Exception
+   public RepositoryEntry createRepositoryEntry(DatabaseStructureType dbStructureType, String systemWSName,
+      String dsName, boolean cacheEnabled, boolean cacheShared) throws Exception
    {
       String repositoryName = "repo-" + IdGenerator.generate();
 
@@ -218,8 +218,8 @@ public class TesterConfigurationHelper
    /**
     * Create workspace entry. 
     */
-   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName, List<String> valueStorageIds,
-      boolean cacheEnabled) throws Exception
+   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName,
+      List<String> valueStorageIds, boolean cacheEnabled) throws Exception
    {
       return createWorkspaceEntry(dbStructureType, dsName, valueStorageIds, cacheEnabled, false);
    }
@@ -227,8 +227,8 @@ public class TesterConfigurationHelper
    /**
     * Create workspace entry. 
     */
-   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName, List<String> valueStorageIds,
-      boolean cacheEnabled, boolean cacheShared) throws Exception
+   public WorkspaceEntry createWorkspaceEntry(DatabaseStructureType dbStructureType, String dsName,
+      List<String> valueStorageIds, boolean cacheEnabled, boolean cacheShared) throws Exception
    {
       if (dsName == null)
       {
@@ -295,11 +295,12 @@ public class TesterConfigurationHelper
 
          //TODO EXOJCR-1784
          ArrayList cacheParams = new ArrayList();
-         cacheParams.add(new SimpleParameterEntry("maxSize", "2000"));
-         cacheParams.add(new SimpleParameterEntry("liveTime", "20m"));
+         cacheParams.add(new SimpleParameterEntry("infinispan-configuration",
+            "conf/standalone/test-infinispan-config.xml"));
          cacheEntry = new CacheEntry(cacheParams);
          cacheEntry.setEnabled(cacheEnabled);
-         cacheEntry.setType("org.exoplatform.services.jcr.impl.dataflow.persistent.LinkedWorkspaceStorageCacheImpl");
+         cacheEntry
+            .setType("org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache");
       }
       catch (ClassNotFoundException e)
       {
@@ -446,7 +447,7 @@ public class TesterConfigurationHelper
       ArrayList lockParams = new ArrayList();
       lockParams.addAll(wsEntry.getLockManager().getParameters());
       lockManagerEntry.setParameters(lockParams);
-      
+
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();
       workspaceEntry.setContainer(containerEntry);
       workspaceEntry.setCache(cacheEntry);

@@ -18,7 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
@@ -61,17 +60,6 @@ public class CleanableFilePersistedValueData extends FilePersistedValueData
       {
          // release file
          ((SwapFile)file).release(this);
-
-         if (!PrivilegedFileHelper.delete(file))
-         {
-            spoolConfig.fileCleaner.addFile(file);
-
-            if (LOG.isDebugEnabled())
-            {
-               LOG.debug("Could not remove temporary file on finalize: inUse=" + (((SwapFile)file).inUse()) + ", "
-                  + PrivilegedFileHelper.getAbsolutePath(file));
-            }
-         }
       }
       finally
       {
