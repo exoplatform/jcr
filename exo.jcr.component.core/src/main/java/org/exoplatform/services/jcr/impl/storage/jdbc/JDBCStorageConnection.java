@@ -94,9 +94,9 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
        * {@inheritDoc}
        */
       @Override
-      public void writeStreamedValue(File file, ValueData value, FileCleaner cleaner) throws IOException
+      public void writeStreamedValue(File file, ValueData value) throws IOException
       {
-         super.writeStreamedValue(file, value, cleaner);
+         super.writeStreamedValue(file, value);
       }
    }
 
@@ -2484,7 +2484,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion());
                try
                {
-                  WRITE_VALUE_HELPER.writeStreamedValue(swapFile, streamData, swapCleaner);
+                  WRITE_VALUE_HELPER.writeStreamedValue(swapFile, streamData);
                }
                finally
                {

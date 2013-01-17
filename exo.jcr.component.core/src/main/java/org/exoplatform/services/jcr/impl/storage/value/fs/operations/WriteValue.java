@@ -94,7 +94,7 @@ public class WriteValue extends ValueFileOperation
             cleaner.removeFile(file);
          }
          // write value to the file
-         writeValue(file, value, cleaner);
+         writeValue(file, value);
       }
    }
 

@@ -23,6 +23,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.ref.WeakReference;
 import java.security.PrivilegedAction;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -57,8 +58,8 @@ public class SwapFile extends SpoolFile
    /**
     * In-share files database.
     */
-   protected static final ConcurrentMap<String, SwapFile> CURRENT_SWAP_FILES =
-      new ConcurrentHashMap<String, SwapFile>();
+   protected static final ConcurrentMap<String, WeakReference<SwapFile>> CURRENT_SWAP_FILES =
+      new ConcurrentHashMap<String, WeakReference<SwapFile>>();
 
    /**
     * Spool latch.
@@ -100,8 +101,9 @@ public class SwapFile extends SpoolFile
       SwapFile newsf = new SwapFile(parent, child);
       String absPath = PrivilegedFileHelper.getAbsolutePath(newsf);
 
-      SwapFile swapped = CURRENT_SWAP_FILES.get(absPath);
-      if (swapped != null)
+      WeakReference<SwapFile> swappedRef = CURRENT_SWAP_FILES.get(absPath);
+      SwapFile swapped;
+      if (swappedRef != null && (swapped = swappedRef.get()) != null)
       {
          // The swap file has been registered already
          do
@@ -132,9 +134,14 @@ public class SwapFile extends SpoolFile
          while (!swapped.spoolLatch.compareAndSet(null, new CountDownLatch(1)));
          return swapped;
       }
+      else if (swappedRef != null)
+      {
+         // The SwapFile has been garbage collected so we remove it from the map
+         CURRENT_SWAP_FILES.remove(absPath, swappedRef);
+      }
       newsf.spoolLatch.set(new CountDownLatch(1));
 
-      SwapFile currentValue = CURRENT_SWAP_FILES.putIfAbsent(absPath, newsf);
+      WeakReference<SwapFile> currentValue = CURRENT_SWAP_FILES.putIfAbsent(absPath, new WeakReference<SwapFile>(newsf));
       if (currentValue != null)
       {
          // the swap file has been put already so we need to loop
@@ -171,26 +178,7 @@ public class SwapFile extends SpoolFile
    @Override
    public boolean delete()
    {
-      final SpoolFile sf = this;
-
-      PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
-      {
-         public Boolean run()
-         {
-            if (sf.exists())
-            {
-               return SwapFile.super.delete();
-            }
-            return true;
-         }
-      };
-      boolean res = SecurityHelper.doPrivilegedAction(action);
-      if (res)
-      {
-         // remove from shared files list
-         CURRENT_SWAP_FILES.remove(PrivilegedFileHelper.getAbsolutePath(this));
-      }
-      return res;
+      return delete(false);
    }
 
    /**
@@ -202,5 +190,53 @@ public class SwapFile extends SpoolFile
    public static SwapFile createTempFile(String prefix, String suffix, File directory) throws IOException
    {
       throw new IOException("Not applicable. Call get(File, String) method instead");
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void finalize() throws Throwable
+   {
+      try
+      {
+         delete(true);
+      }
+      finally
+      {
+         super.finalize();
+      }
+   }
+   
+   /**
+    * Deletes the file, if force is set to true, the map of users will be cleared to ensure that the deletion process won't be aborted
+    */
+   private boolean delete(boolean force)
+   {
+      String path = PrivilegedFileHelper.getAbsolutePath(this);
+      WeakReference<SwapFile> currentValue = CURRENT_SWAP_FILES.get(path);
+      if (currentValue == null || (currentValue.get() == this || currentValue.get() == null))
+      {
+         CURRENT_SWAP_FILES.remove(path, currentValue);            
+         synchronized(this)
+         {
+            users.clear();
+            final SpoolFile sf = this;
+
+            PrivilegedAction<Boolean> action = new PrivilegedAction<Boolean>()
+            {
+               public Boolean run()
+               {
+                  if (sf.exists())
+                  {
+                     return SwapFile.super.delete();
+                  }
+                  return true;
+               }
+            };
+            return SecurityHelper.doPrivilegedAction(action);
+         }
+      }
+      return false;
    }
 }

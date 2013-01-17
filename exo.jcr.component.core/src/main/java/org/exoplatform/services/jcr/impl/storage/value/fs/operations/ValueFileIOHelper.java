@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.ByteArrayPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
-import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -116,23 +115,7 @@ public class ValueFileIOHelper
     * @throws IOException
     *           if error occurs
     */
-   @Deprecated
    protected void writeValue(File file, ValueData value) throws IOException
-   {
-      writeValue(file, value, null);
-   }
-
-   /**
-    * Write value to a file.
-    * 
-    * @param file
-    *          File
-    * @param value
-    *          ValueData
-    * @throws IOException
-    *           if error occurs
-    */
-   protected void writeValue(File file, ValueData value, FileCleaner cleaner) throws IOException
    {
       if (value.isByteArray())
       {
@@ -140,10 +123,10 @@ public class ValueFileIOHelper
       }
       else
       {
-         writeStreamedValue(file, value, cleaner);
+         writeStreamedValue(file, value);
       }
    }
-   
+
    /**
     * Write value array of bytes to a file.
     * 
@@ -177,23 +160,7 @@ public class ValueFileIOHelper
     * @throws IOException
     *           if error occurs
     */
-   @Deprecated
    protected void writeStreamedValue(File file, ValueData value) throws IOException
-   {
-      writeStreamedValue(file, value, null);
-   }
-   
-   /**
-    * Write streamed value to a file.
-    * 
-    * @param file
-    *          File
-    * @param value
-    *          ValueData
-    * @throws IOException
-    *           if error occurs
-    */
-   protected void writeStreamedValue(File file, ValueData value, FileCleaner cleaner) throws IOException
    {
       // stream Value
       if (value instanceof StreamPersistedValueData)
@@ -233,8 +200,6 @@ public class ValueFileIOHelper
 
             // link this Value to file in VS
             streamed.setPersistedFile(file);
-            // Sets the file cleaner
-            streamed.setFileCleaner(cleaner);
          }
       }
       else
