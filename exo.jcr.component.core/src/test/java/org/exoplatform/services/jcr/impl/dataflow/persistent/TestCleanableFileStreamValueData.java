@@ -67,7 +67,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
        */
       static void cleanShare()
       {
-         inShare.clear();
+         CURRENT_SWAP_FILES.clear();
       }
    }
 
@@ -209,7 +209,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       assertReleasedFile(testFile);
    }
 
-   private void assertReleasedFile(File file) throws Exception
+   public static void assertReleasedFile(File file) throws Exception
    {
       long purgeStartTime = System.currentTimeMillis();
       while (file.exists() && (System.currentTimeMillis() - purgeStartTime < 2 * 60 * 1000))

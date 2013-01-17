@@ -877,7 +877,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                      cid + i + "." + data.getPersistedVersion());
                try
                {
-                  long vlen = writeValueHelper.writeStreamedValue(swapFile, streamData);
+                  long vlen = WRITE_VALUE_HELPER.writeStreamedValue(swapFile, streamData);
                   if (vlen <= Integer.MAX_VALUE)
                   {
                      streamLength = (int)vlen;
