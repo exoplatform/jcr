@@ -869,7 +869,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                      cid + i + "." + data.getPersistedVersion());
                try
                {
-                  writeValueHelper.writeStreamedValue(swapFile, streamData);
+                  WRITE_VALUE_HELPER.writeStreamedValue(swapFile, streamData);
                }
                finally
                {

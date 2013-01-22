@@ -207,7 +207,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
    {
       try
       {
-         if (file != null && file instanceof SwapFile)
+         if (file instanceof SwapFile)
          {
             ((SwapFile)file).release(this);
          }
