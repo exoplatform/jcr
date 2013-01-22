@@ -85,7 +85,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * Helper.
     */
-   protected class WriteValueHelper extends ValueFileIOHelper
+   protected static class WriteValueHelper extends ValueFileIOHelper
    {
       /**
        * {@inheritDoc}
@@ -120,7 +120,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected final List<ValueIOChannel> valueChanges;
 
-   protected final WriteValueHelper writeValueHelper = new WriteValueHelper();
+   protected static final WriteValueHelper WRITE_VALUE_HELPER = new WriteValueHelper();
 
    // All statements should be closed in closeStatements() method.
 
@@ -286,7 +286,6 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * {@inheritDoc}
     */
-   @Override
    public boolean equals(Object obj)
    {
       if (obj == this)
@@ -2490,7 +2489,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                      cid + i + "." + data.getPersistedVersion());
                try
                {
-                  writeValueHelper.writeStreamedValue(swapFile, streamData);
+                  WRITE_VALUE_HELPER.writeStreamedValue(swapFile, streamData);
                }
                finally
                {
