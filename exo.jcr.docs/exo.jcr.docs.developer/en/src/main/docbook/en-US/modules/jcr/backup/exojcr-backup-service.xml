@@ -951,7 +951,7 @@ repo.removeWorkspace(workspace);</programlisting>
                  <para>Activate the persister config</para>
              </listitem>
          </itemizedlist>
-         <para>Before start the restore operation, ensure that the persister is configured to save the changes of the repository configuration.</para>
+         <para>Before starting the restore operation, ensure that the persister is configured to save the changes of the repository configuration.</para>
 
          <para>If it's not activated, it should be configured, See the<link
                  linkend="JCR.ConfigurationPersister.Usage"> JCR Configuration persister</link> section for more details.</para>
@@ -1056,7 +1056,7 @@ repo.removeWorkspace(workspace);</programlisting>
                   <para>Activate the persister config</para>
               </listitem>
           </itemizedlist>
-          <para>Before start the restore operation, ensure that the persister is configured to save the changes of the repository configuration.</para>
+          <para>Before starting the restore operation, ensure that the persister is configured to save the changes of the repository configuration.</para>
 
           <para>If it's not activated, it should be configured, See the<link
                   linkend="JCR.ConfigurationPersister.Usage"> JCR Configuration persister</link> section for more details.</para>
