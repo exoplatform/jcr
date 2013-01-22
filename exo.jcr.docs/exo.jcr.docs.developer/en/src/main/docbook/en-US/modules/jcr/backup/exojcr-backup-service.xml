@@ -877,7 +877,7 @@ repo.removeWorkspace(workspace);</programlisting>
         can remain some unnecessary DB tables, which can be removed
         safetly.</para>
       </note></para>
-      <para>Before started migration JCR from single/multi format to isolated data format, you need to have the backupconsole.</para>
+      <para>Before starting migrating the data of your JCR from single/multi format to isolated data format, you need to have the backupconsole.</para>
       <para>See the <link
               linkend="JCR.BackupClient.BackupClientUsage.BuildingApplication">Building application</link> section for more details.</para>
       <para>Or you can download it from <ulink url="http://forge.ow2.org/project/showfiles.php?group_id=151">ow2</ulink> directly.</para>
@@ -889,7 +889,7 @@ repo.removeWorkspace(workspace);</programlisting>
              </listitem>
          </itemizedlist>
          <para>See the <link
-                 linkend="JCR.BackupService.Configuration"> Configuration Backup service</link> section for details.</para>
+                 linkend="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentConfiguration"> Configuration Backup service</link> section for details.</para>
          <itemizedlist>
              <listitem>
                  <para>Create a full backup</para>
@@ -954,7 +954,7 @@ repo.removeWorkspace(workspace);</programlisting>
          <para>Before start the restore operation, ensure that the persister is configured to save the changes of the repository configuration.</para>
 
          <para>If it's not activated, it should be configured, See the<link
-                 linkend="JCR.ConfigurationPersister"> JCR Configuration persister</link> section for more details.</para>
+                 linkend="JCR.ConfigurationPersister.Usage"> JCR Configuration persister</link> section for more details.</para>
          <itemizedlist>
              <listitem>
                  <para>Restore repository with original configuation and remove exists</para>
@@ -971,7 +971,7 @@ repo.removeWorkspace(workspace);</programlisting>
          </programlisting>
          <itemizedlist>
              <listitem>
-                 <para>Delete/clean the database</para>
+                 <para>Drop the old tables with the old data format</para>
              </listitem>
          </itemizedlist>
          <programlisting>
@@ -988,7 +988,7 @@ repo.removeWorkspace(workspace);</programlisting>
               </listitem>
           </itemizedlist>
           <para>See the <link
-                  linkend="JCR.BackupService.Configuration"> Configuration Backup service</link> section for details.</para>
+                  linkend="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentConfiguration"> Configuration Backup service</link> section for details.</para>
           <itemizedlist>
               <listitem>
                   <para>Create a full backup</para>
@@ -1059,7 +1059,7 @@ repo.removeWorkspace(workspace);</programlisting>
           <para>Before start the restore operation, ensure that the persister is configured to save the changes of the repository configuration.</para>
 
           <para>If it's not activated, it should be configured, See the<link
-                  linkend="JCR.ConfigurationPersister"> JCR Configuration persister</link> section for more details.</para>
+                  linkend="JCR.ConfigurationPersister.Usage"> JCR Configuration persister</link> section for more details.</para>
           <itemizedlist>
               <listitem>
                   <para>Restore repository with original configuation and remove exists</para>
@@ -1076,7 +1076,7 @@ repo.removeWorkspace(workspace);</programlisting>
           </programlisting>
           <itemizedlist>
               <listitem>
-                  <para>Delete/clean the database</para>
+                  <para>Drop the old tables with the old data format</para>
               </listitem>
           </itemizedlist>
           <programlisting>
