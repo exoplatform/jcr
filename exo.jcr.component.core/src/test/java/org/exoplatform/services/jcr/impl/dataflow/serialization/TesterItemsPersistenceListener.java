@@ -45,10 +45,18 @@ public class TesterItemsPersistenceListener implements ItemsPersistenceListener
 
    public TesterItemsPersistenceListener(SessionImpl session)
    {
+      this(session, true);
+   }
+
+   public TesterItemsPersistenceListener(SessionImpl session, boolean autoRegister)
+   {
       this.dataManager =
          (PersistentDataManager)((ManageableRepository)session.getRepository()).getWorkspaceContainer(
             session.getWorkspace().getName()).getComponent(PersistentDataManager.class);
-      this.dataManager.addItemPersistenceListener(this);
+      if (autoRegister)
+      {
+         this.dataManager.addItemPersistenceListener(this);
+      }
    }
 
    /**
