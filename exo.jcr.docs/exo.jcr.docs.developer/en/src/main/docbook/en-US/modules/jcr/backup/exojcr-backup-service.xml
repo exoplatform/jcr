@@ -877,7 +877,7 @@ repo.removeWorkspace(workspace);</programlisting>
         can remain some unnecessary DB tables, which can be removed
         safetly.</para>
       </note></para>
-      <para>Before starting migrating the data of your JCR from single/multi format to isolated data format, you need to have the backupconsole.</para>
+      <para>Before starting migrating the data of your JCR from single/multi data format to isolated data format, you need to have the backupconsole.</para>
       <para>See the <link
               linkend="JCR.BackupClient.BackupClientUsage.BuildingApplication">Building application</link> section for more details.</para>
       <para>Or you can download it from <ulink url="http://forge.ow2.org/project/showfiles.php?group_id=151">ow2</ulink> directly.</para>
@@ -1050,7 +1050,7 @@ repo.removeWorkspace(workspace);</programlisting>
                   <para>Configure the datasource name used for the isolated mode</para>
               </listitem>
           </itemizedlist>
-          <para>In RepositoryServiceConfiguration component, all workspace should use the same datasource name.</para>
+          <para>Make sure that in your repository configuration all the workspaces of a same repository share the same datasource.</para>
           <itemizedlist>
               <listitem>
                   <para>Activate the persister config</para>
