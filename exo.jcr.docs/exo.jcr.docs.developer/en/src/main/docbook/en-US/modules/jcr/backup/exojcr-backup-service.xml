@@ -877,5 +877,213 @@ repo.removeWorkspace(workspace);</programlisting>
         can remain some unnecessary DB tables, which can be removed
         safetly.</para>
       </note></para>
+      <para>Before starting migrating the data of your JCR from single/multi data format to isolated data format, you need to have the backupconsole.</para>
+      <para>See the <link
+              linkend="JCR.BackupClient.BackupClientUsage.BuildingApplication">Building application</link> section for more details.</para>
+      <para>Or you can download it from <ulink url="http://forge.ow2.org/project/showfiles.php?group_id=151">ow2</ulink> directly.</para>
+      <section>
+          <title>Migrate JCR from single data format to isolated data format</title>
+          <itemizedlist>
+              <listitem>
+                  <para>Enable the Backup service</para>
+              </listitem>
+          </itemizedlist>
+          <para>See the <link
+                  linkend="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentConfiguration"> Configuration Backup service</link> section for details.</para>
+          <itemizedlist>
+              <listitem>
+                  <para>Create a full backup</para>
+              </listitem>
+          </itemizedlist>
+          <para>For example:</para>
+          <programlisting>
+              jcrbackup.cmd http://root:exo@localhost:8080/rest start /repository
+          </programlisting>
+          <para>Return</para>
+          <programlisting>
+              Successful :
+              status code = 200
+          </programlisting>
+          <itemizedlist>
+              <listitem>
+                  <para>Get the backup id</para>
+              </listitem>
+          </itemizedlist>
+          <para>You need get the backup id used in restore action.</para>
+          <para>For example:</para>
+          <programlisting>
+              jcrbackup http://root:exo@localhost:8080 list completed
+          </programlisting>
+          <para>Return</para>
+          <programlisting>
+              The completed (ready to restore) backups information :
+              1) Repository backup with id 5dcbc851c0a801c9545eb434947dbe87 :
+              repository name           : repository
+              backup type               : full only
+              started time              : lun., 21 janv. 2013 16:48:21 GMT+01:00
+              finished time             : lun., 21 janv. 2013 16:48:25 GMT+01:00
+          </programlisting>
+          <para>The backup id: 5dcbc851c0a801c9545eb434947dbe87</para>
+          <para>See the <link
+                  linkend="JCR.BackupClient.BackupClientUsage"> Backup Client Usage</link> section for more details.</para>
+          <itemizedlist>
+              <listitem>
+                  <para>Set desired DB type in the repository configuration file of backup</para>
+              </listitem>
+          </itemizedlist>
+          <para>Change  db-structure-type to isolated.</para>
+          <para>For example:
+              In original-repository-config :</para>
+          <programlisting>
+              exo-tomcat\temp\backup\repository_repository_backup_1358783301705\original-repository-config
+          </programlisting>
+          <para>replace</para>
+          <programlisting>
+              &lt;property name="db-structure-type" value="single"/&gt;
+          </programlisting>
+          <para>by</para>
+          <programlisting>
+              &lt;property name="db-structure-type" value="isolated"/&gt;
+          </programlisting>
+          <para>This change must be done for all workspaces.</para>
+          <itemizedlist>
+              <listitem>
+                  <para>Activate the persister config</para>
+              </listitem>
+          </itemizedlist>
+          <para>Before starting the restore operation, ensure that the persister is configured to save the changes of the repository configuration.</para>
+
+          <para>If it's not activated, it should be configured, See the<link
+                  linkend="JCR.ConfigurationPersister.Usage"> JCR Configuration persister</link> section for more details.</para>
+          <itemizedlist>
+              <listitem>
+                  <para>Restore repository with original configuation and remove exists</para>
+              </listitem>
+          </itemizedlist>
+          <para>For example:</para>
+          <programlisting>
+              jcrbackup.cmd http://root:exo@localhost:8080/rest restore remove-exists 5dcbc851c0a801c9545eb434947dbe87
+          </programlisting>
+          <para>Return</para>
+          <programlisting>
+              Successful :
+              status code = 200
+          </programlisting>
+          <itemizedlist>
+              <listitem>
+                  <para>Drop the old tables with the old data format</para>
+              </listitem>
+          </itemizedlist>
+          <programlisting>
+              drop table JCR_SREF;
+              drop table JCR_SVALUE;
+              drop table JCR_SITEM;
+          </programlisting>
+      </section>
+      <section>
+          <title>Migrate JCR from multi data format to isolated data format</title>
+          <itemizedlist>
+              <listitem>
+                  <para>Enable the Backup service</para>
+              </listitem>
+          </itemizedlist>
+          <para>See the <link
+                  linkend="JCR.BackupClient.HTTPBackupAgent.HTTPBackupAgentConfiguration"> Configuration Backup service</link> section for details.</para>
+          <itemizedlist>
+              <listitem>
+                  <para>Create a full backup</para>
+              </listitem>
+          </itemizedlist>
+          <para>For example:</para>
+          <programlisting>
+              jcrbackup.cmd http://root:exo@localhost:8080/rest start /repository
+          </programlisting>
+          <para>Return</para>
+          <programlisting>
+              Successful :
+              status code = 200
+          </programlisting>
+          <itemizedlist>
+              <listitem>
+                  <para>Get the backup id</para>
+              </listitem>
+          </itemizedlist>
+          <para>You need get the backup id to launch the restore action.</para>
+          <para>For example:</para>
+          <programlisting>
+              jcrbackup http://root:exo@localhost:8080 list completed
+          </programlisting>
+          <para>Return</para>
+          <programlisting>
+              The completed (ready to restore) backups information :
+              1) Repository backup with id 5dcbc851c0a801c9545eb434947dbe87 :
+              repository name           : repository
+              backup type               : full only
+              started time              : lun., 21 janv. 2013 16:48:21 GMT+01:00
+              finished time             : lun., 21 janv. 2013 16:48:25 GMT+01:00
+          </programlisting>
+          <para>The backup id: 5dcbc851c0a801c9545eb434947dbe87</para>
+          <para>See the <link
+                  linkend="JCR.BackupClient.BackupClientUsage"> Backup Client Usage</link> section for more details.</para>
+          <itemizedlist>
+              <listitem>
+                  <para>Set desired DB type in the repository configuration file of backup</para>
+              </listitem>
+          </itemizedlist>
+          <para>Change  db-structure-type to isolated.</para>
+          <para>For example:
+              In original-repository-config :</para>
+          <programlisting>
+              exo-tomcat\temp\backup\repository_repository_backup_1358783301705\original-repository-config
+          </programlisting>
+          <para>replace</para>
+          <programlisting>
+              &lt;property name="db-structure-type" value="multi"/&gt;
+          </programlisting>
+          <para>by</para>
+          <programlisting>
+              &lt;property name="db-structure-type" value="isolated"/&gt;
+          </programlisting>
+          <para>This change must be done for all workspaces.</para>
+          <itemizedlist>
+              <listitem>
+                  <para>Configure the datasource name used for the isolated mode</para>
+              </listitem>
+          </itemizedlist>
+          <para>Make sure that in your repository configuration all the workspaces of a same repository share the same datasource.</para>
+          <itemizedlist>
+              <listitem>
+                  <para>Activate the persister config</para>
+              </listitem>
+          </itemizedlist>
+          <para>Before starting the restore operation, ensure that the persister is configured to save the changes of the repository configuration.</para>
+
+          <para>If it's not activated, it should be configured, See the<link
+                  linkend="JCR.ConfigurationPersister.Usage"> JCR Configuration persister</link> section for more details.</para>
+          <itemizedlist>
+              <listitem>
+                  <para>Restore repository with original configuation and remove exists</para>
+              </listitem>
+          </itemizedlist>
+          <para>For example:</para>
+          <programlisting>
+              jcrbackup.cmd http://root:exo@localhost:8080/rest restore remove-exists 5dcbc851c0a801c9545eb434947dbe87
+          </programlisting>
+          <para>Return</para>
+          <programlisting>
+              Successful :
+              status code = 200
+          </programlisting>
+          <itemizedlist>
+              <listitem>
+                  <para>Drop the old tables with the old data format</para>
+              </listitem>
+          </itemizedlist>
+          <programlisting>
+              drop table JCR_MREF;
+              drop table JCR_MVALUE;
+              drop table JCR_MITEM;
+          </programlisting>
+      </section>
   </section>
 </section>
