@@ -30,7 +30,7 @@
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.14.10-GA-SNAPSHOT</version>
+  <version>1.14.11-GA-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
 
@@ -43,9 +43,9 @@
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.14</exo.product.specification>
-    <org.exoplatform.kernel.version>2.3.10-GA-SNAPSHOT</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>2.4.10-GA-SNAPSHOT</org.exoplatform.core.version>
-    <org.exoplatform.ws.version>2.2.10-GA-SNAPSHOT</org.exoplatform.ws.version>
+    <org.exoplatform.kernel.version>2.3.11-GA-SNAPSHOT</org.exoplatform.kernel.version>
+    <org.exoplatform.core.version>2.4.11-GA-SNAPSHOT</org.exoplatform.core.version>
+    <org.exoplatform.ws.version>2.2.11-GA-SNAPSHOT</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
 
     <version.release.plugin>2.2.1</version.release.plugin>
