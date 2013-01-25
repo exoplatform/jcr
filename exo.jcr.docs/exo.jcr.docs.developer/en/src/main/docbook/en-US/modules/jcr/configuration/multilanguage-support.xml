@@ -129,6 +129,13 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
               &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;
             &lt;/properties&gt;
           .....</programlisting>
+
+    For MySQL utf-8 support is needed to add character-set-server=utf8 property.
+    character-set-server=utf8 property should be set at server or connection pool, it should be set additional property for MySQL connection:
+    <programlisting language="xml">
+          &lt;property name="connectionProperties" value="useUnicode=yes;characterEncoding=utf8;characterSetResults=UTF-8;" /&gt;
+    </programlisting>
+
   </section>
 
   <section id="JCR.MultilanguageSupport.PostgreSQL">
