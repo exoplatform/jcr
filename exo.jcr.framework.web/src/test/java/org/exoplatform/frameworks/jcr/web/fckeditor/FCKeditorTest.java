@@ -23,7 +23,7 @@ public class FCKeditorTest extends TestCase {
 
 
     public void testChromeRetrieveBrowserVersion(){
-        FCKeditor fck =new FCKeditor("") ;
+        FCKeditor fck =new FCKeditor() ;
         for (int i=0 ;i<userAgentString.length ; i++) {
             assertEquals(Double.parseDouble(version[i]),fck.retrieveBrowserVersion(userAgentString[i]));
         }
@@ -31,7 +31,7 @@ public class FCKeditorTest extends TestCase {
     }
 
     public void testChromeIsCompatible(){
-        FCKeditor fck =new FCKeditor("") ;
+        FCKeditor fck =new FCKeditor() ;
         for (int i=0 ;i<userAgentString.length ; i++) {
             fck.setUserAgent(userAgentString[i]);
             if(i<4)

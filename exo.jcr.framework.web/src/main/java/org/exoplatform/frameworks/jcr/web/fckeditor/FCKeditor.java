@@ -279,14 +279,10 @@ public class FCKeditor
    }
 
     /**
-     * Initialize the object with userAgentString
-     *
-     * @param userAgentString
-     *          userAgent value
+     * Initialize the object without param
      */
-    FCKeditor(String userAgentString)
+    FCKeditor()
     {
-        userAgent=userAgentString;
     }
 
    boolean isCompatible()
