@@ -1,12 +1,6 @@
 package org.exoplatform.frameworks.jcr.web.fckeditor;
 
 import junit.framework.TestCase;
-import org.exoplatform.services.rest.impl.InputHeadersMap;
-import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
-import org.exoplatform.services.test.mock.MockHttpServletRequest;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.core.MultivaluedMap;
 
 
 /**
@@ -29,10 +23,7 @@ public class FCKeditorTest extends TestCase {
 
 
     public void testChromeRetrieveBrowserVersion(){
-        MultivaluedMap<String, String> headers =new MultivaluedMapImpl();
-        headers.add("user-agent","");
-        HttpServletRequest httpRequest = new MockHttpServletRequest("http://localhost:8080/context/a", null, 0, "GET", new InputHeadersMap(headers));
-        FCKeditor fck =new FCKeditor(httpRequest) ;
+        FCKeditor fck =new FCKeditor("") ;
         for (int i=0 ;i<userAgentString.length ; i++) {
             assertEquals(Double.parseDouble(version[i]),fck.retrieveBrowserVersion(userAgentString[i]));
         }
@@ -40,10 +31,7 @@ public class FCKeditorTest extends TestCase {
     }
 
     public void testChromeIsCompatible(){
-        MultivaluedMap<String, String> headers =new MultivaluedMapImpl();
-        headers.add("user-agent","");
-        HttpServletRequest httpRequest = new MockHttpServletRequest("http://localhost:8080/context/a", null, 0, "GET", new InputHeadersMap(headers));
-        FCKeditor fck =new FCKeditor(httpRequest) ;
+        FCKeditor fck =new FCKeditor("") ;
         for (int i=0 ;i<userAgentString.length ; i++) {
             fck.setUserAgent(userAgentString[i]);
             if(i<4)
