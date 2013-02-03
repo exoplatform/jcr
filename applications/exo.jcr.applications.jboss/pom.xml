@@ -38,17 +38,37 @@
      <enforcer.skip>true</enforcer.skip>
    </properties>
 
-   <dependencies>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.ear</artifactId>
-         <version>1.15.3-GA-SNAPSHOT</version>
-         <type>ear</type>
-         <scope>runtime</scope>
-      </dependency>
-   </dependencies>
-
    <profiles>
+    <profile>
+           <id>ispn</id>
+           <dependencies>
+               <dependency>
+                   <groupId>org.exoplatform.jcr</groupId>
+                   <artifactId>exo.jcr.ispn.ear</artifactId>
+                   <version>${project.version}</version>
+                   <type>ear</type>
+                   <scope>runtime</scope>
+               </dependency>
+           </dependencies>
+           <properties>
+               <exo.deploy.profile>ispn</exo.deploy.profile>
+           </properties>
+    </profile>
+    <profile>
+           <id>jbc</id>
+           <dependencies>
+               <dependency>
+                   <groupId>org.exoplatform.jcr</groupId>
+                   <artifactId>exo.jcr.ear</artifactId>
+                   <version>${project.version}</version>
+                   <type>ear</type>
+                   <scope>runtime</scope>
+               </dependency>
+           </dependencies>
+           <properties>
+               <exo.deploy.profile>jbc</exo.deploy.profile>
+           </properties>
+   </profile>
    <profile>
       <id>deploy</id>
       <activation>
