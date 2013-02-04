@@ -530,34 +530,4 @@
       </childNodeDefinitions>
    </nodeType>
 
-   <nodeType name="exo:mockNodeType" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
-      <supertypes>
-         <supertype>nt:base</supertype>
-      </supertypes>
-      <propertyDefinitions>
-         <propertyDefinition name="jcr:nodeTypeName" requiredType="String" autoCreated="false" mandatory="true" onParentVersion="COPY"
-            protected="false" multiple="false">
-            <valueConstraints />
-         </propertyDefinition>
-         <propertyDefinition name="jcr:supertypes" requiredType="String" autoCreated="false" mandatory="false" onParentVersion="COPY"
-            protected="false" multiple="false">
-            <valueConstraints />
-         </propertyDefinition>
-      </propertyDefinitions>
-      <childNodeDefinitions>
-         <childNodeDefinition name="jcr:childNodeDefinition" defaultPrimaryType="nt:childNodeDefinition" autoCreated="false" mandatory="false"
-            onParentVersion="VERSION" protected="false" sameNameSiblings="true">
-            <requiredPrimaryTypes>
-               <requiredPrimaryType>nt:childNodeDefinition</requiredPrimaryType>
-            </requiredPrimaryTypes>
-         </childNodeDefinition>
-         <childNodeDefinition name="jcr:childNodeDefinition" defaultPrimaryType="nt:childNodeDefinition" autoCreated="false" mandatory="false"
-            onParentVersion="VERSION" protected="false" sameNameSiblings="true">
-            <requiredPrimaryTypes>
-               <requiredPrimaryType>nt:childNodeDefinition</requiredPrimaryType>
-            </requiredPrimaryTypes>
-         </childNodeDefinition>
-      </childNodeDefinitions>
-   </nodeType>
-
 </nodeTypes>
