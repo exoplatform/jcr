@@ -465,7 +465,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                      ItemData item = (ItemData)entry.getValue();
                      if (parentId.equals(item.getParentIdentifier()))
                      {
-                        n = (T)item;                        
+                        n = (T)item;
                      }
                   }
                }
