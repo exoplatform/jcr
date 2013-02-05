@@ -18,7 +18,7 @@ II. Has been tested with such AS:
 III. Deployment
    If you want to deploy Tomcat, go to folder "exo.jcr.applications.tomcat" and run "mvn clean install -Pdeploy" command.
    If you want to deploy Jetty, go to folder "exo.jcr.applications.Jetty" and run "mvn clean install -Pdeploy" command.
-   If you want to deploy JBoss, go to folder "exo.jcr.applications.jboss" and run "mvn clean install -Pdeploy,jbc" command.
+   If you want to deploy JBoss, go to folder "exo.jcr.applications.jboss" and run "mvn clean install -Pdeploy" command.
 
 IV. If you want to deploy AS with eXo JCR based on ISPN use "ispn" profile in deployment command like this "mvn clean install -Pdeploy,ispn"
 
