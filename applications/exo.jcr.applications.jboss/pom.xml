@@ -36,24 +36,32 @@
    
    <properties>
      <enforcer.skip>true</enforcer.skip>
+     <exo.deploy.profile>jbc</exo.deploy.profile>
+     <exo.deploy.artifactId>exo.jcr.ear</exo.deploy.artifactId>
    </properties>
 
-   <dependencies>
-      <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.ear</artifactId>
-         <version>1.16.0-Alpha1-SNAPSHOT</version>
-         <type>ear</type>
-         <scope>runtime</scope>
-      </dependency>
-   </dependencies>
-
    <profiles>
+       <profile>
+           <id>ispn</id>
+           <properties>
+               <exo.deploy.profile>ispn</exo.deploy.profile>
+               <exo.deploy.artifactId>exo.jcr.ispn.ear</exo.deploy.artifactId>
+           </properties>
+       </profile>
    <profile>
       <id>deploy</id>
       <activation>
          <activeByDefault>false</activeByDefault> 
       </activation>
+      <dependencies>
+          <dependency>
+             <groupId>org.exoplatform.jcr</groupId>
+             <artifactId>${exo.deploy.artifactId}</artifactId>
+             <version>${project.version}</version>
+             <type>ear</type>
+             <scope>runtime</scope>
+          </dependency>
+      </dependencies>
       <build>
       <plugins>
          <plugin>
