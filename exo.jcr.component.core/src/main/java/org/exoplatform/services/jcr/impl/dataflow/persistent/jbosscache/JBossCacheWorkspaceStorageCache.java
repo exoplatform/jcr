@@ -2054,7 +2054,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          }
          if (newAcl != null)
          {
-            if (newAcl.equals(acl))
+            if (newAcl.equals(prevNode.getACL()))
             {
                // No need to keep traversing the cache since the acl is the same
                continue loop;
