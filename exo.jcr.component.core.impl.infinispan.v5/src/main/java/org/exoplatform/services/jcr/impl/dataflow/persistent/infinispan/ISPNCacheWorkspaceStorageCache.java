@@ -434,7 +434,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             else
             {
                next = null;
-            }            
+            }
          }
          else
          {
@@ -461,7 +461,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             else
             {
                next = null;
-            }            
+            }
          }
       }
 

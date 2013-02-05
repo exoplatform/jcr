@@ -324,7 +324,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             return set != null ? set.size() : -1;
          }
       };
-
+      
    private final CacheActionNonTxAware<List<PropertyData>, Object> getChildProps =
       new CacheActionNonTxAware<List<PropertyData>, Object>()
       {
@@ -361,7 +361,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
          }
       };
-
+     
    private final CacheActionNonTxAware<List<PropertyData>, String> getReferencedProperties =
       new CacheActionNonTxAware<List<PropertyData>, String>()
       {
@@ -424,7 +424,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          return numNodes(container.peekInternalNode(rootFqn, false));
       }
    };
-
+      
    /**
     * Indicates whether the cache has already been initialized or not
     */
@@ -561,9 +561,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     * @throws RepositoryException if error of initialization
     * @throws RepositoryConfigurationException if error of configuration
     */
-   public JBossCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig,
-      TransactionService transactionService, ConfigurationManager cfm) throws RepositoryException,
-      RepositoryConfigurationException
+   public JBossCacheWorkspaceStorageCache(ExoContainerContext ctx, WorkspaceEntry wsConfig, TransactionService transactionService,
+      ConfigurationManager cfm) throws RepositoryException, RepositoryConfigurationException
    {
       if (wsConfig.getCache() == null)
       {
@@ -612,8 +611,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             FIFOAlgorithmConfig fifoConfig = (FIFOAlgorithmConfig)config;
             if (fifoConfig.getMinTimeToLive() > 0)
             {
-               LOG.warn("The FIFO algorithm with a minTimeToLive greater than 0 can cause a memory leak, "
-                  + "please use another eviction algorithm or set the minTimeToLive to 0.");
+               LOG.warn("The FIFO algorithm with a minTimeToLive greater than 0 can cause a memory leak, " +
+               		"please use another eviction algorithm or set the minTimeToLive to 0.");
             }
          }
       }
@@ -988,6 +987,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       }
    }
 
+
    /**
     * {@inheritDoc}
     */
@@ -1002,14 +1002,14 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          }
 
          cache.setLocal(true);
-
+         
          Fqn<String> fqn = makeChildListFqn(childNodesByPageList, parent.getIdentifier());
          Map<Integer, Set<String>> pages = (Map<Integer, Set<String>>)cache.get(fqn, ITEM_LIST);
          if (pages == null)
          {
             pages = new HashMap<Integer, Set<String>>();
          }
-
+         
          if (childs.size() > 0)
          {
             Set<String> set = new HashSet<String>();
@@ -1183,7 +1183,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       return getFromCacheByPath.run(parentId, name, itemType);
    }
-
+   
    /**
     * {@inheritDoc}
     */
@@ -1199,7 +1199,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       return getChildNodes.run(parent);
    }
-
+   
    /**
     * {@inheritDoc}
     */
@@ -1334,7 +1334,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       return getChildProps(parent.getIdentifier(), false);
    }
-
+   
    /**
     * {@inheritDoc}
     */
@@ -1387,7 +1387,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       return getChildProps.run(parentId, withValue);
    }
-
+   
    /**
     * {@inheritDoc}
     */
@@ -1453,7 +1453,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       return true;
    }
-
+   
    /**
     * {@inheritDoc}
     */
@@ -1593,8 +1593,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       }
 
       // add in ITEMS
-      return (ItemData)cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node,
-         modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+      return (ItemData) cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node,
+               modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
    }
 
    /**
@@ -1651,14 +1651,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       if (node.getParentIdentifier() != null)
       {
          // add in CHILD_NODES
-         cache.put(
-            makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
-               .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
+         cache.put(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
+            .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
 
          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
          {
-            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
-               node.getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
+            cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST, node
+               .getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
          }
       }
       // add in ITEMS
@@ -1676,10 +1675,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    protected PropertyData putProperty(PropertyData prop, ModifyChildOption modifyListsOfChild)
    {
       // add in CHILD_PROPS
-      cache.put(
-         makeChildFqn(childProps, prop.getParentIdentifier(),
-            prop.getQPath().getEntries()[prop.getQPath().getEntries().length - 1]), ITEM_ID, prop.getIdentifier(),
-         modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+      cache.put(makeChildFqn(childProps, prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath()
+         .getEntries().length - 1]), ITEM_ID, prop.getIdentifier(), modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
 
       if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
       {
@@ -1718,9 +1715,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       // add in ITEMS
       // NullItemData must never be returned inside internal cache operations. 
       ItemData returnedData =
-         (ItemData)cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop,
-            modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
-      return (returnedData instanceof NullItemData) ? null : (PropertyData)returnedData;
+               (ItemData) cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop,
+                        modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+      return (returnedData instanceof NullItemData) ? null : (PropertyData) returnedData;
    }
 
    protected void removeItem(ItemData item)
@@ -1736,8 +1733,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                .getQPath().getEntries().length - 1]));
 
             // remove from CHILD_NODES_LIST of parent
-            cache.removeFromList(makeChildListFqn(childNodesList, item.getParentIdentifier()), ITEM_LIST,
-               item.getIdentifier());
+            cache.removeFromList(makeChildListFqn(childNodesList, item.getParentIdentifier()), ITEM_LIST, item
+               .getIdentifier());
 
             // remove from CHILD_NODES_BY_PATTERN_LIST of parent
             cache.removeFromPatternList(makeChildListFqn(childNodesByPatternList, item.getParentIdentifier()),
@@ -1777,8 +1774,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             .getQPath().getEntries().length - 1]));
 
          // remove from CHILD_PROPS_LIST
-         cache.removeFromList(makeChildListFqn(childPropsList, item.getParentIdentifier()), ITEM_LIST,
-            item.getIdentifier());
+         cache.removeFromList(makeChildListFqn(childPropsList, item.getParentIdentifier()), ITEM_LIST, item
+            .getIdentifier());
 
          cache.removeFromPatternList(makeChildListFqn(childPropsByPatternList, item.getParentIdentifier()),
             PATTERN_OBJ, ITEM_LIST, item);
@@ -1976,8 +1973,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          // recreate with new path for child Nodes only
          TransientNodeData newNode =
             new TransientNodeData(prevNode.getQPath(), prevNode.getIdentifier(), prevNode.getPersistedVersion(),
-               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
-               prevNode.getParentIdentifier(), acl);
+               prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(), prevNode
+                  .getParentIdentifier(), acl);
          // update this node
          cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
          // update childs recursive
@@ -2019,7 +2016,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    private enum ModifyChildOption {
       NOT_MODIFY, MODIFY, FORCE_MODIFY
    }
-
+   
    /**
     * Allows to commit the cache changes in a dedicated XA Tx in order to avoid potential
     * deadlocks
@@ -2042,7 +2039,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     * {@inheritDoc}
     */
    @Managed
-   @ManagedDescription("Remove all the existing items from the cache")
+   @ManagedDescription("Remove all the existing items from the cache")   
    public void clean() throws BackupException
    {
       cleanCache();
@@ -2126,7 +2123,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          createResidentNode(itemsRoot);
       }
    }
-
    /**
     * {@inheritDoc}
     */
@@ -2134,8 +2130,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       // As the listeners in JBC really slow down the whole application, we decided to disable
       // the bloom filters in case of JBC
-      throw new UnsupportedOperationException(
-         "The cache listeners are not supported by the JBossCacheWorkspaceStorageCache");
+      throw new UnsupportedOperationException("The cache listeners are not supported by the JBossCacheWorkspaceStorageCache");
    }
 
    /**
@@ -2145,10 +2140,9 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       // As the listeners in JBC really slow down the whole application, we decided to disable
       // the bloom filters in case of JBC
-      throw new UnsupportedOperationException(
-         "The cache listeners are not supported by the JBossCacheWorkspaceStorageCache");
+      throw new UnsupportedOperationException("The cache listeners are not supported by the JBossCacheWorkspaceStorageCache");
    }
-
+   
    /**
     * Actions that are not supposed to be called within a transaction
     * 

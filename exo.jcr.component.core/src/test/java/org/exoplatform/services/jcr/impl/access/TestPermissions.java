@@ -58,7 +58,7 @@ public class TestPermissions extends BaseStandaloneTest
 {
 
    protected SessionImpl sessionMaryWS;
-
+   
    protected SessionImpl sessionMaryWS1;
 
    protected SessionImpl sessionWS;
@@ -86,12 +86,12 @@ public class TestPermissions extends BaseStandaloneTest
       Credentials credentials = new CredentialsImpl("admin", "admin".toCharArray());
       sessionWS = (SessionImpl)repository.login(credentials, "ws");
       sessionWS1 = (SessionImpl)repository.login(credentials, "ws1");
-
+      
       repository = repositoryService.getRepository("db2");
       credentials = new CredentialsImpl("mary", "exo".toCharArray());
       sessionMaryWS = (SessionImpl)repository.login(credentials, "ws");
       sessionMaryWS1 = (SessionImpl)repository.login(credentials, "ws1");
-
+      
       // add node with only read permission for mary
       NodeImpl node = (NodeImpl)sessionWS1.getRootNode().addNode("MARY-ReadOnly");
       node.addMixin("exo:privilegeable");
@@ -650,7 +650,7 @@ public class TestPermissions extends BaseStandaloneTest
       assertTrue(marysNode.hasPermission(PermissionType.ADD_NODE));
       assertFalse(marysNode.hasPermission(PermissionType.REMOVE));;
       assertEquals(((NodeData)marysChildNode2.getData()).getACL().getOwner(), "admin");
-
+      
       NodeImpl marysChildNode3 = (NodeImpl)marysNode.getNode(CHILD_TESTNODE_NAME3);
       assertTrue(marysChildNode3.hasPermission(PermissionType.READ));
       assertTrue(marysChildNode3.hasPermission(PermissionType.SET_PROPERTY));
