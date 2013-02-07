@@ -1535,8 +1535,9 @@ public class SessionDataManager implements ItemDataConsumer
             return;
          }
 
-         throw new RepositoryException("Version history is not found. UUID: " + vhID
-            + ". Context item (ancestor to save) " + ancestorToSave.getAsString());
+         log.debug("Version history is not found. UUID: " + vhID + ". Context item (ancestor to save) "
+            + ancestorToSave.getAsString());
+         return;
       }
 
       // mix:versionable
