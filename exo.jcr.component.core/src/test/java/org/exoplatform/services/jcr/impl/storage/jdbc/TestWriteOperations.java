@@ -25,13 +25,14 @@ import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.TestCleanableFileStreamValueData;
+import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
+import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
 
 import javax.jcr.Node;
 import javax.jcr.Session;
+import java.io.ByteArrayInputStream;
+import java.io.File;
 
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
@@ -83,7 +84,12 @@ public class TestWriteOperations extends JcrAPIBaseTest
       WorkspaceContainerFacade wsc = repo.getWorkspaceContainer(s.getWorkspace().getName());
       JDBCWorkspaceDataContainer dataContainer =
          (JDBCWorkspaceDataContainer)wsc.getComponent(JDBCWorkspaceDataContainer.class);
-      JDBCStorageConnection con = (JDBCStorageConnection)dataContainer.openConnection();
+      WorkspaceStorageConnection wscon = dataContainer.openConnection();
+      if (wscon instanceof StatisticsJDBCStorageConnection)
+      {
+         wscon = ((StatisticsJDBCStorageConnection)wscon).getNestedWorkspaceStorageConnection();
+      }
+      JDBCStorageConnection con = (JDBCStorageConnection) wscon;
       File file =
          new File(dataContainer.containerConfig.spoolConfig.tempDirectory, con.getInternalId(property
             .getInternalIdentifier()) + "0.0");
