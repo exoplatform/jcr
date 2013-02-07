@@ -376,6 +376,7 @@ public class DefaultHighlighter {
         StringReader reader = new StringReader(text);
         StringBuffer excerpt = new StringBuffer(excerptStart);
         excerpt.append(fragmentStart);
+		if(!text.isEmpty())  {
         int min = excerpt.length();
         char[] buf = new char[maxLength];
         int len = reader.read(buf);
@@ -391,6 +392,7 @@ public class DefaultHighlighter {
             }
         }
         excerpt.append(Text.encodeIllegalXMLCharacters(tmp.toString()));
+		}
         excerpt.append(fragmentEnd).append(excerptEnd);
         return excerpt.toString();
     }
