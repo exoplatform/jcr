@@ -1862,7 +1862,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       {
          String id = (String)namesIt.next();
          ItemData data = (ItemData)cache.get(makeItemFqn(id), ITEM_DATA);
-
+         if (data == null)
+         {
+            continue;
+         }
          // check is this descendant of prevRootPath
          QPath nodeQPath = data.getQPath();
          if (nodeQPath != null && nodeQPath.isDescendantOf(prevRootPath))
