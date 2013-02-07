@@ -18,12 +18,7 @@ package org.exoplatform.services.jcr.api.importing;
 
 import org.exoplatform.commons.utils.MimeTypeResolver;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
-import org.exoplatform.services.jcr.dataflow.ItemState;
-import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
-import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
-import org.exoplatform.services.jcr.impl.core.PropertyImpl;
-import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.util.VersionHistoryImporter;
 
@@ -34,7 +29,6 @@ import java.util.Calendar;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
 /**
@@ -246,38 +240,10 @@ public class TestImportVersionedChild extends JcrAPIBaseTest
       Node picture = wc1.getNode("medias").getNode("picture");
       assertTrue(picture.isNodeType("mix:versionable"));
 
-      //try to remove wc1, there must be RepositoryException
-      try
-      {
-         wc1.remove();
-         session.save();
-         fail();
-      }
-      catch (RepositoryException e)
-      {
-         // OK - wc1  Version History contain nt:versionedChild with link to non exist Version history
-
-         // remove bugy version history
-         SessionDataManager dataManager = session.getTransientNodesManager();
-         NodeImpl vhPicture =
-            (NodeImpl)session.getItem("/jcr:system/jcr:versionStorage/" + versionHistory
-               + "/1/jcr:frozenNode/medias/picture");
-
-         assertTrue(vhPicture.isNodeType("nt:versionedChild"));
-
-         PlainChangesLog changesLogDelete = new PlainChangesLogImpl();
-         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)vhPicture
-            .getProperty("jcr:childVersionHistory")).getData()));
-         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)vhPicture.getProperty("jcr:primaryType"))
-            .getData()));
-         changesLogDelete.add(ItemState.createDeletedState((vhPicture.getData())));
-
-         picture = wc1.getNode("medias").getNode("picture");
-         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)picture.getProperty("jcr:mixinTypes"))
-            .getData()));
-
-         dataManager.getTransactManager().save(changesLogDelete);
-      }
+      // try to remove picture, there must be debug messages since the picture doesn't have any version history
+      // but we don't want to prevent the remove process to be done normally
+      wc1.remove();
+      session.save();
    }
 
    public void testImportVersionHistoryWithChildVersions() throws Exception
@@ -1017,38 +983,10 @@ public class TestImportVersionedChild extends JcrAPIBaseTest
       assertFalse(chbaseVersion.equals(picture.getProperty("jcr:baseVersion").getValue().getString()));
       assertFalse(chpredecessorsHistory[0].equals(picture.getProperty("jcr:predecessors").getValues()[0].getString()));
 
-      // try to remove picture, there must be RepositoryException
-      try
-      {
-         wc1.remove();
-         session.save();
-         fail();
-      }
-      catch (RepositoryException e)
-      {
-         // OK - wc1  Version History contain nt:versionedChild with link to non exist Version history
-
-         // remove bugy version history
-         SessionDataManager dataManager = session.getTransientNodesManager();
-         NodeImpl vhPicture =
-            (NodeImpl)session.getItem("/jcr:system/jcr:versionStorage/" + versionHistory
-               + "/1/jcr:frozenNode/medias/picture");
-
-         assertTrue(vhPicture.isNodeType("nt:versionedChild"));
-
-         PlainChangesLog changesLogDelete = new PlainChangesLogImpl();
-         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)vhPicture.getProperty("jcr:primaryType"))
-            .getData()));
-         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)vhPicture
-            .getProperty("jcr:childVersionHistory")).getData()));
-         changesLogDelete.add(ItemState.createDeletedState((vhPicture.getData())));
-
-         picture = wc1.getNode("medias").getNode("picture");
-         changesLogDelete.add(ItemState.createDeletedState(((PropertyImpl)picture.getProperty("jcr:mixinTypes"))
-            .getData()));
-
-         dataManager.getTransactManager().save(changesLogDelete);
-      }
+      // try to remove picture, there must be debug messages since the picture doesn't have any version history
+      // but we don't want to prevent the remove process to be done normally
+      wc1.remove();
+      session.save();
    }
 
 }
