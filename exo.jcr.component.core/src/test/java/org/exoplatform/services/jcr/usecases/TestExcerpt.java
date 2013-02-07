@@ -62,6 +62,8 @@ public class TestExcerpt extends BaseUsecasesTest
       "<div><span>It is a test for <strong>excerpt</strong> query.Searching with synonyms is integrated in the jcr:contains() function and uses the same syntax like synonym searches ...</span></div>";
 
    private String s3 = "JCR supports such features as Lucene Fuzzy Searches";
+   
+   private String string3_excerpt= "<div><span></span></div>";
 
    private Session testSession;
 
@@ -172,4 +174,28 @@ public class TestExcerpt extends BaseUsecasesTest
          }
       }
    }
+   
+   	public void testExcerptWithEmptyProperty ()   throws Exception
+    {
+        Node node4 = testRoot.addNode("Node4", "exo:article");
+        node4.setProperty("exo:title", "");
+        node4.setProperty("exo:text", s1);
+
+        testSession.save();
+
+        QueryManager queryManager = testSession.getWorkspace().getQueryManager();
+        Query query =
+                queryManager.createQuery("select  excerpt(.) from exo:article where "
+                         + "contains(., 'excerpt') ORDER BY exo:title", Query.SQL);
+        QueryResult result = query.execute();
+        RowIterator rows = result.getRows();
+        for (RowIterator it = rows; it.hasNext();)
+        {
+            Row r = it.nextRow();
+            Value excerpt = r.getValue("rep:excerpt(exo:title)");
+            assertEquals(string3_excerpt, excerpt.getString());
+        }
+        node4.remove();
+        testSession.save();
+    }
 }

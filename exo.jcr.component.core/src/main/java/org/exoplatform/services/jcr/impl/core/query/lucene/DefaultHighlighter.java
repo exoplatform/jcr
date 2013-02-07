@@ -376,21 +376,23 @@ public class DefaultHighlighter {
         StringReader reader = new StringReader(text);
         StringBuffer excerpt = new StringBuffer(excerptStart);
         excerpt.append(fragmentStart);
-        int min = excerpt.length();
-        char[] buf = new char[maxLength];
-        int len = reader.read(buf);
-        StringBuffer tmp = new StringBuffer();
-        tmp.append(buf, 0, len);
-        if (len == buf.length) {
-            for (int i = tmp.length() - 1; i > min; i--) {
-                if (Character.isWhitespace(tmp.charAt(i))) {
-                    tmp.delete(i, tmp.length());
-                    tmp.append(" ...");
-                    break;
+        if (!text.isEmpty()) {
+            int min = excerpt.length();
+            char[] buf = new char[maxLength];
+            int len = reader.read(buf);
+            StringBuffer tmp = new StringBuffer();
+            tmp.append(buf, 0, len);
+            if (len == buf.length) {
+                for (int i = tmp.length() - 1; i > min; i--) {
+                    if (Character.isWhitespace(tmp.charAt(i))) {
+                        tmp.delete(i, tmp.length());
+                        tmp.append(" ...");
+                        break;
+                    }
                 }
             }
+            excerpt.append(Text.encodeIllegalXMLCharacters(tmp.toString()));
         }
-        excerpt.append(Text.encodeIllegalXMLCharacters(tmp.toString()));
         excerpt.append(fragmentEnd).append(excerptEnd);
         return excerpt.toString();
     }
