@@ -116,7 +116,9 @@ public class DeleteValues extends ValueFileOperation
       if (locks != null)
          try
          {
-            for (int i = 0,length = files.length; i < length; i++)
+            if (bckFiles == null)
+               return;
+            for (int i = 0,length = bckFiles.length; i < length; i++)
             {
                File f = bckFiles[i];
                if (f != null)
@@ -133,8 +135,11 @@ public class DeleteValues extends ValueFileOperation
          }
          finally
          {
-            for (ValueFileLock fl : locks)
+            for (int i = 0,length = locks.length; i < length; i++)
+            {
+               ValueFileLock fl = locks[i];
                fl.unlock();
+            }
          }
    }
 
@@ -146,8 +151,11 @@ public class DeleteValues extends ValueFileOperation
       if (locks != null)
          try
          {
-            for (File f : bckFiles)
+            if (bckFiles == null)
+               return;
+            for (int i = 0,length = bckFiles.length; i < length; i++)
             {
+               File f = bckFiles[i];
                if (f != null && !f.delete())
                   // Possible place of error: FileNotFoundException when we delete/update existing
                   // Value and then add/update again.
@@ -158,8 +166,11 @@ public class DeleteValues extends ValueFileOperation
          }
          finally
          {
-            for (ValueFileLock fl : locks)
+            for (int i = 0,length = locks.length; i < length; i++)
+            {
+               ValueFileLock fl = locks[i];
                fl.unlock();
+            }
          }
    }
 }
