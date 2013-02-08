@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.quota;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.backup.BackupException;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
@@ -32,6 +33,8 @@ import org.exoplatform.services.log.Log;
 
 import java.io.File;
 import java.io.IOException;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * {@link DataRestore} implementation for quota.
@@ -111,8 +114,30 @@ public class WorkspaceQuotaRestore implements DataRestore
     */
    public void clean() throws BackupException
    {
-      doBackup(tempFile);
-      doClean();
+      try
+      {
+         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
+         {
+            public Void run() throws BackupException
+            {
+               doBackup(tempFile);
+               doClean();
+               return null;
+            }
+         });
+      }
+      catch (PrivilegedActionException e)
+      {
+         Throwable cause = e.getCause();
+         if (cause instanceof BackupException)
+         {
+            throw (BackupException)cause;
+         }
+         else
+         {
+            throw new BackupException(cause);
+         }
+      }
    }
 
    /**

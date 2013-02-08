@@ -49,7 +49,7 @@ abstract public class JDBCConnectionTestBase extends JcrAPIBaseTest
    @Override
    protected void tearDown() throws Exception
    {
-
+      connect.commit();
       connect.close();
       super.tearDown();
    }

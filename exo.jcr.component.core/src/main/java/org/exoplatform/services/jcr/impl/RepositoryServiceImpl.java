@@ -43,6 +43,8 @@ import org.picocontainer.Startable;
 
 import java.io.InputStream;
 import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -397,7 +399,7 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
    /**
     * {@inheritDoc}
     */
-   public void removeRepository(String name, boolean forceRemove) throws RepositoryException
+   public void removeRepository(final String name, boolean forceRemove) throws RepositoryException
    {
       // Need privileges to manage repository.
       SecurityManager security = System.getSecurityManager();
@@ -414,34 +416,38 @@ public class RepositoryServiceImpl implements RepositoryService, Startable, Thre
 
       try
       {
-         RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
-         RepositoryImpl repo = (RepositoryImpl)getRepository(name);
+         final RepositoryEntry repconfig = config.getRepositoryConfiguration(name);
+         final RepositoryImpl repo = (RepositoryImpl)getRepository(name);
          repo.setState(ManageableRepository.OFFLINE);
-
-         List<WorkspaceEntry> workspaces = new ArrayList<WorkspaceEntry>(repconfig.getWorkspaceEntries());
-         for (WorkspaceEntry entry : workspaces)
+         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
          {
-            repo.internalRemoveWorkspace(entry.getName());
-         }
-         final RepositoryContainer repositoryContainer = repositoryContainers.get(name);
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-         {
-            public Void run()
+            public Void run() throws RepositoryException
             {
+               List<WorkspaceEntry> workspaces = new ArrayList<WorkspaceEntry>(repconfig.getWorkspaceEntries());
+               for (WorkspaceEntry entry : workspaces)
+               {
+                  repo.internalRemoveWorkspace(entry.getName());
+               }
+               RepositoryContainer repositoryContainer = repositoryContainers.get(name);
                repositoryContainer.stop();
-               return null;
-            }
-         });
-         repositoryContainers.remove(name);
-         config.getRepositoryConfigurations().remove(repconfig);
-         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
-         {
-            public Void run()
-            {
+               repositoryContainers.remove(name);
+               config.getRepositoryConfigurations().remove(repconfig);
                parentContainer.unregisterComponent(repositoryContainer.getName());
                return null;
             }
          });
+      }
+      catch (PrivilegedActionException e)
+      {
+         Throwable cause = e.getCause();
+         if (cause instanceof RepositoryException)
+         {
+            throw (RepositoryException)cause;
+         }
+         else
+         {
+            throw new RepositoryException(cause);
+         }
       }
       catch (RepositoryConfigurationException e)
       {

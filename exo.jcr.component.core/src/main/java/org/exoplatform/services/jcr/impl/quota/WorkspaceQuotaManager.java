@@ -342,14 +342,27 @@ public class WorkspaceQuotaManager implements Startable, Backupable, Suspendable
    /**
     * Calculates node data size by asking directly respective {@link WorkspacePersistentDataManager}.
     */
-   public long getNodeDataSizeDirectly(String nodePath) throws QuotaManagerException
+   public long getNodeDataSizeDirectly(final String nodePath) throws QuotaManagerException
    {
-      if (nodePath.equals(JCRPath.ROOT_PATH))
+      try
       {
-         return getWorkspaceDataSizeDirectly();
-      }
+         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Long>()
+         {
+            public Long run() throws Exception
+            {
+               if (nodePath.equals(JCRPath.ROOT_PATH))
+               {
+                  return getWorkspaceDataSizeDirectly();
+               }
 
-      return calculateNodeDataSizeTool.getNodeDataSizeDirectly(nodePath);
+               return calculateNodeDataSizeTool.getNodeDataSizeDirectly(nodePath);
+            }
+         });
+      }
+      catch (PrivilegedActionException e)
+      {
+         throw new QuotaManagerException(e.getMessage(), e);
+      }
    }
 
    /**
