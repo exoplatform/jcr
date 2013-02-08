@@ -3,9 +3,10 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Kernel.Cache">
   <title>eXo Cache</title>
-  <para>
-    This section will provide you all the basic knowledge about eXo Cache, from basic concepts to advanced concepts, sample codes, and more.
-  </para>
+
+  <para>This section will provide you all the basic knowledge about eXo Cache,
+  from basic concepts to advanced concepts, sample codes, and more.</para>
+
   <section id="Kernel.Cache.Basic_concepts">
     <title>Basic concepts</title>
 
@@ -1857,8 +1858,8 @@ public interface ExoCacheCreator {
         <emphasis>eXoCache</emphasis> and <emphasis>JCRCache</emphasis>
         defined:</para>
 
-        <programlisting>&lt;infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:5.1 http://www.infinispan.org/schemas/infinispan-config-5.1.xsd"
-  xmlns="urn:infinispan:config:5.1"&gt;
+        <programlisting>&lt;infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:5.2 http://www.infinispan.org/schemas/infinispan-config-5.2.xsd"
+  xmlns="urn:infinispan:config:5.2"&gt;
    &lt;global&gt;
       &lt;globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/&gt;
       &lt;transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="JCR-cluster" distributedSyncTimeout="20000"&gt;
@@ -1874,7 +1875,7 @@ public interface ExoCacheCreator {
       &lt;jmxStatistics enabled="true"/&gt;
       &lt;clustering mode="distribution"&gt;
         &lt;l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/&gt;
-         &lt;hash numOwners="${numOwners}" numVirtualNodes="${numVirtualNodes}" rehashRpcTimeout="120000"&gt;
+         &lt;hash numOwners="${numOwners}" numVirtualNodes="${numVirtualNodes}"&gt;
            &lt;groups enabled="true"/&gt;
          &lt;/hash&gt;
          &lt;sync replTimeout="180000"/&gt;
@@ -1886,7 +1887,7 @@ public interface ExoCacheCreator {
       &lt;jmxStatistics enabled="true"/&gt;
       &lt;clustering mode="distribution"&gt;
          &lt;l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/&gt;
-         &lt;hash numOwners="${numOwners}" numVirtualNodes="${numVirtualNodes}" rehashRpcTimeout="120000"/&gt;
+         &lt;hash numOwners="${numOwners}" numVirtualNodes="${numVirtualNodes}"/&gt;
          &lt;sync replTimeout="180000"/&gt;
       &lt;/clustering&gt;
    &lt;/namedCache&gt;
