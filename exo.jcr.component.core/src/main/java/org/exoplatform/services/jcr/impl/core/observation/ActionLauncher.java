@@ -39,12 +39,11 @@ import org.exoplatform.services.jcr.impl.util.EntityCollection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.util.List;
-
 import javax.jcr.RepositoryException;
 import javax.jcr.observation.Event;
 import javax.jcr.observation.EventListener;
 import javax.jcr.observation.EventListenerIterator;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -83,64 +82,53 @@ public class ActionLauncher implements ItemsPersistenceListener
 
          EventListener listener = eventListeners.nextEventListener();
          ListenerCriteria criteria = observationRegistry.getListenerFilter(listener);
+          if (listener != null && criteria != null) {
+              EntityCollection events = new EntityCollection();
 
-         EntityCollection events = new EntityCollection();
+              ChangesLogIterator logIterator = ((CompositeChangesLog) changesLog).getLogIterator();
+              while (logIterator.hasNextLog()) {
 
-         ChangesLogIterator logIterator = ((CompositeChangesLog)changesLog).getLogIterator();
-         while (logIterator.hasNextLog())
-         {
+                  PlainChangesLog subLog = logIterator.nextLog();
+                  String sessionId = subLog.getSessionId();
 
-            PlainChangesLog subLog = logIterator.nextLog();
-            String sessionId = subLog.getSessionId();
+                  ExtendedSession userSession;
 
-            ExtendedSession userSession;
-
-            if (subLog.getSession() != null)
-            {
-               userSession = subLog.getSession();
-            }
-            else
-            {
-               userSession = sessionRegistry.getSession(sessionId);
-            }
-
-            if (userSession != null)
-            {
-               for (ItemState itemState : subLog.getAllStates())
-               {
-                  if (itemState.isEventFire())
-                  {
-
-                     ItemData item = itemState.getData();
-                     try
-                     {
-                        int eventType = eventType(itemState);
-                        if (eventType != SKIP_EVENT && isTypeMatch(criteria, eventType)
-                           && isPathMatch(criteria, item, userSession) && isIdentifierMatch(criteria, item)
-                           && isNodeTypeMatch(criteria, item, userSession, subLog)
-                           && isSessionMatch(criteria, sessionId))
-                        {
-
-                           String path =
-                              userSession.getLocationFactory().createJCRPath(item.getQPath()).getAsString(false);
-
-                           events.add(new EventImpl(eventType, path, userSession.getUserID()));
-                        }
-                     }
-                     catch (RepositoryException e)
-                     {
-                        LOG.error("Can not fire ActionLauncher.onSaveItems() for " + item.getQPath().getAsString()
-                           + " reason: " + e.getMessage());
-                     }
+                  if (subLog.getSession() != null) {
+                      userSession = subLog.getSession();
+                  } else {
+                      userSession = sessionRegistry.getSession(sessionId);
                   }
-               }
-            }
-         }
-         if (events.getSize() > 0)
-         {
-            // TCK says, no events - no onEvent() action
-            listener.onEvent(events);
-         }
+
+                  if (userSession != null) {
+                      for (ItemState itemState : subLog.getAllStates()) {
+                          if (itemState.isEventFire()) {
+
+                              ItemData item = itemState.getData();
+                              try {
+                                  int eventType = eventType(itemState);
+                                  if (eventType != SKIP_EVENT && isTypeMatch(criteria, eventType)
+                                          && isPathMatch(criteria, item, userSession) && isIdentifierMatch(criteria, item)
+                                          && isNodeTypeMatch(criteria, item, userSession, subLog)
+                                          && isSessionMatch(criteria, sessionId)) {
+
+                                      String path =
+                                              userSession.getLocationFactory().createJCRPath(item.getQPath()).getAsString(false);
+
+                                      events.add(new EventImpl(eventType, path, userSession.getUserID()));
+                                  }
+                              } catch (RepositoryException e) {
+                                  LOG.error("Can not fire ActionLauncher.onSaveItems() for " + item.getQPath().getAsString()
+                                          + " reason: " + e.getMessage());
+                              }
+                          }
+                      }
+                  }
+              }
+              if (events.getSize() > 0) {
+                  // TCK says, no events - no onEvent() action
+                  listener.onEvent(events);
+              }
+          }
       }
    }
 
