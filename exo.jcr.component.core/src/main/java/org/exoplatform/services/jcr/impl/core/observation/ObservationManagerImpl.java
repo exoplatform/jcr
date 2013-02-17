@@ -20,6 +20,8 @@ package org.exoplatform.services.jcr.impl.core.observation;
 
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.SessionLifecycleListener;
+import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
 
 import java.util.ArrayList;
@@ -73,10 +75,19 @@ public class ObservationManagerImpl implements ObservationManager, SessionLifecy
    /**
     * @see javax.jcr.observation.ObservationManager#removeEventListener
     */
-   public void removeEventListener(EventListener listener) throws RepositoryException
-   {
-      registry.removeEventListener(listener);
-      sessionListeners.remove(listener);
+   public void removeEventListener(EventListener listener) throws RepositoryException {
+
+       ListenerCriteria list = registry.getListenerFilter(listener);
+       if (list != null && !this.sessionId.equals(list.getSessionId())) {
+           sessionId=list.getSessionId();
+           SessionRegistry sessionRegistry = registry.getSessionRegistry();
+           SessionImpl session = sessionRegistry.getSession(sessionId);
+           if (session != null) {
+               session.getWorkspace().getObservationManager().removeEventListener(listener);
+           }
+       }
+       sessionListeners.remove(listener);
+       registry.removeEventListener(listener);
    }
 
    /**

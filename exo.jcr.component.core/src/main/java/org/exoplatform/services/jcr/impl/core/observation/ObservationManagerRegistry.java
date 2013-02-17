@@ -49,12 +49,15 @@ public class ObservationManagerRegistry
 
    protected ActionLauncher launcher;
 
+   private final SessionRegistry sessionRegistry;
+
    public ObservationManagerRegistry(WorkspacePersistentDataManager workspaceDataManager,
       SessionRegistry sessionRegistry)
    {
 
       this.listenersMap = new HashMap<EventListener, ListenerCriteria>();
       this.launcher = new ActionLauncher(this, workspaceDataManager, sessionRegistry);
+      this.sessionRegistry=sessionRegistry;
    }
 
    public ObservationManagerImpl createObservationManager(SessionImpl session)
@@ -80,6 +83,11 @@ public class ObservationManagerRegistry
    public ListenerCriteria getListenerFilter(EventListener listener)
    {
       return listenersMap.get(listener);
+   }
+
+   public  SessionRegistry getSessionRegistry()
+   {
+       return sessionRegistry;
    }
 
    public void removeSessionEventListeners(SessionImpl session)
