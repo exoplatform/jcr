@@ -485,7 +485,7 @@ public class CollectionResource extends GenericResource
                {
                   Node childNode = ni.nextNode();
                   writer.writeStartElement(XML_NODE);
-                  writer.writeAttribute(XML_NAME, childNode.getName());
+                  writer.writeAttribute(XML_NAME, TextUtil.unescape(childNode.getName(),'%'));
                   String childNodeHref = rootHref + TextUtil.escape(childNode.getPath(), '%', true);
                   writer.writeAttribute(XML_HREF, childNodeHref);
                   writer.writeEndElement();

@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.webdav.util;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.BitSet;
 
 /**
@@ -49,16 +51,22 @@ public class TextUtil
             try
             {
                out.write(Integer.parseInt(string.substring(i + 1, i + 3), 16));
+               i += 2;
             }
             catch (NumberFormatException e)
             {
-               throw new IllegalArgumentException();
+              out.write(c);
             }
-            i += 2;
          }
          else
          {
-            out.write(c);
+           try {
+             out.write(String.valueOf(c).getBytes("utf-8"));
+           } catch (UnsupportedEncodingException e) {
+             throw new InternalError(e.toString());
+           } catch (IOException e) {
+             throw new InternalError(e.toString());
+           }
          }
       }
 
