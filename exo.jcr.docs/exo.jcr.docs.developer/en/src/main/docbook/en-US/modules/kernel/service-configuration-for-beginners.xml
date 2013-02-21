@@ -746,8 +746,8 @@ import jndi:/localhost/portal/WEB-INF/conf/jcr/jcr-configuration.xml
     linkend="Kernel.ContainerConfiguration.ConfigurationNamespace">XML Schema
     of the configuration file</link> looks like.</para>
 
-    <para>If you wish to see a examples of service configurations you should
-    study the <link linkend="Core">Core.</link> Where you find descriptions of
+    <para>If you wish to see examples of service configurations you should
+    study the <ulink url="https://github.com/exoplatform/core/tree/stable/2.4.x">Core.</ulink> Where you find descriptions of
     some eXo's core services. Finally you might wish to read more about <ulink
     url="http://picocontainer.codehaus.org/">PicoContainer</ulink>.</para>
   </section>
