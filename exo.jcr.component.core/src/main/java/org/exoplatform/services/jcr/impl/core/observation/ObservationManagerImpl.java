@@ -79,9 +79,8 @@ public class ObservationManagerImpl implements ObservationManager, SessionLifecy
 
        ListenerCriteria list = registry.getListenerFilter(listener);
        if (list != null && !this.sessionId.equals(list.getSessionId())) {
-           sessionId=list.getSessionId();
            SessionRegistry sessionRegistry = registry.getSessionRegistry();
-           SessionImpl session = sessionRegistry.getSession(sessionId);
+           SessionImpl session = sessionRegistry.getSession(list.getSessionId());
            if (session != null) {
                session.getWorkspace().getObservationManager().removeEventListener(listener);
            }

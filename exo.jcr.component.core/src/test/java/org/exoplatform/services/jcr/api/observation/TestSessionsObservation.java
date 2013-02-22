@@ -124,8 +124,7 @@ public class TestSessionsObservation extends JcrAPIBaseTest
          }
          catch (Exception e)
          {
-            e.printStackTrace();
-            fail("There are no error should be, but found " + e.getMessage());
+            fail("No exception was expected but we got : " + e.getMessage());
          }
       }
       finally
@@ -188,8 +187,7 @@ public class TestSessionsObservation extends JcrAPIBaseTest
             }
             catch (Exception e)
             {
-               e.printStackTrace();
-               fail("There are no error should be, but found " + e.getMessage());
+               fail("No exception was expected but we got : " + e.getMessage());
             }
             finally
             {
@@ -252,8 +250,7 @@ public class TestSessionsObservation extends JcrAPIBaseTest
          }
          catch (Exception e)
          {
-            e.printStackTrace();
-            fail("There are no error should be, but found " + e.getMessage());
+            fail("No exception was expected but we got : " + e.getMessage());
          }
       }
       finally
@@ -297,8 +294,7 @@ public class TestSessionsObservation extends JcrAPIBaseTest
        }
        catch (Exception e)
        {
-           e.printStackTrace();
-           fail("There are no error should be, but found " + e.getMessage());
+           fail("No exception was expected but we got : " + e.getMessage());
        }
    }
 

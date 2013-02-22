@@ -85,7 +85,7 @@ public class ObservationManagerRegistry
       return listenersMap.get(listener);
    }
 
-   public  SessionRegistry getSessionRegistry()
+   SessionRegistry getSessionRegistry()
    {
        return sessionRegistry;
    }
