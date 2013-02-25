@@ -82,18 +82,23 @@ public class ActionLauncher implements ItemsPersistenceListener
       {
 
          EventListener listener = eventListeners.nextEventListener();
-         if (listener == null) {
-              if (LOG.isDebugEnabled()) {
-                  LOG.debug("The listener has probably been removed thus it will be skipped");
-              }
-              continue;
+         if (listener == null)
+         {
+            if (LOG.isDebugEnabled())
+            {
+                LOG.debug("The listener has probably been removed thus it will be skipped");
+            }
+            continue;
          }
+
          ListenerCriteria criteria = observationRegistry.getListenerFilter(listener);
-         if (criteria == null) {
-              if (LOG.isDebugEnabled()) {
-                  LOG.debug("The criteria of the listener could not be found thus it will be skipped");
-              }
-              continue;
+         if (criteria == null)
+         {
+            if (LOG.isDebugEnabled())
+            {
+                LOG.debug("The criteria of the listener could not be found thus it will be skipped");
+            }
+            continue;
          }
 
          EntityCollection events = new EntityCollection();
