@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.webdav.util;
 
-import java.io.ByteArrayOutputStream;
+import java.io.CharArrayWriter;
 import java.util.BitSet;
 
 /**
@@ -40,7 +40,7 @@ public class TextUtil
     */
    public static String unescape(String string, char escape)
    {
-      ByteArrayOutputStream out = new ByteArrayOutputStream(string.length());
+      CharArrayWriter out = new CharArrayWriter(string.length());
       for (int i = 0; i < string.length(); i++)
       {
          char c = string.charAt(i);
@@ -61,15 +61,7 @@ public class TextUtil
             out.write(c);
          }
       }
-
-      try
-      {
-         return new String(out.toByteArray(), "utf-8");
-      }
-      catch (Exception exc)
-      {
-         throw new InternalError(exc.toString());
-      }
+      return new String(out.toCharArray());
    }
 
    public static BitSet URISave;

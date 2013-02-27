@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.util;
 
-import java.io.ByteArrayOutputStream;
+import java.io.CharArrayWriter;
 import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -492,7 +492,7 @@ public class Text
     */
    public static String unescape(String string, char escape)
    {
-      ByteArrayOutputStream out = new ByteArrayOutputStream(string.length());
+      CharArrayWriter out = new CharArrayWriter(string.length());
       for (int i = 0; i < string.length(); i++)
       {
          char c = string.charAt(i);
@@ -513,15 +513,7 @@ public class Text
             out.write(c);
          }
       }
-
-      try
-      {
-         return new String(out.toByteArray(), "utf-8");
-      }
-      catch (UnsupportedEncodingException e)
-      {
-         throw new InternalError(e.toString());
-      }
+      return new String(out.toCharArray());
    }
 
    /**
