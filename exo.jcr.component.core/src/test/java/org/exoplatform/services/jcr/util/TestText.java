@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 eXo Platform SAS.
+ * Copyright (C) 2013 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -16,39 +16,20 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.webdav.utils;
+package org.exoplatform.services.jcr.util;
 
 import junit.framework.TestCase;
 
-import org.exoplatform.services.jcr.webdav.util.TextUtil;
-
 /**
- * @author <a href="mailto:areshetnyak@exoplatform.com">Alex Reshetnyak</a>
- * @version $Id: rainf0x $
+ * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
+ * @version $Id$
  *
  */
-public class TestTextUtil extends TestCase
+public class TestText extends TestCase
 {
-   public void testParentPath() throws Exception
-   {
-      assertEquals("/a/b",TextUtil.parentPath("/a/b/c.txt"));
-      assertEquals("/a",TextUtil.parentPath("/a/b"));
-      assertEquals("/",TextUtil.parentPath("/a"));
-      assertEquals("/",TextUtil.parentPath("/"));
-      
-      try
-      {
-         TextUtil.parentPath("a");
-         fail("A IllegalArgumentException is expected here");
-      }
-      catch (IllegalArgumentException e)
-      {
-      }
-   }
-   
    public void testUnescape()
    {
       String filename = "ááááá.txt";
-      assertEquals(filename, TextUtil.unescape(filename, '%'));
+      assertEquals(filename, Text.unescape(filename, '%'));
    }
 }
