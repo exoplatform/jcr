@@ -16,9 +16,11 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.util;
+package org.exoplatform.services.jcr.impl.utils;
 
 import junit.framework.TestCase;
+
+import org.exoplatform.services.jcr.util.Text;
 
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
@@ -29,7 +31,7 @@ public class TestText extends TestCase
 {
    public void testUnescape()
    {
-      String filename = "ááááá.txt";
+      String filename = "\u00E1\u00E1\u00E1\u00E1\u00E1.txt";
       assertEquals(filename, Text.unescape(filename, '%'));
    }
 }

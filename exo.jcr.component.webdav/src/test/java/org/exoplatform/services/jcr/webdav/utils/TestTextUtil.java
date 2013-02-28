@@ -48,7 +48,7 @@ public class TestTextUtil extends TestCase
    
    public void testUnescape()
    {
-      String filename = "ááááá.txt";
+      String filename = "\u00E1\u00E1\u00E1\u00E1\u00E1.txt";
       assertEquals(filename, TextUtil.unescape(filename, '%'));
    }
 }
