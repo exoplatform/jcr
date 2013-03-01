@@ -153,6 +153,6 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected String getLikeExpressionEscape()
    {
       // must be .. LIKE 'prop\\_name' ESCAPE '\\\\'
-      return this.PATTERN_ESCAPE_STRING;
+      return PATTERN_ESCAPE_STRING;
    }
 }

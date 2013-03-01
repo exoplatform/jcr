@@ -87,6 +87,9 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     */
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CQJDBCStorageConnection");
 
+   protected static final String PATTERN_ESCAPE_STRING = "\\"; //valid for HSQL, Sybase, DB2, MSSQL, ORACLE
+   protected static final String SINGLE_QUOTE_ESCAPE_PATTERN = "'"; //valid for HSQL, Sybase, DB2, MSSQL, ORACLE, PGSQL
+
    /**
     * FIND_NODES_BY_PARENTID NEW.
     */
@@ -1370,6 +1373,108 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       }
    }
 
+   /**
+    * Replace underscore and single quote in pattern with escaped symbol. Replace jcr-wildcard '*' with sql-wildcard '%'.
+    * 
+    * @param pattern
+    * @return pattern with escaped underscore, single quote and fixed wildcard symbols
+    */
+   protected String escapeSpecialChars(String pattern)
+   {
+      char[] chars = pattern.toCharArray();
+      StringBuilder sb = new StringBuilder(chars.length + 1);
+      for (int i = 0; i < chars.length; i++)
+      {
+         switch (chars[i])
+         {
+            case '*' :
+               sb.append('%');
+               break;
+            case '\'' :
+               sb.append(getSingleQuoteEscapeSymbol());
+               sb.append(chars[i]);
+               break;
+            case '_' :
+            case '%' :
+               sb.append(getWildcardEscapeSymbol());
+            default :
+               sb.append(chars[i]);
+         }
+      }
+      return sb.toString();
+   }
+
+   /**
+    * Escape all the single quote found
+    */
+   protected String escape(String pattern)
+   {
+      char[] chars = pattern.toCharArray();
+      StringBuilder sb = new StringBuilder(chars.length + 1);
+      for (int i = 0; i < chars.length; i++)
+      {
+         switch (chars[i])
+         {
+            case '\'' :
+               sb.append(getSingleQuoteEscapeSymbol());
+            default :
+               sb.append(chars[i]);
+         }
+      }
+      return sb.toString();
+   }
+   
+   /**
+    * Append pattern expression.
+    * Appends String "I.NAME LIKE 'escaped pattern' ESCAPE 'escapeString'" or "I.NAME='pattern'"
+    * to String builder sb.
+    * 
+    * @param sb StringBuilder
+    * @param indexConstraint 
+    * @param pattern
+    */
+   protected void appendPattern(StringBuilder sb, QPathEntry entry, boolean indexConstraint)
+   {
+      String pattern = entry.getAsString(false);
+      sb.append("(I.NAME");
+      if (pattern.contains("*"))
+      {
+         sb.append(" LIKE '");
+         sb.append(escapeSpecialChars(pattern));
+         sb.append("' ESCAPE '");
+         sb.append(getLikeExpressionEscape());
+         sb.append("'");
+      }
+      else
+      {
+         sb.append("='");
+         sb.append(escape(pattern));
+         sb.append("'");
+      }
+
+      if (indexConstraint && entry.getIndex() != -1)
+      {
+         sb.append(" and I.I_INDEX=");
+         sb.append(entry.getIndex());
+      }
+      sb.append(")");
+   }
+
+   protected String getSingleQuoteEscapeSymbol()
+   {
+      return SINGLE_QUOTE_ESCAPE_PATTERN;
+   }
+
+   protected String getWildcardEscapeSymbol()
+   {
+      return PATTERN_ESCAPE_STRING;
+   }
+
+   protected String getLikeExpressionEscape()
+   {
+      return PATTERN_ESCAPE_STRING;
+   }
+   
    protected abstract ResultSet findACLHolders() throws SQLException;
 
    protected abstract ResultSet findItemQPathByIdentifierCQ(String identifier) throws SQLException;

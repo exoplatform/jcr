@@ -280,7 +280,7 @@ public class LocationFactory
       }
 
       return !((ch == '\t') || (ch == '\n') || (ch == '\f') || (ch == '\r') || (ch == ' ') || (ch == '/')
-         || (ch == ':') || (ch == '[') || (ch == ']') || (ch == '\'') || (ch == '\"') || (ch == '*'));
+         || (ch == ':') || (ch == '[') || (ch == ']') || (ch == '*'));
    }
 
    private boolean isSimpleString(String str)
