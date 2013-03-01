@@ -166,11 +166,11 @@ public class WebDavServiceInitParams
    {
       ParametersMapProcessor pmp = new ParametersMapProcessor(parameters);
 
-      pmp.processSingleParameter(defaultFolderNodeType, InitParamsNames.DEF_FOLDER_NODE_TYPE);
-      pmp.processSingleParameter(defaultFileNodeType, InitParamsNames.DEF_FILE_NODE_TYPE);
-      pmp.processSingleParameter(defaultFileMimeType, InitParamsNames.DEF_FILE_MIME_TYPE);
-      pmp.processSingleParameter(defaultUpdatePolicyType, InitParamsNames.UPDATE_POLICY);
-      pmp.processSingleParameter(defaultAutoVersionType, InitParamsNames.AUTO_VERSION);
+      defaultFolderNodeType = pmp.processSingleParameter(defaultFolderNodeType, InitParamsNames.DEF_FOLDER_NODE_TYPE);
+      defaultFileNodeType = pmp.processSingleParameter(defaultFileNodeType, InitParamsNames.DEF_FILE_NODE_TYPE);
+      defaultFileMimeType = pmp.processSingleParameter(defaultFileMimeType, InitParamsNames.DEF_FILE_MIME_TYPE);
+      defaultUpdatePolicyType = pmp.processSingleParameter(defaultUpdatePolicyType, InitParamsNames.UPDATE_POLICY);
+      defaultAutoVersionType = pmp.processSingleParameter(defaultAutoVersionType, InitParamsNames.AUTO_VERSION);
 
       pmp.processMultiParameter(untrustedUserAgents, InitParamsNames.UNTRUSTED_USER_AGENTS);
       pmp.processMultiParameter(allowedFileNodeTypes, InitParamsNames.ALLOWED_FILE_NODE_TYPES);
@@ -341,7 +341,7 @@ public class WebDavServiceInitParams
          }
       }
 
-      private void processSingleParameter(String parameter, String parameterName)
+      private String processSingleParameter(String parameter, String parameterName)
       {
          String paramValue = parameters.get(parameterName);
          if (paramValue != null)
@@ -349,6 +349,7 @@ public class WebDavServiceInitParams
             parameter = paramValue;
             log.info(parameterName + " = " + parameter);
          }
+         return parameter;
       }
 
       private void processMultiParameter(Set<String> valuesSet, String parameterName)
