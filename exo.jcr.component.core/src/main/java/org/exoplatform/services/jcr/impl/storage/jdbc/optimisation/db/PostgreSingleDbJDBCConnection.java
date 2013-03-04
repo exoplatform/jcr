@@ -42,18 +42,9 @@ public class PostgreSingleDbJDBCConnection extends SingleDbJDBCConnection
       super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected void prepareQueries() throws SQLException
-   {
-      super.prepareQueries();
-   }
-
    protected String getLikeExpressionEscape()
    {
       // must be .. LIKE 'prop\\_name' ESCAPE '\\\\'
-      return this.PATTERN_ESCAPE_STRING;
+      return PATTERN_ESCAPE_STRING;
    }
 }

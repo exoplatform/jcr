@@ -84,7 +84,7 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected String fixEscapeSymbols(String pattern)
+   protected String escapeSpecialChars(String pattern)
    {
       char[] chars = pattern.toCharArray();
       StringBuilder sb = new StringBuilder();
@@ -99,7 +99,7 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
             case '%' :
             case '[' : //Sybase pattern special symbol
             case ']' : //Sybase pattern special symbol
-               sb.append(this.getWildcardEscapeSymbold());
+               sb.append(this.getWildcardEscapeSymbol());
             default :
                sb.append(chars[i]);
          }

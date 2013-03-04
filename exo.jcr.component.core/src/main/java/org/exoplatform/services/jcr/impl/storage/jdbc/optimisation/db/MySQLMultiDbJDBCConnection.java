@@ -39,7 +39,7 @@ import java.sql.SQLException;
 public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
 
-   protected String PATTERN_ESCAPE_STRING = "\\\\";
+   protected static final String PATTERN_ESCAPE_STRING = "\\\\";
 
    /**
     * MySQL Multidatabase JDBC Connection constructor.
@@ -153,6 +153,6 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected String getLikeExpressionEscape()
    {
       // must be .. LIKE 'prop\\_name' ESCAPE '\\\\'
-      return this.PATTERN_ESCAPE_STRING;
+      return PATTERN_ESCAPE_STRING;
    }
 }

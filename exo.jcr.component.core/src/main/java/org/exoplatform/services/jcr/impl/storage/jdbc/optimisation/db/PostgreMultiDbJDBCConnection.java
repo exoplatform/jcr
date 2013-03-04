@@ -33,7 +33,7 @@ import java.sql.SQLException;
  */
 public class PostgreMultiDbJDBCConnection extends MultiDbJDBCConnection
 {
-   protected String PATTERN_ESCAPE_STRING = "\\\\";
+   protected static final String PATTERN_ESCAPE_STRING = "\\\\";
 
    public PostgreMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
       ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
@@ -42,19 +42,10 @@ public class PostgreMultiDbJDBCConnection extends MultiDbJDBCConnection
       super(dbConnection, readOnly, containerName, valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected void prepareQueries() throws SQLException
-   {
-      super.prepareQueries();
-   }
-
    @Override
    protected String getLikeExpressionEscape()
    {
       // must be .. LIKE 'prop\\_name' ESCAPE '\\\\'
-      return this.PATTERN_ESCAPE_STRING;
+      return PATTERN_ESCAPE_STRING;
    }
 }
