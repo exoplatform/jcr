@@ -402,7 +402,7 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-core</artifactId>
-        <version>5.2.0.Final</version>
+        <version>5.2.1.Final</version>
         <exclusions>
           <exclusion>
             <groupId>org.jboss.spec.javax.transaction</groupId>
@@ -413,7 +413,7 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-cachestore-jdbc</artifactId>
-        <version>5.2.0.Final</version>
+        <version>5.2.1.Final</version>
       </dependency>
       <dependency>
         <groupId>commons-io</groupId>
