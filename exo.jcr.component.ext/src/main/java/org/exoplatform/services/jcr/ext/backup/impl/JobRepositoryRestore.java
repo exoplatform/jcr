@@ -215,6 +215,7 @@ public class JobRepositoryRestore extends Thread
       boolean restored = true;
       try
       {
+         LOG.info("Trying to create the repository '" + repositoryEntry.getName() + "'");
          repositoryService.createRepository(repositoryEntry);
 
          //set original initializer to created workspace.
@@ -231,8 +232,9 @@ public class JobRepositoryRestore extends Thread
             if (!(wsEntry.getName().equals(repositoryEntry.getSystemWorkspaceName())))
             {
                currennWorkspaceName = wsEntry.getName();
+               LOG.info("Trying to restore the workspace " + wsEntry.getName());
                backupManager.restore(new BackupChainLog(workspacesMapping.get(wsEntry.getName())),
-                  repositoryEntry.getName(), wsEntry, false);
+               repositoryEntry.getName(), wsEntry, false);
             }
          }
       }

@@ -1611,7 +1611,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
    protected void suspendLocally() throws SuspendException
    {
-      if (!handler.isOnline())
+      if (handler != null && !handler.isOnline())
       {
          throw new SuspendException("Can't suspend index, while reindexing in progeress.");
       }
@@ -1645,6 +1645,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void clean() throws BackupException
    {
+      LOG.info("Start to clean lucene indexes of the workspace '"+workspaceName+"'");
       try
       {
          final File indexDir = getIndexDirectory();
@@ -1674,6 +1675,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void backup(final File storageDir) throws BackupException
    {
+      LOG.info("Start to backup lucene indexes of the workspace '"+workspaceName+"'");
       try
       {
          final File indexDir = getIndexDirectory();

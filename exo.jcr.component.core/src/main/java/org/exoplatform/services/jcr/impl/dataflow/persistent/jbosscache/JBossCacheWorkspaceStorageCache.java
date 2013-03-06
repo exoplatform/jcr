@@ -2101,6 +2101,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    @ManagedDescription("Remove all the existing items from the cache")   
    public void clean() throws BackupException
    {
+      LOG.info("Start to clean all the existing items from Jboss cache");
       cleanCache();
    }
 
@@ -2116,6 +2117,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
           */
          public void clean() throws BackupException
          {
+            LOG.info("Start to clean all the existing items from Jboss cache");
             cleanCache();
          }
 
