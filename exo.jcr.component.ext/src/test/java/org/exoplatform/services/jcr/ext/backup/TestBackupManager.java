@@ -34,6 +34,6 @@ public class TestBackupManager extends AbstractBackupUseCasesTest
    @Override
    protected ExtendedBackupManager getBackupManager()
    {
-      return getJCRBackupManager();
+      return getRDBMSBackupManager();
    }
 }

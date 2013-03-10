@@ -362,6 +362,14 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
 
       checkConent(repository, newWS.getName());
    }
+   public void testRepositoryFullBackupRestoreSingleToSingle() throws Exception
+   {
+      testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType.SINGLE, DatabaseStructureType.SINGLE);
+   }
+   public void testRepositoryFullBackupRestoreIsolatedToIsolated() throws Exception
+   {
+      testRepositoryFullBackupRestoreWithSpecifiedDbTypes(DatabaseStructureType.ISOLATED, DatabaseStructureType.ISOLATED);
+   }
 
    public void testRepositoryFullBackupRestore() throws Exception
    {

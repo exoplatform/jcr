@@ -57,7 +57,9 @@ import org.exoplatform.services.jcr.impl.backup.JCRRestore;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SysViewWorkspaceInitializer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -1559,10 +1561,13 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
    public void restoreExistingRepository(RepositoryBackupChainLog rblog, RepositoryEntry repositoryEntry,
       boolean asynchronous) throws BackupOperationException, BackupConfigurationException
    {
-      try
+       JDBCDataContainerConfig.DatabaseStructureType dbType;
+       try
       {
          // repository should be existed
          repoService.getRepository(repositoryEntry.getName());
+         WorkspaceEntry wsEntry=repoService.getRepository(repositoryEntry.getName()).getConfiguration().getWorkspaceEntries().get(0) ;
+         dbType = DBInitializerHelper.getDatabaseType(wsEntry);
       }
       catch (RepositoryException e)
       {
@@ -1644,10 +1649,24 @@ public class BackupManagerImpl implements ExtendedBackupManager, Startable
          this.LOG.error(e);
       }
 
-      JobRepositoryRestore jobExistedRepositoryRestore =
-         isSameConfigRestore ? new JobExistingRepositorySameConfigRestore(repoService, this, repositoryEntry,
-            workspacesMapping, new File(rblog.getLogFilePath())) : new JobExistingRepositoryRestore(repoService, this,
-            repositoryEntry, workspacesMapping, new File(rblog.getLogFilePath()));
+      JobRepositoryRestore jobExistedRepositoryRestore;
+
+      if (isSameConfigRestore)
+      {
+          jobExistedRepositoryRestore =   new JobExistingRepositorySameConfigRestore(repoService, this, repositoryEntry,
+                  workspacesMapping, new File(rblog.getLogFilePath()));
+      }
+       else if (dbType == JDBCDataContainerConfig.DatabaseStructureType.SINGLE)
+      {
+          jobExistedRepositoryRestore = new JobExistingRepositorySingleDBRestore(repoService, this,
+                  repositoryEntry, workspacesMapping, new File(rblog.getLogFilePath()));
+      }
+       else
+      {
+          jobExistedRepositoryRestore =  new JobExistingRepositoryRestore(repoService, this,
+                  repositoryEntry, workspacesMapping, new File(rblog.getLogFilePath()));
+      }
+
 
       restoreRepositoryJobs.add(jobExistedRepositoryRestore);
       if (asynchronous)
