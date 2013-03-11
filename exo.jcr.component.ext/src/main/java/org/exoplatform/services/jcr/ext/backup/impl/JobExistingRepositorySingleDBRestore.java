@@ -126,7 +126,7 @@ public class JobExistingRepositorySingleDBRestore extends JobExistingRepositoryS
     * {@inheritDoc}
     */
    @Override
-   protected WorkspaceEntry getRepositoryConfig() throws RepositoryConfigurationException, RepositoryException
+   protected WorkspaceEntry getWorkspaceConfig() throws RepositoryConfigurationException, RepositoryException
    {
       return repositoryService.getRepository(this.repositoryEntry.getName()).getConfiguration().getWorkspaceEntries().get(0);
    }

@@ -104,7 +104,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          // define one common database cleaner for all restores for single db case
          DBCleanerTool dbCleaner = null;
 
-         WorkspaceEntry wsEntry = getRepositoryConfig();
+         WorkspaceEntry wsEntry = getWorkspaceConfig();
 
          JDBCDataContainerConfig.DatabaseStructureType dbType = DBInitializerHelper.getDatabaseType(wsEntry);
 
@@ -338,7 +338,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
     * @throws RepositoryException will be generate RepositoryException
     * @throws RepositoryConfigurationException will be generate RepositoryConfigurationException
     */
-   protected WorkspaceEntry getRepositoryConfig() throws RepositoryConfigurationException, RepositoryException
+   protected WorkspaceEntry getWorkspaceConfig() throws RepositoryConfigurationException, RepositoryException
    {
       return repositoryEntry.getWorkspaceEntries().get(0);
    }
