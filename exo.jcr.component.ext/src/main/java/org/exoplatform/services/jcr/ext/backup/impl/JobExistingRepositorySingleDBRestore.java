@@ -42,7 +42,7 @@ import javax.sql.DataSource;
  * @author <a href="mailto:aboughzela@exoplatform.com.ua">Aymen Boughzela</a>
  * @version $Id$
  */
-public class JobExistingRepositorySingleDBRestore extends JobRepositoryRestore {
+public class JobExistingRepositorySingleDBRestore extends JobExistingRepositorySameConfigRestore {
 
     /**
      * JobExistingRepositorySingleDBRestore constructor.
@@ -62,137 +62,39 @@ public class JobExistingRepositorySingleDBRestore extends JobRepositoryRestore {
         super(repoService, backupManagerImpl, repositoryEntry, workspacesMapping, backupChainLogFile, removeJobOnceOver);
     }
 
-    @Override
+
     /**
      * {@inheritDoc}
      */
-    protected void restoreRepository() throws RepositoryRestoreExeption {
+    @Override
+  protected void restoreData(List<DataRestore> dataRestorer,List<WorkspaceContainerFacade> workspacesWaits4Resume) throws RepositoryRestoreExeption{
+      try{
 
-        // list of components to clean
-        List<Backupable> backupable;
+          for (DataRestore restorer : dataRestorer) {
+              restorer.commit();
+          }
+          ArrayList<WorkspaceEntry> workspaceList = new ArrayList<WorkspaceEntry>();
+          workspaceList.addAll(repositoryEntry.getWorkspaceEntries());
 
-        // list of data restorers
-        List<DataRestore> dataRestorer = new ArrayList<DataRestore>();
+          //close all session
+          LOG.info("Trying to close all the current sessions of all the workspaces of the repository");
 
-        // define one common connection for all restores and cleaners for single db case
-        Connection jdbcConn = null;
+          for (WorkspaceEntry wEntry : workspaceList) {
+              forceCloseSession(repositoryEntry.getName(), wEntry.getName());
+          }
+          //remove repository
+          LOG.info("Trying to remove the repository '" + repositoryEntry.getName() + "'");
+          repositoryService.removeRepository(repositoryEntry.getName());
 
-        // define one common database cleaner for all restores for single db case
-        DBCleanerTool dbCleaner = null;
-
-        try {
-
-            WorkspaceEntry wsEntry = repositoryService.getRepository(this.repositoryEntry.getName()).getConfiguration().getWorkspaceEntries().get(0);
-
-            JDBCDataContainerConfig.DatabaseStructureType dbType = DBInitializerHelper.getDatabaseType(wsEntry);
-
-            if (dbType.isShareSameDatasource()) {
-                String dsName = wsEntry.getContainer().getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME);
-
-                final DataSource ds = (DataSource) new InitialContext().lookup(dsName);
-                if (ds == null) {
-                    throw new NameNotFoundException("Data source " + dsName + " not found");
-                }
-
-                jdbcConn = SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Connection>() {
-                    public Connection run() throws Exception {
-                        return ds.getConnection();
-
-                    }
-                });
-                jdbcConn.setAutoCommit(false);
-
-                dbCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryService.getRepository(this.repositoryEntry.getName()).getConfiguration());
-
-            }
-            ManageableRepository repository = repositoryService.getRepository(this.repositoryEntry.getName());
-            for (String wsName : repository.getWorkspaceNames()) {
-                LOG.info("Trying to suspend workspace '" + wsName + "'");
-                WorkspaceContainerFacade wsContainer = repository.getWorkspaceContainer(wsName);
-                wsContainer.setState(ManageableRepository.SUSPENDED);
-            }
-
-            boolean isSharedDbCleaner = false;
-            for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries()) {
-                // get all backupable components
-                backupable =
-                        repositoryService.getRepository(this.repositoryEntry.getName()).getWorkspaceContainer(wEntry.getName())
-                                .getComponentInstancesOfType(Backupable.class);
-
-                File fullBackupDir =
-                        JCRRestore.getFullBackupFile(new BackupChainLog(workspacesMapping.get(wEntry.getName()))
-                                .getBackupConfig().getBackupDir());
-
-                DataRestoreContext context;
-
-                if (jdbcConn != null) {
-                    context = new DataRestoreContext(
-                            new String[]{
-                                    DataRestoreContext.STORAGE_DIR,
-                                    DataRestoreContext.DB_CONNECTION,
-                                    DataRestoreContext.DB_CLEANER},
-                            new Object[]{
-                                    fullBackupDir,
-                                    jdbcConn,
-                                    isSharedDbCleaner ? new DummyDBCleanerTool() : dbCleaner});
-
-                    isSharedDbCleaner = true;
-
-                } else {
-                    context = new DataRestoreContext(
-                            new String[]{DataRestoreContext.STORAGE_DIR},
-                            new Object[]{fullBackupDir});
-                }
-
-                for (Backupable component : backupable) {
-                    dataRestorer.add(component.getDataRestorer(context));
-                }
-            }
+          super.restoreData();
 
 
-            ArrayList<WorkspaceEntry> workspaceList = new ArrayList<WorkspaceEntry>();
-            workspaceList.addAll(repositoryEntry.getWorkspaceEntries());
+      }
+      catch (Throwable t) {
+          throw new RepositoryRestoreExeption("Repository " + repositoryEntry.getName() + " was not restored", t);
+      }
+  }
 
-            //close all session
-            LOG.info("Trying to close all the current sessions of all the workspaces of the repository");
-
-            for (WorkspaceEntry wEntry : workspaceList) {
-                forceCloseSession(repositoryEntry.getName(), wEntry.getName());
-            }
-
-
-            for (DataRestore restorer : dataRestorer) {
-                restorer.clean();
-            }
-            for (DataRestore restorer : dataRestorer) {
-                restorer.commit();
-            }
-            //remove repository
-            LOG.info("Trying to remove the repository '" + repositoryEntry.getName() + "'");
-            repositoryService.removeRepository(repositoryEntry.getName());
-
-            super.restoreRepository();
-        } catch (Throwable t) {
-            LOG.info("Trying to roll back the changes");
-            for (DataRestore restorer : dataRestorer) {
-                try {
-                    restorer.rollback();
-                } catch (BackupException e) {
-                    LOG.error("Can't rollback changes", e);
-                }
-            }
-            throw new RepositoryRestoreExeption("Repository " + repositoryEntry.getName() + " was not restored", t);
-        } finally {
-            for (DataRestore restorer : dataRestorer) {
-                try {
-                    restorer.close();
-                } catch (BackupException e) {
-                    LOG.error("Can't close restorer", e);
-                }
-            }
-
-        }
-    }
 
     /**
      * {@inheritDoc}

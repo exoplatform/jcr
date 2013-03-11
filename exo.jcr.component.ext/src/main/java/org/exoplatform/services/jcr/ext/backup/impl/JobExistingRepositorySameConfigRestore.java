@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanerTool;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DummyDBCleanerTool;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
@@ -59,7 +60,7 @@ import javax.sql.DataSource;
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: JobExistingRepositorySameConfigRestore.java 34360 2010-11-11 11:11:11Z tolusha $
  */
-public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
+public  class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
 {
 
    /**
@@ -94,15 +95,16 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
       List<WorkspaceContainerFacade> workspacesWaits4Resume = new ArrayList<WorkspaceContainerFacade>();
       try
       {
-         WorkspaceEntry wsEntry = repositoryEntry.getWorkspaceEntries().get(0);
 
          // define one common connection for all restores and cleaners for single db case
          Connection jdbcConn = null;
          
          // define one common database cleaner for all restores for single db case
          DBCleanerTool dbCleaner = null;
-         
-         DatabaseStructureType dbType = DBInitializerHelper.getDatabaseType(wsEntry);
+
+         WorkspaceEntry wsEntry = repositoryService.getRepository(this.repositoryEntry.getName()).getConfiguration().getWorkspaceEntries().get(0);
+
+         JDBCDataContainerConfig.DatabaseStructureType dbType = DBInitializerHelper.getDatabaseType(wsEntry);
 
          if (dbType.isShareSameDatasource())
          {
@@ -126,7 +128,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
 
             if (dbType == DatabaseStructureType.SINGLE)
             {
-               dbCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryEntry);
+               dbCleaner = DBCleanService.getRepositoryDBCleaner(jdbcConn, repositoryService.getRepository(this.repositoryEntry.getName()).getConfiguration());
             }
          }
 
@@ -200,50 +202,11 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          {
             restorer.clean();
          }
+         //restore repository
+         restoreData(dataRestorer,workspacesWaits4Resume);
 
-         for (DataRestore restorer : dataRestorer)
-         {
-            restorer.restore();
-         }
-
-         for (DataRestore restorer : dataRestorer)
-         {
-            restorer.commit();
-         }
-         
-         // resume components
-         for (WorkspaceContainerFacade wsContainer : workspacesWaits4Resume)
-         {
-            wsContainer.setState(ManageableRepository.ONLINE);
-         }
-
-         // incremental restore
-         for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
-         {
-            LOG.info("Trying to restore an incremental backup for the workspace '"+wEntry.getName()+"'");
-            repositoryService.getRepository(this.repositoryEntry.getName()).getWorkspaceContainer(wEntry.getName())
-               .getComponentInstancesOfType(Backupable.class);
-
-            DataManager dataManager =
-               (WorkspacePersistentDataManager)repositoryService.getRepository(this.repositoryEntry.getName())
-                  .getWorkspaceContainer(wEntry.getName()).getComponent(WorkspacePersistentDataManager.class);
-
-            File storageDir =
-               JCRRestore.getFullBackupFile(new BackupChainLog(workspacesMapping.get(wEntry.getName()))
-                  .getBackupConfig().getBackupDir());
-
-            FileCleanerHolder cleanerHolder =
-               (FileCleanerHolder)repositoryService.getRepository(this.repositoryEntry.getName())
-                  .getWorkspaceContainer(wEntry.getName()).getComponent(FileCleanerHolder.class);
-
-            JCRRestore restorer = new JCRRestore(dataManager, cleanerHolder.getFileCleaner());
-            for (File incrBackupFile : JCRRestore.getIncrementalFiles(storageDir))
-            {
-               restorer.incrementalRestore(incrBackupFile);
-            }
-         }
       }
-      catch (Throwable t) //NOSONAR
+      catch (Throwable t)
       {
          LOG.info("Trying to roll back the changes");
          for (DataRestore restorer : dataRestorer)
@@ -288,4 +251,71 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          }
       }
    }
+    /**
+     * Restore repository
+     *
+     * @param dataRestorer  list of data restorers
+     * @param workspacesWaits4Resume  List of workspaces
+     * @throws RepositoryException will be generate RepositoryException
+     */
+    protected void restoreData(List<DataRestore> dataRestorer, List<WorkspaceContainerFacade> workspacesWaits4Resume) throws RepositoryRestoreExeption {
+        try {
+
+
+            for (DataRestore restorer : dataRestorer) {
+                restorer.restore();
+            }
+
+            for (DataRestore restorer : dataRestorer) {
+                restorer.commit();
+            }
+
+            // resume components
+            for (WorkspaceContainerFacade wsContainer : workspacesWaits4Resume) {
+                wsContainer.setState(ManageableRepository.ONLINE);
+            }
+
+            // incremental restore
+            for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries()) {
+                LOG.info("Trying to restore an incremental backup for the workspace '" + wEntry.getName() + "'");
+                repositoryService.getRepository(this.repositoryEntry.getName()).getWorkspaceContainer(wEntry.getName())
+                        .getComponentInstancesOfType(Backupable.class);
+
+                DataManager dataManager =
+                        (WorkspacePersistentDataManager) repositoryService.getRepository(this.repositoryEntry.getName())
+                                .getWorkspaceContainer(wEntry.getName()).getComponent(WorkspacePersistentDataManager.class);
+
+                File storageDir =
+                        JCRRestore.getFullBackupFile(new BackupChainLog(workspacesMapping.get(wEntry.getName()))
+                                .getBackupConfig().getBackupDir());
+
+                FileCleanerHolder cleanerHolder =
+                        (FileCleanerHolder) repositoryService.getRepository(this.repositoryEntry.getName())
+                                .getWorkspaceContainer(wEntry.getName()).getComponent(FileCleanerHolder.class);
+
+                JCRRestore restorer = new JCRRestore(dataManager, cleanerHolder.getFileCleaner());
+                for (File incrBackupFile : JCRRestore.getIncrementalFiles(storageDir)) {
+                    restorer.incrementalRestore(incrBackupFile);
+                }
+            }
+        }
+        catch (Throwable t) {
+            throw new RepositoryRestoreExeption("Repository " + repositoryEntry.getName() + " was not restored", t);
+        }
+    }
+
+    /**
+     * Restore repository
+     *
+     * @throws RepositoryException will be generate RepositoryException
+     */
+    protected void restoreData() throws RepositoryRestoreExeption {
+        try {
+            super.restoreRepository();
+        }
+        catch (Throwable t) {
+            throw new RepositoryRestoreExeption("Repository " + repositoryEntry.getName() + " was not restored", t);
+        }
+    }
+
 }
