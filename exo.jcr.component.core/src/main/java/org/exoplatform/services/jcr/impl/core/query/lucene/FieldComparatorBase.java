@@ -31,7 +31,7 @@ abstract public class FieldComparatorBase extends FieldComparator
    /**
     * The bottom value.
     */
-   private Comparable bottom;
+   private Comparable<?> bottom;
 
    /**
     * Value for a document
@@ -39,7 +39,7 @@ abstract public class FieldComparatorBase extends FieldComparator
     * @param doc  id of the document
     * @return  the value for the given id
     */
-   protected abstract Comparable sortValue(int doc);
+   protected abstract Comparable<?> sortValue(int doc);
 
    /**
     * Retrieves the value of a given slot
@@ -47,7 +47,7 @@ abstract public class FieldComparatorBase extends FieldComparator
     * @param slot  index of the value to retrieve
     * @return  the value in the given slot
     */
-   protected abstract Comparable getValue(int slot);
+   protected abstract Comparable<?> getValue(int slot);
 
    /**
     * Puts a value into a given slot
@@ -55,7 +55,7 @@ abstract public class FieldComparatorBase extends FieldComparator
     * @param slot  index where to put the value
     * @param value  the value to put into the given slot
     */
-   protected abstract void setValue(int slot, Comparable value);
+   protected abstract void setValue(int slot, Comparable<?> value);
 
    @Override
    public int compare(int slot1, int slot2)
@@ -84,7 +84,7 @@ abstract public class FieldComparatorBase extends FieldComparator
     *   a positive integer if <code>val1</code> comes after <code>val2</code> and
     *   <code>0</code> if <code>val1</code> and <code>val2</code> are equal.
     */
-   protected int compare(Comparable val1, Comparable val2)
+   protected int compare(Comparable<?> val1, Comparable<?> val2)
    {
       return Util.compare(val1, val2);
    }
@@ -96,7 +96,7 @@ abstract public class FieldComparatorBase extends FieldComparator
    }
 
    @Override
-   public Comparable value(int slot)
+   public Comparable<?> value(int slot)
    {
       return getValue(slot);
    }

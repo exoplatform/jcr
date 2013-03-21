@@ -66,7 +66,7 @@ public class SharedFieldInsensitiveComparatorSource extends SharedFieldComparato
       /**
        * {@inheritDoc}
        */
-      protected int compare(Comparable val1, Comparable val2)
+      protected int compare(Comparable<?> val1, Comparable<?> val2)
       {
          val1 = makeInsensitiveValue(val1);
          val2 = makeInsensitiveValue(val2);
@@ -89,7 +89,7 @@ public class SharedFieldInsensitiveComparatorSource extends SharedFieldComparato
       /**
        * {@inheritDoc}
        */
-      protected int compare(Comparable val1, Comparable val2)
+      protected int compare(Comparable<?> val1, Comparable<?> val2)
       {
          val1 = makeInsensitiveValue(val1);
          val2 = makeInsensitiveValue(val2);
@@ -98,7 +98,7 @@ public class SharedFieldInsensitiveComparatorSource extends SharedFieldComparato
       }
    }
 
-   private static Comparable makeInsensitiveValue(Comparable val)
+   private static Comparable<?>  makeInsensitiveValue(Comparable val)
    {
       if (val instanceof String)
       {
