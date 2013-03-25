@@ -31,6 +31,8 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 public class SharedFieldInsensitiveComparatorSource extends SharedFieldComparatorSource
 {
 
+   private static final long serialVersionUID = -8727818091475897471L;
+
    /**
     * Constructor SharedFieldInsensitiveComparatorSource. 
     */
@@ -66,7 +68,7 @@ public class SharedFieldInsensitiveComparatorSource extends SharedFieldComparato
       /**
        * {@inheritDoc}
        */
-      protected int compare(Comparable val1, Comparable val2)
+      protected int compare(Comparable<?> val1, Comparable<?> val2)
       {
          val1 = makeInsensitiveValue(val1);
          val2 = makeInsensitiveValue(val2);
@@ -89,7 +91,7 @@ public class SharedFieldInsensitiveComparatorSource extends SharedFieldComparato
       /**
        * {@inheritDoc}
        */
-      protected int compare(Comparable val1, Comparable val2)
+      protected int compare(Comparable<?> val1, Comparable<?> val2)
       {
          val1 = makeInsensitiveValue(val1);
          val2 = makeInsensitiveValue(val2);
@@ -98,7 +100,7 @@ public class SharedFieldInsensitiveComparatorSource extends SharedFieldComparato
       }
    }
 
-   private static Comparable makeInsensitiveValue(Comparable val)
+   private static Comparable<?>  makeInsensitiveValue(Comparable<?> val)
    {
       if (val instanceof String)
       {
