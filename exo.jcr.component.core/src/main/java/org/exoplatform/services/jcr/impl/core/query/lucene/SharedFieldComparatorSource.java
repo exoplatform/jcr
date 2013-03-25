@@ -56,6 +56,8 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
     * The logger 
     */
    protected static Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SharedFieldSortComparator");
+   
+   private static final long serialVersionUID = -5803240954874585429L;
 
    /**
     * The name of the shared field in the lucene index.

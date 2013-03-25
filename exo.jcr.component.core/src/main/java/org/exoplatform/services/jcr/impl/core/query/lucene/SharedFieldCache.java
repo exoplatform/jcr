@@ -103,7 +103,7 @@ public class SharedFieldCache
          }
       }
 
-      private Map<Integer, Comparable<?>> getValuesMap(Comparable<?>[] values, int setValues)
+      private static Map<Integer, Comparable<?>> getValuesMap(Comparable<?>[] values, int setValues)
       {
          Map<Integer, Comparable<?>> map = new HashMap<Integer, Comparable<?>>(setValues);
          for (int i = 0; i < values.length && setValues > 0; i++)
@@ -117,7 +117,7 @@ public class SharedFieldCache
          return map;
       }
 
-      private boolean isSparse(Comparable<?>[] values, int setValues)
+      private static boolean isSparse(Comparable<?>[] values, int setValues)
       {
          // some really simple test to test whether the array is sparse.  
          // Currently, when less then 1% is set, the array is already sparse 
@@ -258,24 +258,23 @@ public class SharedFieldCache
     */
    ValueIndex lookup(IndexReader reader, String field, String prefix)
    {
-      Key key = new Key(field, prefix);
-      synchronized (this)
+      synchronized (cache)
       {
          Map<Key, ValueIndex> readerCache = cache.get(reader);
          if (readerCache == null)
          {
             return null;
          }
-         return readerCache.get(key);
+         return readerCache.get(new Key(field, prefix));
       }
    }
 
    /**
     * Put a <code>ValueIndex</code> <code>value</code> to cache.
     */
-   ValueIndex store(IndexReader reader, String field, String prefix, ValueIndex value)
+   void store(IndexReader reader, String field, String prefix, ValueIndex value)
    {
-      synchronized (this)
+      synchronized (cache)
       {
          Map<Key, ValueIndex> readerCache = cache.get(reader);
          if (readerCache == null)
@@ -283,7 +282,7 @@ public class SharedFieldCache
             readerCache = new HashMap<Key, ValueIndex>();
             cache.put(reader, readerCache);
          }
-         return readerCache.put(new Key(field, prefix), value);
+         readerCache.put(new Key(field, prefix), value);
       }
    }
 
@@ -314,7 +313,7 @@ public class SharedFieldCache
 
    /**
     * A compound <code>Key</code> that consist of <code>field</code>
-    * <code>prefix</code> .
+    * and <code>prefix</code> .
     */
    static class Key
    {
@@ -335,7 +334,7 @@ public class SharedFieldCache
 
       /**
        * Returns <code>true</code> if <code>o</code> is a <code>Key</code>
-       * instance and refers to the same field, prefix and comparator object.
+       * instance and refers to the same field and prefix.
        */
       public boolean equals(Object o)
       {
@@ -348,7 +347,7 @@ public class SharedFieldCache
       }
 
       /**
-       * Composes a hashcode based on the field, prefix and comparator.
+       * Composes a hashcode based on the field and prefix.
        */
       public int hashCode()
       {
