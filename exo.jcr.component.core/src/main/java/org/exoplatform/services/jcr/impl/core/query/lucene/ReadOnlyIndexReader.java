@@ -34,11 +34,6 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
 {
 
    /**
-    * The underlying shared reader.
-    */
-   private final SharedIndexReader reader;
-
-   /**
     * The deleted documents as initially read from the IndexReader passed
     * in the constructor of this class.
     */
@@ -63,7 +58,6 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
    public ReadOnlyIndexReader(SharedIndexReader reader, BitSet deleted, long deletedDocsVersion)
    {
       super(reader);
-      this.reader = reader;
       this.deleted = deleted;
       this.deletedDocsVersion = deletedDocsVersion;
       // acquire underlying reader
@@ -86,7 +80,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
     */
    long getCreationTick()
    {
-      return reader.getCreationTick();
+      return getBase().getCreationTick();
    }
 
    /**
@@ -211,7 +205,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
    public TermDocs termDocs(Term term) throws IOException
    {
       // do not wrap for empty TermDocs
-      TermDocs td = reader.termDocs(term);
+      TermDocs td = in.termDocs(term);
       if (td != EmptyTermDocs.INSTANCE)
       {
          td = new FilteredTermDocs(td);
