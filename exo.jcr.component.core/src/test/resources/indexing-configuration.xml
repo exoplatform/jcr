@@ -56,7 +56,7 @@
         <include-property>child/property</include-property>
     </aggregate>
 
-	<exclude path="/testRoot/exo:trash/node1"/>
+	<exclude path="${exclude-path:/testRoot/exo:trash/node1}"/>
 	<exclude nodeType="exo:hiddenable"/>
 	<exclude nodeType="exo:hiddenable2" path="/testRoot/node1/node1"/>
 </configuration>
