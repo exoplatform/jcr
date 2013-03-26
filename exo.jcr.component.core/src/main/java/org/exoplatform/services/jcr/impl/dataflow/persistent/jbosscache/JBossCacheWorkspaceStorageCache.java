@@ -2019,18 +2019,50 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     * @param parentId String - root node id of JCR subtree.
     * @param acl AccessControlList
     */
-   protected void updateChildsACL(final String parentId, final AccessControlList acl)
+   protected void updateChildsACL(final String parentId, AccessControlList acl)
    {
-      loop: for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
+      loop : for (Iterator<NodeData> iter = new ChildNodesIterator<NodeData>(parentId); iter.hasNext();)
       {
          NodeData prevNode = iter.next();
          // is ACL changes on this node (i.e. ACL inheritance broken)
+         boolean hasExoPrivilegeable = false;
+         boolean hasExoOwneable = false;
          for (InternalQName mixin : prevNode.getMixinTypeNames())
          {
-            if (mixin.equals(Constants.EXO_PRIVILEGEABLE) || mixin.equals(Constants.EXO_OWNEABLE))
+            if (mixin.equals(Constants.EXO_PRIVILEGEABLE))
             {
+               hasExoPrivilegeable = true;
+               if (hasExoOwneable)
+               {
+                  continue loop;
+               }
+            }
+            else if (mixin.equals(Constants.EXO_OWNEABLE))
+            {
+               hasExoOwneable = true;
+               if (hasExoPrivilegeable)
+               {
+                  continue loop;
+               }
+            }
+         }
+         AccessControlList newAcl = null;
+         if (hasExoOwneable)
+         {
+            newAcl = new AccessControlList(prevNode.getACL().getOwner(), acl.getPermissionEntries());
+         }
+         else if (hasExoPrivilegeable)
+         {
+            newAcl = new AccessControlList(acl.getOwner(), prevNode.getACL().getPermissionEntries());
+         }
+         if (newAcl != null)
+         {
+            if (newAcl.equals(prevNode.getACL()))
+            {
+               // No need to keep traversing the cache since the acl is the same
                continue loop;
             }
+            acl = newAcl;
          }
          // recreate with new path for child Nodes only
          TransientNodeData newNode =

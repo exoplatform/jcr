@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.access;
 
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.IdentityConstants;
 
 import java.io.Externalizable;
@@ -44,8 +42,6 @@ public class AccessControlList implements Externalizable
 {
 
    private static final long serialVersionUID = 5848327750178729120L;
-
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.AccessControlList");
 
    public static final String DELIMITER = ";";
 
