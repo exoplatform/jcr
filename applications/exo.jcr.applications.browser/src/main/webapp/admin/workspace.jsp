@@ -129,7 +129,7 @@
 	          <td>
 	            <table cellpadding="0" cellspacing="0" class="subTable">
 	              <%-- tr --%>
-	                <c:forTokens var="wsParamName" items="${wsParamNames}" delims=",">
+	                <c:forEach var="wsParamName" items="${wsParamNames}">
 	                <%-- c:forEach items="${wsParamNames}" --%>
 	                  <c:choose>
 	                    <c:when test="${wsParamName == 'Container'}">
@@ -154,7 +154,7 @@
                         </tr>
                       </c:forEach>
 	                  </tr>
-	                </c:forTokens>
+	                </c:forEach>
               </table>
             </td>
           </tr>
