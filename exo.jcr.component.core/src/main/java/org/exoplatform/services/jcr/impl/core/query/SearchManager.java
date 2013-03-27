@@ -262,11 +262,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
    private static final String LUCENE_BOOLEAN_QUERY_MAX_CLAUSE_COUNT = "org.apache.lucene.maxClauseCount";
 
-   /**
-    * Maximum number of clauses permitted per BooleanQuery.
-    */
-   private static final int MAX_CLAUSE_COUNT;
-
    static
    {
       String max = PropertyManager.getProperty(LUCENE_BOOLEAN_QUERY_MAX_CLAUSE_COUNT);
@@ -283,8 +278,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                + "' must be an integer, the default value will be used.");
          }
       }
-      MAX_CLAUSE_COUNT = value;
-      BooleanQuery.setMaxClauseCount(MAX_CLAUSE_COUNT);
+      BooleanQuery.setMaxClauseCount(value);
    }
 
    public SearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry,
