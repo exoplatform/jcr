@@ -367,19 +367,14 @@
 
             <entry>1.12</entry>
           </row>
-          <row>
-            <entry>org.apache.lucene.maxClauseCount</entry>
-
-            <entry>Integer.MAX_VALUE</entry>
-
-            <entry>Maximum number of clauses permitted per BooleanQuery. It is possible to change this property via system property org.apache.lucene.maxClauseCount
-                   (Default value is Integer.MAX_VALUE).</entry>
-
-            <entry>1.15.3</entry>
-          </row>
         </tbody>
       </tgroup>
     </table>
+     <note>
+         <para>The Maximum number of clauses permitted per BooleanQuery,
+              can be changed via the System property org.apache.lucene.maxClauseCount.
+             The default value of this parameter is Integer.MAX_VALUE.</para>
+     </note>
   </section>
 
   <section id="JCR.SearchConfiguration.Global_Search_Index">
