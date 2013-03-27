@@ -370,6 +370,11 @@
         </tbody>
       </tgroup>
     </table>
+     <note>
+         <para>The Maximum number of clauses permitted per BooleanQuery,
+              can be changed via the System property org.apache.lucene.maxClauseCount.
+             The default value of this parameter is Integer.MAX_VALUE.</para>
+     </note>
   </section>
 
   <section id="JCR.SearchConfiguration.Global_Search_Index">
