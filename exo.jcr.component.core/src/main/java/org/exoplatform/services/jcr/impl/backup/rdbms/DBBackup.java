@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.backup.rdbms;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.core.security.JCRRuntimePermissions;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -32,10 +33,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -72,6 +73,34 @@ public class DBBackup
     */
    public static final String CONTENT_LEN_ZIP_FILE = "dump-len.zip";
 
+   /**
+    *  Name of fetch size property parameter in configuration.
+    */
+   private static final String  FULL_BACKUP_JOB_FETCH_SIZE = "exo.jcr.component.ext.FullBackupJob.fetch-size";
+
+   /**
+    * The number of rows that should be fetched from the database
+    */
+   private static final int FETCH_SIZE;
+   static
+   {
+      String size = PropertyManager.getProperty(FULL_BACKUP_JOB_FETCH_SIZE);
+      int value = 1000;
+      if (size != null)
+      {
+         try
+         {
+            value = Integer.valueOf(size);
+         }
+         catch (NumberFormatException e)
+         {
+            LOG.warn("The value of the property '" + FULL_BACKUP_JOB_FETCH_SIZE
+               + "' must be an integer, the default value will be used.");
+         }
+      }
+      FETCH_SIZE = value;
+   }
+    
    /**
     * Backup tables.
     * 
@@ -172,22 +201,22 @@ public class DBBackup
    private static void dumpTable(Connection jdbcConn, String tableName, String script, File storageDir,
       ObjectZipWriterImpl contentWriter, ObjectZipWriterImpl contentLenWriter) throws IOException, SQLException
    {
-      // Need privileges
       SecurityManager security = System.getSecurityManager();
       if (security != null)
       {
          security.checkPermission(JCRRuntimePermissions.MANAGE_REPOSITORY_PERMISSION);
       }
 
-      PreparedStatement stmt = null;
+      Statement stmt = null;
       ResultSet rs = null;
       try
       {
          contentWriter.putNextEntry(new ZipEntry(tableName));
          contentLenWriter.putNextEntry(new ZipEntry(tableName));
 
-         stmt = jdbcConn.prepareStatement(script);
-         rs = stmt.executeQuery();
+         stmt = jdbcConn.createStatement(java.sql.ResultSet.TYPE_FORWARD_ONLY, java.sql.ResultSet.CONCUR_READ_ONLY);
+         stmt.setFetchSize(FETCH_SIZE);
+         rs = stmt.executeQuery(script);
          ResultSetMetaData metaData = rs.getMetaData();
 
          int columnCount = metaData.getColumnCount();
