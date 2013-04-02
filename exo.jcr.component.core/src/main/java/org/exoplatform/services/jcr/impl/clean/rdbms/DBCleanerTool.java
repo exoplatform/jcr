@@ -210,8 +210,8 @@ public class DBCleanerTool
          long start = 0;
          if (LOG.isDebugEnabled())
          {
-              start = System.currentTimeMillis();
-              LOG.debug("Execute script: \n[" + sql + "]");
+            start = System.currentTimeMillis();
+            LOG.debug("Execute script: \n[" + sql + "]");
          }
          SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
          {
@@ -223,7 +223,7 @@ public class DBCleanerTool
          });
          if (LOG.isDebugEnabled())
          {
-              LOG.debug("Script "+sql+" executed in " + ((System.currentTimeMillis() - start) / 1000d) + " sec");
+            LOG.debug("Script "+sql+" executed in " + ((System.currentTimeMillis() - start) / 1000d) + " sec");
          }
       }
       catch (SQLException e)
