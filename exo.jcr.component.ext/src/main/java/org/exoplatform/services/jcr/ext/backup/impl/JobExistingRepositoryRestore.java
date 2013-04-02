@@ -103,12 +103,14 @@ public class JobExistingRepositoryRestore extends JobRepositoryRestore
          }
 
          //close all session
+         LOG.info("Trying to close all the current sessions of all the workspaces of the repository");
          for (WorkspaceEntry wEntry : workspaceList)
          {
             forceCloseSession(repositoryEntry.getName(), wEntry.getName());
          }
 
          //remove repository
+         LOG.info("Trying to remove the repository '" + repositoryEntry.getName() + "'");
          repositoryService.removeRepository(repositoryEntry.getName());
 
          // clean

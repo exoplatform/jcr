@@ -97,6 +97,7 @@ public class DirectoryRestore implements DataRestore
     */
    public void clean() throws BackupException
    {
+      LOG.info("Start to clean old data from the storage");
       try
       {
          SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
