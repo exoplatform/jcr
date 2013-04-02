@@ -76,13 +76,12 @@ public class DBBackup
    /**
     *  Name of fetch size property parameter in configuration.
     */
-
    private static final String  FULL_BACKUP_JOB_FETCH_SIZE = "exo.jcr.component.ext.FullBackupJob.fetch-size";
 
-    /**
-     * The number of rows that should be fetched from the database
-     */
-    private static final int FETCH_SIZE;
+   /**
+    * The number of rows that should be fetched from the database
+    */
+   private static final int FETCH_SIZE;
    static
    {
       String size = PropertyManager.getProperty(FULL_BACKUP_JOB_FETCH_SIZE);
