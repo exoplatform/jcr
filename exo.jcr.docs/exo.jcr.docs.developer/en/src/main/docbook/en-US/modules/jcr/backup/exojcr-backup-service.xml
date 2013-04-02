@@ -247,6 +247,11 @@
           deprecated and not recommended for use.</para>
         </listitem>
       </itemizedlist></para>
+      <note>
+          <para>The number of rows that should be fetched from the database during backup operation,
+              can be changed thanks to the System property exo.jcr.component.ext.FullBackupJob.fetch-size.
+              The default value of this parameter is 1000.</para>
+      </note>
   </section>
 
   <section id="JCR.BackupService.RDBMSBackup">

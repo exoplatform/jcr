@@ -207,6 +207,12 @@ public class DBCleanerTool
    {
       try
       {
+         long start = 0;
+         if (LOG.isDebugEnabled())
+         {
+              start = System.currentTimeMillis();
+              LOG.debug("Execute script: \n[" + sql + "]");
+         }
          SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
          {
             public Object run() throws Exception
@@ -215,6 +221,10 @@ public class DBCleanerTool
                return null;
             }
          });
+         if (LOG.isDebugEnabled())
+         {
+              LOG.debug("Script "+sql+" executed in " + ((System.currentTimeMillis() - start) / 1000d) + " sec");
+         }
       }
       catch (SQLException e)
       {

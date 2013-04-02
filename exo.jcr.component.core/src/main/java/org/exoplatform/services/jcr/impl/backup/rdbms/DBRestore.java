@@ -158,6 +158,7 @@ public class DBRestore implements DataRestore
     */
    public void clean() throws BackupException
    {
+      LOG.info("Start to clean JCR tables");
       try
       {
          dbCleaner.clean();
