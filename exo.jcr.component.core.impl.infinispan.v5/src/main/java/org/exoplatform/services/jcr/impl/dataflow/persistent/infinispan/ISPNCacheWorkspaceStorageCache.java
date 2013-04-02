@@ -1678,6 +1678,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    @ManagedDescription("Remove all the existing items from the cache")
    public void clean() throws BackupException
    {
+      LOG.info("Start to clean all the existing items from ISPN cache");
       if (cache.getStatus() == ComponentStatus.RUNNING)
       {
          caller.clearCache();
@@ -1696,6 +1697,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
           */
          public void clean() throws BackupException
          {
+            LOG.info("Start to clean all the existing items from ISPN cache");
             caller.clearCache();
          }
 

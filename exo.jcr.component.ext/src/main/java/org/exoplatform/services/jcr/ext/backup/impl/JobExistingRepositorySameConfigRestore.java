@@ -133,6 +133,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          ManageableRepository repository = repositoryService.getRepository(this.repositoryEntry.getName());
          for (String wsName : repository.getWorkspaceNames())
          {
+            LOG.info("Trying to suspend workspace '"+ wsName+"'");
             WorkspaceContainerFacade wsContainer = repository.getWorkspaceContainer(wsName);
             wsContainer.setState(ManageableRepository.SUSPENDED);
 
@@ -219,6 +220,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
          // incremental restore
          for (WorkspaceEntry wEntry : repositoryEntry.getWorkspaceEntries())
          {
+            LOG.info("Trying to restore an incremental backup for the workspace '"+wEntry.getName()+"'");
             repositoryService.getRepository(this.repositoryEntry.getName()).getWorkspaceContainer(wEntry.getName())
                .getComponentInstancesOfType(Backupable.class);
 
@@ -243,7 +245,7 @@ public class JobExistingRepositorySameConfigRestore extends JobRepositoryRestore
       }
       catch (Throwable t) //NOSONAR
       {
-         // rollback
+         LOG.info("Trying to roll back the changes");
          for (DataRestore restorer : dataRestorer)
          {
             try

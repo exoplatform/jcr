@@ -794,6 +794,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public void clean() throws BackupException
    {
+      LOG.info("Start to clean value storage of the workspace '"+containerConfig.containerName+"'");
       try
       {
          DBCleanService.cleanWorkspaceData(wsConfig);
@@ -833,6 +834,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public void backup(final File storageDir) throws BackupException
    {
+      LOG.info("Start to backup value storage of the workspace '"+containerConfig.containerName+"'");
       ObjectWriter backupInfo = null;
 
       try
