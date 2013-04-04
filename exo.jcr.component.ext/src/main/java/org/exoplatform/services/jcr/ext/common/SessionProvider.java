@@ -45,6 +45,7 @@ import javax.jcr.Session;
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: SessionProvider.java 34445 2009-07-24 07:51:18Z dkatayev $
+ * @LevelAPI Platform
  */
 
 public class SessionProvider implements SessionLifecycleListener
@@ -157,8 +158,8 @@ public class SessionProvider implements SessionLifecycleListener
    /**
     * Gets the session from internal cache or creates and caches new one.
     * 
-    * @param workspaceName
-    * @param repository
+    * @param workspaceName the workspace name
+    * @param repository the repository instance
     * @return session
     * @throws LoginException
     * @throws NoSuchWorkspaceException
@@ -245,8 +246,8 @@ public class SessionProvider implements SessionLifecycleListener
    /**
     * Key generator for sessions cache.
     * 
-    * @param repository
-    * @param workspaceName
+    * @param repository the repository instance
+    * @param workspaceName the workspace name
     * @return
     */
    private String key(ManageableRepository repository, String workspaceName)
@@ -263,24 +264,23 @@ public class SessionProvider implements SessionLifecycleListener
       return currentRepository;
    }
     /**
-     * Return Current Workspace used.
-     * @return String
+     * @return  returns the current Workspace
      */
    public String getCurrentWorkspace()
    {
       return currentWorkspace;
    }
     /**
-     * Set  Repository.
-     * @param  currentRepository
+     * Sets  Repository.
+     * @param  currentRepository the current repository
      */
    public void setCurrentRepository(ManageableRepository currentRepository)
    {
       this.currentRepository = currentRepository;
    }
     /**
-     * Set  Workspace.
-     * @param  currentWorkspace
+     * Sets  Workspace
+     * @param  currentWorkspace the current workspace
      */
    public void setCurrentWorkspace(String currentWorkspace)
    {

@@ -23,22 +23,36 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
  * @version $Id$
- *
+ * @LevelAPI Platform
  */
 public interface NodeTypeData
 {
-
+   /**
+    * @return returns the definitions list of the children nodes
+    */
    public NodeDefinitionData[] getDeclaredChildNodeDefinitions();
-
+   /**
+    * @return returns the definitions list of the children properties
+    */
    public PropertyDefinitionData[] getDeclaredPropertyDefinitions();
-
+   /**
+    * @return returns the names list of super type
+    */
    public InternalQName[] getDeclaredSupertypeNames();
-
+   /**
+    * @return returns the primary item name
+    */
    public InternalQName getPrimaryItemName();
-
+   /**
+    * @return returns the node data name
+    */
    public InternalQName getName();
-
+   /**
+    * @return returns <code>true</code> if the children data is orderable , <code>false</code> otherwise
+    */
    public boolean hasOrderableChildNodes();
-
+   /**
+    * @return returns <code>true</code> if the node data is a mixin, <code>false</code> otherwise
+    */
    public boolean isMixin();
 }

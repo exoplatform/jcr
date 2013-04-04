@@ -39,6 +39,7 @@ import javax.jcr.nodetype.ConstraintViolationException;
  *         Nedonosko</a>
  * @version $Id: NodeTypeDataManager.java 24494 2008-12-05 12:26:49Z pnedonosko
  *          $
+ * @LevelAPI Platform
  */
 public interface NodeTypeDataManager
 {

@@ -23,6 +23,7 @@ package org.exoplatform.services.jcr.access;
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: AccessControlPolicy.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Platform
  */
 
 public interface AccessControlPolicy

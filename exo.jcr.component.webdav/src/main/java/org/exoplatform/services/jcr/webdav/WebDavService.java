@@ -52,6 +52,7 @@ public interface WebDavService
     * @param ifModifiedSince if-none-match header
     * @param baseURI base URI info
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response get(String repoName, String repoPath, String range, String ifModifiedSince, String ifNoneMatch,
       String version, UriInfo baseURI);
@@ -65,6 +66,7 @@ public interface WebDavService
     * @param repoPath path in repository
     * @param baseURI base URI info
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response head(String repoName, String repoPath, UriInfo baseURI);
 
@@ -80,11 +82,12 @@ public interface WebDavService
     * @param fileNodeTypeHeader JCR NodeType header
     * @param contentNodeTypeHeader JCR Content-NodeType header
     * @param mixinTypes JCR Mixin types header
-    * @param mimeType Content-Type HTTP header
+    * @param mediaType Content-Type HTTP header
     * @param userAgent User-Agent HTTP header
     * @param inputStream stream that contain incoming data
-    * @param UriInfo URI info
+    * @param uriInfo URI info
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response put(String repoName, String repoPath, String lockTokenHeader, String ifHeader, String fileNodeTypeHeader,
       String contentNodeTypeHeader, String mixinTypes, MediaType mediaType, String userAgent, InputStream inputStream,
@@ -96,6 +99,7 @@ public interface WebDavService
     * @param lockTokenHeader Lock-Token HTTP header
     * @param ifHeader If HTTP Header
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response delete(String repoName, String repoPath, String lockTokenHeader, String ifHeader);
 
@@ -110,6 +114,7 @@ public interface WebDavService
     * @param baseURI base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response copy(String repoName, String repoPath, String destinationHeader, String lockTokenHeader, String ifHeader,
       String depthHeader, String overwriteHeader, UriInfo baseURI, HierarchicalProperty body);
@@ -122,6 +127,7 @@ public interface WebDavService
     * @param nodeTypeHeader JCR Node-Type header
     * @param mixinTypesHeader JCR Mixin-Types header
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response mkcol(String repoName, String repoPath, String lockTokenHeader, String ifHeader, String nodeTypeHeader,
       String mixinTypesHeader, UriInfo uriInfo);
@@ -137,6 +143,7 @@ public interface WebDavService
     * @param baseURI base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response move(String repoName, String repoPath, String destinationHeader, String lockTokenHeader, String ifHeader,
       String depthHeader, String overwriteHeader, UriInfo baseURI, HierarchicalProperty body);
@@ -144,6 +151,7 @@ public interface WebDavService
    /**
     * @param repoName repository name
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response options(String repoName);
 
@@ -154,6 +162,7 @@ public interface WebDavService
     * @param baseURI base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response HTTP response
+    * @LevelAPI Platform
     */
    Response propfind(String repoName, String repoPath, String depthHeader, UriInfo baseURI, HierarchicalProperty body);
 
@@ -165,6 +174,7 @@ public interface WebDavService
     * @param baseURI base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response HTTP response
+    * @LevelAPI Platform
     */
    Response proppatch(String repoName, String repoPath, String lockTokenHeader, String ifHeader, UriInfo baseURI,
       HierarchicalProperty body);
@@ -177,6 +187,7 @@ public interface WebDavService
     * @param depth Depth HTTP header
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response lock(String repoName, String repoPath, String lockTokenHeader, String ifHeader, String depth,
       HierarchicalProperty body);
@@ -187,6 +198,7 @@ public interface WebDavService
     * @param lockTokenHeader Lock-Token HTTP header
     * @param ifHeader If- HTTP Header
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response unlock(String repoName, String repoPath, String lockTokenHeader, String ifHeader);
 
@@ -197,6 +209,7 @@ public interface WebDavService
     * @param lockTokenHeader Lock-Token HTTP header
     * @param ifHeader If- HTTP Header
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response checkin(String repoName, String repoPath, String lockTokenHeader, String ifHeader);
 
@@ -206,6 +219,7 @@ public interface WebDavService
     * @param lockTokenHeader Lock-Token HTTP header
     * @param ifHeader If- HTTP Header
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response checkout(String repoName, String repoPath, String lockTokenHeader, String ifHeader);
 
@@ -216,6 +230,7 @@ public interface WebDavService
     * @param baseURI base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response report(String repoName, String repoPath, String depth, UriInfo baseURI, HierarchicalProperty body);
 
@@ -225,6 +240,7 @@ public interface WebDavService
     * @param lockTokenHeader Lock-Token HTTP header
     * @param ifHeader If- HTTP Header
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response uncheckout(String repoName, String repoPath, String lockTokenHeader, String ifHeader);
 
@@ -234,6 +250,7 @@ public interface WebDavService
     * @param lockTokenHeader Lock-Token HTTP header
     * @param ifHeader If- HTTP Header
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response versionControl(String repoName, String repoPath, String lockTokenHeader, String ifHeader);
 
@@ -248,6 +265,7 @@ public interface WebDavService
     * @param baseURI base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response order(String repoName, String repoPath, String lockTokenHeader, String ifHeader, UriInfo baseURI,
       HierarchicalProperty body);
@@ -259,6 +277,7 @@ public interface WebDavService
     * @param baseURI base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response search(String repoName, String repoPath, UriInfo baseURI, HierarchicalProperty body);
 
@@ -272,6 +291,7 @@ public interface WebDavService
     * @param ifHeader If- HTTP Header
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    Response acl(String repoName, String repoPath, String lockTokenHeader, String ifHeader, HierarchicalProperty body);
 }

@@ -36,6 +36,7 @@ import javax.jcr.RepositoryException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: AccessControlList.java 14556 2008-05-21 15:22:15Z pnedonosko $
+ * @LevelAPI Platform
  */
 
 public class AccessControlList implements Externalizable
@@ -82,17 +83,24 @@ public class AccessControlList implements Externalizable
       this.owner = owner;
       this.accessList = accessList;
    }
-
+   /**
+    * @return returns <code>true</code> if the permission list is not empty, <code>false</code> otherwise
+    */
    public boolean hasPermissions()
    {
       return accessList != null;
    }
-
+   /**
+    * @return returns <code>true</code> if the owner exist, <code>false</code> otherwise
+    */
    public boolean hasOwner()
    {
       return owner != null;
    }
-
+   /**
+    * Adds permissions
+    * @param rawData the list of permissions
+    */
    public void addPermissions(String rawData) throws RepositoryException
    {
       StringTokenizer listTokenizer = new StringTokenizer(rawData, AccessControlList.DELIMITER);
@@ -108,7 +116,11 @@ public class AccessControlList implements Externalizable
          accessList.add(new AccessControlEntry(entryTokenizer.nextToken(), entryTokenizer.nextToken()));
       }
    }
-
+   /**
+    * Adds permissions
+    * @param identity the member identity
+    * @param perm the list of permissions
+    */
    public void addPermissions(String identity, String[] perm) throws RepositoryException
    {
       for (String p : perm)
@@ -116,7 +128,10 @@ public class AccessControlList implements Externalizable
          accessList.add(new AccessControlEntry(identity, p));
       }
    }
-
+   /**
+    * Removes permissions
+    * @param identity the member identity
+    */
    public void removePermissions(String identity)
    {
       for (Iterator<AccessControlEntry> iter = accessList.iterator(); iter.hasNext();)
@@ -126,7 +141,11 @@ public class AccessControlList implements Externalizable
             iter.remove();
       }
    }
-
+   /**
+    * Removes permissions
+    * @param identity the member identity
+    * @param permission  the permission entry
+    */
    public void removePermissions(String identity, String permission)
    {
       for (Iterator<AccessControlEntry> iter = accessList.iterator(); iter.hasNext();)
@@ -146,7 +165,11 @@ public class AccessControlList implements Externalizable
    {
       return owner;
    }
-
+   /**
+    * Sets owner.
+    *
+    * @param owner the owner
+    */
    public void setOwner(String owner)
    {
       this.owner = owner;
@@ -163,7 +186,10 @@ public class AccessControlList implements Externalizable
       }
       return list;
    }
-
+   /**
+    * @param identity the member identity
+    * @return returns the correspond permission list
+    */
    public List<String> getPermissions(String identity)
    {
       List<String> permissions = new ArrayList<String>();

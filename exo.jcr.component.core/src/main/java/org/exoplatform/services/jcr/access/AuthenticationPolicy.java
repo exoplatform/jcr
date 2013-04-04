@@ -29,6 +29,7 @@ import javax.jcr.LoginException;
  * 
  * @author <a href="mailto:lautarul@gmail.com">Roman Pedchenko</a>
  * @version $Id: AuthenticationPolicy.java 14100 2008-05-12 10:53:47Z gazarenkov $
+ * @LevelAPI Platform
  */
 
 public interface AuthenticationPolicy

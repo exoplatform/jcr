@@ -27,6 +27,7 @@ import java.util.Set;
  * which can be further used for consistency check.
  *  
  * @author <a href="mailto:dkuleshov@exoplatform.com">Dmitry Kuleshov</a>
+ * @LevelAPI Platform
  */
 public interface LockTableHandler
 {

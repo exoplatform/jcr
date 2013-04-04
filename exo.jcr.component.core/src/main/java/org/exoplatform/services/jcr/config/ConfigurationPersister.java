@@ -21,7 +21,11 @@ package org.exoplatform.services.jcr.config;
 import org.exoplatform.container.xml.PropertiesParam;
 
 import java.io.InputStream;
-
+/**
+ * Created by The eXo Platform SAS.
+ *
+ * @LevelAPI Platform
+ */
 public interface ConfigurationPersister
 {
 

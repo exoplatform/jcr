@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
  * 
  * @see NodeTypeRegistry#addListener(NodeTypeRegistryListener)
  * @see NodeTypeRegistry#removeListener(NodeTypeRegistryListener)
+ * @LevelAPI Platform
  */
 public interface NodeTypeManagerListener
 {

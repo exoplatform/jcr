@@ -47,6 +47,7 @@ import javax.jcr.RepositoryException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: WorkspaceStorageConnection.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Platform
  */
 public interface WorkspaceStorageConnection
 {
@@ -209,7 +210,7 @@ public interface WorkspaceStorageConnection
     * 
     * See more {@link javax.jcr.Node#getReferences()}
     * 
-    * @param Identifier
+    * @param nodeIdentifier
     *          of referenceable Node
     * @return list of referenced property data or empty <code>List</code>
     * @throws RepositoryException

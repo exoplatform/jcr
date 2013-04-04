@@ -30,6 +30,7 @@ import java.util.List;
  * 
  * @author Gennady Azarenkov
  * @version $Id: AddActionsPlugin.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Platform
  */
 
 public class AddActionsPlugin extends BaseComponentPlugin
@@ -46,7 +47,9 @@ public class AddActionsPlugin extends BaseComponentPlugin
          actionsConfig = (ActionsConfig)param.getObject();
       }
    }
-
+   /**
+    * @return  returns a collection containing all actions configuration
+    */
    public List<ActionConfiguration> getActions()
    {
       return actionsConfig.getActions();

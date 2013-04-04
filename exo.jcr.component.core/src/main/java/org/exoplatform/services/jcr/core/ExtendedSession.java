@@ -43,13 +43,14 @@ import javax.transaction.xa.XAResource;
  * 
  * @author Gennady Azarenkov
  * @version $Id: ExtendedSession.java 12649 2008-04-02 12:46:37Z ksm $
+ * @LevelAPI Platform
  */
 
 public interface ExtendedSession extends Session
 {
 
    /**
-    * @return
+    * @return returns the session identify
     */
    String getId();
 
@@ -126,7 +127,7 @@ public interface ExtendedSession extends Session
     *
     * @param absPath The path of the root of the subtree to be serialized.
     * This must be the path to a node, not a property
-    * @param contentHandler The  <code>org.xml.sax.ContentHandler</code> to
+    * @param out The  <code>org.xml.sax.ContentHandler</code> to
     * which the SAX events representing the XML serialization of the subtree
     * will be output.
     * @param skipBinary A <code>boolean</code> governing whether binary

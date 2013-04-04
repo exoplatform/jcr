@@ -35,6 +35,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
  * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
  *
+ * @LevelAPI Platform
  */
 public interface NodeTypeRepository extends ComponentPersister
 {
@@ -117,13 +118,11 @@ public interface NodeTypeRepository extends ComponentPersister
    boolean isNodeType(InternalQName testTypeName, InternalQName[] typesNames);
 
    /**
-    * @param nodeTypeName
     * @param nodeType
     */
    void removeNodeType(NodeTypeData nodeType);
 
    /**
-    * @param nodeTypeName
     * @param nodeType
     * @exception RepositoryException
     */
@@ -131,9 +130,11 @@ public interface NodeTypeRepository extends ComponentPersister
 
    /**
     * Write node types to stream
-    * 
-    * @param os output stream
-    * @param nodeTypes
+    *
+    * @param nodeTypes the list of node types
+    * @param nodeTypeDataManager the node type data manager
+    * @param accessControlPolicy  the access control
+    * @param alreadyExistsBehaviour the behaviour if node exist
     * @throws RepositoryException 
     */
    void registerNodeType(final List<NodeTypeData> nodeTypes, final NodeTypeDataManager nodeTypeDataManager,

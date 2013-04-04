@@ -76,6 +76,7 @@ import javax.xml.transform.TransformerException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: RegistryService.java 34445 2009-07-24 07:51:18Z dkatayev $
+ * @LevelAPI Platform
  */
 public class RegistryService extends Registry implements Startable
 {
@@ -119,7 +120,7 @@ public class RegistryService extends Registry implements Startable
    /**
     * @param params
     *          accepts "locations" properties param
-    * @param repositoryService
+    * @param repositoryService the repository service
     * @throws RepositoryConfigurationException
     * @throws RepositoryException
     */
@@ -413,7 +414,8 @@ public class RegistryService extends Registry implements Startable
    }
 
    /**
-    * @param replace
+    * Init the registry storage
+    * @param replace <code>true</code> if wants to re-create exo:registry node, <code>false</code> otherwise
     * @throws RepositoryConfigurationException
     * @throws RepositoryException
     */
@@ -547,8 +549,9 @@ public class RegistryService extends Registry implements Startable
    }
 
    /**
-    * @param repositoryName
-    * @param workspaceName
+    * Add a new registry entry
+    * @param repositoryName the repository name
+    * @param workspaceName the workspace name
     */
    public void addRegistryLocation(String repositoryName, String workspaceName)
    {
@@ -556,7 +559,7 @@ public class RegistryService extends Registry implements Startable
    }
 
    /**
-    * @param repositoryName
+    * @param repositoryName the repository name
     */
    public void removeRegistryLocation(String repositoryName)
    {
@@ -564,11 +567,9 @@ public class RegistryService extends Registry implements Startable
    }
 
    /**
-    * @param sessionProvider
-    * @param groupName
-    * @param entryName
-    * @param repositoryName
-    * @return
+    * Init the registry entry
+    * @param groupName the group entry name
+    * @param entryName the entry name
     * @throws RepositoryException
     */
    public void initRegistryEntry(String groupName, String entryName) throws RepositoryException,

@@ -315,6 +315,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param workspace
     *          String, the workspace name
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -425,6 +426,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param repository
     *          String, the repository name
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -521,6 +523,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param forceSessionClose
     *          Boolean, flag to force session close
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @RolesAllowed("administrators")
@@ -585,6 +588,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param backupId
     *          String, the identifier of backup
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -701,6 +705,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param removeExisting
     *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -830,11 +835,12 @@ public class HTTPBackupAgent implements ResourceContainer
     *          WorkspaceEntry, the configuration to restored workspace
     * @param repository
     *          String, the repository name
-    * @param backupSetPath
+    * @param backupSetPathEncoded
     *          String, the path to backup set
     * @param removeExisting
     *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -994,14 +1000,13 @@ public class HTTPBackupAgent implements ResourceContainer
 
    /**
     * Restore the workspace with original configuration (this configuration was stored in backup chain log).
-    * 
-    * @param repository
-    *          String, the repository name
+    *
     * @param backupId
     *          String, the identifier of backup
     * @param removeExisting
     *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -1146,11 +1151,12 @@ public class HTTPBackupAgent implements ResourceContainer
    /**
     * Restore the workspace or repository with original configuration (this configuration was stored in backup log).
     * 
-    * @param backupId
-    *          String, the identifier of backup
+    * @param backupSetPathEncoded
+    *          String, the path to backup set
     * @param removeExisting
     *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -1433,11 +1439,10 @@ public class HTTPBackupAgent implements ResourceContainer
     * 
     * @param rEntry
     *          RepositoryEntry, the configuration to restored repository
-    * @param repository
-    *          String, the repository name
     * @param backupId
     *          String, the identifier of backup
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -1526,13 +1531,12 @@ public class HTTPBackupAgent implements ResourceContainer
     * 
     * @param rEntry
     *          RepositoryEntry, the configuration to restored repository
-    * @param repository
-    *          String, the repository name
     * @param backupId
     *          String, the identifier of backup
     * @param removeExisting
     *          Boolean, if 'true' will be removed fully (db, value storage, index) existed repository.
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -1634,13 +1638,12 @@ public class HTTPBackupAgent implements ResourceContainer
     * 
     * @param rEntry
     *          RepositoryEntry, the configuration to restored repository
-    * @param repository
-    *          String, the repository name
-    * @param backupSetPath
+    * @param backupSetPathEncoded
     *          String, the path to backup set
     * @param removeExisting
     *          Boolean, if 'true' will be removed fully (db, value storage, index) existed repository.
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -1776,6 +1779,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param removeExisting
     *          Boolean, if 'true' will be removed fully (db, value storage, index) existed repository.
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -1881,6 +1885,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param backupId
     *          String, the identifier to backup
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -1939,6 +1944,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param backupId
     *          String, the identifier to backup
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2025,6 +2031,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * Will be returned the list short info of current and completed backups .
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2061,6 +2068,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * Will be returned the list short info of current and completed repository backups .
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2099,6 +2107,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param id
     *          String, the identifier to backup
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2147,6 +2156,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param id
     *          String, the identifier to repository backup
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2194,6 +2204,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * Will be returned the list short info of current backups .
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2226,6 +2237,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * Will be returned the list short info of current backups .
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2258,6 +2270,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * Will be returned the list short info of completed backups .
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2291,6 +2304,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * Will be returned the list short info of completed backups .
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2330,6 +2344,7 @@ public class HTTPBackupAgent implements ResourceContainer
     *          String, the workspace name
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2382,6 +2397,7 @@ public class HTTPBackupAgent implements ResourceContainer
     *          String, the repository name
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2433,6 +2449,7 @@ public class HTTPBackupAgent implements ResourceContainer
     *          String, the workspace name
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2483,6 +2500,7 @@ public class HTTPBackupAgent implements ResourceContainer
     *          String, the repository name
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2528,6 +2546,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * Will be returned the detailed information about last restores.
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2583,6 +2602,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * Will be returned the detailed information about last restores.
     * 
     * @return Response return the response
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2637,6 +2657,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * Will be returned the default workspace configuration.
     * 
     * @return Response return the JSON to WorkspaceEntry
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2667,6 +2688,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * Will be returned the default repository configuration.
     * 
     * @return Response return the JSON to WorkspaceEntry
+    * @LevelAPI Platform
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)

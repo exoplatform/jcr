@@ -28,6 +28,7 @@ package org.exoplatform.services.jcr.dataflow.persistent;
  *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a> 
  * @version $Id: MandatoryItemsPersistenceListener.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @LevelAPI Platform
  */
 public interface MandatoryItemsPersistenceListener extends ItemsPersistenceListener
 {

@@ -28,6 +28,7 @@ import java.util.StringTokenizer;
  * 
  * @author Gennady Azarenkov
  * @version $Id: AccessControlEntry.java 14464 2008-05-19 11:05:20Z pnedonosko $
+ * @LevelAPI Platform
  */
 public class AccessControlEntry
 {
@@ -49,17 +50,23 @@ public class AccessControlEntry
       this.identity = identity;
       this.permission = permission;
    }
-
+   /**
+    * @return returns the identity
+    */
    public String getIdentity()
    {
       return identity;
    }
-
+   /**
+    * @return returns the permission
+    */
    public String getPermission()
    {
       return permission;
    }
-
+   /**
+    * @return returns the membership
+    */
    public MembershipEntry getMembershipEntry()
    {
       if (membership == null)

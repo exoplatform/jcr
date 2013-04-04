@@ -25,6 +25,7 @@ import org.exoplatform.services.command.action.Action;
  * 
  * @author Gennady Azarenkov
  * @version $Id: ActionConfiguration.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Platform
  */
 
 public class ActionConfiguration
@@ -61,7 +62,7 @@ public class ActionConfiguration
    }
 
    /**
-    * @return the action
+    * @return returns the action instance
     */
    public Action getAction()
    {
@@ -75,27 +76,37 @@ public class ActionConfiguration
    {
       this.action = action;
    }
-
+   /**
+    * @return returns the action ClassName
+    */
    public String getActionClassName()
    {
       return actionClassName;
    }
-
+   /**
+    * @return returns the event type
+    */
    public String getEventTypes()
    {
       return eventTypes;
    }
-
+   /**
+    * @return returns the node type
+    */
    public String getNodeTypes()
    {
       return nodeTypes;
    }
-
+   /**
+    * @return returns the action configuration path
+    */
    public String getPath()
    {
       return path;
    }
-
+   /**
+    * @return returns the associated workspace
+    */
    public String getWorkspace()
    {
       return workspace;
@@ -105,7 +116,9 @@ public class ActionConfiguration
    {
       return isDeep;
    }
-
+   /**
+    * @param actionClassName the action ClassName to set
+    */
    public void setActionClassName(String actionClassName)
    {
       this.actionClassName = actionClassName;
@@ -115,22 +128,30 @@ public class ActionConfiguration
    {
       this.isDeep = isDeep;
    }
-
+   /**
+    * @param eventTypes the event type to set
+    */
    public void setEventTypes(String eventTypes)
    {
       this.eventTypes = eventTypes;
    }
-
+   /**
+    * @param nodeTypes the node type to set
+    */
    public void setNodeTypes(String nodeTypes)
    {
       this.nodeTypes = nodeTypes;
    }
-
+   /**
+    * @param path the the action configuration path
+    */
    public void setPath(String path)
    {
       this.path = path;
    }
-
+   /**
+    * @param workspace the associated workspace to set
+    */
    public void setWorkspace(String workspace)
    {
       this.workspace = workspace;

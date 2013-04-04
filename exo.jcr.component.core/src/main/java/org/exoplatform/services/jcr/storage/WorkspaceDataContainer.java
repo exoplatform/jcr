@@ -32,6 +32,7 @@ import org.exoplatform.commons.utils.PrivilegedSystemHelper;
  * 
  * @author Gennady Azarenkov
  * @version $Id: WorkspaceDataContainer.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Platform
  */
 
 public interface WorkspaceDataContainer extends DataContainer
@@ -76,8 +77,8 @@ public interface WorkspaceDataContainer extends DataContainer
    /**
     * isSame.
     *
-    * @param another
-    * @return
+    * @param another the WorkspaceDataContainer instance
+    * @return <code>true</code> if the same WorkspaceDataContainer instance, <code>false</code> otherwise"
     */
    boolean isSame(WorkspaceDataContainer another);
 
