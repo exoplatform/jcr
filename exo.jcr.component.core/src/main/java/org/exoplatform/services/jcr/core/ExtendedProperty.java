@@ -32,6 +32,7 @@ import javax.jcr.version.VersionException;
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: ExtendedProperty.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Experimental
  */
 public interface ExtendedProperty extends Property
 {

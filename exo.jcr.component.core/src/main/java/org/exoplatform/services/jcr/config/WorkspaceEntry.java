@@ -23,6 +23,7 @@ package org.exoplatform.services.jcr.config;
  * 
  * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>
  * @version $
+ * @LevelAPI Unsupported
  */
 
 public class WorkspaceEntry
@@ -49,12 +50,16 @@ public class WorkspaceEntry
    public WorkspaceEntry()
    {
    }
-
+   /**
+    * @return returns the workspace name
+    */
    public String getName()
    {
       return name;
    }
-
+   /**
+    * @param name the workspace name
+    */
    public void setName(String name)
    {
       this.name = name;
@@ -110,52 +115,72 @@ public class WorkspaceEntry
    {
       this.uniqueName = uniqueName;
    }
-
+   /**
+    * @return returns the Access Manager
+    */
    public AccessManagerEntry getAccessManager()
    {
       return accessManager;
    }
-
+   /**
+    * @param accessManager the Access Manager
+    */
    public void setAccessManager(AccessManagerEntry accessManager)
    {
       this.accessManager = accessManager;
    }
-
+   /**
+    * @return returns the Lock Manager
+    */
    public LockManagerEntry getLockManager()
    {
       return lockManager;
    }
-
+   /**
+    * @param lockManager the Lock Manager
+    */
    public void setLockManager(LockManagerEntry lockManager)
    {
       this.lockManager = lockManager;
    }
-
+   /**
+    * @return returns the Query Handler
+    */
    public QueryHandlerEntry getQueryHandler()
    {
       return queryHandler;
    }
-
+   /**
+    * @param queryHandlerEntry the Query Handler
+    */
    public void setQueryHandler(QueryHandlerEntry queryHandlerEntry)
    {
       this.queryHandler = queryHandlerEntry;
    }
-
+   /**
+    * @return returns the Workspace Initializer
+    */
    public WorkspaceInitializerEntry getInitializer()
    {
       return initializer;
    }
-
+   /**
+    * @param initializer the workspace initializer
+    */
    public void setInitializer(WorkspaceInitializerEntry initializer)
    {
       this.initializer = initializer;
    }
-   
+   /**
+    * @return returns the Load Threshold
+    */
    public int getLazyReadThreshold()
    {
       return lazyReadThreshold;
    }
-
+   /**
+    * @param lazyReadThreshold the Load Threshold
+    */
    public void setLazyReadThreshold(int lazyReadThreshold)
    {
       this.lazyReadThreshold = lazyReadThreshold;

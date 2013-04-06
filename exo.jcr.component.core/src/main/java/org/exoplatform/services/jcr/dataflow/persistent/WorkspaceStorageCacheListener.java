@@ -25,7 +25,7 @@ import org.exoplatform.services.jcr.datamodel.ItemData;
  * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
  * @version $Id$
- *
+ * @LevelAPI Unsupported
  */
 public interface WorkspaceStorageCacheListener
 {

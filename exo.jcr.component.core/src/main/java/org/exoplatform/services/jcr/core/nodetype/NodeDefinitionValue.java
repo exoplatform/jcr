@@ -31,6 +31,7 @@ import javax.jcr.nodetype.NodeDefinition;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
  *         Azarenkov</a>
  * @version $Id: NodeDefinitionValue.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Unsupported
  */
 
 public final class NodeDefinitionValue extends ItemDefinitionValue

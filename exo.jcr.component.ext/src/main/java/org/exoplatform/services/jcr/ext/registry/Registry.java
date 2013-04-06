@@ -35,28 +35,29 @@ import javax.jcr.RepositoryException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: $
+ * @LevelAPI Unsupported
  */
 
 public abstract class Registry
 {
 
    /**
-    * Returns Registry node object which wraps Node of "exo:registry" type (the whole registry tree)
+    * Returns the registry node which wraps a node of type "exo:registry" (the whole registry tree)
     * 
     * @param sessionProvider
     * @param repository
-    * @return egistry node object
+    * @return registry node object
     * @throws RepositoryException
     */
    public abstract RegistryNode getRegistry(SessionProvider sessionProvider) throws RepositoryConfigurationException,
       RepositoryException;
 
    /**
-    * Returns existed RegistryEntry which wraps Node of "exo:registryEntry" type
+    * Returns the corresponding registry entry which wraps a node of type "exo:registryEntry"
     * 
     * @param sessionProvider
     * @param entryPath
-    * @return existed RegistryEntry
+    * @return the corresponding RegistryEntry
     * @throws PathNotFoundException
     *           if entry not found
     * @throws RepositoryException
@@ -65,8 +66,8 @@ public abstract class Registry
       throws PathNotFoundException, RepositoryException;
 
    /**
-    * creates an entry in the group. In a case if the group does not exist it will be silently
-    * created as well
+    * Creates an entry in the group. In a case the group does not exist already it will be automatically
+    * created.
     * 
     * @param sessionProvider
     * @param groupPath
@@ -79,7 +80,7 @@ public abstract class Registry
       throws RepositoryException;
 
    /**
-    * updates an entry in the group
+    * Updates an entry in the group
     * 
     * @param sessionProvider
     * @param groupPath
@@ -92,7 +93,7 @@ public abstract class Registry
       throws RepositoryException;
 
    /**
-    * removes entry located on entryPath (concatenation of group path / entry name)
+    * Removes the entry at the given absolute path (concatenation of group path / entry name)
     * 
     * @param sessionProvider
     * @param entryPath
@@ -104,6 +105,7 @@ public abstract class Registry
 
    /**
     * Internal Node wrapper which ensures the node of "exo:registry" type inside
+    * @LevelAPI Unsupported
     */
    public final class RegistryNode extends NodeWrapper
    {

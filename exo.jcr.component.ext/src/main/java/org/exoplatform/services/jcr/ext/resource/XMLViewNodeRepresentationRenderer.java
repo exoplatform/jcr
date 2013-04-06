@@ -68,11 +68,14 @@ public class XMLViewNodeRepresentationRenderer implements ResourceContainer
    }
 
    /**
+    * Gives the XML representation of a given node.
+    * 
     * @param repoName - repository name
     * @param repoPath - node path including workspace name
     * @param viewType - either "system" or "document"
     * @param uriInfo
     * @return XML view of requested node
+    * @LevelAPI Unsupported
     */
    @GET
    @Path("/{viewType}/{repoName}/{repoPath:.*}/")
