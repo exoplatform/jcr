@@ -48,6 +48,7 @@ import javax.jcr.RepositoryException;
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov </a>
  * @version $Id: RepositoryServiceConfiguration.java 2038 2005-10-05 16:50:11Z geaz $
+ * @LevelAPI Unsupported
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "RepositoryServiceConfiguration"))
@@ -64,7 +65,10 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
       this.defaultRepositoryName = defaultRepositoryName;
       this.repositoryConfigurations = repositoryEntries;
    }
-
+   /**
+    * @param name the repository name
+    * @return returns the repository configuration
+    */
    public final RepositoryEntry getRepositoryConfiguration(String name) throws RepositoryConfigurationException
    {
       for (int i = 0; i < getRepositoryConfigurations().size(); i++)
@@ -174,7 +178,7 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
    /**
     * Checks if current configuration can be saved.
     * 
-    * @return
+    * @return <code>true</code> if current configuration can be saved, <code>false</code> otherwise
     */
    @Override
    public boolean isRetainable()
@@ -190,7 +194,9 @@ public class RepositoryServiceConfiguration extends AbstractRepositoryServiceCon
    public void retain() throws RepositoryException
    {
    }
-
+   /**
+    * @return returns the configuration of all the repositories in XML format
+    */
    @Managed
    @ManagedDescription("The configuration of all the repositories in XML format.")
    public String getConfigurationXML()

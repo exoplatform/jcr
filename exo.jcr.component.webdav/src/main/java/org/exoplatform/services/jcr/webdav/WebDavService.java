@@ -80,10 +80,10 @@ public interface WebDavService
     * @param fileNodeTypeHeader JCR NodeType header
     * @param contentNodeTypeHeader JCR Content-NodeType header
     * @param mixinTypes JCR Mixin types header
-    * @param mimeType Content-Type HTTP header
+    * @param mediaType Content-Type HTTP header
     * @param userAgent User-Agent HTTP header
     * @param inputStream stream that contain incoming data
-    * @param UriInfo URI info
+    * @param uriInfo URI info
     * @return the instance of javax.ws.rs.core.Response
     */
    Response put(String repoName, String repoPath, String lockTokenHeader, String ifHeader, String fileNodeTypeHeader,

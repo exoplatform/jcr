@@ -29,6 +29,7 @@ import java.util.List;
  * 
  * @author Gennady Azarenkov
  * @version $Id$
+ * @LevelAPI Unsupported
  */
 public interface PlainChangesLog extends ItemStateChangesLog
 {

@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: LockManager.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Unsupported
  */
 public interface WorkspaceLockManager
 {
@@ -42,7 +43,7 @@ public interface WorkspaceLockManager
    /**
     * Release all resources associated with CacheableSessionLockManager.
     * 
-    * @param sessionID - session identifier
+    * @param sessionId - session identifier
     */
    void closeSessionLockManager(String sessionId);
 }

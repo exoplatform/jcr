@@ -52,6 +52,7 @@ import javax.jcr.version.VersionException;
 
 /**
  * Provides the default implementation for a JCR query.
+ * @LevelAPI Experimental
  */
 public class QueryImpl extends AbstractQueryImpl
 {

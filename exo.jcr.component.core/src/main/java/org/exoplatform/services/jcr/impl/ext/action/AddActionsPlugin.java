@@ -30,6 +30,7 @@ import java.util.List;
  * 
  * @author Gennady Azarenkov
  * @version $Id: AddActionsPlugin.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Provisional
  */
 
 public class AddActionsPlugin extends BaseComponentPlugin
@@ -37,6 +38,12 @@ public class AddActionsPlugin extends BaseComponentPlugin
 
    private ActionsConfig actionsConfig;
 
+   /**
+    * The default constructor of the plugin
+    * @param params the init parameter from which we extract the
+    * object parameter <i>actions</i> that contains the
+    * {@link ActionConfiguration} objects
+    */
    public AddActionsPlugin(InitParams params)
    {
       ObjectParameter param = params.getObjectParam("actions");
@@ -47,6 +54,10 @@ public class AddActionsPlugin extends BaseComponentPlugin
       }
    }
 
+   /**
+    * @return returns a collection containing the configuration
+    * of all the actions to be registered
+    */
    public List<ActionConfiguration> getActions()
    {
       return actionsConfig.getActions();
@@ -65,7 +76,5 @@ public class AddActionsPlugin extends BaseComponentPlugin
       {
          this.actions = actions;
       }
-
    }
-
 }

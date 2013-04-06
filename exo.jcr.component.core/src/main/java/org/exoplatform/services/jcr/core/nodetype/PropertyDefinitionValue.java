@@ -32,6 +32,7 @@ import javax.jcr.nodetype.PropertyDefinition;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
  *         Azarenkov</a>
  * @version $Id: PropertyDefinitionValue.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Unsupported
  */
 
 public final class PropertyDefinitionValue extends ItemDefinitionValue

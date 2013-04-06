@@ -25,6 +25,7 @@ import org.picocontainer.Startable;
  * 
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: $
+ * @LevelAPI Unsupported
  */
 public interface ComponentPersister extends Startable
 {

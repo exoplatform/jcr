@@ -94,6 +94,10 @@ public class RESTRegistryService implements ResourceContainer
       this.sessionProviderService = sessionProviderService;
    }
 
+   /**
+    * Returns the registry node which wraps a node of type "exo:registry" (the whole registry tree)
+    * @LevelAPI Experimental
+    */
    @GET
    @Produces(MediaType.APPLICATION_XML)
    public Response getRegistry(@Context UriInfo uriInfo)
@@ -141,6 +145,11 @@ public class RESTRegistryService implements ResourceContainer
       }
    }
 
+   /**
+    * Returns the corresponding registry entry which wraps a node of type "exo:registryEntry"
+    * @param entryPath The relative path to the registry entry
+    * @LevelAPI Experimental
+    */
    @GET
    @Path("/{entryPath:.+}")
    @Produces(MediaType.APPLICATION_XML)
@@ -165,6 +174,13 @@ public class RESTRegistryService implements ResourceContainer
       }
    }
 
+   /**
+    * Creates an entry in the group. In a case the group does not exist already it will be automatically
+    * created.
+    * @param entryStream the input stream corresponding to the content of the registry entry
+    * @param groupName the relative path to the group
+    * @LevelAPI Experimental
+    */
    @POST
    @Path("/{groupName:.+}")
    @Consumes(MediaType.APPLICATION_XML)
@@ -206,6 +222,15 @@ public class RESTRegistryService implements ResourceContainer
       }
    }
 
+   /**
+    * Recreates a registry entry
+    * 
+    * @param entryStream the input stream corresponding to the content of the registry entry
+    * @param groupName the relative path to the group
+    * @param createIfNotExist if set to true, it will try to create the registry if it doesn't exist
+    * yet
+    * @LevelAPI Experimental
+    */
    @PUT
    @Path("/{groupName:.+}")
    @Consumes(MediaType.APPLICATION_XML)
@@ -255,6 +280,11 @@ public class RESTRegistryService implements ResourceContainer
       }
    }
 
+   /**
+    * Removes the entry at the given absolute path (concatenation of group path / entry name)
+    * @param entryPath the absolute path of the entry to remove
+    * @LevelAPI Experimental
+    */
    @DELETE
    @Path("/{entryPath:.+}")
    public Response removeEntry(@PathParam("entryPath") String entryPath)

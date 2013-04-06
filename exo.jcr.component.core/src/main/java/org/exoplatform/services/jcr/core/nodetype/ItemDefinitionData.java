@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.Constants;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
  *         Nedonosko</a>
  * @version $Id: ItemDefinitionData.java 26474 2009-01-09 16:15:25Z ksm $
+ * @LevelAPI Unsupported
  */
 public class ItemDefinitionData
 {

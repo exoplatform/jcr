@@ -18,14 +18,16 @@
  */
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
+import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 
 /**
  * The <code>NodeTypeRegistryListener</code> interface allows an implementing object to be informed
  * about node type (un)registration.
  * 
- * @see NodeTypeRegistry#addListener(NodeTypeRegistryListener)
- * @see NodeTypeRegistry#removeListener(NodeTypeRegistryListener)
+ * @see NodeTypeDataManager#addListener(NodeTypeRegistryListener)
+ * @see NodeTypeDataManager#removeListener(NodeTypeRegistryListener)
+ * @LevelAPI Unsupported
  */
 public interface NodeTypeManagerListener
 {

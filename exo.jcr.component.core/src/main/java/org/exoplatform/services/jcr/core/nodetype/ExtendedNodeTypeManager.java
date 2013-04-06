@@ -19,8 +19,6 @@
 package org.exoplatform.services.jcr.core.nodetype;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeExistsException;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeExistsException; //NOSONAR
 
 import java.io.InputStream;
 import java.util.List;
@@ -38,6 +36,7 @@ import javax.jcr.nodetype.NodeTypeManager;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
  *         Azarenkov</a>
  * @version $Id$
+ * @LevelAPI Unsupported
  */
 public interface ExtendedNodeTypeManager extends NodeTypeManager
 {
@@ -120,15 +119,6 @@ public interface ExtendedNodeTypeManager extends NodeTypeManager
     * @param values a collection of <code>NodeTypeValue</code>s
     * @param alreadyExistsBehaviour a int
     * @return the registered node types.
-    * @throws InvalidNodeTypeDefinitionException if a
-    *           <code>NodeTypeDefinition</code> within the
-    *           <code>Collection</code> is invalid or if the
-    *           <code>Collection</code> contains an object of a type other than
-    *           <code>NodeTypeDefinition</code>.
-    * @throws NodeTypeExistsException if <code>allowUpdate</code> is
-    *           <code>false</code> and a <code>NodeTypeDefinition</code> within
-    *           the <code>Collection</code> specifies a node type name that is
-    *           already registered.
     * @throws UnsupportedRepositoryOperationException if this implementation does
     *           not support node type registration.
     * @throws RepositoryException if another error occurs.

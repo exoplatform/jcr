@@ -41,6 +41,7 @@ import javax.jcr.query.InvalidQueryException;
  * The goal is to allow different implementations based on the persistent
  * manager in use. Some persistent model might allow to execute a query
  * in an optimized manner, e.g. database persistence.
+ * @LevelAPI Unsupported
  */
 public interface QueryHandler
 {
@@ -113,8 +114,7 @@ public interface QueryHandler
    /**
     * 
     * initializes QueryHandler
-    * 
-    * @param ioMode
+    *
     * @throws IOException
     * @throws RepositoryException
     * @throws RepositoryConfigurationException
@@ -123,8 +123,6 @@ public interface QueryHandler
 
    /**
     * Checks whether QueryHandler is initialized or not
-    * 
-    * @return
     */
    boolean isInitialized();
 
@@ -166,12 +164,8 @@ public interface QueryHandler
 
    /**
     * Executes the query on the search index.
-    * 
-    * @param queryImpl the query impl.
+    *
     * @param query the lucene query.
-    * @param orderProps name of the properties for sort order.
-    * @param orderSpecs the order specs for the sort order properties. <code>true</code> indicates
-    *          ascending order, <code>false</code> indicates descending.
     * @return the lucene Hits object.
     * @throws IOException if an error occurs while searching the index.
     */
