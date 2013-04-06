@@ -23,7 +23,7 @@ package org.exoplatform.services.jcr.config;
  * 
  * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>
  * @version $
- * @LevelAPI Platform
+ * @LevelAPI Unsupported
  */
 
 public class WorkspaceEntry

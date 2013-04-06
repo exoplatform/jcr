@@ -27,17 +27,38 @@ package org.exoplatform.services.jcr.access;
  */
 public interface PermissionType
 {
+   /**
+    * Name of the permission needed to read an item
+    */
    public static final String READ = "read";
 
+   /**
+    * Name of the permission needed to add node to a node
+    */
    public static final String ADD_NODE = "add_node";
 
+   /**
+    * The name of the permission needed to set a property to a node
+    */
    public static final String SET_PROPERTY = "set_property";
 
+   /**
+    * Name of the permission needed to remove an item
+    */
    public static final String REMOVE = "remove";
 
+   /**
+    * An array containing all the existing permission types.
+    */
    public static final String[] ALL = new String[]{READ, ADD_NODE, SET_PROPERTY, REMOVE};
 
+   /**
+    * An array containing only the <i>read</i> permission
+    */
    public static final String[] DEFAULT_AC = new String[]{READ};
 
+   /**
+    * A comma separated value composed of the add node, set property and remove permissions
+    */
    public static final String CHANGE_PERMISSION = ADD_NODE + "," + SET_PROPERTY + "," + REMOVE;
 }

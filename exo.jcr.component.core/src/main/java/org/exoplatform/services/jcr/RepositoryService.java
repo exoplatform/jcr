@@ -31,7 +31,7 @@ import javax.jcr.RepositoryException;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @author <a href="mailto:benjamin.mestrallet@exoplatform.com">Benjamin Mestrallet</a>
  * @version $Id: RepositoryService.java 11907 2008-03-13 15:36:21Z ksm $
- * @LevelAPI Platform
+ * @LevelAPI Provisional
  */
 public interface RepositoryService
 {

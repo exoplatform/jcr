@@ -43,14 +43,14 @@ import javax.transaction.xa.XAResource;
  * 
  * @author Gennady Azarenkov
  * @version $Id: ExtendedSession.java 12649 2008-04-02 12:46:37Z ksm $
- * @LevelAPI Platform
+ * @LevelAPI Experimental
  */
 
 public interface ExtendedSession extends Session
 {
 
    /**
-    * @return returns the session identify
+    * @return returns the session's id
     */
    String getId();
 

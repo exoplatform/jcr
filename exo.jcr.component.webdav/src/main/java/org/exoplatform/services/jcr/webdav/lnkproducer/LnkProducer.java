@@ -66,6 +66,7 @@ public class LnkProducer implements ResourceContainer
     * @param path path to resource
     * @param uriInfo uriInfo
     * @return generated link
+    * @LevelAPI Experimental
     */
    @GET
    @Path("/{linkFilePath}/")

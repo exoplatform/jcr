@@ -38,7 +38,7 @@ import javax.jcr.lock.LockException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: ExtendedNode.java 11907 2008-03-13 15:36:21Z ksm $
- * @LevelAPI Platform
+ * @LevelAPI Experimental
  */
 
 public interface ExtendedNode extends Node

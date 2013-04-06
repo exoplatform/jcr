@@ -113,7 +113,7 @@ public class SessionProvider implements SessionLifecycleListener
    /**
     * Helper for creating System session provider.
     * 
-    * @return System session
+    * @return a system session provider
     */
    public static SessionProvider createSystemProvider()
    {
@@ -123,18 +123,20 @@ public class SessionProvider implements SessionLifecycleListener
    /**
     * Helper for creating Anonymous session provider.
     * 
-    * @return System session
+    * @return an anonymous session provider
     */
    public static SessionProvider createAnonimProvider()
    {
       Identity id = new Identity(IdentityConstants.ANONIM, new HashSet<MembershipEntry>());
       return new SessionProvider(new ConversationState(id));
    }
-    /**
-     * Return SessionProvider for a given list of AccessControlEntry.
+
+   /**
+     * Gives a {@link SessionProvider} for a given list of {@link AccessControlEntry}.
      *
-     * @param accessList list of AccessControlEntry
-     * @return SessionProvider
+     * @param accessList list of {@link AccessControlEntry}
+     * @return a {@link SessionProvider} allowing to provide sessions with the
+     * corresponding ACL.
      */
    public static SessionProvider createProvider(List<AccessControlEntry> accessList)
    {
@@ -156,14 +158,15 @@ public class SessionProvider implements SessionLifecycleListener
    }
 
    /**
-    * Gets the session from internal cache or creates and caches new one.
+    * Gets the session from an internal cache if a similar session has already been used
+    * or creates a new session and puts it into the internal cache.
     * 
     * @param workspaceName the workspace name
     * @param repository the repository instance
-    * @return session
-    * @throws LoginException
-    * @throws NoSuchWorkspaceException
-    * @throws RepositoryException
+    * @return a session corresponding to the given repository and workspace
+    * @throws LoginException if an error occurs while trying to login to the workspace
+    * @throws NoSuchWorkspaceException if the requested workspace doesn't exist
+    * @throws RepositoryException if any error occurs
     */
    public synchronized Session getSession(String workspaceName, ManageableRepository repository) throws LoginException,
       NoSuchWorkspaceException, RepositoryException
@@ -255,31 +258,34 @@ public class SessionProvider implements SessionLifecycleListener
       String repositoryName = repository.getConfiguration().getName();
       return repositoryName + workspaceName;
    }
-    /**
-     * Return Current Repository.
-     * @return ManageableRepository
+
+   /**
+     * @return returns the current Repository
      */
    public ManageableRepository getCurrentRepository()
    {
       return currentRepository;
    }
-    /**
-     * @return  returns the current Workspace
+
+   /**
+     * @return returns the current Workspace
      */
    public String getCurrentWorkspace()
    {
       return currentWorkspace;
    }
-    /**
-     * Sets  Repository.
+
+   /**
+     * Sets the current repository Repository.
      * @param  currentRepository the current repository
      */
    public void setCurrentRepository(ManageableRepository currentRepository)
    {
       this.currentRepository = currentRepository;
    }
-    /**
-     * Sets  Workspace
+
+   /**
+     * Sets the current Workspace
      * @param  currentWorkspace the current workspace
      */
    public void setCurrentWorkspace(String currentWorkspace)

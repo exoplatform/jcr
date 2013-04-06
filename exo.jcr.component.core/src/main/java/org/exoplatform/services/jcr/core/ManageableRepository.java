@@ -41,7 +41,7 @@ import javax.jcr.Session;
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: ManageableRepository.java 13931 2008-05-06 12:10:00Z pnedonosko
  *          $
- * @LevelAPI Platform
+ * @LevelAPI Experimental
  */
 
 public interface ManageableRepository extends Repository
@@ -174,7 +174,7 @@ public interface ManageableRepository extends Repository
    /**
     * Set repository state.
     * 
-    * @param state state
+    * @param state the new repository state to set
     */
    void setState(int state) throws RepositoryException;
 

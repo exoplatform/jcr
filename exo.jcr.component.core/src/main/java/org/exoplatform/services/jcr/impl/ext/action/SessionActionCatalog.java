@@ -40,7 +40,7 @@ import javax.jcr.observation.Event;
  * 
  * @author Gennady Azarenkov
  * @version $Id: SessionActionCatalog.java 11907 2008-03-13 15:36:21Z ksm $
- * LevelAPI Platform
+ * @LevelAPI Provisional
  */
 
 public class SessionActionCatalog extends ActionCatalog
@@ -58,9 +58,11 @@ public class SessionActionCatalog extends ActionCatalog
       this.locFactory = rep.getLocationFactory();
       this.typeDataManager = rep.getNodeTypeManager().getNodeTypesHolder();
    }
+
    /**
-    * Register action plugin
-    * @param plugin the Component plugin
+    * Registers all the actions defined in the provided {@link AddActionsPlugin}. Do nothing if the
+    * provided plugin is not of type {@link AddActionsPlugin}
+    * @param plugin the Component plugin that is expected to be of type {@link AddActionsPlugin}
     */
    public void addPlugin(ComponentPlugin plugin)
    {

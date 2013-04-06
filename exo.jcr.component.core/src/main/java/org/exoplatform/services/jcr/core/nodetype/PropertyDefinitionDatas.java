@@ -23,6 +23,7 @@ package org.exoplatform.services.jcr.core.nodetype;
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: PropertyDefinitions.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Unsupported
  */
 
 public class PropertyDefinitionDatas

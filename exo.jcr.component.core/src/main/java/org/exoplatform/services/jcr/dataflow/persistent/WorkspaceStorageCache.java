@@ -38,7 +38,7 @@ import java.util.List;
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: WorkspaceStorageCache.java 13869 2008-05-05 08:40:10Z pnedonosko $
- * @LevelAPI Platform
+ * @LevelAPI Unsupported
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "Cache"))
@@ -73,7 +73,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    /**
     * Get child nodes.
     * 
-    * @param parent the parent data
+    * @param parent the parent node data
     * @return child nodes for parent if found; empty list if no items found; null if no items
     *         initialized
     */
@@ -83,7 +83,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * Get page of child nodes.
     * 
     * @param parent
-    *          the parent data
+    *          the parent node data
     * @param fromOrderNum
     *          the order number related to page of child nodes
     * @return child nodes for parent if found; empty list if no items found; null if no items
@@ -94,7 +94,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    /**
     * Get child nodes by pattern.
     * 
-    * @param parent the parent data
+    * @param parent the parent node data
     * @param pattern the filter to use
     * @return child nodes for parent if found; empty list if no items found; null if no items
     *         initialized
@@ -104,7 +104,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    /**
     * Get child nodes count.
     * 
-    * @param parent the parent data
+    * @param parent the parent node data
     * @return child nodes count for parent if found; 0 if no items found; -1 if no items
     *         initialized
     */
@@ -113,7 +113,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    /**
     * Get node child properties.<br/>
     * 
-    * @param parent the parent data
+    * @param parent the parent node data
     * @return child properties for parent if found; empty list if no items found; null if no items
     *         initialized
     */
@@ -122,7 +122,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    /**
     * Get node child properties by pattern.<br/>
     * 
-    * @param parent the parent data
+    * @param parent the parent node data
     * @param pattern the filter to use
     * @return child properties for parent if found; empty list if no items found; null if no items
     *         initialized
@@ -134,7 +134,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * method may return list of node properties (PropertyData) which contains no data
     * (ValueData).<br/> Used for Node.hasProperties(), NodeIndexer.createDoc().
     * 
-    * @param parentData the parent data
+    * @param parentData the parent node data
     * @return child properties for parent if found; null if no items initialized
     */
    List<PropertyData> listChildProperties(final NodeData parentData);
@@ -170,7 +170,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * Adds the total amount of children nodes.
     *
     * @param parent
-    *          the parent data
+    *          the parent node data
     * @param count
     *          the total amount of nodes
     */
@@ -180,7 +180,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * Adds page of child nodes.
     * 
     * @param parent
-    *          the parent data
+    *          the parent node data
     * @param childs
     *          the list of child nodes
     * @param fromOrderNum
@@ -192,7 +192,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * Adds (update should not be the case!) list of child nodes. The list can be empty. If list is
     * null the operation is ignored.
     * 
-    * @param parent the parent data
+    * @param parent the parent node data
     * @param childNodes the list of child nodes
     */
    void addChildNodes(NodeData parent, List<NodeData> childNodes);
@@ -201,7 +201,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * Adds (update should not be the case!) list of child nodes. The list can be empty. If list is
     * null the operation is ignored.
     * 
-    * @param parent the parent data
+    * @param parent the parent node data
     * @param pattern the filter to use
     * @param childNodes the list of children nodes
     */
@@ -211,7 +211,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * Adds (update should not be the case!) list of child properties. The list can be empty. If list
     * is null the operation is ignored.
     * 
-    * @param parent the parent data
+    * @param parent the parent node data
     * @param childProperties the children properties
     */
    void addChildProperties(NodeData parent, List<PropertyData> childProperties);
@@ -220,7 +220,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * Adds (update should not be the case!) list of child properties. The list can be empty. If list
     * is null the operation is ignored.
     * 
-    * @param parent the parent data
+    * @param parent the parent node data
     * @param pattern the filter to use
     * @param childProperties the children properties
     */
@@ -230,7 +230,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
     * Adds (update should not be the case!) list of child properties with empty values. The list can
     * be empty. If list is null the operation is ignored.
     * 
-    * @param parent the parent data
+    * @param parent the parent node data
     * @param childProperties the list of child properties
     */
    void addChildPropertiesList(NodeData parent, List<PropertyData> childProperties);

@@ -30,6 +30,7 @@ import java.util.Comparator;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
  *         Nedonosko</a>
  * @version $Id: NodeDefinitionData.java 25471 2008-12-19 08:34:01Z ksm $
+ * @LevelAPI Unsupported
  */
 
 public class NodeDefinitionData extends ItemDefinitionData

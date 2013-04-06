@@ -306,23 +306,20 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * The start backup.
+    * Starts a backup on a given workspace.
     * 
-    * @param bConfigBeen
-    *          BackupConfigBeen, the been with backup configuration.
-    * @param repository
-    *          String, the repository name
-    * @param workspace
-    *          String, the workspace name
+    * @param bConfigBean the bean with backup configuration.
+    * @param repository the name of the repository
+    * @param workspace the name of the workspace
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
    @Path("/start/{repo}/{ws}")
-   public Response start(BackupConfigBean bConfigBeen, @PathParam("repo") String repository,
+   public Response start(BackupConfigBean bConfigBean, @PathParam("repo") String repository,
       @PathParam("ws") String workspace)
    {
       String failMessage;
@@ -333,25 +330,25 @@ public class HTTPBackupAgent implements ResourceContainer
       {
          File backupDir;
 
-         if (bConfigBeen.getBackupDir() == null)
+         if (bConfigBean.getBackupDir() == null)
          {
             backupDir = backupManager.getBackupDirectory();
          }
          else
          {
-            backupDir = new File(bConfigBeen.getBackupDir());
+            backupDir = new File(bConfigBean.getBackupDir());
             if (!PrivilegedFileHelper.exists(backupDir))
                throw new BackupDirNotFoundException("The backup folder not exists :  "
                         + PrivilegedFileHelper.getAbsolutePath(backupDir));
          }
 
          BackupConfig config = new BackupConfig();
-         config.setBackupType(bConfigBeen.getBackupType());
+         config.setBackupType(bConfigBean.getBackupType());
          config.setRepository(repository);
          config.setWorkspace(workspace);
          config.setBackupDir(backupDir);
-         config.setIncrementalJobPeriod(bConfigBeen.getIncrementalJobPeriod());
-         config.setIncrementalJobNumber(bConfigBeen.getIncrementalRepetitionNumber());
+         config.setIncrementalJobPeriod(bConfigBean.getIncrementalJobPeriod());
+         config.setIncrementalJobNumber(bConfigBean.getIncrementalRepetitionNumber());
 
          validateRepositoryName(repository);
          validateWorkspaceName(repository, workspace);
@@ -419,21 +416,19 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * The start repository backup.
+    * Starts a backup on a given repository.
     * 
-    * @param bConfigBeen
-    *          BackupConfigBeen, the been with backup configuration.
-    * @param repository
-    *          String, the repository name
+    * @param bConfigBean the bean with backup configuration.
+    * @param repository the name of the repository
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
    @Produces(MediaType.APPLICATION_JSON)
    @RolesAllowed("administrators")
    @Path("/start-backup-repository/{repo}")
-   public Response startBackupRepository(BackupConfigBean bConfigBeen, @PathParam("repo") String repository)
+   public Response startBackupRepository(BackupConfigBean bConfigBean, @PathParam("repo") String repository)
    {
       String failMessage;
       Response.Status status;
@@ -443,24 +438,24 @@ public class HTTPBackupAgent implements ResourceContainer
       {
          File backupDir;
 
-         if (bConfigBeen.getBackupDir() == null)
+         if (bConfigBean.getBackupDir() == null)
          {
             backupDir = backupManager.getBackupDirectory();
          }
          else
          {
-            backupDir = new File(bConfigBeen.getBackupDir());
+            backupDir = new File(bConfigBean.getBackupDir());
             if (!PrivilegedFileHelper.exists(backupDir))
                throw new BackupDirNotFoundException("The backup folder not exists :  "
                         + PrivilegedFileHelper.getAbsolutePath(backupDir));
          }
 
          RepositoryBackupConfig config = new RepositoryBackupConfig();
-         config.setBackupType(bConfigBeen.getBackupType());
+         config.setBackupType(bConfigBean.getBackupType());
          config.setRepository(repository);
          config.setBackupDir(backupDir);
-         config.setIncrementalJobPeriod(bConfigBeen.getIncrementalJobPeriod());
-         config.setIncrementalJobNumber(bConfigBeen.getIncrementalRepetitionNumber());
+         config.setIncrementalJobPeriod(bConfigBean.getIncrementalJobPeriod());
+         config.setIncrementalJobNumber(bConfigBean.getIncrementalRepetitionNumber());
 
          validateRepositoryName(repository);
 
@@ -514,16 +509,13 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * The delete workspace.
+    * Drops a given workspace.
     * 
-    * @param repository
-    *          String, the repository name
-    * @param workspace
-    *          String, the workspace name
-    * @param forceSessionClose
-    *          Boolean, flag to force session close
+    * @param repository the name of the repository
+    * @param workspace the name of the workspace
+    * @param forceSessionClose the flag indicating whether or not we need to force closing the current sessions
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @RolesAllowed("administrators")
@@ -579,16 +571,13 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Restore the workspace.
+    * Restores a workspace.
     * 
-    * @param wEntry
-    *          WorkspaceEntry, the configuration to restored workspace
-    * @param repository
-    *          String, the repository name
-    * @param backupId
-    *          String, the identifier of backup
+    * @param wEntry the configuration of the workspace to restore
+    * @param repository the name of the repository
+    * @param backupId the identifier of the backup
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -694,18 +683,14 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Restore the workspace.
+    * Restores a workspace.
     * 
-    * @param wEntry
-    *          WorkspaceEntry, the configuration to restored workspace
-    * @param repository
-    *          String, the repository name
-    * @param backupId
-    *          String, the identifier of backup
-    * @param removeExisting
-    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
+    * @param wEntry the configuration of the workspace to restore
+    * @param repository the name of the repository
+    * @param backupId the identifier of the backup
+    * @param removeExisting if 'true', it will remove fully (db, value storage, index) the existing workspace.  
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -829,18 +814,14 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Restore the workspace from backup set with changing configuration (WorkspaceEntry).
+    * Restores the workspace from backup set with changing configuration.
     * 
-    * @param wEntry
-    *          WorkspaceEntry, the configuration to restored workspace
-    * @param repository
-    *          String, the repository name
-    * @param backupSetPathEncoded
-    *          String, the path to backup set
-    * @param removeExisting
-    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
+    * @param wEntry the configuration of the workspace to restore
+    * @param repository the name of the repository
+    * @param backupSetPathEncoded the path to backup set
+    * @param removeExisting if 'true', it will remove fully (db, value storage, index) the existing workspace.  
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -999,14 +980,12 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Restore the workspace with original configuration (this configuration was stored in backup chain log).
+    * Restores the workspace with original configuration (this configuration was stored in backup chain log).
     *
-    * @param backupId
-    *          String, the identifier of backup
-    * @param removeExisting
-    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
+    * @param backupId the identifier of the backup
+    * @param removeExisting if 'true', it will be remove fully (db, value storage, index) the existing workspace.  
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -1149,14 +1128,12 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Restore the workspace or repository with original configuration (this configuration was stored in backup log).
+    * Restores the workspace or repository with original configuration (this configuration was stored in backup log).
     * 
-    * @param backupSetPathEncoded
-    *          String, the path to backup set
-    * @param removeExisting
-    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed workspace.  
+    * @param backupSetPathEncoded the path to backup set
+    * @param removeExisting if 'true', it will remove fully (db, value storage, index) the existing workspace.  
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -1435,14 +1412,12 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Restore the repository.
+    * Restores a repository.
     * 
-    * @param rEntry
-    *          RepositoryEntry, the configuration to restored repository
-    * @param backupId
-    *          String, the identifier of backup
+    * @param rEntry the configuration of the repository to restore
+    * @param backupId the identifier of the backup
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -1527,16 +1502,13 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Restore the repository.
+    * Restores a repository.
     * 
-    * @param rEntry
-    *          RepositoryEntry, the configuration to restored repository
-    * @param backupId
-    *          String, the identifier of backup
-    * @param removeExisting
-    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed repository.
+    * @param rEntry the configuration of the repository to restore
+    * @param backupId the identifier of the backup
+    * @param removeExisting if 'true', it will remove fully (db, value storage, index) the existing repository.
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -1634,16 +1606,13 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Restore the repository from backup set with changing configuration (RepositoryEntry).
+    * Restores a repository from backup set with changing configuration.
     * 
-    * @param rEntry
-    *          RepositoryEntry, the configuration to restored repository
-    * @param backupSetPathEncoded
-    *          String, the path to backup set
-    * @param removeExisting
-    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed repository.
+    * @param rEntry the configuration of the repository to restore
+    * @param backupSetPathEncoded the path to backup set
+    * @param removeExisting if 'true', it will remove fully (db, value storage, index) the existing repository.
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -1772,14 +1741,12 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Restore the repository.
+    * Restores a repository.
     * 
-    * @param backupId
-    *          String, the identifier of backup
-    * @param removeExisting
-    *          Boolean, if 'true' will be removed fully (db, value storage, index) existed repository.
+    * @param backupId the identifier of the backup
+    * @param removeExisting if 'true', it  will remove fully (db, value storage, index) the existing repository.
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -1880,12 +1847,11 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * The backup stop by 'id'.
+    * Stops the backup corresponding to the given id.
     * 
-    * @param backupId
-    *          String, the identifier to backup
+    * @param backupId the identifier of the backup
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -1939,12 +1905,11 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * The repository backup stop by 'id'.
+    * Stops the repository backup corresponding to the given id.
     * 
-    * @param backupId
-    *          String, the identifier to backup
+    * @param backupId the identifier of the backup
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -1998,7 +1963,7 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the backup service info.
+    * Gives info about the backup service.
     * 
     * @return Response return the response
     */
@@ -2028,10 +1993,10 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the list short info of current and completed backups .
+    * Gives info about all the current and completed backups.
     * 
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2065,10 +2030,10 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the list short info of current and completed repository backups .
+    * Gives info about all the current and completed repository backups .
     * 
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2102,12 +2067,11 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the detailed info of current or completed backup by 'id'.
+    * Gives full details about the current or completed backup corresponding to the given id.
     * 
-    * @param id
-    *          String, the identifier to backup
+    * @param id the identifier of the backup
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2151,12 +2115,11 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the detailed info of current or completed repository backup by 'id'.
+    * Gives full details about the current or completed repository backup corresponding to the given id.
     * 
-    * @param id
-    *          String, the identifier to repository backup
+    * @param id the identifier of the repository backup
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2201,10 +2164,10 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the list short info of current backups .
+    * Gives info about all the current backups.
     * 
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2234,10 +2197,10 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the list short info of current backups .
+    * Gives info about all the current repository backups.
     * 
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2267,10 +2230,10 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the list short info of completed backups .
+    * Gives info about all the completed backups.
     * 
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2301,10 +2264,10 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the list short info of completed backups .
+    * Gives info about all the completed repository backups.
     * 
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2335,16 +2298,13 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the list short info of current and completed backups. Filtered by specific
+    * Gives info about all the current and completed backups of a specific
     * workspace.
     * 
-    * @param repository
-    *          String, the repository name
-    * @param workspace
-    *          String, the workspace name
-    * 
+    * @param repository the name of the repository
+    * @param workspace the name of the workspace
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2390,14 +2350,13 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the list short info of current and completed backups. Filtered by specific
+    * Gives info about all the current and completed backups of a specific
     * repository.
     * 
-    * @param repository
-    *          String, the repository name
+    * @param repository the name of the repository
     * 
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2441,15 +2400,13 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the detailed information about last restore for specific workspace.
+    * Gives all details about the last restore of a specific workspace.
     * 
-    * @param repository
-    *          String, the repository name
-    * @param workspace
-    *          String, the workspace name
+    * @param repository the name of the repository
+    * @param workspace the name of the workspace
     * 
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2494,13 +2451,12 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the detailed information about last restore for specific repository.
+    * Gives all details about the last restore of a specific repository.
     * 
-    * @param repository
-    *          String, the repository name
+    * @param repository the name of the repository
     * 
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2543,10 +2499,10 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the detailed information about last restores.
+    * Gives all details about the last restores.
     * 
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2599,10 +2555,10 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the detailed information about last restores.
+    * Gives all details about the last repository restores.
     * 
     * @return Response return the response
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2654,10 +2610,10 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the default workspace configuration.
+    * Gives the default workspace configuration.
     * 
     * @return Response return the JSON to WorkspaceEntry
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2685,10 +2641,10 @@ public class HTTPBackupAgent implements ResourceContainer
    }
 
    /**
-    * Will be returned the default repository configuration.
+    * Gives the default repository configuration.
     * 
     * @return Response return the JSON to WorkspaceEntry
-    * @LevelAPI Platform
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -2711,7 +2667,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * validateRepositoryName.
     * 
     * @param repositoryName
-    *          the repository name
+    *          the name of the repository
     * @throws RepositoryConfigurationException
     *           will be generated the exception RepositoryConfigurationException
     * @throws RepositoryException
@@ -2727,9 +2683,9 @@ public class HTTPBackupAgent implements ResourceContainer
     * validateWorkspaceName.
     * 
     * @param repositoryName
-    *          the repository name
+    *          the name of the repository
     * @param workspaceName
-    *          the workspace name
+    *          the name of the workspace
     * @throws RepositoryConfigurationException
     *           will be generated the exception RepositoryConfigurationException
     * @throws RepositoryException
@@ -2780,9 +2736,9 @@ public class HTTPBackupAgent implements ResourceContainer
     * validateOneBackupInstants.
     * 
     * @param repositoryName
-    *          the repository name
+    *          the name of the repository
     * @param workspaceName
-    *          the workspace name
+    *          the name of the workspace
     * @throws WorkspaceRestoreExeption
     *           will be generated WorkspaceRestoreExeption
     */
@@ -2800,9 +2756,9 @@ public class HTTPBackupAgent implements ResourceContainer
     * validateOneRestoreInstants.
     * 
     * @param repositoryName
-    *          the repository name
+    *          the name of the repository
     * @param workspaceName
-    *          the workspace name
+    *          the name of the workspace
     * @throws WorkspaceRestoreExeption
     *           will be generated WorkspaceRestoreExeption
     */
@@ -2824,7 +2780,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * validateOneRepositoryRestoreInstants.
     * 
     * @param repositoryName
-    *          the repository name
+    *          the name of the repository
     * @throws WorkspaceRestoreExeption
     *           will be generated WorkspaceRestoreExeption
     */

@@ -732,6 +732,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param workspace workspace name
     * @param path path to resource to be created
     * @return Response with status 'created'
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes({"script/groovy"})
@@ -786,6 +787,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param workspace workspace name
     * @param path path to resource to be created
     * @return Response with status 'created'
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes({"multipart/*"})
@@ -888,6 +890,7 @@ public class GroovyScript2RestLoader implements Startable
     *           location must point directly to file that contains Groovy
     *           source. Source file can have any name and extension
     * @return Response with corresponded status. 200 if source code is valid
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes({"script/groovy"})
@@ -941,6 +944,7 @@ public class GroovyScript2RestLoader implements Startable
     *           extension
     * @throws MalformedScriptException if <code>script</code> contains not valid
     *            source code
+    * @LevelAPI Provisional
     */
    public void validateScript(String name, InputStream script, SourceFolder[] src, SourceFile[] files)
       throws MalformedScriptException
@@ -963,6 +967,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param workspace workspace name
     * @param path path to resource to be created
     * @return Response with status 'created'
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes({"script/groovy"})
@@ -1018,6 +1023,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param workspace workspace name
     * @param path path to resource to be created
     * @return Response with status 'created'
+    * @LevelAPI Provisional
     */
    @POST
    @Consumes({"multipart/*"})
@@ -1114,6 +1120,7 @@ public class GroovyScript2RestLoader implements Startable
     *           source. Source file can have any name and extension
     * @param properties optional properties to be applied to loaded resource.
     *           Ignored if <code>state</code> parameter is false
+    * @LevelAPI Provisional
     */
    @POST
    @Path("load/{repository}/{workspace}/{path:.*}")
@@ -1166,6 +1173,7 @@ public class GroovyScript2RestLoader implements Startable
     *           point directly to file that contains Groovy source, see
     *           {@link SourceFile#getPath()} . Source file can have any name and
     *           extension
+    * @LevelAPI Provisional
     */
    public Response load(String repository, String workspace, String path, boolean state,
       MultivaluedMap<String, String> properties, SourceFolder[] src, SourceFile[] files)
@@ -1229,6 +1237,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param repository repository name
     * @param workspace workspace name
     * @param path JCR path to node that contains script
+    * @LevelAPI Provisional
     */
    @POST
    @Path("delete/{repository}/{workspace}/{path:.*}")
@@ -1278,6 +1287,7 @@ public class GroovyScript2RestLoader implements Startable
     *           'true' will be used as default. <br />
     *           Example: .../scripts/groovy/test1.groovy/load is the same to
     *           .../scripts/groovy/test1.groovy/load?state=true
+    * @LevelAPI Provisional
     */
    @POST
    @Path("autoload/{repository}/{workspace}/{path:.*}")
@@ -1323,6 +1333,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param workspace workspace name
     * @param path JCR path to node that contains script
     * @return groovy script as stream
+    * @LevelAPI Provisional
     */
    @POST
    @Produces({"script/groovy"})
@@ -1368,6 +1379,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param workspace workspace name
     * @param path JCR path to node that contains script
     * @return groovy script's meta-information
+    * @LevelAPI Provisional
     */
    @POST
    @Produces({MediaType.APPLICATION_JSON})
@@ -1420,6 +1432,7 @@ public class GroovyScript2RestLoader implements Startable
     *           list of script names matching wildcard else returns all the
     *           scripts found in workspace.
     * @return list of groovy services
+    * @LevelAPI Provisional
     */
    @POST
    @Produces(MediaType.APPLICATION_JSON)

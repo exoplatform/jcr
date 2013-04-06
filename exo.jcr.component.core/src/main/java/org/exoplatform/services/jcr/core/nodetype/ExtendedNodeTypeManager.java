@@ -19,8 +19,6 @@
 package org.exoplatform.services.jcr.core.nodetype;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeExistsException;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeExistsException; //NOSONAR
 
 import java.io.InputStream;
 import java.util.List;
@@ -31,6 +29,7 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
+//NOSONAR
 
 /**
  * Created by The eXo Platform SAS. <br/> Node Type manager.
@@ -38,7 +37,7 @@ import javax.jcr.nodetype.NodeTypeManager;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
  *         Azarenkov</a>
  * @version $Id$
- * @LevelAPI Platform
+ * @LevelAPI Unsupported
  */
 public interface ExtendedNodeTypeManager extends NodeTypeManager
 {

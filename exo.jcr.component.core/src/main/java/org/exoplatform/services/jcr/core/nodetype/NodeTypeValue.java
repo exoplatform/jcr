@@ -27,7 +27,7 @@ import java.util.List;
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
  *         Azarenkov</a>
  * @version $Id: NodeTypeValue.java 11907 2008-03-13 15:36:21Z ksm $
- * @LevelAPI Platform
+ * @LevelAPI Unsupported
  */
 
 public final class NodeTypeValue
@@ -131,7 +131,7 @@ public final class NodeTypeValue
    }
 
    /**
-    * @return Returns the declaredChildNodeDefinitionNames.
+    * @return Returns the declaredChildNodeDefinitionValues.
     */
    public List<NodeDefinitionValue> getDeclaredChildNodeDefinitionValues()
    {
@@ -140,7 +140,7 @@ public final class NodeTypeValue
 
    /**
     * @param declaredChildNodeDefinitionValues The
-    *          declaredChildNodeDefinitionNames to set.
+    *          declaredChildNodeDefinitionValues to set.
     */
    public void setDeclaredChildNodeDefinitionValues(List<NodeDefinitionValue> declaredChildNodeDefinitionValues)
    {
@@ -148,7 +148,7 @@ public final class NodeTypeValue
    }
 
    /**
-    * @return Returns the declaredPropertyDefinitionNames.
+    * @return Returns the declaredPropertyDefinitionValues.
     */
    public List<PropertyDefinitionValue> getDeclaredPropertyDefinitionValues()
    {
@@ -156,7 +156,7 @@ public final class NodeTypeValue
    }
 
    /**
-    * @param declaredPropertyDefinitionValues The declaredPropertyDefinitionNames
+    * @param declaredPropertyDefinitionValues The declaredPropertyDefinitionValues
     *          to set.
     */
    public void setDeclaredPropertyDefinitionValues(List<PropertyDefinitionValue> declaredPropertyDefinitionValues)

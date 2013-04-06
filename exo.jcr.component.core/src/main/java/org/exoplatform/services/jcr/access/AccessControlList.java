@@ -36,7 +36,7 @@ import javax.jcr.RepositoryException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: AccessControlList.java 14556 2008-05-21 15:22:15Z pnedonosko $
- * @LevelAPI Platform
+ * @LevelAPI Experimental
  */
 
 public class AccessControlList implements Externalizable
@@ -84,14 +84,14 @@ public class AccessControlList implements Externalizable
       this.accessList = accessList;
    }
    /**
-    * @return returns <code>true</code> if the permission list is not empty, <code>false</code> otherwise
+    * @return returns <code>true</code> if the permission list has been set, <code>false</code> otherwise
     */
    public boolean hasPermissions()
    {
       return accessList != null;
    }
    /**
-    * @return returns <code>true</code> if the owner exist, <code>false</code> otherwise
+    * @return returns <code>true</code> if the owner has been set, <code>false</code> otherwise
     */
    public boolean hasOwner()
    {
@@ -99,7 +99,8 @@ public class AccessControlList implements Externalizable
    }
    /**
     * Adds permissions
-    * @param rawData the list of permissions
+    * @param rawData A semicolon separated string representing the list of permission entries to add, 
+    * knowing that the syntax of a permission entry is ${identity} [read|add_node|set_property|remove]
     */
    public void addPermissions(String rawData) throws RepositoryException
    {
@@ -117,9 +118,9 @@ public class AccessControlList implements Externalizable
       }
    }
    /**
-    * Adds permissions
+    * Adds a set of permission types to a given identity
     * @param identity the member identity
-    * @param perm the list of permissions
+    * @param perm an array of permission types to add
     */
    public void addPermissions(String identity, String[] perm) throws RepositoryException
    {
@@ -129,7 +130,7 @@ public class AccessControlList implements Externalizable
       }
    }
    /**
-    * Removes permissions
+    * Removes all the permissions of a given identity
     * @param identity the member identity
     */
    public void removePermissions(String identity)
@@ -142,9 +143,9 @@ public class AccessControlList implements Externalizable
       }
    }
    /**
-    * Removes permissions
+    * Removes the permission corresponding to the given identity and the given permission type
     * @param identity the member identity
-    * @param permission  the permission entry
+    * @param permission the permission type
     */
    public void removePermissions(String identity, String permission)
    {
@@ -175,7 +176,10 @@ public class AccessControlList implements Externalizable
       this.owner = owner;
    }
 
-   // Create safe copy of list <AccessControlEntry>
+   /**
+    * Gives all the permission entries
+    * @return a safe copy of all the permission entries
+    */
    public List<AccessControlEntry> getPermissionEntries()
    {
       List<AccessControlEntry> list = new ArrayList<AccessControlEntry>();
@@ -186,9 +190,10 @@ public class AccessControlList implements Externalizable
       }
       return list;
    }
+
    /**
     * @param identity the member identity
-    * @return returns the correspond permission list
+    * @return returns the list of all the permission types associated to the given identity
     */
    public List<String> getPermissions(String identity)
    {
@@ -202,6 +207,9 @@ public class AccessControlList implements Externalizable
       return permissions;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public boolean equals(Object obj)
    {
       if (obj == this)
@@ -244,6 +252,9 @@ public class AccessControlList implements Externalizable
       return false;
    }
 
+   /**
+    * Gives a String representation of the {@link AccessControlList} with all the details
+    */
    public String dump()
    {
       StringBuilder res = new StringBuilder("OWNER: ").append(owner != null ? owner : "null").append("\n");
@@ -261,6 +272,9 @@ public class AccessControlList implements Externalizable
       return res.toString();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       // reading owner
@@ -294,6 +308,9 @@ public class AccessControlList implements Externalizable
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void writeExternal(ObjectOutput out) throws IOException
    {
       // Writing owner
@@ -322,7 +339,7 @@ public class AccessControlList implements Externalizable
    }
 
    /**
-    * Get access list size.
+    * Gives access to the size of existing permissions.
     * 
     * @return size of access list
     */

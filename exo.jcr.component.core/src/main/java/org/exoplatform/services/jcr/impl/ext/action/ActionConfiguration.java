@@ -25,7 +25,7 @@ import org.exoplatform.services.command.action.Action;
  * 
  * @author Gennady Azarenkov
  * @version $Id: ActionConfiguration.java 11907 2008-03-13 15:36:21Z ksm $
- * @LevelAPI Platform
+ * @LevelAPI Provisional
  */
 
 public class ActionConfiguration
@@ -76,81 +76,109 @@ public class ActionConfiguration
    {
       this.action = action;
    }
+
    /**
-    * @return returns the action ClassName
+    * @return returns the full qualified name of the action
     */
    public String getActionClassName()
    {
       return actionClassName;
    }
+
    /**
-    * @return returns the event type
+    * @return returns a comma separated value corresponding to a list of event types
+    * for which we expect the action to be triggered
     */
    public String getEventTypes()
    {
       return eventTypes;
    }
+
    /**
-    * @return returns the node type
+    * @return returns a comma separated value corresponding to a list of node types
+    * for which we expect the action to be triggered
     */
    public String getNodeTypes()
    {
       return nodeTypes;
    }
+
    /**
-    * @return returns the action configuration path
+    * @return returns a comma separated value corresponding to a list of paths
+    * for which we expect the action to be triggered
     */
    public String getPath()
    {
       return path;
    }
+
    /**
-    * @return returns the associated workspace
+    * @return returns the name of the workspace on which the action will be enabled
     */
    public String getWorkspace()
    {
       return workspace;
    }
 
+   /**
+    * Indicates whether we need to limit the scope of the action to the items located
+    * directly under the list of provided paths or the descendants should be included too
+    * 
+    */
    public boolean isDeep()
    {
       return isDeep;
    }
+
    /**
-    * @param actionClassName the action ClassName to set
+    * @param actionClassName the full qualified name of the action to set
     */
    public void setActionClassName(String actionClassName)
    {
       this.actionClassName = actionClassName;
    }
 
+   /**
+    * Sets the flag indicating if the action must be applied to direct children of the
+    * list of provided paths or to the the descendants too
+    * 
+    * @param isDeep if set to <code>true</code> the descendants will be included to the
+    * scope of the action
+    */
    public void setDeep(boolean isDeep)
    {
       this.isDeep = isDeep;
    }
+
    /**
-    * @param eventTypes the event type to set
+    * @param eventTypes a comma separated value corresponding to a list of node types
+    * for which we expect the action to be triggered
     */
    public void setEventTypes(String eventTypes)
    {
       this.eventTypes = eventTypes;
    }
+
    /**
-    * @param nodeTypes the node type to set
+    * @param nodeTypes a comma separated value corresponding to a list of node types
+    * for which we expect the action to be triggered
     */
    public void setNodeTypes(String nodeTypes)
    {
       this.nodeTypes = nodeTypes;
    }
+
    /**
-    * @param path the the action configuration path
+    * @param path a comma separated value corresponding to a list of paths
+    * for which we expect the action to be triggered
     */
    public void setPath(String path)
    {
       this.path = path;
    }
+
    /**
-    * @param workspace the associated workspace to set
+    * @param workspace the name of the workspace on which the action will be enabled
     */
    public void setWorkspace(String workspace)
    {

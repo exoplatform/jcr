@@ -209,7 +209,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @CHECKIN
    @Path("/{repoName}/{repoPath:.*}/")
@@ -238,7 +243,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @CHECKOUT
    @Path("/{repoName}/{repoPath:.*}/")
@@ -267,7 +277,17 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param destinationHeader Destination HTTP Header
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @param depthHeader Depth HTTP header
+    * @param overwriteHeader Overwrite HTTP header
+    * @param baseURI base URI info
+    * @param body Request body
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @COPY
    @Path("/{repoName}/{repoPath:.*}/")
@@ -390,7 +410,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If HTTP Header
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @DELETE
    @Path("/{repoName}/{repoPath:.*}/")
@@ -431,7 +456,18 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * WedDAV "GET" method. See <a href='http://www.ietf.org/rfc/rfc2518.txt'>HTTP
+    * methods for distributed authoring sec. 8.4 "GET, HEAD for Collections"</a>.
+    * 
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param range Range HTTP header
+    * @param version version name
+    * @param ifModifiedSince if-modified-since header
+    * @param ifModifiedSince if-none-match header
+    * @param baseURI base URI info
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @GET
    @Path("/{repoName}/{repoPath:.*}/")
@@ -513,7 +549,15 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * WedDAV "HEAD" method. see <a
+    * href='http://www.ietf.org/rfc/rfc2518.txt'>HTTP methods for distributed
+    * authoring sec. 8.4 "GET, HEAD for Collections"</a>.
+    * 
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param baseURI base URI info
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @HEAD
    @Path("/{repoName}/{repoPath:.*}/")
@@ -549,7 +593,14 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @param depth Depth HTTP header
+    * @param body Request body
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @LOCK
    @Path("/{repoName}/{repoPath:.*}/")
@@ -591,7 +642,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @UNLOCK
    @Path("/{repoName}/{repoPath:.*}/")
@@ -627,7 +683,14 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @param nodeTypeHeader JCR Node-Type header
+    * @param mixinTypesHeader JCR Mixin-Types header
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @MKCOL
    @Path("/{repoName}/{repoPath:.*}/")
@@ -672,7 +735,17 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param destinationHeader Destination HTTP header
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @param depthHeader Depth HTTP header
+    * @param overwriteHeader Overwrite HTTP header
+    * @param baseURI base URI info
+    * @param body Request body
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @MOVE
    @Path("/{repoName}/{repoPath:.*}/")
@@ -780,7 +853,9 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @OPTIONS
    @Path("/{repoName}/{path:.*}/")
@@ -802,7 +877,14 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @param baseURI base URI info
+    * @param body Request body
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @ORDERPATCH
    @Path("/{repoName}/{repoPath:.*}/")
@@ -835,7 +917,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param depthHeader Depth HTTP header
+    * @param baseURI base URI info
+    * @param body Request body
+    * @return the instance of javax.ws.rs.core.Response HTTP response
+    * @LevelAPI Platform
     */
    @PROPFIND
    @Path("/{repoName}/{repoPath:.*}/")
@@ -874,7 +962,14 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @param baseURI base URI info
+    * @param body Request body
+    * @return the instance of javax.ws.rs.core.Response HTTP response
+    * @LevelAPI Platform
     */
    @PROPPATCH
    @Path("/{repoName}/{repoPath:.*}/")
@@ -911,7 +1006,23 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * WedDAV "PUT" method. See <a
+    * href='http://www.ietf.org/rfc/rfc2518.txt'>HTTP methods for distributed
+    * authoring sec. 8.7 "PUT"</a>.
+    * 
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If HTTP Header
+    * @param fileNodeTypeHeader JCR NodeType header
+    * @param contentNodeTypeHeader JCR Content-NodeType header
+    * @param mixinTypes JCR Mixin types header
+    * @param mediaType Content-Type HTTP header
+    * @param userAgent User-Agent HTTP header
+    * @param inputStream stream that contain incoming data
+    * @param uriInfo URI info
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @PUT
    @Path("/{repoName}/{repoPath:.*}/")
@@ -972,7 +1083,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param depth Depth HTTP header
+    * @param baseURI base URI info
+    * @param body Request body
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @REPORT
    @Path("/{repoName}/{repoPath:.*}/")
@@ -1009,7 +1126,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param baseURI base URI info
+    * @param body Request body
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @SEARCH
    @Path("/{repoName}/{repoPath:.*}/")
@@ -1046,7 +1168,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @UNCHECKOUT
    @Path("/{repoName}/{repoPath:.*}/")
@@ -1081,7 +1208,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Platform
     */
    @VERSIONCONTROL
    @Path("/{repoName}/{repoPath:.*}/")
@@ -1110,7 +1242,16 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * {@inheritDoc}
+    * WebDAV ACL method according to protocol extension - Access Control Protocol: RFC3744
+    * More details here: <a href='http://www.webdav.org/specs/rfc3744.html'>Web Distributed 
+    * Authoring and Versioning (WebDAV) Access Control Protocol</a>
+    * @param repoName repository name
+    * @param repoPath path in repository
+    * @param lockTokenHeader Lock-Token HTTP header
+    * @param ifHeader If- HTTP Header
+    * @param body Request body
+    * @return the instance of javax.ws.rs.core.Response
+    * @LevelAPI Provisional
     */
    @ACL
    @Path("/{repoName}/{repoPath:.*}/")

@@ -31,7 +31,7 @@ import javax.jcr.lock.LockException;
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: SessionLockManager.java 111 2008-11-11 11:11:11Z serg $
- * @LevelAPI Platform
+ * @LevelAPI Unsupported
  */
 public interface SessionLockManager extends SessionLifecycleListener
 {

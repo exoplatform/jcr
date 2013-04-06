@@ -25,7 +25,7 @@ import org.exoplatform.commons.utils.QName;
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: InternalQName.java 11907 2008-03-13 15:36:21Z ksm $
- * @LevelAPI Platform
+ * @LevelAPI Unsupported
  */
 
 public class InternalQName extends QName

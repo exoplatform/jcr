@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.storage;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+
 import java.util.Calendar;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 
 /**
  * Created by The eXo Platform SAS.<br>
@@ -32,7 +32,7 @@ import org.exoplatform.commons.utils.PrivilegedSystemHelper;
  * 
  * @author Gennady Azarenkov
  * @version $Id: WorkspaceDataContainer.java 11907 2008-03-13 15:36:21Z ksm $
- * @LevelAPI Platform
+ * @LevelAPI Unsupported
  */
 
 public interface WorkspaceDataContainer extends DataContainer
@@ -77,8 +77,8 @@ public interface WorkspaceDataContainer extends DataContainer
    /**
     * isSame.
     *
-    * @param another the WorkspaceDataContainer instance
-    * @return <code>true</code> if the same WorkspaceDataContainer instance, <code>false</code> otherwise"
+    * @param another a WorkspaceDataContainer instance with which to compare
+    * @return <code>true</code> if it is the same kind WorkspaceDataContainer, <code>false</code> otherwise"
     */
    boolean isSame(WorkspaceDataContainer another);
 

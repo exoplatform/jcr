@@ -24,7 +24,7 @@ import java.io.InputStream;
 /**
  * Created by The eXo Platform SAS.
  *
- * @LevelAPI Platform
+ * @LevelAPI Provisional
  */
 public interface ConfigurationPersister
 {

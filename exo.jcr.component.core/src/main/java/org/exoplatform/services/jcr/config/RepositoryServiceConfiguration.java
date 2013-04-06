@@ -48,7 +48,7 @@ import javax.jcr.RepositoryException;
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov </a>
  * @version $Id: RepositoryServiceConfiguration.java 2038 2005-10-05 16:50:11Z geaz $
- * @LevelAPI Platform
+ * @LevelAPI Unsupported
  */
 @Managed
 @NameTemplate(@Property(key = "service", value = "RepositoryServiceConfiguration"))

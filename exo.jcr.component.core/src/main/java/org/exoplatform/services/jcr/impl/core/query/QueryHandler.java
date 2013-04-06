@@ -41,7 +41,7 @@ import javax.jcr.query.InvalidQueryException;
  * The goal is to allow different implementations based on the persistent
  * manager in use. Some persistent model might allow to execute a query
  * in an optimized manner, e.g. database persistence.
- * @LevelAPI Platform
+ * @LevelAPI Unsupported
  */
 public interface QueryHandler
 {

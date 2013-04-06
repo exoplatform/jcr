@@ -47,7 +47,7 @@ import javax.jcr.RepositoryException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: WorkspaceStorageConnection.java 11907 2008-03-13 15:36:21Z ksm $
- * @LevelAPI Platform
+ * @LevelAPI Unsupported
  */
 public interface WorkspaceStorageConnection
 {
