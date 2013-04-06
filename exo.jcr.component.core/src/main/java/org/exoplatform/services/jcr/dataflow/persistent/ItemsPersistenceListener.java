@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
  * 
  * @author Gennady Azarenkov
  * @version $Id: ItemsPersistenceListener.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Unsupported
  */
 public interface ItemsPersistenceListener
 {

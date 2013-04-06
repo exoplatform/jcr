@@ -29,13 +29,14 @@ import javax.jcr.lock.LockException;
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: CacheableLockManager.java 111 2008-11-11 11:11:11Z serg $
+ * @LevelAPI Unsupported
  */
 public interface CacheableLockManager extends WorkspaceLockManager
 {
    /**
     * Is lock live for node by nodeIdentifier.
     * 
-    * @param nodeIdentifier
+    * @param nodeIdentifier the node identifier
     * 
     * @return boolean
     * @throws LockException 
@@ -45,7 +46,7 @@ public interface CacheableLockManager extends WorkspaceLockManager
    /**
     * Replace old lockData with new one. Node ID, token can't be replaced.
     * 
-    * @param newLockData
+    * @param newLockData  the new lock data
     * @throws LockException
     */
    void refreshLockData(LockData newLockData) throws LockException;

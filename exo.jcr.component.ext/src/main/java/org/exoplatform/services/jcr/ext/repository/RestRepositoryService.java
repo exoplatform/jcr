@@ -172,8 +172,11 @@ public class RestRepositoryService implements ResourceContainer
    }
 
    /**
+    * Gives the repository service configuration which is composed
+    * of the configuration of all the repositories and workspaces
     * @return Response
     *           return the Response with RepositoryServiceConf
+    * @LevelAPI Experimental
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -189,10 +192,11 @@ public class RestRepositoryService implements ResourceContainer
    }
 
    /**
-    * @param repositoryName
-    *          String, the repository name
+    * Gives the configuration of the default workspace of the given repository
+    * @param repositoryName the name of the repository
     * @return Response
     *           return the Response with WorkspaceEntry
+    * @LevelAPI Experimental
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -244,14 +248,13 @@ public class RestRepositoryService implements ResourceContainer
    }
 
    /**
-    * @param uriInfo
-    *          UriInfo, the uri location 
-    * @param newRepository
-    *          RepositoryEntry,  the RepositoryEntry to new repository
-    * @return Response
-    *           return the Response
-    * @throws URISyntaxException
-    *           will be generated the URISyntaxException  
+    * Creates a repository based on the given repository configuration
+    * 
+    * @param uriInfo the uri location 
+    * @param newRepository the configuration of the new repository
+    * @return Response return the Response
+    * @throws URISyntaxException will be generated the URISyntaxException  
+    * @LevelAPI Experimental
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -300,16 +303,14 @@ public class RestRepositoryService implements ResourceContainer
    }
 
    /**
-    * @param uriInfo
-    *          UriInfo, the uri location
-    * @param repositoryName
-    *          String, the repository name
-    * @param newWorkspace
-    *          WorkspaceEntry,  the WorkspaceEntry to new repository
-    * @return Response
-    *           return the Response
-    * @throws URISyntaxException
-    *           will be generated the URISyntaxException
+    * Adds a new workspace based on the given configuration to the given repository.
+    * 
+    * @param uriInfo the uri location
+    * @param repositoryName the name of the repository
+    * @param newWorkspace the configuration of the new workspace
+    * @return Response return the Response
+    * @throws URISyntaxException will be generated the URISyntaxException
+    * @LevelAPI Experimental
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -360,14 +361,13 @@ public class RestRepositoryService implements ResourceContainer
    }
 
    /**
-    * @param uriInfo
-    *          UriInfo, the uri location
-    * @param repositoryName
-    *          String, the repository name
-    * @param forseSessionClose
-    *          Boolean, flag to force session close
-    * @return Response
-    *           return the Response
+    * Removes an existing repository
+    * 
+    * @param uriInfo the uri location
+    * @param repositoryName the name of the repository
+    * @param forseSessionClose a flag indicating whether or not the current sessions must be closed
+    * @return Response return the Response
+    * @LevelAPI Experimental
     */
    @GET
    @RolesAllowed("administrators")
@@ -422,16 +422,14 @@ public class RestRepositoryService implements ResourceContainer
    }
 
    /**
-    * @param uriInfo
-    *          UriInfo, the uri location
-    * @param repositoryName
-    *          String, the repository name
-    * @param workspaceName
-    *          String, the workspace name
-    * @param forseSessionClose
-    *          Boolean, flag to force session close
-    * @return Response
-    *           return the Response
+    * Removes an existing workspace from a given repository. 
+    * 
+    * @param uriInfo the uri location
+    * @param repositoryName the name of the repository
+    * @param workspaceName the name of the workspace
+    * @param forseSessionClose a flag indicating whether or not the current sessions must be closed
+    * @return Response return the Response
+    * @LevelAPI Experimental
     */
    @POST
    @RolesAllowed("administrators")
@@ -494,8 +492,10 @@ public class RestRepositoryService implements ResourceContainer
    }
 
    /**
-    * @return Response
-    *           return the Response with list of repository names
+    * Gives the name of all the existing repositories.
+    * 
+    * @return Response return the Response with list of repository names
+    * @LevelAPI Experimental
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -514,10 +514,11 @@ public class RestRepositoryService implements ResourceContainer
    }
 
    /**
-    * @param repositoryName
-    *          String, the repository name
-    * @return Response
-    *           return the Response with list of workspace names
+    * Gives the name of all the existing workspaces for a given repository.
+    * 
+    * @param repositoryName the name of the repository
+    * @return Response return the Response with list of workspace names
+    * @LevelAPI Experimental
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
@@ -564,14 +565,13 @@ public class RestRepositoryService implements ResourceContainer
    }
 
    /**
-    * * @param repositoryName
-    *          String, the repository name
-    * @param workspaceName
-    *          String, the workspace name
-    * @param workspaceEntry
-    *          WorkspaceEntry, the confg to workspace 
-    * @return Response
-    *           return the Response
+    * Updates the configuration of a given workspace.
+    * 
+    * @param repositoryName the name of the repository
+    * @param workspaceName the name of the workspace
+    * @param workspaceEntry the configuration of the workspace 
+    * @return Response return the Response
+    * @LevelAPI Unsupported
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)

@@ -23,10 +23,15 @@ package org.exoplatform.services.jcr.core;
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: SessionLifecycleListener.java 12096 2008-03-19 11:42:40Z gazarenkov $
+ * @LevelAPI Experimental
  */
 
 public interface SessionLifecycleListener
 {
-
+   /**
+    * Executes when the session was logout
+    *
+    * @param session the session instance
+    */
    void onCloseSession(ExtendedSession session);
 }
