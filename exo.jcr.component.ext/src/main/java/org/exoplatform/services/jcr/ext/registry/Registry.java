@@ -35,6 +35,7 @@ import javax.jcr.RepositoryException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: $
+ * @LevelAPI Unsupported
  */
 
 public abstract class Registry
@@ -45,7 +46,7 @@ public abstract class Registry
     * 
     * @param sessionProvider
     * @param repository
-    * @return egistry node object
+    * @return registry node object
     * @throws RepositoryException
     */
    public abstract RegistryNode getRegistry(SessionProvider sessionProvider) throws RepositoryConfigurationException,
@@ -56,7 +57,7 @@ public abstract class Registry
     * 
     * @param sessionProvider
     * @param entryPath
-    * @return existed RegistryEntry
+    * @return the corresponding RegistryEntry
     * @throws PathNotFoundException
     *           if entry not found
     * @throws RepositoryException
@@ -104,6 +105,7 @@ public abstract class Registry
 
    /**
     * Internal Node wrapper which ensures the node of "exo:registry" type inside
+    * @LevelAPI Unsupported
     */
    public final class RegistryNode extends NodeWrapper
    {

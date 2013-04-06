@@ -29,7 +29,6 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
-//NOSONAR
 
 /**
  * Created by The eXo Platform SAS. <br/> Node Type manager.

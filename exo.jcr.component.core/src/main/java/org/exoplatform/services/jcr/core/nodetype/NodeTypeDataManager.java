@@ -38,7 +38,7 @@ import javax.jcr.nodetype.ConstraintViolationException;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
  *         Nedonosko</a>
  * @version $Id: NodeTypeDataManager.java 24494 2008-12-05 12:26:49Z pnedonosko$
- * @LevelAPI @LevelAPI Unsupported
+ * @LevelAPI Unsupported
  */
 public interface NodeTypeDataManager
 {

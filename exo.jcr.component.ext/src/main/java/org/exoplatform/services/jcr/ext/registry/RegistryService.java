@@ -76,7 +76,7 @@ import javax.xml.transform.TransformerException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: RegistryService.java 34445 2009-07-24 07:51:18Z dkatayev $
- * @LevelAPI Platform
+ * @LevelAPI Unsupported
  */
 public class RegistryService extends Registry implements Startable
 {

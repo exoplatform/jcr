@@ -1966,6 +1966,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives info about the backup service.
     * 
     * @return Response return the response
+    * @LevelAPI Provisional
     */
    @GET
    @Produces(MediaType.APPLICATION_JSON)
