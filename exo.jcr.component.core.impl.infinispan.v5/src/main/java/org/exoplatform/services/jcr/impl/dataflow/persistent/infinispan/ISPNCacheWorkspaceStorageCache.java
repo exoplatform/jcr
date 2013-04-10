@@ -88,6 +88,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -405,41 +406,76 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    class ChildItemsIterator<T extends ItemData> implements Iterator<T>
    {
 
-      final Iterator<String> childs;
-
-      T next;
-
-      ChildItemsIterator(CacheKey key)
+      private Iterator<String> childs;
+      private Iterator<Entry<CacheKey, Object>> entries; 
+      private String parentId;
+      private Class<? extends ItemData> type;
+      
+      private T next;
+      
+      ChildItemsIterator(String parentId, Class<? extends ItemData> type, CacheKey key)
       {
          Set<String> set = (Set<String>)cache.get(key);
          if (set != null)
          {
-            childs = ((Set<String>)cache.get(key)).iterator();
-            fetchNext();
+            this.childs = ((Set<String>)cache.get(key)).iterator();
          }
          else
          {
-            childs = null;
-            next = null;
+            this.entries = cache.entrySet().iterator();
+            this.parentId = parentId;
+            this.type = type;
          }
+         fetchNext();
       }
 
       protected void fetchNext()
       {
-         if (childs.hasNext())
+         if (childs != null)
          {
-            // traverse to the first existing or the end of children
-            T n = null;
-            do
+            // Case where all the children nodes have been loaded
+            if (childs.hasNext())
             {
-               n = (T)cache.get(new CacheId(getOwnerId(), childs.next()));
+               // traverse to the first existing or the end of children
+               T n = null;
+               do
+               {
+                  n = (T)cache.get(new CacheId(getOwnerId(), childs.next()));
+               }
+               while (n == null && childs.hasNext());
+               next = n;
             }
-            while (n == null && childs.hasNext());
-            next = n;
+            else
+            {
+               next = null;
+            }
          }
          else
          {
-            next = null;
+            // Case where all the children nodes have not been loaded
+            if (entries.hasNext())
+            {
+               // traverse to the first children node or the end of the entry set
+               T n = null;
+               do
+               {
+                  Entry<CacheKey, Object> entry = entries.next();
+                  if (entry.getKey() instanceof CacheId && type.isInstance(entry.getValue()))
+                  {
+                     ItemData item = (ItemData)entry.getValue();
+                     if (parentId.equals(item.getParentIdentifier()))
+                     {
+                        n = (T)item;
+                     }
+                  }
+               }
+               while (n == null && entries.hasNext());
+               next = n;
+            }
+            else
+            {
+               next = null;
+            }
          }
       }
 
@@ -470,7 +506,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    {
       ChildNodesIterator(String parentId)
       {
-         super(new CacheNodesId(getOwnerId(), parentId));
+         super(parentId, NodeData.class, new CacheNodesId(getOwnerId(), parentId));
       }
 
       @Override
@@ -485,7 +521,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
 
       ChildPropertiesIterator(String parentId)
       {
-         super(new CachePropsId(getOwnerId(), parentId));
+         super(parentId, PropertyData.class, new CachePropsId(getOwnerId(), parentId));
       }
 
       @Override
@@ -1646,6 +1682,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    @ManagedDescription("Remove all the existing items from the cache")
    public void clean() throws BackupException
    {
+      LOG.info("Start to clean all the existing items from ISPN cache");
       if (cache.getStatus() == ComponentStatus.RUNNING)
       {
          caller.clearCache();
@@ -1664,6 +1701,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
           */
          public void clean() throws BackupException
          {
+            LOG.info("Start to clean all the existing items from ISPN cache");
             caller.clearCache();
          }
 
@@ -1887,14 +1925,45 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             NodeData prevNode = iter.next();
 
             // is ACL changes on this node (i.e. ACL inheritance brokes)
+            boolean hasExoPrivilegeable = false;
+            boolean hasExoOwneable = false;
             for (InternalQName mixin : prevNode.getMixinTypeNames())
             {
-               if (mixin.equals(Constants.EXO_PRIVILEGEABLE) || mixin.equals(Constants.EXO_OWNEABLE))
+               if (mixin.equals(Constants.EXO_PRIVILEGEABLE))
                {
-                  continue loop;
+                  hasExoPrivilegeable = true;
+                  if (hasExoOwneable)
+                  {
+                     continue loop;
+                  }
+               }
+               else if (mixin.equals(Constants.EXO_OWNEABLE))
+               {
+                  hasExoOwneable = true;
+                  if (hasExoPrivilegeable)
+                  {
+                     continue loop;
+                  }
                }
             }
-
+            AccessControlList newAcl = null;
+            if (hasExoOwneable)
+            {
+               newAcl = new AccessControlList(prevNode.getACL().getOwner(), acl.getPermissionEntries());
+            }
+            else if (hasExoPrivilegeable)
+            {
+               newAcl = new AccessControlList(acl.getOwner(), prevNode.getACL().getPermissionEntries());
+            }
+            if (newAcl != null)
+            {
+               if (newAcl.equals(prevNode.getACL()))
+               {
+                  // No need to keep traversing the cache since the acl is the same
+                  continue loop;
+               }
+               acl = newAcl;
+            }
             // recreate with new path for child Nodes only
             TransientNodeData newNode =
                new TransientNodeData(prevNode.getQPath(), prevNode.getIdentifier(), prevNode.getPersistedVersion(),
@@ -2363,11 +2432,25 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          }
 
          // is ACL changes on this node (i.e. ACL inheritance brokes)
+         boolean hasExoPrivilegeable = false;
+         boolean hasExoOwneable = false;
          for (InternalQName mixin : prevNode.getMixinTypeNames())
          {
-            if (mixin.equals(Constants.EXO_PRIVILEGEABLE) || mixin.equals(Constants.EXO_OWNEABLE))
+            if (mixin.equals(Constants.EXO_PRIVILEGEABLE))
             {
-               return;
+               hasExoPrivilegeable = true;
+               if (hasExoOwneable)
+               {
+                  return;
+               }
+            }
+            else if (mixin.equals(Constants.EXO_OWNEABLE))
+            {
+               hasExoOwneable = true;
+               if (hasExoPrivilegeable)
+               {
+                  return;
+               }
             }
          }
          ExoContainer container = ExoContainerContext.getTopContainer();

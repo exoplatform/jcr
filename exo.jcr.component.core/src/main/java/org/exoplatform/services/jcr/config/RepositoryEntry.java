@@ -27,6 +27,7 @@ import java.util.Map;
  * 
  * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>
  * @version $
+ * @LevelAPI Unsupported
  */
 
 public class RepositoryEntry extends RepositoryInfo

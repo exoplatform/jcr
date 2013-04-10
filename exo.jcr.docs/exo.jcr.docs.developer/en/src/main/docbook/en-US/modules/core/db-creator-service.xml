@@ -51,7 +51,7 @@
   </section>
 
   <section id="Core.DBCreatorService.ConfigurationExamples">
-    <title>A configuration examples</title>
+    <title>Configuration examples</title>
 
     <para>Service's configuration.</para>
 
@@ -159,7 +159,7 @@
   </section>
 
   <section id="Core.DBCreatorService.ExamplesOfDDLScript">
-    <title>An examples of a DDL script</title>
+    <title>Examples of DDL script</title>
 
     <para>MySQL:</para>
 

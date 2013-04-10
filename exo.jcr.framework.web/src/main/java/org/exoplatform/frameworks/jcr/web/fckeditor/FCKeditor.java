@@ -278,7 +278,14 @@ public class FCKeditor
       oConfig = new FCKeditorConfigurations();
    }
 
-   private boolean isCompatible()
+    /**
+     * Initialize the object without param
+     */
+    FCKeditor()
+    {
+    }
+
+   boolean isCompatible()
    {
       // [PN] 11.07.06 userAgent as global var, no request stored in editor
       // String userAgent=request.getHeader("user-agent");
@@ -291,6 +298,11 @@ public class FCKeditor
          if (retrieveBrowserVersion(userAgentString) >= 5.5)
             return true;
       }
+      else if (userAgentString.indexOf("chrome") != -1)
+      {
+          if (retrieveBrowserVersion(userAgentString) >= 5)
+              return true;
+      }
       else if (userAgentString.indexOf("gecko") != -1)
       {
          if (retrieveBrowserVersion(userAgentString) >= 20030210)
@@ -299,17 +311,31 @@ public class FCKeditor
       return false;
    }
 
-   private double retrieveBrowserVersion(String userAgentString)
+    double retrieveBrowserVersion(String userAgentString)
    {
+      try{
       if (userAgentString.indexOf("msie") > -1)
       {
          String str = userAgentString.substring(userAgentString.indexOf("msie") + 5);
          return Double.parseDouble(str.substring(0, str.indexOf(";")));
       }
+      else if (userAgentString.indexOf("chrome")>-1)
+      {
+         String str = userAgentString.substring(userAgentString.indexOf("chrome") + 7,userAgentString.indexOf(" safari"));
+         if(str.length()==0)
+              return 0;
+         else
+              return  Double.parseDouble(str.substring(0,str.indexOf(".")+2));
+      }
       else
       {
          String str = userAgentString.substring(userAgentString.indexOf("gecko") + 6);
          return Double.parseDouble(str.substring(0, 8));
+      }
+      }
+      catch (NumberFormatException e)
+      {
+          return -1;
       }
    }
 

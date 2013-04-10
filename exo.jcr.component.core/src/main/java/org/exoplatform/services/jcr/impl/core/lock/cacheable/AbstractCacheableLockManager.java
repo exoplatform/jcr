@@ -825,6 +825,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
     */
    public void clean() throws BackupException
    {
+      LOG.info("Start to clean lock Data");
       doClean();
    }
 
@@ -833,6 +834,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
     */
    public void backup(File storageDir) throws BackupException
    {
+      LOG.info("Start to backup lock data");
       ObjectOutputStream out = null;
       try
       {
@@ -952,6 +954,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
        */
       public void clean() throws BackupException
       {
+         LOG.info("Start to clean lock Data");
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
          {
             public Void run()

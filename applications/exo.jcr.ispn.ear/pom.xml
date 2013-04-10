@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    Copyright (C) 2009 eXo Platform SAS.
+
+    This is free software; you can redistribute it and/or modify it
+    under the terms of the GNU Lesser General Public License as
+    published by the Free Software Foundation; either version 2.1 of
+    the License, or (at your option) any later version.
+
+    This software is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+    Lesser General Public License for more details.
+
+    You should have received a copy of the GNU Lesser General Public
+    License along with this software; if not, write to the Free
+    Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
+    02110-1301 USA, or see the FSF site: http://www.fsf.org.
+
+-->
+
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.exoplatform.jcr</groupId>
+        <artifactId>jcr-applications-parent</artifactId>
+        <version>1.15.4-GA-SNAPSHOT</version>
+    </parent>
+    <artifactId>exo.jcr.ispn.ear</artifactId>
+    <packaging>ear</packaging>
+    <name>eXo JCR :: EAR</name>
+    <description>Artifact for packaging eXo JCR into EAR.</description>
+
+    <properties>
+        <enforcer.skip>true</enforcer.skip>
+        <exo.deploy.profile>ispn</exo.deploy.profile>
+    </properties>
+
+
+    <dependencies>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.connectors.jca</artifactId>
+            <scope>runtime</scope>
+            <type>rar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.component.core</artifactId>
+            <scope>runtime</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.sun.xml.parsers</groupId>
+                    <artifactId>jaxp-ri</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.jgroups</groupId>
+                    <artifactId>jgroups</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.component.ext</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.component.ftp</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.framework.command</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.framework.ftpclient</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.framework.web</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.ws</groupId>
+            <artifactId>exo.ws.frameworks.servlet</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                    <artifactId>servlet-api</artifactId>
+                </exclusion>
+            </exclusions>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.applications.rest</artifactId>
+            <scope>runtime</scope>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>com.sun.xml.bind</groupId>
+            <artifactId>jaxb-impl</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.applications.browser</artifactId>
+            <scope>runtime</scope>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.applications.fckeditor</artifactId>
+            <scope>runtime</scope>
+            <type>war</type>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.component.webdav</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.exoplatform.jcr</groupId>
+            <artifactId>exo.jcr.component.core.impl.infinispan.v5</artifactId>
+            <version>${project.version}</version>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.hsqldb</groupId>
+            <artifactId>hsqldb</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+    </dependencies>
+    <build>
+        <finalName>exo.jcr.ispn.ear</finalName>
+        <plugins>
+            <plugin>
+                <artifactId>maven-ear-plugin</artifactId>
+                <configuration>
+                    <security>
+                        <security-role id="ID_EXO_USER">
+                            <description>a simple user role</description>
+                            <role-name>users</role-name>
+                        </security-role>
+                        <security-role id="ID_EXO_ADMIN">
+                            <description>a simple admin role</description>
+                            <role-name>administrators</role-name>
+                        </security-role>
+                    </security>
+                    <defaultLibBundleDir>APP-INF/lib</defaultLibBundleDir>
+                    <archive>
+                        <manifest>
+                            <addClasspath>false</addClasspath>
+                        </manifest>
+                    </archive>
+                    <modules>
+                        <rarModule>
+                            <groupId>org.exoplatform.jcr</groupId>
+                            <artifactId>exo.jcr.connectors.jca</artifactId>
+                            <bundleFileName>exo-jcr.rar</bundleFileName>
+                        </rarModule>
+                        <webModule>
+                            <groupId>org.exoplatform.jcr</groupId>
+                            <artifactId>exo.jcr.applications.rest</artifactId>
+                            <bundleFileName>rest.war</bundleFileName>
+                            <contextRoot>rest</contextRoot>
+                        </webModule>
+                        <webModule>
+                            <groupId>org.exoplatform.jcr</groupId>
+                            <artifactId>exo.jcr.applications.browser</artifactId>
+                            <bundleFileName>browser.war</bundleFileName>
+                            <contextRoot>browser</contextRoot>
+                        </webModule>
+                        <webModule>
+                            <groupId>org.exoplatform.jcr</groupId>
+                            <artifactId>exo.jcr.applications.fckeditor</artifactId>
+                            <bundleFileName>fckeditor.war</bundleFileName>
+                            <contextRoot>fckeditor</contextRoot>
+                            <excluded>false</excluded>
+                        </webModule>
+                    </modules>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>

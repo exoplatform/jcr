@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-applications-parent</artifactId>
-    <version>1.15.3-GA-SNAPSHOT</version>
+    <version>1.15.4-GA-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.ear</artifactId>
   <packaging>ear</packaging>
@@ -88,6 +88,12 @@
     <dependency>
       <groupId>org.exoplatform.ws</groupId>
       <artifactId>exo.ws.frameworks.servlet</artifactId>
+        <exclusions>
+            <exclusion>
+                <groupId>javax.servlet</groupId>
+                <artifactId>servlet-api</artifactId>
+            </exclusion>
+        </exclusions>
       <scope>runtime</scope>
     </dependency>    
     <dependency>
@@ -129,22 +135,6 @@
        <scope>runtime</scope>
     </dependency>
   </dependencies>
-  <profiles>
-    <profile>
-         <id>ispn</id>
-         <dependencies>
-           <dependency>
-             <groupId>org.exoplatform.jcr</groupId>
-             <artifactId>exo.jcr.component.core.impl.infinispan.v5</artifactId>
-             <version>${project.version}</version>
-           </dependency>
-         </dependencies>
-
-         <properties>
-           <exo.deploy.profile>ispn</exo.deploy.profile>
-         </properties>
-      </profile>
-  </profiles>
   <build>
     <finalName>exo.jcr.ear</finalName>
     <plugins>

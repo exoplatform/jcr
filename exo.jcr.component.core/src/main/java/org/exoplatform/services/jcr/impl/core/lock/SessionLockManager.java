@@ -31,6 +31,7 @@ import javax.jcr.lock.LockException;
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: SessionLockManager.java 111 2008-11-11 11:11:11Z serg $
+ * @LevelAPI Unsupported
  */
 public interface SessionLockManager extends SessionLifecycleListener
 {
@@ -72,9 +73,6 @@ public interface SessionLockManager extends SessionLifecycleListener
 
    /**
     * Return lock tokens enshrined by session
-    * 
-    * @param sessionID
-    *          - Id of session.
     * @return array of lock tokens.
     */
    String[] getLockTokens();
@@ -106,9 +104,7 @@ public interface SessionLockManager extends SessionLifecycleListener
     * Returns <code>true</code> if the specified session holds a lock on the given node; otherwise
     * returns <code>false</code>. <p/> Note that <code>isLockHolder(session, node)==true</code>
     * implies <code>holdsLock(node)==true</code>.
-    * 
-    * @param session
-    *          session
+    *
     * @param nodeImpl
     *          node implementation
     * @return if the specified session holds a lock on the given node; otherwise returns
@@ -118,9 +114,7 @@ public interface SessionLockManager extends SessionLifecycleListener
 
    /**
     * Invoked by a session to inform that a lock token has been removed.
-    * 
-    * @param session
-    *          session that has a removed lock token
+    *
     * @param lt
     *          removed lock token
     */

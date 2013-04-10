@@ -44,6 +44,7 @@ import javax.xml.transform.stream.StreamResult;
  * 
  * @author Gennady Azarenkov
  * @version $Id: $
+ * @LevelAPI Unsupported
  */
 
 public final class RegistryEntry

@@ -41,6 +41,8 @@ import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
+import org.exoplatform.container.util.Utils;
+import org.exoplatform.container.xml.Deserializer;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.QueryHandlerParams;
@@ -74,12 +76,14 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectory
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
@@ -1738,7 +1742,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *
     * @return a file system resource or <code>null</code> if no path was
     *         configured.
-    * @throws FileSystemException if an exception occurs accessing the file
+    * @throws IOException if an exception occurs accessing the file
     *                             system.
     */
    protected InputStream createSynonymProviderConfigResource() throws IOException
@@ -1859,7 +1863,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
                      DocumentBuilder builder = factory.newDocumentBuilder();
                      builder.setEntityResolver(new IndexingConfigurationEntityResolver());
-                     indexingConfiguration = builder.parse(is).getDocumentElement();
+                     String content = Deserializer.resolveVariables(Utils.readStream(is));
+                     InputSource source = new InputSource(new StringReader(content));
+                     indexingConfiguration = builder.parse(source).getDocumentElement();
                   }
                   catch (ParserConfigurationException e)
                   {

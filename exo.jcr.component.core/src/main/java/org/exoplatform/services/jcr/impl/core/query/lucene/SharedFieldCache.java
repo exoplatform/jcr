@@ -21,7 +21,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.TermPositions;
-import org.apache.lucene.search.FieldComparator;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -55,12 +54,11 @@ public class SharedFieldCache
       /**
        * Values indexed by document id.
        */
-      private final Comparable[] values;
-
+      private final Comparable<?>[] values;
       /**
        * Values (Comparable) map indexed by document id.
        */
-      public final Map<Integer, Comparable> valuesMap;
+      public final Map<Integer, Comparable<?>> valuesMap;
 
       /**
        * Boolean indicating whether the {@link #valuesMap} impl has to be used
@@ -70,7 +68,7 @@ public class SharedFieldCache
       /**
        * Creates one of these objects
        */
-      public ValueIndex(Comparable[] values, int setValues)
+      public ValueIndex(Comparable<?>[] values, int setValues)
       {
          if (isSparse(values, setValues))
          {
@@ -93,7 +91,7 @@ public class SharedFieldCache
          }
       }
 
-      public Comparable getValue(int i)
+      public Comparable<?>  getValue(int i)
       {
          if (sparse)
          {
@@ -105,9 +103,9 @@ public class SharedFieldCache
          }
       }
 
-      private Map<Integer, Comparable> getValuesMap(Comparable[] values, int setValues)
+      private static Map<Integer, Comparable<?>> getValuesMap(Comparable<?>[] values, int setValues)
       {
-         Map<Integer, Comparable> map = new HashMap<Integer, Comparable>(setValues);
+         Map<Integer, Comparable<?>> map = new HashMap<Integer, Comparable<?>>(setValues);
          for (int i = 0; i < values.length && setValues > 0; i++)
          {
             if (values[i] != null)
@@ -119,7 +117,7 @@ public class SharedFieldCache
          return map;
       }
 
-      private boolean isSparse(Comparable[] values, int setValues)
+      private static boolean isSparse(Comparable<?>[] values, int setValues)
       {
          // some really simple test to test whether the array is sparse.  
          // Currently, when less then 1% is set, the array is already sparse 
@@ -159,12 +157,11 @@ public class SharedFieldCache
     * @param reader     the <code>IndexReader</code>.
     * @param field      name of the shared field.
     * @param prefix     the property name, will be used as term prefix.
-    * @param comparator the field comparator instance.
     * @return a ValueIndex that contains the field values and order
     *         information.
     * @throws IOException if an error occurs while reading from the index.
     */
-   public ValueIndex getValueIndex(IndexReader reader, String field, String prefix, FieldComparator comparator)
+   public ValueIndex getValueIndex(IndexReader reader, String field, String prefix)
       throws IOException
    {
 
@@ -174,10 +171,10 @@ public class SharedFieldCache
       }
 
       field = field.intern();
-      ValueIndex ret = lookup(reader, field, prefix, comparator);
+      ValueIndex ret = lookup(reader, field, prefix);
       if (ret == null)
       {
-         Comparable[] retArray = new Comparable[reader.maxDoc()];
+         Comparable<?>[] retArray = new Comparable[reader.maxDoc()];
          int setValues = 0;
          if (retArray.length > 0)
          {
@@ -250,7 +247,7 @@ public class SharedFieldCache
             }
          }
          ValueIndex value = new ValueIndex(retArray, setValues);
-         store(reader, field, prefix, comparator, value);
+         store(reader, field, prefix, value);
          return value;
       }
       return ret;
@@ -259,27 +256,25 @@ public class SharedFieldCache
    /**
     * See if a <code>ValueIndex</code> object is in the cache.
     */
-   ValueIndex lookup(IndexReader reader, String field, String prefix, FieldComparator comparer)
+   ValueIndex lookup(IndexReader reader, String field, String prefix)
    {
-      Key key = new Key(field, prefix, comparer);
-      synchronized (this)
+      synchronized (cache)
       {
          Map<Key, ValueIndex> readerCache = cache.get(reader);
          if (readerCache == null)
          {
             return null;
          }
-         return readerCache.get(key);
+         return readerCache.get(new Key(field, prefix));
       }
    }
 
    /**
     * Put a <code>ValueIndex</code> <code>value</code> to cache.
     */
-   ValueIndex store(IndexReader reader, String field, String prefix, FieldComparator comparer, ValueIndex value)
+   void store(IndexReader reader, String field, String prefix, ValueIndex value)
    {
-      Key key = new Key(field, prefix, comparer);
-      synchronized (this)
+      synchronized (cache)
       {
          Map<Key, ValueIndex> readerCache = cache.get(reader);
          if (readerCache == null)
@@ -287,7 +282,7 @@ public class SharedFieldCache
             readerCache = new HashMap<Key, ValueIndex>();
             cache.put(reader, readerCache);
          }
-         return readerCache.put(key, value);
+         readerCache.put(new Key(field, prefix), value);
       }
    }
 
@@ -299,7 +294,7 @@ public class SharedFieldCache
     * @param type the property type.
     * @return a comparable for the <code>value</code>.
     */
-   private Comparable getValue(String value, int type)
+   private Comparable<?>  getValue(String value, int type)
    {
       switch (type)
       {
@@ -318,7 +313,7 @@ public class SharedFieldCache
 
    /**
     * A compound <code>Key</code> that consist of <code>field</code>
-    * <code>prefix</code> and <code>comparator</code>.
+    * and <code>prefix</code> .
     */
    static class Key
    {
@@ -327,38 +322,36 @@ public class SharedFieldCache
 
       private final String prefix;
 
-      private final Object comparator;
 
       /**
        * Creates <code>Key</code> for ValueIndex lookup.
        */
-      Key(String field, String prefix, FieldComparator comparator)
+      Key(String field, String prefix)
       {
          this.field = field.intern();
          this.prefix = prefix.intern();
-         this.comparator = comparator;
       }
 
       /**
        * Returns <code>true</code> if <code>o</code> is a <code>Key</code>
-       * instance and refers to the same field, prefix and comparator object.
+       * instance and refers to the same field and prefix.
        */
       public boolean equals(Object o)
       {
          if (o instanceof Key)
          {
             Key other = (Key)o;
-            return other.field == field && other.prefix == prefix && other.comparator.equals(comparator);
+            return other.field == field && other.prefix == prefix ;
          }
          return false;
       }
 
       /**
-       * Composes a hashcode based on the field, prefix and comparator.
+       * Composes a hashcode based on the field and prefix.
        */
       public int hashCode()
       {
-         return field.hashCode() ^ prefix.hashCode() ^ comparator.hashCode();
+         return field.hashCode() ^ prefix.hashCode();
       }
    }
 

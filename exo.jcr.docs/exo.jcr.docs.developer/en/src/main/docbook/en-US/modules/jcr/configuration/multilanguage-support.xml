@@ -129,6 +129,13 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
               &lt;property name="swap-directory" value="target/temp/swap/ws" /&gt;
             &lt;/properties&gt;
           .....</programlisting>
+
+     <para>You will need also to indicate the charset name either at server level using the server parameter  --character-set-server (find more details <ulink url="http://dev.mysql.com/doc/refman/5.0/en/server-options.html#option_mysqld_character-set-server">there</ulink> )
+          or at datasource configuration level by adding a new property as below:</para>
+
+     <programlisting language="xml">
+          &lt;property name="connectionProperties" value="useUnicode=yes;characterEncoding=utf8;characterSetResults=UTF-8;" /&gt;
+     </programlisting>
   </section>
 
   <section id="JCR.MultilanguageSupport.PostgreSQL">

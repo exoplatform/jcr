@@ -76,6 +76,7 @@ import javax.xml.transform.TransformerException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: RegistryService.java 34445 2009-07-24 07:51:18Z dkatayev $
+ * @LevelAPI Unsupported
  */
 public class RegistryService extends Registry implements Startable
 {
@@ -118,10 +119,9 @@ public class RegistryService extends Registry implements Startable
 
    /**
     * @param params
-    *          accepts "locations" properties param
-    * @param repositoryService
-    * @throws RepositoryConfigurationException
-    * @throws RepositoryException
+    *          accepts <i>locations</i> properties param and <i>mixin-names</i> values param.
+    * @param repositoryService the repository service
+    * @throws RepositoryConfigurationException if no {@link InitParams} are provided
     */
    public RegistryService(InitParams params, RepositoryService repositoryService)
       throws RepositoryConfigurationException
@@ -264,9 +264,7 @@ public class RegistryService extends Registry implements Startable
          throw new RepositoryException("Can't get XML representation from stream " + te);
       }
    }
-   
-   
-   
+
    /**
     * {@inheritDoc}
     */
@@ -333,6 +331,9 @@ public class RegistryService extends Registry implements Startable
       return sessionProvider.getSession(regWorkspaces.get(repo.getConfiguration().getName()), repo);
    }
 
+   /**
+    * Indicates whether the service is started or not
+    */
    public boolean isStarted()
    {
       return started;
@@ -413,9 +414,10 @@ public class RegistryService extends Registry implements Startable
    }
 
    /**
-    * @param replace
-    * @throws RepositoryConfigurationException
-    * @throws RepositoryException
+    * Initializes the registry storage
+    * @param replace <code>true</code> if we want to re-create the exo:registry node, <code>false</code> otherwise
+    * @throws RepositoryConfigurationException if a configuration issue occurs
+    * @throws RepositoryException if any error occurs
     */
    public void initStorage(boolean replace) throws RepositoryConfigurationException, RepositoryException
    {
@@ -547,8 +549,9 @@ public class RegistryService extends Registry implements Startable
    }
 
    /**
-    * @param repositoryName
-    * @param workspaceName
+    * Adds a new registry entry
+    * @param repositoryName the repository name
+    * @param workspaceName the workspace name
     */
    public void addRegistryLocation(String repositoryName, String workspaceName)
    {
@@ -556,7 +559,7 @@ public class RegistryService extends Registry implements Startable
    }
 
    /**
-    * @param repositoryName
+    * @param repositoryName the repository name
     */
    public void removeRegistryLocation(String repositoryName)
    {
@@ -564,12 +567,11 @@ public class RegistryService extends Registry implements Startable
    }
 
    /**
-    * @param sessionProvider
-    * @param groupName
-    * @param entryName
-    * @param repositoryName
-    * @return
-    * @throws RepositoryException
+    * Initializes the registry entry
+    * @param groupName the group entry name
+    * @param entryName the entry name
+    * @throws RepositoryConfigurationException if a configuration issue occurs
+    * @throws RepositoryException if any error occurs
     */
    public void initRegistryEntry(String groupName, String entryName) throws RepositoryException,
       RepositoryConfigurationException
@@ -654,6 +656,12 @@ public class RegistryService extends Registry implements Startable
       }
    }
 
+   /**
+    * Defines the configuration of the service thanks to the provided plugin if and
+    * only if the plugin is of type {@link RegistryInitializationEntryPlugin}
+    * @param plugin the plugin from which we extract the configuration that is expected
+    * to be of type {@link RegistryInitializationEntryPlugin}
+    */
    public void addPlugin(ComponentPlugin plugin)
    {
       if (RegistryInitializationEntryPlugin.class.isAssignableFrom(plugin.getClass()))

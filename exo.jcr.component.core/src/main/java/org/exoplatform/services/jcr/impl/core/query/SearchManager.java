@@ -24,6 +24,7 @@ import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
 import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.container.configuration.ConfigurationManager;
@@ -254,6 +255,31 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    private final ExoContainerContext ctx;
 
    private String hotReindexingState = "not stated";
+
+   /**
+    * Name of max clause count property.
+    */
+
+   private static final String LUCENE_BOOLEAN_QUERY_MAX_CLAUSE_COUNT = "org.apache.lucene.maxClauseCount";
+
+   static
+   {
+      String max = PropertyManager.getProperty(LUCENE_BOOLEAN_QUERY_MAX_CLAUSE_COUNT);
+      int value = Integer.MAX_VALUE;
+      if (max != null)
+      {
+         try
+         {
+            value = Integer.valueOf(max);
+         }
+         catch (NumberFormatException e)
+         {
+            LOG.warn("The value of the property '" + LUCENE_BOOLEAN_QUERY_MAX_CLAUSE_COUNT
+               + "' must be an integer, the default value will be used.");
+         }
+      }
+      BooleanQuery.setMaxClauseCount(value);
+   }
 
    public SearchManager(ExoContainerContext ctx, WorkspaceEntry wEntry, RepositoryEntry rEntry,
       RepositoryService rService, QueryHandlerEntry config, NamespaceRegistryImpl nsReg, NodeTypeDataManager ntReg,
@@ -1611,7 +1637,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
    protected void suspendLocally() throws SuspendException
    {
-      if (!handler.isOnline())
+      if (handler != null && !handler.isOnline())
       {
          throw new SuspendException("Can't suspend index, while reindexing in progeress.");
       }
@@ -1645,6 +1671,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void clean() throws BackupException
    {
+      LOG.info("Start to clean lucene indexes of the workspace '"+workspaceName+"'");
       try
       {
          final File indexDir = getIndexDirectory();
@@ -1674,6 +1701,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void backup(final File storageDir) throws BackupException
    {
+      LOG.info("Start to backup lucene indexes of the workspace '"+workspaceName+"'");
       try
       {
          final File indexDir = getIndexDirectory();

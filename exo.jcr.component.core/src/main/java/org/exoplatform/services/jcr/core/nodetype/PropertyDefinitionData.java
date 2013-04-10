@@ -29,6 +29,7 @@ import java.util.Arrays;
  *         Nedonosko</a>
  * @version $Id: PropertyDefinitionData.java 23992 2008-11-27 16:58:34Z
  *          pnedonosko $
+ * @LevelAPI Unsupported
  */
 public class PropertyDefinitionData extends ItemDefinitionData
 {

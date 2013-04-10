@@ -31,6 +31,7 @@ import javax.jcr.Item;
  * 
  * @author Gennady Azarenkov
  * @version $Id: InvocationContext.java 11907 2008-03-13 15:36:21Z ksm $
+ * @LevelAPI Provisional
  */
 public class InvocationContext extends HashMap implements Context
 {

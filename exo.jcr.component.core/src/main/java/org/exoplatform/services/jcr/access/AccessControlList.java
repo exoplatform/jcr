@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.access;
 
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.IdentityConstants;
 
 import java.io.Externalizable;
@@ -38,14 +36,13 @@ import javax.jcr.RepositoryException;
  * 
  * @author Gennady Azarenkov
  * @version $Id: AccessControlList.java 14556 2008-05-21 15:22:15Z pnedonosko $
+ * @LevelAPI Experimental
  */
 
 public class AccessControlList implements Externalizable
 {
 
    private static final long serialVersionUID = 5848327750178729120L;
-
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.AccessControlList");
 
    public static final String DELIMITER = ";";
 
@@ -86,17 +83,25 @@ public class AccessControlList implements Externalizable
       this.owner = owner;
       this.accessList = accessList;
    }
-
+   /**
+    * @return returns <code>true</code> if the permission list has been set, <code>false</code> otherwise
+    */
    public boolean hasPermissions()
    {
       return accessList != null;
    }
-
+   /**
+    * @return returns <code>true</code> if the owner has been set, <code>false</code> otherwise
+    */
    public boolean hasOwner()
    {
       return owner != null;
    }
-
+   /**
+    * Adds permissions
+    * @param rawData A semicolon separated string representing the list of permission entries to add, 
+    * knowing that the syntax of a permission entry is ${identity} [read|add_node|set_property|remove]
+    */
    public void addPermissions(String rawData) throws RepositoryException
    {
       StringTokenizer listTokenizer = new StringTokenizer(rawData, AccessControlList.DELIMITER);
@@ -112,7 +117,11 @@ public class AccessControlList implements Externalizable
          accessList.add(new AccessControlEntry(entryTokenizer.nextToken(), entryTokenizer.nextToken()));
       }
    }
-
+   /**
+    * Adds a set of permission types to a given identity
+    * @param identity the member identity
+    * @param perm an array of permission types to add
+    */
    public void addPermissions(String identity, String[] perm) throws RepositoryException
    {
       for (String p : perm)
@@ -120,7 +129,10 @@ public class AccessControlList implements Externalizable
          accessList.add(new AccessControlEntry(identity, p));
       }
    }
-
+   /**
+    * Removes all the permissions of a given identity
+    * @param identity the member identity
+    */
    public void removePermissions(String identity)
    {
       for (Iterator<AccessControlEntry> iter = accessList.iterator(); iter.hasNext();)
@@ -130,7 +142,11 @@ public class AccessControlList implements Externalizable
             iter.remove();
       }
    }
-
+   /**
+    * Removes the permission corresponding to the given identity and the given permission type
+    * @param identity the member identity
+    * @param permission the permission type
+    */
    public void removePermissions(String identity, String permission)
    {
       for (Iterator<AccessControlEntry> iter = accessList.iterator(); iter.hasNext();)
@@ -150,13 +166,20 @@ public class AccessControlList implements Externalizable
    {
       return owner;
    }
-
+   /**
+    * Sets owner.
+    *
+    * @param owner the owner
+    */
    public void setOwner(String owner)
    {
       this.owner = owner;
    }
 
-   // Create safe copy of list <AccessControlEntry>
+   /**
+    * Gives all the permission entries
+    * @return a safe copy of all the permission entries
+    */
    public List<AccessControlEntry> getPermissionEntries()
    {
       List<AccessControlEntry> list = new ArrayList<AccessControlEntry>();
@@ -168,6 +191,10 @@ public class AccessControlList implements Externalizable
       return list;
    }
 
+   /**
+    * @param identity the member identity
+    * @return returns the list of all the permission types associated to the given identity
+    */
    public List<String> getPermissions(String identity)
    {
       List<String> permissions = new ArrayList<String>();
@@ -180,6 +207,9 @@ public class AccessControlList implements Externalizable
       return permissions;
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public boolean equals(Object obj)
    {
       if (obj == this)
@@ -222,6 +252,9 @@ public class AccessControlList implements Externalizable
       return false;
    }
 
+   /**
+    * Gives a String representation of the {@link AccessControlList} with all the details
+    */
    public String dump()
    {
       StringBuilder res = new StringBuilder("OWNER: ").append(owner != null ? owner : "null").append("\n");
@@ -239,6 +272,9 @@ public class AccessControlList implements Externalizable
       return res.toString();
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
    {
       // reading owner
@@ -272,6 +308,9 @@ public class AccessControlList implements Externalizable
       }
    }
 
+   /**
+    * {@inheritDoc}
+    */
    public void writeExternal(ObjectOutput out) throws IOException
    {
       // Writing owner
@@ -300,7 +339,7 @@ public class AccessControlList implements Externalizable
    }
 
    /**
-    * Get access list size.
+    * Gives access to the size of existing permissions.
     * 
     * @return size of access list
     */

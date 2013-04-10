@@ -168,6 +168,8 @@ public final class CachingMultiIndexReader
         for (int i = 0; i < subReaders.length; i++) {
             subReaders[i].release();
         }
+       subReaders = null;
+       readersByCreationTick.clear();
     }
 
     //-------------------------< MultiIndexReader >-----------------------------

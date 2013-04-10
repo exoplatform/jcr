@@ -18,9 +18,9 @@
  */
 package org.exoplatform.services.jcr.webdav.utils;
 
-import org.exoplatform.services.jcr.webdav.util.TextUtil;
-
 import junit.framework.TestCase;
+
+import org.exoplatform.services.jcr.webdav.util.TextUtil;
 
 /**
  * @author <a href="mailto:areshetnyak@exoplatform.com">Alex Reshetnyak</a>
@@ -44,5 +44,11 @@ public class TestTextUtil extends TestCase
       catch (IllegalArgumentException e)
       {
       }
+   }
+   
+   public void testUnescape()
+   {
+      String filename = "\u00E1\u00E1\u00E1\u00E1\u00E1.txt";
+      assertEquals(filename, TextUtil.unescape(filename, '%'));
    }
 }
