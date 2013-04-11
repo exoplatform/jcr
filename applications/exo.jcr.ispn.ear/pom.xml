@@ -29,8 +29,8 @@
     </parent>
     <artifactId>exo.jcr.ispn.ear</artifactId>
     <packaging>ear</packaging>
-    <name>eXo JCR :: EAR</name>
-    <description>Artifact for packaging eXo JCR into EAR.</description>
+    <name>eXo JCR :: EAR with ISPN</name>
+    <description>Artifact for packaging eXo JCR into EAR with ISPN as underlying cache.</description>
 
     <properties>
         <enforcer.skip>true</enforcer.skip>
