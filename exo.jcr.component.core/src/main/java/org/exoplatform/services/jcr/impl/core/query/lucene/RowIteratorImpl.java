@@ -753,13 +753,31 @@ class RowIteratorImpl implements RowIterator
             NodeImpl n = (NodeImpl)getNodeImpl().getNode(decodedPath);
             return createExcerpt(n.getData().getIdentifier());
          }
-         catch (PathNotFoundException e)
+         catch (RepositoryException e)
          {
             // does not exist or references a property
             try
             {
-               Property p = getNode().getProperty(decodedPath);
-               return highlight(p.getValue().getString());
+               Property p;
+               StringBuffer sb = new StringBuffer();
+               String[] properties = decodedPath.split("\\|");
+               for (int i = 0; i < properties.length; i++)
+               {
+                  p = getNode().getProperty(properties[i]);
+                  if (i > 0)
+                  {
+                     sb.append(" ");
+                  }
+                  sb.append(p.getValue().getString());
+               }
+               if (properties.length > 1)
+               {
+                  return highlight(sb.toString(), 3, 150);
+               }
+               else
+               {
+                  return highlight(sb.toString(), 1, (sb.length() + 1) * 2);
+               }
             }
             catch (PathNotFoundException e1)
             {
@@ -815,7 +833,7 @@ class RowIteratorImpl implements RowIterator
        * 
        * @return a StringValue or <code>null</code> if highlighting fails.
        */
-      private Value highlight(String text)
+      private Value highlight(String text,int maxFragments, int maxFragmentSize)
       {
          if (!(excerptProvider instanceof HighlightingExcerptProvider))
          {
@@ -829,7 +847,7 @@ class RowIteratorImpl implements RowIterator
             {
                time = System.currentTimeMillis();
             }
-            text = hep.highlight(text);
+            text = hep.highlight(text,maxFragments,maxFragmentSize);
             if (log.isDebugEnabled())
             {
                time = System.currentTimeMillis() - time;
