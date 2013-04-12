@@ -39,22 +39,32 @@ public class TestUnCkeckOut extends BaseStandaloneTest
 
    public void testUnCkeckOut() throws Exception
    {
+      testUnCkeckOut(getPathWS());
+   }
+
+   public void testUnCkeckOutWithFakePathWS() throws Exception
+   {
+      testUnCkeckOut(getFakePathWS());
+   }
+
+   private void testUnCkeckOut(String pathWs) throws Exception
+   {
       String path = TestUtils.getFileName();
       Node node =
          TestUtils.addContent(session, path, new ByteArrayInputStream(TestUtils.getFileContent().getBytes()),
             defaultFileNodeType, MediaType.TEXT_PLAIN);
-      ContainerResponse response = service("UNCHECKOUT", getPathWS() + path, "", null, null);
+      ContainerResponse response = service("UNCHECKOUT", pathWs + path, "", null, null);
       assertEquals(HTTPStatus.CONFLICT, response.getStatus());
       if (!node.isNodeType("mix:versionable"))
       {
          node.addMixin("mix:versionable");
          session.save();
       }
-      response = service("UNCHECKOUT", getPathWS() + path, "", null, null);
+      response = service("UNCHECKOUT", pathWs + path, "", null, null);
       assertEquals(HTTPStatus.INTERNAL_ERROR, response.getStatus());
       node.checkin();
       node.checkout();
-      response = service("UNCHECKOUT", getPathWS() + path, "", null, null);
+      response = service("UNCHECKOUT", pathWs + path, "", null, null);
       assertEquals(HTTPStatus.OK, response.getStatus());
    }
 

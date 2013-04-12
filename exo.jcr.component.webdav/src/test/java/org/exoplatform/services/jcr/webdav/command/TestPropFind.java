@@ -146,6 +146,30 @@ public class TestPropFind extends BaseStandaloneTest
     */
    public void testSimplePropFindWithNonLatin() throws Exception
    {
+      testSimplePropFindWithNonLatin(getPathWS());
+   }
+
+   /**
+    * Same test as the previous one but with a path of the workspace containing
+    * an incorrect repository name. The behavior should not change as we ignore it and use
+    * the current repository.
+    */
+   public void testSimplePropFindWithNonLatinWithFakePathWS() throws Exception
+   {
+      testSimplePropFindWithNonLatin(getFakePathWS());
+   }
+
+   /**
+    * Here we test WebDAV PROPFIND method implementation for correct response 
+    * if request contains encoded non-latin characters. We send a request with
+    * corresponding character sequence and expect to receive response containing
+    * 'href' element with URL encoded characters and 'displayname' element containing
+    * non-latin characters.  
+    * @param pathWs path of the workspace 
+    * @throws Exception
+    */
+   private void testSimplePropFindWithNonLatin(String pathWs) throws Exception
+   {
       // prepare file name and content
       String encodedfileName = "%e3%81%82%e3%81%84%e3%81%86%e3%81%88%e3%81%8a";
       String decodedfileName = URLDecoder.decode(encodedfileName, "UTF-8");
@@ -154,7 +178,7 @@ public class TestPropFind extends BaseStandaloneTest
       TestUtils.addNodeProperty(session, decodedfileName, WEBDAV_AUTHOR_PROPERTY, AUTHOR);
 
       ContainerResponse response =
-         service(WebDAVMethods.PROPFIND, getPathWS() + "/" + encodedfileName, "", null, allPropsXML.getBytes());
+         service(WebDAVMethods.PROPFIND, pathWs + "/" + encodedfileName, "", null, allPropsXML.getBytes());
 
       // serialize response entity to string
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

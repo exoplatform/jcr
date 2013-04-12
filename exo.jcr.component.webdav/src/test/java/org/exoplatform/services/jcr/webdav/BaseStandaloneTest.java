@@ -226,6 +226,11 @@ public abstract class BaseStandaloneTest extends TestCase
       return "/jcr/" + repoName + "/" + WORKSPACE;
    }
 
+   public String getFakePathWS()
+   {
+      return "/jcr/fake-repo-name/" + WORKSPACE;
+   }
+
    public String getPathDestWS()
    {
       return "/jcr/" + repoName + "/" + DEST_WORKSPACE;

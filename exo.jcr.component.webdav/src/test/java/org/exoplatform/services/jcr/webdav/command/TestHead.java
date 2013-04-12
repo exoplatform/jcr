@@ -52,6 +52,12 @@ public class TestHead extends BaseStandaloneTest
       assertEquals(HTTPStatus.OK, response.getStatus());
    }
 
+   public void testSimpleHeadWithFakePathWS() throws Exception
+   {
+      ContainerResponse response = service(WebDAVMethods.HEAD, getFakePathWS() + path, "", null, null);
+      assertEquals(HTTPStatus.OK, response.getStatus());
+   }
+
    @Override
    protected String getRepositoryName()
    {

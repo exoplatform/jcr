@@ -44,14 +44,24 @@ public class TestMove extends BaseStandaloneTest
 
    public void testMoveForNonCollectionSingleWorkspace() throws Exception
    {
+      testMoveForNonCollectionSingleWorkspace(getPathWS());
+   }
+
+   public void testMoveForNonCollectionSingleWorkspaceWithFakePathWS() throws Exception
+   {
+      testMoveForNonCollectionSingleWorkspace(getFakePathWS());
+   }
+
+   private void testMoveForNonCollectionSingleWorkspace(String pathWs) throws Exception
+   {
       String content = TestUtils.getFileContent();
       String filename = TestUtils.getFileName();
       InputStream inputStream = new ByteArrayInputStream(content.getBytes());
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
       String destFilename = TestUtils.getFileName();
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+      headers.add(ExtHttpHeaders.DESTINATION, host + pathWs + destFilename);
+      ContainerResponse response = service(WebDAVMethods.MOVE, pathWs + filename, host, headers, null);
       assertEquals(HTTPStatus.CREATED, response.getStatus());
       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
       Node nodeDest = session.getRootNode().getNode(TextUtil.relativizePath(destFilename));

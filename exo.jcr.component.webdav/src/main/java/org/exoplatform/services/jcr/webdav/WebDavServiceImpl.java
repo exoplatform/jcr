@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.webdav;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.commons.utils.MimeTypeResolver;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
@@ -342,6 +343,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          Depth depth = new Depth(depthHeader);
 
          boolean overwrite = overwriteHeader != null && overwriteHeader.equalsIgnoreCase("T");
+         repoName = getRepositoryName(repoName);
 
          if (overwrite)
          {
@@ -486,6 +488,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       try
       {
+         repoName = getRepositoryName(repoName);
          Session session = session(repoName, workspaceName(repoPath), null);
 
          ArrayList<Range> ranges = new ArrayList<Range>();
@@ -574,6 +577,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       try
       {
+         repoName = getRepositoryName(repoName);
          Session session = session(repoName, workspaceName(repoPath), null);
          String uri =
             uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
@@ -708,6 +712,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       try
       {
+         repoName = getRepositoryName(repoName);
          List<String> tokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), tokens);
          String folderNodeType =
@@ -800,6 +805,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          Depth depth = new Depth(depthHeader);
 
          boolean overwrite = overwriteHeader != null && overwriteHeader.equalsIgnoreCase("T");
+         repoName = getRepositoryName(repoName);
 
          if (overwrite)
          {
@@ -902,6 +908,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       try
       {
+         repoName = getRepositoryName(repoName);
          List<String> lockTokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), lockTokens);
          String uri =
@@ -939,6 +946,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       try
       {
+         repoName = getRepositoryName(repoName);
          Session session = session(repoName, workspaceName(repoPath), null);
          String uri =
             uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
@@ -986,6 +994,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       try
       {
+         repoName = getRepositoryName(repoName);
          List<String> lockTokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), lockTokens);
          String uri =
@@ -1046,6 +1055,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       try
       {
+         repoName = getRepositoryName(repoName);
          List<String> tokens = lockTokens(lockTokenHeader, ifHeader);
          Session session = session(repoName, workspaceName(repoPath), tokens);
 
@@ -1106,6 +1116,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       try
       {
+         repoName = getRepositoryName(repoName);
          Depth depth = new Depth(depthHeader);
          Session session = session(repoName, workspaceName(repoPath), null);
          String uri =
@@ -1148,6 +1159,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
       try
       {
+         repoName = getRepositoryName(repoName);
          Session session = session(repoName, workspaceName(repoPath), null);
          String uri =
             uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
@@ -1297,7 +1309,17 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    protected Session session(String repoName, String wsName, List<String> lockTokens) throws Exception,
       NoSuchWorkspaceException
    {
-      ManageableRepository repo = this.repositoryService.getRepository(repoName);
+      // To be cloud compliant we need now to ignore the provided repository name (more details in JCR-2138)
+      ManageableRepository repo = repositoryService.getCurrentRepository();
+      if (PropertyManager.isDevelopping() && log.isWarnEnabled())
+      {
+         String currentRepositoryName = repo.getConfiguration().getName();
+         if (!currentRepositoryName.equals(repoName))
+         {
+            log.warn("The expected repository was '" + repoName
+               + "' but we will use the current repository instead which is '" + currentRepositoryName + "'");
+         }
+      }
       SessionProvider sp = sessionProviderService.getSessionProvider(null);
       if (sp == null)
          throw new RepositoryException("SessionProvider is not properly set. Make the application calls"
@@ -1324,6 +1346,28 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          }
       }
       return session;
+   }
+
+   
+   /**
+    * Gives the name of the repository to access. 
+    * @param repoName the name of the expected repository.
+    * @return the name of the repository to access.
+    */
+   protected String getRepositoryName(String repoName) throws RepositoryException
+   {
+      // To be cloud compliant we need now to ignore the provided repository name (more details in JCR-2138)
+      ManageableRepository repo = repositoryService.getCurrentRepository();
+      String currentRepositoryName = repo.getConfiguration().getName();
+      if (PropertyManager.isDevelopping() && log.isWarnEnabled())
+      {
+         if (!currentRepositoryName.equals(repoName))
+         {
+            log.warn("The expected repository was '" + repoName
+               + "' but we will use the current repository instead which is '" + currentRepositoryName + "'");
+         }
+      }
+      return currentRepositoryName;
    }
 
    /**
