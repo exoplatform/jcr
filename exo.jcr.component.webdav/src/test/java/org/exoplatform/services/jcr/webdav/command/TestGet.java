@@ -74,7 +74,17 @@ public class TestGet extends BaseStandaloneTest
 
    public void testSimpleGet() throws Exception
    {
-      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", null, null);
+      testSimpleGet(getPathWS());
+   }
+
+   public void testSimpleGetWithFakePathWS() throws Exception
+   {
+      testSimpleGet(getFakePathWS());
+   }
+
+   private void testSimpleGet(String pathWs) throws Exception
+   {
+      ContainerResponse response = service(WebDAVMethods.GET, pathWs + path, "", null, null);
       assertEquals(HTTPStatus.OK, response.getStatus());
       FileInputStream content = (FileInputStream)response.getEntity();
       Reader r = new InputStreamReader(content);

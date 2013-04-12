@@ -43,7 +43,17 @@ public class TestCopy extends BaseStandaloneTest
 
    final static private String host = "http://localhost:8080";
 
-   public void testeCopyForNonCollectionSingleWorkSpace() throws Exception
+   public void testCopyForNonCollectionSingleWorkSpace() throws Exception
+   {
+      testCopyForNonCollectionSingleWorkSpace(getPathWS());
+   }
+
+   public void testCopyForNonCollectionSingleWorkSpaceWithFakePathWS() throws Exception
+   {
+      testCopyForNonCollectionSingleWorkSpace(getFakePathWS());
+   }
+
+   private void testCopyForNonCollectionSingleWorkSpace(String pathWs) throws Exception
    {
       String content = TestUtils.getFileContent();
       String filename = TestUtils.getFileName();
@@ -51,8 +61,8 @@ public class TestCopy extends BaseStandaloneTest
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
       String destFilename = TestUtils.getFileName();
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
-      headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
-      ContainerResponse response = service(WebDAVMethods.COPY, getPathWS() + filename, host, headers, null);
+      headers.add(ExtHttpHeaders.DESTINATION, host + pathWs + destFilename);
+      ContainerResponse response = service(WebDAVMethods.COPY, pathWs + filename, host, headers, null);
       assertEquals(HTTPStatus.CREATED, response.getStatus());
       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
       Node nodeDest = session.getRootNode().getNode(TextUtil.relativizePath(destFilename));
