@@ -45,10 +45,20 @@ public class TestPut extends BaseStandaloneTest
 
    public void testPut() throws Exception
    {
+      testPut(getPathWS());
+   }
+
+   public void testPutWithFakePathWS() throws Exception
+   {
+      testPut(getFakePathWS());
+   }
+
+   private void testPut(String pathWs) throws Exception
+   {
       String content = TestUtils.getFileContent();
       String path = TestUtils.getFileName();
       ContainerResponse containerResponse =
-         service(WebDAVMethods.PUT, getPathWS() + path, "", null, content.getBytes());
+         service(WebDAVMethods.PUT, pathWs + path, "", null, content.getBytes());
       assertEquals(HTTPStatus.CREATED, containerResponse.getStatus());
       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(path)));
    }

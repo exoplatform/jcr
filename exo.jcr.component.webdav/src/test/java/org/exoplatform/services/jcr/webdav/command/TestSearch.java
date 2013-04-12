@@ -66,17 +66,25 @@ public class TestSearch extends BaseStandaloneTest
 
    public void testBasicSearch() throws Exception
    {
+      testBasicSearch(getPathWS());
+   }
 
-      // String body =
-      // "<D:searchrequest xmlns:D='DAV:'>" +
-      // "<D:xpath>" +
-      // "element(*, nt:resource)[jcr:contains(jcr:data, '*F*')]" +
-      // "</D:xpath>" +
-      // "</D:searchrequest>";
+   public void testBasicSearchWithFakePathWS() throws Exception
+   {
+      testBasicSearch(getFakePathWS());
+   }
 
+   // String body =
+   // "<D:searchrequest xmlns:D='DAV:'>" +
+   // "<D:xpath>" +
+   // "element(*, nt:resource)[jcr:contains(jcr:data, '*F*')]" +
+   // "</D:xpath>" +
+   // "</D:searchrequest>";
+   private void testBasicSearch(String pathWs) throws Exception
+   {
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
       TestUtils.addContent(session, fileName, inputStream, defaultFileNodeType, MediaType.TEXT_PLAIN);
-      ContainerResponse response = service(WebDAVMethods.SEARCH, getPathWS(), "", null, basicSql.getBytes());
+      ContainerResponse response = service(WebDAVMethods.SEARCH, pathWs, "", null, basicSql.getBytes());
       assertEquals(HTTPStatus.MULTISTATUS, response.getStatus());
       SearchResultResponseEntity entity = (SearchResultResponseEntity)response.getEntity();
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();

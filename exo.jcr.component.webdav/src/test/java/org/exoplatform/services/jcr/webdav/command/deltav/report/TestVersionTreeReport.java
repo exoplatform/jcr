@@ -52,7 +52,16 @@ public class TestVersionTreeReport extends BaseStandaloneTest
 
    public void testVersionTreeReport() throws Exception
    {
+      testVersionTreeReport(getPathWS());
+   }
 
+   public void testVersionTreeReportWithFakePathWS() throws Exception
+   {
+      testVersionTreeReport(getFakePathWS());
+   }
+
+   private void testVersionTreeReport(String pathWs) throws Exception
+   {
       String path = TestUtils.getFileName();
       String content = TestUtils.getFileContent();
       Node node =
@@ -83,7 +92,7 @@ public class TestVersionTreeReport extends BaseStandaloneTest
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.DEPTH, "1");
 
-      ContainerResponse response = service(WebDAVMethods.REPORT, getPathWS() + path, "", headers, xml.getBytes());
+      ContainerResponse response = service(WebDAVMethods.REPORT, pathWs + path, "", headers, xml.getBytes());
 
       assertEquals(HTTPStatus.MULTISTATUS, response.getStatus());
 

@@ -42,11 +42,21 @@ public class TestDelete extends BaseStandaloneTest
 
    public void testDeleteForNonCollection() throws Exception
    {
+      testDeleteForNonCollection(getPathWS());
+   }
+
+   public void testDeleteForNonCollectionWithFakePathWS() throws Exception
+   {
+      testDeleteForNonCollection(getFakePathWS());
+   }
+
+   private void testDeleteForNonCollection(String pathWs) throws Exception
+   {
       String path = TestUtils.getFileName();
       String fileContent = TestUtils.getFileContent();
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
       TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
-      ContainerResponse response = service(WebDAVMethods.DELETE, getPathWS() + path, "", null, null);
+      ContainerResponse response = service(WebDAVMethods.DELETE, pathWs + path, "", null, null);
       assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
       assertFalse(session.getRootNode().hasNode(TextUtil.relativizePath(path)));
    }

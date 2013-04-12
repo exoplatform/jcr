@@ -40,13 +40,22 @@ public class TestVersionControl extends BaseStandaloneTest
 
    public void testVersionControl() throws Exception
    {
+      testVersionControl(getPathWS());
+   }
 
+   public void testVersionControlWithFakePathWS() throws Exception
+   {
+      testVersionControl(getFakePathWS());
+   }
+
+   private void testVersionControl(String pathWs) throws Exception
+   {
       String path = TestUtils.getFileName();
       Node node =
          TestUtils.addContent(session, path, new ByteArrayInputStream(TestUtils.getFileContent().getBytes()),
             defaultFileNodeType, MediaType.TEXT_PLAIN);
       assertEquals(false, node.isNodeType("mix:versionable"));
-      ContainerResponse response = service("VERSION-CONTROL", getPathWS() + path, "", null, null);
+      ContainerResponse response = service("VERSION-CONTROL", pathWs + path, "", null, null);
       assertEquals(HTTPStatus.OK, response.getStatus());
       Node verNode = session.getRootNode().getNode(TextUtil.relativizePath(path));
       assertEquals(true, verNode.isNodeType("mix:versionable"));

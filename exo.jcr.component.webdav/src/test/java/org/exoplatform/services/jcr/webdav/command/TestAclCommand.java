@@ -74,8 +74,27 @@ public class TestAclCommand extends BaseStandaloneTest
     */
    public void testSetACLForTwoUsersOnNonPrivilegeableResource() throws Exception
    {
-      
+      testSetACLForTwoUsersOnNonPrivilegeableResource(getPathWS());
+   }
 
+   /**
+    * Same test as the previous one but with a path of the workspace containing
+    * an incorrect repository name. The behavior should not change as we ignore it and use
+    * the current repository.
+    */
+   public void testSetACLForTwoUsersOnNonPrivilegeableResourceWithFakePathWS() throws Exception
+   {
+      testSetACLForTwoUsersOnNonPrivilegeableResource(getFakePathWS());
+   }
+
+   /**
+    * Here we check for correct addition of privileges to users,
+    * besides, we check for correct addition of mix:pribilegeable.
+    * @param pathWs path of the workspace 
+    * @throws Exception
+    */
+   private void testSetACLForTwoUsersOnNonPrivilegeableResource(String pathWs) throws Exception
+   {
       NodeImpl testNode = (NodeImpl)root.addNode(TEST_NODE_NAME, "nt:folder");
       session.save();
 
@@ -108,7 +127,7 @@ public class TestAclCommand extends BaseStandaloneTest
             + "</D:ace>" + "</D:acl>";
 
       ContainerResponse response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, pathWs + testNode.getPath(), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.OK, response.getStatus());
