@@ -213,7 +213,7 @@ public class TestExcerpt extends BaseUsecasesTest
 
       QueryManager queryManager = testSession.getWorkspace().getQueryManager();
       Query query =
-         queryManager.createQuery("select  excerpt(.) from exo:article where contains(., 'excerpt') ORDER BY exo:title", Query.SQL);
+      queryManager.createQuery("select  excerpt(.) from exo:article where contains(exo:title, 'excerpt') or contains(exo:text, 'excerpt') or contains(exo:summary, 'excerpt') ORDER BY exo:title", Query.SQL);
       QueryResult result = query.execute();
       RowIterator rows = result.getRows();
       for (RowIterator it = rows; it.hasNext(); )
@@ -223,6 +223,28 @@ public class TestExcerpt extends BaseUsecasesTest
          assertEquals(string4_excerpt, excerpt.getString());
       }
       node5.remove();
+      testSession.save();
+   }
+   public void testExcerptWithManyProperties1() throws Exception
+   {
+      Node node6 = testRoot.addNode("Node6", "exo:article");
+      node6.setProperty("exo:title", "");
+      node6.setProperty("exo:text", s1);
+      node6.setProperty("exo:summary", s2);
+      testSession.save();
+
+      QueryManager queryManager = testSession.getWorkspace().getQueryManager();
+      Query query =
+      queryManager.createQuery("select  excerpt(.) from exo:article where contains(exo:title, 'excerpt') or contains(exo:text, 'excerpt') or contains(exo:summary, 'excerpt') ORDER BY exo:title", Query.SQL);
+      QueryResult result = query.execute();
+      RowIterator rows = result.getRows();
+      for (RowIterator it = rows; it.hasNext(); )
+      {
+         Row r = it.nextRow();
+         Value excerpt = r.getValue("rep:excerpt( exo:text | exo:summary | exo:title )");
+         assertEquals(string4_excerpt, excerpt.getString());
+      }
+      node6.remove();
       testSession.save();
    }
 }

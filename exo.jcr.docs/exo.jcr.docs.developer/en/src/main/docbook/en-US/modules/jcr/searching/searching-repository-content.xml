@@ -219,7 +219,7 @@ for (RowIterator it = result.getRows(); it.hasNext(); ) {
       <para>It is also possible to get an excerpt of all the properties at the same time. See the example below:</para>
       <programlisting language="java">
          QueryManager qm = session.getWorkspace().getQueryManager();
-         Query q = qm.createQuery("select excerpt(.) from nt:resource where contains(., 'exoplatform')", Query.SQL);
+         queryManager.createQuery("select  excerpt(.) from exo:article where contains(exo:title, 'excerpt') or contains(exo:text, 'excerpt') or contains(exo:summary, 'excerpt') ORDER BY exo:title", Query.SQL);
          QueryResult result = q.execute();
          for (RowIterator it = result.getRows(); it.hasNext(); )
          {
@@ -227,6 +227,12 @@ for (RowIterator it = result.getRows(); it.hasNext(); ) {
             Value excerpt = r.getValue("rep:excerpt(exo:text|exo:summary|exo:title)");
          }
       </programlisting>
+      <note>
+        <para>The maximum number of fragments to create, can be changed thanks to the System property exo.jcr.component.core.AbstractExcerpt.maxFragments.
+         The default value of this parameter is 3.</para>
+	      <para>The maximum number of characters in a fragment, can be changed thanks to the System property exo.jcr.component.core.AbstractExcerpt.maxFragmentSize.
+         The default value of this parameter is 150 characters.</para>
+      </note>
     </section>
   </section>
 
