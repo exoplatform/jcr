@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -128,6 +129,61 @@ class RowIteratorImpl implements RowIterator
     * A value factory for the session that executes the query.
     */
    private final ValueFactory valueFactory;
+
+   /**
+    *  Name of maximum fragments property parameter in configuration.
+    */
+   private static final String MAX_FRAGMENTS = "exo.jcr.component.core.AbstractExcerpt.maxFragments";
+
+   /**
+    * The maximum number of fragments to create.
+    */
+   private static final int maxFragments;
+
+   /**
+    *  Name of maximum fragment size property parameter in configuration.
+    */
+   private static final String MAX_FRAGMENT_SIZE = "exo.jcr.component.core.AbstractExcerpt.maxFragmentSize";
+
+   /**
+    * The maximum number of characters in a fragment.
+    */
+   private static final int maxFragmentSize;
+
+   static
+   {
+      String max = PropertyManager.getProperty(MAX_FRAGMENTS);
+      String size = PropertyManager.getProperty(MAX_FRAGMENT_SIZE);
+      int maxValue = 3;
+      int sizeValue = 150;
+      if (max != null)
+      {
+         try
+         {
+            maxValue = Integer.valueOf(max);
+         }
+         catch (NumberFormatException e)
+         {
+            log.warn("The value of the property '" + MAX_FRAGMENTS
+               + "' must be an integer, the default value will be used.");
+         }
+      }
+      maxFragments = maxValue;
+
+      if (size != null)
+      {
+         try
+         {
+            sizeValue = Integer.valueOf(size);
+         }
+         catch (NumberFormatException e)
+         {
+            log.warn("The value of the property '" + MAX_FRAGMENT_SIZE
+               + "' must be an integer, the default value will be used.");
+         }
+      }
+      maxFragmentSize = sizeValue;
+   }
 
    /**
     * Creates a new <code>RowIteratorImpl</code> that iterates over the result
@@ -748,6 +804,30 @@ class RowIteratorImpl implements RowIterator
          }
          String pathStr = excerptCall.substring(idx + EXCERPT_FUNC_LPAR.length(), end).trim();
          String decodedPath = ISO9075.decode(pathStr);
+         if (decodedPath.indexOf('|') != -1)
+         {
+            try
+            {
+               Property p;
+               StringBuffer sb = new StringBuffer();
+               String[] properties = decodedPath.split("\\|");
+               for (int i = 0; i < properties.length; i++)
+               {
+                  p = getNode().getProperty(properties[i].trim());
+                  if (i > 0)
+                  {
+                     sb.append(" ");
+                  }
+                  sb.append(p.getValue().getString());
+               }
+               return highlight(sb.toString(), maxFragments, maxFragmentSize);
+            }
+            catch (RepositoryException e)
+            {
+               return null;
+            }
+         }
+
          try
          {
             NodeImpl n = (NodeImpl)getNodeImpl().getNode(decodedPath);
@@ -759,7 +839,7 @@ class RowIteratorImpl implements RowIterator
             try
             {
                Property p = getNode().getProperty(decodedPath);
-               return highlight(p.getValue().getString());
+               return highlight(p.getValue().getString(), maxFragments, maxFragmentSize);
             }
             catch (PathNotFoundException e1)
             {
@@ -788,7 +868,7 @@ class RowIteratorImpl implements RowIterator
             {
                time = System.currentTimeMillis();
             }
-            String excerpt = excerptProvider.getExcerpt(id, 3, 150);
+            String excerpt = excerptProvider.getExcerpt(id, maxFragments, maxFragmentSize);
             
             if (log.isDebugEnabled())
             {
@@ -815,7 +895,7 @@ class RowIteratorImpl implements RowIterator
        * 
        * @return a StringValue or <code>null</code> if highlighting fails.
        */
-      private Value highlight(String text)
+      private Value highlight(String text,int maxFragments, int maxFragmentSize)
       {
          if (!(excerptProvider instanceof HighlightingExcerptProvider))
          {
@@ -829,7 +909,7 @@ class RowIteratorImpl implements RowIterator
             {
                time = System.currentTimeMillis();
             }
-            text = hep.highlight(text);
+            text = hep.highlight(text,maxFragments,maxFragmentSize);
             if (log.isDebugEnabled())
             {
                time = System.currentTimeMillis() - time;

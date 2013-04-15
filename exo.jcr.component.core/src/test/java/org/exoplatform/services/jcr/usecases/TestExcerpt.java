@@ -65,6 +65,11 @@ public class TestExcerpt extends BaseUsecasesTest
    
    private String string3_excerpt= "<div><span></span></div>";
 
+   private String string4_excerpt="<div><span>... parameter for this setting is:This is the test for <strong>Excerpt</strong> query"
+                                     +" It is a test for <strong>excerpt</strong> query.Searching with synonyms is integrated in"
+                                     +" the ...</span><span>Additionally there is a parameter that controls the format of the"
+                                     +" <strong>excerpt</strong> created. In JCR 1.9 the default is set ...</span></div>" ;
+
    private Session testSession;
 
    private Node testRoot;
@@ -185,7 +190,7 @@ public class TestExcerpt extends BaseUsecasesTest
         QueryManager queryManager = testSession.getWorkspace().getQueryManager();
         Query query =
                 queryManager.createQuery("select  excerpt(.) from exo:article where "
-                         + "contains(., 'excerpt') ORDER BY exo:title", Query.SQL);
+                   + "contains(., 'excerpt') ORDER BY exo:title", Query.SQL);
         QueryResult result = query.execute();
         RowIterator rows = result.getRows();
         for (RowIterator it = rows; it.hasNext();)
@@ -197,4 +202,49 @@ public class TestExcerpt extends BaseUsecasesTest
         node4.remove();
         testSession.save();
     }
+
+   public void testExcerptWithManyProperties() throws Exception
+   {
+      Node node5 = testRoot.addNode("Node5", "exo:article");
+      node5.setProperty("exo:title", "");
+      node5.setProperty("exo:text", s1);
+      node5.setProperty("exo:summary", s2);
+      testSession.save();
+
+      QueryManager queryManager = testSession.getWorkspace().getQueryManager();
+      Query query =
+      queryManager.createQuery("select  excerpt(.) from exo:article where contains(exo:title, 'excerpt') or contains(exo:text, 'excerpt') or contains(exo:summary, 'excerpt') ORDER BY exo:title", Query.SQL);
+      QueryResult result = query.execute();
+      RowIterator rows = result.getRows();
+      for (RowIterator it = rows; it.hasNext(); )
+      {
+         Row r = it.nextRow();
+         Value excerpt = r.getValue("rep:excerpt(exo:text|exo:summary|exo:title)");
+         assertEquals(string4_excerpt, excerpt.getString());
+      }
+      node5.remove();
+      testSession.save();
+   }
+   public void testExcerptWithManyProperties1() throws Exception
+   {
+      Node node6 = testRoot.addNode("Node6", "exo:article");
+      node6.setProperty("exo:title", "");
+      node6.setProperty("exo:text", s1);
+      node6.setProperty("exo:summary", s2);
+      testSession.save();
+
+      QueryManager queryManager = testSession.getWorkspace().getQueryManager();
+      Query query =
+      queryManager.createQuery("select  excerpt(.) from exo:article where contains(exo:title, 'excerpt') or contains(exo:text, 'excerpt') or contains(exo:summary, 'excerpt') ORDER BY exo:title", Query.SQL);
+      QueryResult result = query.execute();
+      RowIterator rows = result.getRows();
+      for (RowIterator it = rows; it.hasNext(); )
+      {
+         Row r = it.nextRow();
+         Value excerpt = r.getValue("rep:excerpt( exo:text | exo:summary | exo:title )");
+         assertEquals(string4_excerpt, excerpt.getString());
+      }
+      node6.remove();
+      testSession.save();
+   }
 }

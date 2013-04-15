@@ -148,10 +148,10 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
    /**
     * {@inheritDoc}
     */
-   public String highlight(String text) throws IOException
+   public String highlight(String text, int maxFragments, int maxFragmentSize) throws IOException
    {
       checkRewritten(null);
-      return createExcerpt(createTermPositionVector(text), text, 1, (text.length() + 1) * 2);
+      return createExcerpt(createTermPositionVector(text), text, maxFragments, maxFragmentSize);
    }
 
    /**

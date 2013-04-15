@@ -30,8 +30,10 @@ public interface HighlightingExcerptProvider extends ExcerptProvider {
      *
      * @param text the input text.
      * @return the highlighted text.
+     * @param maxFragments  the maximum number of fragments to create.
+     * @param maxFragmentSize  the maximum number of characters in a fragment.
      * @throws IOException if an error occurs while highlighting the text.
      */
-    String highlight(String text) throws IOException;
+    String highlight(String text,int maxFragments, int maxFragmentSize) throws IOException;
 
 }
