@@ -1,0 +1,63 @@
+Summary
+	* Issue title:  Impossibility to delete a node without Version History
+	* Product Jira Issue: JCR-2086.
+	* Complexity: N/A
+
+Proposal
+ 
+Problem description
+
+What is the problem to fix?
+	* While trying to delete the content of a site, we can get several type of exception such as NPE or "Version history is not found. UUID: 9696dba0c0a803020165c955703dbf31. Context item (ancestor to save)"
+
+Fix description
+
+Problem analysis
+	* The user upload the site content without the history so when he tries to delete it the JCR detects that we try to remove a node mix:versionable that doesn't have any history in the system workspace
+
+How is the problem fixed?
+	* We made the code more flexible to prevent NPE on places where NPE could be raised and we now only log a message at debug level instead of throwing an exception when the JCR detects a missing history 
+
+Tests to perform
+
+Reproduction test
+	* Import a node which was exported without version history
+        * Verify that we can delete this node via Crash, Webdav 
+
+Tests performed at DevLevel
+        * The test case TestImportVersionedChild has been modified to make sure that the JCR doesn't throw any RepositoryException in case of a missing history	
+Tests performed at Support Level
+	* Upload the site and make sure that we can remove it using CraSH or webdav
+
+Tests performed at QA
+	*
+
+Changes in Test Referential
+
+Changes in SNIFF/FUNC/REG tests
+	* 
+
+Changes in Selenium scripts 
+	* 
+
+Documentation changes
+
+Documentation (User/Admin/Dev/Ref) changes:
+	* No
+
+Configuration changes
+
+Configuration changes:
+	* No
+
+Will previous configuration continue to work?
+	* Yes
+
+Risks and impacts
+
+Can this bug fix have any side effects on current client projects?
+	* Any change in API (name, signature, annotation of a class/method)? 
+	* Data (template, node type) migration/upgrade:  No
+
+Is there a performance risk/cost?
+	* No
