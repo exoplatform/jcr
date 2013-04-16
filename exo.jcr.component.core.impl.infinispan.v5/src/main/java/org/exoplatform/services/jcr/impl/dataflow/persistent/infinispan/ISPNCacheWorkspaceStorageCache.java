@@ -81,6 +81,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -1786,8 +1787,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       }
    }
 
-   private static void updateTreePath(Cache<CacheKey, Object> cache, String ownerId, ItemData data, QPath prevRootPath,
-      QPath newRootPath, boolean isBufferedISPNCache)
+   private static void updateTreePath(Map<CacheKey, Object> cache, String ownerId, ItemData data, QPath prevRootPath,
+      QPath newRootPath)
    {
       if (data == null)
       {
@@ -1834,11 +1835,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                   prevNode.getMixinTypeNames(), prevNode.getACL());
 
             // update this node
-            if (isBufferedISPNCache)
-            {
-               ((BufferedISPNCache)cache).put(new CacheId(ownerId, newNode.getIdentifier()), newNode, false, true);
-               return;
-            }
             cache.put(new CacheId(ownerId, newNode.getIdentifier()), newNode);
          }
          else
@@ -1852,11 +1848,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                   new SimplePersistedSize(((PersistedPropertyData)prevProp).getPersistedSize()));
 
             // update this property
-            if (isBufferedISPNCache)
-            {
-               ((BufferedISPNCache)cache).put(new CacheId(ownerId, newProp.getIdentifier()), newProp, false, true);
-               return;
-            }
             cache.put(new CacheId(ownerId, newProp.getIdentifier()), newProp);
          }
       }
@@ -1988,13 +1979,14 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
        */
       protected void updateTreePath(QPath prevRootPath, QPath newRootPath)
       {
+         BufferedISPNCacheWrapper wrapper = new BufferedISPNCacheWrapper(cache);
          Map<CacheKey, Object> changes = cache.getLastChanges();
          for (CacheKey key : changes.keySet())
          {
             if (key instanceof CacheId)
             {
                ItemData data = (ItemData)changes.get(key);
-               ISPNCacheWorkspaceStorageCache.updateTreePath(cache, getOwnerId(), data, prevRootPath, newRootPath, true);
+               ISPNCacheWorkspaceStorageCache.updateTreePath(wrapper, getOwnerId(), data, prevRootPath, newRootPath);
             }
          }
          // check all ITEMS in cache 
@@ -2003,7 +1995,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             if (key instanceof CacheId && !changes.containsKey(key))
             {
                ItemData data = (ItemData)cache.get(key);
-               ISPNCacheWorkspaceStorageCache.updateTreePath(cache, getOwnerId(), data, prevRootPath, newRootPath, true);
+               ISPNCacheWorkspaceStorageCache.updateTreePath(wrapper, getOwnerId(), data, prevRootPath, newRootPath);
             }
          }
       }
@@ -2340,7 +2332,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          }
          Cache<CacheKey, Object> cache = dcm.getCache(CACHE_NAME);
          ISPNCacheWorkspaceStorageCache.updateTreePath(cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP),
-            ownerId, (ItemData)value, prevRootPath, newRootPath, false);
+            ownerId, (ItemData)value, prevRootPath, newRootPath);
       }
    }
 
@@ -2506,6 +2498,112 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             // is called
             add(Integer.toString(i));
          }
+      }
+   }
+
+   private static class BufferedISPNCacheWrapper implements Map<CacheKey, Object>
+   {
+      private final BufferedISPNCache delegate;
+      
+      public BufferedISPNCacheWrapper(BufferedISPNCache delegate)
+      {
+         this.delegate = delegate;
+      }
+
+      /**
+       * @see java.util.Map#size()
+       */
+      public int size()
+      {
+         return delegate.size();
+      }
+
+      /**
+       * @see java.util.Map#isEmpty()
+       */
+      public boolean isEmpty()
+      {
+         return delegate.isEmpty();
+      }
+
+      /**
+       * @see java.util.Map#containsKey(java.lang.Object)
+       */
+      public boolean containsKey(Object key)
+      {
+         return delegate.containsKey(key);
+      }
+
+      /**
+       * @see java.util.Map#containsValue(java.lang.Object)
+       */
+      public boolean containsValue(Object value)
+      {
+         return delegate.containsValue(value);
+      }
+
+      /**
+       * @see java.util.Map#get(java.lang.Object)
+       */
+      public Object get(Object key)
+      {
+         return delegate.get(key);
+      }
+
+      /**
+       * @see java.util.Map#put(java.lang.Object, java.lang.Object)
+       */
+      public Object put(CacheKey key, Object value)
+      {
+         return delegate.put(key, value, false, true);
+      }
+
+      /**
+       * @see java.util.Map#remove(java.lang.Object)
+       */
+      public Object remove(Object key)
+      {
+         return delegate.remove(key);
+      }
+
+      /**
+       * @see java.util.Map#putAll(java.util.Map)
+       */
+      public void putAll(Map<? extends CacheKey, ? extends Object> m)
+      {
+         delegate.putAll(m);
+      }
+
+      /**
+       * @see java.util.Map#clear()
+       */
+      public void clear()
+      {
+         delegate.clear();
+      }
+
+      /**
+       * @see java.util.Map#keySet()
+       */
+      public Set<CacheKey> keySet()
+      {
+         return delegate.keySet();
+      }
+
+      /**
+       * @see java.util.Map#values()
+       */
+      public Collection<Object> values()
+      {
+         return delegate.values();
+      }
+
+      /**
+       * @see java.util.Map#entrySet()
+       */
+      public Set<Entry<CacheKey, Object>> entrySet()
+      {
+         return delegate.entrySet();
       }
    }
 }
