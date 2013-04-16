@@ -1815,9 +1815,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
 
       JCRPath sourcePath = locationFactory.createJCRPath(getLocation(), srcName);
-      JCRPath destenationPath = destName != null ? locationFactory.createJCRPath(getLocation(), destName) : null;
+      JCRPath destinationPath = destName != null ? locationFactory.createJCRPath(getLocation(), destName) : null;
       QPath srcPath = sourcePath.getInternalPath();
-      QPath destPath = destenationPath != null ? destenationPath.getInternalPath() : null;
+      QPath destPath = destinationPath != null ? destinationPath.getInternalPath() : null;
 
       doOrderBefore(srcPath, destPath);
    }

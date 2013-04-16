@@ -910,8 +910,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          ItemState lastDelete = null;
 
          cache.beginTransaction();
-         for (ItemState state : itemStates.getAllStates())
+         List<ItemState> states = itemStates.getAllStates();
+         for (int i = 0, length = states.size(); i < length; i++)
          {
+            ItemState state = states.get(i);
             if (state.isAdded())
             {
                if (state.isPersisted())
@@ -925,7 +927,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                {
                   // There was a problem with removing a list of samename siblings in on transaction,
                   // so putItemInBufferedCache(..) and updateInBufferedCache(..) used instead put(..) and update (..) methods.
-                  ItemData prevItem = putItemInBufferedCache(state.getData());
+                  ItemData prevItem = putItemInBufferedCache(state.getData(), lastDelete);
 
                   if (prevItem != null && state.isNode())
                   {
@@ -947,7 +949,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
             else if (state.isPathChanged())
             {
-               updateTreePath(state.getOldPath(), state.getData().getQPath(), null);
+               updateTreePath(state.getOldPath(), state.getData().getQPath());
             }
             else if (state.isMixinChanged())
             {
@@ -1039,7 +1041,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          }
 
          pages.put(fromOrderNum, set);
-         cache.put(fqn, ITEM_LIST, pages);
+         cache.putOnly(fqn, ITEM_LIST, pages);
       }
       finally
       {
@@ -1584,11 +1586,11 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       }
    }
 
-   protected ItemData putItemInBufferedCache(ItemData item)
+   protected ItemData putItemInBufferedCache(ItemData item, ItemState lastDelete)
    {
       if (item.isNode())
       {
-         return putNodeInBufferedCache((NodeData)item, ModifyChildOption.MODIFY);
+         return putNodeInBufferedCache((NodeData)item, ModifyChildOption.MODIFY, lastDelete);
       }
       else
       {
@@ -1612,7 +1614,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          cache.put(
             makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
                .getEntries().length - 1]), ITEM_ID, node.getIdentifier(),
-            modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+            modifyListsOfChild == ModifyChildOption.NOT_MODIFY, true);
 
          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
          {
@@ -1627,7 +1629,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
       // add in ITEMS
       return (ItemData) cache.put(makeItemFqn(node.getIdentifier()), ITEM_DATA, node,
-               modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+               modifyListsOfChild == ModifyChildOption.NOT_MODIFY, false);
    }
 
    /**
@@ -1678,13 +1680,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
    }
 
-   protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild)
+   protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild, ItemState lastDelete)
    {
       // if not a root node
       if (node.getParentIdentifier() != null)
       {
          // add in CHILD_NODES
-         cache.put(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
+         cache.putOnly(makeChildFqn(childNodes, node.getParentIdentifier(), node.getQPath().getEntries()[node.getQPath()
             .getEntries().length - 1]), ITEM_ID, node.getIdentifier());
 
          if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
@@ -1694,8 +1696,12 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          }
       }
       // add in ITEMS
+      boolean skipApplyToBuffer =
+               lastDelete != null && lastDelete.isPersisted()
+                  && !lastDelete.getData().getIdentifier().equals(node.getIdentifier())
+                  && lastDelete.getData().getQPath().equals(node.getQPath());
       // NullNodeData must never be returned inside internal cache operations. 
-      ItemData returnedData = (ItemData)cache.putInBuffer(makeItemFqn(node.getIdentifier()), ITEM_DATA, node);
+      ItemData returnedData = (ItemData)cache.putInBuffer(makeItemFqn(node.getIdentifier()), ITEM_DATA, node, skipApplyToBuffer);
       return (returnedData instanceof NullItemData) ? null : returnedData;
    }
 
@@ -1709,7 +1715,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    {
       // add in CHILD_PROPS
       cache.put(makeChildFqn(childProps, prop.getParentIdentifier(), prop.getQPath().getEntries()[prop.getQPath()
-         .getEntries().length - 1]), ITEM_ID, prop.getIdentifier(), modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+         .getEntries().length - 1]), ITEM_ID, prop.getIdentifier(), modifyListsOfChild == ModifyChildOption.NOT_MODIFY, true);
 
       if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
       {
@@ -1755,7 +1761,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       // NullItemData must never be returned inside internal cache operations. 
       ItemData returnedData =
                (ItemData) cache.put(makeItemFqn(prop.getIdentifier()), ITEM_DATA, prop,
-                        modifyListsOfChild == ModifyChildOption.NOT_MODIFY);
+                        modifyListsOfChild == ModifyChildOption.NOT_MODIFY, false);
       return (returnedData instanceof NullItemData) ? null : (PropertyData) returnedData;
    }
 
@@ -1877,7 +1883,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       if (nodeIndex != prevNodeIndex)
       {
          // its a samename reordering
-         updateTreePath(prevNode.getQPath(), node.getQPath(), null); // don't change ACL, it's same parent
+         updateTreePath(prevNode.getQPath(), node.getQPath()); // don't change ACL, it's same parent
       }
    }
 
@@ -1901,7 +1907,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          else
          {
             // update item data with new name only
-            cache.put(makeItemFqn(data.getIdentifier()), ITEM_DATA, data);
+            cache.putOnly(makeItemFqn(data.getIdentifier()), ITEM_DATA, data);
          }
       }
       else
@@ -1917,7 +1923,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                      ((PersistedPropertyData)prevData).getPersistedSize()));
 
             // update item data with new name and old values only
-            cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
+            cache.putOnly(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
          }
          else
          {
@@ -1934,10 +1940,18 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
     * @param newRootPath
     * @param acl
     */
-   protected void updateTreePath(final QPath prevRootPath, final QPath newRootPath, final AccessControlList acl)
+   protected void updateTreePath(QPath prevRootPath, QPath newRootPath)
    {
-      boolean inheritACL = acl != null;
-
+      Map<Fqn, Map<Serializable, Object>> changes = cache.getLastChanges();
+      for (Fqn fqn : changes.keySet())
+      {
+         if (!fqn.isChildOf(itemsRoot))
+            continue;
+         ItemData data = (ItemData)changes.get(fqn).get(ITEM_DATA);
+         if (data == null)
+            continue;
+         updateTreePath(prevRootPath, newRootPath, data);
+      }
       // check all ITEMS in cache 
       Node<Serializable, Object> items = cache.getNode(itemsRoot);
       Set<Object> childrenNames = items.getChildrenNames();
@@ -1946,71 +1960,68 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       while (namesIt.hasNext())
       {
          String id = (String)namesIt.next();
-         ItemData data = (ItemData)cache.get(makeItemFqn(id), ITEM_DATA);
-         if (data == null)
-         {
+         Fqn fqn = makeItemFqn(id);
+         if (changes.containsKey(fqn))
             continue;
-         }
-         // check is this descendant of prevRootPath
-         QPath nodeQPath = data.getQPath();
-         if (nodeQPath != null && nodeQPath.isDescendantOf(prevRootPath))
+         ItemData data = (ItemData)cache.get(fqn, ITEM_DATA);
+         if (data == null)
+            continue;
+         updateTreePath(prevRootPath, newRootPath, data);
+      }
+   }
+
+   private void updateTreePath(QPath prevRootPath, QPath newRootPath, ItemData data)
+   {
+      // check is this descendant of prevRootPath
+      QPath nodeQPath = data.getQPath();
+      if (nodeQPath != null && nodeQPath.isDescendantOf(prevRootPath))
+      {
+         //make relative path
+         QPathEntry[] relativePath = null;
+         try
          {
-            //make relative path
-            QPathEntry[] relativePath = null;
-            try
+            relativePath = nodeQPath.getRelPath(nodeQPath.getDepth() - prevRootPath.getDepth());
+         }
+         catch (IllegalPathException e)
+         {
+            if (LOG.isTraceEnabled())
             {
-               relativePath = nodeQPath.getRelPath(nodeQPath.getDepth() - prevRootPath.getDepth());
+               LOG.trace("An exception occurred: " + e.getMessage());
             }
-            catch (IllegalPathException e)
-            {
-               if (LOG.isTraceEnabled())
-               {
-                  LOG.trace("An exception occurred: " + e.getMessage());
-               }
-            }
+         }
 
-            if (relativePath == null)
-            {
-               LOG.error("Could not get the relative path of the node " + nodeQPath + " with "
-                  + (nodeQPath.getDepth() - prevRootPath.getDepth()) + " as relative degree");
-               continue;
-            }
-            // make new path - no matter  node or property
-            QPath newPath = QPath.makeChildPath(newRootPath, relativePath);
+         if (relativePath == null)
+         {
+            LOG.error("Could not get the relative path of the node " + nodeQPath + " with "
+               + (nodeQPath.getDepth() - prevRootPath.getDepth()) + " as relative degree");
+            return;
+         }
+         // make new path - no matter  node or property
+         QPath newPath = QPath.makeChildPath(newRootPath, relativePath);
 
-            if (data.isNode())
-            {
-               // update node
+         if (data.isNode())
+         {
+            // update node
 
-               NodeData prevNode = (NodeData)data;
+            NodeData prevNode = (NodeData)data;
 
-               NodeData newNode =
-                  new PersistedNodeData(prevNode.getIdentifier(), newPath, prevNode.getParentIdentifier(),
-                     prevNode.getPersistedVersion(), prevNode.getOrderNumber(), prevNode.getPrimaryTypeName(),
-                     prevNode.getMixinTypeNames(), inheritACL ? acl : prevNode.getACL());
-               // update this node
-               cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
-            }
-            else
-            {
-               //update property
+            NodeData newNode =
+               new PersistedNodeData(prevNode.getIdentifier(), newPath, prevNode.getParentIdentifier(),
+                  prevNode.getPersistedVersion(), prevNode.getOrderNumber(), prevNode.getPrimaryTypeName(),
+                  prevNode.getMixinTypeNames(), prevNode.getACL());
+            // update this node
+            cache.putOnly(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode, true);
+         }
+         else
+         {
+            //update property
 
-               PropertyData prevProp = (PropertyData)data;
-
-               if (inheritACL
-                  && (prevProp.getQPath().getName().equals(Constants.EXO_PERMISSIONS) || prevProp.getQPath().getName()
-                     .equals(Constants.EXO_OWNER)))
-               {
-                  inheritACL = false;
-               }
-
-               PropertyData newProp =
-                  new PersistedPropertyData(prevProp.getIdentifier(), newPath, prevProp.getParentIdentifier(),
-                     prevProp.getPersistedVersion(), prevProp.getType(), prevProp.isMultiValued(),
-                     prevProp.getValues(), new SimplePersistedSize(
-                        ((PersistedPropertyData)prevProp).getPersistedSize()));
-               cache.put(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp);
-            }
+            PropertyData prevProp = (PropertyData)data;
+            PropertyData newProp =
+               new PersistedPropertyData(prevProp.getIdentifier(), newPath, prevProp.getParentIdentifier(),
+                  prevProp.getPersistedVersion(), prevProp.getType(), prevProp.isMultiValued(), prevProp.getValues(), new SimplePersistedSize(
+                     ((PersistedPropertyData)prevProp).getPersistedSize()));
+            cache.putOnly(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp, true);
          }
       }
    }
@@ -2073,7 +2084,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                prevNode.getMixinTypeNames(), acl);
 
          // update this node
-         cache.put(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
+         cache.putOnly(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode);
          // update childs recursive
          updateChildsACL(newNode.getIdentifier(), acl);
       }
