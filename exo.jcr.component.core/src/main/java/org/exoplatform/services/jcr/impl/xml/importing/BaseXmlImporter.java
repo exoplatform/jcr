@@ -36,9 +36,6 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.itemfilters.PatternQPathEntry;
-import org.exoplatform.services.jcr.impl.core.itemfilters.PatternQPathEntryFilter;
-import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ItemDataRemoveVisitor;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
@@ -271,10 +268,7 @@ public abstract class BaseXmlImporter implements ContentImporter
       }
 
       newIndex += transientAddChilds.size();
-      List<NodeData> existedChilds =
-         dataConsumer.getChildNodesData(parentData, Collections
-            .<QPathEntryFilter>singletonList(new PatternQPathEntryFilter(new PatternQPathEntry(name.getNamespace(),
-               name.getName(), -1))));
+      List<NodeData> existedChilds = dataConsumer.getChildNodesData(parentData);
 
       // Calculate SNS index for dest root
       main: for (int n = 0, l = existedChilds.size(); n < l; n++)
