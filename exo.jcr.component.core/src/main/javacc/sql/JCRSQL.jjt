@@ -647,7 +647,7 @@ InternalQName Identifier() :
     t = <DELIMITED_IDENTIFIER>
       {
         try {
-          InternalQName internalQName = locationFactory.parseJCRName(t.image.substring(1, t.image.length()-1)).getInternalName();
+          InternalQName internalQName = locationFactory.parseJCRName(t.image.substring(1, t.image.length()-1).replaceAll("\"\"", "\"")).getInternalName();
           jjtThis.setName(internalQName);
         } catch (RepositoryException e) {
           throw new ParseException(e.getMessage());
