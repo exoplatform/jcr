@@ -98,7 +98,7 @@ public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
     * @param pattern
     * @return pattern with escaped underscore and fixed wildcard symbols
     */
-   protected String fixEscapeSymbols(String pattern)
+   protected String escapeSpecialChars(String pattern)
    {
       char[] chars = pattern.toCharArray();
       StringBuilder sb = new StringBuilder();
@@ -113,7 +113,7 @@ public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
             case '%' :
             case '[' :
             case ']' :
-               sb.append(getWildcardEscapeSymbold());
+               sb.append(getWildcardEscapeSymbol());
             default :
                sb.append(chars[i]);
          }
