@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.Constants;
@@ -100,7 +101,7 @@ class RowIteratorImpl implements RowIterator
    private Set propertySet;
 
    /**
-    * List of valid selector {@link Name}s.
+    * List of valid selector {@link javax.naming.Name}s.
     */
    private final List selectorNames = new ArrayList();
 
@@ -130,6 +131,112 @@ class RowIteratorImpl implements RowIterator
    private final ValueFactory valueFactory;
 
    /**
+    *The excerpt start for XML format.
+    */
+   public static final String START_XML_EXCERPT = "<excerpt>";
+
+   /**
+    *The excerpt end for XML format.
+    */
+   public static final String END_XML_EXCERPT = "</excerpt>";
+
+   /**
+    *The excerpt start for HTML format.
+    */
+   public static final String START_HTML_EXCERPT = "<div>";
+
+   /**
+    *The excerpt end for HTML format.
+    */
+   public static final String END_HTML_EXCERPT = "</div>";
+
+   /**
+    *The fragment separator for XML format.
+    */
+   public static final String XML_FRAGMENT_SEPARATOR = "<fragment></fragment>";
+
+   /**
+    *The fragment separator for HTML format.
+    */
+   public static final String HTML_FRAGMENT_SEPARATOR = "<span></span>";
+
+   /**
+    *The start tag used to prepend a words for XML format.
+    */
+   public static final String START_XML_HIGHLIGHT = "<highlight>";
+
+   /**
+    *The start tag used to prepend a words for HTML format.
+    */
+   public static final String START_HTML_HIGHLIGHT = "<strong>";
+
+   /**
+    *The end tag used to prepend a words for XML format.
+    */
+   public static final String END_XML_HIGHLIGHT = "</highlight>";
+
+   /**
+    *The end tag used to prepend a words for HTML format.
+    */
+   public static final String END_HTML_HIGHLIGHT = "</strong>";
+
+
+   /**
+    *  Name of maximum fragments property parameter in configuration.
+    */
+   private static final String MAX_FRAGMENTS = "exo.jcr.component.core.AbstractExcerpt.maxFragments";
+
+   /**
+    * The maximum number of fragments to create.
+    */
+   private static final int MAXFRAGMENTS;
+
+   /**
+    *  Name of maximum fragment size property parameter in configuration.
+    */
+   private static final String MAX_FRAGMENT_SIZE = "exo.jcr.component.core.AbstractExcerpt.maxFragmentSize";
+
+   /**
+    * The maximum number of characters in a fragment.
+    */
+   private static final int MAXFRAGMENTSIZE;
+
+   static
+   {
+      String max = PropertyManager.getProperty(MAX_FRAGMENTS);
+      String size = PropertyManager.getProperty(MAX_FRAGMENT_SIZE);
+      int maxValue = 3;
+      int sizeValue = 150;
+      if (max != null)
+      {
+         try
+         {
+            maxValue = Integer.valueOf(max);
+         }
+         catch (NumberFormatException e)
+         {
+            log.warn("The value of the property '" + MAX_FRAGMENTS
+               + "' must be an integer, the default value will be used.");
+         }
+      }
+      MAXFRAGMENTS = maxValue;
+
+      if (size != null)
+      {
+         try
+         {
+            sizeValue = Integer.valueOf(size);
+         }
+         catch (NumberFormatException e)
+         {
+            log.warn("The value of the property '" + MAX_FRAGMENT_SIZE
+               + "' must be an integer, the default value will be used.");
+         }
+      }
+      MAXFRAGMENTSIZE = sizeValue;
+   }
+
+   /**
     * Creates a new <code>RowIteratorImpl</code> that iterates over the result
     * nodes.
     * 
@@ -142,7 +249,7 @@ class RowIteratorImpl implements RowIterator
     *            the selector names.
     * @param itemMgr
     *            the item manager of the session that executes the query.
-    * @param hmgr
+    * @param itemMgr
     *            the hierarchy manager of the workspace.
     * @param resolver
     *            <code>NamespaceResolver</code> of the user
@@ -748,6 +855,61 @@ class RowIteratorImpl implements RowIterator
          }
          String pathStr = excerptCall.substring(idx + EXCERPT_FUNC_LPAR.length(), end).trim();
          String decodedPath = ISO9075.decode(pathStr);
+         if (decodedPath.indexOf('|') != -1)
+         {
+            try
+            {
+               Property p;
+               StringBuilder sb = new StringBuilder();
+               Value v = null;
+               String result;
+               String[] properties = decodedPath.split("\\|");
+               for (int i = 0; i < properties.length; i++)
+               {
+                  p = getNode().getProperty(properties[i].trim());
+                  v = highlight(p.getValue().getString(), MAXFRAGMENTS, MAXFRAGMENTSIZE);
+                  if (i == 0)
+                  {
+                     if (v.getString().startsWith(START_HTML_EXCERPT))
+                     {
+                        sb.append(START_HTML_EXCERPT);
+                     }
+                     else
+                     {
+                        sb.append(START_XML_EXCERPT);
+                     }
+                  }
+                  if (v.getString().startsWith(START_HTML_EXCERPT))
+                  {
+                     result = v.getString().substring(v.getString().indexOf(START_HTML_EXCERPT) + 5, v.getString().indexOf(END_HTML_EXCERPT));
+                  }
+                  else
+                  {
+                     result = v.getString().substring(v.getString().indexOf(START_XML_EXCERPT) + 9, v.getString().indexOf(END_XML_EXCERPT));
+                  }
+                  if ((!result.isEmpty()) && ((!XML_FRAGMENT_SEPARATOR.equals(result)) && result.indexOf(START_XML_HIGHLIGHT) != -1 && result.indexOf(START_XML_HIGHLIGHT) < result.indexOf(END_XML_HIGHLIGHT))
+                     || ((!HTML_FRAGMENT_SEPARATOR.equals(result)) && result.indexOf(START_HTML_HIGHLIGHT) != -1 && result.indexOf(START_HTML_HIGHLIGHT) < result.indexOf(END_HTML_HIGHLIGHT)))
+                  {
+                     sb.append(result);
+                  }
+
+               }
+               if (v.getString().startsWith(START_HTML_EXCERPT))
+               {
+                  sb.append(END_HTML_EXCERPT);
+               }
+               else
+               {
+                  sb.append(END_XML_EXCERPT);
+               }
+               return valueFactory.createValue(sb.toString());
+            }
+            catch (RepositoryException e)
+            {
+               return null;
+            }
+         }
+
          try
          {
             NodeImpl n = (NodeImpl)getNodeImpl().getNode(decodedPath);
@@ -759,7 +921,7 @@ class RowIteratorImpl implements RowIterator
             try
             {
                Property p = getNode().getProperty(decodedPath);
-               return highlight(p.getValue().getString());
+               return highlight(p.getValue().getString(), 1, (p.getValue().getString().length() + 1) * 2);
             }
             catch (PathNotFoundException e1)
             {
@@ -815,7 +977,7 @@ class RowIteratorImpl implements RowIterator
        * 
        * @return a StringValue or <code>null</code> if highlighting fails.
        */
-      private Value highlight(String text)
+      private Value highlight(String text,int maxFragments, int maxFragmentSize)
       {
          if (!(excerptProvider instanceof HighlightingExcerptProvider))
          {
@@ -829,7 +991,7 @@ class RowIteratorImpl implements RowIterator
             {
                time = System.currentTimeMillis();
             }
-            text = hep.highlight(text);
+            text = hep.highlight(text,maxFragments,maxFragmentSize);
             if (log.isDebugEnabled())
             {
                time = System.currentTimeMillis() - time;
