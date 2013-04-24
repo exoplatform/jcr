@@ -89,7 +89,7 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected String fixEscapeSymbols(String pattern)
+   protected String escapeSpecialChars(String pattern)
    {
       char[] chars = pattern.toCharArray();
       StringBuilder sb = new StringBuilder();
@@ -104,7 +104,7 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
             case '%' :
             case '[' : //Sybase pattern special symbol
             case ']' : //Sybase pattern special symbol
-               sb.append(getWildcardEscapeSymbold());
+               sb.append(getWildcardEscapeSymbol());
             default :
                sb.append(chars[i]);
          }

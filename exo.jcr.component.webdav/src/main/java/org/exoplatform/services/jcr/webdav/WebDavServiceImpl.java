@@ -76,7 +76,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -1394,25 +1393,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          return repoPath.substring(0, repoPath.length() - 1);
       }
 
-      String[] pathElements = repoPath.split("/");
-      StringBuffer escapedPath = new StringBuffer();
-      for (String element : pathElements)
-      {
-         try
-         {
-            if (element.contains("'"))
-            {
-               element = element.replaceAll("'", URLEncoder.encode("'", "UTF-8"));
-            }
-            escapedPath.append(element + "/");
-         }
-         catch (Exception e)
-         {
-            log.warn(e.getMessage());
-         }
-      }
-
-      return escapedPath.toString().substring(0, escapedPath.length() - 1);
+      return repoPath;
    }
 
    /**

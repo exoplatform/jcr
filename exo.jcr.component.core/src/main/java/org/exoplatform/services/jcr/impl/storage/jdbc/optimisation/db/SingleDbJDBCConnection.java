@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
@@ -71,8 +70,6 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
    protected static final String FIND_ITEM_QPATH_BY_ID_CQ_QUERY = "select I.ID, I.PARENT_ID, I.NAME, I.I_INDEX"
       + " from JCR_SITEM I, (SELECT ID, PARENT_ID from JCR_SITEM where ID=?) J"
       + " where I.ID = J.ID or I.ID = J.PARENT_ID";
-
-   protected static final String PATTERN_ESCAPE_STRING = "\\"; //valid for HSQL, Sybase, DB2, MSSQL, ORACLE
 
    /**
     * Singledatabase JDBC Connection constructor.
@@ -1019,79 +1016,6 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       updateValue.setInt(4, orderNumber);
 
       return executeUpdate(updateValue, TYPE_UPDATE_VALUE);
-   }
-
-   /**
-    * Replace underscore in pattern with escaped symbol. Replace jcr-wildcard '*' with sql-wildcard '%'.
-    * 
-    * @param pattern
-    * @return pattern with escaped underscore and fixed wildcard symbols
-    */
-   protected String fixEscapeSymbols(String pattern)
-   {
-      char[] chars = pattern.toCharArray();
-      StringBuilder sb = new StringBuilder();
-      for (int i = 0; i < chars.length; i++)
-      {
-         switch (chars[i])
-         {
-            case '*' :
-               sb.append('%');
-               break;
-            case '_' :
-            case '%' :
-               sb.append(getWildcardEscapeSymbold());
-            default :
-               sb.append(chars[i]);
-         }
-      }
-      return sb.toString();
-   }
-
-   /**
-    * Append pattern expression.
-    * Appends String "I.NAME LIKE 'escaped pattern' ESCAPE 'escapeString'" or "I.NAME='pattern'"
-    * to String builder sb.
-    * 
-    * @param sb StringBuilder
-    * @param indexConstraint 
-    * @param pattern
-    */
-   protected void appendPattern(StringBuilder sb, QPathEntry entry, boolean indexConstraint)
-   {
-      String pattern = entry.getAsString(false);
-      sb.append("(I.NAME");
-      if (pattern.contains("*"))
-      {
-         sb.append(" LIKE '");
-         sb.append(fixEscapeSymbols(pattern));
-         sb.append("' ESCAPE '");
-         sb.append(getLikeExpressionEscape());
-         sb.append("'");
-      }
-      else
-      {
-         sb.append("='");
-         sb.append(pattern);
-         sb.append("'");
-      }
-
-      if (indexConstraint && entry.getIndex() != -1)
-      {
-         sb.append(" and I.I_INDEX=");
-         sb.append(entry.getIndex());
-      }
-      sb.append(")");
-   }
-
-   protected String getWildcardEscapeSymbold()
-   {
-      return PATTERN_ESCAPE_STRING;
-   }
-
-   protected String getLikeExpressionEscape()
-   {
-      return PATTERN_ESCAPE_STRING;
    }
 
    /**
