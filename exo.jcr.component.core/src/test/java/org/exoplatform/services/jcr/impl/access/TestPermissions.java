@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.access.SystemIdentity;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
@@ -863,4 +864,362 @@ public class TestPermissions extends BaseStandaloneTest
       assertEquals(((NodeData)marysNode.getData()).getACL().getOwner(), "admin");
    }
 
+   /**
+    * Here we check that if add the mixin types exo:owneable and exo:privilegeable,
+    * the sub nodes inherits from them
+    */
+   public void testPermissionInheritance1() throws Exception
+   {
+      ExtendedNode rootEn = (ExtendedNode)sessionWS1.getRootNode();
+      Node rootNode = sessionWS1.getRootNode().addNode("testPermissionInheritance1");
+      sessionWS1.save();
+      Node subNode = rootNode.addNode("subNode");
+      sessionWS1.save();
+      subNode.addNode("subNode2");
+      sessionWS1.save();
+
+      Repository repository = repositoryService.getRepository("db2");
+      Credentials credentialsAdmin = new CredentialsImpl("admin", "admin".toCharArray());
+
+      Session s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      ExtendedNode en = (ExtendedNode)s.getItem("/testPermissionInheritance1");
+      assertEquals(rootEn.getACL().getOwner(), en.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), en.getACL().getPermissionsSize());
+      assertEquals(4, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, en.getACL().getPermissions("mary").size());
+      ExtendedNode enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals(rootEn.getACL().getOwner(), enSub.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub.getACL().getPermissionsSize());
+      assertEquals(4, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub.getACL().getPermissions("mary").size());
+      ExtendedNode enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals(rootEn.getACL().getOwner(), enSub2.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub2.getACL().getPermissionsSize());
+      assertEquals(4, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub2.getACL().getPermissions("mary").size());
+      en.addMixin("exo:owneable");
+      s.save();
+      s.logout();
+
+      s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      en = (ExtendedNode)s.getItem("/testPermissionInheritance1");
+      assertEquals("admin", en.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), en.getACL().getPermissionsSize());
+      assertEquals(4, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, en.getACL().getPermissions("mary").size());
+      enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals("admin", enSub.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub.getACL().getPermissionsSize());
+      assertEquals(4, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub.getACL().getPermissions("mary").size());
+      enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals("admin", enSub2.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub2.getACL().getPermissionsSize());
+      assertEquals(4, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub2.getACL().getPermissions("mary").size());
+      en.addMixin("exo:privilegeable");
+      en.setPermission("*:/platform/administrators", PermissionType.ALL);
+      en.setPermission("mary", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY, PermissionType.ADD_NODE});
+      en.removePermission(SystemIdentity.ANY);
+      en.save();
+      s.logout();
+
+      s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      en = (ExtendedNode)s.getItem("/testPermissionInheritance1");
+      assertEquals("admin", en.getACL().getOwner());
+      assertEquals(7, en.getACL().getPermissionsSize());
+      assertEquals(0, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(3, en.getACL().getPermissions("mary").size());
+      assertEquals(4, en.getACL().getPermissions("*:/platform/administrators").size());
+      enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals("admin", enSub.getACL().getOwner());
+      assertEquals(7, enSub.getACL().getPermissionsSize());
+      assertEquals(0, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(3, enSub.getACL().getPermissions("mary").size());
+      assertEquals(4, enSub.getACL().getPermissions("*:/platform/administrators").size());
+      enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals("admin", enSub2.getACL().getOwner());
+      assertEquals(7, enSub2.getACL().getPermissionsSize());
+      assertEquals(0, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(3, enSub2.getACL().getPermissions("mary").size());
+      assertEquals(4, enSub2.getACL().getPermissions("*:/platform/administrators").size());
+      s.logout();
+   }
+
+   /**
+    * Here we check that if add the mixin types exo:owneable and exo:privilegeable and the sub node is already 
+    * exo:owneable, only exo:privilegeable will be inherited
+    */
+   public void testPermissionInheritance2() throws Exception
+   {
+      ExtendedNode rootEn = (ExtendedNode)sessionWS1.getRootNode();
+      Node rootNode = sessionWS1.getRootNode().addNode("testPermissionInheritance2");
+      sessionWS1.save();
+      Node subNode = rootNode.addNode("subNode");
+      sessionWS1.save();
+      subNode.addNode("subNode2");
+      sessionWS1.save();
+
+      Repository repository = repositoryService.getRepository("db2");
+      Credentials credentialsAdmin = new CredentialsImpl("admin", "admin".toCharArray());
+
+      Session s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      ExtendedNode en = (ExtendedNode)s.getItem("/testPermissionInheritance2");
+      assertEquals(rootEn.getACL().getOwner(), en.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), en.getACL().getPermissionsSize());
+      assertEquals(4, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, en.getACL().getPermissions("mary").size());
+      ExtendedNode enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals(rootEn.getACL().getOwner(), enSub.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub.getACL().getPermissionsSize());
+      assertEquals(4, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub.getACL().getPermissions("mary").size());
+      ExtendedNode enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals(rootEn.getACL().getOwner(), enSub2.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub2.getACL().getPermissionsSize());
+      assertEquals(4, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub2.getACL().getPermissions("mary").size());
+      en.addMixin("exo:owneable");
+      s.save();
+      s.logout();
+      Credentials credentialsMary = new CredentialsImpl("mary", "exo".toCharArray());
+      s = (SessionImpl)repository.login(credentialsMary, "ws1");
+      en = (ExtendedNode)s.getItem("/testPermissionInheritance2/subNode");
+      en.addMixin("exo:owneable");
+      s.save();
+      s.logout();
+
+      s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      en = (ExtendedNode)s.getItem("/testPermissionInheritance2");
+      assertEquals("admin", en.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), en.getACL().getPermissionsSize());
+      assertEquals(4, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, en.getACL().getPermissions("mary").size());
+      enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals("mary", enSub.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub.getACL().getPermissionsSize());
+      assertEquals(4, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub.getACL().getPermissions("mary").size());
+      enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals("mary", enSub2.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub2.getACL().getPermissionsSize());
+      assertEquals(4, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub2.getACL().getPermissions("mary").size());
+      en.addMixin("exo:privilegeable");
+      en.setPermission("*:/platform/administrators", PermissionType.ALL);
+      en.setPermission("mary", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY, PermissionType.ADD_NODE});
+      en.removePermission(SystemIdentity.ANY);
+      en.save();
+      s.logout();
+
+      s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      en = (ExtendedNode)s.getItem("/testPermissionInheritance2");
+      assertEquals("admin", en.getACL().getOwner());
+      assertEquals(7, en.getACL().getPermissionsSize());
+      assertEquals(0, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(3, en.getACL().getPermissions("mary").size());
+      assertEquals(4, en.getACL().getPermissions("*:/platform/administrators").size());
+      enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals("mary", enSub.getACL().getOwner());
+      assertEquals(7, enSub.getACL().getPermissionsSize());
+      assertEquals(0, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(3, enSub.getACL().getPermissions("mary").size());
+      assertEquals(4, enSub.getACL().getPermissions("*:/platform/administrators").size());
+      enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals("mary", enSub2.getACL().getOwner());
+      assertEquals(7, enSub2.getACL().getPermissionsSize());
+      assertEquals(0, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(3, enSub2.getACL().getPermissions("mary").size());
+      assertEquals(4, enSub2.getACL().getPermissions("*:/platform/administrators").size());
+      s.logout();
+   }
+
+   /**
+    * Here we check that if add the mixin types exo:owneable and exo:privilegeable and the sub node is already 
+    * exo:privilegeable, only exo:owneable will be inherited
+    */
+   public void testPermissionInheritance3() throws Exception
+   {
+      ExtendedNode rootEn = (ExtendedNode)sessionWS1.getRootNode();
+      Node rootNode = sessionWS1.getRootNode().addNode("testPermissionInheritance3");
+      sessionWS1.save();
+      Node subNode = rootNode.addNode("subNode");
+      sessionWS1.save();
+      subNode.addNode("subNode2");
+      sessionWS1.save();
+
+      Repository repository = repositoryService.getRepository("db2");
+      Credentials credentialsAdmin = new CredentialsImpl("admin", "admin".toCharArray());
+
+      Session s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      ExtendedNode en = (ExtendedNode)s.getItem("/testPermissionInheritance3");
+      assertEquals(rootEn.getACL().getOwner(), en.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), en.getACL().getPermissionsSize());
+      assertEquals(4, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, en.getACL().getPermissions("mary").size());
+      ExtendedNode enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals(rootEn.getACL().getOwner(), enSub.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub.getACL().getPermissionsSize());
+      assertEquals(4, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub.getACL().getPermissions("mary").size());
+      ExtendedNode enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals(rootEn.getACL().getOwner(), enSub2.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub2.getACL().getPermissionsSize());
+      assertEquals(4, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub2.getACL().getPermissions("mary").size());
+      en.addMixin("exo:owneable");
+      s.save();
+      s.logout();
+      Credentials credentialsMary = new CredentialsImpl("mary", "exo".toCharArray());
+      s = (SessionImpl)repository.login(credentialsMary, "ws1");
+      en = (ExtendedNode)s.getItem("/testPermissionInheritance3/subNode");
+      en.addMixin("exo:privilegeable");
+      en.setPermission("*:/platform/administrators", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY});
+      en.setPermission("mary", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY});
+      en.removePermission(SystemIdentity.ANY);
+      s.save();
+      s.logout();
+
+      s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      en = (ExtendedNode)s.getItem("/testPermissionInheritance3");
+      assertEquals("admin", en.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), en.getACL().getPermissionsSize());
+      assertEquals(4, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, en.getACL().getPermissions("mary").size());
+      assertEquals(0, en.getACL().getPermissions("*:/platform/administrators").size());
+      enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals("admin", enSub.getACL().getOwner());
+      assertEquals(4, enSub.getACL().getPermissionsSize());
+      assertEquals(0, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(2, enSub.getACL().getPermissions("mary").size());
+      assertEquals(2, enSub.getACL().getPermissions("*:/platform/administrators").size());
+      enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals("admin", enSub2.getACL().getOwner());
+      assertEquals(4, enSub2.getACL().getPermissionsSize());
+      assertEquals(0, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(2, enSub2.getACL().getPermissions("mary").size());
+      assertEquals(2, enSub2.getACL().getPermissions("*:/platform/administrators").size());
+      en.addMixin("exo:privilegeable");
+      en.setPermission("*:/platform/administrators", PermissionType.ALL);
+      en.setPermission("mary", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY, PermissionType.ADD_NODE});
+      en.removePermission(SystemIdentity.ANY);
+      en.save();
+      s.logout();
+
+      s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      en = (ExtendedNode)s.getItem("/testPermissionInheritance3");
+      assertEquals("admin", en.getACL().getOwner());
+      assertEquals(7, en.getACL().getPermissionsSize());
+      assertEquals(0, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(3, en.getACL().getPermissions("mary").size());
+      assertEquals(4, en.getACL().getPermissions("*:/platform/administrators").size());
+      enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals("admin", enSub.getACL().getOwner());
+      assertEquals(4, enSub.getACL().getPermissionsSize());
+      assertEquals(0, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(2, enSub.getACL().getPermissions("mary").size());
+      assertEquals(2, enSub.getACL().getPermissions("*:/platform/administrators").size());
+      enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals("admin", enSub2.getACL().getOwner());
+      assertEquals(4, enSub2.getACL().getPermissionsSize());
+      assertEquals(0, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(2, enSub2.getACL().getPermissions("mary").size());
+      assertEquals(2, enSub2.getACL().getPermissions("*:/platform/administrators").size());
+      s.logout();
+   }
+
+   /**
+    * Here we check that if add the mixin types exo:owneable and exo:privilegeable and the sub node is already 
+    * exo:owneable and exo:privilegeable, so nothing will be inherited
+    */
+   public void testPermissionInheritance4() throws Exception
+   {
+      ExtendedNode rootEn = (ExtendedNode)sessionWS1.getRootNode();
+      Node rootNode = sessionWS1.getRootNode().addNode("testPermissionInheritance4");
+      sessionWS1.save();
+      Node subNode = rootNode.addNode("subNode");
+      sessionWS1.save();
+      subNode.addNode("subNode2");
+      sessionWS1.save();
+
+      Repository repository = repositoryService.getRepository("db2");
+      Credentials credentialsAdmin = new CredentialsImpl("admin", "admin".toCharArray());
+
+      Session s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      ExtendedNode en = (ExtendedNode)s.getItem("/testPermissionInheritance4");
+      assertEquals(rootEn.getACL().getOwner(), en.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), en.getACL().getPermissionsSize());
+      assertEquals(4, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, en.getACL().getPermissions("mary").size());
+      ExtendedNode enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals(rootEn.getACL().getOwner(), enSub.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub.getACL().getPermissionsSize());
+      assertEquals(4, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub.getACL().getPermissions("mary").size());
+      ExtendedNode enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals(rootEn.getACL().getOwner(), enSub2.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), enSub2.getACL().getPermissionsSize());
+      assertEquals(4, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, enSub2.getACL().getPermissions("mary").size());
+      en.addMixin("exo:owneable");
+      s.save();
+      s.logout();
+      Credentials credentialsMary = new CredentialsImpl("mary", "exo".toCharArray());
+      s = (SessionImpl)repository.login(credentialsMary, "ws1");
+      en = (ExtendedNode)s.getItem("/testPermissionInheritance4/subNode");
+      en.addMixin("exo:owneable");
+      en.addMixin("exo:privilegeable");
+      en.setPermission("*:/platform/administrators", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY});
+      en.setPermission("mary", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY});
+      en.removePermission(SystemIdentity.ANY);
+      s.save();
+      s.logout();
+
+      s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      en = (ExtendedNode)s.getItem("/testPermissionInheritance4");
+      assertEquals("admin", en.getACL().getOwner());
+      assertEquals(rootEn.getACL().getPermissionsSize(), en.getACL().getPermissionsSize());
+      assertEquals(4, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(0, en.getACL().getPermissions("mary").size());
+      assertEquals(0, en.getACL().getPermissions("*:/platform/administrators").size());
+      enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals("mary", enSub.getACL().getOwner());
+      assertEquals(4, enSub.getACL().getPermissionsSize());
+      assertEquals(0, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(2, enSub.getACL().getPermissions("mary").size());
+      assertEquals(2, enSub.getACL().getPermissions("*:/platform/administrators").size());
+      enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals("mary", enSub2.getACL().getOwner());
+      assertEquals(4, enSub2.getACL().getPermissionsSize());
+      assertEquals(0, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(2, enSub2.getACL().getPermissions("mary").size());
+      assertEquals(2, enSub2.getACL().getPermissions("*:/platform/administrators").size());
+      en.addMixin("exo:privilegeable");
+      en.setPermission("*:/platform/administrators", PermissionType.ALL);
+      en.setPermission("mary", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY, PermissionType.ADD_NODE});
+      en.removePermission(SystemIdentity.ANY);
+      en.save();
+      s.logout();
+
+      s = (SessionImpl)repository.login(credentialsAdmin, "ws1");
+      en = (ExtendedNode)s.getItem("/testPermissionInheritance4");
+      assertEquals("admin", en.getACL().getOwner());
+      assertEquals(7, en.getACL().getPermissionsSize());
+      assertEquals(0, en.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(3, en.getACL().getPermissions("mary").size());
+      assertEquals(4, en.getACL().getPermissions("*:/platform/administrators").size());
+      enSub = (ExtendedNode)en.getNode("subNode");
+      assertEquals("mary", enSub.getACL().getOwner());
+      assertEquals(4, enSub.getACL().getPermissionsSize());
+      assertEquals(0, enSub.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(2, enSub.getACL().getPermissions("mary").size());
+      assertEquals(2, enSub.getACL().getPermissions("*:/platform/administrators").size());
+      enSub2 = (ExtendedNode)enSub.getNode("subNode2");
+      assertEquals("mary", enSub2.getACL().getOwner());
+      assertEquals(4, enSub2.getACL().getPermissionsSize());
+      assertEquals(0, enSub2.getACL().getPermissions(SystemIdentity.ANY).size());
+      assertEquals(2, enSub2.getACL().getPermissions("mary").size());
+      assertEquals(2, enSub2.getACL().getPermissions("*:/platform/administrators").size());
+      s.logout();
+   }
 }
