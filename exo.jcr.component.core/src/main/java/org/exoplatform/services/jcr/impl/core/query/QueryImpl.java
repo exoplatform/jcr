@@ -165,8 +165,10 @@ public class QueryImpl extends AbstractQueryImpl
 
    /**
     * This method simply forwards the <code>execute</code> call to the
-    * {@link ExecutableQuery} object returned by
-    * {@link QueryHandler#createExecutableQuery}.
+    * {{code language=java}}{@include org.exoplatform.services.jcr.impl.core.query.ExecutableQuery}{{/code}} object returned by
+    * {{code language=java}}{@include org.exoplatform.services.jcr.impl.core.query.QueryHandler#createExecutableQuery
+    * (org.exoplatform.services.jcr.impl.core.SessionImpl,
+    * org.exoplatform.services.jcr.impl.core.SessionDataManager,String,String)}{{/code}}.
     * {@inheritDoc}
     */
    public QueryResult execute() throws RepositoryException
@@ -314,7 +316,7 @@ public class QueryImpl extends AbstractQueryImpl
    }
 
    /**
-    * Setter for {@link #caseInsensitiveOrder} field.
+    * Setter for {{code language=java}}{@include org.exoplatform.services.jcr.impl.core.query.QueryImpl#caseInsensitiveOrder}{{/code}} field.
     */
    public void setCaseInsensitiveOrder(boolean caseInsensitiveOrder)
    {

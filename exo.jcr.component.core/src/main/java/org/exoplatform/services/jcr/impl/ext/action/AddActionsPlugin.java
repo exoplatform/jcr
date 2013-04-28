@@ -42,7 +42,7 @@ public class AddActionsPlugin extends BaseComponentPlugin
     * The default constructor of the plugin
     * @param params the init parameter from which we extract the
     * object parameter <i>actions</i> that contains the
-    * {@link ActionConfiguration} objects
+    * {{code language=java}}{@include org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration}{{/code}} objects
     */
    public AddActionsPlugin(InitParams params)
    {

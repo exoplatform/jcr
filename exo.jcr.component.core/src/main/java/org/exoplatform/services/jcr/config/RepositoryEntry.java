@@ -72,9 +72,10 @@ public class RepositoryEntry extends RepositoryInfo
    }
 
    /**
-    * Merges the current {@link RepositoryEntry} with the given one. The current {@link RepositoryEntry}
+    * Merges the current {{code language=java}}{@include org.exoplatform.services.jcr.config.RepositoryEntry}{{/code}}
+    * with the given one. The current {{code language=java}}{@include org.exoplatform.services.jcr.config.RepositoryEntry}{{/code}}
     * has the highest priority thus only absent data will be overrode
-    * @param entry the entry to merge with the current {@link RepositoryEntry}
+    * @param entry the entry to merge with the current {{code language=java}}{@include org.exoplatform.services.jcr.config.RepositoryEntry}{{/code}}
     */
    void merge(RepositoryEntry entry)
    {

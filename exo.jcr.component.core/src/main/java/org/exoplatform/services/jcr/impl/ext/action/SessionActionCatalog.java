@@ -60,9 +60,11 @@ public class SessionActionCatalog extends ActionCatalog
    }
 
    /**
-    * Registers all the actions defined in the provided {@link AddActionsPlugin}. Do nothing if the
-    * provided plugin is not of type {@link AddActionsPlugin}
-    * @param plugin the Component plugin that is expected to be of type {@link AddActionsPlugin}
+    * Registers all the actions defined in the provided
+    * {{code language=java}}{@include org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin}{{/code}}. Do nothing if the
+    * provided plugin is not of type {{code language=java}}{@include org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin}{{/code}}
+    * @param plugin the Component plugin that is expected to be of type
+    *{{code language=java}}{@include org.exoplatform.services.jcr.impl.ext.action.AddActionsPlugin}{{/code}}
     */
    public void addPlugin(ComponentPlugin plugin)
    {

@@ -77,7 +77,7 @@ public interface ExtendedNodeTypeManager extends NodeTypeManager
       throws RepositoryException;
 
    /**
-    * Gives the {@link NodeTypeManager}
+    * Gives the {{code language=java}}{@include javax.jcr.nodetype.NodeTypeManager}{{/code}}
     *
     * @throws RepositoryException if another error occurs.
     */

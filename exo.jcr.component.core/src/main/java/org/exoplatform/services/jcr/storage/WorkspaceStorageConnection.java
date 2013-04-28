@@ -204,11 +204,10 @@ public interface WorkspaceStorageConnection
    /**
     * Reads <code>List</code> of <code>PropertyData</code> from the storage using item's parent
     * location.
-    * 
-    * <br/>
+    *
     * It's REFERENCE type Properties referencing Node with given <code>nodeIdentifier</code>.
     * 
-    * See more {@link javax.jcr.Node#getReferences()}
+    * See more {{code language=java}}{@include javax.jcr.Node#getReferences()}{{/code}}
     * 
     * @param nodeIdentifier
     *          of referenceable Node

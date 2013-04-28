@@ -132,10 +132,11 @@ public class SessionProvider implements SessionLifecycleListener
    }
 
    /**
-     * Gives a {@link SessionProvider} for a given list of {@link AccessControlEntry}.
+     * Gives a {{code language=java}}{@include org.exoplatform.services.jcr.ext.common.SessionProvider}{{/code}}for a given list of
+    * {{code language=java}}{@include org.exoplatform.services.jcr.access.AccessControlEntry}{{/code}}.
      *
-     * @param accessList list of {@link AccessControlEntry}
-     * @return a {@link SessionProvider} allowing to provide sessions with the
+     * @param accessList list of {{code language=java}}{@include org.exoplatform.services.jcr.access.AccessControlEntry}{{/code}}
+     * @return a {{code language=java}}{@include org.exoplatform.services.jcr.ext.common.SessionProvider}{{/code}} allowing to provide sessions with the
      * corresponding ACL.
      */
    public static SessionProvider createProvider(List<AccessControlEntry> accessList)

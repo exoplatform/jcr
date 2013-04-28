@@ -47,8 +47,9 @@ public interface QueryHandler
 {
 
    /**
-    * Returns the query handler context that passed in {@link
-    * #setContext(QueryHandlerContext)}.
+    * Returns the query handler context that passed in {{code language=java}}
+    * {@include org.exoplatform.services.jcr.impl.core.query.QueryHandler#setContext(org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext)}
+    * {{/code}}.
     *
     * @return the query handler context.
     */
@@ -83,11 +84,13 @@ public interface QueryHandler
    void updateNodes(Iterator<String> remove, Iterator<NodeData> add) throws RepositoryException, IOException;
 
    /**
-    * Extracts all the changes and returns them as a {@link ChangesHolder} instance
+    * Extracts all the changes and returns them as a
+    * {{code language=java}}{@include org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder}{{/code}} instance
     * @param remove Iterator of <code>NodeIds</code> of nodes to delete
     * @param add    Iterator of <code>NodeState</code> instance to add to the
     *               index.
-    * @return a {@link ChangesHolder} instance that contains all the changes
+    * @return a {{code language=java}}{@include org.exoplatform.services.jcr.impl.core.query.lucene.ChangesHolder}{{/code}}
+    * instance that contains all the changes
     */
    ChangesHolder getChanges(Iterator<String> remove, Iterator<NodeData> add);
 
@@ -172,14 +175,17 @@ public interface QueryHandler
    QueryHits executeQuery(Query query) throws IOException;
 
    /**
-    * Sets {@link IndexInfos} instance into QueryHandler, which is later passed to {@link MultiIndex}.
+    * Sets {{code language=java}}{@include org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos}{{/code}}
+    * instance into QueryHandler, which is later passed to
+    * {{code language=java}}{@include org.exoplatform.services.jcr.impl.core.query.lucene.MultiIndex}{{/code}}.
     * 
     * @param indexInfos
     */
    void setIndexInfos(IndexInfos indexInfos);
 
    /**
-    * Returns {@link IndexInfos} instance that was set into QueryHandler.
+    * Returns {{code language=java}}{@include org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos}{{/code}}
+    * instance that was set into QueryHandler.
     * @return
     */
    IndexInfos getIndexInfos();

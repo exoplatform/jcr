@@ -62,7 +62,7 @@ public interface ExtendedWorkspace extends Workspace
       InvalidSerializedDataException, RepositoryException;
 
    /**
-    * Returns {@link NodeTypeDataManager} instance
+    * Returns {{code language=java}}{@include org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager}{{/code}} instance
     * 
     * @return NodeTypeDataManager
     * @throws RepositoryException

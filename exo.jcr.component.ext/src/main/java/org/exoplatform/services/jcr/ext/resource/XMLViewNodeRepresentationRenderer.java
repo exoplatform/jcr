@@ -75,6 +75,18 @@ public class XMLViewNodeRepresentationRenderer implements ResourceContainer
     * @param viewType - either "system" or "document"
     * @param uriInfo
     * @return XML view of requested node
+    * @request
+    * {code}
+    * GET: http://{domain_name}/{rest_context_name}/private//jcr-xml-view/{viewType}/{repoName}/{repoPath:.*}/
+    * GET: http://localhost:8080/rest/jcr-xml-view/system/repository/digital-assets/doc/
+    * {code}
+    * @response
+    * {code}
+    * "xml" : "the XML representation of a given node"
+    * {code}
+    * {code:xml}
+    * <sv:node > ...</sv:node>
+    * {code}
     * @LevelAPI Unsupported
     */
    @GET

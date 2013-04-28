@@ -176,6 +176,15 @@ public class RestRepositoryService implements ResourceContainer
     * of the configuration of all the repositories and workspaces
     * @return Response
     *           return the Response with RepositoryServiceConf
+    * @request
+    * {code}
+    * GET : http://{domain_name}/{rest_context_name}/private//jcr-service/repository-service-configuration
+    * GET : http://localhost:8080/rest/private/jcr-service/repository-service-configuration
+    * {code}
+    * @response
+    * {code:json}
+    *{"repositories":[{"workspaceEntries": "the list of workspace entries"}] }
+    * {code}
     * @LevelAPI Experimental
     */
    @GET
@@ -196,6 +205,16 @@ public class RestRepositoryService implements ResourceContainer
     * @param repositoryName the name of the repository
     * @return Response
     *           return the Response with WorkspaceEntry
+    * @request
+    * {code}
+    * GET : http://{domain_name}/{rest_context_name}/private/jcr-service/default-ws-config/{repositoryName}
+    * GET : http://localhost:8080/rest/private/jcr-service/default-ws-config/repository
+    * {code}
+    * @response
+    * {code:json}
+    *  {"workspaceEntry" : "the default workspace entry"}
+    *  {"name":"production","container":{ },"lazyReadThreshold":0}
+    * {code}
     * @LevelAPI Experimental
     */
    @GET
@@ -253,7 +272,15 @@ public class RestRepositoryService implements ResourceContainer
     * @param uriInfo the uri location 
     * @param newRepository the configuration of the new repository
     * @return Response return the Response
-    * @throws URISyntaxException will be generated the URISyntaxException  
+    * @throws URISyntaxException will be generated the URISyntaxException
+    * @request
+    * {code}
+    * POST : http://{domain_name}/{rest_context_name}/private/jcr-service/create-repository
+    * POST : http://localhost:8080/rest/private/jcr-service/create-repository
+    * {code}
+    * {code:json}
+    *   {"repositories":[{"workspaceEntries": "the list of workspace entries"}] }
+    * {code}
     * @LevelAPI Experimental
     */
    @POST
@@ -310,6 +337,15 @@ public class RestRepositoryService implements ResourceContainer
     * @param newWorkspace the configuration of the new workspace
     * @return Response return the Response
     * @throws URISyntaxException will be generated the URISyntaxException
+    * @request
+    * {code}
+    * POST : http://{domain_name}/{rest_context_name}/private/jcr-service/create-workspace/{repositoryName}
+    * POST : http://localhost:8080/rest/private/create-workspace/repository
+    * {code}
+    * {code:json}
+    *  {"workspaceEntry" : "the default workspace entry"}
+    *  {"name":"production","container":{ },"lazyReadThreshold":0}
+    * {code}
     * @LevelAPI Experimental
     */
    @POST
@@ -367,6 +403,11 @@ public class RestRepositoryService implements ResourceContainer
     * @param repositoryName the name of the repository
     * @param forseSessionClose a flag indicating whether or not the current sessions must be closed
     * @return Response return the Response
+    * @request
+    * {code}
+    * POST : http://{domain_name}/{rest_context_name}/private/jcr-service/remove-repository/{repositoryName}/{forseSessionClose}
+    * POST : http://localhost:8080/rest/private/jcr-service/remove-workspace/repository/true/
+    * {code}
     * @LevelAPI Experimental
     */
    @GET
@@ -429,6 +470,11 @@ public class RestRepositoryService implements ResourceContainer
     * @param workspaceName the name of the workspace
     * @param forseSessionClose a flag indicating whether or not the current sessions must be closed
     * @return Response return the Response
+    * @request
+    * {code}
+    * POST : http://{domain_name}/{rest_context_name}/private/jcr-service/remove-workspace/{repositoryName}/{workspaceName}/{forseSessionClose}/
+    * POST : http://localhost:8080/rest/private/jcr-service/remove-workspace/repository/backup/true/
+    * {code}
     * @LevelAPI Experimental
     */
    @POST
@@ -495,6 +541,16 @@ public class RestRepositoryService implements ResourceContainer
     * Gives the name of all the existing repositories.
     * 
     * @return Response return the Response with list of repository names
+    * @request
+    * {code}
+    * GET : http://{domain_name}/{rest_context_name}/private/jcr-service/repositories
+    * GET : http://localhost:8080/rest/jcr-service/repositories
+    * {code}
+    * @response
+    * {code:json}
+    *  {"names" : "the name of all the existing repositories" }
+    *  {"names":["repository"]}
+    * {code}
     * @LevelAPI Experimental
     */
    @GET
@@ -518,6 +574,16 @@ public class RestRepositoryService implements ResourceContainer
     * 
     * @param repositoryName the name of the repository
     * @return Response return the Response with list of workspace names
+    *  @request
+    * {code}
+    * GET : http://{domain_name}/{rest_context_name}/private/jcr-service/repositories
+    * GET : http://localhost:8080/rest/jcr-service/workspaces/repository
+    * {code}
+    * @response
+    * {code:json}
+    *  {"names" : "the name of all the existing workspaces for a given repository" }
+    *  {"names":["production","backup","digital-assets"]}
+    * {code}
     * @LevelAPI Experimental
     */
    @GET
@@ -569,7 +635,16 @@ public class RestRepositoryService implements ResourceContainer
     * 
     * @param repositoryName the name of the repository
     * @param workspaceName the name of the workspace
-    * @param workspaceEntry the configuration of the workspace 
+    * @param workspaceEntry the configuration of the workspace
+    * @request
+    * {code}
+    * POST : http://{domain_name}/{rest_context_name}/private//jcr-service/update-workspace-config/{repositoryName}/{workspaceName}
+    * POST : http://localhost:8080/rest/private/update-workspace-config/repository/backup
+    * {code}
+    * {code:json}
+    *  {"workspaceEntry" : "the default workspace entry"}
+    *  {"name":"backup","container":{ },"lazyReadThreshold":0}
+    * {code}
     * @return Response return the Response
     * @LevelAPI Unsupported
     */
