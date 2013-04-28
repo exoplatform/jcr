@@ -78,12 +78,12 @@ public class RESTRegistryService implements ResourceContainer
    private static final String EXO_REGISTRY = "exo:registry/";
 
    /**
-    * See {@link RegistryService}.
+    * See {{code language=java}}{@include org.exoplatform.services.jcr.ext.registry.RegistryService}{{/code}}.
     */
    private RegistryService regService;
 
    /**
-    * See {@link ThreadLocalSessionProviderService}.
+    * See {{code language=java}}{@include org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService}{{/code}}.
     */
    private ThreadLocalSessionProviderService sessionProviderService;
 
@@ -96,6 +96,23 @@ public class RESTRegistryService implements ResourceContainer
 
    /**
     * Returns the registry node which wraps a node of type "exo:registry" (the whole registry tree)
+    *
+    * @request
+    * {code}
+    * GET: http://{domain_name}/{rest_context_name}/private/registry/
+    * GET :http://localhost:8080/portal/rest/registry/
+    * {code}
+    * @response
+    * {code}
+    * "entryStream" :  "the output stream corresponding registry node which wraps a node of type "exo:registry" (the whole registry tree)"
+    * {code}
+    * {code:xml}
+    * <registry xlinks:href="http://localhost:8080/portal/rest/registry/">
+    *    <GroovyScript2RestLoader xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/GroovyScript2RestLoader"/>
+    *    <Audit xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/Audit"/>
+    * </registry>
+    *  {code}
+    *
     * @LevelAPI Experimental
     */
    @GET
@@ -148,6 +165,20 @@ public class RESTRegistryService implements ResourceContainer
    /**
     * Returns the corresponding registry entry which wraps a node of type "exo:registryEntry"
     * @param entryPath The relative path to the registry entry
+    * @request
+    * {code}
+    * GET: http://{domain_name}/{rest_context_name}/private/registry/{entryPath:.+}
+    * GET :http://localhost:8080/portal/rest/registry/exo:services/Audit
+    * {code}
+    *  @response
+    *  {code}
+    * "entryStream" :  "the output stream corresponding registry entry which wraps a node of type "exo:registryEntry"
+    *  {code}
+    * {code:xml}
+    *  <Audit jcr:primaryType="exo:registryEntry">
+    *     <adminIdentity jcr:primaryType="nt:unstructured" value="*:/Platform/Administrators"/>
+    *  </Audit>
+    *  {code}
     * @LevelAPI Experimental
     */
    @GET
@@ -179,6 +210,19 @@ public class RESTRegistryService implements ResourceContainer
     * created.
     * @param entryStream the input stream corresponding to the content of the registry entry
     * @param groupName the relative path to the group
+    * @request
+    * {code}
+    * POST: http://{domain_name}/{rest_context_name}/private/registry/{groupName:.+}
+    * POST: http://localhost:8080/portal/rest/registry/exo:services/group/test
+    * "entryStream" :  "the input stream corresponding to the content of the registry entry"
+    * {code}
+    * {code:xml}
+    * <registry xlinks:href="http://localhost:8080/portal/rest/registry/">
+    *    <GroovyScript2RestLoader xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/GroovyScript2RestLoader"/>
+    *    <Audit xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/Audit"/>
+    * </registry>
+    *  {code}
+    *
     * @LevelAPI Experimental
     */
    @POST
@@ -229,6 +273,17 @@ public class RESTRegistryService implements ResourceContainer
     * @param groupName the relative path to the group
     * @param createIfNotExist if set to true, it will try to create the registry if it doesn't exist
     * yet
+    * @request
+    * {code}
+    * PUT: http://{domain_name}/{rest_context_name}/private/registry/{groupName:.+}
+    * PUT: http://localhost:8080/portal/rest/registry/exo:services/group/test
+    * "entryStream" :  "the input stream corresponding to the content of the registry entry"
+    * {code}
+    *{code:xml}
+    *  <Audit jcr:primaryType="exo:registryEntry">
+    *     <adminIdentity jcr:primaryType="nt:unstructured" value="*:/Platform/Administrators"/>
+    *  </Audit>
+    * {code}
     * @LevelAPI Experimental
     */
    @PUT
@@ -283,6 +338,11 @@ public class RESTRegistryService implements ResourceContainer
    /**
     * Removes the entry at the given absolute path (concatenation of group path / entry name)
     * @param entryPath the absolute path of the entry to remove
+    * @request
+    * {code}
+    * DELETE: http://{domain_name}/{rest_context_name}/private/registry/{groupName:.+}
+    * DELETE: http://localhost:8080/portal/rest/registry/exo:services/group/test
+    * {code}
     * @LevelAPI Experimental
     */
    @DELETE

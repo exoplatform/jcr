@@ -168,7 +168,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param params Initialization parameters
     * @param repositoryService repository service
     * @param sessionProviderService session provider service
-    * @throws Exception {@link Exception}
+    * @throws Exception {{code language=java}}{@include java.lang.Exception}{{/code}}
     */
    public WebDavServiceImpl(InitParams params, RepositoryService repositoryService,
       ThreadLocalSessionProviderService sessionProviderService) throws Exception
@@ -284,7 +284,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param ifHeader If- HTTP Header
     * @param depthHeader Depth HTTP header
     * @param overwriteHeader Overwrite HTTP header
-    * @param baseURI base URI info
+    * @param uriInfo base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
     * @LevelAPI Platform
@@ -415,6 +415,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param lockTokenHeader Lock-Token HTTP header
     * @param ifHeader If HTTP Header
     * @return the instance of javax.ws.rs.core.Response
+    * @request
+    * {code}
+    * DELETE: http://{domain_name}/{rest_context_name}/private/jcr/{repoName}/{repoPath:.*}/
+    * DELETE: http:localhost:8080/rest/private/jcr/repository/production/
+    * {code}
+    * @respon
     * @LevelAPI Platform
     */
    @DELETE
@@ -461,12 +467,16 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * 
     * @param repoName repository name
     * @param repoPath path in repository
-    * @param range Range HTTP header
+    * @param rangeHeader Range HTTP header
     * @param version version name
     * @param ifModifiedSince if-modified-since header
-    * @param ifModifiedSince if-none-match header
-    * @param baseURI base URI info
+    * @param ifNoneMatch if-none-match header
     * @return the instance of javax.ws.rs.core.Response
+    * @request
+    * {code}
+    * GET: http://{domain_name}/{rest_context_name}/private/jcr/{repoName}/{repoPath:.*}/
+    * GET: http:localhost:8080/rest/private/jcr/repository/production/
+    * {code}
     * @LevelAPI Platform
     */
    @GET
@@ -555,7 +565,6 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * 
     * @param repoName repository name
     * @param repoPath path in repository
-    * @param baseURI base URI info
     * @return the instance of javax.ws.rs.core.Response
     * @LevelAPI Platform
     */
@@ -597,7 +606,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param repoPath path in repository
     * @param lockTokenHeader Lock-Token HTTP header
     * @param ifHeader If- HTTP Header
-    * @param depth Depth HTTP header
+    * @param depthHeader Depth HTTP header
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
     * @LevelAPI Platform
@@ -687,7 +696,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param repoPath path in repository
     * @param lockTokenHeader Lock-Token HTTP header
     * @param ifHeader If- HTTP Header
-    * @param nodeTypeHeader JCR Node-Type header
+    * @param folderNodeTypeHeader JCR Node-Type header
     * @param mixinTypesHeader JCR Mixin-Types header
     * @return the instance of javax.ws.rs.core.Response
     * @LevelAPI Platform
@@ -742,7 +751,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param ifHeader If- HTTP Header
     * @param depthHeader Depth HTTP header
     * @param overwriteHeader Overwrite HTTP header
-    * @param baseURI base URI info
+    * @param uriInfo base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
     * @LevelAPI Platform
@@ -881,7 +890,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param repoPath path in repository
     * @param lockTokenHeader Lock-Token HTTP header
     * @param ifHeader If- HTTP Header
-    * @param baseURI base URI info
+    * @param uriInfo base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
     * @LevelAPI Platform
@@ -920,7 +929,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param repoName repository name
     * @param repoPath path in repository
     * @param depthHeader Depth HTTP header
-    * @param baseURI base URI info
+    * @param uriInfo base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response HTTP response
     * @LevelAPI Platform
@@ -966,7 +975,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param repoPath path in repository
     * @param lockTokenHeader Lock-Token HTTP header
     * @param ifHeader If- HTTP Header
-    * @param baseURI base URI info
+    * @param uriInfo base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response HTTP response
     * @LevelAPI Platform
@@ -1022,6 +1031,11 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param inputStream stream that contain incoming data
     * @param uriInfo URI info
     * @return the instance of javax.ws.rs.core.Response
+    * @request
+    * {code}
+    * PUT: http://{domain_name}/{rest_context_name}/private/jcr/{repoName}/{repoPath:.*}/
+    * PUT: http:localhost:8080/rest/private/jcr/repository/production/test
+    * {code}
     * @LevelAPI Platform
     */
    @PUT
@@ -1085,8 +1099,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * @param repoName repository name
     * @param repoPath path in repository
-    * @param depth Depth HTTP header
-    * @param baseURI base URI info
+    * @param depthHeader Depth HTTP header
+    * @param uriInfo base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
     * @LevelAPI Platform
@@ -1128,7 +1142,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * @param repoName repository name
     * @param repoPath path in repository
-    * @param baseURI base URI info
+    * @param uriInfo base URI info
     * @param body Request body
     * @return the instance of javax.ws.rs.core.Response
     * @LevelAPI Platform
@@ -1292,7 +1306,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param wsName workspace name
     * @param lockTokens Lock tokens
     * @return current session
-    * @throws Exception {@link Exception}
+    * @throws Exception {{code language=java}}{@include java.lang.Exception}{{/code}}
     */
    protected Session session(String repoName, String wsName, List<String> lockTokens) throws Exception,
       NoSuchWorkspaceException

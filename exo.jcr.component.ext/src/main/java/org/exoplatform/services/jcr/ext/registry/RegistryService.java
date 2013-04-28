@@ -121,7 +121,7 @@ public class RegistryService extends Registry implements Startable
     * @param params
     *          accepts <i>locations</i> properties param and <i>mixin-names</i> values param.
     * @param repositoryService the repository service
-    * @throws RepositoryConfigurationException if no {@link InitParams} are provided
+    * @throws RepositoryConfigurationException if no {{code language=java}}{@include org.exoplatform.container.xml.InitParams}{{/code}} are provided
     */
    public RegistryService(InitParams params, RepositoryService repositoryService)
       throws RepositoryConfigurationException
@@ -658,9 +658,9 @@ public class RegistryService extends Registry implements Startable
 
    /**
     * Defines the configuration of the service thanks to the provided plugin if and
-    * only if the plugin is of type {@link RegistryInitializationEntryPlugin}
+    * only if the plugin is of type {{code language=java}}{@include org.exoplatform.services.jcr.ext.registry.RegistryInitializationEntryPlugin}{{/code}}
     * @param plugin the plugin from which we extract the configuration that is expected
-    * to be of type {@link RegistryInitializationEntryPlugin}
+    * to be of type {{code language=java}}{@include org.exoplatform.services.jcr.ext.registry.RegistryInitializationEntryPlugin}{{/code}}
     */
    public void addPlugin(ComponentPlugin plugin)
    {

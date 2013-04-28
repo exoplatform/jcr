@@ -253,7 +253,7 @@ public class AccessControlList implements Externalizable
    }
 
    /**
-    * Gives a String representation of the {@link AccessControlList} with all the details
+    * Gives a String representation of the {{code language=java}}{@include org.exoplatform.services.jcr.access.AccessControlList}{{/code}} with all the details
     */
    public String dump()
    {

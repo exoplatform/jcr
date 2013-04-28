@@ -99,7 +99,7 @@ public final class NodeDefinitionValue extends ItemDefinitionValue
    }
 
    /**
-    * @param sameNameSiblings The sameNameSiblings to set.
+    * @param multiple The sameNameSiblings to set.
     */
    public void setSameNameSiblings(boolean multiple)
    {

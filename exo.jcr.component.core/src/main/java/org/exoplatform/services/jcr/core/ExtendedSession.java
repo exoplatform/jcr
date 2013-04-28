@@ -176,7 +176,7 @@ public interface ExtendedSession extends Session
 
    /**
     * Gives the XA representation of the session
-    * @return the {@link XAResource} corresponding to the session
+    * @return the {{code language=java}}{@include javax.transaction.xa.XAResource}{{/code}} corresponding to the session
     */
    XAResource getXAResource();
 
@@ -200,8 +200,8 @@ public interface ExtendedSession extends Session
     * either the source or destination node.
     * <p>
     * Note that this behavior differs from that of
-    * {@link Workspace#move}, which operates directly in the persistent
-    * workspace and does not require a <code>save</code>.
+    * {{code language=java}}{@include javax.jcr.Workspace#move(String,String)}{{/code}}, which operates directly
+    * in the persistent workspace and does not require a <code>save</code>.
     * <p/>
     * The <code>destAbsPath</code> provided must not
     * have an index on its final element. If it does then a <code>RepositoryException</code>

@@ -52,7 +52,7 @@ public interface NodeTypeRepository extends ComponentPersister
       throws RepositoryException;
 
    /**
-    * Gives a safe copy of the {@link NodeTypeRepository}
+    * Gives a safe copy of the {{code language=java}}{@include org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeRepository}{{/code}}
     */
    NodeTypeRepository createCopy();
 
@@ -88,7 +88,8 @@ public interface NodeTypeRepository extends ComponentPersister
     * Gives the node type data corresponding to the given node type name
     * 
     * @param typeName the node type name to retrieve
-    * @return the {@link NodeTypeData} object representing the given node type name
+    * @return the {{code language=java}}{@include org.exoplatform.services.jcr.core.nodetype.NodeTypeData}{{/code}}
+    * object representing the given node type name
     * @throws RepositoryException if any error occurs
     */
    NodeTypeData getNodeType(InternalQName typeName);
