@@ -96,6 +96,19 @@ public class RESTRegistryService implements ResourceContainer
 
    /**
     * Returns the registry node which wraps a node of type "exo:registry" (the whole registry tree)
+    *
+    * @response
+    * {code}
+    * "entryStream" : "the output stream corresponding registry node which wraps a node of type "exo:registry" (the whole registry tree)"
+    * {code}
+    * Example :
+    * {code:xml}
+    * <registry xlinks:href="http://localhost:8080/portal/rest/registry/">
+    *    <GroovyScript2RestLoader xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/GroovyScript2RestLoader"/>
+    *    <Audit xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/Audit"/>
+    * </registry>
+    *  {code}
+    *
     * @LevelAPI Experimental
     */
    @GET
@@ -148,6 +161,17 @@ public class RESTRegistryService implements ResourceContainer
    /**
     * Returns the corresponding registry entry which wraps a node of type "exo:registryEntry"
     * @param entryPath The relative path to the registry entry
+    *
+    *  @response
+    *  {code}
+    * "entryStream" :  "the output stream corresponding registry entry which wraps a node of type "exo:registryEntry"
+    *  {code}
+    *  Example :
+    * {code:xml}
+    *  <Audit jcr:primaryType="exo:registryEntry">
+    *     <adminIdentity jcr:primaryType="nt:unstructured" value="*:/Platform/Administrators"/>
+    *  </Audit>
+    * {code}
     * @LevelAPI Experimental
     */
    @GET
@@ -179,6 +203,18 @@ public class RESTRegistryService implements ResourceContainer
     * created.
     * @param entryStream the input stream corresponding to the content of the registry entry
     * @param groupName the relative path to the group
+    * @request
+    * {code}
+    * "entryStream" : "the input stream corresponding to the content of the registry entry"
+    * {code}
+    * Example :
+    * {code:xml}
+    * <registry xlinks:href="http://localhost:8080/portal/rest/registry/">
+    *    <GroovyScript2RestLoader xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/GroovyScript2RestLoader"/>
+    *    <Audit xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/Audit"/>
+    * </registry>
+    *  {code}
+    *
     * @LevelAPI Experimental
     */
    @POST
@@ -229,6 +265,16 @@ public class RESTRegistryService implements ResourceContainer
     * @param groupName the relative path to the group
     * @param createIfNotExist if set to true, it will try to create the registry if it doesn't exist
     * yet
+    * @request
+    * {code}
+    * "entryStream" : "the input stream corresponding to the content of the registry entry"
+    * {code}
+    * Example :
+    * {code:xml}
+    *  <Audit jcr:primaryType="exo:registryEntry">
+    *     <adminIdentity jcr:primaryType="nt:unstructured" value="*:/Platform/Administrators"/>
+    *  </Audit>
+    * {code}
     * @LevelAPI Experimental
     */
    @PUT

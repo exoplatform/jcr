@@ -49,6 +49,7 @@
     <org.exoplatform.core.version>2.5.4-GA-SNAPSHOT</org.exoplatform.core.version>
     <org.exoplatform.ws.version>2.3.4-GA-SNAPSHOT</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
+    <org.exoplatform.doc.doc-style.version>4.0.0-SNAPSHOT</org.exoplatform.doc.doc-style.version>
   </properties>
 
   <dependencyManagement>
@@ -463,6 +464,12 @@
       <artifactId>slf4j-log4j12</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.exoplatform.doc</groupId>
+      <artifactId>doc-style</artifactId>
+      <version>${org.exoplatform.doc.doc-style.version}</version>
+      <optional>true</optional>
+     </dependency>
   </dependencies>
   <build>
     <resources>

@@ -727,11 +727,15 @@ public class GroovyScript2RestLoader implements Startable
     * 'script/groovy'.
     * 
     * @param stream the stream that contains groovy source code
-    * @param uriInfo see {@link UriInfo}
+    * @param uriInfo see {{code language=java}}{@include javax.ws.rs.core.UriInfo}{{/code}}
     * @param repository repository name
     * @param workspace workspace name
     * @param path path to resource to be created
     * @return Response with status 'created'
+    * @request
+    * {code}
+    *  {"stream" : "the stream that contains groovy source code"}
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -775,18 +779,23 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * This method is useful for clients that send scripts as file in
-    * 'multipart/*' request body. <br/>
+    * 'multipart/*' request body.
     * NOTE even we use iterator item should be only one, rule one address - one
     * script. This method is created just for comfort loading script from HTML
     * form. NOT use this script for uploading few files in body of
     * 'multipart/form-data' or other type of multipart.
     * 
-    * @param items iterator {@link FileItem}
-    * @param uriInfo see {@link UriInfo}
+    * @param items iterator {{code language=java}}{@include org.apache.commons.fileupload.FileItem}{{/code}}
+    * @param uriInfo see {{code language=java}}{@include javax.ws.rs.core.UriInfo}{{/code}}
     * @param repository repository name
     * @param workspace workspace name
     * @param path path to resource to be created
     * @return Response with status 'created'
+    * @request
+    * {code}
+    *  "items" : "the sending data with HTML form ('multipart/form-data')"
+    * {code}
+
     * @LevelAPI Provisional
     */
    @POST
@@ -857,20 +866,19 @@ public class GroovyScript2RestLoader implements Startable
     * @param script Groovy source stream
     * @param sources locations (string representation of URL) of source folders
     *           that should be add in class path when compile Groovy script.
-    *           <b>NOTE</b> To be able load Groovy source files from specified
+    *           NOTE : To be able load Groovy source files from specified
     *           folders the following rules must be observed:
-    *           <ul>
-    *           <li>Groovy source files must be located in folder with respect
-    *           to package structure</li>
-    *           <li>Name of Groovy source files must be the same as name of
-    *           class located in file</li>
-    *           <li>Groovy source file must have extension '.groovy'</li>
-    *           </ul>
-    * <br/>
+    *
+    *           - Groovy source files must be located in folder with respect
+    *           to package structure
+    *           - Name of Groovy source files must be the same as name of
+    *           class located in file
+    *           - Groovy source file must have extension '.groovy'
+    *
     *           Example: If source stream that we want validate contains the
     *           following code:
     * 
-    *           <pre>
+    *
     *           package c.b.a
     *           
     *           import a.b.c.A
@@ -878,7 +886,6 @@ public class GroovyScript2RestLoader implements Startable
     *           class B extends A {
     *           // Do something.
     *           }
-    * </pre>
     * 
     *           Assume we store dependencies in JCR then URL of folder with
     *           Groovy sources may be like this:
@@ -890,6 +897,10 @@ public class GroovyScript2RestLoader implements Startable
     *           location must point directly to file that contains Groovy
     *           source. Source file can have any name and extension
     * @return Response with corresponded status. 200 if source code is valid
+    *  @request
+    * {code }
+    *  "script" : "the Groovy source stream."
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -962,11 +973,15 @@ public class GroovyScript2RestLoader implements Startable
     * 'script/groovy'.
     * 
     * @param stream the stream that contains groovy source code
-    * @param uriInfo see {@link UriInfo}
+    * @param uriInfo see {{code language=java}}{@include javax.ws.rs.core.UriInfo}{{/code}}
     * @param repository repository name
     * @param workspace workspace name
     * @param path path to resource to be created
     * @return Response with status 'created'
+    * @request
+    * {code }
+    *  "stream" : "the stream that contains groovy source code."
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -1011,18 +1026,22 @@ public class GroovyScript2RestLoader implements Startable
 
    /**
     * This method is useful for clients that send scripts as file in
-    * 'multipart/*' request body. <br/>
+    * 'multipart/*' request body.
     * NOTE even we use iterator item should be only one, rule one address - one
     * script. This method is created just for comfort loading script from HTML
     * form. NOT use this script for uploading few files in body of
     * 'multipart/form-data' or other type of multipart.
     * 
-    * @param items iterator {@link FileItem}
-    * @param uriInfo see {@link UriInfo}
+    * @param items iterator {{code language=java}}{@include org.apache.commons.fileupload.FileItem}{{/code}}
+    * @param uriInfo see {{code language=java}}{@include javax.ws.rs.core.UriInfo}{{/code}}
     * @param repository repository name
     * @param workspace workspace name
     * @param path path to resource to be created
     * @return Response with status 'created'
+    * @request
+    *  {code}
+    *  "items" : "the sending data with HTML form ('multipart/form-data')"
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -1074,8 +1093,8 @@ public class GroovyScript2RestLoader implements Startable
    /**
     * Deploy groovy script as REST service. If this property set to 'true' then
     * script will be deployed as REST service if 'false' the script will be
-    * undeployed. NOTE is script already deployed and <tt>state</tt> is
-    * <tt>true</tt> script will be re-deployed.
+    * undeployed. NOTE is script already deployed and state is
+    * true script will be re-deployed.
     * 
     * @param repository repository name
     * @param workspace workspace name
@@ -1086,20 +1105,19 @@ public class GroovyScript2RestLoader implements Startable
     *           in HTTP request then it will be considered as <code>true</code>
     * @param sources locations (string representation of URL) of source folders
     *           that should be add in class path when compile Groovy script.
-    *           <b>NOTE</b> To be able load Groovy source files from specified
+    *           NOTE: To be able load Groovy source files from specified
     *           folders the following rules must be observed:
-    *           <ul>
-    *           <li>Groovy source files must be located in folder with respect
-    *           to package structure</li>
-    *           <li>Name of Groovy source files must be the same as name of
-    *           class located in file</li>
-    *           <li>Groovy source file must have extension '.groovy'</li>
-    *           </ul>
-    * <br/>
+    *
+    *           - Groovy source files must be located in folder with respect
+    *           to package structure
+    *           - Name of Groovy source files must be the same as name of
+    *           class located in file
+    *           - Groovy source file must have extension '.groovy'
+    *
     *           Example: If source stream that we want validate contains the
     *           following code:
     * 
-    *           <pre>
+    *
     *           package c.b.a
     *           
     *           import a.b.c.A
@@ -1107,7 +1125,6 @@ public class GroovyScript2RestLoader implements Startable
     *           class B extends A {
     *           // Do something.
     *           }
-    * </pre>
     * 
     *           Assume we store dependencies in JCR then URL of folder with
     *           Groovy sources may be like this:
@@ -1284,7 +1301,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param workspace workspace name
     * @param path JCR path to node that contains script
     * @param state value for property exo:autoload, if it is not specified then
-    *           'true' will be used as default. <br />
+    *           'true' will be used as default.
     *           Example: .../scripts/groovy/test1.groovy/load is the same to
     *           .../scripts/groovy/test1.groovy/load?state=true
     * @LevelAPI Provisional
@@ -1333,6 +1350,10 @@ public class GroovyScript2RestLoader implements Startable
     * @param workspace workspace name
     * @param path JCR path to node that contains script
     * @return groovy script as stream
+    * @response
+    * {code}
+    *  "scriptsource" : "the source code of groovy script."
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -1379,6 +1400,10 @@ public class GroovyScript2RestLoader implements Startable
     * @param workspace workspace name
     * @param path JCR path to node that contains script
     * @return groovy script's meta-information
+    * @response
+    * {code:json}
+    *  "scriptList" : "the groovy script's meta-information"
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -1432,6 +1457,10 @@ public class GroovyScript2RestLoader implements Startable
     *           list of script names matching wildcard else returns all the
     *           scripts found in workspace.
     * @return list of groovy services
+    * @response
+    * {code:json}
+    *  "scriptList" : "the list of all groovy scripts found in workspace."
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -1682,7 +1711,7 @@ public class GroovyScript2RestLoader implements Startable
       }
 
       /**
-       * @param the list of scripts
+       * @param scriptList the list of scripts
        */
       public ScriptList(List<String> scriptList)
       {
