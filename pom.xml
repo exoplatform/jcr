@@ -451,6 +451,11 @@
          <artifactId>groovy-all</artifactId>
          <version>1.7.6</version>
       </dependency>
+      <dependency>
+         <groupId>org.exoplatform.doc</groupId>
+         <artifactId>doc-style</artifactId>
+         <version>${org.exoplatform.doc.doc-style.version}</version>
+     </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>
@@ -464,12 +469,6 @@
       <artifactId>slf4j-log4j12</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.exoplatform.doc</groupId>
-      <artifactId>doc-style</artifactId>
-      <version>${org.exoplatform.doc.doc-style.version}</version>
-      <optional>true</optional>
-     </dependency>
   </dependencies>
   <build>
     <resources>

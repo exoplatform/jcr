@@ -50,6 +50,11 @@
       <artifactId>hsqldb</artifactId>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <groupId>org.exoplatform.doc</groupId>
+      <artifactId>doc-style</artifactId>
+      <optional>true</optional>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
