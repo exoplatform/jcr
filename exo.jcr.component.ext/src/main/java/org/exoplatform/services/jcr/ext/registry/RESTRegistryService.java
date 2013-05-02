@@ -99,7 +99,7 @@ public class RESTRegistryService implements ResourceContainer
     *
     * @response
     * {code}
-    * "entryStream" : "the output stream corresponding registry node which wraps a node of type "exo:registry" (the whole registry tree)"
+    * "entryStream" : the output stream corresponding registry node which wraps a node of type "exo:registry" (the whole registry tree)
     * {code}
     * Example :
     * {code:xml}
@@ -164,7 +164,7 @@ public class RESTRegistryService implements ResourceContainer
     *
     *  @response
     *  {code}
-    * "entryStream" :  "the output stream corresponding registry entry which wraps a node of type "exo:registryEntry"
+    * "entryStream" :  the output stream corresponding registry entry which wraps a node of type "exo:registryEntry
     *  {code}
     *  Example :
     * {code:xml}
@@ -205,7 +205,7 @@ public class RESTRegistryService implements ResourceContainer
     * @param groupName the relative path to the group
     * @request
     * {code}
-    * "entryStream" : "the input stream corresponding to the content of the registry entry"
+    * "entryStream" : the input stream corresponding to the content of the registry entry
     * {code}
     * Example :
     * {code:xml}
@@ -267,7 +267,7 @@ public class RESTRegistryService implements ResourceContainer
     * yet
     * @request
     * {code}
-    * "entryStream" : "the input stream corresponding to the content of the registry entry"
+    * "entryStream" : the input stream corresponding to the content of the registry entry
     * {code}
     * Example :
     * {code:xml}

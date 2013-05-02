@@ -734,7 +734,7 @@ public class GroovyScript2RestLoader implements Startable
     * @return Response with status 'created'
     * @request
     * {code}
-    *  {"stream" : "the stream that contains groovy source code"}
+    *  "stream" : the input stream that contains groovy source code
     * {code}
     * @LevelAPI Provisional
     */
@@ -793,7 +793,7 @@ public class GroovyScript2RestLoader implements Startable
     * @return Response with status 'created'
     * @request
     * {code}
-    *  "items" : "the sending data with HTML form ('multipart/form-data')"
+    *  "items" : the sending data with HTML form ('multipart/form-data')
     * {code}
 
     * @LevelAPI Provisional
@@ -899,7 +899,7 @@ public class GroovyScript2RestLoader implements Startable
     * @return Response with corresponded status. 200 if source code is valid
     *  @request
     * {code }
-    *  "script" : "the Groovy source stream."
+    *  "script" : the Groovy source stream.
     * {code}
     * @LevelAPI Provisional
     */
@@ -980,7 +980,7 @@ public class GroovyScript2RestLoader implements Startable
     * @return Response with status 'created'
     * @request
     * {code }
-    *  "stream" : "the stream that contains groovy source code."
+    *  "stream" : the input stream that contains groovy source code.
     * {code}
     * @LevelAPI Provisional
     */
@@ -1040,7 +1040,7 @@ public class GroovyScript2RestLoader implements Startable
     * @return Response with status 'created'
     * @request
     *  {code}
-    *  "items" : "the sending data with HTML form ('multipart/form-data')"
+    *  "items" : the sending data with HTML form ('multipart/form-data')
     * {code}
     * @LevelAPI Provisional
     */
@@ -1352,7 +1352,7 @@ public class GroovyScript2RestLoader implements Startable
     * @return groovy script as stream
     * @response
     * {code}
-    *  "scriptsource" : "the source code of groovy script."
+    *  "scriptsource" : the source code of groovy script.
     * {code}
     * @LevelAPI Provisional
     */
@@ -1402,7 +1402,7 @@ public class GroovyScript2RestLoader implements Startable
     * @return groovy script's meta-information
     * @response
     * {code:json}
-    *  "scriptList" : "the groovy script's meta-information"
+    *  "scriptList" : the groovy script's meta-information
     * {code}
     * @LevelAPI Provisional
     */
@@ -1459,7 +1459,7 @@ public class GroovyScript2RestLoader implements Startable
     * @return list of groovy services
     * @response
     * {code:json}
-    *  "scriptList" : "the list of all groovy scripts found in workspace."
+    *  "scriptList" : the list of all groovy scripts found in workspace.
     * {code}
     * @LevelAPI Provisional
     */

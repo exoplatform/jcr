@@ -68,7 +68,7 @@ public class LnkProducer implements ResourceContainer
     * @return generated link
     * @response
     * {code}
-    *  "content" : "the generated link file."
+    *  "content" : the generated link file.
     * {code}
     * @LevelAPI Experimental
     */
