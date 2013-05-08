@@ -77,7 +77,7 @@ public class SwapFile extends SpoolFile
    /**
     * swap cleaner (FileCleaner).
     */
-    private static FileCleaner swapCleaner;
+   private final FileCleaner swapCleaner;
 
    /**
     * SwapFile constructor.
@@ -87,9 +87,10 @@ public class SwapFile extends SpoolFile
     * @param child
     *          File name
     */
-   protected SwapFile(File parent, String child)
+   protected SwapFile(File parent, String child, FileCleaner cleaner)
    {
-      super(parent, child);
+      super(parent,child);
+      this.swapCleaner=cleaner;
    }
 
    /**
@@ -130,9 +131,8 @@ public class SwapFile extends SpoolFile
     */
    public static SwapFile get(final File parent, final String child, FileCleaner cleaner) throws IOException
    {
-      SwapFile newsf = new SwapFile(parent, child);
+      SwapFile newsf = new SwapFile(parent, child,cleaner);
       String absPath = PrivilegedFileHelper.getAbsolutePath(newsf);
-      swapCleaner=cleaner;
 
       WeakReference<SwapFile> swappedRef = CURRENT_SWAP_FILES.get(absPath);
       SwapFile swapped;
@@ -240,7 +240,7 @@ public class SwapFile extends SpoolFile
       WeakReference<SwapFile> currentValue = CURRENT_SWAP_FILES.get(path);
       if (currentValue == null || (currentValue.get() == this || currentValue.get() == null))
       {
-         CURRENT_SWAP_FILES.remove(path, currentValue);            
+         CURRENT_SWAP_FILES.remove(path, currentValue);
          synchronized(this)
          {
             users.clear();
@@ -259,13 +259,13 @@ public class SwapFile extends SpoolFile
                      else if (swapCleaner != null)
                      {
                         swapCleaner.addFile(SwapFile.super.getAbsoluteFile());
-                        if (LOG.isDebugEnabled())
-                        {
-                           LOG.debug("Could not remove swap file on finalize : "
-                              + PrivilegedFileHelper.getAbsolutePath(SwapFile.super.getAbsoluteFile()));
-                        }
-                        return false;
                      }
+                     if (LOG.isDebugEnabled())
+                     {
+                        LOG.debug("Could not remove swap file on finalize : "
+                           + PrivilegedFileHelper.getAbsolutePath(SwapFile.super.getAbsoluteFile()));
+                     }
+                     return false;
                   }
                   return true;
                }

@@ -62,7 +62,6 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCS
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
-import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
