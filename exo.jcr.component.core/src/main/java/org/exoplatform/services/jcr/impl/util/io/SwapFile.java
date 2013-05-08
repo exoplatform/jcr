@@ -86,6 +86,8 @@ public class SwapFile extends SpoolFile
     *          Parent File
     * @param child
     *          File name
+    * @param cleaner
+    *          File Cleaner
     */
    protected SwapFile(File parent, String child, FileCleaner cleaner)
    {
