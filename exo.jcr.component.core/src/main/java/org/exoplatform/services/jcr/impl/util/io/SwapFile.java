@@ -67,6 +67,11 @@ public class SwapFile extends SpoolFile
    protected final AtomicReference<CountDownLatch> spoolLatch = new AtomicReference<CountDownLatch>();
 
    /**
+    * swap cleaner (FileCleaner).
+    */
+    private static FileCleaner swapCleaner;
+
+   /**
     * SwapFile constructor.
     * 
     * @param parent
@@ -77,6 +82,15 @@ public class SwapFile extends SpoolFile
    protected SwapFile(File parent, String child)
    {
       super(parent, child);
+   }
+
+   /**
+    *  Sets the {@link FileCleaner} to use in case the swap file cannot be removed
+    *  @param cleaner the file cleaner instance
+    */
+   public static void setFileCleaner(FileCleaner cleaner)
+   {
+      swapCleaner = cleaner;
    }
 
    /**
@@ -229,7 +243,15 @@ public class SwapFile extends SpoolFile
                {
                   if (sf.exists())
                   {
-                     return SwapFile.super.delete();
+                     if (SwapFile.super.delete())
+                     {
+                        return true;
+                     }
+                     else if (swapCleaner != null)
+                     {
+                        swapCleaner.addFile(SwapFile.super.getAbsoluteFile());
+                        return false;
+                     }
                   }
                   return true;
                }
