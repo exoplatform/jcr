@@ -56,9 +56,9 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       /**
        * Dummy constructor.
        */
-      protected TestSwapFile(File parent, String child)
+      protected TestSwapFile(File parent, String child,FileCleaner cleaner)
       {
-         super(parent, child);
+         super(parent, child,cleaner);
       }
 
       /**
@@ -79,7 +79,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       testFile = new File(parentDir, FILE_NAME);
       testCleaner = new FileCleaner(CLEANER_TIMEOUT);
 
-      SwapFile sf = SwapFile.get(parentDir, FILE_NAME);
+      SwapFile sf = SwapFile.get(parentDir, FILE_NAME,testCleaner);
       FileOutputStream fout = new FileOutputStream(sf);
       fout.write("testFileCleaned".getBytes());
       fout.close();

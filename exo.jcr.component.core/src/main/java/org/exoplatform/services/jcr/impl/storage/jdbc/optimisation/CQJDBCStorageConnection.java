@@ -877,7 +877,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
 
                SwapFile swapFile =
                   SwapFile.get(this.containerConfig.spoolConfig.tempDirectory,
-                     cid + i + "." + data.getPersistedVersion());
+                     cid + i + "." + data.getPersistedVersion(),this.containerConfig.spoolConfig.fileCleaner);
                try
                {
                   long vlen = WRITE_VALUE_HELPER.writeStreamedValue(swapFile, streamData);

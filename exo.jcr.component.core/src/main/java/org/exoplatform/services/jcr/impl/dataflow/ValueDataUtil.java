@@ -110,7 +110,7 @@ public class ValueDataUtil
                {
                   // threshold for keeping data in memory exceeded;
                   // create temp file and spool buffer contents
-                  swapFile = SwapFile.get(spoolConfig.tempDirectory, cid + orderNumber + "." + version);
+                  swapFile = SwapFile.get(spoolConfig.tempDirectory, cid + orderNumber + "." + version,spoolConfig.fileCleaner);
                   if (swapFile.isSpooled())
                   {
                      // break, value already spooled
