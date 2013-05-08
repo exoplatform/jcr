@@ -318,8 +318,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          cleanupSwapDirectory();
       }
-
-      SwapFile.setFileCleaner(fileCleanerHolder.getFileCleaner());
       
       this.containerConfig.initScriptPath =
          DBInitializerHelper.scriptPath(containerConfig.dbDialect, containerConfig.dbStructureType.isMultiDatabase());

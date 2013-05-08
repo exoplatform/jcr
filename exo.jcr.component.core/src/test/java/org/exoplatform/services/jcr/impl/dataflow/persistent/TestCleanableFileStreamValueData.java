@@ -79,7 +79,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       testFile = new File(parentDir, FILE_NAME);
       testCleaner = new FileCleaner(CLEANER_TIMEOUT);
 
-      SwapFile sf = SwapFile.get(parentDir, FILE_NAME);
+      SwapFile sf = SwapFile.get(parentDir, FILE_NAME,testCleaner);
       FileOutputStream fout = new FileOutputStream(sf);
       fout.write("testFileCleaned".getBytes());
       fout.close();
@@ -123,7 +123,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
       Thread.sleep(CLEANER_TIMEOUT / 2);
 
       CleanableFilePersistedValueData cfvd2 =
-         new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), SpoolConfig.getDefaultSpoolConfig());
+         new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME,SpoolConfig.getDefaultSpoolConfig().fileCleaner), SpoolConfig.getDefaultSpoolConfig());
       assertTrue(testFile.exists());
 
       cleanableValueData = null; // CleanableVD dies but another instance points swapped file
@@ -197,7 +197,7 @@ public class TestCleanableFileStreamValueData extends JcrImplBaseTest
 
       // file shared with third CleanableVD, i.e. file still exists (aquired by TransientVD)
       CleanableFilePersistedValueData cfvd2 =
-         new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME), SpoolConfig.getDefaultSpoolConfig());
+         new CleanableFilePersistedValueData(1, SwapFile.get(parentDir, FILE_NAME,SpoolConfig.getDefaultSpoolConfig().fileCleaner), SpoolConfig.getDefaultSpoolConfig());
       assertTrue(testFile.exists());
 
       trvd = null; // TransientVD dies
