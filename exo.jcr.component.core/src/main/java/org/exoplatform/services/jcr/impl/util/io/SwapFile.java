@@ -107,7 +107,7 @@ public class SwapFile extends SpoolFile
     */
    public static SwapFile get(final File parent, final String child) throws IOException
    {
-      return get(parent, child, getFileCleaner());
+      return get(parent, child, FileCleanerHolder.getDefaultFileCleaner());
    }
 
    /**
@@ -276,21 +276,4 @@ public class SwapFile extends SpoolFile
       return false;
    }
 
-   /**
-    * @return the File Cleaner
-    */
-   private static FileCleaner getFileCleaner()
-   {
-      ExoContainer container = ExoContainerContext.getCurrentContainer();
-      if (container != null)
-      {
-         FileCleanerHolder cleanerHolder =
-            (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
-         if (cleanerHolder != null)
-         {
-            return cleanerHolder.getFileCleaner();
-         }
-      }
-      return new FileCleaner();
-   }
 }
