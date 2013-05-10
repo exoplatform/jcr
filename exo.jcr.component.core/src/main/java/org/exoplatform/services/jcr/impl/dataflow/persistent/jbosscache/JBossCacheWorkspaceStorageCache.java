@@ -949,7 +949,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             }
             else if (state.isPathChanged())
             {
-               updateTreePath(state.getOldPath(), state.getData().getQPath());
+               updateTreePath(state.getOldPath(), state.getData().getQPath(), false);
             }
             else if (state.isMixinChanged())
             {
@@ -1877,13 +1877,13 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       }
 
       // node and prevNode are not NullNodeDatas
-      // update childs paths if index changed
+      // update children paths if index changed
       int nodeIndex = node.getQPath().getEntries()[node.getQPath().getEntries().length - 1].getIndex();
       int prevNodeIndex = prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1].getIndex();
       if (nodeIndex != prevNodeIndex)
       {
-         // its a samename reordering
-         updateTreePath(prevNode.getQPath(), node.getQPath()); // don't change ACL, it's same parent
+         // its a same name reordering
+         updateTreePath(prevNode.getQPath(), node.getQPath(), true);
       }
    }
 
@@ -1934,13 +1934,14 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    }
 
    /**
-    * Check all items in cache - is it descendant of prevRootPath, and update path according newRootPath.
+    * Check all items in cache if it is a descendant of the previous root path, and if so update the path according 
+    * the new root path.
     * 
-    * @param prevRootPath
-    * @param newRootPath
-    * @param acl
+    * @param prevRootPath previous root path
+    * @param newRootPath new root path
+    * @param skipApplyToBuffer set to <code>true</code> to avoid applying the change into the buffer
     */
-   protected void updateTreePath(QPath prevRootPath, QPath newRootPath)
+   protected void updateTreePath(QPath prevRootPath, QPath newRootPath, boolean skipApplyToBuffer)
    {
       Map<Fqn, Map<Serializable, Object>> changes = cache.getLastChanges();
       for (Fqn fqn : changes.keySet())
@@ -1950,7 +1951,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          ItemData data = (ItemData)changes.get(fqn).get(ITEM_DATA);
          if (data == null)
             continue;
-         updateTreePath(prevRootPath, newRootPath, data);
+         updateTreePath(prevRootPath, newRootPath, data, skipApplyToBuffer);
       }
       // check all ITEMS in cache 
       Node<Serializable, Object> items = cache.getNode(itemsRoot);
@@ -1966,11 +1967,20 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
          ItemData data = (ItemData)cache.get(fqn, ITEM_DATA);
          if (data == null)
             continue;
-         updateTreePath(prevRootPath, newRootPath, data);
+         updateTreePath(prevRootPath, newRootPath, data, skipApplyToBuffer);
       }
    }
 
-   private void updateTreePath(QPath prevRootPath, QPath newRootPath, ItemData data)
+   /**
+    * Check all items in cache if it is a descendant of the previous root path, and if so update the path according 
+    * the new root path.
+    * 
+    * @param prevRootPath previous root path
+    * @param newRootPath new root path
+    * @param data the data to which we want to modify the path
+    * @param skipApplyToBuffer set to <code>true</code> to avoid applying the change into the buffer
+    */
+   private void updateTreePath(QPath prevRootPath, QPath newRootPath, ItemData data, boolean skipApplyToBuffer)
    {
       // check is this descendant of prevRootPath
       QPath nodeQPath = data.getQPath();
@@ -2010,7 +2020,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                   prevNode.getPersistedVersion(), prevNode.getOrderNumber(), prevNode.getPrimaryTypeName(),
                   prevNode.getMixinTypeNames(), prevNode.getACL());
             // update this node
-            cache.putOnly(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode, true);
+            cache.putOnly(makeItemFqn(newNode.getIdentifier()), ITEM_DATA, newNode, skipApplyToBuffer);
          }
          else
          {
@@ -2021,7 +2031,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                new PersistedPropertyData(prevProp.getIdentifier(), newPath, prevProp.getParentIdentifier(),
                   prevProp.getPersistedVersion(), prevProp.getType(), prevProp.isMultiValued(), prevProp.getValues(), new SimplePersistedSize(
                      ((PersistedPropertyData)prevProp).getPersistedSize()));
-            cache.putOnly(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp, true);
+            cache.putOnly(makeItemFqn(newProp.getIdentifier()), ITEM_DATA, newProp, skipApplyToBuffer);
          }
       }
    }
