@@ -2404,7 +2404,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                {
                   // threshold for keeping data in memory exceeded;
                   // create temp file and spool buffer contents
-                  swapFile = SwapFile.get(swapDirectory, cid + orderNumber + "." + version);
+                  swapFile = SwapFile.get(swapDirectory, cid + orderNumber + "." + version,swapCleaner);
                   if (swapFile.isSpooled())
                   {
                      // break, value already spooled
@@ -2481,7 +2481,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             {
                StreamPersistedValueData streamData = (StreamPersistedValueData)vd;
 
-               SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion());
+               SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion(),swapCleaner);
                try
                {
                   WRITE_VALUE_HELPER.writeStreamedValue(swapFile, streamData);
