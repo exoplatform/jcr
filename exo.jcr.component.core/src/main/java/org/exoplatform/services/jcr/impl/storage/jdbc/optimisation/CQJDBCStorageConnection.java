@@ -623,7 +623,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             {
                StreamPersistedValueData streamData = (StreamPersistedValueData)vd;
 
-               SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion());
+               SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion(),swapCleaner);
                try
                {
                   WRITE_VALUE_HELPER.writeStreamedValue(swapFile, streamData);
