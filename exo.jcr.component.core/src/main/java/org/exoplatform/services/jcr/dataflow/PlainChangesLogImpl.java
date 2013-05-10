@@ -115,6 +115,11 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     */
    protected Map<String, int[]> childNodesInfo = new HashMap<String, int[]>();
 
+   /**
+    * The list of states corresponding to path changed
+    */
+   protected List<ItemState> allPathsChanged;
+
    /** 
     * Index in <code>childNodesInfo<code> value array to store child nodes count. 
    */
@@ -270,6 +275,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       childNodeStates.clear();
       childPropertyStates.clear();
       childNodesInfo.clear();
+      allPathsChanged = null;
    }
 
    /**
@@ -397,6 +403,14 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
             childNodeStates.put(item.getData().getParentIdentifier(), listItemState);
          }
          listItemState.add(item);
+         if (item.isPathChanged())
+         {
+            if (allPathsChanged == null)
+            {
+               allPathsChanged = new ArrayList<ItemState>();
+            }
+            allPathsChanged.add(item);
+         }
       }
       else
       {
@@ -437,6 +451,14 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
          }
          childNodesInfo.put(item.getData().getParentIdentifier(), childInfo);
       }
+   }
+
+   /**
+    * @return the allPathsChanged
+    */
+   public List<ItemState> getAllPathsChanged()
+   {
+      return allPathsChanged;
    }
 
    public int getChildNodesCount(String rootIdentifier)
@@ -497,6 +519,12 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       childNodesInfo.remove(item.getData().getIdentifier());
       lastChildNodeStates.remove(item.getData().getIdentifier());
       childNodeStates.remove(item.getData().getIdentifier());
+      if (allPathsChanged != null && item.isPathChanged())
+      {
+         allPathsChanged.remove(item);
+         if (allPathsChanged.isEmpty())
+            allPathsChanged = null;
+      }
 
       if (item.isPersisted())
       {

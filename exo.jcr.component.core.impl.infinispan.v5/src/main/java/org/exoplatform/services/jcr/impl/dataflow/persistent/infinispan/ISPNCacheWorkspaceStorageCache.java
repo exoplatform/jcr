@@ -766,7 +766,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             }
             else if (state.isPathChanged())
             {
-               updateTreePath(state.getOldPath(), state.getData().getQPath());
+               updateTreePath(state.getOldPath(), state.getData().getQPath(), false);
             }
             else if (state.isMixinChanged())
             {
@@ -1514,20 +1514,22 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       int prevNodeIndex = prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1].getIndex();
       if (nodeIndex != prevNodeIndex)
       {
-         // its a samename reordering
-         updateTreePath(prevNode.getQPath(), node.getQPath()); // don't change ACL, it's same parent
+         // its a same name reordering
+         updateTreePath(prevNode.getQPath(), node.getQPath(), true);
       }
    }
 
    /**
-    * Check all items in cache - is it descendant of prevRootPath, and update path according newRootPath.
+    * Check all items in cache if it is a descendant of the previous root path, and if so update the path according 
+    * the new root path.
     * 
-    * @param prevRootPath
-    * @param newRootPath
+    * @param prevRootPath previous root path
+    * @param newRootPath new root path
+    * @param skipApplyToBuffer set to <code>true</code> to avoid applying the change into the buffer
     */
-   protected void updateTreePath(QPath prevRootPath, QPath newRootPath)
+   protected void updateTreePath(QPath prevRootPath, QPath newRootPath, boolean skipApplyToBuffer)
    {
-      caller.updateTreePath(prevRootPath, newRootPath);
+      caller.updateTreePath(prevRootPath, newRootPath, skipApplyToBuffer);
    }
 
    /**
@@ -1970,14 +1972,16 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       }
 
       /**
-       * Check all items in cache - is it descendant of prevRootPath, and update path according newRootPath.
+       * Check all items in cache if it is a descendant of the previous root path, and if so update the path according 
+       * the new root path.
        * 
-       * @param prevRootPath
-       * @param newRootPath
+       * @param prevRootPath previous root path
+       * @param newRootPath new root path
+       * @param skipApplyToBuffer set to <code>true</code> to avoid applying the change into the buffer
        */
-      protected void updateTreePath(QPath prevRootPath, QPath newRootPath)
+      protected void updateTreePath(QPath prevRootPath, QPath newRootPath, boolean skipApplyToBuffer)
       {
-         BufferedISPNCacheWrapper wrapper = new BufferedISPNCacheWrapper(cache);
+         BufferedISPNCacheWrapper wrapper = new BufferedISPNCacheWrapper(cache, skipApplyToBuffer);
          Map<CacheKey, Object> changes = cache.getLastChanges();
          for (CacheKey key : changes.keySet())
          {
@@ -2054,7 +2058,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
        * {@inheritDoc}
        */
       @Override
-      protected void updateTreePath(final QPath prevRootPath, final QPath newRootPath)
+      protected void updateTreePath(final QPath prevRootPath, final QPath newRootPath, boolean skipApplyToBuffer)
       {
          final TransactionManager tm = getTransactionManager();
          if (tm != null)
@@ -2502,10 +2506,12 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    private static class BufferedISPNCacheWrapper implements Map<CacheKey, Object>
    {
       private final BufferedISPNCache delegate;
-      
-      public BufferedISPNCacheWrapper(BufferedISPNCache delegate)
+      private final boolean skipApplyToBuffer;
+
+      public BufferedISPNCacheWrapper(BufferedISPNCache delegate, boolean skipApplyToBuffer)
       {
          this.delegate = delegate;
+         this.skipApplyToBuffer = skipApplyToBuffer;
       }
 
       /**
@@ -2553,7 +2559,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
        */
       public Object put(CacheKey key, Object value)
       {
-         return delegate.put(key, value, false, true);
+         return delegate.put(key, value, false, skipApplyToBuffer);
       }
 
       /**

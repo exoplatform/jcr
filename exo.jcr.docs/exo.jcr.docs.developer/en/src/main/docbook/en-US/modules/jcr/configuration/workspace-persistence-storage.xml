@@ -75,9 +75,12 @@
     <listitem>
       <para><emphasis
       role="bold">trigger-events-for-descendants-on-rename:</emphasis>
-      indicates if need to trigger events for descendants on rename or not. It
-      allows to increase performance on- rename operation but in same time
-      Observation'll not notified, has default value true</para>
+      indicates whether or not events must be triggered for all descendants
+      items in case of a move or a rename. It allows to increase performance
+      on rename and remove operations but as no event will be triggered for
+      all the descendants items, applications listening to these events won't
+      be notified which could cause some side effects so it must be used with
+      caution. The default value is true.</para>
     </listitem>
   </itemizedlist>
 
@@ -107,9 +110,10 @@
 
     <listitem>
       <para><emphasis role="bold">dialect</emphasis>: Database dialect, one of
-      "hsqldb", "h2", "mysql", "mysql-myisam", "mysql-utf8", "mysql-myisam-utf8",
-      "pgsql", "pgsql-scs", "oracle", "oracle-oci", "mssql", "sybase",
-      "derby", "db2" ,"db2-mys", "db2v8". The default value is "auto".</para>
+      "hsqldb", "h2", "mysql", "mysql-myisam", "mysql-utf8",
+      "mysql-myisam-utf8", "pgsql", "pgsql-scs", "oracle", "oracle-oci",
+      "mssql", "sybase", "derby", "db2" ,"db2-mys", "db2v8". The default value
+      is "auto".</para>
     </listitem>
 
     <listitem>
@@ -153,7 +157,8 @@
     </listitem>
 
     <listitem>
-      <para><emphasis role="bold">batch-size:</emphasis> the batch size. Default value is -1 (disabled)</para>
+      <para><emphasis role="bold">batch-size:</emphasis> the batch size.
+      Default value is -1 (disabled)</para>
     </listitem>
   </itemizedlist>
 
@@ -273,22 +278,24 @@
           <para>mysql-myisam-utf8 - this dialect is used if needed to create
           JCR tables with MyISAM engine with UTF-8 encoding support</para>
         </listitem>
-        
+
         <listitem>
-          <para>mysql-ndb - this dialect is used if needed to create JCR tables
-          with NDB engine (mysql cluster)</para>
+          <para>mysql-ndb - this dialect is used if needed to create JCR
+          tables with NDB engine (mysql cluster)</para>
         </listitem>
-        
+
         <listitem>
-          <para>mysql-ndb-utf8 - this dialect is used if needed to create JCR tables
-          with NDB engine (mysql cluster) with UTF-8 encoding support</para>
+          <para>mysql-ndb-utf8 - this dialect is used if needed to create JCR
+          tables with NDB engine (mysql cluster) with UTF-8 encoding
+          support</para>
         </listitem>
       </itemizedlist>
+
       <note>
-          <para>Since MySQL NDB engine does not support foreign keys, 
-          which may lead to improper item removal and as consequence to
-          InvalidItemStateException. In this case you will need to use
-          consistency checker tool.</para>
+        <para>Since MySQL NDB engine does not support foreign keys, which may
+        lead to improper item removal and as consequence to
+        InvalidItemStateException. In this case you will need to use
+        consistency checker tool.</para>
       </note>
     </section>
   </section>

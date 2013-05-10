@@ -1047,7 +1047,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       ItemDataMoveVisitor initializer =
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
             (NodeData)srcParentNode.getData(), nodeTypeManager, getTransientNodesManager(), true,
-            triggerEventsForDescendantsOnRename || srcParentNode != destParentNode);//NOSONAR
+            triggerEventsForDescendantsOnRename);//NOSONAR
 
       getTransientNodesManager().rename((NodeData)srcNode.getData(), initializer);
    }

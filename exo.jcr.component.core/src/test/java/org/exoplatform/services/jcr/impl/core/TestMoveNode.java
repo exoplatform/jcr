@@ -90,7 +90,105 @@ public class TestMoveNode extends JcrImplBaseTest
       }
    }
 
+   public void testMoveAndRefreshTrue() throws Exception
+   {
+      testMoveAndRefreshTrue(true);
+   }
+
+   public void testMoveAndRefreshTrueWithoutTriggering() throws Exception
+   {
+      testMoveAndRefreshTrue(false);
+   }
+
+   private void testMoveAndRefreshTrue(boolean triggerEventsForDescendantsOnRename) throws Exception
+   {
+      Node node1 = root.addNode("node1");
+      Node node2 = node1.addNode("node2");
+      Node node3 = root.addNode("node3");
+      session.save();
+      session.move(node1.getPath(), node3.getPath() + "/" + "node4", triggerEventsForDescendantsOnRename);
+      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
+      assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      session.refresh(true);
+      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
+      assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+
+      try
+      {
+         root.getNode("node1");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/node1/node2");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/node1/jcr:primaryType");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/node1/node2/jcr:primaryType");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         node3.getNode("node4");
+      }
+      catch (PathNotFoundException e1)
+      {
+         fail();
+      }
+
+      node3.remove();
+      session.save();
+
+      try
+      {
+         root.getNode("node3");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+   }
+
    public void testMoveAndRefreshFalse() throws Exception
+   {
+      testMoveAndRefreshFalse(true);
+   }
+
+   public void testMoveAndRefreshFalseWithoutTriggering() throws Exception
+   {
+      testMoveAndRefreshFalse(false);
+   }
+
+   private void testMoveAndRefreshFalse(boolean triggerEventsForDescendantsOnRename) throws Exception
    {
       Node node1 = root.addNode("node1");
       Node node2 = node1.addNode("node2");
@@ -98,10 +196,13 @@ public class TestMoveNode extends JcrImplBaseTest
       String node1path = node1.getPath();
       Node node3 = root.addNode("node3");
       session.save();
-      session.move(node1.getPath(), node3.getPath() + "/" + "node4");
+      session.move(node1.getPath(), node3.getPath() + "/" + "node4", triggerEventsForDescendantsOnRename);
+      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
       assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
       session.refresh(false);
       assertEquals(node2path, node2.getPath());
+      assertEquals(node2path + "/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
       assertEquals(node1path, node1.getPath());
       try
       {
@@ -141,15 +242,80 @@ public class TestMoveNode extends JcrImplBaseTest
       assertTrue(node2.isModified());
    }
 
-   public void _testMoveAndRefreshTrue() throws Exception
+   public void testMoveAndRefreshTrueNSave() throws Exception
+   {
+      testMoveAndRefreshTrueNSave(true);
+   }
+
+   public void testMoveAndRefreshTrueNSaveWithoutTriggering() throws Exception
+   {
+      testMoveAndRefreshTrueNSave(false);
+   }
+
+   private void testMoveAndRefreshTrueNSave(boolean triggerEventsForDescendantsOnRename) throws Exception
    {
       Node node1 = root.addNode("node1");
       Node node2 = node1.addNode("node2");
       Node node3 = root.addNode("node3");
       session.save();
-      session.move(node1.getPath(), node3.getPath() + "/" + "node4");
-      session.refresh(false);
+      session.move(node1.getPath(), node3.getPath() + "/" + "node4", triggerEventsForDescendantsOnRename);
+      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
+      assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      session.refresh(true);
       session.save();
+      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
+      assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+
+      try
+      {
+         root.getNode("node1");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/node1/node2");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/node1/jcr:primaryType");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/node1/node2/jcr:primaryType");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         node3.getNode("node4");
+      }
+      catch (PathNotFoundException e1)
+      {
+         fail();
+      }
 
       node3.remove();
       session.save();
@@ -165,16 +331,79 @@ public class TestMoveNode extends JcrImplBaseTest
       }
    }
 
-   public void testMoveTwice() throws Exception
+   public void testMoveAndRefreshFalseNSave() throws Exception
+   {
+      testMoveAndRefreshFalseNSave(true);
+   }
+
+   public void testMoveAndRefreshFalseNSaveWithoutTriggering() throws Exception
+   {
+      testMoveAndRefreshFalseNSave(false);
+   }
+
+   private void testMoveAndRefreshFalseNSave(boolean triggerEventsForDescendantsOnRename) throws Exception
    {
       Node node1 = root.addNode("node1");
       Node node2 = node1.addNode("node2");
+      String node2path = node2.getPath();
+      String node1path = node1.getPath();
+      Node node3 = root.addNode("node3");
+      session.save();
+      session.move(node1.getPath(), node3.getPath() + "/" + "node4", triggerEventsForDescendantsOnRename);
+      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
+      assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      session.refresh(false);
+      session.save();
+      assertEquals(node2path, node2.getPath());
+      assertEquals(node2path + "/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      assertEquals(node1path, node1.getPath());
+      try
+      {
+         node3.getNode("node4");
+         fail();
+      }
+      catch (PathNotFoundException e1)
+      {
+         // ok
+      }
+
+      node3.remove();
+      session.save();
+
+      try
+      {
+         root.getNode("node3");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+   }
+   public void testMoveTwice() throws Exception
+   {
+      testMoveTwice(true);
+   }
+
+   public void testMoveTwiceWithoutTriggering() throws Exception
+   {
+      testMoveTwice(false);
+   }
+
+   private void testMoveTwice(boolean triggerEventsForDescendantsOnRename) throws Exception
+   {
+      Node node1 = root.addNode("node1");
+      Node node2 = node1.addNode("node2");
+      node2.addMixin("mix:referenceable");
+      node2.addNode("subnode2");
       Node node3 = root.addNode("node3");
       session.save();
       // root/node1/node2
       // root/node3
-      session.move(node1.getPath(), node3.getPath() + "/" + "node4");
+      session.move(node1.getPath(), node3.getPath() + "/" + "node4", triggerEventsForDescendantsOnRename);
 
+      String id = node2.getUUID();
       // root/node3/node4/node2
 
       try
@@ -186,12 +415,45 @@ public class TestMoveNode extends JcrImplBaseTest
       {
          // ok
       }
-      Node node34 = root.getNode("node3/node4");
-      Node node342 = root.getNode("node3/node4/node2");
+
+      try
+      {
+         session.getItem("/node1");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/node1/jcr:primaryType");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      assertTrue(root.hasNode("node3/node4"));
+      assertEquals("/node3/node4", root.getNode("node3/node4").getPath());
+      assertEquals("/node3/node4/jcr:primaryType", root.getNode("node3/node4").getProperty("jcr:primaryType").getPath());
+      assertTrue(root.hasNode("node3/node4/node2"));
+      assertEquals("/node3/node4/node2", root.getNode("node3/node4/node2").getPath());
+      assertEquals("/node3/node4/node2/jcr:primaryType", root.getNode("node3/node4/node2").getProperty("jcr:primaryType").getPath());
+      assertEquals("/node3/node4/node2/subnode2", root.getNode("node3/node4/node2/subnode2").getPath());
+      assertEquals("/node3/node4/node2/subnode2/jcr:primaryType", root.getNode("node3/node4/node2/subnode2").getProperty("jcr:primaryType").getPath());
+
+      Node node = session.getNodeByUUID(id);
+      assertEquals("/node3/node4/node2", node.getPath());
+      assertEquals("/node3/node4/node2/jcr:primaryType", node.getProperty("jcr:primaryType").getPath());
+      assertEquals("/node3/node4/node2/subnode2", node.getNode("subnode2").getPath());
+      assertEquals("/node3/node4/node2/subnode2/jcr:primaryType", root.getNode("node3/node4/node2/subnode2").getProperty("jcr:primaryType").getPath());
 
       // root/node3/node4
       // root/node5
-      session.move(node3.getPath() + "/node4/node2", root.getPath() + "node5");
+      session.move(node3.getPath() + "/node4/node2", root.getPath() + "node5", triggerEventsForDescendantsOnRename);
 
       try
       {
@@ -203,9 +465,56 @@ public class TestMoveNode extends JcrImplBaseTest
          // ok
       }
 
-      Node node5 = root.getNode("node5");
+      try
+      {
+         session.getItem("/node3/node4/node2");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
 
+      try
+      {
+         session.getItem("/node3/node4/node2/jcr:primaryType");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/node3/node4/node2/subnode2");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/node3/node4/node2/subnode2/jcr:primaryType");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      Node node5 = root.getNode("node5");
+      assertEquals("/node5", root.getNode("node5").getPath());
       assertEquals("/node5/jcr:primaryType", root.getNode("node5").getProperty("jcr:primaryType").getPath());
+      assertEquals("/node5/subnode2", root.getNode("node5/subnode2").getPath());
+      assertEquals("/node5/subnode2/jcr:primaryType", root.getNode("node5/subnode2").getProperty("jcr:primaryType").getPath());
+      node = session.getNodeByUUID(id);
+      assertEquals("/node5", node.getPath());
+      assertEquals("/node5/jcr:primaryType", node.getProperty("jcr:primaryType").getPath());
+      assertEquals("/node5/subnode2", node.getNode("subnode2").getPath());
+      assertEquals("/node5/subnode2/jcr:primaryType", node.getNode("subnode2").getProperty("jcr:primaryType").getPath());
 
       assertEquals(QPath.makeChildPath(((NodeImpl)root).getData().getQPath(), new InternalQName("", "node5"),
 
@@ -213,7 +522,15 @@ public class TestMoveNode extends JcrImplBaseTest
 
       session.save();
 
+      assertEquals("/node5", root.getNode("node5").getPath());
       assertEquals("/node5/jcr:primaryType", root.getNode("node5").getProperty("jcr:primaryType").getPath());
+      assertEquals("/node5/subnode2", root.getNode("node5/subnode2").getPath());
+      assertEquals("/node5/subnode2/jcr:primaryType", root.getNode("node5/subnode2").getProperty("jcr:primaryType").getPath());
+      node = session.getNodeByUUID(id);
+      assertEquals("/node5", node.getPath());
+      assertEquals("/node5/jcr:primaryType", node.getProperty("jcr:primaryType").getPath());
+      assertEquals("/node5/subnode2", node.getNode("subnode2").getPath());
+      assertEquals("/node5/subnode2/jcr:primaryType", node.getNode("subnode2").getProperty("jcr:primaryType").getPath());
 
       node5.remove();
       node3.remove();
@@ -421,6 +738,16 @@ public class TestMoveNode extends JcrImplBaseTest
 
    public void testMoveAndRemoveTree() throws Exception
    {
+      testMoveAndRemoveTree(true);
+   }
+
+   public void testMoveAndRemoveTreeWithoutTriggering() throws Exception
+   {
+      testMoveAndRemoveTree(false);
+   }
+
+   private void testMoveAndRemoveTree(boolean triggerEventsForDescendantsOnRename) throws Exception
+   {
       Node testRoot = root.addNode("test");
       testRoot.addMixin("mix:referenceable");
 
@@ -441,7 +768,7 @@ public class TestMoveNode extends JcrImplBaseTest
       session.save();
 
       // move tree
-      session.move("/test", "/newtest");
+      session.move("/test", "/newtest", triggerEventsForDescendantsOnRename);
       session.save();
 
       Node testRootMoved = root.getNode("newtest");
@@ -476,7 +803,7 @@ public class TestMoveNode extends JcrImplBaseTest
       assertEquals("/newtest/node1[3]/node2_1/node3_1/jcr:primaryType", node3_1PRMoved.getPath());
 
       // move sns node newtest/node1[1]
-      session.move("/newtest/node1", "/newtest/node4");
+      session.move("/newtest/node1", "/newtest/node4", triggerEventsForDescendantsOnRename);
       session.save();
 
       node1_2Moved = testRootMoved.getNode("node1[1]");
@@ -501,11 +828,21 @@ public class TestMoveNode extends JcrImplBaseTest
       assertEquals("/newtest/node1[2]/node2_1/node3_1/jcr:primaryType", node3_1PRMoved.getPath());
    }
 
+   public void testSetPropertyAndMoveNode() throws Exception
+   {
+      testSetPropertyAndMoveNode(true);
+   }
+
+   public void testSetPropertyAndMoveNodeWithoutTriggering() throws Exception
+   {
+      testSetPropertyAndMoveNode(false);
+   }
+
    /**
     * JCR-1960. Set property and move node. Reveals bug in cache, when actually property with old value
     * has been moved.
     */
-   public void testSetPropertyAndMoveNode() throws Exception
+   private void testSetPropertyAndMoveNode(boolean triggerEventsForDescendantsOnRename) throws Exception
    {
       Node rootNode = session.getRootNode();
       Node aNode = rootNode.addNode("foo");
@@ -515,8 +852,52 @@ public class TestMoveNode extends JcrImplBaseTest
       rootNode = session.getRootNode();
       aNode = rootNode.getNode("foo");
       aNode.setProperty("A", "C");
-      session.move("/foo", "/bar");
+      session.move("/foo", "/bar", triggerEventsForDescendantsOnRename);
       session.save();
+
+      try
+      {
+         root.getNode("foo");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/foo");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/foo/jcr:primaryType");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
+      try
+      {
+         session.getItem("/foo/A");
+         fail();
+      }
+      catch (PathNotFoundException e)
+      {
+         // ok
+      }
+
       assertEquals("C", aNode.getProperty("A").getString());
+      assertEquals("/bar", rootNode.getNode("bar").getPath());
+      assertEquals("/bar/jcr:primaryType", rootNode.getNode("bar").getProperty("jcr:primaryType").getPath());
+      assertEquals("/bar/A", rootNode.getNode("bar").getProperty("A").getPath());
    }
 }
