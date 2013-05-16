@@ -590,6 +590,23 @@ public class TestPropFind extends BaseStandaloneTest
       assertTrue(find.contains("<dc:creator xmlns:dc=\"http://purl.org/dc/elements/1.1/\"></dc:creator>"));
    }
 
+   public void testAllPropsWithEmptyMultiValuedProperty2() throws Exception
+   {
+      Node node = session.getRootNode().addNode("propertyDefNode", "nt:unstructured");
+      node.setProperty("jcr:defaultValue", new String[]{});
+      session.save();
+
+      ContainerResponse responseFind =
+         service(WebDAVMethods.PROPFIND, getPathWS() + node.getPath(), "", null, allPropsXML.getBytes());
+      assertEquals(HTTPStatus.MULTISTATUS, responseFind.getStatus());
+      ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+      PropFindResponseEntity entity = (PropFindResponseEntity)responseFind.getEntity();
+      entity.write(outputStream);
+      String find = outputStream.toString();
+
+      assertTrue(find.contains("<jcr:defaultValue xmlns:jcr=\"http://www.jcp.org/jcr/1.0\"></jcr:defaultValue>"));
+   }
+
    @Override
    protected String getRepositoryName()
    {
