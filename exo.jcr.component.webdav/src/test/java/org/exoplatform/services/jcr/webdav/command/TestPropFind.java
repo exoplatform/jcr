@@ -614,7 +614,7 @@ public class TestPropFind extends BaseStandaloneTest
       assertTrue(find.contains("<dc:creator xmlns:dc=\"http://purl.org/dc/elements/1.1/\"></dc:creator>"));
    }
 
-   public void testAllPropsWithEmptyMultiValuedProperty2() throws Exception
+   public void testPropFindWithEmptyMultiValuedProperty() throws Exception
    {
       Node node = session.getRootNode().addNode("propertyDefNode", "nt:unstructured");
       node.setProperty("jcr:defaultValue", new String[]{});
