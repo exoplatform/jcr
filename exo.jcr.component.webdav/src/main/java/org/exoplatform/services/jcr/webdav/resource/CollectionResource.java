@@ -356,17 +356,23 @@ public class CollectionResource extends GenericResource
          }
 
          Property property = node.getProperty(WebDavNamespaceContext.createName(name));
-
+         String propertyValue;
          if (property.getDefinition().isMultiple())
          {
-            Value[] values = property.getValues();
-            return new HierarchicalProperty(name, values[0].getString());
+            if (property.getValues().length > 0)
+            {
+               propertyValue = property.getValues()[0].getString();
+            }
+            else
+            {
+               propertyValue = "";
+            }
          }
          else
          {
-            return new HierarchicalProperty(name, property.getString());
+            propertyValue = property.getString();
          }
-
+         return new HierarchicalProperty(name, propertyValue);
       }
    }
 
