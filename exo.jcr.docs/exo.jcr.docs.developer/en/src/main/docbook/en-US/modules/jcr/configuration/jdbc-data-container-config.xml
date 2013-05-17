@@ -345,6 +345,10 @@ $ db2start</programlisting></para>
           <para>for JCR_SITEM (or JCR_MITEM) and JCR_SVALUE (or JCR_MVALUE)
           tables.</para>
         </listitem>
+         <listitem>
+            <para>If you don't want to enable the LIMIT/OFFSET clauses, you can still use "db2-mys"
+             as dialect however please note that the indexing is 120 times slower.</para>
+         </listitem>
       </itemizedlist>
     </section>
 
@@ -377,9 +381,8 @@ $ db2start</programlisting></para>
 
       <itemizedlist>
         <listitem>
-          <para>Be aware, when using RDBMS for reindexing need to set
-          "enable_seqscan" to "off" or "default_statistics_target" at least
-          "50"</para>
+          <para>Be aware, when using the RDBMS reindexing,
+             you need to set "enable_seqscan" to "off" or "default_statistics_target" to at least "50"</para>
         </listitem>
 
         <listitem>
@@ -392,6 +395,10 @@ $ db2start</programlisting></para>
           <programlisting>ANALYZE JCR_SITEM
 ANALYZE JCR_SVALUE</programlisting>
         </listitem>
+         <listitem>
+            <para>If for a version prior to 9.1, the parameter standard_conforming_strings is enabled,
+             you need to use "pgsql-scs" as dialect</para>
+         </listitem>
       </itemizedlist>
     </section>
 
