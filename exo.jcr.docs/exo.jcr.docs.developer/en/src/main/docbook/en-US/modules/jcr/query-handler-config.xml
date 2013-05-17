@@ -218,8 +218,8 @@
             <row>
               <entry>rdbms-reindexing</entry>
 
-              <entry>indicate that need to use rdbms reindexing mechanism if
-              possible, the default value is true</entry>
+              <entry>Indicates whether the rdbms re-indexing mechanism must
+                 be used, the default value is true.</entry>
             </row>
 
             <row>
@@ -259,7 +259,14 @@
             <row>
               <entry>indexing-thread-pool-size</entry>
 
-              <entry>Define the total amount of indexing threads.</entry>
+              <entry>Defines the total amount of indexing threads.</entry>
+            </row>
+
+            <row>
+              <entry>max-volatile-size</entry>
+
+              <entry>The maximum volatile index size in bytes until it is written to disk.
+                 The default value is 1048576 (1MB).</entry>
             </row>
           </tbody>
         </tgroup>
