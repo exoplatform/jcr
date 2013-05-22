@@ -176,6 +176,10 @@ public class RestRepositoryService implements ResourceContainer
     * of the configuration of all the repositories and workspaces
     * @return Response
     *           return the Response with RepositoryServiceConf
+    * @response
+    * {code:json}
+    *{"repositoryEntry": the configuration of the repository }
+    * {code}
     * @LevelAPI Experimental
     */
    @GET
@@ -196,6 +200,10 @@ public class RestRepositoryService implements ResourceContainer
     * @param repositoryName the name of the repository
     * @return Response
     *           return the Response with WorkspaceEntry
+    * @response
+    * {code:json}
+    *  {"workspaceEntry" : the configuration of the default workspace }
+    * {code}
     * @LevelAPI Experimental
     */
    @GET
@@ -253,7 +261,11 @@ public class RestRepositoryService implements ResourceContainer
     * @param uriInfo the uri location 
     * @param newRepository the configuration of the new repository
     * @return Response return the Response
-    * @throws URISyntaxException will be generated the URISyntaxException  
+    * @throws URISyntaxException will be generated the URISyntaxException
+    * @request
+    * {code:json}
+    *   {"newRepository": the configuration of the new repository }
+    * {code}
     * @LevelAPI Experimental
     */
    @POST
@@ -310,6 +322,10 @@ public class RestRepositoryService implements ResourceContainer
     * @param newWorkspace the configuration of the new workspace
     * @return Response return the Response
     * @throws URISyntaxException will be generated the URISyntaxException
+    * @request
+    * {code:json}
+    *  {"newWorkspace" : the configuration of the new workspace}
+    * {code}
     * @LevelAPI Experimental
     */
    @POST
@@ -495,6 +511,10 @@ public class RestRepositoryService implements ResourceContainer
     * Gives the name of all the existing repositories.
     * 
     * @return Response return the Response with list of repository names
+    * @response
+    * {code:json}
+    *  {"names" : the name of all the existing repositories }
+    * {code}
     * @LevelAPI Experimental
     */
    @GET
@@ -518,6 +538,10 @@ public class RestRepositoryService implements ResourceContainer
     * 
     * @param repositoryName the name of the repository
     * @return Response return the Response with list of workspace names
+    * @response
+    * {code:json}
+    *  {"names" : the name of all the existing workspaces for a given repository }
+    * {code}
     * @LevelAPI Experimental
     */
    @GET
@@ -569,7 +593,11 @@ public class RestRepositoryService implements ResourceContainer
     * 
     * @param repositoryName the name of the repository
     * @param workspaceName the name of the workspace
-    * @param workspaceEntry the configuration of the workspace 
+    * @param workspaceEntry the configuration of the workspace
+    * @request
+    * {code:json}
+    *  {"workspaceEntry" : the configuration of the workspace}
+    * {code}
     * @return Response return the Response
     * @LevelAPI Unsupported
     */

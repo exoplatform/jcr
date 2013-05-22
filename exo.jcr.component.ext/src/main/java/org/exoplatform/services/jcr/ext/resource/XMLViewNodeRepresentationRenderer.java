@@ -75,6 +75,10 @@ public class XMLViewNodeRepresentationRenderer implements ResourceContainer
     * @param viewType - either "system" or "document"
     * @param uriInfo
     * @return XML view of requested node
+    * @response
+    * {code}
+    * "xml" : the XML representation of a given node
+    * {code}
     * @LevelAPI Unsupported
     */
    @GET
