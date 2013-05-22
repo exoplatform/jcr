@@ -34,7 +34,6 @@ import javax.ws.rs.core.UriInfo;
  * Collections Protocol
  * 
  * @author Gennady Azarenkov
- * @version $Id: $
  */
 
 public interface WebDavService

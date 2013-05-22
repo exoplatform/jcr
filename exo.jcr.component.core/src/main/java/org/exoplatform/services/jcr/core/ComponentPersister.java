@@ -21,10 +21,11 @@ package org.exoplatform.services.jcr.core;
 import org.picocontainer.Startable;
 
 /**
- * Created by The eXo Platform SAS.
- * 
+ * Created by The eXo Platform SAS</br>
+ *
+ * The component persister service interface.
+ *
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
- * @version $Id: $
  * @LevelAPI Unsupported
  */
 public interface ComponentPersister extends Startable

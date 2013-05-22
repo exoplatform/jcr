@@ -39,7 +39,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
- * Created by The eXo Platform SAS .<br/>
+ * Created by The eXo Platform SAS<br/>
  * Provides JCR Session for client program. Usually it is per client thread object Session creates
  * with Repository.login(..) method and then can be stored in some cache if neccessary.
  * 

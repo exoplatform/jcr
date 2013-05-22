@@ -26,7 +26,9 @@ import org.exoplatform.services.jcr.core.ManageableRepository;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.<br/> The repository service
+ * Created by The eXo Platform SAS<br/>
+ *
+ * The repository service  interface
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @author <a href="mailto:benjamin.mestrallet@exoplatform.com">Benjamin Mestrallet</a>

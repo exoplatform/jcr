@@ -31,11 +31,11 @@ import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
 
 /**
- * Created by The eXo Platform SAS. <br/> Node Type manager.
+ * Created by The eXo Platform SAS<br/>
+ *
+ * Node Type manager interface.
  * 
- * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
- *         Azarenkov</a>
- * @version $Id$
+ * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @LevelAPI Unsupported
  */
 public interface ExtendedNodeTypeManager extends NodeTypeManager

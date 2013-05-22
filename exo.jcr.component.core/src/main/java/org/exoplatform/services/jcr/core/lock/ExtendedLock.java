@@ -21,6 +21,8 @@ package org.exoplatform.services.jcr.core.lock;
 import javax.jcr.lock.Lock;
 
 /**
+ * Extended interface of Lock adding  getTimeToDeath method.
+ *
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: ExtendedLock.java 11907 2008-03-13 15:36:21Z ksm $
  * @LevelAPI Experimental

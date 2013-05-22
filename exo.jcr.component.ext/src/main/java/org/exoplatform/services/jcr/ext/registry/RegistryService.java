@@ -63,7 +63,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 /**
- * Created by The eXo Platform SAS . <br/>
+ * Created by The eXo Platform SAS <br/>
  * 
  * Centralized collector for JCR based entities (services, apps, users) It contains info about the
  * whole system, i.e. for all repositories used by system. All operations performed in context of
@@ -225,7 +225,10 @@ public class RegistryService extends Registry implements Startable
    }
 
    /**
-    * {@inheritDoc}
+    * Re-creates an entry in the group.
+    *
+    * @param sessionProvider the session provider
+    * @throws RepositoryException
     */
    @Override
    public void recreateEntry(final SessionProvider sessionProvider, final String groupPath, final RegistryEntry entry)
@@ -266,7 +269,10 @@ public class RegistryService extends Registry implements Startable
    }
 
    /**
-    * {@inheritDoc}
+    * Update an entry in the group.
+    *
+    * @param sessionProvider the session provider
+    * @throws RepositoryException
     */
    public void updateEntry(final SessionProvider sessionProvider, final String groupPath, final RegistryEntry entry)
       throws RepositoryException

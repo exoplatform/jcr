@@ -22,11 +22,11 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
 
 /**
- * Created by The eXo Platform SAS. <br/>
- * Date: 25.11.2008
+ * Created by The eXo Platform SAS<br/>
+ *
+ * ItemDefinition Data object.
  * 
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
- *         Nedonosko</a>
+ * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter  Nedonosko</a>
  * @version $Id: ItemDefinitionData.java 26474 2009-01-09 16:15:25Z ksm $
  * @LevelAPI Unsupported
  */

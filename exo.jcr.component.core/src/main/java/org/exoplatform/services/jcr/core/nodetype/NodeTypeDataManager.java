@@ -32,11 +32,11 @@ import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
 
 /**
- * Created by The eXo Platform SAS. <br/>
- * Date: 25.11.2008
- * 
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
- *         Nedonosko</a>
+ * Created by The eXo Platform SAS<br/>
+ *
+ * The NodeTypeDataManager interface provides the following methods related to reading and registering node types.
+ *
+ * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: NodeTypeDataManager.java 24494 2008-12-05 12:26:49Z pnedonosko$
  * @LevelAPI Unsupported
  */
@@ -64,7 +64,7 @@ public interface NodeTypeDataManager
 
    /**
     * @param nodeTypeNames
-    * @return
+    * @return  the children node definitions
     */
    NodeDefinitionData[] getAllChildNodeDefinitions(InternalQName... nodeTypeNames);
 
@@ -78,14 +78,14 @@ public interface NodeTypeDataManager
 
    /**
     * @param nodeTypeNames
-    * @return
+    * @return  the property definitions
     */
    PropertyDefinitionData[] getAllPropertyDefinitions(InternalQName... nodeTypeNames);
 
    /**
     * @param nodeName
     * @param nodeTypeNames
-    * @return
+    * @return the children node definition
     * @throws RepositoryException 
     */
    NodeDefinitionData getChildNodeDefinition(InternalQName nodeName, InternalQName... nodeTypeNames)
@@ -95,7 +95,7 @@ public interface NodeTypeDataManager
     * @param nodeName
     * @param primaryNodeType
     * @param mixinTypes
-    * @return
+    * @return the children node definition
     */
    NodeDefinitionData getChildNodeDefinition(InternalQName nodeName, InternalQName primaryNodeType,
       InternalQName[] mixinTypes) throws RepositoryException;
@@ -108,7 +108,7 @@ public interface NodeTypeDataManager
     * @param nodeName
     * @param parentNodeType
     * @param parentMixinTypes
-    * @return
+    * @return the children node definition
     */
    NodeDefinitionData getChildNodeDefinition(InternalQName nodeName, InternalQName nodeType,
       InternalQName parentNodeType, InternalQName[] parentMixinTypes) throws RepositoryException;
@@ -118,28 +118,28 @@ public interface NodeTypeDataManager
     * inheritance hierarchy, that is, those which actually declared this node
     * type in their list of supertypes.
     * 
-    * @return
+    * @return the subtypes of this node
     */
    Set<InternalQName> getDeclaredSubtypes(final InternalQName nodeTypeName);
 
    /**
     * @param primaryNodeType
     * @param mixinTypes
-    * @return
+    * @return  Mandatory Item Definitions
     */
    List<ItemDefinitionData> getManadatoryItemDefs(InternalQName primaryNodeType, InternalQName[] mixinTypes)
       throws RepositoryException;
 
    /**
     * @param typeName
-    * @return
+    * @return the node type corresponding to the given node type name
     */
    NodeTypeData getNodeType(InternalQName typeName);
 
    /**
     * @param propertyName
     * @param nodeTypeNames
-    * @return
+    * @return  the property definition
     */
    PropertyDefinitionDatas getPropertyDefinitions(InternalQName propertyName, InternalQName... nodeTypeNames)
       throws RepositoryException;
@@ -148,7 +148,7 @@ public interface NodeTypeDataManager
     * @param propertyName
     * @param primaryNodeType
     * @param mixinTypes
-    * @return
+    * @return  the property definition
     */
    PropertyDefinitionDatas getPropertyDefinitions(InternalQName propertyName, InternalQName primaryNodeType,
       InternalQName[] mixinTypes) throws RepositoryException;
@@ -158,17 +158,18 @@ public interface NodeTypeDataManager
     * hierarchy.
     * 
     * @param nodeTypeName
-    * @return
+    * @return the subtypes of this node
     */
    Set<InternalQName> getSubtypes(final InternalQName nodeTypeName);
    
    /**
-    * 
+    *
     * @param childNodeName
     * @param childNodeTypeName
     * @param parentNodeType
     * @param parentMixinNames
-    * @return
+    * @return  <code>true</code> if node with <code>childNodeName</code>as name and <code>childNodeTypeName</code> as node type
+    * allowed as child, <code>false</code> otherwise
     */
    boolean isChildNodePrimaryTypeAllowed(InternalQName childNodeName, InternalQName childNodeTypeName,
       InternalQName parentNodeType, InternalQName[] parentMixinNames) throws RepositoryException;
@@ -176,7 +177,8 @@ public interface NodeTypeDataManager
    /**
     * @param testTypeName
     * @param typeNames
-    * @return
+    * @return  <code>true</code> if the node type name to test is of type
+    * of one of the given node type names, <code>false</code> otherwise
     */
    boolean isNodeType(InternalQName testTypeName, InternalQName... typeNames);
 
@@ -184,14 +186,15 @@ public interface NodeTypeDataManager
     * @param testTypeName
     * @param primaryNodeType
     * @param mixinNames
-    * @return
+    * @return <code>true</code> if the node type name to test is of type
+    * of one of the given node type names, <code>false</code> otherwise
     */
    boolean isNodeType(InternalQName testTypeName, InternalQName primaryNodeType, InternalQName[] mixinNames);
 
    /**
     * @param primaryNodeType
     * @param mixinTypes
-    * @return
+    * @return  <code>true</code> if orderable child nodes is supported, <code>false</code> otherwise
     */
    boolean isOrderableChildNodesSupported(InternalQName primaryNodeType, InternalQName[] mixinTypes)
       throws RepositoryException;
@@ -199,7 +202,7 @@ public interface NodeTypeDataManager
    /**
     * @param xml
     * @param alreadyExistsBehaviour
-    * @return
+    * @return the list of node types
     * @throws RepositoryException
     */
    List<NodeTypeData> registerNodeTypes(InputStream xml, int alreadyExistsBehaviour, String contentType)
@@ -208,7 +211,7 @@ public interface NodeTypeDataManager
    /**
     * @param ntValues
     * @param alreadyExistsBehaviour
-    * @return
+    * @return the list of node types
     * @throws RepositoryException
     */
    List<NodeTypeData> registerNodeTypes(List<NodeTypeValue> ntValues, int alreadyExistsBehaviour)
@@ -219,7 +222,7 @@ public interface NodeTypeDataManager
     * 
     * @param nodeData
     * @param nodeTypeName
-    * @return
+    * @return PlainChangesLog
     * @throws RepositoryException
     */
    PlainChangesLog setPrimaryType(NodeData nodeData, InternalQName nodeTypeName) throws RepositoryException;

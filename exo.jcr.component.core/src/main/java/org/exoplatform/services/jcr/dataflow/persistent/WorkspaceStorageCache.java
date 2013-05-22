@@ -32,7 +32,7 @@ import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import java.util.List;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS</br>
  * 
  * Defines storage cache contract
  * 
@@ -130,7 +130,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    List<PropertyData> getChildProperties(NodeData parent, QPathEntryFilter pattern);
 
    /**
-    * List node child properties.<br/> A difference from {@link getChildProperties()} it's that the
+    * List node child properties.<br/> A difference from {@link #getChildProperties(org.exoplatform.services.jcr.datamodel.NodeData)} it's that the
     * method may return list of node properties (PropertyData) which contains no data
     * (ValueData).<br/> Used for Node.hasProperties(), NodeIndexer.createDoc().
     * 

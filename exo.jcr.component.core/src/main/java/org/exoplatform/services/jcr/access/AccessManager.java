@@ -36,7 +36,10 @@ import java.util.StringTokenizer;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS</br>
+ *
+ * The AccessManager can be queried to determines whether permission is granted
+ * to perform a specific action on a specific item.
  * 
  * @author Gennady Azarenkov
  * @version $Id: AccessManager.java 14518 2008-05-20 13:27:19Z ksm $

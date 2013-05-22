@@ -101,10 +101,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Created by The eXo Platform SARL .<br/>
- * 
+ * Created by The eXo Platform SAS.
+ * Service class to handle webdav protocol.
+ *
  * @author Gennady Azarenkov
- * @version $Id$
  */
 
 @Path("/jcr")

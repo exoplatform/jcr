@@ -79,9 +79,9 @@ import javax.ws.rs.core.Response;
 
 /**
  * Created by The eXo Platform SAS.
- * 
- * <br/>
- * Date: 24.02.2009
+ *
+ * HTTPBackupAgent is representation BackupManager to creation backup,
+ * restore, getting status of current or completed backup/restore, etc.
  * 
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id: BackupServer.java 111 2008-11-11 11:11:11Z rainf0x $

@@ -24,7 +24,9 @@ import org.exoplatform.services.security.MembershipEntry;
 import java.util.StringTokenizer;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS</br>
+ *
+ * A data structure consisting of a user name, group and a permission granted to it.
  * 
  * @author Gennady Azarenkov
  * @version $Id: AccessControlEntry.java 14464 2008-05-19 11:05:20Z pnedonosko $

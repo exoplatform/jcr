@@ -25,7 +25,7 @@ import java.util.Calendar;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.<br>
+ * Created by The eXo Platform SAS<br>
  * 
  * Serves repository workspace persistent storage. Acts as factory for WorkspaceStorageConnection
  * objects, the implementation should support thread safety for openConnection() method;

@@ -34,7 +34,9 @@ import javax.jcr.lock.Lock;
 import javax.jcr.lock.LockException;
 
 /**
- * Created by The eXo Platform SAS.<br/> The extension for JSR-170 standard Node interface.
+ * Created by The eXo Platform SAS<br/>
+ *
+ * The extension for JSR-170 standard Node interface.
  * 
  * @author Gennady Azarenkov
  * @version $Id: ExtendedNode.java 11907 2008-03-13 15:36:21Z ksm $

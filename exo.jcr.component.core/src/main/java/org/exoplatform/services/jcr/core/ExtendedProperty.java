@@ -28,7 +28,10 @@ import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS</br>
+ *
+ * ExtendedProperty extends a Property class with support  Writing
+ * binary data portion to the property value data
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: ExtendedProperty.java 11907 2008-03-13 15:36:21Z ksm $

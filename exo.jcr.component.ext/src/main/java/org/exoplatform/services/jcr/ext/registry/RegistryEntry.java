@@ -39,11 +39,11 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 
 /**
- * Created by The eXo Platform SAS .<br/>
+ * Created by The eXo Platform SAS<br/>
+ *
  * Encapsulates registry entry (i.e services', applications' etc settings)
  * 
  * @author Gennady Azarenkov
- * @version $Id: $
  * @LevelAPI Unsupported
  */
 

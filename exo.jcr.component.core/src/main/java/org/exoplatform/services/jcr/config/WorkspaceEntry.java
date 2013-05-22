@@ -19,10 +19,11 @@
 package org.exoplatform.services.jcr.config;
 
 /**
- * Created by The eXo Platform SAS .
+ * Created by The eXo Platform SAS</br>
+ *
+ * The workspace configuration bean
  * 
  * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>
- * @version $
  * @LevelAPI Unsupported
  */
 

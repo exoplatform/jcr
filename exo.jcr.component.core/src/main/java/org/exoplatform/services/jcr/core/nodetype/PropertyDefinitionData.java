@@ -23,12 +23,13 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import java.util.Arrays;
 
 /**
- * Created by The eXo Platform SAS. <br/>Date: 25.11.2008
- * 
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
- *         Nedonosko</a>
- * @version $Id: PropertyDefinitionData.java 23992 2008-11-27 16:58:34Z
- *          pnedonosko $
+ * Created by The eXo Platform SAS<br/>
+ *
+ * The PropertyDefinitionData interface extends ItemDefinitionValue provides the methods read access to property definition
+ *
+ *
+ * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
+ * @version $Id: PropertyDefinitionData.java 23992 2008-11-27 16:58:34Z pnedonosko $
  * @LevelAPI Unsupported
  */
 public class PropertyDefinitionData extends ItemDefinitionData

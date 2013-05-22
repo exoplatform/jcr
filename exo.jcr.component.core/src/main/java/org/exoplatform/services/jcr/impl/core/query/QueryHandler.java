@@ -180,7 +180,7 @@ public interface QueryHandler
 
    /**
     * Returns {@link IndexInfos} instance that was set into QueryHandler.
-    * @return
+    * @return Index info instance
     */
    IndexInfos getIndexInfos();
 

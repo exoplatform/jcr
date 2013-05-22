@@ -39,7 +39,9 @@ import javax.jcr.version.VersionException;
 import javax.transaction.xa.XAResource;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS</br>
+ *
+ * ExtendedSession extends the Session interface
  * 
  * @author Gennady Azarenkov
  * @version $Id: ExtendedSession.java 12649 2008-04-02 12:46:37Z ksm $

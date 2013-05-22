@@ -36,11 +36,12 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
- * Created by The eXo Platform SAS.<br/> Etended Repository implementation
+ * Created by The eXo Platform SAS<br/>
+ *
+ * Extended Repository implementation
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
- * @version $Id: ManageableRepository.java 13931 2008-05-06 12:10:00Z pnedonosko
- *          $
+ * @version $Id: ManageableRepository.java 13931 2008-05-06 12:10:00Z pnedonosko $
  * @LevelAPI Experimental
  */
 

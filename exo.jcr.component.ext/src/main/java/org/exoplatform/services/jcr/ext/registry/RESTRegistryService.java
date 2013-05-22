@@ -58,8 +58,9 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 
 /**
+ * RESTRegistryService is RESTfull service intended to manage registry nodes.
+ *
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
- * @version $Id: $
  */
 @Path("/registry/")
 public class RESTRegistryService implements ResourceContainer

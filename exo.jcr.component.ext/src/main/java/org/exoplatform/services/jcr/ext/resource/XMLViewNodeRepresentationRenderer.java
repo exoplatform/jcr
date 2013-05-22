@@ -42,12 +42,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Created by The eXo Platform SAS .
+ * Created by The eXo Platform SAS.
  * 
- * REST service to expose JCR node as either sys or doc view
+ * REST service to expose JCR node as either sys or doc view.
  * 
  * @author Gennady Azarenkov
- * @version $Id: $
  */
 @Path("/jcr-xml-view")
 public class XMLViewNodeRepresentationRenderer implements ResourceContainer
