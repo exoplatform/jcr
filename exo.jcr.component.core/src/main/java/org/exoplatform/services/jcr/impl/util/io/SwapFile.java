@@ -29,6 +29,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicReference;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -56,6 +59,11 @@ public class SwapFile extends SpoolFile
    private static final long serialVersionUID = 4048760909657109754L;
 
    /**
+    * The Logger.
+    */
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SwapFile");
+
+   /**
     * In-share files database.
     */
    protected static final ConcurrentMap<String, WeakReference<SwapFile>> CURRENT_SWAP_FILES =
@@ -67,16 +75,41 @@ public class SwapFile extends SpoolFile
    protected final AtomicReference<CountDownLatch> spoolLatch = new AtomicReference<CountDownLatch>();
 
    /**
+    * swap cleaner (FileCleaner).
+    */
+   private final FileCleaner swapCleaner;
+
+   /**
     * SwapFile constructor.
     * 
     * @param parent
     *          Parent File
     * @param child
     *          File name
+    * @param cleaner
+    *          File Cleaner
     */
-   protected SwapFile(File parent, String child)
+   protected SwapFile(File parent, String child, FileCleaner cleaner)
    {
-      super(parent, child);
+      super(parent,child);
+      this.swapCleaner=cleaner;
+   }
+
+   /**
+    * Obtain SwapFile by parent file and name.
+    *
+    * @param parent
+    *          - parent File
+    * @param child
+    *          - String with file name
+    * @return SwapFile swap file
+    * @throws IOException
+    *           I/O error
+    */
+   public static SwapFile get(final File parent, final String child) throws IOException
+   {
+
+      return get(parent, child, SpoolConfig.getDefaultSpoolConfig().fileCleaner);
    }
 
    /**
@@ -92,13 +125,15 @@ public class SwapFile extends SpoolFile
     *          - parent File
     * @param child
     *          - String with file name
+    * @param cleaner
+    *          - The FileCleaner
     * @return SwapFile swap file
     * @throws IOException
     *           I/O error
     */
-   public static SwapFile get(final File parent, final String child) throws IOException
+   public static SwapFile get(final File parent, final String child, FileCleaner cleaner) throws IOException
    {
-      SwapFile newsf = new SwapFile(parent, child);
+      SwapFile newsf = new SwapFile(parent, child,cleaner);
       String absPath = PrivilegedFileHelper.getAbsolutePath(newsf);
 
       WeakReference<SwapFile> swappedRef = CURRENT_SWAP_FILES.get(absPath);
@@ -145,7 +180,7 @@ public class SwapFile extends SpoolFile
       if (currentValue != null)
       {
          // the swap file has been put already so we need to loop
-         return get(parent, child);
+         return get(parent, child,cleaner);
       }
       return newsf;
    }
@@ -170,17 +205,6 @@ public class SwapFile extends SpoolFile
       sl.countDown();
    }
 
-   // ------ java.io.File ------
-
-   /**
-    * Delete file if it was not used by any other thread.
-    */
-   @Override
-   public boolean delete()
-   {
-      return delete(false);
-   }
-
    /**
     * Not applicable. Call get(File, String) method instead.
     * 
@@ -200,24 +224,25 @@ public class SwapFile extends SpoolFile
    {
       try
       {
-         delete(true);
+         delete();
       }
       finally
       {
          super.finalize();
       }
    }
-   
+
    /**
-    * Deletes the file, if force is set to true, the map of users will be cleared to ensure that the deletion process won't be aborted
+    * {@inheritDoc}
     */
-   private boolean delete(boolean force)
+   @Override
+   public boolean delete()
    {
       String path = PrivilegedFileHelper.getAbsolutePath(this);
       WeakReference<SwapFile> currentValue = CURRENT_SWAP_FILES.get(path);
       if (currentValue == null || (currentValue.get() == this || currentValue.get() == null))
       {
-         CURRENT_SWAP_FILES.remove(path, currentValue);            
+         CURRENT_SWAP_FILES.remove(path, currentValue);
          synchronized(this)
          {
             users.clear();
@@ -229,7 +254,20 @@ public class SwapFile extends SpoolFile
                {
                   if (sf.exists())
                   {
-                     return SwapFile.super.delete();
+                     if (SwapFile.super.delete())
+                     {
+                        return true;
+                     }
+                     else if (swapCleaner != null)
+                     {
+                        swapCleaner.addFile(SwapFile.super.getAbsoluteFile());
+                     }
+                     if (LOG.isDebugEnabled())
+                     {
+                        LOG.debug("Could not remove swap file on finalize : "
+                           + PrivilegedFileHelper.getAbsolutePath(SwapFile.super.getAbsoluteFile()));
+                     }
+                     return false;
                   }
                   return true;
                }
