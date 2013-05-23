@@ -27,14 +27,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * JCR WebDAV entry point. Defines WebDav protocol methods: RFC-2518 HTTP
  * Extensions for Distributed Authoring -- WEBDAV RFC-3253 Versioning Extensions
  * to WebDAV RFC-3648: Web Distributed Authoring and Versioning (WebDAV) Ordered
  * Collections Protocol
  * 
  * @author Gennady Azarenkov
- * @version $Id: $
  */
 
 public interface WebDavService

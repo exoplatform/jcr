@@ -19,8 +19,10 @@
 package org.exoplatform.services.jcr.access;
 
 /**
- * Created by The eXo Platform SAS.
- * 
+ * Created by The eXo Platform SAS<br>
+ *
+ * Interface defining all the constants related to a permission type.
+ *
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: PermissionType.java 14515 2008-05-20 11:45:21Z ksm $
  * @LevelAPI Platform

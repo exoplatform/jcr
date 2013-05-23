@@ -23,10 +23,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Created by The eXo Platform SAS .
- * 
+ * Created by The eXo Platform SAS<br>
+ *
+ * The repository configuration bean
+ *
  * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>
- * @version $
  * @LevelAPI Unsupported
  */
 

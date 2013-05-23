@@ -21,8 +21,10 @@ package org.exoplatform.services.jcr.core.nodetype;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 
 /**
+ *
+ * Define base abstraction for NodeType data used in core.
+ *
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
- * @version $Id$
  * @LevelAPI Unsupported
  */
 public interface NodeTypeData

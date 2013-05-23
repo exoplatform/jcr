@@ -27,14 +27,13 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS .<br/>
+ * Created by The eXo Platform SAS<br>
  * JCR based Services Registry abstraction. As interchange object all the methods use Nodes'
  * wrappers to not to let using an arbitrary Type of Node. There is 2 phase modification of
  * RegistryEntry (1) get or create RegistryEntry retrieves or creates new object in memory and (2)
  * register/unregister stores the object permanently
  * 
  * @author Gennady Azarenkov
- * @version $Id: $
  * @LevelAPI Unsupported
  */
 
@@ -45,9 +44,9 @@ public abstract class Registry
     * Returns the registry node which wraps a node of type "exo:registry" (the whole registry tree)
     * 
     * @param sessionProvider
-    * @param repository
     * @return registry node object
     * @throws RepositoryException
+    * @throws RepositoryConfigurationException
     */
    public abstract RegistryNode getRegistry(SessionProvider sessionProvider) throws RepositoryConfigurationException,
       RepositoryException;
@@ -73,7 +72,6 @@ public abstract class Registry
     * @param groupPath
     *          related path (w/o leading slash) to group
     * @param entry
-    * @throws RepositoryConfigurationException
     * @throws RepositoryException
     */
    public abstract void createEntry(SessionProvider sessionProvider, String groupPath, RegistryEntry entry)
@@ -86,7 +84,6 @@ public abstract class Registry
     * @param groupPath
     *          related path (w/o leading slash) to group
     * @param entry
-    * @throws RepositoryConfigurationException
     * @throws RepositoryException
     */
    public abstract void recreateEntry(SessionProvider sessionProvider, String groupPath, RegistryEntry entry)
@@ -98,7 +95,6 @@ public abstract class Registry
     * @param sessionProvider
     * @param entryPath
     *          related path (w/o leading slash) to entry
-    * @throws RepositoryConfigurationException
     * @throws RepositoryException
     */
    public abstract void removeEntry(SessionProvider sessionProvider, String entryPath) throws RepositoryException;

@@ -22,7 +22,9 @@ import org.exoplatform.container.xml.PropertiesParam;
 
 import java.io.InputStream;
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS<br>
+ *
+ *  Repository service configuration persister interface.
  *
  * @LevelAPI Provisional
  */
@@ -31,8 +33,6 @@ public interface ConfigurationPersister
 
    /**
     * Init persister. Used by RepositoryServiceConfiguration on init.
-    * 
-    * @return - config data stream
     */
    void init(PropertiesParam params) throws RepositoryConfigurationException;
 
