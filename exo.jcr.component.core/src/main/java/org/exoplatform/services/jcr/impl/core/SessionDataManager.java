@@ -1201,7 +1201,7 @@ public class SessionDataManager implements ItemDataConsumer
       return itemsPool.reload(data);
    }
 
-   public void rename(NodeData srcData, ItemDataMoveVisitor initializer) throws RepositoryException
+   public void move(NodeData srcData, ItemDataMoveVisitor initializer) throws RepositoryException
    {
 
       srcData.accept(initializer);
@@ -1209,8 +1209,15 @@ public class SessionDataManager implements ItemDataConsumer
       changesLog.addAll(initializer.getAllStates());
 
       // reload items pool
-      for (ItemState state : initializer.getItemAddStates())
+      reloadItems(initializer);
+   }
+
+   public void reloadItems(ItemDataMoveVisitor initializer) throws RepositoryException
+   {
+      List<ItemState> states = initializer.getItemAddStates();
+      for (int i = 0, length = states.size(); i < length; i++)
       {
+         ItemState state = states.get(i);
          if (state.isUpdated() || state.isRenamed())
          {
             ItemImpl item = reloadItem(state.getData());
@@ -1226,6 +1233,7 @@ public class SessionDataManager implements ItemDataConsumer
       }
    }
 
+   
    /**
     * Traverses all the descendants of incoming item and creates DELETED state for them Adds DELETED
     * incoming state of incoming and descendants to the changes log and removes corresponding items

@@ -36,11 +36,23 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Random;
 
+import javax.jcr.AccessDeniedException;
+import javax.jcr.InvalidItemStateException;
 import javax.jcr.Item;
+import javax.jcr.ItemExistsException;
+import javax.jcr.LoginException;
+import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.query.InvalidQueryException;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryResult;
+import javax.jcr.version.VersionException;
 
 /**
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
@@ -56,7 +68,7 @@ public class TestMoveNode extends JcrImplBaseTest
       Node node2 = node1.addNode("node2");
       Node node3 = root.addNode("node3");
       session.save();
-      session.move(node1.getPath(), node3.getPath() + "/" + "node4");
+      session.move(node1.getPath(), node3.getPath() + "/node4");
       session.save();
       node3.remove();
       session.save();
@@ -100,20 +112,23 @@ public class TestMoveNode extends JcrImplBaseTest
       testMoveAndRefreshTrue(false);
    }
 
-   private void testMoveAndRefreshTrue(boolean triggerEventsForDescendantsOnRename) throws Exception
+   private void testMoveAndRefreshTrue(boolean triggerEventsForDescendants) throws Exception
    {
       Node node1 = root.addNode("node1");
       Node node2 = node1.addNode("node2");
       Node node3 = root.addNode("node3");
       session.save();
-      session.move(node1.getPath(), node3.getPath() + "/" + "node4", triggerEventsForDescendantsOnRename);
-      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      assertEquals("/node1", node1.getPath());
+      assertEquals("/node1/node2", node2.getPath());
+      assertEquals("/node1/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      session.move(node1.getPath(), node3.getPath() + "/node4", triggerEventsForDescendants);
+      assertEquals(node3.getPath() + "/node4", node1.getPath());
+      assertEquals(node3.getPath() + "/node4/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/node4/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
       session.refresh(true);
-      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      assertEquals(node3.getPath() + "/node4", node1.getPath());
+      assertEquals(node3.getPath() + "/node4/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/node4/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
 
       try
       {
@@ -188,22 +203,23 @@ public class TestMoveNode extends JcrImplBaseTest
       testMoveAndRefreshFalse(false);
    }
 
-   private void testMoveAndRefreshFalse(boolean triggerEventsForDescendantsOnRename) throws Exception
+   private void testMoveAndRefreshFalse(boolean triggerEventsForDescendants) throws Exception
    {
       Node node1 = root.addNode("node1");
       Node node2 = node1.addNode("node2");
-      String node2path = node2.getPath();
-      String node1path = node1.getPath();
       Node node3 = root.addNode("node3");
       session.save();
-      session.move(node1.getPath(), node3.getPath() + "/" + "node4", triggerEventsForDescendantsOnRename);
-      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      assertEquals("/node1", node1.getPath());
+      assertEquals("/node1/node2", node2.getPath());
+      assertEquals("/node1/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      session.move(node1.getPath(), node3.getPath() + "/node4", triggerEventsForDescendants);
+      assertEquals(node3.getPath() + "/node4", node1.getPath());
+      assertEquals(node3.getPath() + "/node4/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/node4/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
       session.refresh(false);
-      assertEquals(node2path, node2.getPath());
-      assertEquals(node2path + "/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
-      assertEquals(node1path, node1.getPath());
+      assertEquals("/node1", node1.getPath());
+      assertEquals("/node1/node2", node2.getPath());
+      assertEquals("/node1/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
       try
       {
          node3.getNode("node4");
@@ -238,7 +254,7 @@ public class TestMoveNode extends JcrImplBaseTest
       assertFalse(node2.isModified());
       node2.setProperty("test", "sdf");
       assertTrue(node2.isModified());
-      session.move(node1.getPath(), node3.getPath() + "/" + "node4");
+      session.move(node1.getPath(), node3.getPath() + "/node4");
       assertTrue(node2.isModified());
    }
 
@@ -252,21 +268,47 @@ public class TestMoveNode extends JcrImplBaseTest
       testMoveAndRefreshTrueNSave(false);
    }
 
-   private void testMoveAndRefreshTrueNSave(boolean triggerEventsForDescendantsOnRename) throws Exception
+   private void testMoveAndRefreshTrueNSave(boolean triggerEventsForDescendants) throws Exception
    {
       Node node1 = root.addNode("node1");
       Node node2 = node1.addNode("node2");
       Node node3 = root.addNode("node3");
       session.save();
-      session.move(node1.getPath(), node3.getPath() + "/" + "node4", triggerEventsForDescendantsOnRename);
-      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      assertEquals("/node1", node1.getPath());
+      assertEquals("/node1/node2", node2.getPath());
+      assertEquals("/node1/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      session.move(node1.getPath(), node3.getPath() + "/node4", triggerEventsForDescendants);
+      assertEquals(node3.getPath() + "/node4", node1.getPath());
+      assertEquals(node3.getPath() + "/node4/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/node4/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
       session.refresh(true);
       session.save();
-      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      assertEquals(node3.getPath() + "/node4", node1.getPath());
+      assertEquals(node3.getPath() + "/node4/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/node4/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+
+      Query query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node1'", Query.SQL);
+      QueryResult result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node1/node2'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node3/node4'", Query.SQL);
+      result = query.execute();
+      NodeIterator ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      Node n = ni.nextNode();
+      assertEquals("/node3/node4", n.getPath());
+      assertFalse(ni.hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node3/node4/node2'", Query.SQL);
+      result = query.execute();
+      ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      n = ni.nextNode();
+      assertEquals("/node3/node4/node2", n.getPath());
+      assertEquals("/node3/node4/node2/jcr:primaryType", n.getProperty("jcr:primaryType").getPath());
+      assertFalse(ni.hasNext());
 
       try
       {
@@ -341,23 +383,48 @@ public class TestMoveNode extends JcrImplBaseTest
       testMoveAndRefreshFalseNSave(false);
    }
 
-   private void testMoveAndRefreshFalseNSave(boolean triggerEventsForDescendantsOnRename) throws Exception
+   private void testMoveAndRefreshFalseNSave(boolean triggerEventsForDescendants) throws Exception
    {
       Node node1 = root.addNode("node1");
       Node node2 = node1.addNode("node2");
-      String node2path = node2.getPath();
-      String node1path = node1.getPath();
       Node node3 = root.addNode("node3");
       session.save();
-      session.move(node1.getPath(), node3.getPath() + "/" + "node4", triggerEventsForDescendantsOnRename);
-      assertEquals(node3.getPath() + "/" + "node4", node1.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2", node2.getPath());
-      assertEquals(node3.getPath() + "/" + "node4" + "/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      assertEquals("/node1", node1.getPath());
+      assertEquals("/node1/node2", node2.getPath());
+      assertEquals("/node1/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+      session.move(node1.getPath(), node3.getPath() + "/node4", triggerEventsForDescendants);
+      assertEquals(node3.getPath() + "/node4", node1.getPath());
+      assertEquals(node3.getPath() + "/node4/node2", node2.getPath());
+      assertEquals(node3.getPath() + "/node4/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
       session.refresh(false);
       session.save();
-      assertEquals(node2path, node2.getPath());
-      assertEquals(node2path + "/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
-      assertEquals(node1path, node1.getPath());
+      assertEquals("/node1", node1.getPath());
+      assertEquals("/node1/node2", node2.getPath());
+      assertEquals("/node1/node2/jcr:primaryType", node2.getProperty("jcr:primaryType").getPath());
+
+      Query query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node1'", Query.SQL);
+      QueryResult result = query.execute();
+      NodeIterator ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      Node n = ni.nextNode();
+      assertEquals("/node1", n.getPath());
+      assertFalse(ni.hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node1/node2'", Query.SQL);
+      result = query.execute();
+      ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      n = ni.nextNode();
+      assertEquals("/node1/node2", n.getPath());
+      assertEquals("/node1/node2/jcr:primaryType", n.getProperty("jcr:primaryType").getPath());
+      assertFalse(ni.hasNext());
+
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node3/node4'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node3/node4/node2'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+
       try
       {
          node3.getNode("node4");
@@ -391,7 +458,7 @@ public class TestMoveNode extends JcrImplBaseTest
       testMoveTwice(false);
    }
 
-   private void testMoveTwice(boolean triggerEventsForDescendantsOnRename) throws Exception
+   private void testMoveTwice(boolean triggerEventsForDescendants) throws Exception
    {
       Node node1 = root.addNode("node1");
       Node node2 = node1.addNode("node2");
@@ -401,7 +468,7 @@ public class TestMoveNode extends JcrImplBaseTest
       session.save();
       // root/node1/node2
       // root/node3
-      session.move(node1.getPath(), node3.getPath() + "/" + "node4", triggerEventsForDescendantsOnRename);
+      session.move(node1.getPath(), node3.getPath() + "/node4", triggerEventsForDescendants);
 
       String id = node2.getUUID();
       // root/node3/node4/node2
@@ -453,7 +520,7 @@ public class TestMoveNode extends JcrImplBaseTest
 
       // root/node3/node4
       // root/node5
-      session.move(node3.getPath() + "/node4/node2", root.getPath() + "node5", triggerEventsForDescendantsOnRename);
+      session.move(node3.getPath() + "/node4/node2", root.getPath() + "node5", triggerEventsForDescendants);
 
       try
       {
@@ -531,6 +598,46 @@ public class TestMoveNode extends JcrImplBaseTest
       assertEquals("/node5/jcr:primaryType", node.getProperty("jcr:primaryType").getPath());
       assertEquals("/node5/subnode2", node.getNode("subnode2").getPath());
       assertEquals("/node5/subnode2/jcr:primaryType", node.getNode("subnode2").getProperty("jcr:primaryType").getPath());
+
+      Query query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node1'", Query.SQL);
+      QueryResult result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node1/node2'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node1/node2/subnode2'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node3/node4/node2'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node3/node4/node2/subnode2'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node3/node4'", Query.SQL);
+      result = query.execute();
+      NodeIterator ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      Node n = ni.nextNode();
+      assertEquals("/node3/node4", n.getPath());
+      assertFalse(ni.hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node5'", Query.SQL);
+      result = query.execute();
+      ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      n = ni.nextNode();
+      assertEquals("/node5", n.getPath());
+      assertEquals("/node5/jcr:primaryType", n.getProperty("jcr:primaryType").getPath());
+      assertFalse(ni.hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/node5/subnode2'", Query.SQL);
+      result = query.execute();
+      ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      n = ni.nextNode();
+      assertEquals("/node5/subnode2", n.getPath());
+      assertEquals("/node5/subnode2/jcr:primaryType", n.getProperty("jcr:primaryType").getPath());
+      assertFalse(ni.hasNext());
 
       node5.remove();
       node3.remove();
@@ -652,7 +759,7 @@ public class TestMoveNode extends JcrImplBaseTest
 
          for (int i = 0; i < FILES_COUNT; i++)
          {
-            session.move(testLocalBigFiles.getPath() + "/" + "bigFile" + i, dstNode.getPath() + "/" + "bigFile" + i);
+            session.move(testLocalBigFiles.getPath() + "/bigFile" + i, dstNode.getPath() + "/bigFile" + i);
          }
          session.save();
       }
@@ -684,23 +791,7 @@ public class TestMoveNode extends JcrImplBaseTest
       ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
 
-      SessionImpl session = (SessionImpl)repository.login(credentials, wsEntry.getName());
-
-      Node nodeA = session.getRootNode().addNode("A");
-      Node nodeB = nodeA.addNode("B");
-      session.save();
-
-      assertEquals("/A/B", nodeB.getPath());
-
-      session.move("/A", "/C");
-
-      assertEquals("/C/B", nodeB.getPath());
-      assertEquals("/C", nodeA.getPath());
-
-      session.refresh(false);
-
-      assertEquals("/A/B", nodeB.getPath());
-      assertEquals("/A", nodeA.getPath());
+      testMoveForAllSubTree(wsEntry, repository);
    }
 
    /**
@@ -717,23 +808,124 @@ public class TestMoveNode extends JcrImplBaseTest
       ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
 
+      testMoveForAllSubTree(wsEntry, repository);
+   }
+
+   /**
+    * We have A/B moved to C/B without generation events for B.
+    * Will checked if B reloaded its data.
+    */
+   public void testMoveWithoutGenerationChangesForAllSubTreeWithMaxDescParam() throws Exception
+   {
+      TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
+      wsEntry.getContainer().getParameters()
+         .add(new SimpleParameterEntry(WorkspaceDataContainer.MAX_DESCENDANTS_NODES_ALLOWED_ON_MOVE, "2"));
+
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      helper.addWorkspace(repository, wsEntry);
+
+      testMoveForAllSubTree(wsEntry, repository);
+   }
+
+   /**
+    * We have A/B moved to C/B without generation events for B.
+    * Will checked if B reloaded its data.
+    */
+   public void testMoveWithoutGenerationChangesForAllSubTreeWithMoveParam() throws Exception
+   {
+      TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
+      WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
+      wsEntry.getContainer().getParameters()
+         .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_MOVE, "false"));
+
+      ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
+      helper.addWorkspace(repository, wsEntry);
+
+      testMoveForAllSubTree(wsEntry, repository);
+   }
+
+   private void testMoveForAllSubTree(WorkspaceEntry wsEntry, ManageableRepository repository) throws LoginException,
+      NoSuchWorkspaceException, RepositoryException, ItemExistsException, PathNotFoundException, VersionException,
+      ConstraintViolationException, LockException, AccessDeniedException, InvalidItemStateException,
+      InvalidQueryException
+   {
       SessionImpl session = (SessionImpl)repository.login(credentials, wsEntry.getName());
 
       Node nodeA = session.getRootNode().addNode("A");
       Node nodeB = nodeA.addNode("B");
+      Node nodeB1 = nodeB.addNode("B1");
+      Node nodeB2 = nodeB1.addNode("B2");
       session.save();
 
+      assertEquals("/A", nodeA.getPath());
       assertEquals("/A/B", nodeB.getPath());
+      assertEquals("/A/B/B1", nodeB1.getPath());
+      assertEquals("/A/B/B1/B2", nodeB2.getPath());
 
       session.move("/A", "/C");
 
-      assertEquals("/C/B", nodeB.getPath());
       assertEquals("/C", nodeA.getPath());
+      assertEquals("/C/B", nodeB.getPath());
+      assertEquals("/C/B/B1", nodeB1.getPath());
+      assertEquals("/C/B/B1/B2", nodeB2.getPath());
 
       session.refresh(false);
 
-      assertEquals("/A/B", nodeB.getPath());
       assertEquals("/A", nodeA.getPath());
+      assertEquals("/A/B", nodeB.getPath());
+      assertEquals("/A/B/B1", nodeB1.getPath());
+      assertEquals("/A/B/B1/B2", nodeB2.getPath());
+
+      session.move("/A", "/C");
+      session.save();
+
+      assertEquals("/C", nodeA.getPath());
+      assertEquals("/C/B", nodeB.getPath());
+      assertEquals("/C/B/B1", nodeB1.getPath());
+      assertEquals("/C/B/B1/B2", nodeB2.getPath());
+
+      Query query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/A'", Query.SQL);
+      QueryResult result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/A/B'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/A/B/B1'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/A/B/B1/B2'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/C'", Query.SQL);
+      result = query.execute();
+      NodeIterator ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      Node n = ni.nextNode();
+      assertEquals("/C", n.getPath());
+      assertFalse(ni.hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/C/B'", Query.SQL);
+      result = query.execute();
+      ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      n = ni.nextNode();
+      assertEquals("/C/B", n.getPath());
+      assertFalse(ni.hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/C/B/B1'", Query.SQL);
+      result = query.execute();
+      ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      n = ni.nextNode();
+      assertEquals("/C/B/B1", n.getPath());
+      assertFalse(ni.hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/C/B/B1/B2'", Query.SQL);
+      result = query.execute();
+      ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      n = ni.nextNode();
+      assertEquals("/C/B/B1/B2", n.getPath());
+      assertFalse(ni.hasNext());
    }
 
    public void testMoveAndRemoveTree() throws Exception
@@ -746,7 +938,7 @@ public class TestMoveNode extends JcrImplBaseTest
       testMoveAndRemoveTree(false);
    }
 
-   private void testMoveAndRemoveTree(boolean triggerEventsForDescendantsOnRename) throws Exception
+   private void testMoveAndRemoveTree(boolean triggerEventsForDescendants) throws Exception
    {
       Node testRoot = root.addNode("test");
       testRoot.addMixin("mix:referenceable");
@@ -768,7 +960,7 @@ public class TestMoveNode extends JcrImplBaseTest
       session.save();
 
       // move tree
-      session.move("/test", "/newtest", triggerEventsForDescendantsOnRename);
+      session.move("/test", "/newtest", triggerEventsForDescendants);
       session.save();
 
       Node testRootMoved = root.getNode("newtest");
@@ -803,7 +995,7 @@ public class TestMoveNode extends JcrImplBaseTest
       assertEquals("/newtest/node1[3]/node2_1/node3_1/jcr:primaryType", node3_1PRMoved.getPath());
 
       // move sns node newtest/node1[1]
-      session.move("/newtest/node1", "/newtest/node4", triggerEventsForDescendantsOnRename);
+      session.move("/newtest/node1", "/newtest/node4", triggerEventsForDescendants);
       session.save();
 
       node1_2Moved = testRootMoved.getNode("node1[1]");
@@ -826,6 +1018,69 @@ public class TestMoveNode extends JcrImplBaseTest
       assertEquals("/newtest/node1[2]/jcr:primaryType", node1_3PRMoved.getPath());
       assertEquals("/newtest/node1[2]/node2_1/jcr:primaryType", node2_1PRMoved.getPath());
       assertEquals("/newtest/node1[2]/node2_1/node3_1/jcr:primaryType", node3_1PRMoved.getPath());
+
+      Query query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/test'", Query.SQL);
+      QueryResult result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/test/node1'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/test/node1[2]'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/test/node1[3]'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/test/node1[3]/node2_1'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/test/node1[3]/node2_1/node3_1'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/newtest/node1[3]'", Query.SQL);
+      result = query.execute();
+      assertFalse(result.getNodes().hasNext());
+
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/newtest/node1'", Query.SQL);
+      result = query.execute();
+      NodeIterator ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      Node n = ni.nextNode();
+      assertEquals("/newtest/node1", n.getPath());
+      assertEquals("/newtest/node1/jcr:primaryType", n.getProperty("jcr:primaryType").getPath());
+      assertFalse(ni.hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/newtest/node1[2]'", Query.SQL);
+      result = query.execute();
+      ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      n = ni.nextNode();
+      assertEquals("/newtest/node1[2]", n.getPath());
+      assertEquals("/newtest/node1[2]/jcr:primaryType", n.getProperty("jcr:primaryType").getPath());
+      assertFalse(ni.hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/newtest/node1[2]/node2_1'", Query.SQL);
+      result = query.execute();
+      ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      n = ni.nextNode();
+      assertEquals("/newtest/node1[2]/node2_1", n.getPath());
+      assertEquals("/newtest/node1[2]/node2_1/jcr:primaryType", n.getProperty("jcr:primaryType").getPath());
+      assertFalse(ni.hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/newtest/node1[2]/node2_1/node3_1'", Query.SQL);
+      result = query.execute();
+      ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      n = ni.nextNode();
+      assertEquals("/newtest/node1[2]/node2_1/node3_1", n.getPath());
+      assertEquals("/newtest/node1[2]/node2_1/node3_1/jcr:primaryType", n.getProperty("jcr:primaryType").getPath());
+      assertFalse(ni.hasNext());
+      query = session.getWorkspace().getQueryManager().createQuery("select * from nt:base where jcr:path = '/newtest/node4'", Query.SQL);
+      result = query.execute();
+      ni = result.getNodes();
+      assertTrue(ni.hasNext());
+      n = ni.nextNode();
+      assertEquals("/newtest/node4", n.getPath());
+      assertEquals("/newtest/node4/jcr:primaryType", n.getProperty("jcr:primaryType").getPath());
+      assertFalse(ni.hasNext());
    }
 
    public void testSetPropertyAndMoveNode() throws Exception
@@ -842,7 +1097,7 @@ public class TestMoveNode extends JcrImplBaseTest
     * JCR-1960. Set property and move node. Reveals bug in cache, when actually property with old value
     * has been moved.
     */
-   private void testSetPropertyAndMoveNode(boolean triggerEventsForDescendantsOnRename) throws Exception
+   private void testSetPropertyAndMoveNode(boolean triggerEventsForDescendants) throws Exception
    {
       Node rootNode = session.getRootNode();
       Node aNode = rootNode.addNode("foo");
@@ -852,7 +1107,7 @@ public class TestMoveNode extends JcrImplBaseTest
       rootNode = session.getRootNode();
       aNode = rootNode.getNode("foo");
       aNode.setProperty("A", "C");
-      session.move("/foo", "/bar", triggerEventsForDescendantsOnRename);
+      session.move("/foo", "/bar", triggerEventsForDescendants);
       session.save();
 
       try

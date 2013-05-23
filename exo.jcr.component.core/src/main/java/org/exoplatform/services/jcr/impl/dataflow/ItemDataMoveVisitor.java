@@ -85,12 +85,18 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
     */
    protected NodeTypeDataManager ntManager;
 
-   protected QPath ancestorToSave = null;
+   protected QPath ancestorToSave;
 
    /** 
     * Trigger events for descendants. 
    */
-   protected boolean triggerEventsForDescendants;
+   protected Boolean triggerEventsForDescendants;
+
+   private int maxDescendantNodesAllowed;
+   private int totalVisitedNodes;
+   private int sizeOfAddStatesAfterRootLevel;
+   private int sizeOfDeleteStatesAfterRootLevel;
+   private ItemState pathChangedState;
 
    /**
     * Creates an instance of this class.
@@ -106,13 +112,17 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
     * @param keepIdentifiers
     *          - Is it necessity to keep <code>Identifiers</code>
     * @param triggerEventsForDescendants 
-    *          - Trigger events for descendants.          
+    *          - Trigger events for descendants.
+    * @param maxDescendantNodesAllowed
+    *          - The maximum amount of descendant nodes allowed before considering that triggering event
+    *          for descendants is too costly, it will be then automatically disabled
     */
    public ItemDataMoveVisitor(NodeData parent, InternalQName dstNodeName, NodeData srcParent,
       NodeTypeDataManager nodeTypeManager, SessionDataManager srcDataManager, boolean keepIdentifiers,
-      boolean triggerEventsForDescendants)
+      Boolean triggerEventsForDescendants, int maxDescendantNodesAllowed)
    {
-      super(srcDataManager, triggerEventsForDescendants ? INFINITE_DEPTH : 0);
+      super(srcDataManager, triggerEventsForDescendants == null || triggerEventsForDescendants.booleanValue()
+         ? INFINITE_DEPTH : 0);
       this.keepIdentifiers = keepIdentifiers;
       this.ntManager = nodeTypeManager;
       this.destNodeName = dstNodeName;
@@ -121,23 +131,7 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
       this.parents.add(parent);
       this.srcParent = srcParent;
       this.triggerEventsForDescendants = triggerEventsForDescendants;
-   }
-
-   /** 
-    * Creates an instance of this class. 
-    * 
-    * @param parent - The parent node 
-    * @param dstNodeName Destination node name 
-    * @param nodeTypeManager - The NodeTypeManager 
-    * @param srcDataManager - Source data manager 
-    * @param keepIdentifiers - Is it necessity to keep <code>Identifiers</code> 
-    * @param skipEventsForDescendants - Don't generate events for the 
-    *          descendants. 
-    */
-   public ItemDataMoveVisitor(NodeData parent, InternalQName dstNodeName, NodeData srcParent,
-      NodeTypeDataManager nodeTypeManager, SessionDataManager srcDataManager, boolean keepIdentifiers)
-   {
-      this(parent, dstNodeName, srcParent, nodeTypeManager, srcDataManager, keepIdentifiers, true);
+      this.maxDescendantNodesAllowed = maxDescendantNodesAllowed;
    }
 
    @Override
@@ -267,11 +261,38 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
       parents.push(newNode);
 
       // ancestorToSave is a parent node
-      // if level == 0 set internal createt as false for validating on save
+      // if level == 0 set internal create as false for validating on save
       addStates.add(new ItemState(newNode, ItemState.RENAMED, level == 0, ancestorToSave, false, level == 0));
       deleteStates.add(new ItemState(node, ItemState.DELETED, level == 0, ancestorToSave, false, false));
 
-      if (!triggerEventsForDescendants)
+      if (triggerEventsForDescendants == null)
+      {
+         // In case we did not set an explicit value for the parameter triggerEventsForDescendants
+         if (level == 0)
+         {
+            // We save the size to be able to roll back to this state later if needed
+            sizeOfAddStatesAfterRootLevel = addStates.size();
+            sizeOfDeleteStatesAfterRootLevel = deleteStates.size();
+            pathChangedState = new ItemState(newNode, ItemState.PATH_CHANGED, false, ancestorToSave, false, false, node
+               .getQPath());
+         }
+         if (!isInterrupted() && ++totalVisitedNodes > maxDescendantNodesAllowed)
+         {
+            // Interrupt the visit process
+            this.interrupted = true;
+            // Go back to the previous state
+            for (int i = addStates.size() - 1; i >= sizeOfAddStatesAfterRootLevel; i--)
+            {
+               addStates.remove(i);
+            }
+            for (int i = deleteStates.size() - 1; i >= sizeOfDeleteStatesAfterRootLevel; i--)
+            {
+               deleteStates.remove(i);
+            }
+            addStates.add(pathChangedState);
+         }
+      }
+      else if (!triggerEventsForDescendants.booleanValue())
       {
          addStates.add(new ItemState(newNode, ItemState.PATH_CHANGED, false, ancestorToSave, false, false, node
             .getQPath()));

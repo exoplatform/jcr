@@ -26,7 +26,6 @@
     &lt;property name="acl-bloomfilter-elements-number" value="1000000"/&gt;
     &lt;property name="check-sns-new-connection" value="false"/&gt;
     &lt;property name="batch-size" value="1000"/&gt;
-    &lt;property name="trigger-events-for-descendants-on-rename" value="true"/&gt;
   &lt;/properties&gt;</programlisting>
 
   <para><emphasis role="bold">Workspace Data Container specific
@@ -75,12 +74,47 @@
     <listitem>
       <para><emphasis
       role="bold">trigger-events-for-descendants-on-rename:</emphasis>
-      indicates whether or not events must be triggered for all descendants
-      items in case of a move or a rename. It allows to increase performance
-      on rename and remove operations but as no event will be triggered for
-      all the descendants items, applications listening to these events won't
-      be notified which could cause some side effects so it must be used with
-      caution. The default value is true.</para>
+      Indicates whether or not each descendant item must be included into the
+      changes log in case of a rename. If it is set to false, it will allow to
+      increase performance on rename operations if there is a big amount of
+      nodes under the source parent node but it will decrease the performance
+      with a small amount of sub nodes. If it is set to true, we will get the
+      exact opposite, the performance will be better in case of small amount
+      of sub nodes and worse in case of big amount of sub nodes. When this
+      parameter is not set, the application will rely on the parameter
+      <emphasis>max-descendant-nodes-allowed-on-move</emphasis> to add or not
+      the descendant items to the changes log. If this parameter is not set
+      but the parameter
+      <emphasis>trigger-events-for-descendants-on-move</emphasis> is set, it
+      will have the same value. </para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis
+      role="bold">trigger-events-for-descendants-on-move:</emphasis> Indicates
+      whether or not each descendant item must be included into the changes
+      log in case of a move. If it is set to false, it will allow to increase
+      performance on move operations if there is a big amount of nodes under
+      the source parent node but it will decrease the performance with a small
+      amount of sub nodes. If it is set to true, we will get the exact
+      opposite, the performance will be better in case of small amount of sub
+      nodes and worse in case of big amount of sub nodes. When this parameter
+      is not set, the application will rely on the parameter
+      <emphasis>max-descendant-nodes-allowed-on-move</emphasis> to add or not
+      the descendant items to the changes log.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis
+      role="bold">max-descendant-nodes-allowed-on-move:</emphasis> The maximum
+      amount of descendant nodes allowed before considering that the
+      descendant items should not be included into the changes log. This
+      allows to have the best possible performances whatever the total amount
+      of sub nodes. The default value is 100. This parameter is only used if
+      and only if <emphasis>trigger-events-for-descendants-on-move</emphasis>
+      is not set and in case of a rename
+      <emphasis>trigger-events-for-descendants-on-rename</emphasis> is not
+      set.</para>
     </listitem>
   </itemizedlist>
 
