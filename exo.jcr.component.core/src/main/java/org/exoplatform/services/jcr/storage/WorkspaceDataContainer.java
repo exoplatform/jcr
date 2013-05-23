@@ -43,7 +43,13 @@ public interface WorkspaceDataContainer extends DataContainer
 
    public static final String TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME = "trigger-events-for-descendants-on-rename";
 
-   public static final boolean TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME_DEFAULT = true;
+   public static final String TRIGGER_EVENTS_FOR_DESCENDANTS_ON_MOVE = "trigger-events-for-descendants-on-move";
+
+   public static final Boolean TRIGGER_EVENTS_FOR_DESCENDANTS_ON_MOVE_DEFAULT = null;
+
+   public static final String MAX_DESCENDANTS_NODES_ALLOWED_ON_MOVE = "max-descendant-nodes-allowed-on-move";
+
+   public static final int MAX_DESCENDANTS_NODES_ALLOWED_ON_MOVE_DEFAULT = 100;
 
    public static final String LAZY_NODE_ITERATOR_PAGE_SIZE = "lazy-node-iterator-page-size";
 

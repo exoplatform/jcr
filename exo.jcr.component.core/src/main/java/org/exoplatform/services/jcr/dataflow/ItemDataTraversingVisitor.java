@@ -44,6 +44,8 @@ public abstract class ItemDataTraversingVisitor implements ItemDataVisitor
     */
    protected int currentLevel = 0;
 
+   protected boolean interrupted;
+
    protected final ItemDataConsumer dataManager;
 
    /**
@@ -108,8 +110,14 @@ public abstract class ItemDataTraversingVisitor implements ItemDataVisitor
     */
    protected void visitChildProperties(NodeData node) throws RepositoryException
    {
+      if (isInterrupted())
+         return;
       for (PropertyData data : dataManager.getChildPropertiesData(node))
+      {
+         if (isInterrupted())
+            return;
          data.accept(this);
+      }
    }
 
    /**
@@ -117,8 +125,14 @@ public abstract class ItemDataTraversingVisitor implements ItemDataVisitor
     */
    protected void visitChildNodes(NodeData node) throws RepositoryException
    {
+      if (isInterrupted())
+         return;
       for (NodeData data : dataManager.getChildNodesData(node))
+      {
+         if (isInterrupted())
+            return;
          data.accept(this);
+      }
    }
 
    /**
@@ -127,6 +141,15 @@ public abstract class ItemDataTraversingVisitor implements ItemDataVisitor
    public ItemDataConsumer getDataManager()
    {
       return dataManager;
+   }
+
+   /**
+    * Indicates whether the visit process has been interrupted
+    * @return <code>true</code> if the visit process is interrupted, <code>false</code> otherwise
+    */
+   protected boolean isInterrupted()
+   {
+      return interrupted;
    }
 
    /**

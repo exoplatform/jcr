@@ -22,6 +22,7 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.access.AccessManager;
+import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ExtendedSession;
@@ -176,7 +177,11 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
    private long lastAccessTime;
 
-   private boolean triggerEventsForDescendantsOnRename;
+   Boolean triggerEventsForDescendantsOnMove;
+
+   Boolean triggerEventsForDescendantsOnRename;
+
+   int maxDescendantNodesAllowed;
 
    private int lazyNodeIteatorPageSize;
 
@@ -259,14 +264,22 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       sessionRegistry.registerSession(this);
       this.lastAccessTime = System.currentTimeMillis();
 
+      this.triggerEventsForDescendantsOnMove =
+         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_MOVE,
+            WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_MOVE_DEFAULT);
+
       // first check the parameter misspelled
       this.triggerEventsForDescendantsOnRename =
          wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME,
-            WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME_DEFAULT);
+            triggerEventsForDescendantsOnMove);
 
       this.triggerEventsForDescendantsOnRename =
          wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME,
             triggerEventsForDescendantsOnRename);
+
+      this.maxDescendantNodesAllowed =
+         wsConfig.getContainer().getParameterInteger(WorkspaceDataContainer.MAX_DESCENDANTS_NODES_ALLOWED_ON_MOVE,
+            WorkspaceDataContainer.MAX_DESCENDANTS_NODES_ALLOWED_ON_MOVE_DEFAULT);
 
       this.lazyNodeIteatorPageSize =
          wsConfig.getContainer().getParameterInteger(WorkspaceDataContainer.LAZY_NODE_ITERATOR_PAGE_SIZE,
@@ -979,27 +992,42 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void move(String srcAbsPath, String destAbsPath) throws ItemExistsException, PathNotFoundException,
       VersionException, LockException, RepositoryException
    {
-      move(srcAbsPath, destAbsPath, triggerEventsForDescendantsOnRename);
+      // In this particular case we rely on the default configuration
+      move(srcAbsPath, destAbsPath, triggerEventsForDescendantsOnRename, triggerEventsForDescendantsOnMove);
    }
 
    /**
     * {@inheritDoc}
     */
-   public void move(String srcAbsPath, String destAbsPath, boolean triggerEventsForDescendantsOnRename)
+   public void move(String srcAbsPath, String destAbsPath, boolean triggerEventsForDescendants)
       throws ItemExistsException, PathNotFoundException, VersionException, LockException, RepositoryException
+   {
+      // In this particular case we decide what to do whether it is a rename or a real move
+      move(srcAbsPath, destAbsPath, triggerEventsForDescendants, triggerEventsForDescendants);
+   }
 
+   /**
+    * We need this new method for backward compatibility in case we decide to disable the trigger in case
+    * of a rename but not for a move, which was possible before so we need to make sure that it is still possible
+    */
+   private void move(String srcAbsPath, String destAbsPath, Boolean triggerEventsForDescendantsOnRename,
+      Boolean triggerEventsForDescendantsOnMove) throws ItemExistsException, PathNotFoundException, VersionException,
+      LockException, RepositoryException
    {
       checkLive();
-      JCRPath srcNodePath = getLocationFactory().parseAbsPath(srcAbsPath);
-      NodeImpl srcNode = (NodeImpl)dataManager.getItem(srcNodePath.getInternalPath(), false);
-
+      // get destination node
       JCRPath destNodePath = getLocationFactory().parseAbsPath(destAbsPath);
       if (destNodePath.isIndexSetExplicitly())
       {
-         throw new RepositoryException("The relPath provided must not have an index on its final element. "
+         throw new RepositoryException("The destination path provided must not have an index on its final element. "
             + destNodePath.getAsString(false));
       }
+      // get source node
+      JCRPath srcNodePath = getLocationFactory().parseAbsPath(srcAbsPath);
 
+      NodeImpl srcNode = (NodeImpl)dataManager.getItem(srcNodePath.getInternalPath(), false);
+
+      // get dst parent node
       NodeImpl destParentNode = (NodeImpl)dataManager.getItem(destNodePath.makeParentPath().getInternalPath(), true);
 
       if (srcNode == null || destParentNode == null)
@@ -1007,7 +1035,15 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
          throw new PathNotFoundException("No node exists at " + srcAbsPath + " or no node exists one level above "
             + destAbsPath);
       }
-
+      try
+      {
+         destParentNode.checkPermission(PermissionType.ADD_NODE);
+         srcNode.checkPermission(PermissionType.REMOVE);
+      }
+      catch (AccessControlException e)
+      {
+         throw new AccessDeniedException(e.getMessage());
+      }
       destParentNode.validateChildNode(destNodePath.getName().getInternalName(),
          ((NodeTypeImpl)srcNode.getPrimaryNodeType()).getQName());
 
@@ -1016,22 +1052,22 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
          (NodeImpl)dataManager.getItem((NodeData)destParentNode.getData(), new QPathEntry(destNodePath
             .getInternalPath().getName(), 0), false, ItemType.NODE);
 
-      if (destNode != null)
+      if (destNode != null && !destNode.getDefinition().allowsSameNameSiblings())
       {
-         if (!destNode.getDefinition().allowsSameNameSiblings())
-         {
-            throw new ItemExistsException("A node with this name (" + destAbsPath + ") is already exists. ");
-         }
+         throw new ItemExistsException("A node with this name (" + destAbsPath + ") already exists. ");
       }
       NodeImpl srcParentNode = null;
+      Boolean triggerEventsForDescendants;
       if (destParentNode.getIdentifier().equals(srcNode.getParentIdentifier()))
       {
          // move to same parent
          srcParentNode = destParentNode;
+         triggerEventsForDescendants = triggerEventsForDescendantsOnRename;
       }
       else
       {
          srcParentNode = srcNode.parent();
+         triggerEventsForDescendants = triggerEventsForDescendantsOnMove;
       }
       // Check if versionable ancestor is not checked-in
       if (!srcParentNode.checkedOut())
@@ -1047,9 +1083,9 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       ItemDataMoveVisitor initializer =
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
             (NodeData)srcParentNode.getData(), nodeTypeManager, getTransientNodesManager(), true,
-            triggerEventsForDescendantsOnRename);//NOSONAR
+            triggerEventsForDescendants, maxDescendantNodesAllowed);
 
-      getTransientNodesManager().rename((NodeData)srcNode.getData(), initializer);
+      getTransientNodesManager().move((NodeData)srcNode.getData(), initializer);
    }
 
    /**
