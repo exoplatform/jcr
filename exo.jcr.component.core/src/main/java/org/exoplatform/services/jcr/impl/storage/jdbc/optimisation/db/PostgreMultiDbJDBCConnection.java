@@ -48,19 +48,10 @@ public class PostgreMultiDbJDBCConnection extends MultiDbJDBCConnection
       super(dbConnection, readOnly, containerConfig);
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected void prepareQueries() throws SQLException
-   {
-      super.prepareQueries();
-   }
-
    @Override
    protected String getLikeExpressionEscape()
    {
       // must be .. LIKE 'prop\\_name' ESCAPE '\\\\'
-      return this.PATTERN_ESCAPE_STRING;
+      return PATTERN_ESCAPE_STRING;
    }
 }

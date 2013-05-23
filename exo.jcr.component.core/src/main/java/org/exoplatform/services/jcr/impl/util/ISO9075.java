@@ -58,7 +58,7 @@ public class ISO9075
    public static InternalQName encode(InternalQName name)
    {
       String encoded = encode(name.getName());
-      if (encoded == name.getName())
+      if (encoded.equals(name.getName()))
       {
          return name;
       }
@@ -145,7 +145,7 @@ public class ISO9075
    public static InternalQName decode(InternalQName name)
    {
       String decoded = decode(name.getName());
-      if (decoded == name.getName())
+      if (decoded.equals(name.getName()))
       {
          return name;
       }

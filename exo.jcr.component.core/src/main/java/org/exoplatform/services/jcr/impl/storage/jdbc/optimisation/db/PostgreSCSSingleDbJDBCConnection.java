@@ -50,7 +50,7 @@ public class PostgreSCSSingleDbJDBCConnection extends PostgreSingleDbJDBCConnect
    protected String getLikeExpressionEscape()
    {
       // must be .. LIKE 'prop\\_name' ESCAPE '\\'
-      return this.PATTERN_ESCAPE_STRING;
+      return PATTERN_ESCAPE_STRING;
    }
 
 }

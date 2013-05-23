@@ -75,8 +75,11 @@ import javax.sql.DataSource;
  */
 public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
 {
+   private static final String NODE_NAME = "My Node \"with a '\"";
 
-   private static int index = 0;
+   private static final String PROPERTY_NAME = "My Property \"with a '\"";
+
+   public static int index = 0;
 
    public void testBackupRestoreExistingRepositorySingleDB() throws Exception
    {
@@ -949,6 +952,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          {
             Node rootNode = session.getRootNode().addNode("test" + index);
             rootNode.addNode("node1").setProperty("prop1", "value1");
+            rootNode.addNode(NODE_NAME).setProperty(PROPERTY_NAME, "value1");
             session.save();
          }
          finally
@@ -968,6 +972,7 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
          {
             Node rootNode = session.getRootNode().getNode("test" + index);
             assertEquals(rootNode.getNode("node1").getProperty("prop1").getString(), "value1");
+            assertEquals(rootNode.getNode(NODE_NAME).getProperty(PROPERTY_NAME).getString(), "value1");
          }
          finally
          {

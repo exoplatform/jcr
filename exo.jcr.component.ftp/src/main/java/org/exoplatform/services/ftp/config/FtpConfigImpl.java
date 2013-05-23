@@ -115,9 +115,9 @@ public class FtpConfigImpl implements FtpConfig
    /**
     * According JCR specification  JSR-170 .
     * See 4.6 Path Syntax:
-    * Any Unicode character except: '/', ':', '[', ']', '*', ''', '"', '|' 
+    * Any Unicode character except: '/', ':', '[', ']', '*', '|' 
     */
-   public static final String DEFAULT_JCR_FORBIDDEN_CHARS     = ":[]*'\"|"; 
+   public static final String DEFAULT_JCR_FORBIDDEN_CHARS     = ":[]*|"; 
       
    /**
     * The all forbidden chars will replaced '_' by default.
