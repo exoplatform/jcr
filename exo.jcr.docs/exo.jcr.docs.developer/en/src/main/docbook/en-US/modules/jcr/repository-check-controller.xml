@@ -52,8 +52,8 @@
         <row>
           <entry><code>checkAll()</code></entry>
 
-          <entry>Inspect the full repository data (database, value storage and
-          search index).</entry>
+          <entry>Inspect the full repository data
+             (database, value storage and search indexes).</entry>
         </row>
 
         <row>
@@ -65,13 +65,13 @@
         <row>
           <entry><code>checkValueStorage()</code></entry>
 
-          <entry>Inspect only the ValueStorage.</entry>
+          <entry>Inspect only the value storage.</entry>
         </row>
 
         <row>
           <entry><code>checkIndex()</code></entry>
 
-          <entry>Inspect only the SearchIndex.</entry>
+          <entry>Inspect only the search indexes.</entry>
         </row>
       </tbody>
     </tgroup>
@@ -181,21 +181,21 @@
         <row>
           <entry><code>repairDataBase()</code></entry>
 
-          <entry>Repair DB incosistencies declared above</entry>
+          <entry>Repair DB inconsistencies declared above.</entry>
         </row>
 
         <row>
           <entry><code>repairValueStorage()</code></entry>
 
-          <entry>Repair ValueStorage incosistencies declared above</entry>
+          <entry>Repair value storage inconsistencies declared above.</entry>
         </row>
       </tbody>
     </tgroup>
   </table>
 
-  <para>All tool activities are stored in a file, which can be found in app
-  directory by the <filename>report-&lt;repository
-  name&gt;-dd-MMM-yy-HH-mm.txt</filename> name.</para>
+  <para>All tool activities are stored into a file, which can be found in app directory.
+  The syntax of the name of the file is <filename>report-&lt;repository name&gt;-dd-MMM-yy-HH-mm.txt</filename>.
+  </para>
 
   <section id="JCR.RepositoryCheckController.RecommendationsOnHowToFixCorruptedJCR">
     <title>Recommendations on how to fix corrupted JCR manually</title>
