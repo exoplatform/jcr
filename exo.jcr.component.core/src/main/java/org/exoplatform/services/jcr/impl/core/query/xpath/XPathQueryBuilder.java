@@ -622,7 +622,7 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
     }
 
     /**
-     * Assigns a InternalQName to one of the follwing QueryNodes:
+     * Assigns a InternalQName to one of the following QueryNodes:
      * {@link RelationQueryNode}, {@link DerefQueryNode}, {@link RelationQueryNode},
      * {@link PathQueryNode}, {@link OrderQueryNode}, {@link TextsearchQueryNode}.
      *

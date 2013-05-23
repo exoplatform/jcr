@@ -298,18 +298,18 @@ public class LocationFactory
    }
 
    // Some functions for JCRPath Validation
-   private boolean isNonspace(String str, char ch)
+   private boolean isNonspace(String str, char ch) throws RepositoryException
    {
       if (ch == '|')
       {
-         log.info("Path entry: \"" + str + "\" contains illegal char: \"" + ch + "\"");
+         throw new RepositoryException("Illegal absPath: \"" + str + "\": The path entry contains an illegal char: \"" + ch + "\"");
       }
 
       return !((ch == '\t') || (ch == '\n') || (ch == '\f') || (ch == '\r') || (ch == ' ') || (ch == '/')
-         || (ch == ':') || (ch == '[') || (ch == ']') || (ch == '\'') || (ch == '\"') || (ch == '*'));
+         || (ch == ':') || (ch == '[') || (ch == ']') || (ch == '*'));
    }
 
-   private boolean isSimpleString(String str)
+   private boolean isSimpleString(String str) throws RepositoryException
    {
       char ch;
 
@@ -325,7 +325,7 @@ public class LocationFactory
       return true;
    }
 
-   private boolean isLocalName(String str)
+   private boolean isLocalName(String str) throws RepositoryException
    {
       int strLen = str.length();
 
@@ -348,7 +348,7 @@ public class LocationFactory
       }
    }
 
-   private boolean isSimpleName(String str)
+   private boolean isSimpleName(String str) throws RepositoryException
    {
       int strLen = str.length();
 
@@ -366,7 +366,7 @@ public class LocationFactory
       }
    }
 
-   private boolean isValidName(String str, boolean prefixed)
+   private boolean isValidName(String str, boolean prefixed) throws RepositoryException
    {
       return (prefixed ? isLocalName(str) : isSimpleName(str) || str.equals(JCRPath.THIS_RELPATH)
          || str.equals(JCRPath.PARENT_RELPATH) || str.equals("*"));
