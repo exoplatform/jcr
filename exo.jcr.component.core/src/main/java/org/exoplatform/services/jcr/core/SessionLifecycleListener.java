@@ -19,9 +19,9 @@
 package org.exoplatform.services.jcr.core;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
- * The session Life cycle Listener, it'll be executed when the session was logout.
+ * A listener allowing to be notified when a session is closed
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: SessionLifecycleListener.java 12096 2008-03-19 11:42:40Z gazarenkov $
@@ -31,7 +31,7 @@ package org.exoplatform.services.jcr.core;
 public interface SessionLifecycleListener
 {
    /**
-    * Executes when the session was logout
+    * Called when a session is closed.
     *
     * @param session the session instance
     */

@@ -32,7 +32,7 @@ import java.util.StringTokenizer;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  *
  * The AccessControlList represents a list of access control entries.
  * 

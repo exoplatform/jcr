@@ -31,7 +31,7 @@ import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  *
  * Node Type manager interface.
  * 

@@ -63,7 +63,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
 /**
- * Created by The eXo Platform SAS <br/>
+ * Created by The eXo Platform SAS <br>
  * 
  * Centralized collector for JCR based entities (services, apps, users) It contains info about the
  * whole system, i.e. for all repositories used by system. All operations performed in context of

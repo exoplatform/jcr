@@ -27,7 +27,7 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  * JCR based Services Registry abstraction. As interchange object all the methods use Nodes'
  * wrappers to not to let using an arbitrary Type of Node. There is 2 phase modification of
  * RegistryEntry (1) get or create RegistryEntry retrieves or creates new object in memory and (2)

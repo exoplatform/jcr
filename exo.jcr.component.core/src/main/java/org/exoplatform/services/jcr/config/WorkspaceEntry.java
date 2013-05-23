@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.config;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
  * The workspace configuration bean
  * 

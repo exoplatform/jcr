@@ -24,7 +24,7 @@ import org.exoplatform.services.jcr.observation.ExtendedEventType;
 import java.util.List;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  *
  * Plain changes log implementation (i.e. no nested logs inside)
  * 

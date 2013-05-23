@@ -27,7 +27,7 @@ import javax.jcr.Value;
 import javax.jcr.nodetype.PropertyDefinition;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
  * The PropertyDefinitionValue interface extends ItemDefinitionValue with the addition of writing methods,
  * enabling the characteristics of a child property definition to be set,

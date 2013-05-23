@@ -26,7 +26,7 @@ import org.exoplatform.services.jcr.core.ManageableRepository;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  *
  * The repository service  interface
  * 

@@ -36,9 +36,10 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  *
- * Extended Repository implementation
+ * This interface provides advanced methods that are not part of the Repository Interface
+ * defined in the specification JSR-170.
  * 
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov</a>
  * @version $Id: ManageableRepository.java 13931 2008-05-06 12:10:00Z pnedonosko $

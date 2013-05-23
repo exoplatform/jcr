@@ -21,7 +21,7 @@ package org.exoplatform.services.jcr.datamodel;
 import org.exoplatform.commons.utils.QName;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
  * Extends a QName with provides method to parse qname
  * 

@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.core.nodetype;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
  * PropertyDefinition data object.
  *

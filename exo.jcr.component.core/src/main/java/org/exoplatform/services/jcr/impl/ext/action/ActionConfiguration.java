@@ -21,7 +21,7 @@ package org.exoplatform.services.jcr.impl.ext.action;
 import org.exoplatform.services.command.action.Action;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
  * The ActionConfiguration bean
  * 

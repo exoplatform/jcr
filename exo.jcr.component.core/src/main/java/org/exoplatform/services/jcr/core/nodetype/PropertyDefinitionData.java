@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.datamodel.InternalQName;
 import java.util.Arrays;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  *
  * The PropertyDefinitionData interface extends ItemDefinitionValue provides the methods read access to property definition
  *

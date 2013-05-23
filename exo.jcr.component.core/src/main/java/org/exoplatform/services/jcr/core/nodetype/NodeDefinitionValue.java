@@ -26,7 +26,7 @@ import java.util.List;
 import javax.jcr.nodetype.NodeDefinition;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  *
  * The NodeDefinitionValue interface extends ItemDefinitionValue with the addition of writing methods,
  * enabling the characteristics of a child node definition to be set,

@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.access;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
  * The AccessControlPolicy is an interface for all kind of access control policies.
  *

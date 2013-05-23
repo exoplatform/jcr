@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.storage;
 
 /**
- * Created by The eXo Platform SAS <br/>
+ * Created by The eXo Platform SAS <br>
  * 
  * Abstract jcr data storage
  * 

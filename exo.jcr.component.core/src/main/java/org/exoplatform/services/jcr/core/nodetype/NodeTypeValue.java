@@ -22,7 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  *
  * The NodeTypeValue interface represents a simple container structure used to define node types
  * which are then registered through the ExtendedNodeTypeManager.

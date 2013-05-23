@@ -24,7 +24,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 
 /**
- * Created by The eXo Platform SAS <br/>
+ * Created by The eXo Platform SAS <br>
  *
  * The NodeDefinitionData class extends ItemDefinitionValue with the addition of getter methods
  * 

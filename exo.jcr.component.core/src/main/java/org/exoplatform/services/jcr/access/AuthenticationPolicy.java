@@ -24,10 +24,10 @@ import javax.jcr.Credentials;
 import javax.jcr.LoginException;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  *
  *  The AuthenticationPolicy interface defines methods to validate Credentials upon authentication.
- *  The validation dependants on the authentication mechanism used.
+ *  The validation depends on the authentication mechanism used.
  *
  * @author <a href="mailto:lautarul@gmail.com">Roman Pedchenko</a>
  * @version $Id: AuthenticationPolicy.java 14100 2008-05-12 10:53:47Z gazarenkov $

@@ -22,7 +22,7 @@ import org.exoplatform.container.xml.PropertiesParam;
 
 import java.io.InputStream;
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
  *  Repository service configuration persister interface.
  *

@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  *
  * The Item data object interface
  *

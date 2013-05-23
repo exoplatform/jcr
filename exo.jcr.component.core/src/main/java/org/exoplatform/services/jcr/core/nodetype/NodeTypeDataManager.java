@@ -32,7 +32,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.ConstraintViolationException;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  *
  * The NodeTypeDataManager interface provides the following methods related to reading and registering node types.
  *
@@ -168,7 +168,7 @@ public interface NodeTypeDataManager
     * @param childNodeTypeName
     * @param parentNodeType
     * @param parentMixinNames
-    * @return  <code>true</code> if node with <code>childNodeName</code>as name and <code>childNodeTypeName</code> as node type
+    * @return  <code>true</code> if node with <code>childNodeName</code> as name and <code>childNodeTypeName</code> as node type
     * allowed as child, <code>false</code> otherwise
     */
    boolean isChildNodePrimaryTypeAllowed(InternalQName childNodeName, InternalQName childNodeTypeName,

@@ -53,7 +53,7 @@ import javax.ws.rs.core.UriInfo;
 /**
  * Created by The eXo Platform SAS.
  *
- * RestRepositoryService is RESTfull service provides the access to repository.
+ * RestRepositoryService is a RESTfull service allowing to manage the repositories.
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id: NamesList.java 111 2008-11-11 11:11:11Z rainf0x $

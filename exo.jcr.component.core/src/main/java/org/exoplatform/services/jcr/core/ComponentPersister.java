@@ -21,7 +21,7 @@ package org.exoplatform.services.jcr.core;
 import org.picocontainer.Startable;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
  * The component persister service interface.
  *

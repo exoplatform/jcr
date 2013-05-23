@@ -44,7 +44,7 @@ import javax.jcr.RepositoryException;
 
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
  * Repository service configuration class is used to manage repository configuration.
  *

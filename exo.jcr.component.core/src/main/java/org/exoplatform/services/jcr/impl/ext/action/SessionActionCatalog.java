@@ -36,9 +36,9 @@ import javax.jcr.RepositoryException;
 import javax.jcr.observation.Event;
 
 /**
- * Created by The eXo Platform SAS</br>
+ * Created by The eXo Platform SAS<br>
  *
- * SessionActionCatalog service allow register  actions.
+ * SessionActionCatalog service allows to register actions.
  *
  * @author Gennady Azarenkov
  * @version $Id: SessionActionCatalog.java 11907 2008-03-13 15:36:21Z ksm $
