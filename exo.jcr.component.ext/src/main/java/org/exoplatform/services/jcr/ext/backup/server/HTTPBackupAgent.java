@@ -80,8 +80,8 @@ import javax.ws.rs.core.Response;
 /**
  * Created by The eXo Platform SAS.
  *
- * HTTPBackupAgent is a RESTfull service on to of the BackupManager
- * allowing to managed the backups and the restores.
+ * HTTPBackupAgent is a RESTfull service on top of the BackupManager
+ * allowing to manage the backups and the restores.
  * 
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id: BackupServer.java 111 2008-11-11 11:11:11Z rainf0x $
