@@ -97,36 +97,40 @@
 &lt;property name="hibernate.cache.use_query_cache" value="true"/&gt;
     </programlisting>
 
-    <para>Hibernate caching parameters are well described in hibernate documentation.
-    There is no forced injection of eXo cache provider anymore. It's usage can be configured via standard hibernate
-    properties (in our xml) just like any other hibernate settings.</para>
+    <para>Hibernate caching parameters are well described in hibernate
+    documentation. There is no forced injection of eXo cache provider anymore.
+    It's usage can be configured via standard hibernate properties (in our
+    xml) just like any other hibernate settings.</para>
 
-    <para>Also it is possible to configure size of eXoCache instances via cache service configuration.
-    Every region (eXoCache instance) created by RegionFactory has it's own prefix depending on it's
-    type. All prefixes are:
-    <programlisting language="xml">
+    <para>Also it is possible to configure size of eXoCache instances via
+    cache service configuration. Every region (eXoCache instance) created by
+    RegionFactory has it's own prefix depending on it's type. All prefixes
+    are: <programlisting language="xml">
 ExoCacheRegionFactory-Entity-
 ExoCacheRegionFactory-NaturalId-
 ExoCacheRegionFactory-Collection-
 ExoCacheRegionFactory-QueryResults-
 ExoCacheRegionFactory-Timestamps-
-    </programlisting>
-    So, names of eXoCache instances will look like "ExoCacheRegionFactory-Entity-org.exoplatform.services.organization.impl.GroupImpl", etc.
-    Details about cache service configuration can be found in <link linkend="Kernel.Cache"> eXo Cache section</link>.</para>
-     
-     <warning>Hibernate's second level cache is enabled by default. In case if you want to turn
-     it off you must explicitly set property "hibernate.cache.use_second_level_cache" to false.</warning>
+    </programlisting> So, names of eXoCache instances will look like
+    "ExoCacheRegionFactory-Entity-org.exoplatform.services.organization.impl.GroupImpl",
+    etc. Details about cache service configuration can be found in <link
+    linkend="Kernel.Cache"> eXo Cache section</link>.</para>
+
+    <warning>
+      Hibernate's second level cache is enabled by default. In case if you want to turn it off you must explicitly set property "hibernate.cache.use_second_level_cache" to false.
+    </warning>
   </section>
 
   <section id="Core.DatabaseConfigurationForHibernate.RegisteringCustomHibernateXMLFilesIntoService">
-    <title>Registering custom annotated classes and Hibernate XML files into the service</title>
+    <title>Registering custom annotated classes and Hibernate XML files into
+    the service</title>
 
     <para>It is possible to use the eXo hibernate service and register your
-    annotated classes or hibernate hbm.xml files to leverage some add-on features of the service
-    such as the table automatic creation as well as the cache of the hibernate
-    session in a ThreadLocal object during all the request lifecycle. To do
-    so, you just have to add a plugin and indicate the location of your
-    files.</para>
+    annotated classes or hibernate hbm.xml files to leverage some add-on
+    features of the service such as the table automatic creation as well as
+    the cache of the hibernate session in a ThreadLocal object during all the
+    request lifecycle. To do so, you just have to add a plugin and indicate
+    the location of your files.</para>
 
     <para>Registering custom XML files can be done in this way:</para>
 
@@ -176,5 +180,18 @@ ExoCacheRegionFactory-Timestamps-
 &lt;/configuration&gt;</programlisting>
   </section>
 
-  
+  <section>
+    <title>Disable/Enable an User</title>
+
+    <para>To be able to disable or enable an user account which is supported
+    since JCR 1.16, you have no need to change your old configuration as it is
+    exactly the same configuration. Hibernate will detect automatically that
+    the structure of the user table has changed and will migrate it at
+    startup.</para>
+
+    <para>If you use DB2, you can get an error of type <emphasis>SQLCODE=-668,
+    SQLSTATE=57016, SQLERRMC=7</emphasis> when hibernate will try to migrate
+    the table structure, to workaround this issue you only need to call the
+    command <emphasis>reorg table exo_user</emphasis> </para>
+  </section>
 </section>
