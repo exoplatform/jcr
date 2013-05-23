@@ -19,10 +19,13 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan;
 
 import org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.BufferedISPNCache.ChangesContainer;
+import org.exoplatform.services.jcr.infinispan.CacheKey;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Sorting cache modification
@@ -34,7 +37,12 @@ public class CompressedISPNChangesBuffer
 {
    private int historyIndex = 0;
 
-   List<ChangesContainer> changes = new ArrayList<ChangesContainer>();
+   private final List<ChangesContainer> changes = new ArrayList<ChangesContainer>();
+
+   /**
+    * Stores the last changes into the map by CacheKey to be able to find a change quickly 
+    */
+   private final Map<CacheKey, Object> lastChanges = new HashMap<CacheKey, Object>();
 
    /**
     * Adds new modification container to buffer and performs optimization if needed. Optimization doesn't iterate
@@ -45,6 +53,7 @@ public class CompressedISPNChangesBuffer
    public void add(ChangesContainer container)
    {
       changes.add(container);
+      container.applyToBuffer(this);
    }
 
    /**
@@ -70,4 +79,21 @@ public class CompressedISPNChangesBuffer
       return changesContainers;
    }
 
+   Object get(CacheKey key)
+   {
+      return lastChanges.get(key);
+   }
+
+   void put(CacheKey key, Object value)
+   {
+      lastChanges.put(key, value);
+   }
+
+   /**
+    * @return that latest changes applied into the buffer
+    */
+   public Map<CacheKey, Object> getLastChanges()
+   {
+      return lastChanges;
+   }
 }

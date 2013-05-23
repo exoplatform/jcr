@@ -90,6 +90,11 @@ public class ImportNodeData extends TransientNodeData implements ImportItemData
    private List<String> exoPrivileges;
 
    /**
+    * Indicates whether this node is temporary or not.
+    */
+   private boolean temporary;
+   
+   /**
     * @param parent
     * @param name
     * @param index
@@ -235,6 +240,22 @@ public class ImportNodeData extends TransientNodeData implements ImportItemData
    public boolean isNewIdentifer()
    {
       return newIdentifer;
+   }
+
+   /**
+    * @return the temporary
+    */
+   public boolean isTemporary()
+   {
+      return temporary;
+   }
+
+   /**
+    * @param temporary the temporary to set
+    */
+   public void setTemporary(boolean temporary)
+   {
+      this.temporary = temporary;
    }
 
    /**

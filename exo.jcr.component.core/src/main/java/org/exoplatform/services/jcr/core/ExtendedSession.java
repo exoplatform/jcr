@@ -234,8 +234,9 @@ public interface ExtendedSession extends Session
     * if a lock prevents the <code>move</code>. Implementations may differ on when this validation is performed.
     * @param srcAbsPath the root of the subtree to be moved.
     * @param destAbsPath the location to which the subtree is to be moved.
-    * @param triggerEventsForDescendantsOnRename indicates need of triggering events for all descendants in tree
-    * if move is a rename.
+    * @param triggerEventsForDescendants indicates whether or not each descendant item must be included into the
+    * changes log in case of a move or a rename. If you have a small amount of nodes to move, it is faster to set it to
+    * <code>true</code> but in case you have a big amount of nodes it will be faster to set it to <code>false</code>
     * @throws ItemExistsException if a property already exists at
     * <code>destAbsPath</code> or a node already exist there, and same name
     * siblings are not allowed and this
@@ -251,7 +252,7 @@ public interface ExtendedSession extends Session
     * implementation performs this validation immediately instead of waiting until <code>save</code>.
     * @throws RepositoryException if the last element of <code>destAbsPath</code> has an index or if another error occurs.
     */
-   public void move(String srcAbsPath, String destAbsPath, boolean triggerEventsForDescendantsOnRename)
+   public void move(String srcAbsPath, String destAbsPath, boolean triggerEventsForDescendants)
       throws ItemExistsException, PathNotFoundException, VersionException, ConstraintViolationException, LockException,
       RepositoryException;
 }

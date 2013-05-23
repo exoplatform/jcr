@@ -969,7 +969,7 @@ public class TestOrderBefore extends JcrAPIBaseTest
       session.logout();
 
       session = repository.login(credentials, "ws");
-      Node a = session.getRootNode().getNode("a"); // We suppose it already exist
+      Node a = session.getRootNode().getNode("a"); // We suppose it already exists
       a.addNode("n");
       a.addNode("n");
       a.addNode("n");

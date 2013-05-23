@@ -115,6 +115,11 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     */
    protected Map<String, int[]> childNodesInfo = new HashMap<String, int[]>();
 
+   /**
+    * The list of states corresponding to path changed
+    */
+   protected List<ItemState> allPathsChanged;
+
    /** 
     * Index in <code>childNodesInfo<code> value array to store child nodes count. 
    */
@@ -270,6 +275,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       childNodeStates.clear();
       childPropertyStates.clear();
       childNodesInfo.clear();
+      allPathsChanged = null;
    }
 
    /**
@@ -363,7 +369,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       }
       else 
       {
-         removeProperty(item);
+         removeProperty(item, -1);
       }
    }
 
@@ -397,6 +403,14 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
             childNodeStates.put(item.getData().getParentIdentifier(), listItemState);
          }
          listItemState.add(item);
+         if (item.isPathChanged())
+         {
+            if (allPathsChanged == null)
+            {
+               allPathsChanged = new ArrayList<ItemState>();
+            }
+            allPathsChanged.add(item);
+         }
       }
       else
       {
@@ -439,6 +453,14 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       }
    }
 
+   /**
+    * @return the allPathsChanged
+    */
+   public List<ItemState> getAllPathsChanged()
+   {
+      return allPathsChanged;
+   }
+
    public int getChildNodesCount(String rootIdentifier)
    {
       int[] childInfo = childNodesInfo.get(rootIdentifier);
@@ -470,11 +492,11 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
             
             if (item.isNode())
             {
-               removeNode(item);
+               removeNode(item, i);
             }
             else
             {
-               removeProperty(item);
+               removeProperty(item, i);
             }
          }
       }
@@ -486,10 +508,10 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     * @param item
     *          ItemState
     */
-   private void removeNode(ItemState item)
+   private void removeNode(ItemState item, int indexItem)
    {
 
-      items.remove(item);
+      items.remove(indexItem);
       index.remove(item.getData().getIdentifier());
       index.remove(item.getData().getQPath());
       index.remove(new ParentIDQPathBasedKey(item));
@@ -497,6 +519,12 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       childNodesInfo.remove(item.getData().getIdentifier());
       lastChildNodeStates.remove(item.getData().getIdentifier());
       childNodeStates.remove(item.getData().getIdentifier());
+      if (allPathsChanged != null && item.isPathChanged())
+      {
+         allPathsChanged.remove(item);
+         if (allPathsChanged.isEmpty())
+            allPathsChanged = null;
+      }
 
       if (item.isPersisted())
       {
@@ -522,12 +550,24 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       if (children != null)
       {
          children.remove(item.getData().getIdentifier());
+         if (children.isEmpty())
+         {
+            lastChildNodeStates.remove(item.getData().getParentIdentifier());
+         }
       }
 
       List<ItemState> listItemStates = childNodeStates.get(item.getData().getParentIdentifier());
       if (listItemStates != null)
       {
          listItemStates.remove(item);
+         if (listItemStates.isEmpty())
+         {
+            childNodeStates.remove(item.getData().getParentIdentifier());
+         }
+      }
+      if ((children == null || children.isEmpty()) && (listItemStates == null || listItemStates.isEmpty()))
+      {
+         childNodesInfo.remove(item.getData().getParentIdentifier());
       }
    }
    
@@ -537,9 +577,16 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     * @param item
     *          ItemState
     */
-   private void removeProperty(ItemState item)
+   private void removeProperty(ItemState item, int indexItem)
    {
-      items.remove(item);
+      if (indexItem == -1)
+      {
+         items.remove(item);
+      }
+      else
+      {
+         items.remove(indexItem);
+      }
       index.remove(item.getData().getIdentifier());
       index.remove(item.getData().getQPath());
       index.remove(new ParentIDQPathBasedKey(item));
@@ -551,12 +598,20 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
       if (children != null)
       {
          children.remove(item.getData().getIdentifier());
+         if (children.isEmpty())
+         {
+            lastChildPropertyStates.remove(item.getData().getParentIdentifier());
+         }
       }
 
       List<ItemState> listItemStates = childPropertyStates.get(item.getData().getParentIdentifier());
       if (listItemStates != null)
       {
          listItemStates.remove(item);
+         if (listItemStates.isEmpty())
+         {
+            childPropertyStates.remove(item.getData().getParentIdentifier());
+         }
       }
    }
 

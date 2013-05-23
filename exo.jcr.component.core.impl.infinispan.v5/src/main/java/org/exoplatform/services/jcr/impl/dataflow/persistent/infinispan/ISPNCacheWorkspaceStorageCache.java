@@ -81,6 +81,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -727,8 +728,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          ItemState lastDelete = null;
 
          cache.beginTransaction();
-         for (ItemState state : itemStates.getAllStates())
+         List<ItemState> states = itemStates.getAllStates();
+         for (int i = 0, length = states.size(); i < length; i++)
          {
+            ItemState state = states.get(i);
             if (state.isAdded())
             {
                if (state.isPersisted())
@@ -742,7 +745,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                {
                   // There was a problem with removing a list of samename siblings in on transaction,
                   // so putItemInBufferedCache(..) and updateInBufferedCache(..) used instead put(..) and update (..) methods.
-                  ItemData prevItem = putItemInBufferedCache(state.getData());
+                  ItemData prevItem = putItemInBufferedCache(state.getData(), lastDelete);
                   if (prevItem != null && state.isNode())
                   {
                      // nodes reordered, if previous is null it's InvalidItemState case
@@ -763,7 +766,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             }
             else if (state.isPathChanged())
             {
-               updateTreePath(state.getOldPath(), state.getData().getQPath(), null);
+               updateTreePath(state.getOldPath(), state.getData().getQPath(), false);
             }
             else if (state.isMixinChanged())
             {
@@ -1247,11 +1250,11 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       }
    }
 
-   protected ItemData putItemInBufferedCache(ItemData item)
+   protected ItemData putItemInBufferedCache(ItemData item, ItemState lastDelete)
    {
       if (item.isNode())
       {
-         return putNodeInBufferedCache((NodeData)item, ModifyChildOption.MODIFY);
+         return putNodeInBufferedCache((NodeData)item, ModifyChildOption.MODIFY, lastDelete);
       }
       else
       {
@@ -1302,7 +1305,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       }
    }
 
-   protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild)
+   protected ItemData putNodeInBufferedCache(NodeData node, ModifyChildOption modifyListsOfChild, ItemState lastDelete)
    {
       if (node.getParentIdentifier() != null)
       {
@@ -1317,8 +1320,12 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          }
       }
 
+      boolean skipApplyToBuffer =
+               lastDelete != null && lastDelete.isPersisted()
+                  && !lastDelete.getData().getIdentifier().equals(node.getIdentifier())
+                  && lastDelete.getData().getQPath().equals(node.getQPath());
       // NullNodeData must never be returned inside internal cache operations. 
-      ItemData itemData = (ItemData)cache.putInBuffer(new CacheId(getOwnerId(), node.getIdentifier()), node);
+      ItemData itemData = (ItemData)cache.putInBuffer(new CacheId(getOwnerId(), node.getIdentifier()), node, skipApplyToBuffer);
       return (itemData instanceof NullItemData) ? null : itemData;
    }
 
@@ -1507,21 +1514,22 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       int prevNodeIndex = prevNode.getQPath().getEntries()[prevNode.getQPath().getEntries().length - 1].getIndex();
       if (nodeIndex != prevNodeIndex)
       {
-         // its a samename reordering
-         updateTreePath(prevNode.getQPath(), node.getQPath(), null); // don't change ACL, it's same parent
+         // its a same name reordering
+         updateTreePath(prevNode.getQPath(), node.getQPath(), true);
       }
    }
 
    /**
-    * Check all items in cache - is it descendant of prevRootPath, and update path according newRootPath.
+    * Check all items in cache if it is a descendant of the previous root path, and if so update the path according 
+    * the new root path.
     * 
-    * @param prevRootPath
-    * @param newRootPath
-    * @param acl
+    * @param prevRootPath previous root path
+    * @param newRootPath new root path
+    * @param skipApplyToBuffer set to <code>true</code> to avoid applying the change into the buffer
     */
-   protected void updateTreePath(final QPath prevRootPath, final QPath newRootPath, final AccessControlList acl)
+   protected void updateTreePath(QPath prevRootPath, QPath newRootPath, boolean skipApplyToBuffer)
    {
-      caller.updateTreePath(prevRootPath, newRootPath, acl);
+      caller.updateTreePath(prevRootPath, newRootPath, skipApplyToBuffer);
    }
 
    /**
@@ -1780,15 +1788,14 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       }
    }
 
-   private static void updateTreePath(Cache<CacheKey, Object> cache, String ownerId, ItemData data, QPath prevRootPath,
-      QPath newRootPath, AccessControlList acl)
+   private static void updateTreePath(Map<CacheKey, Object> cache, String ownerId, ItemData data, QPath prevRootPath,
+      QPath newRootPath)
    {
       if (data == null)
       {
          return;
       }
 
-      boolean inheritACL = acl != null;
       // check is this descendant of prevRootPath
       QPath nodeQPath = data.getQPath();
       if (nodeQPath != null && nodeQPath.isDescendantOf(prevRootPath))
@@ -1807,6 +1814,13 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                LOG.trace("An exception occurred: " + e.getMessage());
             }
          }
+         
+         if (relativePath == null)
+         {
+            LOG.error("Could not get the relative path of the node " + nodeQPath + " with "
+               + (nodeQPath.getDepth() - prevRootPath.getDepth()) + " as relative degree");
+            return;
+         }
 
          // make new path - no matter  node or property
          QPath newPath = QPath.makeChildPath(newRootPath, relativePath);
@@ -1819,7 +1833,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             TransientNodeData newNode =
                new TransientNodeData(newPath, prevNode.getIdentifier(), prevNode.getPersistedVersion(),
                   prevNode.getPrimaryTypeName(), prevNode.getMixinTypeNames(), prevNode.getOrderNumber(),
-                  prevNode.getParentIdentifier(), inheritACL ? acl : prevNode.getACL());
+                  prevNode.getParentIdentifier(), prevNode.getACL());
 
             // update this node
             cache.put(new CacheId(ownerId, newNode.getIdentifier()), newNode);
@@ -1828,13 +1842,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          {
             //update property
             PropertyData prevProp = (PropertyData)data;
-
-            if (inheritACL
-               && (prevProp.getQPath().getName().equals(Constants.EXO_PERMISSIONS) || prevProp.getQPath().getName()
-                  .equals(Constants.EXO_OWNER)))
-            {
-               inheritACL = false;
-            }
 
             TransientPropertyData newProp =
                new TransientPropertyData(newPath, prevProp.getIdentifier(), prevProp.getPersistedVersion(),
@@ -1965,25 +1972,32 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       }
 
       /**
-       * Check all items in cache - is it descendant of prevRootPath, and update path according newRootPath.
+       * Check all items in cache if it is a descendant of the previous root path, and if so update the path according 
+       * the new root path.
        * 
-       * @param prevRootPath
-       * @param newRootPath
-       * @param acl
+       * @param prevRootPath previous root path
+       * @param newRootPath new root path
+       * @param skipApplyToBuffer set to <code>true</code> to avoid applying the change into the buffer
        */
-      protected void updateTreePath(QPath prevRootPath, QPath newRootPath, AccessControlList acl)
+      protected void updateTreePath(QPath prevRootPath, QPath newRootPath, boolean skipApplyToBuffer)
       {
-
-         // check all ITEMS in cache 
-         Iterator<CacheKey> keys = cache.keySet().iterator();
-
-         while (keys.hasNext())
+         BufferedISPNCacheWrapper wrapper = new BufferedISPNCacheWrapper(cache, skipApplyToBuffer);
+         Map<CacheKey, Object> changes = cache.getLastChanges();
+         for (CacheKey key : changes.keySet())
          {
-            CacheKey key = keys.next();
             if (key instanceof CacheId)
             {
+               ItemData data = (ItemData)changes.get(key);
+               ISPNCacheWorkspaceStorageCache.updateTreePath(wrapper, getOwnerId(), data, prevRootPath, newRootPath);
+            }
+         }
+         // check all ITEMS in cache 
+         for (CacheKey key : cache.keySet())
+         {
+            if (key instanceof CacheId && !changes.containsKey(key))
+            {
                ItemData data = (ItemData)cache.get(key);
-               ISPNCacheWorkspaceStorageCache.updateTreePath(cache, getOwnerId(), data, prevRootPath, newRootPath, acl);
+               ISPNCacheWorkspaceStorageCache.updateTreePath(wrapper, getOwnerId(), data, prevRootPath, newRootPath);
             }
          }
       }
@@ -2044,7 +2058,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
        * {@inheritDoc}
        */
       @Override
-      protected void updateTreePath(final QPath prevRootPath, final QPath newRootPath, final AccessControlList acl)
+      protected void updateTreePath(final QPath prevRootPath, final QPath newRootPath, boolean skipApplyToBuffer)
       {
          final TransactionManager tm = getTransactionManager();
          if (tm != null)
@@ -2070,7 +2084,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                            // The listeners will need to be executed outside the current tx so we suspend
                            // the current tx we can face enlistment issues on product like ISPN
                            tm.suspend();
-                           _updateTreePath(prevRootPath, newRootPath, acl);
+                           _updateTreePath(prevRootPath, newRootPath);
                         }
                         catch (SystemException e)
                         {
@@ -2090,10 +2104,10 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
                }
             }
          }
-         _updateTreePath(prevRootPath, newRootPath, acl);
+         _updateTreePath(prevRootPath, newRootPath);
       }
 
-      private void _updateTreePath(final QPath prevRootPath, final QPath newRootPath, final AccessControlList acl)
+      private void _updateTreePath(final QPath prevRootPath, final QPath newRootPath)
       {
          SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
          {
@@ -2101,7 +2115,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             {
                MapReduceTask<CacheKey, Object, Void, Void> task =
                   new MapReduceTask<CacheKey, Object, Void, Void>(cache);
-               task.mappedWith(new UpdateTreePathMapper(getOwnerId(), prevRootPath, newRootPath, acl)).reducedWith(
+               task.mappedWith(new UpdateTreePathMapper(getOwnerId(), prevRootPath, newRootPath)).reducedWith(
                   new IdentityReducer());
                task.execute();
                return null;
@@ -2237,18 +2251,15 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    {
       private QPath prevRootPath, newRootPath;
 
-      private AccessControlList acl;
-
       public UpdateTreePathMapper()
       {
       }
 
-      public UpdateTreePathMapper(String ownerId, QPath prevRootPath, QPath newRootPath, AccessControlList acl)
+      public UpdateTreePathMapper(String ownerId, QPath prevRootPath, QPath newRootPath)
       {
          super(ownerId);
          this.prevRootPath = prevRootPath;
          this.newRootPath = newRootPath;
-         this.acl = acl;
       }
 
       /**
@@ -2274,12 +2285,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          buf = newRootPath.getAsString().getBytes(Constants.DEFAULT_ENCODING);
          out.writeInt(buf.length);
          out.write(buf);
-
-         out.writeBoolean(acl != null);
-         if (acl != null)
-         {
-            acl.writeExternal(out);
-         }
       }
 
       /**
@@ -2306,11 +2311,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          {
             throw new IOException("Deserialization error. ", e);
          }
-         if (in.readBoolean())
-         {
-            this.acl = new AccessControlList();
-            acl.readExternal(in);
-         }
       }
 
       /**
@@ -2334,7 +2334,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          }
          Cache<CacheKey, Object> cache = dcm.getCache(CACHE_NAME);
          ISPNCacheWorkspaceStorageCache.updateTreePath(cache.getAdvancedCache().withFlags(Flag.SKIP_REMOTE_LOOKUP),
-            ownerId, (ItemData)value, prevRootPath, newRootPath, acl);
+            ownerId, (ItemData)value, prevRootPath, newRootPath);
       }
    }
 
@@ -2500,6 +2500,114 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             // is called
             add(Integer.toString(i));
          }
+      }
+   }
+
+   private static class BufferedISPNCacheWrapper implements Map<CacheKey, Object>
+   {
+      private final BufferedISPNCache delegate;
+      private final boolean skipApplyToBuffer;
+
+      public BufferedISPNCacheWrapper(BufferedISPNCache delegate, boolean skipApplyToBuffer)
+      {
+         this.delegate = delegate;
+         this.skipApplyToBuffer = skipApplyToBuffer;
+      }
+
+      /**
+       * @see java.util.Map#size()
+       */
+      public int size()
+      {
+         return delegate.size();
+      }
+
+      /**
+       * @see java.util.Map#isEmpty()
+       */
+      public boolean isEmpty()
+      {
+         return delegate.isEmpty();
+      }
+
+      /**
+       * @see java.util.Map#containsKey(java.lang.Object)
+       */
+      public boolean containsKey(Object key)
+      {
+         return delegate.containsKey(key);
+      }
+
+      /**
+       * @see java.util.Map#containsValue(java.lang.Object)
+       */
+      public boolean containsValue(Object value)
+      {
+         return delegate.containsValue(value);
+      }
+
+      /**
+       * @see java.util.Map#get(java.lang.Object)
+       */
+      public Object get(Object key)
+      {
+         return delegate.get(key);
+      }
+
+      /**
+       * @see java.util.Map#put(java.lang.Object, java.lang.Object)
+       */
+      public Object put(CacheKey key, Object value)
+      {
+         return delegate.put(key, value, false, skipApplyToBuffer);
+      }
+
+      /**
+       * @see java.util.Map#remove(java.lang.Object)
+       */
+      public Object remove(Object key)
+      {
+         return delegate.remove(key);
+      }
+
+      /**
+       * @see java.util.Map#putAll(java.util.Map)
+       */
+      public void putAll(Map<? extends CacheKey, ? extends Object> m)
+      {
+         delegate.putAll(m);
+      }
+
+      /**
+       * @see java.util.Map#clear()
+       */
+      public void clear()
+      {
+         delegate.clear();
+      }
+
+      /**
+       * @see java.util.Map#keySet()
+       */
+      public Set<CacheKey> keySet()
+      {
+         return delegate.keySet();
+      }
+
+      /**
+       * @see java.util.Map#values()
+       */
+      public Collection<Object> values()
+      {
+         return delegate.values();
+      }
+
+      /**
+       * @see java.util.Map#entrySet()
+       */
+      public Set<Entry<CacheKey, Object>> entrySet()
+      {
+         return delegate.entrySet();
       }
    }
 }

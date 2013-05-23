@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.api.importing;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessManager;
@@ -2429,5 +2430,443 @@ public class TestImport extends AbstractImportTest
       
       assertEquals("john", ((ExtendedNode)session.getItem("/testRoot/subroot/node")).getACL().getOwner());
    }
+
    
+   public void testImportCreateNew() throws Exception
+   {
+      for (int i = 0; i < 4; i++)
+      {
+         if (PropertyManager.isDevelopping())
+            System.out.println("System IMPORT_UUID_CREATE_NEW " + i);
+         testImport(ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, true, i);
+         if (PropertyManager.isDevelopping())
+            System.out.println("Document IMPORT_UUID_CREATE_NEW " + i);
+         testImport(ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW, false, i);
+      }
+   }
+
+   public void testImportRemoveExisting() throws Exception
+   {
+      for (int i = 0; i < 4; i++)
+      {
+         if (PropertyManager.isDevelopping())
+            System.out.println("System IMPORT_UUID_COLLISION_REMOVE_EXISTING " + i);
+         testImport(ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING, true, i);
+         if (PropertyManager.isDevelopping())
+            System.out.println("Document IMPORT_UUID_COLLISION_REMOVE_EXISTING " + i);
+         testImport(ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING, false, i);
+      }
+   }
+
+   public void testImportReplaceExisting() throws Exception
+   {
+      for (int i = 0; i < 4; i++)
+      {
+         if (PropertyManager.isDevelopping())
+            System.out.println("System IMPORT_UUID_COLLISION_REPLACE_EXISTING " + i);
+         testImport(ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING, true, i);
+         if (PropertyManager.isDevelopping())
+            System.out.println("Document IMPORT_UUID_COLLISION_REPLACE_EXISTING " + i);
+         testImport(ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING, false, i);
+      }
+   }
+
+   private void testImport(int uuidBehavior, boolean system, int preLoadedNodes) throws Exception
+   {
+      Node testImport = (ExtendedNode)session.getRootNode().addNode("testImport");
+      session.save();
+      Node node = createNodeJCR2125(testImport);
+      if (preLoadedNodes == 3)
+      {
+         node.addMixin("mix:referenceable");
+         testImport.save();
+      }
+      ByteArrayOutputStream outBefore = new ByteArrayOutputStream();
+      if (system)
+      {
+         testImport.getSession().exportSystemView(node.getPath(), outBefore, false, false);
+      }
+      else
+      {
+         testImport.getSession().exportDocumentView(node.getPath(), outBefore, false, false);
+      }
+      outBefore.close();
+      setNewValuesJCR2125(node);
+      ByteArrayOutputStream outAfter = new ByteArrayOutputStream();
+      if (system)
+      {
+         testImport.getSession().exportSystemView(node.getPath(), outAfter, false, false);
+      }
+      else
+      {
+         testImport.getSession().exportDocumentView(node.getPath(), outAfter, false, false);
+      }
+      outAfter.close();
+      if (preLoadedNodes == 3)
+      {
+         for (NodeIterator ni = node.getNodes(); ni.hasNext();)
+         {
+            ni.nextNode().remove();
+         }
+         node.addNode("Node-3");
+         node.addNode("Node-1");
+      }
+      else
+      {
+         node.remove();
+      }
+      for (int i = 0; i < preLoadedNodes && i < 2; i++)
+      {
+         Node root = testImport.addNode("JCR-2125");
+         root.addNode("Node-3");
+         root.addNode("Node-1");
+      }
+      Node temp = testImport.addNode("temp");
+      for (int i = 0; i < preLoadedNodes && i < 2; i++)
+      {
+         Node root = temp.addNode("JCR-2125");
+         root.addNode("Node-3");
+         root.addNode("Node-1");
+      }
+      testImport.save();
+      InputStream in = new ByteArrayInputStream(outBefore.toByteArray());
+      testImport.getSession().importXML(temp.getPath(), in, uuidBehavior);
+      in.close();
+      testImport.save();
+
+      in = new ByteArrayInputStream(outAfter.toByteArray());
+      testImport.getSession().importXML(testImport.getPath(), in, uuidBehavior);
+      in.close();
+      testImport.save();
+
+      Session session2 = (SessionImpl)repository.login(credentials, "ws");
+      Node accessTestRoot2 = (Node)session2.getItem(testImport.getPath());
+
+      if (PropertyManager.isDevelopping())
+         showTree(accessTestRoot2, 0);
+      
+      checkTestImport(accessTestRoot2, uuidBehavior, preLoadedNodes);
+      session2.logout();
+   }
+
+   
+   private Node createNodeJCR2125(Node parentNode) throws Exception
+   {
+      Node root = parentNode.addNode("JCR-2125");
+      Node n = root.addNode("Node-1");
+      n.setProperty("name", "old value 1");
+      n.addNode("SubNode-1").addNode("SubNode-1");
+      n = root.addNode("Node-2");
+      n.addMixin("mix:referenceable");
+      n.setProperty("name", "old value 2");
+      n.addNode("SubNode-2").addNode("SubNode-2");
+      n = root.addNode("Node-3");
+      n.setProperty("name", "old value 3-1");
+      n.addNode("SubNode-3-1").addNode("SubNode-3-1");
+      n = root.addNode("Node-3");
+      n.addMixin("mix:referenceable");
+      n.setProperty("name", "old value 3-2");
+      n.addNode("SubNode-3-2").addNode("SubNode-3-2");
+      n = root.addNode("Node-3");
+      n.setProperty("name", "old value 3-3");
+      n.addNode("SubNode-3-3").addNode("SubNode-3-3");
+      n = root.addNode("Node-3");
+      n.addMixin("mix:referenceable");
+      n.setProperty("name", "old value 3-4");
+      n.addNode("SubNode-3-4").addNode("SubNode-3-4");
+      n = root.addNode("Node-3");
+      n.setProperty("name", "old value 3-5");
+      n.addNode("SubNode-3-5").addNode("SubNode-3-5");
+      n = root.addNode("Node-4");
+      n.setProperty("name", "old value 4");
+      n.addNode("SubNode-4").addNode("SubNode-4");
+      session.save();
+      return root;
+   }
+
+   private void setNewValuesJCR2125(Node root) throws Exception
+   {
+      root.getNode("Node-1").setProperty("name", "new value 1");
+      root.getNode("Node-2").setProperty("name", "new value 2");
+      root.getNode("Node-3").setProperty("name", "new value 3-1");
+      Node n = root.getNode("Node-3[2]");
+      n.setProperty("name", "new value 3-4");
+      n.getNode("SubNode-3-2").remove();
+      n.addNode("SubNode-3-4").addNode("SubNode-3-4");
+      root.getNode("Node-3[3]").setProperty("name", "new value 3-3");
+      n = root.getNode("Node-3[4]");
+      n.setProperty("name", "new value 3-2");
+      n.getNode("SubNode-3-4").remove();
+      n.addNode("SubNode-3-2").addNode("SubNode-3-2");      
+      root.getNode("Node-3[5]").setProperty("name", "new value 3-5");
+      root.getNode("Node-4").setProperty("name", "new value 4");
+      session.save();
+      root.orderBefore("Node-3[4]", "Node-3[2]");
+      session.save();
+      root.orderBefore("Node-3[3]", "Node-3[5]");
+      session.save();
+   }
+
+   private void showTree(Node node, int depth) throws Exception
+   {
+      for (int i = 0; i <= depth; i++)
+         System.out.print(">>>>");
+      System.out.println(node.getName() + "[" + node.getIndex() + "]-" + ((NodeImpl)node).getInternalIdentifier()
+         + (node.hasProperty("name") ? (": name = " + node.getProperty("name").getString()) : ""));
+      NodeIterator ni = node.getNodes();
+      while (ni.hasNext())
+      {
+         Node subNode = ni.nextNode();
+         showTree(subNode, depth + 1);
+      }
+   }
+
+   private void checkTestImport(Node node, int uuidBehavior, int preLoadedNodes) throws Exception
+   {
+      assertEquals("testImport", node.getName());
+      NodeIterator ni = node.getNodes();
+      if ((uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING ||
+          uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING)
+         && preLoadedNodes == 3)
+      {
+         assertEquals(4, ni.getSize());
+      }
+      else
+      {
+         assertEquals(2 + preLoadedNodes, ni.getSize());
+      }
+      int countNodeJCR2125 = 0;
+      int countNonImportedNodeJCR2125 = 0;
+      boolean hasTemp = false;
+      while (ni.hasNext())
+      {
+         Node subNode = ni.nextNode();
+         assertTrue(subNode.getPath().startsWith(node.getPath()));
+         if (subNode.getName().equals("temp"))
+         {
+            if (hasTemp)
+            {
+               fail("Only one temp node is expected");
+            }
+            hasTemp = true;
+            checkTemp(subNode, uuidBehavior, preLoadedNodes);
+         }
+         else if (subNode.getName().equals("JCR-2125"))
+         {
+            countNodeJCR2125++;
+            if (!checkTestJCR2125(subNode, uuidBehavior, preLoadedNodes, false))
+            {
+               countNonImportedNodeJCR2125++;
+            }
+         }
+         else
+         {
+            fail("Unexpected node: " + subNode.getName());
+         }
+      }
+      assertTrue(hasTemp);
+      if ((uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING || 
+           uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING)
+         && preLoadedNodes == 3)
+      {
+         assertEquals(preLoadedNodes, countNodeJCR2125);
+         assertEquals(2, countNonImportedNodeJCR2125);
+      }
+      else
+      {
+         assertEquals(preLoadedNodes + 1, countNodeJCR2125);
+         assertEquals(preLoadedNodes, countNonImportedNodeJCR2125);
+      }
+   }
+
+   private void checkTemp(Node node, int uuidBehavior, int preLoadedNodes) throws Exception
+   {
+      NodeIterator ni = node.getNodes();
+      if ((uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING || 
+           uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING)
+         && preLoadedNodes == 3)
+      {
+         assertEquals(2, ni.getSize());
+      }
+      else
+      {
+         assertEquals(1 + Math.min(preLoadedNodes, 2), ni.getSize());
+      }
+      int countNodeJCR2125 = 0;
+      int countNonImportedNodeJCR2125 = 0;
+      while (ni.hasNext())
+      {
+         Node subNode = ni.nextNode();
+         assertTrue(subNode.getPath().startsWith(node.getPath()));
+         if (subNode.getName().equals("JCR-2125"))
+         {
+            countNodeJCR2125++;
+            if (!checkTestJCR2125(subNode, uuidBehavior, preLoadedNodes, true))
+            {
+               countNonImportedNodeJCR2125++;
+            }
+         }
+         else
+         {
+            fail("Unexpected node: " + subNode.getName());
+         }
+      }
+      if ((uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING || 
+           uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING)
+         && preLoadedNodes == 3)
+      {
+         assertEquals(2, countNodeJCR2125);
+      }
+      else
+      {
+         assertEquals(Math.min(preLoadedNodes, 2) + 1, countNodeJCR2125);
+      }
+      assertEquals(Math.min(preLoadedNodes, 2), countNonImportedNodeJCR2125);
+   }
+
+   private boolean checkTestJCR2125(Node node, int uuidBehavior, int preLoadedNodes, boolean inTemp) throws Exception
+   {
+      boolean isImportedNode = false;
+      NodeIterator ni = node.getNodes();
+      int totalNode3 = 5;
+      int totalOtherNodes = 3;
+      if (inTemp)
+      {
+         if (uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING)
+         {
+            totalNode3 = 3;
+            totalOtherNodes = 2;
+         }
+      }
+      else
+      {
+         if (uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING && preLoadedNodes != 3)
+         {
+            totalNode3 = 3;
+            totalOtherNodes = 2;
+         }         
+      }
+      if (ni.getSize() == 2)
+      {
+         assertTrue(node.hasNode("Node-1"));
+         assertTrue(node.getNode("Node-1").getPath().startsWith(node.getPath()));
+         assertTrue(node.hasNode("Node-3"));
+         assertTrue(node.getNode("Node-3").getPath().startsWith(node.getPath()));
+      }
+      else if (ni.getSize() == (totalNode3 + totalOtherNodes))
+      {
+         assertTrue(node.hasNode("Node-1"));
+         assertEquals(
+            !((inTemp && uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING) || 
+             (!inTemp && uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING && preLoadedNodes != 3)),
+            node.hasNode("Node-2"));
+         assertTrue(node.hasNode("Node-4"));
+         NodeIterator sni = node.getNodes("Node-3");
+         assertEquals(totalNode3, sni.getSize());
+         while (ni.hasNext())
+         {
+            Node subNode = ni.nextNode();
+            assertTrue(subNode.getPath().startsWith(node.getPath()));
+            assertTrue(subNode.hasProperty("name"));
+            if (subNode.getName().equals("Node-3"))
+            {
+               if ((inTemp && uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING) ||
+                   (!inTemp && uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING && preLoadedNodes != 3))
+               {
+                  int suffix = -1;
+                  if (subNode.getIndex() == 1)
+                  {
+                     suffix = 1;
+                  }
+                  else if (subNode.getIndex() == 2)
+                  {
+                     suffix = 3;
+                  }
+                  else if (subNode.getIndex() == 3)
+                  {
+                     suffix = 5;
+                  }
+                  else
+                  {
+                     fail("Forbidden index " + subNode.getIndex());
+                  }
+                  assertEquals((inTemp ? "old value " : "new value ") + subNode.getName().substring(5) + "-" + suffix, subNode
+                     .getProperty("name").getString());
+                  assertTrue(subNode.hasNode("SubNode-3-" + suffix));
+                  Node n = subNode.getNode("SubNode-3-" + suffix);
+                  assertTrue(subNode.getPath() + " should be a sub path of " + n.getPath(), n.getPath().startsWith(subNode.getPath()));
+                  assertTrue(subNode.hasNode("SubNode-3-" + suffix + "/SubNode-3-" + suffix));
+                  assertTrue(n.getNode("SubNode-3-" + suffix).getPath().startsWith(n.getPath()));
+               }
+               else if (inTemp && uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING)
+               {
+                  int suffix = -1;
+                  boolean oldValue = true;
+                  if (subNode.getIndex() == 1)
+                  {
+                     suffix = 1;
+                  }
+                  else if (subNode.getIndex() == 2)
+                  {
+                     suffix = 3;
+                  }
+                  else if (subNode.getIndex() == 3)
+                  {
+                     suffix = 5;
+                  }
+                  else if (subNode.getIndex() == 4)
+                  {
+                     suffix = 2;
+                     oldValue = false;
+                  }                  
+                  else if (subNode.getIndex() == 5)
+                  {
+                     suffix = 4;
+                     oldValue = false;
+                  }
+                  else
+                  {
+                     fail("Forbidden index " + subNode.getIndex());
+                  }
+                  assertEquals((oldValue ? "old value " : "new value ") + subNode.getName().substring(5) + "-" + suffix,
+                     subNode.getProperty("name").getString());
+                  assertTrue(subNode.hasNode("SubNode-3-" + suffix));
+                  Node n = subNode.getNode("SubNode-3-" + suffix);
+                  assertTrue(subNode.getPath() + " should be a sub path of " + n.getPath(), n.getPath().startsWith(subNode.getPath()));
+                  assertTrue(subNode.hasNode("SubNode-3-" + suffix + "/SubNode-3-" + suffix));
+                  assertTrue(n.getNode("SubNode-3-" + suffix).getPath().startsWith(n.getPath()));
+               }
+               else
+               {
+                  assertEquals(
+                     (inTemp ? "old value " : "new value ") + subNode.getName().substring(5) + "-" + subNode.getIndex(),
+                     subNode.getProperty("name").getString());
+                  assertTrue(subNode.hasNode("SubNode-3-" + subNode.getIndex()));
+                  Node n = subNode.getNode("SubNode-3-" + subNode.getIndex());
+                  assertTrue(n.getPath().startsWith(subNode.getPath()));
+                  assertTrue(subNode.hasNode("SubNode-3-" + subNode.getIndex() + "/SubNode-3-" + subNode.getIndex()));
+                  assertTrue(n.getNode("SubNode-3-" + subNode.getIndex()).getPath().startsWith(n.getPath()));
+               }
+            }
+            else
+            {
+               assertEquals((inTemp
+                  && (uuidBehavior != ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING || !subNode.getName()
+                     .equals("Node-2")) ? "old value " : "new value ")
+                  + subNode.getName().substring(5), subNode.getProperty("name").getString());
+               assertTrue(subNode.hasNode("SubNode-" + subNode.getName().substring(5)));
+               Node n = subNode.getNode("SubNode-" + subNode.getName().substring(5));
+               assertTrue(n.getPath().startsWith(subNode.getPath()));
+               assertTrue(subNode.hasNode("SubNode-" + subNode.getName().substring(5) + "/SubNode-" + subNode.getName().substring(5)));
+               assertTrue(n.getNode("SubNode-" + subNode.getName().substring(5)).getPath().startsWith(n.getPath()));
+            }
+         }
+         isImportedNode = true;
+      }
+      else
+      {
+         fail("Unexpected total amount of sub nodes: " + ni.getSize());
+      }
+      return isImportedNode;
+   }
 }
