@@ -26,10 +26,13 @@ import java.util.List;
 import javax.jcr.nodetype.NodeDefinition;
 
 /**
- * Created by The eXo Platform SAS.<br/> NodeDefinition value object
- * 
- * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
- *         Azarenkov</a>
+ * Created by The eXo Platform SAS<br>
+ *
+ * The NodeDefinitionValue interface extends ItemDefinitionValue with the addition of writing methods,
+ * enabling the characteristics of a child node definition to be set,
+ * after that the NodeDefinitionValue is added to a NodeTypeValue.
+ *
+ * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: NodeDefinitionValue.java 11907 2008-03-13 15:36:21Z ksm $
  * @LevelAPI Unsupported
  */
@@ -99,7 +102,7 @@ public final class NodeDefinitionValue extends ItemDefinitionValue
    }
 
    /**
-    * @param sameNameSiblings The sameNameSiblings to set.
+    * @param multiple The sameNameSiblings to set.
     */
    public void setSameNameSiblings(boolean multiple)
    {

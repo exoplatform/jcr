@@ -27,10 +27,13 @@ import javax.jcr.Value;
 import javax.jcr.nodetype.PropertyDefinition;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS<br>
+ *
+ * The PropertyDefinitionValue interface extends ItemDefinitionValue with the addition of writing methods,
+ * enabling the characteristics of a child property definition to be set,
+ * after that the PropertyDefinitionValue is added to a NodeTypeValue.
  * 
- * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
- *         Azarenkov</a>
+ * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: PropertyDefinitionValue.java 11907 2008-03-13 15:36:21Z ksm $
  * @LevelAPI Unsupported
  */

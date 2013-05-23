@@ -23,8 +23,10 @@ import org.exoplatform.services.jcr.dataflow.ItemDataVisitor;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.
- * 
+ * Created by The eXo Platform SAS<br>
+ *
+ * The Item data object interface
+ *
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: ItemData.java 11907 2008-03-13 15:36:21Z ksm $
  * @LevelAPI Unsupported

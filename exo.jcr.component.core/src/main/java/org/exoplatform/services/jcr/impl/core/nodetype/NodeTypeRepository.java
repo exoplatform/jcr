@@ -32,6 +32,8 @@ import java.util.Set;
 import javax.jcr.RepositoryException;
 
 /**
+ * The NodeTypeRepository interface provides the methods related to access to node types
+ *
  * @author <a href="mailto:Sergey.Kabashnyuk@exoplatform.org">Sergey Kabashnyuk</a>
  * @version $Id: exo-jboss-codetemplates.xml 34360 2009-07-22 23:58:59Z ksm $
  *

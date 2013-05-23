@@ -26,8 +26,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by The eXo Platform SAS.
- * 
+ * Created by The eXo Platform SAS<br>
+ *
+ * The AddActionsPlugin class provides the methods to manage configuration
+ * of all the actions registered
+ *
  * @author Gennady Azarenkov
  * @version $Id: AddActionsPlugin.java 11907 2008-03-13 15:36:21Z ksm $
  * @LevelAPI Provisional

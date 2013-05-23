@@ -27,7 +27,9 @@ import java.util.HashMap;
 import javax.jcr.Item;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS<br>
+ *
+ * InvocationContext is a collection of properties which reflects the state of a current Session.
  * 
  * @author Gennady Azarenkov
  * @version $Id: InvocationContext.java 11907 2008-03-13 15:36:21Z ksm $

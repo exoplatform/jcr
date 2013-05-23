@@ -101,10 +101,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Created by The eXo Platform SARL .<br/>
- * 
+ * Created by The eXo Platform SAS.
+ * WebDavServiceImpl is the WebDav connector on top of eXo JCR.
+ * It allows to execute CRUD operations on the JCR thanks to the Webdav protocol.
+ *
  * @author Gennady Azarenkov
- * @version $Id$
  */
 
 @Path("/jcr")

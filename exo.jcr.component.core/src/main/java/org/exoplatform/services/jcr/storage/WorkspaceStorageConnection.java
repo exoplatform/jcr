@@ -32,7 +32,7 @@ import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS. <br>
+ * Created by The eXo Platform SAS<br>
  * 
  * Includes methods for direct read (by identifier and qPath), node child traversing, reference
  * access as well as write single item methods (add, update, delete) and batch operations support.

@@ -21,8 +21,10 @@ package org.exoplatform.services.jcr.dataflow.persistent;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 
 /**
- * Created by The eXo Platform SAS.
- * 
+ * Created by The eXo Platform SAS<br>
+ *
+ * The Items persistence listener interface, it'll be called when data is permanently saved.
+ *
  * @author Gennady Azarenkov
  * @version $Id: ItemsPersistenceListener.java 11907 2008-03-13 15:36:21Z ksm $
  * @LevelAPI Unsupported

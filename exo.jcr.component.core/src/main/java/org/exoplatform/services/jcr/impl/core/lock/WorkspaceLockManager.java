@@ -21,6 +21,8 @@ package org.exoplatform.services.jcr.impl.core.lock;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 
 /**
+ * The workspace lock manager interface
+ *
  * @author <a href="mailto:Sergey.Kabashnyuk@gmail.com">Sergey Kabashnyuk</a>
  * @version $Id: LockManager.java 11907 2008-03-13 15:36:21Z ksm $
  * @LevelAPI Unsupported

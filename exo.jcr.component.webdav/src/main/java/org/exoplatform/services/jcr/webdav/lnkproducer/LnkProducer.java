@@ -37,10 +37,13 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 /**
- * Created by The eXo Platform SAS Author : <a
- * href="gavrikvetal@gmail.com">Vitaly Guly</a>.
- * 
- * @version $Id: $
+ * Created by The eXo Platform SAS.
+ *
+ * Link Producer Service is a simple service, which generates an .lnk file,
+ * that is compatible with the Microsoft link file format.
+ *
+ * @author : <a href="gavrikvetal@gmail.com">Vitaly Guly</a>.
+ *
  */
 
 @Path("/lnkproducer/")
