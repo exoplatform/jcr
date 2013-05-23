@@ -226,8 +226,8 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
 
             <listitem>
               <para>For <envar>JBoss AS</envar>, the value of the variable
-              <emphasis>${jboss.server.config.url}</emphasis> if the exo-conf
-              directory can be found there otherwise it will be the value of
+              <emphasis>${jboss.server.config.url}</emphasis> or <emphasis>${jboss.server.config.dir}</emphasis>
+              if the exo-conf directory can be found there otherwise it will be the value of
               the variable <emphasis>${jboss.home.dir}</emphasis>.</para>
             </listitem>
           </itemizedlist>
