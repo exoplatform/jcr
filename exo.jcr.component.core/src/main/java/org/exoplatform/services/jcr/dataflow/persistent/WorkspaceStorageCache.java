@@ -130,9 +130,9 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    List<PropertyData> getChildProperties(NodeData parent, QPathEntryFilter pattern);
 
    /**
-    * List node child properties.<br/> A difference from {@link #getChildProperties(org.exoplatform.services.jcr.datamodel.NodeData)} it's that the
+    * List node child properties.<br> A difference from {@link #getChildProperties(org.exoplatform.services.jcr.datamodel.NodeData)} it's that the
     * method may return list of node properties (PropertyData) which contains no data
-    * (ValueData).<br/> Used for Node.hasProperties(), NodeIndexer.createDoc().
+    * (ValueData).<br> Used for Node.hasProperties(), NodeIndexer.createDoc().
     * 
     * @param parentData the parent node data
     * @return child properties for parent if found; null if no items initialized
