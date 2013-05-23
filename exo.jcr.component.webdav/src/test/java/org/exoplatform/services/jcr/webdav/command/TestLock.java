@@ -71,11 +71,32 @@ public class TestLock extends BaseStandaloneTest
     */
    public void testLock() throws Exception
    {
+      testLock(getPathWS());
+   }
+
+   /**
+    * Same test as the previous one but with a path of the workspace containing
+    * an incorrect repository name. The behavior should not change as we ignore it and use
+    * the current repository.
+    */
+   public void testLockWithFakePathWS() throws Exception
+   {
+      testLock(getFakePathWS());
+   }
+
+   /**
+    * Testing Lock method. Firstly lock existing node via webdav LOCK method and check for correct response status.
+    * Secondly check if the node is locked indeed via webdav DELETE method (no delete or any other operation cannot
+    * be performed with locked node). The response status must be LOCKED.
+    * @param pathWs path of the workspace 
+    * @throws Exception
+    */
+   private void testLock(String pathWs) throws Exception
+   {
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.CONTENTTYPE, MediaType.TEXT_PLAIN);
       ContainerResponse containerResponse =
-         service(WebDAVMethods.LOCK, getPathWS() + path, "", headers, lockRequestBody.getBytes());
-      MultivaluedMap<String, Object> lockResponseHeaders = containerResponse.getHttpHeaders();
+         service(WebDAVMethods.LOCK, pathWs + path, "", headers, lockRequestBody.getBytes());
 
       assertEquals(HTTPStatus.OK, containerResponse.getStatus());
 
@@ -84,7 +105,7 @@ public class TestLock extends BaseStandaloneTest
       LockResultResponseEntity entity = (LockResultResponseEntity)containerResponse.getEntity();
       entity.write(outputStream);
 
-      containerResponse = service("DELETE", getPathWS() + path, "", null, null);
+      containerResponse = service("DELETE", pathWs + path, "", null, null);
 
       assertEquals(HTTPStatus.LOCKED, containerResponse.getStatus());
       assertTrue(session.getRootNode().getNode(TextUtil.relativizePath(path)).isLocked());
