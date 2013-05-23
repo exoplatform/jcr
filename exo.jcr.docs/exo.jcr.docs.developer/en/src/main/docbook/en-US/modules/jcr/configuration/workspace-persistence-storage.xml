@@ -26,7 +26,6 @@
     &lt;property name="acl-bloomfilter-elements-number" value="1000000"/&gt;
     &lt;property name="check-sns-new-connection" value="false"/&gt;
     &lt;property name="batch-size" value="1000"/&gt;
-    &lt;property name="trigger-events-for-descendants-on-rename" value="true"/&gt;
   &lt;/properties&gt;</programlisting>
 
   <para><emphasis role="bold">Workspace Data Container specific
@@ -75,9 +74,47 @@
     <listitem>
       <para><emphasis
       role="bold">trigger-events-for-descendants-on-rename:</emphasis>
-      indicates if need to trigger events for descendants on rename or not. It
-      allows to increase performance on- rename operation but in same time
-      Observation'll not notified, has default value true</para>
+      Indicates whether or not each descendant item must be included into the
+      changes log in case of a rename. If it is set to false, it will allow to
+      increase performance on rename operations if there is a big amount of
+      nodes under the source parent node but it will decrease the performance
+      with a small amount of sub nodes. If it is set to true, we will get the
+      exact opposite, the performance will be better in case of small amount
+      of sub nodes and worse in case of big amount of sub nodes. When this
+      parameter is not set, the application will rely on the parameter
+      <emphasis>max-descendant-nodes-allowed-on-move</emphasis> to add or not
+      the descendant items to the changes log. If this parameter is not set
+      but the parameter
+      <emphasis>trigger-events-for-descendants-on-move</emphasis> is set, it
+      will have the same value. </para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis
+      role="bold">trigger-events-for-descendants-on-move:</emphasis> Indicates
+      whether or not each descendant item must be included into the changes
+      log in case of a move. If it is set to false, it will allow to increase
+      performance on move operations if there is a big amount of nodes under
+      the source parent node but it will decrease the performance with a small
+      amount of sub nodes. If it is set to true, we will get the exact
+      opposite, the performance will be better in case of small amount of sub
+      nodes and worse in case of big amount of sub nodes. When this parameter
+      is not set, the application will rely on the parameter
+      <emphasis>max-descendant-nodes-allowed-on-move</emphasis> to add or not
+      the descendant items to the changes log.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis
+      role="bold">max-descendant-nodes-allowed-on-move:</emphasis> The maximum
+      amount of descendant nodes allowed before considering that the
+      descendant items should not be included into the changes log. This
+      allows to have the best possible performances whatever the total amount
+      of sub nodes. The default value is 100. This parameter is only used if
+      and only if <emphasis>trigger-events-for-descendants-on-move</emphasis>
+      is not set and in case of a rename
+      <emphasis>trigger-events-for-descendants-on-rename</emphasis> is not
+      set.</para>
     </listitem>
   </itemizedlist>
 
@@ -107,9 +144,10 @@
 
     <listitem>
       <para><emphasis role="bold">dialect</emphasis>: Database dialect, one of
-      "hsqldb", "h2", "mysql", "mysql-myisam", "mysql-utf8", "mysql-myisam-utf8",
-      "pgsql", "pgsql-scs", "oracle", "oracle-oci", "mssql", "sybase",
-      "derby", "db2" ,"db2-mys", "db2v8". The default value is "auto".</para>
+      "hsqldb", "h2", "mysql", "mysql-myisam", "mysql-utf8",
+      "mysql-myisam-utf8", "pgsql", "pgsql-scs", "oracle", "oracle-oci",
+      "mssql", "sybase", "derby", "db2" ,"db2-mys", "db2v8". The default value
+      is "auto".</para>
     </listitem>
 
     <listitem>
@@ -153,7 +191,8 @@
     </listitem>
 
     <listitem>
-      <para><emphasis role="bold">batch-size:</emphasis> the batch size. Default value is -1 (disabled)</para>
+      <para><emphasis role="bold">batch-size:</emphasis> the batch size.
+      Default value is -1 (disabled)</para>
     </listitem>
   </itemizedlist>
 
@@ -273,22 +312,24 @@
           <para>mysql-myisam-utf8 - this dialect is used if needed to create
           JCR tables with MyISAM engine with UTF-8 encoding support</para>
         </listitem>
-        
+
         <listitem>
-          <para>mysql-ndb - this dialect is used if needed to create JCR tables
-          with NDB engine (mysql cluster)</para>
+          <para>mysql-ndb - this dialect is used if needed to create JCR
+          tables with NDB engine (mysql cluster)</para>
         </listitem>
-        
+
         <listitem>
-          <para>mysql-ndb-utf8 - this dialect is used if needed to create JCR tables
-          with NDB engine (mysql cluster) with UTF-8 encoding support</para>
+          <para>mysql-ndb-utf8 - this dialect is used if needed to create JCR
+          tables with NDB engine (mysql cluster) with UTF-8 encoding
+          support</para>
         </listitem>
       </itemizedlist>
+
       <note>
-          <para>Since MySQL NDB engine does not support foreign keys, 
-          which may lead to improper item removal and as consequence to
-          InvalidItemStateException. In this case you will need to use
-          consistency checker tool.</para>
+        <para>Since MySQL NDB engine does not support foreign keys, which may
+        lead to improper item removal and as consequence to
+        InvalidItemStateException. In this case you will need to use
+        consistency checker tool.</para>
       </note>
     </section>
   </section>

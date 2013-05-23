@@ -257,6 +257,7 @@ public class SessionDataManager implements ItemDataConsumer
          if (!(skipCheckInPersistence))
          {
             data = transactionableManager.getItemData(parent, name, itemType, createNullItemData);
+            data = updatePathIfNeeded(data);
          }
       }
       else if (!state.isDeleted())
@@ -319,6 +320,7 @@ public class SessionDataManager implements ItemDataConsumer
       {
          // 2. Try from txdatamanager
          data = transactionableManager.getItemData(identifier);
+         data = updatePathIfNeeded(data);
       }
       else if (!state.isDeleted())
       {
@@ -1199,7 +1201,7 @@ public class SessionDataManager implements ItemDataConsumer
       return itemsPool.reload(data);
    }
 
-   public void rename(NodeData srcData, ItemDataMoveVisitor initializer) throws RepositoryException
+   public void move(NodeData srcData, ItemDataMoveVisitor initializer) throws RepositoryException
    {
 
       srcData.accept(initializer);
@@ -1207,8 +1209,15 @@ public class SessionDataManager implements ItemDataConsumer
       changesLog.addAll(initializer.getAllStates());
 
       // reload items pool
-      for (ItemState state : initializer.getItemAddStates())
+      reloadItems(initializer);
+   }
+
+   public void reloadItems(ItemDataMoveVisitor initializer) throws RepositoryException
+   {
+      List<ItemState> states = initializer.getItemAddStates();
+      for (int i = 0, length = states.size(); i < length; i++)
       {
+         ItemState state = states.get(i);
          if (state.isUpdated() || state.isRenamed())
          {
             ItemImpl item = reloadItem(state.getData());
@@ -1224,6 +1233,7 @@ public class SessionDataManager implements ItemDataConsumer
       }
    }
 
+   
    /**
     * Traverses all the descendants of incoming item and creates DELETED state for them Adds DELETED
     * incoming state of incoming and descendants to the changes log and removes corresponding items
@@ -2353,26 +2363,7 @@ public class SessionDataManager implements ItemDataConsumer
       {
          ItemData oldItemData = item.getData();
 
-         int relativeDegree = oldItemData.getQPath().getDepth() - parentOld.getDepth();
-         QPath newQPath = QPath.makeChildPath(parent, oldItemData.getQPath().getRelPath(relativeDegree));
-
-         ItemData newItemData;
-         if (oldItemData.isNode())
-         {
-            NodeData oldNodeData = (NodeData)oldItemData;
-            newItemData =
-               new TransientNodeData(newQPath, oldNodeData.getIdentifier(), oldNodeData.getPersistedVersion(),
-                  oldNodeData.getPrimaryTypeName(), oldNodeData.getMixinTypeNames(), oldNodeData.getOrderNumber(),
-                  oldNodeData.getParentIdentifier(), oldNodeData.getACL());
-         }
-         else
-         {
-            PropertyData oldPropertyData = (PropertyData)oldItemData;
-            newItemData =
-               new TransientPropertyData(newQPath, oldPropertyData.getIdentifier(),
-                  oldPropertyData.getPersistedVersion(), oldPropertyData.getType(),
-                  oldPropertyData.getParentIdentifier(), oldPropertyData.isMultiValued(), oldPropertyData.getValues());
-         }
+         ItemData newItemData = updatePath(parentOld, parent, oldItemData);
 
          ItemImpl reloadedItem = reloadItem(newItemData);
          if (reloadedItem != null)
@@ -2380,6 +2371,60 @@ public class SessionDataManager implements ItemDataConsumer
             invalidated.add(reloadedItem);
          }
       }
+   }
+
+   /**
+    * Updates the path if needed and gives the updated item data if an update was needed or the provided item data
+    * otherwise
+    * @throws IllegalPathException 
+    */
+   private ItemData updatePathIfNeeded(ItemData data) throws IllegalPathException
+   {
+      if (data == null || changesLog.getAllPathsChanged() == null)
+         return data;
+      List<ItemState> states = changesLog.getAllPathsChanged();
+      for (int i = 0, length = states.size(); i < length; i++)
+      {
+         ItemState state = states.get(i);
+         if (data.getQPath().isDescendantOf(state.getOldPath()))
+         {
+            data = updatePath(state.getOldPath(), state.getData().getQPath(), data);
+         }
+      }
+      return data;
+   }
+
+   /**
+    * Updates the path of the item data and gives the updated objects
+    * @param parentOld the path of the old ancestor
+    * @param parent the path of the new ancestor
+    * @param oldItemData the old item data
+    * @return the {@link ItemData} with the updated path
+    * @throws IllegalPathException if the relative path could not be retrieved
+    */
+   private ItemData updatePath(QPath parentOld, QPath parent, ItemData oldItemData) throws IllegalPathException
+   {
+      int relativeDegree = oldItemData.getQPath().getDepth() - parentOld.getDepth();
+      QPath newQPath = QPath.makeChildPath(parent, oldItemData.getQPath().getRelPath(relativeDegree));
+
+      ItemData newItemData;
+      if (oldItemData.isNode())
+      {
+         NodeData oldNodeData = (NodeData)oldItemData;
+         newItemData =
+            new TransientNodeData(newQPath, oldNodeData.getIdentifier(), oldNodeData.getPersistedVersion(),
+               oldNodeData.getPrimaryTypeName(), oldNodeData.getMixinTypeNames(), oldNodeData.getOrderNumber(),
+               oldNodeData.getParentIdentifier(), oldNodeData.getACL());
+      }
+      else
+      {
+         PropertyData oldPropertyData = (PropertyData)oldItemData;
+         newItemData =
+            new TransientPropertyData(newQPath, oldPropertyData.getIdentifier(),
+               oldPropertyData.getPersistedVersion(), oldPropertyData.getType(),
+               oldPropertyData.getParentIdentifier(), oldPropertyData.isMultiValued(), oldPropertyData.getValues());
+      }
+      return newItemData;
    }
 
    /**

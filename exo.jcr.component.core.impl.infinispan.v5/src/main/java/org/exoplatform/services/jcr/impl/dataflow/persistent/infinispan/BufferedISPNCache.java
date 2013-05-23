@@ -168,6 +168,11 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       {
          return false;
       }
+
+      void applyToBuffer(CompressedISPNChangesBuffer buffer)
+      {
+         // By default we don't do anything
+      }
    }
 
    /**
@@ -177,18 +182,29 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    {
       private final Object value;
 
+      private final boolean skipApplyToBuffer;
+
       public PutObjectContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache, int historicalIndex,
-         boolean local, Boolean allowLocalChanges)
+         boolean local, Boolean allowLocalChanges, boolean skipApplyToBuffer)
       {
          super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
 
          this.value = value;
+         this.skipApplyToBuffer = skipApplyToBuffer;
       }
 
       @Override
       public void apply()
       {
          setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, value);
+      }
+
+      @Override
+      void applyToBuffer(CompressedISPNChangesBuffer buffer)
+      {
+         if (skipApplyToBuffer)
+            return;
+         buffer.put(key, value);
       }
    }
 
@@ -930,11 +946,30 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     * @return <code>null</code> if <code>withReturnValue</code> has been set to <code>false</code>
     * the previous value otherwise
     */
-   public Object put(final CacheKey key, Object value, final boolean withReturnValue)
+   public Object put(CacheKey key, Object value, boolean withReturnValue)
+   {
+      return put(key, value, withReturnValue, false);
+   }
+
+   /**
+    * Put object in cache.
+    * @param key
+    *          cache key
+    * @param value
+    *          cache value
+    * @param withReturnValue
+    *          indicates if a return value is expected
+    * @param skipApplyToBuffer
+    *          indicates if the change must be applied to the buffer. if <code>skipApplyToBuffer</code>
+    *          has been set to <code>false</code> the change will be applied, it won't be applied otherwise.
+    * @return <code>null</code> if <code>withReturnValue</code> has been set to <code>false</code>
+    * the previous value otherwise
+    */
+   public Object put(CacheKey key, Object value, boolean withReturnValue, boolean skipApplyToBuffer)
    {
       CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
       changesContainer.add(new PutObjectContainer(key, value, parentCache, changesContainer.getHistoryIndex(), local
-         .get(), allowLocalChanges));
+         .get(), allowLocalChanges, skipApplyToBuffer));
 
       return withReturnValue ? parentCache.get(key) : null;
    }
@@ -1204,13 +1239,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          .getHistoryIndex(), local.get(), allowLocalChanges));
    }
 
-   /**
-    * 
-    * @param string
-    * @param node
-    * @return
-    */
-   public Object putInBuffer(CacheKey key, Object value)
+   public Object putInBuffer(CacheKey key, Object value, boolean skipApplyToBuffer)
    {
       CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
 
@@ -1218,7 +1247,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       Object prevObject = getObjectFromChangesContainer(changesContainer, key);
 
       changesContainer.add(new PutObjectContainer(key, value, parentCache, changesContainer.getHistoryIndex(), local
-         .get(), allowLocalChanges));
+         .get(), allowLocalChanges, skipApplyToBuffer));
 
       if (prevObject != null)
       {
@@ -1232,18 +1261,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
 
    private Object getObjectFromChangesContainer(CompressedISPNChangesBuffer changesContainer, CacheKey key)
    {
-      List<ChangesContainer> changes = changesContainer.getSortedList();
-      Object object = null;
-
-      for (ChangesContainer change : changes)
-      {
-         if (change.getChangesType().equals(ChangesType.PUT) && change.getKey().equals(key))
-         {
-            object = ((PutObjectContainer)change).value;
-         }
-      }
-
-      return object;
+      return changesContainer.get(key);
    }
 
    /**
@@ -1287,5 +1305,11 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       {
          return parentCache.get(key);
       }
+   }
+
+   Map<CacheKey, Object> getLastChanges()
+   {
+      CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
+      return changesContainer.getLastChanges();
    }
 }

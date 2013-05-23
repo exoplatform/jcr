@@ -52,6 +52,7 @@ import org.exoplatform.services.security.ConversationState;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -218,62 +219,79 @@ public abstract class BaseXmlImporter implements ContentImporter
       throws PathNotFoundException, IllegalPathException, RepositoryException
    {
 
+      if (name instanceof QPathEntry)
+      {
+         name = new InternalQName(name.getNamespace(), name.getName());
+      }
+      
       int newIndex = 1;
 
       NodeDefinitionData nodedef =
          nodeTypeDataManager.getChildNodeDefinition(name, parentData.getPrimaryTypeName(), parentData
             .getMixinTypeNames());
 
-      ItemData sameNameNode = null;
-      try
-      {
-         sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0), ItemType.NODE, false);
-      }
-      catch (PathNotFoundException e)
-      {
-         // Ok no same name node;
-         return newIndex;
-      }
 
       List<ItemState> transientAddChilds = getItemStatesList(parentData, name, ItemState.ADDED, skipIdentifier);
-      List<ItemState> transientDeletedChilds =
-         getItemStatesList(parentData, new QPathEntry(name, 0), ItemState.DELETED, null);
+      List<ItemState> transientDeletedChilds;
 
-      if (!nodedef.isAllowsSameNameSiblings() && ((sameNameNode != null) || (transientAddChilds.size() > 0)))
+      if (nodedef.isAllowsSameNameSiblings())
       {
-         if ((sameNameNode != null) && (transientDeletedChilds.size() < 1))
+         transientDeletedChilds = getItemStatesList(parentData, name, ItemState.DELETED, null);
+      }
+      else
+      {
+         transientDeletedChilds = getItemStatesList(parentData, new QPathEntry(name, 0), ItemState.DELETED, null);
+         ItemData sameNameNode = null;
+         try
          {
-            throw new ItemExistsException("The node  already exists in " + sameNameNode.getQPath().getAsString()
-               + " and same name sibling is not allowed ");
+            sameNameNode = dataConsumer.getItemData(parentData, new QPathEntry(name, 0), ItemType.NODE, false);
          }
-         if (transientAddChilds.size() > 0)
+         catch (PathNotFoundException e)
          {
-            throw new ItemExistsException("The node  already exists in add state "
-               + "  and same name sibling is not allowed ");
+            // Ok no same name node;
+            return newIndex;
+         }
+         if (((sameNameNode != null) || (transientAddChilds.size() > 0)))
+         {
+            if ((sameNameNode != null) && (transientDeletedChilds.size() < 1))
+            {
+               throw new ItemExistsException("The node  already exists in " + sameNameNode.getQPath().getAsString()
+                  + " and same name sibling is not allowed ");
+            }
+            else if (transientAddChilds.size() > 0)
+            {
+               throw new ItemExistsException("The node  already exists in add state "
+                  + "  and same name sibling is not allowed ");
 
+            }            
          }
       }
 
       newIndex += transientAddChilds.size();
-
       List<NodeData> existedChilds = dataConsumer.getChildNodesData(parentData);
 
       // Calculate SNS index for dest root
-      for (NodeData child : existedChilds)
+      main: for (int n = 0, l = existedChilds.size(); n < l; n++)
       {
-         // skeep deleted items
-         if (transientDeletedChilds.size() != 0)
-         {
-            continue;
-         }
-
+         NodeData child = existedChilds.get(n);
          if (child.getQPath().getName().equals(name))
          {
-            newIndex++; // next sibling index
+            // skip deleted items
+            if (!transientDeletedChilds.isEmpty())
+            {
+               for (int i = 0, length = transientDeletedChilds.size(); i < length; i++)
+               {
+                  ItemState state = transientDeletedChilds.get(i);
+                  if (state.getData().equals(child))
+                  {
+                     transientDeletedChilds.remove(i);
+                     continue main;
+                  }
+               }
+            }
+            newIndex++; // next sibling index            
          }
-
       }
-
       // searching
       return newIndex;
    }
@@ -381,7 +399,7 @@ public abstract class BaseXmlImporter implements ContentImporter
     */
    protected void checkReferenceable(ImportNodeData currentNodeInfo, String olUuid) throws RepositoryException
    {
-      // if node is in version storrage - do not assign new id from jcr:uuid
+      // if node is in version storage - do not assign new id from jcr:uuid
       // property
       if (Constants.JCR_VERSION_STORAGE_PATH.getDepth() + 3 <= currentNodeInfo.getQPath().getDepth()
          && currentNodeInfo.getQPath().getEntries()[Constants.JCR_VERSION_STORAGE_PATH.getDepth() + 3]
@@ -402,8 +420,15 @@ public abstract class BaseXmlImporter implements ContentImporter
          currentNodeInfo.setIsNewIdentifer(true);
       }
       if (uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING)
-         currentNodeInfo.setParentIdentifer(getParent().getIdentifier());
-
+      {
+         NodeData parentNode = getParent();
+         currentNodeInfo.setParentIdentifer(parentNode.getIdentifier());
+         if (parentNode instanceof ImportNodeData && ((ImportNodeData)parentNode).isTemporary())
+         {
+            // remove the temporary parent
+            tree.pop();
+         }
+      }
    }
 
    /**
@@ -418,32 +443,83 @@ public abstract class BaseXmlImporter implements ContentImporter
    protected void reloadChangesInfoAfterUC(ImportNodeData currentNodeInfo, String identifier)
       throws PathNotFoundException, IllegalPathException, RepositoryException
    {
+      reloadChangesInfoAfterUC(getParent(), currentNodeInfo, identifier);
+   }
+   
+   /**
+    * Reload path information after uuid collision
+    * 
+    * @param currentParentData the parent node
+    * @param currentNodeInfo
+    * @param identifier
+    * @throws PathNotFoundException
+    * @throws IllegalPathException
+    * @throws RepositoryException
+    */
+   protected void reloadChangesInfoAfterUC(NodeData currentParentData, ImportNodeData currentNodeInfo, String identifier)
+      throws PathNotFoundException, IllegalPathException, RepositoryException
+   {
       boolean reloadSNS =
          uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING
             || uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING;
       QPath newPath = null;
+      QPath oldPath = currentNodeInfo.getQPath();
       if (reloadSNS)
       {
-         NodeData currentParentData = getParent();
          // current node already in list
-         int nodeIndex = getNodeIndex(currentParentData, currentNodeInfo.getQName(), currentNodeInfo.getIdentifier());
+         int nodeIndex =
+            getNodeIndex(currentParentData, currentNodeInfo.getQName(), currentNodeInfo.getIdentifier());
          newPath = QPath.makeChildPath(currentParentData.getQPath(), currentNodeInfo.getQName(), nodeIndex);
-         currentNodeInfo.setQPath(newPath);
+         if (newPath.equals(oldPath))
+         {
+            // skip path reloading in case the path did not change
+            reloadSNS = false;
+         }
+         else
+         {
+            currentNodeInfo.setQPath(newPath);
+         }
       }
 
       String oldIdentifer = currentNodeInfo.getIdentifier();
       // update parentIdentifer
-      for (ItemState state : changesLog.getAllStates())
+      List<ItemState> states = changesLog.getAllStates();
+      for (int j = 0, length = states.size(); j < length; j++)
       {
+         ItemState state = states.get(j);
          ItemData data = state.getData();
-         if (data.getParentIdentifier() != null && data.getParentIdentifier().equals(oldIdentifer))
+         if (data instanceof ImportItemData)
          {
-            ((ImportItemData)data).setParentIdentifer(identifier);
-            if (reloadSNS)
-               ((ImportItemData)data).setQPath(QPath.makeChildPath(newPath, data.getQPath().getName()));
+            if (data.getParentIdentifier() != null && data.getParentIdentifier().equals(oldIdentifer))
+            {
+               ((ImportItemData)data).setParentIdentifer(identifier);
+               if (reloadSNS)
+                  ((ImportItemData)data).setQPath(QPath.makeChildPath(newPath, data.getQPath().getName()));
+            }
+            else if (reloadSNS && data.getQPath().isDescendantOf(oldPath))
+            {
+               QPathEntry[] relativePath = null;
+               try
+               {
+                  relativePath = data.getQPath().getRelPath(data.getQPath().getDepth() - oldPath.getDepth());
+               }
+               catch (IllegalPathException e)
+               {
+                  if (LOG.isTraceEnabled())
+                  {
+                     LOG.trace("An exception occurred: " + e.getMessage());
+                  }
+               }
 
+               if (relativePath == null)
+               {
+                  LOG.error("Could not get the relative path of the node " + data.getQPath() + " with "
+                     + (data.getQPath().getDepth() - oldPath.getDepth()) + " as relative degree");
+                  continue;
+               }
+               ((ImportItemData)data).setQPath(QPath.makeChildPath(newPath, relativePath)); 
+            }
          }
-
       }
 
       currentNodeInfo.setIdentifier(identifier);
@@ -509,7 +585,9 @@ public abstract class BaseXmlImporter implements ContentImporter
                      }
                      removeExisted(sameUuidItem);
                      ItemData parentOfsameUuidItem = dataConsumer.getItemData(sameUuidItem.getParentIdentifier());
-                     tree.push(ImportNodeData.createCopy((NodeData)parentOfsameUuidItem));
+                     ImportNodeData temporaryParent = ImportNodeData.createCopy((NodeData)parentOfsameUuidItem);
+                     temporaryParent.setTemporary(true);
+                     tree.push(temporaryParent);
                      break;
                   case ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW :
                      // If an incoming referenceable node has the same UUID as a node
@@ -640,6 +718,42 @@ public abstract class BaseXmlImporter implements ContentImporter
       sameUuidItem.accept(visitor);
 
       changesLog.addAll(visitor.getRemovedStates());
+      
+      // Refresh the indexes if needed
+      boolean reloadSNS =
+         uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REMOVE_EXISTING
+            || uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING;
+      if (reloadSNS)
+      {
+         NodeData parentData = (NodeData)dataConsumer.getItemData(sameUuidItem.getParentIdentifier());
+         ItemState lastState = getLastItemState(sameUuidItem.getParentIdentifier());
+
+         if (sameUuidItem != null && (lastState == null || !lastState.isDeleted()))
+         {
+            InternalQName name =
+               new InternalQName(sameUuidItem.getQPath().getName().getNamespace(), sameUuidItem.getQPath().getName()
+                  .getName());
+            List<ItemState> transientAddChilds = getItemStatesList(parentData, name, ItemState.ADDED, null);
+            if (transientAddChilds.isEmpty())
+               return;
+            List<ItemState> statesToReLoad = new LinkedList<ItemState>();
+            for (int i = 0, length = transientAddChilds.size(); i < length; i++)
+            {
+               ItemState state = transientAddChilds.get(i);
+               if (sameUuidItem.getQPath().getIndex() < state.getData().getQPath().getIndex() && state.getData() instanceof ImportNodeData)
+               {
+                  statesToReLoad.add(state);
+               }
+            }
+            if (statesToReLoad.isEmpty())
+               return;
+            for (ItemState state : statesToReLoad)
+            {
+               ImportNodeData node = (ImportNodeData)state.getData();
+               reloadChangesInfoAfterUC(parentData, node, node.getIdentifier());
+            }
+         }
+      }
    }
 
    /**
@@ -672,7 +786,7 @@ public abstract class BaseXmlImporter implements ContentImporter
    }
 
    /**
-    * Class helps sort ItemStates list. After sorting the delete states has to be
+    * Class helps sort ItemStates list. After sorting the delete states have to be
     * on top of the list
     */
    private class PathSorter implements Comparator<ItemState>

@@ -18,17 +18,16 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.cache.jbosscache;
 
-import java.util.HashMap;
-
 import junit.framework.TestCase;
 
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.CompressedChangesBuffer;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesContainer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.PutObjectContainer;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.RemoveNodeContainer;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.CompressedChangesBuffer;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache;
 import org.jboss.cache.Fqn;
+
+import java.util.HashMap;
 
 /**
  * @author <a href="mailto:foo@bar.org">Foo Bar</a>
@@ -42,13 +41,13 @@ public class TestCompressedChangesBuffer extends TestCase
    {
       CompressedChangesBuffer buffer = new CompressedChangesBuffer();
       ChangesContainer put1 =
-         new PutObjectContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"),
+         new PutObjectContainer(Fqn.fromString("wk-unique-name/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"),
             new HashMap<String, String>(), null, buffer.getHistoryIndex(), false, false, 0);
       ChangesContainer put2 =
-         new PutObjectContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b/c"),
+         new PutObjectContainer(Fqn.fromString("wk-unique-name/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b/c"),
             new HashMap<String, String>(), null, buffer.getHistoryIndex(), false, false, 0);
       ChangesContainer rm1 =
-         new RemoveNodeContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"), null, buffer
+         new RemoveNodeContainer(Fqn.fromString("wk-unique-name/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"), null, buffer
             .getHistoryIndex(), false, false, 0);
       buffer.add(put1);
       buffer.add(put2);
@@ -69,17 +68,17 @@ public class TestCompressedChangesBuffer extends TestCase
    {
       CompressedChangesBuffer buffer = new CompressedChangesBuffer();
       ChangesContainer put1 =
-         new PutObjectContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"),
+         new PutObjectContainer(Fqn.fromString("wk-unique-name/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"),
             new HashMap<String, String>(), null, buffer.getHistoryIndex(), false, false, 0);
 
       ChangesContainer put2 =
-         new PutObjectContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b/c"),
+         new PutObjectContainer(Fqn.fromString("wk-unique-name/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b/c"),
             new HashMap<String, String>(), null, buffer.getHistoryIndex(), false, false, 0);
       ChangesContainer rm1 =
-         new RemoveNodeContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b/c"), null,
+         new RemoveNodeContainer(Fqn.fromString("wk-unique-name/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b/c"), null,
             buffer.getHistoryIndex(), false, false, 0);
       ChangesContainer rm2 =
-         new RemoveNodeContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"), null, buffer
+         new RemoveNodeContainer(Fqn.fromString("wk-unique-name/" + JBossCacheWorkspaceStorageCache.CHILD_NODES + "/b"), null, buffer
             .getHistoryIndex(), false, false, 0);
       buffer.add(put1);
       buffer.add(put2);
@@ -99,11 +98,11 @@ public class TestCompressedChangesBuffer extends TestCase
    {
       CompressedChangesBuffer buffer = new CompressedChangesBuffer();
       ChangesContainer put1 =
-         new PutObjectContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES_LIST + "/b"),
+         new PutObjectContainer(Fqn.fromString("wk-unique-name/" + JBossCacheWorkspaceStorageCache.CHILD_NODES_LIST + "/b"),
             new HashMap<String, String>(), null, buffer.getHistoryIndex(), false, false, 0);
 
       ChangesContainer rm1 =
-         new RemoveNodeContainer(Fqn.fromString("/" + JBossCacheWorkspaceStorageCache.CHILD_NODES_LIST + "/b"), null,
+         new RemoveNodeContainer(Fqn.fromString("wk-unique-name/" + JBossCacheWorkspaceStorageCache.CHILD_NODES_LIST + "/b"), null,
             buffer.getHistoryIndex(), false, false, 0);
       buffer.add(put1);
       assertTrue("List MUST contain put container", buffer.getSortedList().contains(put1));

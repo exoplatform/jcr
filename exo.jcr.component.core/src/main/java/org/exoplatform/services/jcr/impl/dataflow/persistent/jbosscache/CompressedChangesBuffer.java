@@ -18,15 +18,16 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache;
 
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesContainer;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesType;
+import org.jboss.cache.Fqn;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesContainer;
-import org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache.ChangesType;
-import org.jboss.cache.Fqn;
 
 /**
  * Sorting cache modification "as is" in {@link BufferedJBossCache} may harm data consistency. 
@@ -57,14 +58,25 @@ public class CompressedChangesBuffer
 {
    private int historyIndex = 0;
 
-   // Stores changes made to any ordinary cache region
-   List<ChangesContainer> changes = new ArrayList<ChangesContainer>();
+   /**
+    *  Stores changes made to any ordinary cache region
+    */
+   private final List<ChangesContainer> changes = new ArrayList<ChangesContainer>();
 
-   // Stores changes made to /$CHILD_NODES cache region. Stores <ParentUUID> <--> <Change>
-   Map<String, List<ChangesContainer>> childNodesMap = new HashMap<String, List<ChangesContainer>>();
+   /**
+    * Stores the last changes into the map by fqn to be able to find a change quickly 
+    */
+   private final Map<Fqn, Map<Serializable, Object>> lastChanges = new HashMap<Fqn, Map<Serializable, Object>>();
 
-   // Stores changes made to /$CHILD_PROPERTIES cache region. Stores <ParentUUID> <--> <Change>
-   Map<String, List<ChangesContainer>> childPropertyMap = new HashMap<String, List<ChangesContainer>>();
+   /**
+    *  Stores changes made to /$CHILD_NODES cache region. Stores <ParentUUID> <--> <Change>
+    */
+   private final Map<String, List<ChangesContainer>> childNodesMap = new HashMap<String, List<ChangesContainer>>();
+
+   /**
+    *  Stores changes made to /$CHILD_PROPERTIES cache region. Stores <ParentUUID> <--> <Change>
+    */
+   private final Map<String, List<ChangesContainer>> childPropertyMap = new HashMap<String, List<ChangesContainer>>();
 
    /**
     * Adds new modification container to buffer and performs optimization if needed. Optimization doesn't iterate
@@ -74,12 +86,12 @@ public class CompressedChangesBuffer
     */
    public void add(ChangesContainer container)
    {
-      String parentCacheNode = (String)container.getFqn().get(0);
-      if (JBossCacheWorkspaceStorageCache.CHILD_NODES.equals(parentCacheNode) && container.getFqn().size() > 1)
+      String parentCacheNode = (String)container.getFqn().get(1);
+      if (container.getFqn().size() > 2 && JBossCacheWorkspaceStorageCache.CHILD_NODES.equals(parentCacheNode))
       {
          optimize(childNodesMap, container);
       }
-      else if (JBossCacheWorkspaceStorageCache.CHILD_PROPS.equals(parentCacheNode) && container.getFqn().size() > 1)
+      else if (container.getFqn().size() > 2 && JBossCacheWorkspaceStorageCache.CHILD_PROPS.equals(parentCacheNode))
       {
          optimize(childPropertyMap, container);
       }
@@ -87,6 +99,7 @@ public class CompressedChangesBuffer
       {
          changes.add(container);
       }
+      container.applyToBuffer(this);
    }
 
    /**
@@ -159,8 +172,8 @@ public class CompressedChangesBuffer
    private void optimize(Map<String, List<ChangesContainer>> childMap, ChangesContainer container)
    {
       Fqn fqn = container.getFqn();
-      String parent = (String)fqn.get(1);
-      if (fqn.size() == 2)
+      String parent = (String)fqn.get(2);
+      if (fqn.size() == 3)
       {
          if (container.getChangesType() == ChangesType.REMOVE)
          {
@@ -171,4 +184,32 @@ public class CompressedChangesBuffer
       addToList(childMap, parent, container);
    }
 
+   Object get(Fqn fqn, Serializable key)
+   {
+      Map<Serializable, Object> map = lastChanges.get(fqn);
+      if (map != null)
+      {
+         return map.get(key);
+      }
+      return null;
+   }
+
+   void put(Fqn fqn, Serializable key, Object value)
+   {
+      Map<Serializable, Object> map = lastChanges.get(fqn);
+      if (map == null)
+      {
+         map = new HashMap<Serializable, Object>();
+         lastChanges.put(fqn, map);
+      }
+      map.put(key, value);
+   }
+
+   /**
+    * @return that latest changes applied into the buffer
+    */
+   public Map<Fqn, Map<Serializable, Object>> getLastChanges()
+   {
+      return lastChanges;
+   }
 }

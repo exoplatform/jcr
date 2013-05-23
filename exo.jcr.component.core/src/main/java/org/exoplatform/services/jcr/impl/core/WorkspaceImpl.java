@@ -393,7 +393,7 @@ public class WorkspaceImpl implements ExtendedWorkspace
       JCRPath destNodePath = session.getLocationFactory().parseAbsPath(destAbsPath);
       if (destNodePath.isIndexSetExplicitly())
       {
-         throw new RepositoryException("The path provided must not have an index on its final element. "
+         throw new RepositoryException("The destination path provided must not have an index on its final element. "
             + destNodePath.getAsString(false));
       }
       // get source node
@@ -427,24 +427,23 @@ public class WorkspaceImpl implements ExtendedWorkspace
          (NodeImpl)session.getTransientNodesManager().getItem((NodeData)destParentNode.getData(),
             new QPathEntry(destNodePath.getInternalPath().getName(), 0), false, ItemType.NODE);
 
-      if (destNode != null)
+      if (destNode != null && !destNode.getDefinition().allowsSameNameSiblings())
       {
-         if (!destNode.getDefinition().allowsSameNameSiblings())
-         {
-            // Throw exception
-            String msg = "A node with name (" + destAbsPath + ") is already exists.";
-            throw new ItemExistsException(msg);
-         }
+         throw new ItemExistsException("A node with this name (" + destAbsPath + ") already exists. ");
       }
+
       NodeImpl srcParentNode = null;
+      Boolean triggerEventsForDescendants;
       if (destParentNode.getIdentifier().equals(srcNode.getParentIdentifier()))
       {
          // move to same parent
          srcParentNode = destParentNode;
+         triggerEventsForDescendants = session.triggerEventsForDescendantsOnRename;
       }
       else
       {
          srcParentNode = srcNode.parent();
+         triggerEventsForDescendants = session.triggerEventsForDescendantsOnMove;
       }
       // Check if versionable ancestor is not checked-in
       if (!srcParentNode.checkedOut())
@@ -455,25 +454,20 @@ public class WorkspaceImpl implements ExtendedWorkspace
       // Check locking
       if (!srcNode.checkLocking())
       {
-         throw new LockException("Source parent node " + srcNode.getPath() + " is     locked ");
+         throw new LockException("Source parent node " + srcNode.getPath() + " is locked ");
       }
 
       ItemDataMoveVisitor initializer =
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
-            (NodeData)srcParentNode.getData(), nodeTypeManager, session.getTransientNodesManager(), true);
+            (NodeData)srcParentNode.getData(), nodeTypeManager, session.getTransientNodesManager(), true,
+            triggerEventsForDescendants, session.maxDescendantNodesAllowed);
+      
       srcNode.getData().accept(initializer);
-
       PlainChangesLog changes = new PlainChangesLogImpl(initializer.getAllStates(), session);
 
       // reload items pool
-      for (ItemState state : initializer.getItemAddStates())
-      {
-         if (state.isUpdated() || state.isRenamed())
-         {
-            (session.getTransientNodesManager()).reloadItem(state.getData());
-         }
-      }
-
+      session.getTransientNodesManager().reloadItems(initializer);
+      // persist the changes
       session.getTransientNodesManager().getTransactManager().save(changes);
    }
 
