@@ -92,6 +92,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
+ * GroovyScript2RestLoader allows to save a Groovy script in JCR.
+ *
  * @author <a href="mailto:andrew00x@gmail.com">Andrey Parfonov</a>
  * @version $Id: GroovyScript2RestLoader.java 34445 2009-07-24 07:51:18Z
  *          dkatayev $

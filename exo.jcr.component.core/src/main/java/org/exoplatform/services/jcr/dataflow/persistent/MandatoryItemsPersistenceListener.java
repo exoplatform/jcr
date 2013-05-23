@@ -19,12 +19,11 @@
 package org.exoplatform.services.jcr.dataflow.persistent;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS
  * 
- * <br/>Implementations of this interface are mandatory for notification in PersistentDataManager save.
+ * <br>Implementations of this interface are mandatory for notification in PersistentDataManager save.
  * I.e. such implementations cannot be filtered by ItemsPersistenceListenerFilter.
- * 
- * <br/>Date: 14.01.2009.
+ *
  *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a> 
  * @version $Id: MandatoryItemsPersistenceListener.java 34801 2009-07-31 15:44:50Z dkatayev $

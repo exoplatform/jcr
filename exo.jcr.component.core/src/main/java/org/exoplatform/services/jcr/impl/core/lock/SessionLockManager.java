@@ -25,9 +25,9 @@ import javax.jcr.lock.Lock;
 import javax.jcr.lock.LockException;
 
 /**
- * Created by The eXo Platform SAS.
- * 
- * <br/>Date: 
+ * Created by The eXo Platform SAS<br>
+ *
+ * This interface encapsulates methods for the management of locks by session.
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: SessionLockManager.java 111 2008-11-11 11:11:11Z serg $

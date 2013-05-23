@@ -23,7 +23,7 @@ import java.util.Set;
 
 /**
  * Provides method for extraction of set of locked nodes' IDs from
- * {@link LockManager} persistant layer (database lock table),
+ * {@link org.exoplatform.services.jcr.config.LockManagerEntry} persistant layer (database lock table),
  * which can be further used for consistency check.
  *  
  * @author <a href="mailto:dkuleshov@exoplatform.com">Dmitry Kuleshov</a>
@@ -32,7 +32,7 @@ import java.util.Set;
 public interface LockTableHandler
 {
    /**
-    * Get a set of locked jcr nodes IDs contained in {@link LockManager} persistent layer (database table).
+    * Get a set of locked jcr nodes IDs contained in {@link org.exoplatform.services.jcr.config.LockManagerEntry} persistent layer (database table).
     * 
     * @return {@link Set} of node IDs
     * @throws SQLException
@@ -44,7 +44,6 @@ public interface LockTableHandler
     * 
     * @param nodeId
     *          node identifier
-    * @return {@link Set} of node IDs
     * @throws SQLException
     */
    void removeLockedNode(String nodeId) throws SQLException;

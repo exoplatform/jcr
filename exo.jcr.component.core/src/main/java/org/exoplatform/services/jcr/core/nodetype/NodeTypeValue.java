@@ -22,10 +22,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by The eXo Platform SAS.<br/> NodeType value object
- * 
- * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
- *         Azarenkov</a>
+ * Created by The eXo Platform SAS<br>
+ *
+ * The NodeTypeValue interface represents a simple container structure used to define node types
+ * which are then registered through the ExtendedNodeTypeManager.
+ *
+ * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: NodeTypeValue.java 11907 2008-03-13 15:36:21Z ksm $
  * @LevelAPI Unsupported
  */

@@ -28,7 +28,10 @@ import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.version.VersionException;
 
 /**
- * Created by The eXo Platform SAS.
+ * Created by The eXo Platform SAS<br>
+ *
+ * This interface provides advanced methods that are not part of the Property Interface
+ * defined in the specification JSR-170.
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: ExtendedProperty.java 11907 2008-03-13 15:36:21Z ksm $
