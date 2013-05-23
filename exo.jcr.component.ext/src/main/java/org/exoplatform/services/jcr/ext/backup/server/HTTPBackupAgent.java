@@ -312,6 +312,29 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param repository the name of the repository
     * @param workspace the name of the workspace
     * @return Response return the response
+    * @request
+    * {code:json}
+    * {
+    *   "backupType" : the backup type (full or full+incremental),
+    *   "incrementalJobPeriod" : the incremental job period,
+    *   "incrementalRepetitionNumber" : the incremental repetition number,
+    *   "fullBackupJobConfig" : the BackupJobConfig to full backup,
+    *   "incrementalBackupJobConfig" : the BackupJobConfig to incremental backup,
+    *   "backupDir" : the folder for backup data
+    * }
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -422,6 +445,29 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param repository the name of the repository
     * @return Response return the response
     * @LevelAPI Provisional
+    * @request
+    * {code:json}
+    * {
+    *   "backupType" : the backup type (full or full+incremental),
+    *   "incrementalJobPeriod" : the incremental job period,
+    *   "incrementalRepetitionNumber" : the incremental repetition number,
+    *   "fullBackupJobConfig" : the BackupJobConfig to full backup,
+    *   "incrementalBackupJobConfig" : the BackupJobConfig to incremental backup,
+    *   "backupDir" : the folder for backup data
+    * }
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    * }
+    * {code}
     */
    @POST
    @Consumes(MediaType.APPLICATION_JSON)
@@ -577,6 +623,23 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param repository the name of the repository
     * @param backupId the identifier of the backup
     * @return Response return the response
+    * @request
+    * {code:json}
+    *  "wEntry" : the configuration of the workspace to restore.
+    * {code}
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore) ,
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -690,6 +753,23 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param backupId the identifier of the backup
     * @param removeExisting if 'true', it will remove fully (db, value storage, index) the existing workspace.  
     * @return Response return the response
+    * @request
+    * {code:json}
+    *  "wEntry" : "the configuration of the workspace to restore.
+    * {code}
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore) ,
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -821,6 +901,23 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param backupSetPathEncoded the path to backup set
     * @param removeExisting if 'true', it will remove fully (db, value storage, index) the existing workspace.  
     * @return Response return the response
+    * @request
+    * {code:json}
+    *  "wEntry" : the configuration of the workspace to restore.
+    * {code}
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -985,6 +1082,19 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param backupId the identifier of the backup
     * @param removeExisting if 'true', it will be remove fully (db, value storage, index) the existing workspace.  
     * @return Response return the response
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -1133,6 +1243,19 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param backupSetPathEncoded the path to backup set
     * @param removeExisting if 'true', it will remove fully (db, value storage, index) the existing workspace.  
     * @return Response return the response
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -1417,6 +1540,26 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param rEntry the configuration of the repository to restore
     * @param backupId the identifier of the backup
     * @return Response return the response
+    * @request
+    * {code:json}
+    * {
+    *   "rEntry" :  the configuration of the repository to restore
+    * }
+    * {code}
+
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -1508,6 +1651,25 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param backupId the identifier of the backup
     * @param removeExisting if 'true', it will remove fully (db, value storage, index) the existing repository.
     * @return Response return the response
+    * @request
+    * {code:json}
+    * {
+    *   "rEntry" :  the configuration of the repository to restore
+    * }
+    * {code}
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @POST
@@ -1612,6 +1774,26 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param backupSetPathEncoded the path to backup set
     * @param removeExisting if 'true', it will remove fully (db, value storage, index) the existing repository.
     * @return Response return the response
+    * @request
+    * {code:json}
+    * {
+    *   "rEntry" :  the configuration of the repository to restore
+    * }
+    * {code}
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName":the name of repository
+    * }
+    * {code}
+
     * @LevelAPI Provisional
     */
    @POST
@@ -1746,6 +1928,19 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param backupId the identifier of the backup
     * @param removeExisting if 'true', it  will remove fully (db, value storage, index) the existing repository.
     * @return Response return the response
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -1851,6 +2046,19 @@ public class HTTPBackupAgent implements ResourceContainer
     * 
     * @param backupId the identifier of the backup
     * @return Response return the response
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -1909,6 +2117,19 @@ public class HTTPBackupAgent implements ResourceContainer
     * 
     * @param backupId the identifier of the backup
     * @return Response return the response
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    * }
+    * {code
     * @LevelAPI Provisional
     */
    @GET
@@ -1966,6 +2187,15 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives info about the backup service.
     * 
     * @return Response return the response
+    * @response
+    * {code:json}
+    * {
+    *   "backupLogDir" : the path to backup log folder,
+    *   "defaultIncrementalJobPeriod" : the default incremental job period,
+    *   "fullBackupType" : the type of full backup,
+    *   "incrementalBackupType" : the type of incremental backup
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -1997,6 +2227,20 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives info about all the current and completed backups.
     * 
     * @return Response return the response
+    * @response
+    * {code:json}
+    *  {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    *  }
+    *  ]
+    *  {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2032,7 +2276,23 @@ public class HTTPBackupAgent implements ResourceContainer
 
    /**
     * Gives info about all the current and completed repository backups .
-    * 
+    *
+    * @response
+    * {code:json}
+    * [
+    *   {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    *  }
+    *  ]
+    *  {code}
+    * @LevelAPI Provisional
     * @return Response return the response
     * @LevelAPI Provisional
     */
@@ -2071,6 +2331,26 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives full details about the current or completed backup corresponding to the given id.
     * 
     * @param id the identifier of the backup
+    *
+    * @response
+    * {code:json}
+    *  {
+    *   "backupType" : the backup type (full or full+incremental),
+    *   "incrementalJobPeriod" : the incremental job period,
+    *   "incrementalRepetitionNumber" : the incremental repetition number,
+    *   "fullBackupJobConfig" : the BackupJobConfig to full backup,
+    *   "incrementalBackupJobConfig" : the BackupJobConfig to incremental backup,
+    *   "backupDir" : the folder for backup data},
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    *  }
+    *  {code}
     * @return Response return the response
     * @LevelAPI Provisional
     */
@@ -2119,6 +2399,26 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives full details about the current or completed repository backup corresponding to the given id.
     * 
     * @param id the identifier of the repository backup
+    *
+    * @response
+    * {code:json}
+    *  {
+    *   "backupType" : the backup type (full or full+incremental),
+    *   "incrementalJobPeriod" : the incremental job period,
+    *   "incrementalRepetitionNumber" : the incremental repetition number,
+    *   "fullBackupJobConfig" : the BackupJobConfig to full backup,
+    *   "incrementalBackupJobConfig" : the BackupJobConfig to incremental backup,
+    *   "backupDir" : the folder for backup data},
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    *  }
+    *  {code}
     * @return Response return the response
     * @LevelAPI Provisional
     */
@@ -2168,6 +2468,22 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives info about all the current backups.
     * 
     * @return Response return the response
+    *
+    * @response
+    * {code:json}
+    * [
+    *   {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    *  }
+    * ]
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2201,6 +2517,22 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives info about all the current repository backups.
     * 
     * @return Response return the response
+    *
+    * @response
+    * {code:json}
+    * [
+    *   {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    *  }
+    * ]
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2234,6 +2566,22 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives info about all the completed backups.
     * 
     * @return Response return the response
+    *
+    * @response
+    * {code:json}
+    * [
+    *   {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    *  }
+    * ]
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2268,6 +2616,22 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives info about all the completed repository backups.
     * 
     * @return Response return the response
+    *
+    * @response
+    * {code:json}
+    * [
+    *  {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    *  }
+    * ]
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2305,6 +2669,22 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param repository the name of the repository
     * @param workspace the name of the workspace
     * @return Response return the response
+    *
+    * @response
+    * {code:json}
+    * [
+    *  {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    *  }
+    * ]
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2357,6 +2737,22 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param repository the name of the repository
     * 
     * @return Response return the response
+    *
+    * @response
+    * {code:json}
+    * [
+    *   {
+    *   "startedTime": the start time of backup,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of backup,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of backup,
+    *   "repositoryName": the name of repository
+    *  }
+    * ]
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2407,6 +2803,27 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param workspace the name of the workspace
     * 
     * @return Response return the response
+    *
+    * @response
+    * {code:json}
+    * {
+    *  {
+    *   "backupType" : the backup type (full or full+incremental),
+    *   "incrementalJobPeriod" : the incremental job period,
+    *   "incrementalRepetitionNumber" : the incremental repetition number,
+    *   "fullBackupJobConfig" : the BackupJobConfig to full backup,
+    *   "incrementalBackupJobConfig" : the BackupJobConfig to incremental backup,
+    *   "backupDir" : the folder for backup data},
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    *  }
+    *  {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2457,6 +2874,27 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param repository the name of the repository
     * 
     * @return Response return the response
+    *
+    * @response
+    * {code:json}
+    * {
+    *  {
+    *   "backupType" : the backup type (full or full+incremental),
+    *   "incrementalJobPeriod" : the incremental job period,
+    *   "incrementalRepetitionNumber" : the incremental repetition number,
+    *   "fullBackupJobConfig" : the BackupJobConfig to full backup,
+    *   "incrementalBackupJobConfig" : the BackupJobConfig to incremental backup,
+    *   "backupDir" : the folder for backup data},
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    *  }
+    *  {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2503,6 +2941,21 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives all details about the last restores.
     * 
     * @return Response return the response
+    *
+    * @response
+    * {code:json}
+    * {
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    *  }
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2559,6 +3012,22 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives all details about the last repository restores.
     * 
     * @return Response return the response
+    *
+    * @response
+    * {code:json}
+    * [
+    *    {
+    *   "startedTime": the start time of restore,
+    *   "backupId": the backup identifier,
+    *   "type": the type of ShortInfo (current, completed, restore),
+    *   "state": the state of restore,
+    *   "backupType": the backup type (full or full+incremental),
+    *   "workspaceName": the name of workspace,
+    *   "finishedTime": the finish time of restore,
+    *   "repositoryName": the name of repository
+    *  }
+    * ]
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2614,6 +3083,13 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives the default workspace configuration.
     * 
     * @return Response return the JSON to WorkspaceEntry
+    *
+    * @response
+    * {code:json}
+    * {
+    *   "wEntry" : the default workspace configuration.
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
@@ -2645,6 +3121,13 @@ public class HTTPBackupAgent implements ResourceContainer
     * Gives the default repository configuration.
     * 
     * @return Response return the JSON to WorkspaceEntry
+    *
+    * @response
+    * {code:json}
+    * {
+    *   "rEntry" : the default repository configuration.
+    * }
+    * {code}
     * @LevelAPI Provisional
     */
    @GET
