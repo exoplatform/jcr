@@ -109,23 +109,34 @@
     <emphasis>org.exoplatform.jcr</emphasis>.</para>
 
     <para>Then you will need to configure the connector itself, for example
-    for JBoss AS, you need to create in your deploy directory a file of type
-    <emphasis>*-ds.xml</emphasis> (jcr-ds.xml for example) with the following
-    content:</para>
+    for JBoss AS, you need to configure the resource adapter in <emphasis>JBOSS_HOME/standalone/configuration/standalone.xml</emphasis>.
+    you should replace</para>
 
-    <programlisting>&lt;connection-factories&gt;
-  &lt;tx-connection-factory&gt;
-    &lt;jndi-name&gt;jcr/repository&lt;/jndi-name&gt;
-    &lt;xa-transaction/&gt;
-    &lt;!-- The rar name will be exo.jcr.connectors.jca.X.Y.Z.rar in case you deploy only the rar file --&gt;
-    &lt;rar-name&gt;exo.jcr.ear.ear#exo-jcr.rar&lt;/rar-name&gt;
-    &lt;adapter-display-name&gt;eXo JCR Adapter&lt;/adapter-display-name&gt;
-    &lt;connection-definition&gt;org.exoplatform.connectors.jcr.adapter.SessionFactory&lt;/connection-definition&gt;
-    &lt;!--
-    &lt;config-property name="PortalContainer" type="java.lang.String"&gt;portal&lt;/config-property&gt;
-    --&gt;
-    &lt;config-property name="Repository" type="java.lang.String"&gt;repository&lt;/config-property&gt;
-  &lt;/tx-connection-factory&gt;
-&lt;/connection-factories&gt;</programlisting>
+    <programlisting>
+     &lt;subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/&gt;
+    </programlisting>
+    <para> by the following content:</para>
+
+    <programlisting>
+               &lt;subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"&gt;
+           &lt;resource-adapters&gt;
+              &lt;resource-adapter&gt;
+                 &lt;archive&gt;exo-jcr.rar&lt;/archive&gt;
+
+                 &lt;transaction-support&gt;XATransaction&lt;/transaction-support&gt;
+                 &lt;connection-definitions&gt;
+                    &lt;connection-definition class-name="org.exoplatform.connectors.jcr.impl.adapter.ManagedSessionFactory"
+                                           jndi-name="java:/jcr/Repository"&gt;
+
+                       &lt;config-property name="PortalContainer"&gt;portal&lt;/config-property&gt;
+                       &lt;config-property name="Repository"&gt;repository&lt;/config-property&gt;
+
+
+                    &lt;/connection-definition&gt;
+                 &lt;/connection-definitions&gt;
+              &lt;/resource-adapter&gt;
+           &lt;/resource-adapters&gt;
+        &lt;/subsystem&gt;
+    </programlisting>
   </section>
 </section>
