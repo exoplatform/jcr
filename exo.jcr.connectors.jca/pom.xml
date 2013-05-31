@@ -114,6 +114,9 @@
             <manifest>
               <addClasspath>true</addClasspath>
             </manifest>
+            <manifestEntries>
+              <Dependencies>javax.jcr.api,org.gatein.lib,org.gatein.sso</Dependencies>
+            </manifestEntries>
           </archive>
         </configuration>
       </plugin>

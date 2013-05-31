@@ -18,6 +18,7 @@
  */
 package org.exoplatform.connectors.jcr.adapter;
 
+import java.io.Serializable;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.resource.cci.ConnectionFactory;
@@ -29,7 +30,7 @@ import javax.resource.cci.ConnectionFactory;
  * @version $Id$
  *
  */
-public interface SessionFactory
+public interface SessionFactory  extends Serializable
 {
    /**
     * Get a JCR session corresponding to the repository
