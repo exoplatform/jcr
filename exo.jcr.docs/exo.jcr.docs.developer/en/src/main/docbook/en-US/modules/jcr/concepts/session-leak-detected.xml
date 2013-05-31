@@ -18,21 +18,21 @@
 
       <para>Setting the virtual machine system property <emphasis role="bold">exo.jcr.session.tracking.active</emphasis> to true activates the session detector with a default time period of 2 minutes.</para>
 
-      <para>You can set the max age with the virtual machine system property <emphasis role="bold">exo.jcr.jcr.session.tracking.maxage</emphasis> in seconds. The default value, if you don't override it is 120 (2 minutes).</para>
+      <para>You can set the max age with the virtual machine system property <emphasis role="bold">exo.jcr.session.tracking.maxage</emphasis> in seconds. The default value, if you don't override it is 120 (2 minutes).</para>
 
       <para>Example :</para>
 
       <para>You can do this easily in eXo.sh. For example : On Linux/Macs :</para>
 
       <programlisting>
-        JCR_SESSION_TRACK="-Dexo.jcr.session.tracking.active=true -Dexo.jcr.jcr.session.tracking.maxage=60"
+        JCR_SESSION_TRACK="-Dexo.jcr.session.tracking.active=true -Dexo.jcr.session.tracking.maxage=60"
         JAVA_OPTS="$JCR_SESSION_TRACK $JAVA_OPTS $LOG_OPTS $SECURITY_OPTS $EXO_OPTS $EXO_CONFIG_OPTS $REMOTE_DEBUG"
       </programlisting>
 
       <para>on Windows :</para>
 
       <programlisting>
-        set JCR_SESSION_TRACK=-Dexo.jcr.session.tracking.active=true -Dexo.jcr.jcr.session.tracking.maxage=60
+        set JCR_SESSION_TRACK=-Dexo.jcr.session.tracking.active=true -Dexo.jcr.session.tracking.maxage=60
         set JAVA_OPTS="%JCR_SESSION_TRACK% %JAVA_OPTS% %LOG_OPTS% %SECURITY_OPTS% %EXO_OPTS% %EXO_CONFIG_OPTS% %REMOTE_DEBUG%"
       </programlisting>
 
