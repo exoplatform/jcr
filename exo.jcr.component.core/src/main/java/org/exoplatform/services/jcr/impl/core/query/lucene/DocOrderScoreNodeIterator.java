@@ -254,6 +254,20 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
       {
          ScoreNode n1 = nodes1[selectorIndex];
          ScoreNode n2 = nodes2[selectorIndex];
+         // handle null values
+         // null is considered less than any value
+         if (n1 == n2)
+         {
+            return 0;
+         }
+         else if (n1 == null)
+         {
+            return -1;
+         }
+         else if (n2 == null)
+         {
+            return 1;
+         }
          try
          {
             NodeData ndata1;
@@ -286,42 +300,6 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
                // node does not exist anymore
                invalidIDs.add(n2.getNodeId());
                throw new SortFailedException();
-            }
-
-            QPath path1 = ndata1.getQPath();
-            QPath path2 = ndata2.getQPath();
-
-            QPathEntry[] pentries1 = path1.getEntries();
-            QPathEntry[] pentries2 = path2.getEntries();
-
-            // find nearest common ancestor
-            int commonDepth = 0; // root
-            while (pentries1.length > commonDepth && pentries2.length > commonDepth)
-            {
-               if (pentries1[commonDepth].equals(pentries2[commonDepth]))
-               {
-                  commonDepth++;
-               }
-               else
-               {
-                  break;
-               }
-            }
-
-            // path elements at last depth were equal
-            commonDepth--;
-
-            // check if either path is an ancestor of the other
-            if (pentries1.length - 1 == commonDepth)
-            {
-               // path1 itself is ancestor of path2
-               return -1;
-            }
-
-            if (pentries2.length - 1 == commonDepth)
-            {
-               // path2 itself is ancestor of path1
-               return 1;
             }
 
             return ndata1.getOrderNumber() - ndata2.getOrderNumber();
