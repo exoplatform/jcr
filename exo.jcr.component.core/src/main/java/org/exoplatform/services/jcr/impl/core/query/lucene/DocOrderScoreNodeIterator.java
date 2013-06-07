@@ -302,6 +302,84 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
                throw new SortFailedException();
             }
 
+            QPath path1 = ndata1.getQPath();
+            QPath path2 = ndata2.getQPath();
+
+            QPathEntry[] pentries1 = path1.getEntries();
+            QPathEntry[] pentries2 = path2.getEntries();
+
+            // find nearest common ancestor
+            int commonDepth = 0; // root
+            while (pentries1.length > commonDepth && pentries2.length > commonDepth)
+            {
+               if (pentries1[commonDepth].equals(pentries2[commonDepth]))
+               {
+                  commonDepth++;
+               }
+               else
+               {
+                  break;
+               }
+            }
+
+            // path elements at last depth were equal
+            commonDepth--;
+
+            // check if either path is an ancestor of the other
+            if (pentries1.length - 1 == commonDepth)
+            {
+               // path1 itself is ancestor of path2
+               return -1;
+            }
+
+            if (pentries2.length - 1 == commonDepth)
+            {
+               // path2 itself is ancestor of path1
+               return 1;
+            }
+
+            // Get the ancestor of node1 that is under the common
+            // ancestor with node2
+            while (pentries1.length - 1 > commonDepth + 1)
+            {
+               String id = ndata1.getParentIdentifier();
+               try
+               {
+                  ndata1 = getNode(id);
+                  if (ndata1 == null)
+                  {
+                     throw new RepositoryException("Node not found for " + id);
+                  }
+                  pentries1 = ndata1.getQPath().getEntries();
+               }
+               catch (RepositoryException e)
+               {
+                  invalidIDs.add(id);
+                  throw new SortFailedException();
+               }
+            }
+
+            // Get the ancestor of node2 that is under the common
+            // ancestor with node1
+            while (pentries2.length - 1 > commonDepth + 1)
+            {
+               String id = ndata2.getParentIdentifier();
+               try
+               {
+                  ndata2 = getNode(id);
+                  if (ndata2 == null)
+                  {
+                     throw new RepositoryException("Node not found for " + id);
+                  }
+                  pentries2 = ndata2.getQPath().getEntries();
+               }
+               catch (RepositoryException e)
+               {
+                  invalidIDs.add(id);
+                  throw new SortFailedException();
+               }
+            }
+
             return ndata1.getOrderNumber() - ndata2.getOrderNumber();
          }
          catch (SortFailedException e)
