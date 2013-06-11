@@ -150,6 +150,12 @@
 
   &lt;/init-params&gt;
 &lt;/component&gt;</programlisting>
+      <note>
+        <para>
+           The MimeTypeResolver throw an exception on Redhat 5.9, you should use the mime cache file instead of magic.mime file.
+            It will be able to set the path of the mime cache file thanks to the System property exo.mime-cache.
+        </para>
+     </note>
   </section>
 
   <section id="JCR.WebDAV.Screenshots">
