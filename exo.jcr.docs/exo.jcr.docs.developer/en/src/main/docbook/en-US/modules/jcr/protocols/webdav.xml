@@ -153,7 +153,7 @@
       <note>
         <para>
             If the MimeTypeResolver throws exceptions of type "eu.medsea.mimeutil.detector.InvalidMagicMimeEntryException: Invalid Magic Mime Entry"
-            on RHEL or CentOS, ..., you should use the mime cache file instead of the magic mime file.
+            on RHEL or CentOS, you should use the mime cache file instead of the magic mime file.
             To provide the full path to the mime cache file, you will need to use the system property exo.mime.cache.
         </para>
      </note>
