@@ -77,9 +77,9 @@ public final class SortedLuceneQueryHits extends AbstractQueryHits
    private int hitIndex = -1;
 
    /**
-    * The score nodes.
+    * The score docs.
     */
-   private final List scoreNodes = new ArrayList();
+   private final List<ScoreDoc> scoreDocs = new ArrayList<ScoreDoc>();
 
    /**
     * The total number of hits.
@@ -130,13 +130,15 @@ public final class SortedLuceneQueryHits extends AbstractQueryHits
          // no more score nodes
          return null;
       }
-      else if (hitIndex >= scoreNodes.size())
+      else if (hitIndex >= scoreDocs.size())
       {
          // refill at least numHits or twice hitIndex
          this.numHits = Math.max(this.numHits, hitIndex * 2);
          getHits();
       }
-      return (ScoreNode)scoreNodes.get(hitIndex);
+      ScoreDoc doc = scoreDocs.get(hitIndex);
+      String uuid = reader.document(doc.doc, FieldSelectors.UUID).get(FieldNames.UUID);
+      return new ScoreNode(uuid, doc.score, doc.doc);
    }
 
    /**
@@ -159,15 +161,12 @@ public final class SortedLuceneQueryHits extends AbstractQueryHits
 
       this.size = collector.getTotalHits();
       ScoreDoc[] docs = collector.topDocs().scoreDocs;
-      for (int i = scoreNodes.size(); i < docs.length; i++)
+      for (int i = scoreDocs.size(); i < docs.length; i++)
       {
-         String uuid = reader.document(docs[i].doc).get(FieldNames.UUID);
-         //NodeId id = new NodeId(UUID.fromString(uuid));
-         scoreNodes.add(new ScoreNode(uuid, docs[i].score, docs[i].doc));
+         scoreDocs.add(docs[i]);
       }
-      log.debug("getHits() {}/{}", new Integer(scoreNodes.size()), new Integer(numHits));
+      log.debug("getHits() {}/{}", scoreDocs.size(), numHits);
       // double hits for next round
       numHits *= 2;
-
    }
 }

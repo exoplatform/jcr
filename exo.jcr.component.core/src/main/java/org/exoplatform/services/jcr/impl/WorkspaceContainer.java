@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
-import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
@@ -50,6 +49,11 @@ import javax.jcr.RepositoryException;
 public class WorkspaceContainer extends ExoContainer
 {
 
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 6960318261888349500L;
+
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.WorkspaceContainer");
 
    private final String name;
@@ -60,7 +64,7 @@ public class WorkspaceContainer extends ExoContainer
       RepositoryConfigurationException
    {
       // Before repository instantiation
-      super(new MX4JComponentAdapterFactory(), parent);
+      super(parent);
 
       repositoryContainer = parent;
       this.name = config.getName();

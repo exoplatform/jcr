@@ -45,12 +45,12 @@ public class TestMultiValueSearch extends BaseQueryTest
       QueryManager qman = this.workspace.getQueryManager();
 
       // Check first value
-      Query q = qman.createQuery("SELECT * FROM nt:unstructured " + " WHERE  CONTAINS(., 'First')", Query.SQL);
+      Query q = qman.createQuery("SELECT * FROM nt:unstructured " + " WHERE jcr:data = 'First'", Query.SQL);
       QueryResult res = q.execute();
       assertEquals("First value isnt found.", 1, res.getNodes().getSize());
 
       // Check second value
-      q = qman.createQuery("SELECT * FROM nt:unstructured " + " WHERE  CONTAINS(., 'Second')", Query.SQL);
+      q = qman.createQuery("SELECT * FROM nt:unstructured " + " WHERE jcr:data = 'Second'", Query.SQL);
       res = q.execute();
       assertEquals("Second value isnt found.", 1, res.getNodes().getSize());
    }

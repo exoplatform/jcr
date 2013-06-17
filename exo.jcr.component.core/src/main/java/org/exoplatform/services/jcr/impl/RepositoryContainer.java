@@ -22,7 +22,6 @@ import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.ExoContainer;
 import org.exoplatform.container.component.ComponentPlugin;
-import org.exoplatform.container.jmx.MX4JComponentAdapterFactory;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
@@ -102,6 +101,11 @@ public class RepositoryContainer extends ExoContainer
 {
 
    /**
+    * The serial UID
+    */
+   private static final long serialVersionUID = -8441933562276408877L;
+
+   /**
     * Repository config.
     */
    private final RepositoryEntry config;
@@ -145,7 +149,7 @@ public class RepositoryContainer extends ExoContainer
       throws RepositoryException, RepositoryConfigurationException
    {
 
-      super(new MX4JComponentAdapterFactory(), parent);
+      super(parent);
 
       // Defaults:
       if (config.getAccessControl() == null)
