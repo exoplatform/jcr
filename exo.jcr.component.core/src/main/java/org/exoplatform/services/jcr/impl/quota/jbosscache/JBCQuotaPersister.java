@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.quota.jbosscache;
 
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -31,6 +32,8 @@ import org.jboss.cache.Fqn;
 import org.jboss.cache.Node;
 
 import java.io.Serializable;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -414,15 +417,35 @@ public class JBCQuotaPersister extends AbstractQuotaPersister
       return getAllChildrenItems(fqn);
    }
 
-   private Set<String> getAllChildrenItems(Fqn<String> fqn)
+   private Set<String> getAllChildrenItems(final Fqn<String> fqn)
    {
-      Set<String> result = new HashSet<String>();
-      for (Object path : cache.getChildrenNames(fqn))
+      try
       {
-         result.add(unescaping((String)path));
+         return SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Set<String>>()
+         {
+            public Set<String> run() throws Exception
+            {
+               Set<String> result = new HashSet<String>();
+               for (Object path : cache.getChildrenNames(fqn))
+               {
+                  result.add(unescaping((String)path));
+               }
+               return result;
+            }
+         });
       }
-
-      return result;
+      catch (PrivilegedActionException e)
+      {
+         Throwable cause = e.getCause();
+         if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
    }
 
    // ==============================> private methods
@@ -430,11 +453,32 @@ public class JBCQuotaPersister extends AbstractQuotaPersister
    /**
     * Returns quota value otherwise throws {@link UnknownQuotaLimitException}.
     */
-   private long getQuota(Fqn<String> fqn) throws UnknownQuotaLimitException
+   private long getQuota(final Fqn<String> fqn) throws UnknownQuotaLimitException
    {
       cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
-      Long size = (Long)cache.get(fqn, SIZE);
-
+      Long size = null;
+      try
+      {
+         size = SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Long>()
+         {
+            public Long run() throws Exception
+            {
+               return (Long)cache.get(fqn, SIZE);
+            }
+         });
+      }
+      catch (PrivilegedActionException e)
+      {
+         Throwable cause = e.getCause();
+         if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
       if (size == null)
       {
          throw new UnknownQuotaLimitException("Quota was not set early");
