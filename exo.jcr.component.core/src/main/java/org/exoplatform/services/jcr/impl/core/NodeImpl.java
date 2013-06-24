@@ -199,6 +199,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       InternalQName name = locationFactory.parseJCRName(mixinName).getInternalName();
 
+      if (name.equals(Constants.EXO_OWNEABLE))
+      {
+         checkPermission(PermissionType.CHANGE_PERMISSION);
+      }
+
       // Does the node already has the mixin
       for (InternalQName mixin : nodeData().getMixinTypeNames())
       {

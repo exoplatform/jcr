@@ -51,6 +51,7 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -418,6 +419,11 @@ public abstract class ItemImpl implements Item
       ConstraintViolationException, RepositoryException
    {
       boolean persistedParent = !parentNode.isNew();
+
+      if (propertyName.equals(Constants.EXO_OWNER) && !hasPermission(PermissionType.CHANGE_PERMISSION))
+      {
+         throw new AccessControlException("Permission denied " + getPath() + " : " + PermissionType.CHANGE_PERMISSION);
+      }
 
       // Check if checked-in (versionable)
       if (persistedParent && !parentNode.checkedOut())
