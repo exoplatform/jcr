@@ -420,11 +420,6 @@ public abstract class ItemImpl implements Item
    {
       boolean persistedParent = !parentNode.isNew();
 
-      if (propertyName.equals(Constants.EXO_OWNER) && !hasPermission(PermissionType.CHANGE_PERMISSION))
-      {
-         throw new AccessControlException("Permission denied " + getPath() + " : " + PermissionType.CHANGE_PERMISSION);
-      }
-
       // Check if checked-in (versionable)
       if (persistedParent && !parentNode.checkedOut())
       {

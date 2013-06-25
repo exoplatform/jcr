@@ -199,11 +199,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       InternalQName name = locationFactory.parseJCRName(mixinName).getInternalName();
 
-      if (name.equals(Constants.EXO_OWNEABLE))
-      {
-         checkPermission(PermissionType.CHANGE_PERMISSION);
-      }
-
       // Does the node already has the mixin
       for (InternalQName mixin : nodeData().getMixinTypeNames())
       {
@@ -229,6 +224,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       if (definition.isProtected())
       {
          throw new ConstraintViolationException("Can not add mixin type. Node is protected " + getPath());
+      }
+
+      if (name.equals(Constants.EXO_OWNEABLE))
+      {
+         checkPermission(PermissionType.CHANGE_PERMISSION);
       }
 
       // Check if versionable ancestor is not checked-in

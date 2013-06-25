@@ -1078,7 +1078,6 @@ public class TestAccess extends BaseStandaloneTest
       ExtendedNode node = (ExtendedNode)accessTestRoot.addNode("testSetOwneable");
       node.addMixin("exo:privilegeable");
       node.setPermission("john", new String[]{PermissionType.ADD_NODE,PermissionType.READ,PermissionType.REMOVE,PermissionType.SET_PROPERTY});
-      node.setPermission("mary", new String[]{PermissionType.READ,PermissionType.SET_PROPERTY});
       node.setPermission(accessTestRoot.getSession().getUserID(), PermissionType.ALL);
       node.removePermission(IdentityConstants.ANY);
       session.save();
@@ -1096,11 +1095,18 @@ public class TestAccess extends BaseStandaloneTest
       }
       session1.logout();
 
+      ExtendedNode node2 = (ExtendedNode)accessTestRoot.addNode("testSetOwneable1");
+      node2.addMixin("exo:privilegeable");
+      node2.setPermission("mary", new String[]{PermissionType.READ,PermissionType.SET_PROPERTY});
+      node2.setPermission(accessTestRoot.getSession().getUserID(), PermissionType.ALL);
+      node2.removePermission(IdentityConstants.ANY);
+      session.save();
+
       Session session2 = repository.login(new CredentialsImpl("mary", "exo".toCharArray()));
-      ExtendedNode node2 = (ExtendedNode)session2.getRootNode().getNode("accessTestRoot/testSetOwneable");
+      ExtendedNode node3 = (ExtendedNode)session2.getRootNode().getNode("accessTestRoot/testSetOwneable1");
 
       try {
-         node2.addMixin("exo:owneable");
+         node3.addMixin("exo:owneable");
          session2.save();
          fail();
       }
@@ -1109,6 +1115,7 @@ public class TestAccess extends BaseStandaloneTest
       }
       session2.logout();
       node.remove();
+      node2.remove();
       session.save();
 
    }
