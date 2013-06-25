@@ -35,6 +35,7 @@
       <properties.url.suffix>.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <batch.size>-1</batch.size>
+      <debug.opts></debug.opts>
   </properties>
   <dependencies>
     <dependency>
@@ -93,7 +94,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
-            <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+            <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy ${debug.opts}</argLine>
             <systemProperties>
                <property>
                   <name>jcr.test.configuration.file</name>
@@ -107,7 +108,7 @@
             <excludes>
               <exclude>**/BaseStandaloneTest.java</exclude>
               <exclude>**/backup/AbstractBackupTestCase.java</exclude>
-              <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>              
+              <exclude>**/backup/BaseRDBMSBackupTest.java</exclude>
               <exclude>**/backup/TestBackupRestart.java</exclude>
               <exclude>**/replication/**</exclude>
               <exclude>**/repository/creation/cluster/**</exclude>
@@ -234,7 +235,7 @@
                    <groupId>org.apache.maven.plugins</groupId>
                    <artifactId>maven-surefire-plugin</artifactId>
                    <configuration>
-                     <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+                     <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy ${debug.opts}</argLine>
                      <systemProperties>
                         <property>
                            <name>jcr.test.configuration.file</name>
@@ -245,9 +246,9 @@
                            <value>${properties.url.prefix}${properties.url.suffix}</value>
                        </property>
                         <property>
-	                   <name>exo.jcr.config.default.all.container.batch-size</name>
-    	                   <value>${batch.size}</value>
-        	        </property>
+                           <name>exo.jcr.config.default.all.container.batch-size</name>
+                           <value>${batch.size}</value>
+                        </property>
                      </systemProperties>
                      <includes>
                        <include>org/exoplatform/services/jcr/ext/backup/usecase/TestBackupRestore.java</include>
@@ -427,7 +428,7 @@
                <artifactId>db2jcc_license_cu</artifactId>
                <version>9.7</version>
                <scope>test</scope>
-            </dependency>            
+            </dependency>
          </dependencies>
       </profile>
       <profile>
@@ -501,6 +502,20 @@
          </dependencies>
       </profile>
       <profile>
+         <id>pgpls-9.2</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/pgpls</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.edb</groupId>
+               <artifactId>edb</artifactId>
+               <version>9.2.1.3</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
          <id>h2</id>
          <properties>
             <properties.url.prefix>classpath:/conf/standalone/h2</properties.url.prefix>
@@ -517,6 +532,12 @@
          <id>batch-update</id>
          <properties>
             <batch.size>1000</batch.size>
+         </properties>
+      </profile>
+      <profile>
+         <id>debug</id>
+         <properties>
+            <debug.opts>-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y</debug.opts>
          </properties>
       </profile>
   </profiles>
