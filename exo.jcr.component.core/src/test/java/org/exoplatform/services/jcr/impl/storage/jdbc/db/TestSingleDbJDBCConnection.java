@@ -107,7 +107,6 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
          st.executeUpdate("drop table JCR_SREF");
          st.executeUpdate("drop table JCR_SVALUE");
          st.executeUpdate("drop table JCR_SITEM");
-         st.close();
       }
       catch (SQLException se)
       {
