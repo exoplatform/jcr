@@ -98,9 +98,12 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
    protected void tearDown() throws Exception
    {
       super.tearDown();
+      Connection con = null;
+      Statement st = null;
       try
       {
-         Statement st = getJNDIConnection().createStatement();
+         con = getJNDIConnection();
+         st = con.createStatement();
          st.executeUpdate("drop table JCR_SREF");
          st.executeUpdate("drop table JCR_SVALUE");
          st.executeUpdate("drop table JCR_SITEM");
@@ -109,6 +112,16 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
       catch (SQLException se)
       {
          fail(se.toString());
+      }
+      finally
+      {
+         if (st != null)
+            st.close();
+         if (con != null)
+         {
+            con.commit();
+            con.close();
+         }
       }
    }
 }
