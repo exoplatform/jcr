@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -50,10 +51,12 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
    public void setUp() throws Exception
    {
       setUp("/conf/storage/jcr-mjdbc.sql", DatabaseStructureType.MULTI);
+      Connection con = null;
+      Statement st = null;
       try
       {
-
-         Statement st = getJNDIConnection().createStatement();
+         con = getJNDIConnection();
+         st = con.createStatement();
          st.executeUpdate("insert into JCR_MITEM values" + "('A','A','test1',20090525,2,1233,5,10,1)");
          st.executeUpdate("insert into JCR_MITEM values" + "('B','A','test2',20090625,1,1233,5,10,1)");
          st.executeUpdate("insert into JCR_MITEM values" + "('C','B','test3',20090825,1,1233,5,10,1)");
@@ -70,12 +73,20 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
          jdbcDataContainerConfig.dbStructureType = DatabaseStructureType.MULTI;
          jdbcConn = new MultiDbJDBCConnection(getJNDIConnection(), false, jdbcDataContainerConfig);
          tableType = "M";
-         st.close();
       }
       catch (SQLException se)
       {
-
          fail(se.toString());
+      }
+      finally
+      {
+         if (st != null)
+            st.close();
+         if (con != null)
+         {
+            con.commit();
+            con.close();
+         }
       }
    }
 
@@ -85,20 +96,29 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
    @Override
    protected void tearDown() throws Exception
    {
-
+      Connection con = null;
+      Statement st = null;
       try
       {
-
-         Statement st = getJNDIConnection().createStatement();
+         con = getJNDIConnection();
+         st = con.createStatement();
          st.executeUpdate("drop table JCR_MREF");
          st.executeUpdate("drop table JCR_MVALUE");
          st.executeUpdate("drop table JCR_MITEM");
-         st.close();
-
       }
       catch (SQLException se)
       {
          fail(se.toString());
+      }
+      finally
+      {
+         if (st != null)
+            st.close();
+         if (con != null)
+         {
+            con.commit();
+            con.close();
+         }
       }
       super.tearDown();
    }
