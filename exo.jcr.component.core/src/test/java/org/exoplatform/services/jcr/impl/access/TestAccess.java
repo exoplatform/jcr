@@ -1120,46 +1120,6 @@ public class TestAccess extends BaseStandaloneTest
 
    }
 
-   public void testSetOwner() throws Exception
-   {
-      ExtendedNode node = (ExtendedNode)accessTestRoot.addNode("testSetOwner");
-      node.addMixin("exo:privilegeable");
-      node.setPermission("john", new String[]{PermissionType.ADD_NODE,PermissionType.READ,PermissionType.REMOVE,PermissionType.SET_PROPERTY});
-      node.setPermission("mary", new String[]{PermissionType.READ,PermissionType.SET_PROPERTY});
-      node.setPermission(accessTestRoot.getSession().getUserID(), PermissionType.ALL);
-      node.removePermission(IdentityConstants.ANY);
-      session.save();
-
-      Session session1 = repository.login(new CredentialsImpl("john", "exo".toCharArray()));
-      ExtendedNode node1 = (ExtendedNode)session1.getRootNode().getNode("accessTestRoot/testSetOwner");
-      try {
-         node1.setProperty("exo:owner","mary") ;
-         session1.save();
-      }
-      catch (AccessControlException e)
-      {
-         fail();
-      }
-
-      session1.logout();
-
-      Session session2 = repository.login(new CredentialsImpl("mary", "exo".toCharArray()));
-      ExtendedNode node2 = (ExtendedNode)session2.getRootNode().getNode("accessTestRoot/testSetOwner");
-      try {
-         node2.setProperty("exo:owner","john") ;
-         session2.save();
-         fail();
-      }
-      catch (AccessControlException e)
-      {
-
-      }
-
-      session2.logout();
-      node.remove();
-      session.save();
-   }
-
    private void showPermissions(String path) throws RepositoryException
    {
       NodeImpl node = (NodeImpl)this.repository.getSystemSession().getRootNode().getNode(path);

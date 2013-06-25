@@ -51,7 +51,6 @@ import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.security.AccessControlException;
 import java.util.ArrayList;
 import java.util.List;
 
