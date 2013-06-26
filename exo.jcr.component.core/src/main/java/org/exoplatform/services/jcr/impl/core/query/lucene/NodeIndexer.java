@@ -396,15 +396,30 @@ public class NodeIndexer
                         {
                            is = pvd.getAsStream();
                            Reader reader;
-                           if (encoding != null)
+                           try
                            {
-                              reader = new StringReader(dreader.getContentAsText(is, encoding));
+                              if (encoding != null)
+                              {
+                                 reader = new StringReader(dreader.getContentAsText(is, encoding));
+                              }
+                              else
+                              {
+                                 reader = new StringReader(dreader.getContentAsText(is));
+                              }
+                              doc.add(createFulltextField(reader));
+
                            }
-                           else
+                           catch (Throwable e) //NOSONAR
                            {
-                              reader = new StringReader(dreader.getContentAsText(is));
+                              if (LOG.isDebugEnabled())
+                              {
+                                 LOG.debug("The full text content extraction failure: ", e);
+                              }
+                              else
+                              {
+                                 LOG.warn("The full text content extraction failure for the property located at: " + prop.getQPath().getAsString());
+                              }
                            }
-                           doc.add(createFulltextField(reader));
                         }
                         finally
                         {
