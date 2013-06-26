@@ -396,30 +396,15 @@ public class NodeIndexer
                         {
                            is = pvd.getAsStream();
                            Reader reader;
-                           try
+                           if (encoding != null)
                            {
-                              if (encoding != null)
-                              {
-                                 reader = new StringReader(dreader.getContentAsText(is, encoding));
-                              }
-                              else
-                              {
-                                 reader = new StringReader(dreader.getContentAsText(is));
-                              }
-                              doc.add(createFulltextField(reader));
-
+                              reader = new StringReader(dreader.getContentAsText(is, encoding));
                            }
-                           catch (Throwable e) //NOSONAR
+                           else
                            {
-                              if (LOG.isDebugEnabled())
-                              {
-                                 LOG.debug("The full text content extraction failure: ", e);
-                              }
-                              else
-                              {
-                                 LOG.warn("The full text content extraction failure for the property located at: " + prop.getQPath().getAsString());
-                              }
+                              reader = new StringReader(dreader.getContentAsText(is));
                            }
+                           doc.add(createFulltextField(reader));
                         }
                         finally
                         {
@@ -447,8 +432,16 @@ public class NodeIndexer
                }
                catch (DocumentReadException e)
                {
-                  LOG.error("Can not indexing the document by path " + propData.getQPath().getAsString()
-                     + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                  if (LOG.isDebugEnabled())
+                  {
+                     LOG.debug("Can not indexing the document by path " + propData.getQPath().getAsString()
+                        + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                  }
+                  else
+                  {
+                     LOG.warn("Can not indexing the document by path " + propData.getQPath().getAsString()
+                        + ", propery id '" + propData.getIdentifier());
+                  }
                }
                catch (HandlerNotFoundException e)
                {
@@ -462,16 +455,29 @@ public class NodeIndexer
                catch (IOException e)
                {
                   // no data - no index
-                  if (LOG.isWarnEnabled())
+                  if (LOG.isDebugEnabled())
+                  {
+                     LOG.debug("Binary value indexer IO error, document by path " + propData.getQPath().getAsString()
+                        + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                  }
+                  else
                   {
                      LOG.warn("Binary value indexer IO error, document by path " + propData.getQPath().getAsString()
-                        + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                        + ", propery id '" + propData.getIdentifier());
                   }
                }
                catch (Exception e)
                {
-                  LOG.error("Binary value indexer error, document by path " + propData.getQPath().getAsString()
-                     + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                  if (LOG.isDebugEnabled())
+                  {
+                     LOG.debug("Binary value indexer error, document by path " + propData.getQPath().getAsString()
+                        + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
+                  }
+                  else
+                  {
+                     LOG.warn("Binary value indexer error, document by path " + propData.getQPath().getAsString()
+                        + ", propery id '" + propData.getIdentifier());
+                  }
                }
             }
             else
