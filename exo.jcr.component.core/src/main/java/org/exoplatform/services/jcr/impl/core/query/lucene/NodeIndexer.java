@@ -470,12 +470,12 @@ public class NodeIndexer
                {
                   if (LOG.isDebugEnabled())
                   {
-                     LOG.debug("An IO exception occurred while trying to extract the full text content of the property " + propData.getQPath().getAsString()
+                     LOG.debug("An exception occurred while trying to extract the full text content of the property " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                   }
                   else
                   {
-                     LOG.warn("An IO exception occurred while trying to extract the full text content of the property " + propData.getQPath().getAsString()
+                     LOG.warn("An exception occurred while trying to extract the full text content of the property " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier());
                   }
                }
