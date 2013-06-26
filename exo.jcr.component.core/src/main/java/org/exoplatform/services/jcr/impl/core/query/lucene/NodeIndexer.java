@@ -434,12 +434,12 @@ public class NodeIndexer
                {
                   if (LOG.isDebugEnabled())
                   {
-                     LOG.debug("Can not indexing the document by path " + propData.getQPath().getAsString()
+                     LOG.debug("Cannot extract the full text content of the property " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                   }
                   else
                   {
-                     LOG.warn("Can not indexing the document by path " + propData.getQPath().getAsString()
+                     LOG.warn("Cannot extract the full text content of the property " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier());
                   }
                }
@@ -457,12 +457,12 @@ public class NodeIndexer
                   // no data - no index
                   if (LOG.isDebugEnabled())
                   {
-                     LOG.debug("Binary value indexer IO error, document by path " + propData.getQPath().getAsString()
+                     LOG.debug("An IO exception occurred while trying to extract the full text content of the property " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                   }
                   else
                   {
-                     LOG.warn("Binary value indexer IO error, document by path " + propData.getQPath().getAsString()
+                     LOG.warn("An IO exception occurred while trying to extract the full text content of the property " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier());
                   }
                }
@@ -470,12 +470,12 @@ public class NodeIndexer
                {
                   if (LOG.isDebugEnabled())
                   {
-                     LOG.debug("Binary value indexer error, document by path " + propData.getQPath().getAsString()
+                     LOG.debug("An IO exception occurred while trying to extract the full text content of the property " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier() + "' : " + e, e);
                   }
                   else
                   {
-                     LOG.warn("Binary value indexer error, document by path " + propData.getQPath().getAsString()
+                     LOG.warn("An IO exception occurred while trying to extract the full text content of the property " + propData.getQPath().getAsString()
                         + ", propery id '" + propData.getIdentifier());
                   }
                }
