@@ -61,6 +61,11 @@
       </listitem>
 
       <listitem>
+        <para>Enterprise DB Postgres Plus Advanced Server 9.2.1 JDBC4 Driver,
+        Version 9.2.1.3</para>
+      </listitem>
+
+      <listitem>
         <para>Oracle DB 10g R2 (10.2.0.4), JDBC Driver Oracle 10g R2
         (10.2.0.4)</para>
       </listitem>
@@ -165,7 +170,7 @@
     </tr>
 
     <tr>
-      <td>PostgreSQL</td>
+      <td>PostgreSQL and Postgre Plus</td>
 
       <td>jcr-sjdbc.pqsql.sql</td>
     </tr>
@@ -247,7 +252,7 @@
     </tr>
 
     <tr>
-      <td>PostgreSQL</td>
+      <td>PostgreSQL and Postgre Plus</td>
 
       <td>jcr-mjdbc.pqsql.sql</td>
     </tr>
@@ -386,7 +391,7 @@ $ db2start</programlisting></para>
     </section>
 
     <section id="JCR.JDBCDataContainerConfig.GeneralRecommendationsForDatabaseConfiguration.PostgreSQLConfiguration">
-      <title>PostgreSQL configuration</title>
+      <title>PostgreSQL/PostgrePlus configuration</title>
 
       <itemizedlist>
         <listitem>
@@ -396,8 +401,8 @@ $ db2start</programlisting></para>
         </listitem>
 
         <listitem>
-          <para>Though PostgreSQL server performs query optimization
-          automatically, you can manualy call '<ulink
+          <para>Though PostgreSQL/PostgrePlus server performs query
+          optimization automatically, you can manualy call '<ulink
           url="http://www.postgresql.org/docs/8.1/static/sql-analyze.html">ANALYZE</ulink>'
           command to collect statistics which can influence the performance.
           For example</para>
