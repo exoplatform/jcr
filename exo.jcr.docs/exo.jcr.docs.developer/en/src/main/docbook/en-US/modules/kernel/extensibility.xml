@@ -10,7 +10,7 @@
   reviewed to remove the dependency to <emphasis>picocontainer</emphasis>, but
   for backward compatibility reasons we had to keep some interfaces of
   picocontainer such as <emphasis>Startable</emphasis> and
-  <emphasis>Disposable</emphasis>. </para>
+  <emphasis>Disposable</emphasis>.</para>
 
   <para>In previous versions, we relied on a huge hierarchy of classes, indeed
   <emphasis>PortalContainer</emphasis>, <emphasis>RootContainer</emphasis> and
@@ -25,11 +25,11 @@
   thanks to MicroContainer. And finally
   <emphasis>MCIntegrationContainer</emphasis> extended
   <emphasis>ConcurrentPicoContainer</emphasis> which is a thread safe
-  implementation of a <emphasis>MutablePicoContainer</emphasis>. </para>
+  implementation of a <emphasis>MutablePicoContainer</emphasis>.</para>
 
   <para>In other words, anytime we wanted to add a feature to the Kernel, we
   injected a new container somewhere in this hierarchy of classes which is of
-  course really intrusive and not really flexible. </para>
+  course really intrusive and not really flexible.</para>
 
   <para>To make the kernel easily extensible, we replaced this hierarchy of
   classes with a chain of implementations of the interface
@@ -39,7 +39,7 @@
   methods according to the main purpose of the interceptor, it is also
   possible to simply extend <emphasis>AbstractInterceptor</emphasis>, which
   simply delegates everything to the next <emphasis>Interceptor</emphasis>
-  also called successor. </para>
+  also called successor.</para>
 
   <para>The kernel leverages SPI (Service Provider Interface) to dynamically
   define the chain of interceptors, eXo kernel proposes several ways to do
@@ -66,7 +66,7 @@
   possible chain of Interceptors as they are mandatory, the order is first
   <emphasis>ManageableContainer</emphasis>, then
   <emphasis>CachingContainer</emphasis> and finally
-  <emphasis>ConcurrentContainer</emphasis>. </para>
+  <emphasis>ConcurrentContainer</emphasis>.</para>
 
   <para>The <emphasis>DefaultInterceptorChainFactory</emphasis> leverages SPI
   to dynamically inject Interceptors in the chain of static interceptors. So
@@ -96,7 +96,7 @@
   <emphasis>CachingContainer</emphasis> -&gt;
   <emphasis>ConcurrentContainer.</emphasis></para>
 
-  <para><programlisting>@Before(value = "Cache")
+  <para><programlisting>@Before("Cache")
 public static class MyInterceptor extends AbstractInterceptor
 {
 ...
