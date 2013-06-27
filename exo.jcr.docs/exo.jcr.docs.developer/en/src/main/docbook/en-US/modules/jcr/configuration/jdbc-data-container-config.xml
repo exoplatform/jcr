@@ -41,19 +41,23 @@
       </listitem>
 
       <listitem>
-        <para>PostgresSQL 8.2.4 JDBC4 Driver, Version 8.2-507</para>
+        <para>PostgreSQL 8.2.4 JDBC4 Driver, Version 8.2-507</para>
       </listitem>
 
       <listitem>
-        <para>PostgresSQL 8.3.7 JDBC4 Driver, Version 8.3-606</para>
+        <para>PostgreSQL 8.3.7 JDBC4 Driver, Version 8.3-606</para>
       </listitem>
 
       <listitem>
-        <para>PostgresSQL 8.4.14 JDBC4 Driver, Version 8.4-702</para>
+        <para>PostgreSQL 8.4.14 JDBC4 Driver, Version 8.4-702</para>
       </listitem>
 
       <listitem>
-        <para>PostgresSQL 9.1.5 JDBC4 Driver, Version 9.1-902</para>
+        <para>PostgreSQL 9.1.5 JDBC4 Driver, Version 9.1-902</para>
+      </listitem>
+
+      <listitem>
+        <para>PostgreSQL 9.2.4 JDBC4 Driver, Version 9.2-1002</para>
       </listitem>
 
       <listitem>
