@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="Kernel.Extensibility">
+  <title>Extensibility</title>
+
+  <para>In previous versions of eXo Kernel, it was hard to make it evolve
+  mainly due to the fact that we directly depended on a very old library which
+  is <emphasis>picocontainer 1.1</emphasis>. The kernel has totally been
+  reviewed to remove the dependency to <emphasis>picocontainer</emphasis>, but
+  for backward compatibility reasons we had to keep some interfaces of
+  picocontainer such as <emphasis>Startable</emphasis> and
+  <emphasis>Disposable</emphasis>. </para>
+
+  <para>In previous versions, we relied on a huge hierarchy of classes, indeed
+  <emphasis>PortalContainer</emphasis>, <emphasis>RootContainer</emphasis> and
+  <emphasis>StandaloneContainer</emphasis> were sub classes of
+  <emphasis>ExoContainer</emphasis>. An <emphasis>ExoContainer</emphasis>
+  itself extended <emphasis>ManageableContainer</emphasis> to give the ability
+  to bind and unbind the components to a MBeanServer. A
+  <emphasis>ManageableContainer</emphasis> extended
+  <emphasis>CachingContainer</emphasis> to store and retrieve the components
+  from a Cache. A <emphasis>CachingContainer</emphasis> extended
+  <emphasis>MCIntegrationContainer</emphasis> to give the ability to do AOP
+  thanks to MicroContainer. And finally
+  <emphasis>MCIntegrationContainer</emphasis> extended
+  <emphasis>ConcurrentPicoContainer</emphasis> which is a thread safe
+  implementation of a <emphasis>MutablePicoContainer</emphasis>. </para>
+
+  <para>In other words, anytime we wanted to add a feature to the Kernel, we
+  injected a new container somewhere in this hierarchy of classes which is of
+  course really intrusive and not really flexible. </para>
+
+  <para>To make the kernel easily extensible, we replaced this hierarchy of
+  classes with a chain of implementations of the interface
+  <emphasis>Interceptor</emphasis>. Each implementation of an
+  <emphasis>Interceptor</emphasis> will need to implement all the methods that
+  define a <emphasis>Container</emphasis>. To focus only on the most important
+  methods according to the main purpose of the interceptor, it is also
+  possible to simply extend <emphasis>AbstractInterceptor</emphasis>, which
+  simply delegates everything to the next <emphasis>Interceptor</emphasis>
+  also called successor. </para>
+
+  <para>The kernel leverages SPI (Service Provider Interface) to dynamically
+  define the chain of interceptors, eXo kernel proposes several ways to do
+  so:</para>
+
+  <para>First, you can define the factory that will be reponsible for creating
+  the chain of interceptors, to do so you will need to implement the interface
+  <emphasis>InterceptorChainFactory</emphasis>, then create a file
+  <emphasis>META-INF/services/org.exoplatform.container.spi.InterceptorChainFactory
+  </emphasis>that will contain the FQN of your implementation and finally
+  deploy your jar file that contains those files. The first factory found in
+  the classpath wil be used, by default it will use
+  <emphasis>DefaultInterceptorChainFactory</emphasis> which is enough for most
+  use cases, the only cases where it makes sense to define a new factory is
+  when you want to redefine one or several static Interceptors defined by the
+  <emphasis>DefaultInterceptorChainFactory</emphasis>.</para>
+
+  <para>The <emphasis>DefaultInterceptorChainFactory</emphasis> has dynamic
+  and static Interceptors. The static interceptors are
+  <emphasis>ManageableContainer</emphasis>,
+  <emphasis>CachingContainer</emphasis> and
+  <emphasis>ConcurrentContainer</emphasis> (previously called
+  <emphasis>ConcurrentPicoContainer</emphasis>), they represent the smallest
+  possible chain of Interceptors as they are mandatory, the order is first
+  <emphasis>ManageableContainer</emphasis>, then
+  <emphasis>CachingContainer</emphasis> and finally
+  <emphasis>ConcurrentContainer</emphasis>. </para>
+
+  <para>The <emphasis>DefaultInterceptorChainFactory</emphasis> leverages SPI
+  to dynamically inject Interceptors in the chain of static interceptors. So
+  if you want to add your own interceptor, you will need first to implement
+  the interface <emphasis>Interceptor</emphasis> as mentioned above, then
+  create a file
+  <emphasis>META-INF/services/org.exoplatform.container.spi.Interceptor
+  </emphasis>that will contain the FQN of your implementation and finally
+  deploy your jar file that contains those files. By default, your
+  <emphasis>Interceptor</emphasis> will be the head of the chain of
+  interceptors but you can also use the annotations <emphasis>After</emphasis>
+  and <emphasis>Before</emphasis> to inject your interceptor after or before a
+  given Interceptor. Those annotations must be defined at class declaration
+  level and they expect as value the id of the interceptor after or before
+  which you would like to inject your interceptor knowing that the id of
+  <emphasis>ManageableContainer</emphasis> is <emphasis>Management</emphasis>,
+  the id of <emphasis>CachingContainer</emphasis> is
+  <emphasis>Cache</emphasis> and the id of
+  <emphasis>ConcurrentContainer</emphasis> is
+  <emphasis>ConcurrentContainer</emphasis>.</para>
+
+  <para>In the next example, the interceptor
+  <emphasis>MyInterceptor</emphasis> will be injected before
+  <emphasis>CachingContainer</emphasis> such that the new chain will be
+  <emphasis>ManageableContainer</emphasis> -&gt;
+  <emphasis>MyInterceptor</emphasis> -&gt;
+  <emphasis>CachingContainer</emphasis> -&gt;
+  <emphasis>ConcurrentContainer.</emphasis></para>
+
+  <para><programlisting>@Before(value = "Cache")
+public static class MyInterceptor extends AbstractInterceptor
+{
+...
+}</programlisting></para>
+
+  <para>In case you implement several interceptors, please note that they can
+  all be defined within the same file
+  <emphasis>META-INF/services/org.exoplatform.container.spi.Interceptor</emphasis>,
+  to do so you simply need to list the FQN of all your interceptors, one FQN
+  per line.</para>
+
+  <para>In developing mode (the system property
+  <emphasis>exo.product.developing</emphasis> has been set to
+  <emphasis>true</emphasis>), you will have access in the standard output
+  stream to the FQN of the factory that the kernel will use and to the
+  effective chain of interceptors that will be used for each
+  <emphasis>ExoContainer</emphasis> in case the factory is
+  <emphasis>DefaultInterceptorChainFactory.</emphasis></para>
+</section>

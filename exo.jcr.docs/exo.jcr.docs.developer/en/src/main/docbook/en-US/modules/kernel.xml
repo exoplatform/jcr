@@ -66,5 +66,8 @@
  
    <xi:include href="kernel/rpc-service.xml"
                xmlns:xi="http://www.w3.org/2001/XInclude" />
+ 
+   <xi:include href="kernel/extensibility.xml"
+               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
 </chapter>
