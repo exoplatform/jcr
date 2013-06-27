@@ -4,20 +4,19 @@
 <section id="JCR.MultilanguageSupport">
   <title>Multi-language support in eXo JCR RDB backend</title>
 
+  <para>Whenever relational database is used to store multilingual text data
+  of eXo Java Content Repository, it is necessary to adapt configuration in
+  order to support UTF-8 encoding. Here is a short HOWTO instruction for
+  several supported RDBMS with examples.</para>
 
-    <para>Whenever relational database is used to store multilingual text data
-    of eXo Java Content Repository, it is necessary to adapt configuration in order to
-    support UTF-8 encoding. Here is a short HOWTO instruction for several
-    supported RDBMS with examples.</para>
+  <para>The configuration file you have to modify:
+  .../webapps/portal/WEB-INF/conf/jcr/repository-configuration.xml</para>
 
-    <para>The configuration file you have to modify:
-    .../webapps/portal/WEB-INF/conf/jcr/repository-configuration.xml</para>
-
-    <note>
-      <para>Datasource <parameter>jdbcjcr</parameter> used in examples can be
-      configured via <classname>InitialContextInitializer</classname>
-      component.</para>
-    </note>
+  <note>
+    <para>Datasource <parameter>jdbcjcr</parameter> used in examples can be
+    configured via <classname>InitialContextInitializer</classname>
+    component.</para>
+  </note>
 
   <section id="JCR.MultilanguageSupport.Oracle">
     <title>Oracle</title>
@@ -85,7 +84,7 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
 
     <para>Create database with UTF-8 encoding and use db2 dialect for
     Workspace Container on DB2 v.9 and higher:</para>
-    
+
     <programlisting language="xml">&lt;workspace name="collaboration"&gt;
           &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
@@ -116,9 +115,8 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
     charset of database, with UTF8 supported by MySQL server. But we have
     tested it only on latin1 database default charset.</para>
 
-    <para>Repository configuration, workspace container entry
-    example:</para>
-    
+    <para>Repository configuration, workspace container entry example:</para>
+
     <programlisting language="xml">&lt;workspace name="collaboration"&gt;
           &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;
@@ -130,18 +128,23 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
             &lt;/properties&gt;
           .....</programlisting>
 
-     <para>You will need also to indicate the charset name either at server level using the server parameter  --character-set-server (find more details <ulink url="http://dev.mysql.com/doc/refman/5.0/en/server-options.html#option_mysqld_character-set-server">there</ulink> )
-          or at datasource configuration level by adding a new property as below:</para>
+    <para>You will need also to indicate the charset name either at server
+    level using the server parameter --character-set-server (find more details
+    <ulink
+    url="http://dev.mysql.com/doc/refman/5.0/en/server-options.html#option_mysqld_character-set-server">there</ulink>
+    ) or at datasource configuration level by adding a new property as
+    below:</para>
 
-     <programlisting language="xml">
+    <programlisting language="xml">
           &lt;property name="connectionProperties" value="useUnicode=yes;characterEncoding=utf8;characterSetResults=UTF-8;" /&gt;
      </programlisting>
   </section>
 
   <section id="JCR.MultilanguageSupport.PostgreSQL">
-    <title>PostgreSQL</title>
+    <title>PostgreSQL/PostgrePlus</title>
 
-    <para>On PostgreSQL-backend, multilingual support can be enabled in <ulink
+    <para>On PostgreSQL/PostgrePlus-backend, multilingual support can be
+    enabled in <ulink
     url="http://www.postgresql.org/docs/8.3/interactive/charset.html">different
     ways</ulink>:<itemizedlist>
         <listitem>
@@ -153,17 +156,17 @@ NLS_NCHAR_CHARACTERSET   AL16UTF16</programlisting></para>
 
         <listitem>
           <para>Providing a number of different character sets defined in the
-          PostgreSQL server, including multiple-byte character sets, to
-          support storing text of any languages, and providing character set
-          translation between client and server. We recommend to use UTF-8
-          database charset, it will allow any-to-any conversations and make
-          this issue transparent for the JCR.</para>
+          PostgreSQL/PostgrePlus server, including multiple-byte character
+          sets, to support storing text of any languages, and providing
+          character set translation between client and server. We recommend to
+          use UTF-8 database charset, it will allow any-to-any conversations
+          and make this issue transparent for the JCR.</para>
         </listitem>
       </itemizedlist></para>
 
-    <para>Create database with UTF-8 encoding and use PgSQL dialect for
+    <para>Create database with UTF-8 encoding and use a PgSQL dialect for
     Workspace Container:</para>
-    
+
     <programlisting language="java">&lt;workspace name="collaboration"&gt;
           &lt;container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer"&gt;
             &lt;properties&gt;

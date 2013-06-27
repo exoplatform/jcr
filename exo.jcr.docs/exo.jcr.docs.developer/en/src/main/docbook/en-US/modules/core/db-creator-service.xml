@@ -4,26 +4,26 @@
 <section id="Core.DBCreatorService">
   <title>Database Creator</title>
 
-    <para>Database creator<envar> DBCreator</envar> is responsible for
-    execution DDL script in runtime. A DDL script may contain templates for
-    database name, user name and password which will be replaced by real
-    values at execution time.</para>
+  <para>Database creator<envar> DBCreator</envar> is responsible for execution
+  DDL script in runtime. A DDL script may contain templates for database name,
+  user name and password which will be replaced by real values at execution
+  time.</para>
 
-    <para>Three templates supported:</para>
+  <para>Three templates supported:</para>
 
-    <itemizedlist>
-      <listitem>
-        <para><envar>${database}</envar> for database name;</para>
-      </listitem>
+  <itemizedlist>
+    <listitem>
+      <para><envar>${database}</envar> for database name;</para>
+    </listitem>
 
-      <listitem>
-        <para><envar>${username}</envar> for user name;</para>
-      </listitem>
+    <listitem>
+      <para><envar>${username}</envar> for user name;</para>
+    </listitem>
 
-      <listitem>
-        <para><envar>${password}</envar> for user's password;</para>
-      </listitem>
-    </itemizedlist>
+    <listitem>
+      <para><envar>${password}</envar> for user's password;</para>
+    </listitem>
+  </itemizedlist>
 
   <section id="Core.DBCreatorService.API">
     <title>API</title>
@@ -90,7 +90,7 @@
 
     <para>For example, next additional proprites allows reconnect to MySQL
     database when connection was refused:</para>
-    
+
     <programlisting language="xml">         &lt;properties-param&gt;
             &lt;name&gt;db-connection&lt;/name&gt;
             ...
@@ -135,6 +135,11 @@
 &lt;property name="url" value="jdbc:postgresql://localhost/" /&gt;
 &lt;property name="username" value="root" /&gt;
 &lt;property name="password" value="admin" /&gt;</programlisting>
+
+    <para>PostgrePlus:<programlisting language="xml">&lt;property name="driverClassName" value="com.edb.Driver" /&gt;
+&lt;property name="url" value="jdbc:edb://localhost/" /&gt;
+&lt;property name="username" value="root" /&gt;
+&lt;property name="password" value="admin" /&gt;</programlisting></para>
 
     <para>MSSQL:</para>
 
