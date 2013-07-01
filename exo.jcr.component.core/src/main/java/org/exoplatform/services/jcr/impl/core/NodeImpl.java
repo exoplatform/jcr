@@ -226,6 +226,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          throw new ConstraintViolationException("Can not add mixin type. Node is protected " + getPath());
       }
 
+      if (name.equals(Constants.EXO_OWNEABLE))
+      {
+         checkPermission(PermissionType.CHANGE_PERMISSION);
+      }
+
       // Check if versionable ancestor is not checked-in
       if (!checkedOut())
       {
