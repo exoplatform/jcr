@@ -4,42 +4,42 @@
 <section id="Core.OrganizationListener">
   <title>Organization Listener</title>
 
-    <para>The <link linkend="Core.OrganizationService">Organization
-    Service</link> provides a mechanism to receive notifications when:</para>
+  <para>The <link linkend="Core.OrganizationService">Organization
+  Service</link> provides a mechanism to receive notifications when:</para>
 
-    <itemizedlist>
-      <listitem>
-        <para>A User is created, deleted or modified.</para>
-      </listitem>
+  <itemizedlist>
+    <listitem>
+      <para>A User is created, deleted, modified, enabled or disabled.</para>
+    </listitem>
 
-      <listitem>
-        <para>A Group is created, deleted or modified.</para>
-      </listitem>
+    <listitem>
+      <para>A Group is created, deleted or modified.</para>
+    </listitem>
 
-      <listitem>
-        <para>A Membership is created or removed.</para>
-      </listitem>
-    </itemizedlist>
+    <listitem>
+      <para>A Membership is created or removed.</para>
+    </listitem>
+  </itemizedlist>
 
-    <para>This mechanism is very useful to cascade some actions when the
-    organization model is modified. For example, it is currently used to
-    :</para>
+  <para>This mechanism is very useful to cascade some actions when the
+  organization model is modified. For example, it is currently used to
+  :</para>
 
-    <itemizedlist>
-      <listitem>
-        <para>Initialize the personal portal pages.</para>
-      </listitem>
+  <itemizedlist>
+    <listitem>
+      <para>Initialize the personal portal pages.</para>
+    </listitem>
 
-      <listitem>
-        <para>Initialize the personal calendars, address books and mail
-        accounts in CS.</para>
-      </listitem>
+    <listitem>
+      <para>Initialize the personal calendars, address books and mail accounts
+      in CS.</para>
+    </listitem>
 
-      <listitem>
-        <para>Create drives and personal areas in ECM.</para>
-      </listitem>
-    </itemizedlist>
-  
+    <listitem>
+      <para>Create drives and personal areas in ECM.</para>
+    </listitem>
+  </itemizedlist>
+
   <section id="Core.OrganizationListener.WritingOwnListeners">
     <title>Writing your own listeners</title>
 
@@ -50,7 +50,8 @@
     <section id="Core.OrganizationListener.WritingOwnListeners.UserEventListener">
       <title>UserEventListener</title>
 
-      <para>To listen to user changes, you need to extend "org.exoplatform.services.organization.UserEventListener"</para>
+      <para>To listen to user changes, you need to extend
+      "org.exoplatform.services.organization.UserEventListener"</para>
 
       <programlisting language="java">public class MyUserListener extends UserEventListener {
 
@@ -70,6 +71,14 @@
     System.out.println("After deleting user " + user.getUserName());
   }
 
+  public void preSetEnabled(User user) throws Exception {
+    System.out.println("Before enabling/disabling user " + user.getUserName());
+  }
+
+  public void postSetEnabled(User user) throws Exception {
+    System.out.println("After enabling/disabling user " + user.getUserName());
+  }
+
 }</programlisting>
     </section>
 
@@ -77,8 +86,7 @@
       <title>GroupEventListener</title>
 
       <para>To listen group changes, you need to extend
-      org.exoplatform.services.organization.GroupEventListener
-      :</para>
+      org.exoplatform.services.organization.GroupEventListener :</para>
 
       <programlisting language="java">public class MyGroupListener extends GroupEventListener {
 
@@ -104,8 +112,7 @@
       <title>MembershipEventListener</title>
 
       <para>To listen to membership changes, you need to extend
-      org.exoplatform.services.organization.MembershipEventListener
-      :</para>
+      org.exoplatform.services.organization.MembershipEventListener :</para>
 
       <programlisting language="java">public class MyMembershipListener extends MembershipEventListener {
 

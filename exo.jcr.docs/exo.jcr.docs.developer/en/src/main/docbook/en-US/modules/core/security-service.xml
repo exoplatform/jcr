@@ -4,14 +4,13 @@
 <section id="Core.SecurityService">
   <title>Security Service</title>
 
-    <para>The purpose is to make a simple, unified way for the authentication
-    and the storing/propagation of user sessions through all the eXo
-    components and J2EE containers. JAAS is supposed to be the primary login
-    mechanism but the Security Service framework should not prevent other
-    (custom or standard) mechanisms from being used. You can learn more about
-    JAAS in the <ulink
-    url="http://java.sun.com/j2se/1.5.0/docs/guide/security/jaas/tutorials/GeneralAcnAndAzn.html">Java
-    Tutorial</ulink></para>
+  <para>The purpose is to make a simple, unified way for the authentication
+  and the storing/propagation of user sessions through all the eXo components
+  and J2EE containers. JAAS is supposed to be the primary login mechanism but
+  the Security Service framework should not prevent other (custom or standard)
+  mechanisms from being used. You can learn more about JAAS in the <ulink
+  url="http://java.sun.com/j2se/1.5.0/docs/guide/security/jaas/tutorials/GeneralAcnAndAzn.html">Java
+  Tutorial</ulink></para>
 
   <section id="Core.SecurityService.Framework">
     <title>Framework</title>
@@ -84,8 +83,8 @@ conversationRegistry.getState("key");</programlisting>
     <section id="Core.SecurityService.Framework.Authenticator">
       <title>Authenticator</title>
 
-      <para>An Authenticator is responsible for Identity creation, it consists of
-      two methods:</para>
+      <para>An Authenticator is responsible for Identity creation, it consists
+      of two methods:</para>
 
       <itemizedlist>
         <listitem>
@@ -99,22 +98,34 @@ conversationRegistry.getState("key");</programlisting>
         </listitem>
       </itemizedlist>
 
-      <programlisting language="java">public interface Authenticator {
-  /**
-   * Authenticate user and return userId which can be different to username. 
-   * @param credentials - list of users credentials (such as name/password, X509 certificate etc)
-   * @return userId
-   * @throws LoginException
-   * @throws Exception
-   */
-  String validateUser(Credential[] credentials) throws LoginException, Exception;
+      <programlisting language="java">public interface Authenticator
+{
+   /**
+    * Authenticate user and return userId which can be different to username.
+    * 
+    * @param credentials - list of users credentials (such as name/password, X509
+    *          certificate etc)
+    * @return userId the user's identifier.
+    * @throws LoginException in case the authentication fails
+    * @throws Exception if any exception occurs
+    */
+   String validateUser(Credential[] credentials) throws LoginException, Exception;
 
-  /**
-   * @param credentials - userId.
-   * @return Identity
-   * @throws Exception
-   */
-  Identity createIdentity(String userId) throws Exception;  
+   /**
+    * @param userId the user's identifier
+    * @return returns the Identity representing the user
+    * @throws Exception if any exception occurs
+    */
+   Identity createIdentity(String userId) throws Exception;
+
+   /**
+    * Gives the last exception that occurs while calling {@link #validateUser(Credential[])}. This
+    * allows applications outside JAAS like UI to be able to know which exception occurs
+    * while calling {@link #validateUser(Credential[])}.
+    * @return the original Exception that occurs while calling {@link #validateUser(Credential[])} 
+    * for the very last time if an exception occurred, &lt;code&gt;null&lt;/code&gt; otherwise.
+    */
+   Exception getLastExceptionOnValidateUser();
 }</programlisting>
 
       <para>It is up to the application developer (and deployer) whether to

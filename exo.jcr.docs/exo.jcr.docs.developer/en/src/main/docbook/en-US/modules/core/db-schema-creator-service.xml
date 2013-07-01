@@ -2,7 +2,7 @@
 <!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Core.DBSchemacreatorserviceJDBCimplementation">
-  <title>DB Schema creator service (JDBC implementation)</title>
+  <title>DB Schema creator service</title>
 
   <para>DB Schema Creator is responsible for creating database schema, using a
   DDL script inside service configuration or in an external file,

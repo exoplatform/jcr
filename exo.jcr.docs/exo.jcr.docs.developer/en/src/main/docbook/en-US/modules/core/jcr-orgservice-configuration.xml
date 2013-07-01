@@ -4,16 +4,16 @@
 <section id="Core.JCROrganizationServiceConfiguration">
   <title>JCR organization service Configuration</title>
 
-    <para>You may decide to make eXo users to be mapped on top of JCR.
-    eXo provides an implementation of its OrganizationService
-    on top of JCR.</para>
-    
+  <para>You may decide to make eXo users to be mapped on top of JCR. eXo
+  provides an implementation of its OrganizationService on top of JCR.</para>
+
   <section id="Core.JCROrganizationServiceConfiguration.Quickstart">
     <title>Quickstart</title>
 
-    <para>This is an implementation of the exo.core.component.organization.api API.
-    The information will be stored in the root node exo:organization of the workspace.
-    The workspace name has to be configured in the configuration file (see below)</para>
+    <para>This is an implementation of the exo.core.component.organization.api
+    API. The information will be stored in the root node exo:organization of
+    the workspace. The workspace name has to be configured in the
+    configuration file (see below)</para>
 
     <itemizedlist>
       <listitem>
@@ -31,9 +31,11 @@
 
     <itemizedlist>
       <listitem>
-        <para>Create <emphasis role="bold">jcr-configuration.xml</emphasis> file in <emphasis role="bold">exo-tomcat/webapps/portal/WEB-INF/conf/organization/exo directory</emphasis> and
-          fill it with this content:
-          <programlisting language="xml">
+        <para>Create <emphasis role="bold">jcr-configuration.xml</emphasis>
+        file in <emphasis
+        role="bold">exo-tomcat/webapps/portal/WEB-INF/conf/organization/exo
+        directory</emphasis> and fill it with this content: <programlisting
+        language="xml">
 &lt;configuration
    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
    xsi:schemaLocation="http://www.exoplaform.org/xml/ns/kernel_1_3.xsd http://www.exoplaform.org/xml/ns/kernel_1_3.xsd"
@@ -78,14 +80,13 @@
     &lt;/component-plugin&gt;
   &lt;/external-component-plugins&gt;
 &lt;/configuration&gt;
-</programlisting>
-where storage-workspace is the name of the workspace in the default
-repository where the organization storage will be created.
-If storage-workspace is absent in configuration then default
-workspace will be selected in current repository.
-       </para>
+</programlisting> where storage-workspace is the name of the workspace in the
+        default repository where the organization storage will be created. If
+        storage-workspace is absent in configuration then default workspace
+        will be selected in current repository.</para>
       </listitem>
     </itemizedlist>
+
     <itemizedlist>
       <listitem>
         <para>Delete <emphasis role="bold">exo-tomcat/temp/</emphasis>* to
@@ -93,7 +94,9 @@ workspace will be selected in current repository.
       </listitem>
     </itemizedlist>
 
-    <para>eXo starts and autocreates its organization model in /exo:organization node</para>
+    <para>eXo starts and autocreates its organization model in
+    /exo:organization node</para>
+
     <para>That's it! Now eXo uses your JCR node as its organization model
     storage. Users, groups and memberships are now stored and retrieved from
     there.</para>
@@ -103,7 +106,8 @@ workspace will be selected in current repository.
     <title>Configuration</title>
 
     <para>Sice eXo JCR 1.11 you can add two new params:</para>
-      <programlisting language="xml">
+
+    <programlisting language="xml">
 &lt;value-param&gt;
   &lt;name&gt;repository&lt;/name&gt;
   &lt;description&gt;The name of repository where organization storage will be created&lt;/description&gt;
@@ -115,11 +119,15 @@ workspace will be selected in current repository.
   &lt;value&gt;/exo:organization&lt;/value&gt;
 &lt;/value-param&gt;
       </programlisting>
-      <para>where repository is the name of the repository where the organization storage will be created
-      storage-path - the relative path to the stored data</para>
 
-      <para>Register JCR Organization service namespace and nodetypes via RepositoryService's plugins:</para>
-        <programlisting language="xml">
+    <para>where repository is the name of the repository where the
+    organization storage will be created storage-path - the relative path to
+    the stored data</para>
+
+    <para>Register JCR Organization service namespace and nodetypes via
+    RepositoryService's plugins:</para>
+
+    <programlisting language="xml">
 &lt;component&gt;
 &lt;key&gt;org.exoplatform.services.jcr.RepositoryService&lt;/key&gt;
 &lt;type&gt;org.exoplatform.services.jcr.impl.RepositoryServiceImpl&lt;/type&gt;
@@ -150,15 +158,28 @@ workspace will be selected in current repository.
 &lt;/component-plugins&gt;
 &lt;/component&gt;
         </programlisting>
-    </section>
-    <section id="Core.JCROrganizationServiceConfiguration.Migration">
+  </section>
+
+  <section id="Core.JCROrganizationServiceConfiguration.Migration">
     <title>Migration</title>
-      <para>Inner representation of JCR organization service has been changed in JCR 1.15.
-      eXo provides a migration tool for that users which used JCR organization service with JCR 1.14.
-      Migration process will start automatically after upgrade to JCR 1.15.</para>
-      <note>
-        <para>Please avoid abort of migration process. Migration tool was designed
-        to be failover, but this is not recommended.</para>
-      </note>
-    </section>
+
+    <para>Inner representation of JCR organization service has been modified
+    in JCR 1.15. eXo provides a migration tool to migrate from the old JCR
+    organization service strutcure to the new one. The migration process is
+    launched automatically once you will upgrade to JCR 1.15.</para>
+
+    <note>
+      <para>Please avoid aborting a migration process.</para>
+    </note>
+  </section>
+
+  <section>
+    <title>Disable/Enable an user</title>
+
+    <para>To be able to disable or enable an user account which is supported
+    since JCR 1.16, you have no need to change your old configuration as it is
+    exactly the same configuration. Old data will still be valid, it will
+    consider all the existing users as enabled and since enabling/disabling an
+    user is based on a mixin type, no structure change is required.</para>
+  </section>
 </section>
