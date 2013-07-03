@@ -449,11 +449,11 @@ public class RepositoryImpl implements ManageableRepository
    public String[] getWorkspaceNames()
    {
 
-      List<ComponentAdapter> adapters = repositoryContainer.getComponentAdaptersOfType(WorkspaceContainer.class);
+      List<ComponentAdapter<WorkspaceContainer>> adapters = repositoryContainer.getComponentAdaptersOfType(WorkspaceContainer.class);
       List<String> workspaceNames = new ArrayList<String>();
       for (int i = 0; i < adapters.size(); i++)
       {
-         ComponentAdapter adapter = adapters.get(i);
+         ComponentAdapter<WorkspaceContainer> adapter = adapters.get(i);
          String workspaceName = new String((String)adapter.getComponentKey());
 
          try
