@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.spi.ComponentAdapter;
 import org.exoplatform.services.jcr.access.AuthenticationPolicy;
 import org.exoplatform.services.jcr.access.DynamicIdentity;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -48,7 +49,6 @@ import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.security.MembershipEntry;
-import org.picocontainer.ComponentAdapter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -233,7 +233,6 @@ public class RepositoryImpl implements ManageableRepository
          {
             public Void run()
             {
-               repositoryContainer.unregisterComponentByInstance(workspaceContainer);
                repositoryContainer.unregisterComponent(wsConfig.getName());
                return null;
             }
@@ -247,7 +246,6 @@ public class RepositoryImpl implements ManageableRepository
          {
             public Void run()
             {
-               repositoryContainer.unregisterComponentByInstance(workspaceContainer);
                repositoryContainer.unregisterComponent(wsConfig.getName());
                return null;
             }
@@ -451,11 +449,11 @@ public class RepositoryImpl implements ManageableRepository
    public String[] getWorkspaceNames()
    {
 
-      List adapters = repositoryContainer.getComponentAdaptersOfType(WorkspaceContainer.class);
+      List<ComponentAdapter<WorkspaceContainer>> adapters = repositoryContainer.getComponentAdaptersOfType(WorkspaceContainer.class);
       List<String> workspaceNames = new ArrayList<String>();
       for (int i = 0; i < adapters.size(); i++)
       {
-         ComponentAdapter adapter = (ComponentAdapter)adapters.get(i);
+         ComponentAdapter<WorkspaceContainer> adapter = adapters.get(i);
          String workspaceName = new String((String)adapter.getComponentKey());
 
          try
@@ -548,7 +546,6 @@ public class RepositoryImpl implements ManageableRepository
       {
          public Void run()
          {
-            repositoryContainer.unregisterComponentByInstance(workspaceContainer);
             repositoryContainer.unregisterComponent(workspaceName);
             return null;
          }
