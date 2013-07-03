@@ -192,7 +192,88 @@
    }</programlisting>
       </listitem>
     </itemizedlist>
+  </section>
 
-    <para></para>
+  <section id="Kernel.Container-Integration.Weld">
+    <title>Weld</title>
+
+    <para>In case of Weld 2, the artifacts to deploy are
+    <emphasis>exo.kernel.container.ext.provider.impl.weld.v2</emphasis> and
+    its dependencies. This artifact defines the interceptor called
+    <emphasis>org.exoplatform.container.weld.WeldContainer</emphasis>. To
+    enable the <emphasis>WeldContainer</emphasis>, you will need to configure
+    explicitly in the configuration of the <emphasis>ExoContainer</emphasis>
+    for which you want to enable the <emphasis>WeldContainer</emphasis>, a
+    component of type
+    <emphasis>org.exoplatform.container.weld.WeldContainerHelper</emphasis>.
+    </para>
+
+    <para>This component is needed to enable the
+    <emphasis>WeldContainer</emphasis> but also to provide the Weld extensions
+    that you would like to register and the method
+    <emphasis>isIncluded(Class&lt;?&gt; clazz)</emphasis> which will be used
+    to identify all the classes of the components that should be managed by
+    Weld otherwise by default Weld will manage everything the classes of the
+    components managed by eXo kernel included.</para>
+
+    <para>All the components of Weld will be included automatically to the
+    scope of Weld so we won't rely on the
+    <emphasis>WeldContainerHelper</emphasis> to know if they need to be
+    included to the scope of Weld or not.</para>
+
+    <para>We propose out of the box one implementation of the
+    <emphasis>WeldContainerHelper</emphasis> which is
+    <emphasis>org.exoplatform.container.weld.BasicWeldContainerHelper</emphasis>.
+    When you configure it don't forget to use
+    <emphasis>org.exoplatform.container.weld.WeldContainerHelper</emphasis> as
+    key in the component definition otherwise the
+    <emphasis>WeldContainer</emphasis> won't be enabled.</para>
+
+    <para>The <emphasis>BasicWeldContainerHelper</emphasis> is really a basic
+    implementation as it doesn't provide any Weld extensions such that if you
+    don't want to rely on the SPI approach proposed out of the box by Weld to
+    register your extensions, you will need to propose your own implementation
+    of the <emphasis>WeldContainerHelper</emphasis>.</para>
+
+    <para>The <emphasis>BasicWeldContainerHelper</emphasis> allows to define
+    the scope of Weld thanks to two values-param which are
+    <emphasis>include</emphasis> and <emphasis>exclude</emphasis>. They both
+    expect as values, as set of class name prefixes The first one can be used
+    to define a set of name prefixes of the classes to include and the second
+    one can be used to define a set of name prefixes of the classes to
+    exclude.</para>
+
+    <para>Please note that it is not allowed to not set any values for both
+    parameters. In case you set only values for the exclude parameters, the
+    <emphasis>BasicWeldContainerHelper</emphasis> will include all the classes
+    that don't match with those values. </para>
+
+    <para>See below a configuration example:</para>
+
+    <programlisting>   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.container.weld.WeldContainerHelper&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.container.weld.BasicWeldContainerHelper&lt;/type&gt;
+      &lt;init-params&gt;
+         &lt;values-param&gt;
+            &lt;name&gt;include&lt;/name&gt;
+            &lt;value&gt;org.exoplatform.container.weld.TestWeldContainer$&lt;/value&gt;
+         &lt;/values-param&gt;
+         &lt;values-param&gt;
+            &lt;name&gt;exclude&lt;/name&gt;
+            &lt;value&gt;org.exoplatform.container.weld.TestWeldContainer$A&lt;/value&gt;
+            &lt;value&gt;org.exoplatform.container.weld.TestWeldContainer$B&lt;/value&gt;
+            &lt;value&gt;org.exoplatform.container.weld.TestWeldContainer$C&lt;/value&gt;
+            &lt;value&gt;org.exoplatform.container.weld.TestWeldContainer$D&lt;/value&gt;
+            &lt;value&gt;org.exoplatform.container.weld.TestWeldContainer$E&lt;/value&gt;
+            &lt;value&gt;org.exoplatform.container.weld.TestWeldContainer$F&lt;/value&gt;
+            &lt;value&gt;org.exoplatform.container.weld.TestWeldContainer$G&lt;/value&gt;
+            &lt;value&gt;org.exoplatform.container.weld.TestWeldContainer$Marker&lt;/value&gt;
+         &lt;/values-param&gt;
+      &lt;/init-params&gt;
+   &lt;/component&gt;</programlisting>
+
+    <para>In this example we include all the inner classes of
+    org.exoplatform.container.weld.TestWeldContainer but we exclude the inner
+    classes A, B, C, D, E, F, G and Marker.</para>
   </section>
 </section>
