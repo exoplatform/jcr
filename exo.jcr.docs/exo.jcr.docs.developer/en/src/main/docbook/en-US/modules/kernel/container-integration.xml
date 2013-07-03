@@ -35,6 +35,20 @@
   injected into components of eXo kernel or components of eXo kernel could be
   injected into those shared components.</para>
 
+  <para>Please note that the extensions only register the components at
+  startup, all the dynamic registrations using the methods
+  <emphasis>registerComponentImplementation</emphasis> and
+  <emphasis>registerComponentInstance</emphasis> will be ignored by the
+  extensions such that the components dynamically registered after the startup
+  won't be injected in the components of the container and no component of the
+  container will be injected into those components.</para>
+
+  <para>All the components of eXo kernel that are shared with the container
+  are the components defined before the starup of the ExoContainer and that
+  are configured in the configuration of this particular ExoContainer. In
+  other words the components of the parent ExoContainer won't be
+  shared.</para>
+
   <para>The next sub sections will describe the different integrations that
   are already available. </para>
 
