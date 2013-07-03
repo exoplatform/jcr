@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="Kernel.Container-Integration">
+  <title>Container Integration</title>
+
+  <para>Thanks to the extensibility of the kernel, it is now possible to
+  interact with other containers. Indeed, you can inject components of an
+  external container into a component of eXo kernel and you can also inject
+  components of eXo kernel into a component of an external container.</para>
+
+  <para>To allow eXo kernel to interact with a given container, you will need
+  to deploy the artifact of the extension corresponding to this particular
+  container and its related dependencies. At startup, eXo kernel will detect
+  automatically the new interceptor thanks to SPI, and will add it to the head
+  of the interceptor chain.</para>
+
+  <para>When you will try to access to a component thanks to its type or key,
+  the interceptor will first try to get it from the eXo kernel, if it can be
+  found, it will return it, otherwise it will try to get it from the
+  container. If you try to access to a list of components thanks to their
+  type, it will first get the components from eXo kernel than add those found
+  in the container.</para>
+
+  <para>As we don't want to create and initialize a container for each
+  ExoContainer to limit the impact of such process, you will need to configure
+  explicitly a specific component in the configuration of all the
+  ExoContainers for which you would like to enable the interceptor. By default
+  the interceptor will be disabled, so no interaction between eXo kernel and
+  the container will be possible and no container will be created and
+  initialized. This component is specific to each extension, it is also used
+  to provide anything that the interceptor could need to be enabled. We rely
+  on this component to indicate which components of the container should be
+  shared with eXo kernel, knowing that the shared components can be either
+  injected into components of eXo kernel or components of eXo kernel could be
+  injected into those shared components.</para>
+
+  <para>The next sub sections will describe the different integrations that
+  are already available. </para>
+
+  <section id="Kernel.Container-Integration.Guice">
+    <title>Google Guice</title>
+
+    <para>In case of Google Guice 3, the artifacts to deploy are
+    <emphasis>exo.kernel.container.ext.provider.impl.guice.v3</emphasis> and
+    its dependencies. This artifact defines the interceptor called
+    <emphasis>org.exoplatform.container.guice.GuiceContainer</emphasis>. To
+    enable the <emphasis>GuiceContainer</emphasis>, you will need to configure
+    explicitly in the configuration of the <emphasis>ExoContainer</emphasis>
+    for which you want to enable the <emphasis>GuiceContainer</emphasis>, a
+    component of type
+    <emphasis>org.exoplatform.container.guice.ModuleProvider</emphasis>. This
+    component is needed to enable the <emphasis>GuiceContainer</emphasis> but
+    also to provide the Google Guice Module in which you define all the
+    components that you would like to share with eXo Kernels. You will need to
+    implement explicitly this interface and configure it.</para>
+
+    <para>Here is an example of a configuration of such component, please note
+    that you need to use
+    <emphasis>org.exoplatform.container.guice.ModuleProvider</emphasis>
+    explicitly as key in the component definition otherwise the
+    <emphasis>GuiceContainer</emphasis> won't be enabled.</para>
+
+    <programlisting>   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.container.guice.ModuleProvider&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.container.guice.TestGuiceContainer$MyModuleProvider&lt;/type&gt;
+   &lt;/component&gt;</programlisting>
+
+    <para>Here is an example of a <emphasis>ModuleProvider</emphasis></para>
+
+    <programlisting>   public static class MyModuleProvider implements ModuleProvider
+   {
+      public Module getModule()
+      {
+         return new AbstractModule()
+         {
+            @Override
+            protected void configure()
+            {
+               bind(B.class);
+               bind(C.class);
+               bind(F.class);
+               bind(G.class);
+            }
+         };
+      }
+   }</programlisting>
+
+    <para></para>
+  </section>
+</section>
