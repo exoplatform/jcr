@@ -52,7 +52,7 @@
     <emphasis>org.exoplatform.container.guice.ModuleProvider</emphasis>. This
     component is needed to enable the <emphasis>GuiceContainer</emphasis> but
     also to provide the Google Guice Module in which you define all the
-    components that you would like to share with eXo Kernels. You will need to
+    components that you would like to share with eXo Kernel. You will need to
     implement explicitly this interface and configure it.</para>
 
     <para>Here is an example of a configuration of such component, please note
@@ -85,6 +85,113 @@
          };
       }
    }</programlisting>
+  </section>
+
+  <section id="Kernel.Container-Integration.Spring">
+    <title>Spring</title>
+
+    <para>In case of Spring 3, the artifacts to deploy are
+    <emphasis>exo.kernel.container.ext.provider.impl.spring.v3</emphasis> and
+    its dependencies. This artifact defines the interceptor called
+    <emphasis>org.exoplatform.container.spring.SpringContainer</emphasis>. To
+    enable the <emphasis>SpringContainer</emphasis>, you will need to
+    configure explicitly in the configuration of the
+    <emphasis>ExoContainer</emphasis> for which you want to enable the
+    <emphasis>SpringContainer</emphasis>, a component of type
+    <emphasis>org.exoplatform.container.spring.ApplicationContextProvider</emphasis>.
+    This component is needed to enable the
+    <emphasis>SpringContainer</emphasis> but also to create and provide the
+    <emphasis>ApplicationContext</emphasis> in which you define all the
+    components that you would like to share with eXo Kernel.</para>
+
+    <para>We propose out of the box two implementations of the
+    <emphasis>ApplicationContextProvider</emphasis> which are
+    <emphasis>org.exoplatform.container.spring.FileSystemXmlApplicationContextProvider</emphasis>
+    and
+    <emphasis>org.exoplatform.container.spring.AnnotationConfigApplicationContextProvider</emphasis>.
+    When you configure one of them don't forget to use
+    <emphasis>org.exoplatform.container.spring.ApplicationContextProvider</emphasis>
+    as key in the component definition otherwise the
+    <emphasis>SpringContainer</emphasis> won't be enabled.</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>The <emphasis>FileSystemXmlApplicationContextProvider</emphasis>
+        creates and initializes a
+        <emphasis>FileSystemXmlApplicationContext</emphasis> thanks to a set
+        of path to XML configuration files. The paths that you can use are
+        resolved thanks to the <emphasis>ConfigurationManager</emphasis> which
+        means that we can use prefixes like <emphasis>jar:</emphasis>,
+        <emphasis>classpath:</emphasis>, <emphasis>file:</emphasis> and so on.
+        The XML configuration files can be defined thanks to the values-param
+        called <emphasis>config.paths</emphasis>. </para>
+
+        <para>See below a configuration example:</para>
+
+        <programlisting>   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.container.spring.ApplicationContextProvider&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.container.spring.FileSystemXmlApplicationContextProvider&lt;/type&gt;
+      &lt;init-params&gt;
+         &lt;values-param&gt;
+            &lt;name&gt;config.paths&lt;/name&gt;
+            &lt;description&gt;Path of the configuration files&lt;/description&gt;
+            &lt;value&gt;classpath:/org/exoplatform/container/spring/beans-config2.xml&lt;/value&gt;
+         &lt;/values-param&gt;
+      &lt;/init-params&gt;
+   &lt;/component&gt;</programlisting>
+
+        <para>See below an example of XML configuration file:</para>
+
+        <programlisting>&lt;beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+   xsi:schemaLocation="http://www.springframework.org/schema/beans
+      http://www.springframework.org/schema/beans/spring-beans.xsd
+      http://www.springframework.org/schema/context
+      http://www.springframework.org/schema/context/spring-context.xsd"&gt;
+
+   &lt;context:annotation-config /&gt;
+
+   &lt;bean id="h" class="org.exoplatform.container.spring.TestSpringContainer$H"&gt;
+   &lt;/bean&gt;
+
+&lt;/beans&gt;</programlisting>
+      </listitem>
+
+      <listitem>
+        <para>The
+        <emphasis>AnnotationConfigApplicationContextProvider</emphasis>
+        creates and initializes an
+        <emphasis>AnnotationConfigApplicationContext</emphasis> thanks to a
+        set of FQN of configuration classes. The FQN of configuration classes
+        can be defined thanks to the values-param <emphasis>called
+        config.classes</emphasis>.</para>
+
+        <para>See below a configuration example:</para>
+
+        <programlisting>   &lt;component&gt;
+      &lt;key&gt;org.exoplatform.container.spring.ApplicationContextProvider&lt;/key&gt;
+      &lt;type&gt;org.exoplatform.container.spring.AnnotationConfigApplicationContextProvider&lt;/type&gt;
+      &lt;init-params&gt;
+         &lt;values-param&gt;
+            &lt;name&gt;config.classes&lt;/name&gt;
+            &lt;description&gt;FQN of the configuration classes&lt;/description&gt;
+            &lt;value&gt;org.exoplatform.container.spring.TestSpringContainer$Config2&lt;/value&gt;
+         &lt;/values-param&gt;
+      &lt;/init-params&gt;
+   &lt;/component&gt;</programlisting>
+
+        <para>See below an example of configuration class:</para>
+
+        <programlisting>   @Configuration
+   public static class Config2
+   {
+      @Bean
+      public H h()
+      {
+         return new H();
+      }
+   }</programlisting>
+      </listitem>
+    </itemizedlist>
 
     <para></para>
   </section>
