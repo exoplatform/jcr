@@ -1806,7 +1806,7 @@ public interface ExoCacheCreator {
       &lt;property name="configurationFile" value="${gatein.jcr.jgroups.config}"&gt;&lt;/property&gt;
       &lt;property name="invalidationThreshold" value="0"&gt;&lt;/property&gt;
       &lt;property name="numOwners" value="3"&gt;&lt;/property&gt;
-      &lt;property name="numVirtualNodes" value="2"&gt;&lt;/property&gt;
+      &lt;property name="numSegments" value="60"&gt;&lt;/property&gt;
     &lt;/properties-param&gt;     
   &lt;/init-params&gt;
 &lt;/component&gt;</programlisting>
@@ -1875,7 +1875,7 @@ public interface ExoCacheCreator {
       &lt;jmxStatistics enabled="true"/&gt;
       &lt;clustering mode="distribution"&gt;
         &lt;l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/&gt;
-         &lt;hash numOwners="${numOwners}" numVirtualNodes="${numVirtualNodes}"&gt;
+         &lt;hash numOwners="${numOwners}" numSegments="${numSegments}"&gt;
            &lt;groups enabled="true"/&gt;
          &lt;/hash&gt;
          &lt;sync replTimeout="180000"/&gt;
@@ -1887,7 +1887,7 @@ public interface ExoCacheCreator {
       &lt;jmxStatistics enabled="true"/&gt;
       &lt;clustering mode="distribution"&gt;
          &lt;l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/&gt;
-         &lt;hash numOwners="${numOwners}" numVirtualNodes="${numVirtualNodes}"/&gt;
+         &lt;hash numOwners="${numOwners}" numSegments="${numSegments}"/&gt;
          &lt;sync replTimeout="180000"/&gt;
       &lt;/clustering&gt;
    &lt;/namedCache&gt;

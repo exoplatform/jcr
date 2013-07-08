@@ -36,7 +36,7 @@
       <jmxStatistics enabled="true"/>
       <clustering mode="distribution">
       	 <l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/>
-         <hash numOwners="${numOwners}">
+         <hash numOwners="${numOwners}" numSegments="${numSegments}">
          	<groups enabled="true"/>
          </hash>
          <sync replTimeout="180000"/>
@@ -48,7 +48,7 @@
       <jmxStatistics enabled="true"/>
       <clustering mode="distribution">
          <l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/>
-         <hash numOwners="${numOwners}"/>
+         <hash numOwners="${numOwners}" numSegments="${numSegments}"/>
          <sync replTimeout="180000"/>
       </clustering>
    </namedCache>

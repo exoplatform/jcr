@@ -64,12 +64,6 @@
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
          <artifactId>exo.kernel.component.ext.rpc.impl.jgroups.v3</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>org.jgroups</groupId>
-               <artifactId>jgroups</artifactId>
-            </exclusion>
-         </exclusions>
       </dependency>
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
