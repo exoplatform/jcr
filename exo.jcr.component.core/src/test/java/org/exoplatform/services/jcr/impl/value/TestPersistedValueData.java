@@ -85,18 +85,21 @@ public class TestPersistedValueData extends TestCase
       try
       {
          byte[] buf = "0123456789".getBytes();
-         SwapFile file = SwapFile.get(new File("target"), "testIfFinalizeRemovesTempFileStreamValueData");
+         File file = new File(new File("target"), "testIfFinalizeRemovesTempFileStreamValueData");
+         SwapFile swapFile = SwapFile.get(new File("target"), "testIfFinalizeRemovesTempFileStreamValueData",testFileCleaner);
          //File file = new File("target/testIfFinalizeRemovesTempFileStreamValueData");
          //if (file.exists())
          //  file.delete();
-         FileOutputStream out = new FileOutputStream(file);
+         FileOutputStream out = new FileOutputStream(swapFile);
          out.write(buf);
          out.close();
 
-         CleanableFilePersistedValueData vd = new CleanableFilePersistedValueData(0, file, testFileCleaner);
+         CleanableFilePersistedValueData vd = new CleanableFilePersistedValueData(0, swapFile, testFileCleaner);
          assertTrue(file.exists());
 
          vd = null;
+         swapFile = null;
+         
          System.gc();
 
          // allows GC to call finalize on vd

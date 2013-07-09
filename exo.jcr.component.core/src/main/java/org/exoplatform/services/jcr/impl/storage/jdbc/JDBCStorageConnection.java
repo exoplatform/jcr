@@ -88,7 +88,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * Helper.
     */
-   protected class WriteValueHelper extends ValueFileIOHelper
+   protected static class WriteValueHelper extends ValueFileIOHelper
    {
       /**
        * {@inheritDoc}
@@ -131,7 +131,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected final List<ValueIOChannel> valueChanges;
 
-   protected final WriteValueHelper writeValueHelper = new WriteValueHelper();
+   protected static final WriteValueHelper WRITE_VALUE_HELPER = new WriteValueHelper();
 
    // All statements should be closed in closeStatements() method.
 
@@ -2404,7 +2404,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                {
                   // threshold for keeping data in memory exceeded;
                   // create temp file and spool buffer contents
-                  swapFile = SwapFile.get(swapDirectory, cid + orderNumber + "." + version);
+                  swapFile = SwapFile.get(swapDirectory, cid + orderNumber + "." + version,swapCleaner);
                   if (swapFile.isSpooled())
                   {
                      // break, value already spooled
@@ -2481,10 +2481,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             {
                StreamPersistedValueData streamData = (StreamPersistedValueData)vd;
 
-               SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion());
+               SwapFile swapFile = SwapFile.get(swapDirectory, cid + i + "." + data.getPersistedVersion(),swapCleaner);
                try
                {
-                  writeValueHelper.writeStreamedValue(swapFile, streamData);
+                  WRITE_VALUE_HELPER.writeStreamedValue(swapFile, streamData);
                }
                finally
                {

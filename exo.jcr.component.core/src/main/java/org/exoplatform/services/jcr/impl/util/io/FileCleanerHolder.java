@@ -32,6 +32,11 @@ public class FileCleanerHolder implements Startable
 
    private final FileCleaner fileCleaner;
 
+   /**
+    * the default file cleaner.
+    */
+   private static final FileCleaner defaultFileCleaner = new FileCleaner(null);
+
    public FileCleanerHolder()
    {
       this(null);
@@ -45,6 +50,14 @@ public class FileCleanerHolder implements Startable
    public FileCleaner getFileCleaner()
    {
       return fileCleaner;
+   }
+
+   /**
+    * @return the default File Cleaner
+    */
+   public static FileCleaner getDefaultFileCleaner()
+   {
+      return defaultFileCleaner;
    }
 
    /**

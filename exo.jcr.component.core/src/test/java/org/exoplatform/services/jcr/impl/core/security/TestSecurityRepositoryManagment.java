@@ -115,11 +115,12 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
    }
    public void testAddItemPersistenceListenerSuccess()
    {
+      final TesterItemsPersistenceListener listener = new TesterItemsPersistenceListener(session, false);
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
-            repository.addItemPersistenceListener(workspace.getName(), new TesterItemsPersistenceListener(session));
+            repository.addItemPersistenceListener(workspace.getName(), listener);
             return null;
          }
 
@@ -137,15 +138,21 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
          t.printStackTrace();
          fail();
       }
+      finally
+      {
+         // unregister the listener to avoid keeping ItemData into the memory for nothing
+         listener.pushChanges();
+      }
    }
 
    public void testAddItemPersistenceListenerFail()
    {
+      final TesterItemsPersistenceListener listener = new TesterItemsPersistenceListener(session, false);
       PrivilegedExceptionAction<Object> action = new PrivilegedExceptionAction<Object>()
       {
          public Object run() throws Exception
          {
-            repository.addItemPersistenceListener(workspace.getName(), new TesterItemsPersistenceListener(session));
+            repository.addItemPersistenceListener(workspace.getName(), listener);
             return null;
          }
 
@@ -163,6 +170,11 @@ public class TestSecurityRepositoryManagment extends BaseSecurityTest
       {
          t.printStackTrace();
          fail();
+      }
+      finally
+      {
+         // unregister the listener to avoid keeping ItemData into the memory for nothing
+         listener.pushChanges();
       }
    }
 
