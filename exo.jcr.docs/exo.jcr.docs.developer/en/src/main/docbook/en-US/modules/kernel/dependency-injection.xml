@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="Kernel.DI">
+  <title>Dependency Injection (JSR 330)</title>
+
+  <para>It is now possible to use the Inject annotation in order to inject the
+  dependencies of a given component as described in the JSR 330. </para>
+
+  <para>You can inject values thanks to a constructor:</para>
+
+  <programlisting language="java">@Inject
+public JSR330_C(Provider&lt;P&gt; p, @Named("n2") N n, @N1 N n2)
+{
+   this.p = p;
+   this.n = n;
+   this.n2 = n2;
+}</programlisting>
+
+  <para>In the example above the kernel will inject thanks to the constructor
+  an object of type N named <emphasis>n2</emphasis>, another object of type N
+  annotated with the qualifier <emphasis>N1</emphasis> and will inject the
+  provider allowing to lazily access to an object of type P.</para>
+
+  <note>
+    <para>The kernel will take the first constructor with the Inject
+    annotation that it can find so you must not have more than one constructor
+    with the Inject annotation otherwise you won't be able to predict which
+    constructor will be used by the kernel.</para>
+  </note>
+
+  <para>You can inject values to fields:</para>
+
+  <programlisting language="java">@Inject
+@Named("n2")
+private N n;
+
+@Inject
+@N1
+private N n2;
+
+@Inject
+private Provider&lt;P&gt; p;
+
+</programlisting>
+
+  <para>In the example above the kernel will inject an object of type N named
+  <emphasis>n2</emphasis>, another object of type N annotated with the
+  qualifier <emphasis>N1</emphasis> and will inject the provider allowing to
+  lazily access to an object of type P.</para>
+
+  <para>You can inject values thanks to methods usually setters but you can
+  also make the kernel call methods for initialization purpose</para>
+
+  <programlisting language="java">@Inject
+void setN(@Named("n2") N n)
+{
+   this.n = n;
+}
+
+@Inject
+void setN2(@N1 N n2)
+{
+   this.n2 = n2;
+}
+
+@Inject
+public void init()
+{
+...
+}</programlisting>
+
+  <para>In the example above the kernel will inject an object of type N named
+  <emphasis>n2</emphasis> thanks to the method setN, another object of type N
+  annotated with the qualifier <emphasis>N1</emphasis> thanks to the method
+  setN2 and finally will call the init method. </para>
+
+  <note>
+    <para>You have no way to ensure that a given method will be called before
+    another, so in case you need to implement an init method that needs to be
+    called only when all the dependencies are injected, you should inject your
+    dependencies using constructors or fields. Because constructors are
+    injected first, followed by fields, and then methods.</para>
+  </note>
+
+  <section id="Kernel.DI.SNL">
+    <title>Specificities and Limitations</title>
+
+    <para>The implementation can inject dependencies using private,
+    package-private, protected and public constructors, methods and fileds.
+    Injection on final and/or static fields is not supported. Injection on
+    static methods is not supported. Only one constructor can be annotated
+    with the Inject annotation.</para>
+
+    <para>As the old way to create a component only creates only singletons
+    and according to the specification only components explicitly annotated
+    with the Singleton annotation must be considered as singleton, the kernel
+    will decide which mode to use thanks to the constructors. Indeed if you
+    have no constructor annotated with the Inject annotation and you don't
+    have only one constructor that is public with no argument, the kernel will
+    consider that the component expects the old behavior as it won't be
+    considered as JSR 330 compliant. This also helps to limit the overhead of
+    data injection, it will only be done on compliant components only.</para>
+
+    <note>
+      <para>Once the component is considered as JSR 330 compliant, the kernel
+      will try to inject the dependencies and will check if the annotation
+      Singleton has explicitly been added at class declaration level. By
+      default it will be considered as a prototype such that a new instance
+      will be created at each call. So be very careful of that.</para>
+    </note>
+
+    <para>You can only use one qualifier and the only attribute supported for
+    a qualifier is the value of the annotation <emphasis>Named</emphasis>. You
+    can bind only one class to a given qualifier so make sure that the type is
+    compatible with the object that must be injected by the kernel otherwise
+    you will get <emphasis>ClassCastException</emphasis>.These limitations are
+    for the sake of simplicity.</para>
+
+    <para>The only scope supported so far is Singleton.</para>
+  </section>
+
+  <section id="Kernel.DI.Configuration">
+    <title>Configuration</title>
+
+    <para>When you use the annotation Named, the kernel will get the value of
+    the annotation and will try to get the component that has been registered
+    using this value as key. So thanks to the configuration example below it
+    will be possible to use <emphasis>@Named("spare")</emphasis> in order to
+    inject a component of type <emphasis>SpareTire</emphasis>.</para>
+
+    <programlisting language="xml">&lt;component&gt;
+   &lt;key&gt;spare&lt;/key&gt;
+   &lt;type&gt;org.atinject.tck.auto.accessories.SpareTire&lt;/type&gt;
+&lt;/component&gt;</programlisting>
+
+    <para>In case you want to use your own qualifier, you will be able to bind
+    your object class to this particular qualifier by simply using the FQN of
+    your qualifier as key like in the next example:</para>
+
+    <programlisting language="xml">&lt;component&gt;
+   &lt;key&gt;org.atinject.tck.auto.Drivers&lt;/key&gt;
+   &lt;type&gt;org.atinject.tck.auto.DriversSeat&lt;/type&gt;
+&lt;/component&gt;</programlisting>
+
+    <para>In the example above
+    <emphasis>org.atinject.tck.auto.Drivers</emphasis> is the FQN of the
+    qualifier and <emphasis>org.atinject.tck.auto.DriversSeat</emphasis> is
+    the FQN of the class to which we want to bind the qualifier. Thanks to
+    that if the kernel detects the annotation <emphasis>@Drivers</emphasis> it
+    will inject a component of type <emphasis>DriversSeat</emphasis>.</para>
+  </section>
+</section>

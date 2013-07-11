@@ -26,10 +26,10 @@ import org.exoplatform.services.jcr.webdav.util.InitParamsNames;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.PatternSyntaxException;
@@ -133,7 +133,7 @@ public class WebDavServiceInitParams
       {
          valuesParam = valuesParamIterator.next();
 
-         ArrayList<String> values = valuesParam.getValues();
+         List<String> values = valuesParam.getValues();
          StringBuffer sb = new StringBuffer();
          for (int i = 0; i < values.size(); i++)
          {

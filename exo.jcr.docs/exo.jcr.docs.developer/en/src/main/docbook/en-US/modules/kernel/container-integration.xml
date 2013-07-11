@@ -35,13 +35,15 @@
   injected into components of eXo kernel or components of eXo kernel could be
   injected into those shared components.</para>
 
-  <para>Please note that the extensions only register the components at
-  startup, all the dynamic registrations using the methods
-  <emphasis>registerComponentImplementation</emphasis> and
-  <emphasis>registerComponentInstance</emphasis> will be ignored by the
-  extensions such that the components dynamically registered after the startup
-  won't be injected in the components of the container and no component of the
-  container will be injected into those components.</para>
+  <note>
+    <para>The extensions only register the components at startup, all the
+    dynamic registrations using the methods
+    <emphasis>registerComponentImplementation</emphasis> and
+    <emphasis>registerComponentInstance</emphasis> will be ignored by the
+    extensions such that the components dynamically registered after the
+    startup won't be injected in the components of the container and no
+    component of the container will be injected into those components.</para>
+  </note>
 
   <para>All the components of eXo kernel that are shared with the container
   are the components defined before the starup of the ExoContainer and that
@@ -50,7 +52,7 @@
   shared.</para>
 
   <para>The next sub sections will describe the different integrations that
-  are already available. </para>
+  are already available.</para>
 
   <section id="Kernel.Container-Integration.Guice">
     <title>Google Guice</title>
@@ -75,14 +77,14 @@
     explicitly as key in the component definition otherwise the
     <emphasis>GuiceContainer</emphasis> won't be enabled.</para>
 
-    <programlisting>   &lt;component&gt;
+    <programlisting language="xml">   &lt;component&gt;
       &lt;key&gt;org.exoplatform.container.guice.ModuleProvider&lt;/key&gt;
       &lt;type&gt;org.exoplatform.container.guice.TestGuiceContainer$MyModuleProvider&lt;/type&gt;
    &lt;/component&gt;</programlisting>
 
     <para>Here is an example of a <emphasis>ModuleProvider</emphasis></para>
 
-    <programlisting>   public static class MyModuleProvider implements ModuleProvider
+    <programlisting language="java">   public static class MyModuleProvider implements ModuleProvider
    {
       public Module getModule()
       {
@@ -99,6 +101,18 @@
          };
       }
    }</programlisting>
+
+    <para>When you define a component in the configuration of the
+    corresponding ExoContainer, this component is also defined in Google Guice
+    allowing it to inject it in its components if needed. When the key used in
+    the component definition is a class or an interface that is not an
+    annotation, it will use this class/interface to bind the component. In
+    case the key is a string, it will use the component implementation class
+    and all its super classes and interfaces to bind the component and will
+    annotate it with Named and the value of the key. If the key is an
+    annotation, it will use the component implementation class and all its
+    super classes and interfaces to bind the component and will annotate it
+    with this annotation.</para>
   </section>
 
   <section id="Kernel.Container-Integration.Spring">
@@ -138,11 +152,11 @@
         means that we can use prefixes like <emphasis>jar:</emphasis>,
         <emphasis>classpath:</emphasis>, <emphasis>file:</emphasis> and so on.
         The XML configuration files can be defined thanks to the values-param
-        called <emphasis>config.paths</emphasis>. </para>
+        called <emphasis>config.paths</emphasis>.</para>
 
         <para>See below a configuration example:</para>
 
-        <programlisting>   &lt;component&gt;
+        <programlisting language="xml">   &lt;component&gt;
       &lt;key&gt;org.exoplatform.container.spring.ApplicationContextProvider&lt;/key&gt;
       &lt;type&gt;org.exoplatform.container.spring.FileSystemXmlApplicationContextProvider&lt;/type&gt;
       &lt;init-params&gt;
@@ -156,7 +170,7 @@
 
         <para>See below an example of XML configuration file:</para>
 
-        <programlisting>&lt;beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+        <programlisting language="xml">&lt;beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
    xsi:schemaLocation="http://www.springframework.org/schema/beans
       http://www.springframework.org/schema/beans/spring-beans.xsd
       http://www.springframework.org/schema/context
@@ -181,7 +195,7 @@
 
         <para>See below a configuration example:</para>
 
-        <programlisting>   &lt;component&gt;
+        <programlisting language="xml">   &lt;component&gt;
       &lt;key&gt;org.exoplatform.container.spring.ApplicationContextProvider&lt;/key&gt;
       &lt;type&gt;org.exoplatform.container.spring.AnnotationConfigApplicationContextProvider&lt;/type&gt;
       &lt;init-params&gt;
@@ -195,7 +209,7 @@
 
         <para>See below an example of configuration class:</para>
 
-        <programlisting>   @Configuration
+        <programlisting language="java">   @Configuration
    public static class Config2
    {
       @Bean
@@ -206,6 +220,33 @@
    }</programlisting>
       </listitem>
     </itemizedlist>
+
+    <para>When you define a component in the configuration of the
+    corresponding ExoContainer, this component is also defined in Spring
+    allowing it to inject it in its components if needed. When the key used in
+    the component definition is a class or an interface, it will register the
+    bean with the FQN of this class/interface as bean name. In case the key is
+    a string, it will register the bean with the value of the key as bean
+    name. In case the key is a class or an interface that is not an
+    annotation, the corresponding bean will be defined as the primary autowire
+    candidate otherwise we will only register the related qualifier which is
+    Named and its value in case the key is a string or directly the key if the
+    key is an annotaion.</para>
+
+    <para>When you try to access to a component instance or a component
+    adapter thanks to a key, it will first check if there is an existing bean
+    whose name is the FQN of the class in case the key is a class or whose
+    name is value of the key if the key is a String. If no bean can be found,
+    it will then get the bean that matches with the bind type and the key if
+    the key is an annotation class or the key is a string. In case the key is
+    an annotation class, it will get the first bean that has been bound with
+    this annotation. In case the key is a string, it will get the first bean
+    that has been bound with Named and the value of the key.</para>
+
+    <para>When you try to access to a component instance or a component
+    adapter thanks to a type, it will first check if there is an existing bean
+    whose name is the FQN of the type. If no bean can be found, it will then
+    get the first bean that matches with the type.</para>
   </section>
 
   <section id="Kernel.Container-Integration.Weld">
@@ -219,8 +260,7 @@
     explicitly in the configuration of the <emphasis>ExoContainer</emphasis>
     for which you want to enable the <emphasis>WeldContainer</emphasis>, a
     component of type
-    <emphasis>org.exoplatform.container.weld.WeldContainerHelper</emphasis>.
-    </para>
+    <emphasis>org.exoplatform.container.weld.WeldContainerHelper</emphasis>.</para>
 
     <para>This component is needed to enable the
     <emphasis>WeldContainer</emphasis> but also to provide the Weld extensions
@@ -257,14 +297,16 @@
     one can be used to define a set of name prefixes of the classes to
     exclude.</para>
 
-    <para>Please note that it is not allowed to not set any values for both
-    parameters. In case you set only values for the exclude parameters, the
-    <emphasis>BasicWeldContainerHelper</emphasis> will include all the classes
-    that don't match with those values. </para>
+    <note>
+      <para>It is not allowed to not set any values for both parameters. In
+      case you set only values for the exclude parameters, the
+      <emphasis>BasicWeldContainerHelper</emphasis> will include all the
+      classes that don't match with those values.</para>
+    </note>
 
     <para>See below a configuration example:</para>
 
-    <programlisting>   &lt;component&gt;
+    <programlisting language="xml">   &lt;component&gt;
       &lt;key&gt;org.exoplatform.container.weld.WeldContainerHelper&lt;/key&gt;
       &lt;type&gt;org.exoplatform.container.weld.BasicWeldContainerHelper&lt;/type&gt;
       &lt;init-params&gt;
@@ -289,5 +331,29 @@
     <para>In this example we include all the inner classes of
     org.exoplatform.container.weld.TestWeldContainer but we exclude the inner
     classes A, B, C, D, E, F, G and Marker.</para>
+
+    <para>When you define a component in the configuration of the
+    corresponding ExoContainer, this component is also defined in Weld
+    allowing it to inject it in its components if needed. In case the key is a
+    class or an interface that is not an annotation, the corresponding bean
+    will be qualified using the annotations <emphasis>Default</emphasis> and
+    <emphasis>Any</emphasis> otherwise it will be qualified with Named and its
+    value in case the key is a string or directly the key if the key is an
+    annotaion.</para>
+
+    <para>If the key is a class or an interface that is not an annotation, the
+    bean will be bound to the key and the component implementation class
+    otherwise the bean will be bound to the component implementation class and
+    all its super classes and interfaces.</para>
+
+    <para>When you try to access to a component instance or a component
+    adapter thanks to a key, if it finds several candidates, it will return
+    the first one except if the key is a class or an interface that is not an
+    annotation, in that case it will return the first one annotated with
+    <emphasis>Default</emphasis>.</para>
+
+    <para>When you try to access to a component instance or a component
+    adapter thanks to a type, if it finds several candidates, it will return
+    the first one annotated with <emphasis>Default</emphasis>.</para>
   </section>
 </section>
