@@ -40,7 +40,7 @@
       <eviction strategy="LRU" threadPolicy="DEFAULT" maxEntries="100000"/>
 
       <loaders passivation="false" shared="true" preload="true">
-        <store class="org.infinispan.loaders.jdbc.binary.JdbcBinaryCacheStore" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">
+        <store class="org.infinispan.loaders.jdbc.binary.JdbcBinaryCacheStore" fetchPersistentState="true" ignoreModifications="false" purgeOnStartup="false">
           <properties>
              <property name="bucketTableNamePrefix" value="${infinispan-cl-cache.jdbc.table.name}"/>
              <property name="idColumnName" value="${infinispan-cl-cache.jdbc.id.column}"/>

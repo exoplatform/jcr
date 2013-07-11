@@ -52,7 +52,7 @@
       <eviction strategy="NONE"/>
 
       <loaders passivation="false" shared="false" preload="false">
-        <store class="${infinispan-cachestore-classname}" fetchPersistentState="false" ignoreModifications="false" purgeOnStartup="false">
+        <store class="${infinispan-cachestore-classname}" fetchPersistentState="true" ignoreModifications="false" purgeOnStartup="false">
           <async enabled="false"/>
         </store>
       </loaders>
