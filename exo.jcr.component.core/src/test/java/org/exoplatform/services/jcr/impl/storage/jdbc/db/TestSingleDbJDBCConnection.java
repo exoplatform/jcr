@@ -97,6 +97,7 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      super.tearDown();
       Connection con = null;
       Statement st = null;
       try
@@ -121,6 +122,5 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
             con.close();
          }
       }
-      super.tearDown();
    }
 }
