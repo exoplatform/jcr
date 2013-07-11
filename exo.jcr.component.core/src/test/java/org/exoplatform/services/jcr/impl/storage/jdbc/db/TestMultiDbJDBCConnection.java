@@ -96,6 +96,7 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
    @Override
    protected void tearDown() throws Exception
    {
+      super.tearDown();
       Connection con = null;
       Statement st = null;
       try
@@ -120,6 +121,5 @@ public class TestMultiDbJDBCConnection extends JDBCConnectionTestBase
             con.close();
          }
       }
-      super.tearDown();
    }
 }
