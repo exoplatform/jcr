@@ -23,16 +23,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.security.Principal;
+import java.util.Collection;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.servlet.AsyncContext;
+import javax.servlet.DispatcherType;
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
@@ -41,7 +50,6 @@ import javax.ws.rs.core.MultivaluedMap;
  * @author <a href="mailto:vitaly.parfonov@gmail.com">Vitaly Parfonov</a>
  * @version $Id: $
  */
-@SuppressWarnings("unchecked")
 public class MockHttpServletRequest implements HttpServletRequest
 {
 
@@ -86,14 +94,14 @@ public class MockHttpServletRequest implements HttpServletRequest
       return headers.getFirst(arg0);
    }
 
-   public Enumeration getHeaderNames()
+   public Enumeration<String> getHeaderNames()
    {
-      return new EnumerationImpl(headers.keySet().iterator());
+      return new EnumerationImpl<String>(headers.keySet().iterator());
    }
 
-   public Enumeration getHeaders(String arg0)
+   public Enumeration<String> getHeaders(String arg0)
    {
-      return new EnumerationImpl(headers.get(arg0).iterator());
+      return new EnumerationImpl<String>(headers.get(arg0).iterator());
    }
 
    public int getIntHeader(String arg0)
@@ -191,7 +199,7 @@ public class MockHttpServletRequest implements HttpServletRequest
       return null;
    }
 
-   public Enumeration getAttributeNames()
+   public Enumeration<String> getAttributeNames()
    {
       return null;
    }
@@ -221,7 +229,7 @@ public class MockHttpServletRequest implements HttpServletRequest
       return null;
    }
 
-   public Enumeration getLocales()
+   public Enumeration<Locale> getLocales()
    {
       return null;
    }
@@ -231,12 +239,12 @@ public class MockHttpServletRequest implements HttpServletRequest
       return null;
    }
 
-   public Map getParameterMap()
+   public Map<String, String[]> getParameterMap()
    {
       return null;
    }
 
-   public Enumeration getParameterNames()
+   public Enumeration<String> getParameterNames()
    {
       return null;
    }
@@ -310,37 +318,92 @@ public class MockHttpServletRequest implements HttpServletRequest
 
    public String getLocalAddr()
    {
-      // TODO Auto-generated method stub
       return null;
    }
 
    public String getLocalName()
    {
-      // TODO Auto-generated method stub
       return null;
    }
 
    public int getLocalPort()
    {
-      // TODO Auto-generated method stub
       return 0;
    }
 
    public int getRemotePort()
    {
-      // TODO Auto-generated method stub
       return 0;
    }
 
+   // Servlet 3.0
+
+   public ServletContext getServletContext()
+   {
+      return null;
+   }
+
+   public AsyncContext startAsync() throws IllegalStateException
+   {
+      return null;
+   }
+
+   public AsyncContext startAsync(ServletRequest servletRequest, ServletResponse servletResponse)
+      throws IllegalStateException
+   {
+      return null;
+   }
+
+   public boolean isAsyncStarted()
+   {
+      return false;
+   }
+
+   public boolean isAsyncSupported()
+   {
+      return false;
+   }
+
+   public AsyncContext getAsyncContext()
+   {
+      return null;
+   }
+
+   public DispatcherType getDispatcherType()
+   {
+      return null;
+   }
+
+   public boolean authenticate(HttpServletResponse response) throws IOException, ServletException
+   {
+      return false;
+   }
+
+   public void login(String username, String password) throws ServletException
+   {
+   }
+
+   public void logout() throws ServletException
+   {
+   }
+
+   public Collection<Part> getParts() throws IOException, ServletException
+   {
+      return null;
+   }
+
+   public Part getPart(String name) throws IOException, ServletException
+   {
+      return null;
+   }
 }
 
-@SuppressWarnings("unchecked")
-class EnumerationImpl implements Enumeration
+class EnumerationImpl<T> implements Enumeration<T>
 {
 
-   private final Iterator iter;
+   private final Iterator<T> iter;
 
-   public EnumerationImpl(Iterator iter)
+   public EnumerationImpl(Iterator<T> iter)
    {
       this.iter = iter;
    }
@@ -350,7 +413,7 @@ class EnumerationImpl implements Enumeration
       return iter.hasNext();
    }
 
-   public Object nextElement()
+   public T nextElement()
    {
       return iter.next();
    }

@@ -5,7 +5,7 @@
   <title>Dependency Injection (JSR 330)</title>
 
   <para>It is now possible to use the Inject annotation in order to inject the
-  dependencies of a given component as described in the JSR 330. </para>
+  dependencies of a given component as described in the JSR 330.</para>
 
   <para>You can inject values thanks to a constructor:</para>
 
@@ -73,7 +73,7 @@ public void init()
   <para>In the example above the kernel will inject an object of type N named
   <emphasis>n2</emphasis> thanks to the method setN, another object of type N
   annotated with the qualifier <emphasis>N1</emphasis> thanks to the method
-  setN2 and finally will call the init method. </para>
+  setN2 and finally will call the init method.</para>
 
   <note>
     <para>You have no way to ensure that a given method will be called before
@@ -116,8 +116,6 @@ public void init()
     compatible with the object that must be injected by the kernel otherwise
     you will get <emphasis>ClassCastException</emphasis>.These limitations are
     for the sake of simplicity.</para>
-
-    <para>The only scope supported so far is Singleton.</para>
   </section>
 
   <section id="Kernel.DI.Configuration">
@@ -149,5 +147,42 @@ public void init()
     the FQN of the class to which we want to bind the qualifier. Thanks to
     that if the kernel detects the annotation <emphasis>@Drivers</emphasis> it
     will inject a component of type <emphasis>DriversSeat</emphasis>.</para>
+  </section>
+
+  <section id="Kernel.DI.Scope">
+    <title>Scope Management</title>
+
+    <para>A part of the JSR 346 also know as CDI 1.1 (Contexts and Dependency
+    Injection for JavaTM EE), has been implemented in order to be able to set
+    a scope to a component. For now, the implementation is limited as It is
+    only possible to set a scope at class and/or interface level since the
+    providers are not supported and it is not possible to set a scope at field
+    level either.</para>
+
+    <para>If you intend to use a passivating scope, you will have to make sure
+    that component is Serializable otherwise the container will prevent the
+    instantiation of your component.</para>
+
+    <para>The pseudo-scope SIngleton and the normal scope ApplicationScoped
+    are both considered as singletons by the kernel such that they are managed
+    the exact same way by the kernel. The only difference is the fact that the
+    scope ApplicationScoped can be inherited and the scope Singleton cannot by
+    definition.</para>
+
+    <para>If a scope has not been set at the class definition level of your
+    component implementation class, if it cannot be inherited and no default
+    scope can be found in the stereotypes of the component, it will then set a
+    default scope which will be Dependent in case it detects that the
+    componant is JSR 330 compliant otherwise it assumes that the old behavior
+    is expected so the scope will be Singleton.</para>
+
+    <para>Any time the kernel will need to create an instance of a component
+    that has a normal scope (except the ApplicationScoped), it will create
+    automatically a proxy of your component implementation class.</para>
+
+    <para>If you use a scope that is unknown, the component will be created
+    </para>
+
+    <para>Out of the box, eXo kernel can manage</para>
   </section>
 </section>
