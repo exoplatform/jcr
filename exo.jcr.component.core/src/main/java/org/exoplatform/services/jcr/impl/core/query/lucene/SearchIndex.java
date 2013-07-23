@@ -562,9 +562,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       this.wsId = wsId;
       this.analyzer = new JcrStandartAnalyzer();
       this.cfm = cfm;
+      this.recoveryFilterClasses = new LinkedHashSet<String>();
       SearchIndexConfigurationHelper searchIndexConfigurationHelper = new SearchIndexConfigurationHelper(this);
       searchIndexConfigurationHelper.init(queryHandlerConfig);
-      this.recoveryFilterClasses = new LinkedHashSet<String>();
    }
 
    /**
