@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -50,9 +51,12 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
    public void setUp() throws Exception
    {
       setUp("/conf/storage/jcr-sjdbc.sql", DatabaseStructureType.SINGLE);
+      Connection con = null;
+      Statement st = null;
       try
       {
-         Statement st = getJNDIConnection().createStatement();
+         con = getJNDIConnection();
+         st = con.createStatement();
          st.executeUpdate("insert into JCR_SITEM values" + "('A','A','test1',20090525,'ws3',2,1233,1,10,5)");
          st.executeUpdate("insert into JCR_SITEM values" + "('B','A','test2',20090625,'ws3',1,1233,5,10,4)");
          st.executeUpdate("insert into JCR_SITEM values" + "('C','B','test3',20090825,'ws3',1,1233,5,10,2)");
@@ -63,7 +67,6 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
             + "('0xce',16,'B','testConn2')");
          st.executeUpdate("insert into JCR_SREF values" + "('D','A',2)");
          st.executeUpdate("insert into JCR_SREF values" + "('E','B',2)");
-         st.close();
          JDBCDataContainerConfig jdbcDataContainerConfig = new JDBCDataContainerConfig();
          jdbcDataContainerConfig.containerName = "ws3";
          jdbcDataContainerConfig.spoolConfig = SpoolConfig.getDefaultSpoolConfig();
@@ -76,6 +79,16 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
       {
          fail(se.toString());
       }
+      finally
+      {
+         if (st != null)
+            st.close();
+         if (con != null)
+         {
+            con.commit();
+            con.close();
+         }
+      }
    }
 
    /* (non-Javadoc)
@@ -84,19 +97,30 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
    @Override
    protected void tearDown() throws Exception
    {
-
+      super.tearDown();
+      Connection con = null;
+      Statement st = null;
       try
       {
-         Statement st = getJNDIConnection().createStatement();
+         con = getJNDIConnection();
+         st = con.createStatement();
          st.executeUpdate("drop table JCR_SREF");
          st.executeUpdate("drop table JCR_SVALUE");
          st.executeUpdate("drop table JCR_SITEM");
-         st.close();
       }
       catch (SQLException se)
       {
          fail(se.toString());
       }
-      super.tearDown();
+      finally
+      {
+         if (st != null)
+            st.close();
+         if (con != null)
+         {
+            con.commit();
+            con.close();
+         }
+      }
    }
 }

@@ -86,7 +86,7 @@
       the descendant items to the changes log. If this parameter is not set
       but the parameter
       <emphasis>trigger-events-for-descendants-on-move</emphasis> is set, it
-      will have the same value. </para>
+      will have the same value.</para>
     </listitem>
 
     <listitem>
@@ -237,10 +237,10 @@
     <title>Database's dialects</title>
 
     <section id="JCR.WorkspacePersistenceStorage.DatabasesDialects.PostgreSQLDatabase">
-      <title>PostgreSQL database</title>
+      <title>PostgreSQL/PostgrePlus database</title>
 
-      <para>PostgreSQL's dialect is set automatically. The dialect depends on
-      the version of database. If you change default value of
+      <para>PostgreSQL/PostgrePlus's dialect is set automatically. The dialect
+      depends on the version of database. If you change default value of
       <emphasis>standard_conforming_strings</emphasis> parameter than you must
       configure one of the following dialects manually:<itemizedlist>
           <listitem>

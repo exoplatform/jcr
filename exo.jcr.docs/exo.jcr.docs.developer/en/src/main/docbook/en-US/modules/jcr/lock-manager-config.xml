@@ -4,21 +4,22 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.LockManagerConfiguration">
   <title>LockManager configuration</title>
-    <para>What LockManager does?</para>
 
-    <para>In general, LockManager stores Lock objects, so it can give a Lock
-    object or can release it.</para>
+  <para>What LockManager does?</para>
 
-    <para>Also, LockManager is responsible for removing Locks that live too
-    long. This parameter may be configured with "time-out" property.</para>
+  <para>In general, LockManager stores Lock objects, so it can give a Lock
+  object or can release it.</para>
 
-    <para>JCR provides one basic implementations of LockManager:</para>
+  <para>Also, LockManager is responsible for removing Locks that live too
+  long. This parameter may be configured with "time-out" property.</para>
 
-    <itemizedlist>
-      <listitem>
-        <para><classname>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl</classname></para>
-      </listitem>
-    </itemizedlist>
+  <para>JCR provides one basic implementations of LockManager:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para><classname>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl</classname></para>
+    </listitem>
+  </itemizedlist>
 
   <section id="JCR.LockManagerConfiguration.CacheableLockManagerImpl">
     <title>CacheableLockManagerImpl</title>
@@ -266,7 +267,7 @@
             </row>
 
             <row>
-              <entry>PostgreSQL</entry>
+              <entry>PostgreSQL/PostgrePlus</entry>
 
               <entry>bytea</entry>
 

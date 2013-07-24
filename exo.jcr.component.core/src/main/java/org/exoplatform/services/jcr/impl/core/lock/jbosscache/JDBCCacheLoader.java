@@ -24,6 +24,9 @@ import org.jboss.cache.config.CacheLoaderConfig.IndividualCacheLoaderConfig;
 import org.jboss.cache.loader.AdjListJDBCCacheLoaderConfig;
 
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
+import java.sql.SQLException;
+import java.util.Locale;
 
 
 /**
@@ -59,7 +62,7 @@ the start method is called, since that's when its registered in its lifecycle */
       /* We set the configuration */
       cf.setConfig(config);
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -69,5 +72,26 @@ the start method is called, since that's when its registered in its lifecycle */
       AdjListJDBCCacheLoaderConfig config = super.processConfig(base);
       config.setClassName(getClass().getName());
       return config;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected String getDriverName(Connection con)
+   {
+      if (con == null) return null;
+      try
+      {
+         DatabaseMetaData dmd = con.getMetaData();
+         String result = dmd.getDriverName().toUpperCase(Locale.ENGLISH);
+         return result.startsWith("POSTGRES") ? "POSTGRESQL" : result;
+      }
+      catch (SQLException e)
+      {
+         // This should not happen. A J2EE compatible JDBC driver is
+         // required to fully support metadata.
+         throw new IllegalStateException("Error while getting the driver name", e);
+      }
    }
 }
