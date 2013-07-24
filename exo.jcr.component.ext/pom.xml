@@ -468,7 +468,7 @@
             <dependency>
                <groupId>postgresql</groupId>
                <artifactId>postgresql</artifactId>
-               <version>8.3-606.jdbc3</version>
+               <version>8.3-606.jdbc4</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
@@ -511,6 +511,20 @@
                <groupId>com.edb</groupId>
                <artifactId>edb</artifactId>
                <version>9.2.1.3</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>pgsql-9.2</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>org.postgresql</groupId>
+               <artifactId>postgresql</artifactId>
+               <version>9.2-1003-jdbc4</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
