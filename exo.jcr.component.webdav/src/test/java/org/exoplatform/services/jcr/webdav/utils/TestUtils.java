@@ -94,12 +94,12 @@ public class TestUtils
 
    public static String getFolderName()
    {
-      return "/test-folder-" + System.nanoTime();
+      return "/test-folder-" + System.currentTimeMillis();
    }
 
    public static String getFileName()
    {
-      return "/test-file-" + System.nanoTime() + ".txt";
+      return "/test-file-" + System.currentTimeMillis() + ".txt";
    }
 
    public static Document getXmlFromString(String string) throws Exception
