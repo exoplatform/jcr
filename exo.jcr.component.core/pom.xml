@@ -25,7 +25,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>jcr-parent</artifactId>
-      <version>1.15.5-GA-SNAPSHOT</version>
+      <version>1.15.5-GA</version>
    </parent>
    <artifactId>exo.jcr.component.core</artifactId>
    <name>eXo JCR :: Component :: Core Service</name>
@@ -42,7 +42,7 @@
       <test.cache.all>**/persistent/cache/**</test.cache.all>
       <test.cache.exclude>**/persistent/cache/foo/**</test.cache.exclude>
       <test.exclude>**/foo/foo/**</test.exclude>
-      <debug.opts></debug.opts>
+      <debug.opts />
    </properties>
    <dependencies>
       <dependency>
