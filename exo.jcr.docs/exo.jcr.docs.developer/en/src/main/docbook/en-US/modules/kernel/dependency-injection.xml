@@ -155,34 +155,156 @@ public void init()
     <para>A part of the JSR 346 also know as CDI 1.1 (Contexts and Dependency
     Injection for JavaTM EE), has been implemented in order to be able to set
     a scope to a component. For now, the implementation is limited as It is
-    only possible to set a scope at class and/or interface level since the
-    providers are not supported and it is not possible to set a scope at field
-    level either.</para>
+    only possible to set a scope at class and/or interface definition level
+    since the producers are not supported and it is not possible to set a
+    scope at field declaration level either.</para>
+
+    <para>The pseudo-scope <emphasis>Singleton</emphasis> and the normal scope
+    <emphasis>ApplicationScoped</emphasis> are both considered as singletons
+    such that they are managed the exact same way by the kernel. The only
+    difference is the fact that the scope
+    <emphasis>ApplicationScoped</emphasis> can be inherited and the scope
+    <emphasis>Singleton</emphasis> cannot be inherited by definition.</para>
+
+    <para>How the kernel gets the scope?</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>If the component is not considered as JSR 330 compliant (there
+        isn't any compliant constructor and the Inject annotation is never
+        used), the scope will be <emphasis>Singleton</emphasis> for backward
+        compatibility reason.</para>
+      </listitem>
+
+      <listitem>
+        <para>If the component is considered as JSR 330 compliant and the
+        context manager has not been defined</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>A scope has been set explicitly to <emphasis>Singleton,
+            ApplicationScoped or Dependent</emphasis>, in that case it will
+            use the provided scope.</para>
+          </listitem>
+
+          <listitem>
+            <para>No scope has been set explicitly, in that case it will get
+            the default scope from the stereotypes, by default it will use the
+            scope <emphasis>Dependent</emphasis>.</para>
+          </listitem>
+
+          <listitem>
+            <para>A scope has been set explicitly to something other than
+            <emphasis>Singleton, ApplicationScoped or Dependent</emphasis>, in
+            that case it will get the default scope from the stereotypes, by
+            default it will use the scope
+            <emphasis>Dependent</emphasis>.</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+
+      <listitem>
+        <para>If the component is considered as JSR 330 compliant and the
+        context manager has been defined</para>
+
+        <itemizedlist>
+          <listitem>
+            <para>A scope has been set explicitly to <emphasis>Singleton,
+            ApplicationScoped, Dependent</emphasis> or a scope known by the
+            context manager, in that case it will use the provided
+            scope.</para>
+          </listitem>
+
+          <listitem>
+            <para>No scope has been set explicitly, in that case it will get
+            the default scope from the stereotypes, by default it will use the
+            scope <emphasis>Dependent</emphasis>.</para>
+          </listitem>
+
+          <listitem>
+            <para>A scope has been set explicitly to something other than
+            <emphasis>Singleton, ApplicationScoped, Dependent</emphasis> or a
+            scope known by the context manager, in that case it will get the
+            default scope from the stereotypes, by default it will use the
+            scope <emphasis>Dependent</emphasis>.</para>
+          </listitem>
+        </itemizedlist>
+      </listitem>
+    </itemizedlist>
 
     <para>If you intend to use a passivating scope, you will have to make sure
-    that component is Serializable otherwise the container will prevent the
-    instantiation of your component.</para>
-
-    <para>The pseudo-scope SIngleton and the normal scope ApplicationScoped
-    are both considered as singletons by the kernel such that they are managed
-    the exact same way by the kernel. The only difference is the fact that the
-    scope ApplicationScoped can be inherited and the scope Singleton cannot by
-    definition.</para>
-
-    <para>If a scope has not been set at the class definition level of your
-    component implementation class, if it cannot be inherited and no default
-    scope can be found in the stereotypes of the component, it will then set a
-    default scope which will be Dependent in case it detects that the
-    componant is JSR 330 compliant otherwise it assumes that the old behavior
-    is expected so the scope will be Singleton.</para>
+    that the component with this scope is Serializable otherwise the container
+    will prevent the instantiation of your component.</para>
 
     <para>Any time the kernel will need to create an instance of a component
-    that has a normal scope (except the ApplicationScoped), it will create
-    automatically a proxy of your component implementation class.</para>
+    that has a normal scope (except the
+    <emphasis>ApplicationScoped</emphasis>), it will create automatically a
+    proxy of your component implementation class as defined in the
+    specification. So if you intend to use a normal scope, you will need to
+    deploy the latest version of javassist otherwise you will get a
+    <emphasis>ClassNotFoundException</emphasis>. Moreover, you need to make
+    sure that the code that accesses to a component that has a normal scope,
+    only accesses to methods of this component and never directly to fields
+    otherwise you will get unexpected issues. The best wait to prevent issues
+    is to make private all the fields of a component with a normal
+    scope.</para>
 
-    <para>If you use a scope that is unknown, the component will be created
-    </para>
+    <para>Out of the box, eXo kernel can manage the scopes
+    <emphasis>Singleton</emphasis>, <emphasis>ApplicationScoped</emphasis> and
+    <emphasis>Dependent</emphasis>, even if the context manager has not been
+    defined. If you define the context manager, you will be able to define and
+    use the scopes <emphasis>SessionScoped</emphasis> and
+    <emphasis>RequestScoped</emphasis>.</para>
 
-    <para>Out of the box, eXo kernel can manage</para>
+    <para>The next code snippet shows how the context manager can be
+    configured to allow you to use the scopes
+    <emphasis>SessionScoped</emphasis> and
+    <emphasis>RequestScoped</emphasis>:</para>
+
+    <programlisting language="xml">&lt;component&gt;
+ &lt;key&gt;org.exoplatform.container.context.ContextManager&lt;/key&gt;
+ &lt;type&gt;org.exoplatform.container.context.ContextManagerImpl&lt;/type&gt;
+ &lt;component-plugins&gt;
+  &lt;component-plugin&gt;
+   &lt;name&gt;main-scopes&lt;/name&gt;
+   &lt;set-method&gt;addContexts&lt;/set-method&gt;
+   &lt;type&gt;org.exoplatform.container.context.ContextPlugin&lt;/type&gt;
+   &lt;init-params&gt;
+    &lt;object-param&gt;
+     &lt;name&gt;request-scope&lt;/name&gt;
+     &lt;object type="org.exoplatform.container.context.RequestContext"/&gt;
+    &lt;/object-param&gt;
+    &lt;object-param&gt;
+     &lt;name&gt;session-scope&lt;/name&gt;
+     &lt;object type="org.exoplatform.container.context.SessionContext"/&gt;
+    &lt;/object-param&gt;
+   &lt;/init-params&gt;
+  &lt;/component-plugin&gt;
+ &lt;/component-plugins&gt;
+&lt;/component&gt;</programlisting>
+
+    <para>How to define your own scope?</para>
+
+    <orderedlist>
+      <listitem>
+        <para>You will need to implement the interface
+        <emphasis>org.exoplatform.container.context.AdvancedContext</emphasis>.
+        Most of the time, you will simply need to extend the abstract classes
+        <emphasis>UnSharedContext</emphasis> in case of an unshared context or
+        <emphasis>SharedContext</emphasis> in case of a shared context.</para>
+      </listitem>
+
+      <listitem>
+        <para>You will need to define the lifecycle of your scope by calling
+        the methods register/unregister to create/destroy a context. You will
+        have also to activate/deactivate the context using the corresponding
+        methods.</para>
+      </listitem>
+
+      <listitem>
+        <para>You will need to configure your scope thanks to a
+        <emphasis>org.exoplatform.container.context.ContextPlugin</emphasis>.</para>
+      </listitem>
+    </orderedlist>
   </section>
 </section>

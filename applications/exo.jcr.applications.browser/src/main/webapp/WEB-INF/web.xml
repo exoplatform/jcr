@@ -42,7 +42,14 @@
       <filter-name>JCRBrowserFilter</filter-name>
       <filter-class>org.exoplatform.applications.jcr.browser.JCRBrowserFilter</filter-class>
    </filter>
-
+   <filter>
+      <filter-name>RestContentFilter</filter-name>
+      <filter-class>org.exoplatform.services.rest.servlet.RestEncodingFilter</filter-class>
+      <init-param>
+         <param-name>REQUEST_ENCODING</param-name>
+         <param-value>UTF-8</param-value>
+      </init-param>
+   </filter>
    <filter-mapping>
       <filter-name>SetCurrentIdentityFilter</filter-name>
       <url-pattern>/*</url-pattern>
@@ -58,9 +65,26 @@
       <url-pattern>/*</url-pattern>
    </filter-mapping>
 
+   <filter-mapping>
+      <filter-name>RestContentFilter</filter-name>
+      <servlet-name>RestServer</servlet-name>
+   </filter-mapping>
+
    <listener>
       <listener-class>org.exoplatform.ws.frameworks.servlet.StandaloneContainerInitializedListener</listener-class>
    </listener>
+
+   <servlet>
+      <servlet-name>RestServer</servlet-name>
+      <description>eXo - Platform REST Server</description>
+      <servlet-class>org.exoplatform.services.rest.servlet.RestServlet</servlet-class>
+      <load-on-startup>4</load-on-startup>
+   </servlet>
+
+   <servlet-mapping>
+      <servlet-name>RestServer</servlet-name>
+      <url-pattern>/rest/*</url-pattern>
+   </servlet-mapping>
 
    <welcome-file-list>
       <welcome-file>index.jsp</welcome-file>

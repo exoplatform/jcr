@@ -14,7 +14,10 @@
 
 <body>
 	<h1>eXo Platform JCR browser sample</h1>
-	
+	<form method="link" action="../logout.jsp">
+    	<input type="hidden" name="ap" value="user"/>
+    	<input type="submit" value="Logout"/>
+	</form>
 	<c:choose>
 		<c:when test="${browser.errorsFound}">
  		  <%-- show errors only --%>
