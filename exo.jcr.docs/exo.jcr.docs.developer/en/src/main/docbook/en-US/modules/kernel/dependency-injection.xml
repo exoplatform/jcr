@@ -232,6 +232,16 @@ public void init()
       </listitem>
     </itemizedlist>
 
+    <note>
+      <para>In the package
+      <emphasis>org.exoplatform.container.context.stereotype</emphasis>, you
+      can find a set of stereotypes that you can use to set a default scope.
+      You have one stereotype per supported scope. For example if you want to
+      set the scope <emphasis>Singleton</emphasis> by default, you can add the
+      annotation <emphasis>@SingletonByDefault</emphasis> at the class
+      definition level of your component.</para>
+    </note>
+
     <para>If you intend to use a passivating scope, you will have to make sure
     that the component with this scope is Serializable otherwise the container
     will prevent the instantiation of your component.</para>
