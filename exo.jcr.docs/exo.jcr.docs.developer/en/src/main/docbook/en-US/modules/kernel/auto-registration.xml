@@ -152,10 +152,11 @@ public interface MyService
   component by name (<emphasis>thanks to getComponentInstance(Object
   componentKey, Class&lt;T&gt; bindType) and getComponentAdapter(Object
   componentKey, Class&lt;T&gt; bindType) with a String as
-  componentKey)</emphasis>, you can use the annotation DefinitionByName that
-  has to be set at the class or the interface definition level of the bind
-  type <emphasis>(which is also the value of the parameter
-  bindType)</emphasis>. This annotation has three parameters which are:</para>
+  componentKey)</emphasis>, you can use the annotation
+  <emphasis>DefinitionByName</emphasis> that has to be set at the class or the
+  interface definition level of the bind type <emphasis>(which is also the
+  value of the parameter bindType)</emphasis>. This annotation has three
+  parameters which are:</para>
 
   <itemizedlist>
     <listitem>
