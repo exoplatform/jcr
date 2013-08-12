@@ -106,7 +106,7 @@ public void init()
       <para>Once the component is considered as JSR 330 compliant, the kernel
       will try to inject the dependencies and will check if the annotation
       Singleton has explicitly been added at class declaration level. By
-      default it will be considered as a prototype such that a new instance
+      default it will be considered as a Dependent such that a new instance
       will be created at each call. So be very careful of that.</para>
     </note>
 
@@ -116,6 +116,10 @@ public void init()
     compatible with the object that must be injected by the kernel otherwise
     you will get <emphasis>ClassCastException</emphasis>.These limitations are
     for the sake of simplicity.</para>
+
+    <para>The names are unique within the context of a given container so to
+    prevent any naming collision don't hesitate to add a prefix to your
+    names.</para>
   </section>
 
   <section id="Kernel.DI.Configuration">

@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="Kernel.AutoRegistration">
+  <title>Auto Registration</title>
+
+  <para>It is now possible to rely on a set of annotations in order to make
+  the kernel lazily register your components, this will allow you to reduce
+  the size of your configuration files. If your component is
+  <emphasis>Startable</emphasis> and the container has already been started at
+  the time your component is lazily created, it will be automatically started
+  too.</para>
+
+  <para>You will be able to define the default implementation class to use in
+  case you are looking for a component:</para>
+
+  <para><itemizedlist>
+      <listitem>
+        <para>Of a given type <emphasis>(thanks to
+        getComponentInstanceOfType(Class&lt;T&gt; componentType) or
+        getComponentAdapterOfType(Class&lt;T&gt;
+        componentType))</emphasis></para>
+      </listitem>
+
+      <listitem>
+        <para>Of a given qualifier <emphasis>(thanks to
+        getComponentInstance(Object componentKey, Class&lt;T&gt; bindType) and
+        getComponentAdapter(Object componentKey, Class&lt;T&gt; bindType) with
+        a qualifier as componentKey)</emphasis></para>
+      </listitem>
+
+      <listitem>
+        <para>Of a given name <emphasis>(thanks to getComponentInstance(Object
+        componentKey, Class&lt;T&gt; bindType) and getComponentAdapter(Object
+        componentKey, Class&lt;T&gt; bindType) with a String as
+        componentKey)</emphasis></para>
+      </listitem>
+    </itemizedlist></para>
+
+  <para><emphasis>Definition by type:</emphasis></para>
+
+  <para>To define a default implementation class when you try to find a
+  component by type <emphasis>(thanks to
+  getComponentInstanceOfType(Class&lt;T&gt; componentType) or
+  getComponentAdapterOfType(Class&lt;T&gt; componentType))</emphasis>, you can
+  use the annotation <emphasis>DefinitionByType</emphasis> that has to be set
+  at the class or the interface definition level of the target component type
+  <emphasis>(which is also the value of the parameter
+  componentType)</emphasis>. This annotation has two parameters which
+  are:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para><emphasis>type:</emphasis> Thanks to this parameter you can define
+      the default implementation class to use. This parameter is not mandatory
+      if the annotation has been set on a concrete class otherwise it is
+      mandatory.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis>target:</emphasis> The list of all type of
+      <emphasis>ExoContainers</emphasis> for which the annotation is effecive,
+      this is needed to prevent defining the component on non expected
+      containers. By default, the targets are
+      <emphasis>PortalContainer</emphasis> and
+      <emphasis>StandaloneContainer</emphasis> which should be enough most of
+      the time.</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>Thanks to this annotation, you will be able to remove the next
+  configuration snippet:</para>
+
+  <programlisting language="xml">&lt;component&gt;
+  &lt;key&gt;org.mycompany.myproject.MyService&lt;/key&gt;
+  &lt;type&gt;org.mycompany.myproject.MyServiceImpl&lt;/type&gt;
+&lt;/component&gt;</programlisting>
+
+  <para>And replace it with the next annotation (assuming that the previous
+  configuration was part of the configuration of the
+  <emphasis>PortalContainer</emphasis> and/or the
+  <emphasis>StandaloneContainer</emphasis>):</para>
+
+  <programlisting language="java">@DefinitionByType(type = MyServiceImpl.class)
+public interface MyService
+{
+...
+</programlisting>
+
+  <para><emphasis>Definition by qualifier:</emphasis></para>
+
+  <para>To define the default implementation class when you try to find a
+  component by qualifier <emphasis>(thanks to getComponentInstance(Object
+  componentKey, Class&lt;T&gt; bindType) and getComponentAdapter(Object
+  componentKey, Class&lt;T&gt; bindType) with a qualifier as
+  componentKey)</emphasis>, you can use the annotation
+  <emphasis>DefinitionByQualifier</emphasis> that has to be set at the class
+  or the interface definition level of the bind type <emphasis>(which is also
+  the value of the parameter bindType)</emphasis>. This annotation has three
+  parameters which are:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para><emphasis>qualifier:</emphasis> The class of the corresponding
+      qualifier for which this annotation must be used. This parameter is
+      mandatory, if the class of the qualifier doesn't match with the
+      <emphasis>componentKey</emphasis> that you are looking for, the
+      annotation will be ignored.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis>type:</emphasis> Thanks to this parameter you can define
+      the default implementation class to use. This parameter is not mandatory
+      if the annotation has been set on a concrete class otherwise it is
+      mandatory.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis>target:</emphasis> The list of all type of
+      <emphasis>ExoContainers</emphasis> for which the annotation is effecive,
+      this is needed to prevent defining the component on non expected
+      containers. By default, the targets are
+      <emphasis>PortalContainer</emphasis> and
+      <emphasis>StandaloneContainer</emphasis> which should be enough most of
+      the time.</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>Thanks to this annotation, you will be able to remove the next
+  configuration snippet:</para>
+
+  <programlisting language="xml">&lt;component&gt;
+  &lt;key&gt;org.mycompany.myproject.MyQualifier&lt;/key&gt;
+  &lt;type&gt;org.mycompany.myproject.MyServiceImpl&lt;/type&gt;
+&lt;/component&gt;</programlisting>
+
+  <para>And replace it with the next annotation (assuming that the previous
+  configuration was part of the configuration of the
+  <emphasis>PortalContainer</emphasis> and/or the
+  <emphasis>StandaloneContainer</emphasis> and that the bind type is
+  <emphasis>org.mycompany.myproject.MyService</emphasis>):</para>
+
+  <programlisting>@DefinitionByQualifier(qualifier = MyQualifier.class, type = MyServiceImpl.class)
+public interface MyService
+{
+...
+</programlisting>
+
+  <para><emphasis>Definition by name:</emphasis></para>
+
+  <para>To define the default implementation class when you try to find a
+  component by name (<emphasis>thanks to getComponentInstance(Object
+  componentKey, Class&lt;T&gt; bindType) and getComponentAdapter(Object
+  componentKey, Class&lt;T&gt; bindType) with a String as
+  componentKey)</emphasis>, you can use the annotation DefinitionByName that
+  has to be set at the class or the interface definition level of the bind
+  type <emphasis>(which is also the value of the parameter
+  bindType)</emphasis>. This annotation has three parameters which are:</para>
+
+  <itemizedlist>
+    <listitem>
+      <para><emphasis>named:</emphasis> The name of the component for which
+      this annotation must be used. This parameter is mandatory, if the value
+      of this parameter doesn't match with the
+      <emphasis>componentKey</emphasis> that you are looking for, the
+      annotation will be ignored.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis>type:</emphasis> Thanks to this parameter you can define
+      the default implementation class to use. This parameter is not mandatory
+      if the annotation has been set on a concrete class otherwise it is
+      mandatory.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis>target:</emphasis> The list of all type of
+      <emphasis>ExoContainers</emphasis> for which the annotation is effecive,
+      this is needed to prevent defining the component on non expected
+      containers. By default, the targets are
+      <emphasis>PortalContainer</emphasis> and
+      <emphasis>StandaloneContainer</emphasis> which should be enough most of
+      the time.</para>
+    </listitem>
+  </itemizedlist>
+
+  <para>Thanks to this annotation, you will be able to remove the next
+  configuration snippet:</para>
+
+  <programlisting language="xml">&lt;component&gt;
+  &lt;key&gt;MyName&lt;/key&gt;
+  &lt;type&gt;org.mycompany.myproject.MyServiceImpl&lt;/type&gt;
+&lt;/component&gt;</programlisting>
+
+  <para>And replace it with the next annotation (assuming that the previous
+  configuration was part of the configuration of the
+  <emphasis>PortalContainer</emphasis> and/or the
+  <emphasis>StandaloneContainer</emphasis> and that the bind type is
+  <emphasis>org.mycompany.myproject.MyService</emphasis>):</para>
+
+  <programlisting>@DefinitionByName(named = "MyName", type = MyServiceImpl.class)
+public interface MyService
+{
+...
+</programlisting>
+
+  <note>
+    <para>This approach allows you to define only one name or qualifier for a
+    given type as you cannot duplicate an annotation. In theory, this is not
+    enough since we could use more than one name or qualifier for a given
+    type, but in practice this kind of usecase is quite rare so we decided to
+    propose such kind of approach for the sake of simplicity. In case you need
+    to define other names or qualifiers for the same type, you will have to
+    define them explcitly in a configuration file.</para>
+  </note>
+
+  <note>
+    <para>The auto registration will only work if you did not configure your
+    component explicitly otherwise it will ignore the annotation and use what
+    you defined in the configuration instead.</para>
+  </note>
+
+  <note>
+    <para>This approach is only possible if you don't have any specific
+    configuration to define except external component plugins and if your
+    component doesn't need to be retrieved thanks to methods of type
+    <emphasis>getComponentAdaptersOfType(Class&lt;T&gt;
+    componentType)</emphasis> or
+    <emphasis>getComponentInstancesOfType(Class&lt;T&gt;
+    componentType)</emphasis> and if you don't need to share your component
+    with other containers like <emphasis>Google Guice</emphasis>,
+    <emphasis>Spring</emphasis> or <emphasis>Weld</emphasis>. </para>
+  </note>
+</section>
