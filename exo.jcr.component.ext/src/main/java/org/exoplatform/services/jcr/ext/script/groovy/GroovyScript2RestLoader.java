@@ -28,7 +28,6 @@ import org.exoplatform.container.xml.ObjectParameter;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RegistryEntry;
 import org.exoplatform.services.jcr.ext.registry.RegistryService;
@@ -137,7 +136,7 @@ public class GroovyScript2RestLoader implements Startable
    protected RegistryService registryService;
 
    /** See {@link SessionProviderService} */
-   protected ThreadLocalSessionProviderService sessionProviderService;
+   protected SessionProviderService sessionProviderService;
 
    /** Keeps configuration for observation listener. */
    private ObservationListenerConfiguration observationListenerConfiguration;
@@ -163,7 +162,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param params initialized parameters
     */
    public GroovyScript2RestLoader(ResourceBinder binder, GroovyScriptInstantiator groovyScriptInstantiator,
-      RepositoryService repositoryService, ThreadLocalSessionProviderService sessionProviderService,
+      RepositoryService repositoryService, SessionProviderService sessionProviderService,
       ConfigurationManager configurationManager, org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler,
       InitParams params)
    {
@@ -182,7 +181,7 @@ public class GroovyScript2RestLoader implements Startable
     * @param params initialized parameters
     */
    public GroovyScript2RestLoader(ResourceBinder binder, GroovyScriptInstantiator groovyScriptInstantiator,
-      RepositoryService repositoryService, ThreadLocalSessionProviderService sessionProviderService,
+      RepositoryService repositoryService, SessionProviderService sessionProviderService,
       ConfigurationManager configurationManager, RegistryService registryService,
       org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler, InitParams params)
    {
@@ -192,7 +191,7 @@ public class GroovyScript2RestLoader implements Startable
    }
 
    public GroovyScript2RestLoader(ResourceBinder binder, GroovyScriptInstantiator groovyScriptInstantiator,
-      RepositoryService repositoryService, ThreadLocalSessionProviderService sessionProviderService,
+      RepositoryService repositoryService, SessionProviderService sessionProviderService,
       ConfigurationManager configurationManager, RegistryService registryService, GroovyJaxrsPublisher groovyPublisher,
       org.exoplatform.services.jcr.ext.resource.jcr.Handler jcrUrlHandler, InitParams params)
    {
@@ -331,9 +330,9 @@ public class GroovyScript2RestLoader implements Startable
                            // finish thread
                            return;
                         }
-                        for (Iterator iterator = delayedWorkspacePublishing.iterator(); iterator.hasNext();)
+                        for (Iterator<String> iterator = delayedWorkspacePublishing.iterator(); iterator.hasNext();)
                         {
-                           String workspaceName = (String)iterator.next();
+                           String workspaceName = iterator.next();
                            try
                            {
                               Session session = repository.getSystemSession(workspaceName);
