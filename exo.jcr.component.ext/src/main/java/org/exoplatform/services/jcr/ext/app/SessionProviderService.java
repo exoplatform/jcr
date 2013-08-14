@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.app;
 
+import org.exoplatform.container.spi.DefinitionByType;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 
 /**
@@ -26,7 +27,7 @@ import org.exoplatform.services.jcr.ext.common.SessionProvider;
  * @author Gennady Azarenkov
  * @version $Id: SessionProviderService.java 13869 2008-05-05 08:40:10Z pnedonosko $
  */
-
+@DefinitionByType(type = ThreadLocalSessionProviderService.class)
 public interface SessionProviderService
 {
 

@@ -18,6 +18,8 @@
  */
 package org.exoplatform.applications.jcr.examples.scope;
 
+import org.exoplatform.container.spi.DefinitionByType;
+
 import javax.inject.Singleton;
 
 /**
@@ -28,6 +30,7 @@ import javax.inject.Singleton;
  *
  */
 @Singleton
+@DefinitionByType
 public class SingletonIdProvider
 {
    private final int id = System.identityHashCode(this);

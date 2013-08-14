@@ -18,6 +18,8 @@
  */
 package org.exoplatform.applications.jcr.examples.scope;
 
+import org.exoplatform.container.spi.DefinitionByType;
+
 import javax.enterprise.context.RequestScoped;
 
 /**
@@ -28,6 +30,7 @@ import javax.enterprise.context.RequestScoped;
  *
  */
 @RequestScoped
+@DefinitionByType
 public class RequestIdProvider
 {
    private final int id = System.identityHashCode(this);

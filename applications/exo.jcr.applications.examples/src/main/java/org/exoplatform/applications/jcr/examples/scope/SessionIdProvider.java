@@ -18,6 +18,8 @@
  */
 package org.exoplatform.applications.jcr.examples.scope;
 
+import org.exoplatform.container.spi.DefinitionByType;
+
 import java.io.Serializable;
 
 import javax.enterprise.context.SessionScoped;
@@ -30,6 +32,7 @@ import javax.enterprise.context.SessionScoped;
  *
  */
 @SessionScoped
+@DefinitionByType
 public class SessionIdProvider implements Serializable
 {
    /**

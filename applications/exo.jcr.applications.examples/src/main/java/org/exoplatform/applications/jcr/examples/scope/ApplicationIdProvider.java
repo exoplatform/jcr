@@ -18,6 +18,8 @@
  */
 package org.exoplatform.applications.jcr.examples.scope;
 
+import org.exoplatform.container.spi.DefinitionByType;
+
 import javax.enterprise.context.ApplicationScoped;
 
 /**
@@ -28,6 +30,7 @@ import javax.enterprise.context.ApplicationScoped;
  *
  */
 @ApplicationScoped
+@DefinitionByType
 public class ApplicationIdProvider
 {
    private final int id = System.identityHashCode(this);

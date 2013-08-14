@@ -25,24 +25,6 @@
       <type>org.exoplatform.applications.jcr.examples.scope.TestScoping</type>
    </component>
    <component>
-      <type>org.exoplatform.applications.jcr.examples.scope.RootIdProvider</type>
-   </component>
-   <component>
-      <type>org.exoplatform.applications.jcr.examples.scope.RequestIdProvider</type>
-   </component>
-   <component>
-      <type>org.exoplatform.applications.jcr.examples.scope.SessionIdProvider</type>
-   </component>
-   <component>
-      <type>org.exoplatform.applications.jcr.examples.scope.ApplicationIdProvider</type>
-   </component>
-   <component>
-      <type>org.exoplatform.applications.jcr.examples.scope.DependentIdProvider</type>
-   </component>
-   <component>
-      <type>org.exoplatform.applications.jcr.examples.scope.SingletonIdProvider</type>
-   </component>
-   <component>
       <key>org.exoplatform.container.context.ContextManager</key>
       <type>org.exoplatform.container.context.ContextManagerImpl</type>
       <component-plugins>

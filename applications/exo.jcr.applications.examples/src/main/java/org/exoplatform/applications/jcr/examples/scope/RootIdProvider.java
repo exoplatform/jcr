@@ -18,6 +18,8 @@
  */
 package org.exoplatform.applications.jcr.examples.scope;
 
+import org.exoplatform.container.spi.DefinitionByType;
+
 import javax.enterprise.context.Dependent;
 import javax.inject.Inject;
 
@@ -29,6 +31,7 @@ import javax.inject.Inject;
  *
  */
 @Dependent
+@DefinitionByType
 public class RootIdProvider
 {
    private final RequestIdProvider rip;
