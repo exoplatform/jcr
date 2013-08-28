@@ -13,7 +13,8 @@
 
       <listitem>
         <para><phrase>Single-database</phrase>: All workspaces persisted in
-        one database (used in embedded eXo JCR service mode, e.g. in GateIn)</para>
+        one database (used in embedded eXo JCR service mode, e.g. in
+        GateIn)</para>
       </listitem>
     </itemizedlist></para>
 
@@ -32,27 +33,36 @@
       </listitem>
 
       <listitem>
-              <para>MySQL 5.5.17 MYSQL Connector/J 5.1.18</para>
+        <para>MySQL 5.5.17 MYSQL Connector/J 5.1.18</para>
       </listitem>
-      
+
       <listitem>
         <para>MySQL Cluster (NDB engine)</para>
       </listitem>
 
       <listitem>
-        <para>PostgresSQL 8.2.4 JDBC4 Driver, Version 8.2-507</para>
+        <para>PostgreSQL 8.2.4 JDBC4 Driver, Version 8.2-507</para>
       </listitem>
 
-       <listitem>
-              <para>PostgresSQL 8.3.7 JDBC4 Driver, Version 8.3-606</para>
-       </listitem>
-
-       <listitem>
-              <para>PostgresSQL 8.4.14 JDBC4 Driver, Version 8.4-702</para>
-       </listitem>
+      <listitem>
+        <para>PostgreSQL 8.3.7 JDBC4 Driver, Version 8.3-606</para>
+      </listitem>
 
       <listitem>
-        <para>PostgresSQL 9.1.5 JDBC4 Driver, Version 9.1-902</para>
+        <para>PostgreSQL 8.4.14 JDBC4 Driver, Version 8.4-702</para>
+      </listitem>
+
+      <listitem>
+        <para>PostgreSQL 9.1.5 JDBC4 Driver, Version 9.1-902</para>
+      </listitem>
+
+      <listitem>
+        <para>PostgreSQL 9.2.4 JDBC4 Driver, Version 9.2-1002</para>
+      </listitem>
+
+      <listitem>
+        <para>Enterprise DB Postgres Plus Advanced Server 9.2.1 JDBC4 Driver,
+        Version 9.2.1.3</para>
       </listitem>
 
       <listitem>
@@ -83,9 +93,9 @@
         <para>MS SQL Server 2008 JDBC Driver 3.0</para>
       </listitem>
 
-       <listitem>
-              <para>MS SQL Server 2008 R2 JDBC Driver 3.0</para>
-       </listitem>
+      <listitem>
+        <para>MS SQL Server 2008 R2 JDBC Driver 3.0</para>
+      </listitem>
 
       <listitem>
         <para>Sybase 15.0.3 ASE Driver: Sybase jConnect JDBC driver v7 (Build
@@ -93,7 +103,8 @@
       </listitem>
 
       <listitem>
-              <para>Sybase ASE 15.7 Driver: Sybase jConnect JDBC driver v7 (build 26666)</para>
+        <para>Sybase ASE 15.7 Driver: Sybase jConnect JDBC driver v7 (build
+        26666)</para>
       </listitem>
 
       <listitem>
@@ -145,13 +156,13 @@
 
       <td>jcr-sjdbc.mysql-myisam-utf8.sql</td>
     </tr>
-    
+
     <tr>
       <td>MySQL DB with NDB engine</td>
 
       <td>jcr-sjdbc.mysql-ndb.sql</td>
     </tr>
-    
+
     <tr>
       <td>MySQL DB with NDB engine and utf-8</td>
 
@@ -159,7 +170,7 @@
     </tr>
 
     <tr>
-      <td>PostgresSQL</td>
+      <td>PostgresSQL and Postgre Plus</td>
 
       <td>jcr-sjdbc.pqsql.sql</td>
     </tr>
@@ -233,15 +244,15 @@
 
       <td>jcr-mjdbc.mysql-ndb.sql</td>
     </tr>
-    
+
     <tr>
       <td>MySQL DB with NDB engine and utf-8</td>
 
       <td>jcr-mjdbc.mysql-ndb-utf8.sql</td>
     </tr>
-    
+
     <tr>
-      <td>PostgresSQL</td>
+      <td>PostgresSQL and Postgre Plus</td>
 
       <td>jcr-mjdbc.pqsql.sql</td>
     </tr>
@@ -284,10 +295,11 @@
   </table>
 
   <para>In case the non-ANSI node name is used, it's necessary to use a
-  database with <link linkend="JCR.MultilanguageSupport">MultiLanguage support</link>. Some JDBC
-  drivers need additional parameters for establishing a Unicode friendly
-  connection. E.g. under mysql it's necessary to add an additional parameter
-  for the JDBC driver at the end of JDBC URL. For instance:
+  database with <link linkend="JCR.MultilanguageSupport">MultiLanguage
+  support</link>. Some JDBC drivers need additional parameters for
+  establishing a Unicode friendly connection. E.g. under mysql it's necessary
+  to add an additional parameter for the JDBC driver at the end of JDBC URL.
+  For instance:
   <code>jdbc:mysql://exoua.dnsalias.net/portal?characterEncoding=utf8</code></para>
 
   <para>There are preconfigured configuration files for HSQLDB. Look for these
@@ -298,8 +310,8 @@
   <para>By default, the configuration files are located in service jars
   <filename>/conf/portal/configuration.xml</filename> (eXo services including
   JCR Repository Service) and <filename>exo-jcr-config.xml</filename>
-  (repositories configuration). In GateIn product, JCR is configured in
-  portal web application
+  (repositories configuration). In GateIn product, JCR is configured in portal
+  web application
   <filename>portal/WEB-INF/conf/jcr/jcr-configuration.xml</filename> (JCR
   Repository Service and related serivces) and repository-configuration.xml
   (repositories configuration).</para>
@@ -345,10 +357,12 @@ $ db2start</programlisting></para>
           <para>for JCR_SITEM (or JCR_MITEM) and JCR_SVALUE (or JCR_MVALUE)
           tables.</para>
         </listitem>
-         <listitem>
-            <para>If you don't want to enable the LIMIT/OFFSET clauses, you can still use "db2-mys"
-             as dialect however please note that the indexing is 120 times slower.</para>
-         </listitem>
+
+        <listitem>
+          <para>If you don't want to enable the LIMIT/OFFSET clauses, you can
+          still use "db2-mys" as dialect however please note that the indexing
+          is 120 times slower.</para>
+        </listitem>
       </itemizedlist>
     </section>
 
@@ -363,7 +377,7 @@ $ db2start</programlisting></para>
           consistency in your use-case. This dialect is only dedicated to the
           community.</para>
         </listitem>
-        
+
         <listitem>
           <para>MySQL relies on collected statistics for keeping track of data
           distribution in tables and for optimizing join statements, but you
@@ -377,17 +391,18 @@ $ db2start</programlisting></para>
     </section>
 
     <section id="JCR.JDBCDataContainerConfig.GeneralRecommendationsForDatabaseConfiguration.PostgreSQLConfiguration">
-      <title>PostgreSQL configuration</title>
+      <title>PostgreSQL/PostgrePlus configuration</title>
 
       <itemizedlist>
         <listitem>
-          <para>Be aware, when using the RDBMS reindexing,
-             you need to set "enable_seqscan" to "off" or "default_statistics_target" to at least "50"</para>
+          <para>Be aware, when using the RDBMS reindexing, you need to set
+          "enable_seqscan" to "off" or "default_statistics_target" to at least
+          "50"</para>
         </listitem>
 
         <listitem>
-          <para>Though PostgreSQL server performs query optimization
-          automatically, you can manualy call '<ulink
+          <para>Though PostgreSQL/PostgrePlus server performs query
+          optimization automatically, you can manualy call '<ulink
           url="http://www.postgresql.org/docs/8.1/static/sql-analyze.html">ANALYZE</ulink>'
           command to collect statistics which can influence the performance.
           For example</para>
@@ -395,10 +410,12 @@ $ db2start</programlisting></para>
           <programlisting>ANALYZE JCR_SITEM
 ANALYZE JCR_SVALUE</programlisting>
         </listitem>
-         <listitem>
-            <para>If for a version prior to 9.1, the parameter standard_conforming_strings is enabled,
-             you need to use "pgsql-scs" as dialect</para>
-         </listitem>
+
+        <listitem>
+          <para>If for a version prior to 9.1, the parameter
+          standard_conforming_strings is enabled, you need to use "pgsql-scs"
+          as dialect</para>
+        </listitem>
       </itemizedlist>
     </section>
 
