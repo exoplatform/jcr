@@ -569,7 +569,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   long count;
 
                   if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
-                     && rdbmsReindexableComponent.isReindexingSupport())
+                     && rdbmsReindexableComponent.isReindexingSupported())
                   {
                      count =
                         createIndex(
@@ -649,7 +649,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          (Reindexable)handler.getContext().getContainer().getComponent(Reindexable.class);
 
       if (handler.isRDBMSReindexing() && rdbmsReindexableComponent != null
-         && rdbmsReindexableComponent.isReindexingSupport())
+         && rdbmsReindexableComponent.isReindexingSupported())
       {
          count =
             createIndex(rdbmsReindexableComponent.getNodeDataIndexingIterator(handler.getReindexingPageSize()),

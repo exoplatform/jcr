@@ -41,11 +41,11 @@ public interface Reindexable
    NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize) throws RepositoryException;
 
    /**
-    * Indicates if component support extracting data from storage using paging.
+    * Indicates if the component supports extracting data from storage using paging.
     * 
-    * @return boolean
+    * @return <code>true</code> if it is supported, <code>false</code> otherwise.
     */
-   boolean isReindexingSupport();
+   boolean isReindexingSupported();
 
    /**
     * Return nodes count.

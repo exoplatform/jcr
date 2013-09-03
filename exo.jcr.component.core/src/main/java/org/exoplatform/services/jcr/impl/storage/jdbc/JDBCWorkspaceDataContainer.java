@@ -1092,7 +1092,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public NodeDataIndexingIterator getNodeDataIndexingIterator(int pageSize) throws RepositoryException
    {
-      if (isReindexingSupport())
+      if (isReindexingSupported())
       {
          return new JdbcNodeDataIndexingIterator(connFactory, pageSize);
       }
@@ -1104,9 +1104,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * {@inheritDoc}
     */
-   public boolean isReindexingSupport()
+   public boolean isReindexingSupported()
    {
-      return connFactory.isReindexingSupport();
+      return connFactory.isReindexingSupported();
    }
 
    /**
