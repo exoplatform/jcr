@@ -110,7 +110,7 @@ public class GenericCQConnectionFactory extends GenericConnectionFactory
     * {@inheritDoc}
     */
    @Override
-   public boolean isReindexingSupport()
+   public boolean isReindexingSupported()
    {
       return true;
    }
