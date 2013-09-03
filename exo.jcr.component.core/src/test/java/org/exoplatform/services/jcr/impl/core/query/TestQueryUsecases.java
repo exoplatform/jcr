@@ -16,9 +16,14 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.LuceneQueryBuilder;
 import org.exoplatform.services.jcr.impl.core.query.lucene.NodeIndexer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 
 import java.io.ByteArrayInputStream;
 import java.util.ArrayList;
@@ -94,6 +99,15 @@ public class TestQueryUsecases extends BaseQueryTest
       assertTrue(3 < xpathsize);
 
       assertEquals(sqlsize, xpathsize);
+
+      // Check if we have the same amount of nodes in the database
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer(workspace.getName());
+      WorkspaceDataContainer container =
+         (WorkspaceDataContainer)wsc.getComponent(WorkspaceDataContainer.class);
+      if (container instanceof Reindexable)
+      {
+         assertEquals(sqlsize, ((Reindexable)container).getNodesCount().longValue());
+      }
    }
 
    /**

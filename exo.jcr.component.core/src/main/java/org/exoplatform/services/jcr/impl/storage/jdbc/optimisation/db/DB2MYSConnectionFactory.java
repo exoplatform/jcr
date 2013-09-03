@@ -79,7 +79,7 @@ public class DB2MYSConnectionFactory extends GenericCQConnectionFactory
     * {@inheritDoc}
     */
    @Override
-   public boolean isReindexingSupport()
+   public boolean isReindexingSupported()
    {
       return true;
    }

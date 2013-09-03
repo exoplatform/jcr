@@ -31,6 +31,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import javax.jcr.RepositoryException;
 
@@ -66,16 +68,21 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
     * Indicates if not all records have been read from database.
     */
    private final AtomicBoolean hasNext = new AtomicBoolean(true);
-   
+
    /**
     * The last node Id retrieved from the DB
     */
    private final AtomicReference<String> lastNodeId = new AtomicReference<String>("");
-   
+
    /**
     * The current page index
     */
    private final AtomicInteger page = new AtomicInteger();
+
+   /**
+    * The lock used to prevent using offset when it is not supported by the database
+    */
+   private final Lock lock = new ReentrantLock();
 
    /**
     * Logger.
@@ -104,8 +111,14 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
       }
 
       JDBCStorageConnection conn = (JDBCStorageConnection)connFactory.openConnection();
+      final boolean isOffsetSupported = connFactory.isOffsetSupported();
       try
       {
+         if (!isOffsetSupported)
+         {
+            // The offset is not supported so we need to synchronize the access
+            lock.lock();
+         }
          int currentOffset;
          String currentLastNodeId;
          int currentPage;
@@ -114,6 +127,11 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
             currentOffset = offset.getAndAdd(pageSize);
             currentLastNodeId = lastNodeId.get();
             currentPage = page.incrementAndGet();
+         }
+         if (!hasNext())
+         {
+            // avoid unnecessary request to database
+            return new ArrayList<NodeDataIndexing>();
          }
          long time = 0;
          if (PropertyManager.isDevelopping())
@@ -133,15 +151,20 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
          {
             synchronized (this)
             {
-               lastNodeId.set(result.get(result.size() - 1).getIdentifier());               
-               offset.set((page.get() - currentPage) * pageSize);            
-            }            
+               lastNodeId.set(result.get(result.size() - 1).getIdentifier());
+               offset.set((page.get() - currentPage) * pageSize);
+            }
          }
-         
+
          return result;
       }
       finally
       {
+         if (!isOffsetSupported)
+         {
+            // The offset is not supported so we need to synchronize the access
+            lock.unlock();
+         }
          conn.close();
       }
    }
@@ -154,4 +177,3 @@ public class JdbcNodeDataIndexingIterator implements NodeDataIndexingIterator
       return hasNext.get();
    }
 }
-

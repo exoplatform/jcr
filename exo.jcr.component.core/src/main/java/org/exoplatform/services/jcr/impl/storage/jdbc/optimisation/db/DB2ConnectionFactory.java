@@ -80,7 +80,7 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
     * {@inheritDoc}
     */
    @Override
-   public boolean isReindexingSupport()
+   public boolean isReindexingSupported()
    {
       return true;
    }
