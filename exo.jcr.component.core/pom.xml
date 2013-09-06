@@ -898,7 +898,6 @@
          <id>sybase</id>
          <properties>
             <properties.url.prefix>classpath:/conf/standalone/sybase</properties.url.prefix>
-            <test.exclude>org/exoplatform/services/jcr/api/xa/TestUserTransaction.java</test.exclude>
          </properties>
          <dependencies>
             <dependency>

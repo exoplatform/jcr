@@ -408,6 +408,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       ConnectionMode mode = getMode(txResourceManager);
       try
       {
+         persister.init(mode, txResourceManager);
          if (changesLog instanceof TransactionChangesLog)
          {
             TransactionChangesLog orig = (TransactionChangesLog)changesLog;
@@ -547,6 +548,8 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                persister.rollback();
             }
          });
+         // We share the system connection to prevent deadlocks
+         txResourceManager.putSharedObject(ChangesLogPersister.class.getName(), persister.systemConnection);
       }
    }
 
@@ -559,9 +562,11 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
 
       private final Set<QPath> addedNodes = new HashSet<QPath>();
 
-      private WorkspaceStorageConnection thisConnection = null;
+      private WorkspaceStorageConnection thisConnection;
 
-      private WorkspaceStorageConnection systemConnection = null;
+      private WorkspaceStorageConnection systemConnectionShared;
+
+      private WorkspaceStorageConnection systemConnection;
 
       protected void commit() throws IllegalStateException, RepositoryException
       {
@@ -575,6 +580,16 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          }
 
          notifyCommit();
+      }
+
+      public void init(ConnectionMode mode, TransactionableResourceManager txResourceManager) throws RepositoryException
+      {
+         if (mode == ConnectionMode.GLOBAL_TX)
+         {
+            // We are in a global tx so we should check if there is a shared system connection
+            this.systemConnectionShared =
+               txResourceManager.<WorkspaceStorageConnection> getSharedObject(ChangesLogPersister.class.getName());
+         }
       }
 
       protected void prepare() throws IllegalStateException, RepositoryException
@@ -612,12 +627,21 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
 
       protected WorkspaceStorageConnection getSystemConnection() throws RepositoryException
       {
-         return systemConnection == null
-         // we need system connection but it's not exist
-            ? systemConnection = (systemDataContainer != dataContainer // NOSONAR
+         if (systemConnection != null)
+         {
+            // system connection opened - use it
+            return systemConnection;
+         }
+         if (systemConnectionShared != null)
+         {
+            // A shared system connection exists so we use it
+            return systemConnection = systemConnectionShared;
+         }
+         // we need a system connection but it does not exist
+         return systemConnection = (systemDataContainer != dataContainer // NOSONAR
                // if it's different container instances
                ? systemDataContainer.equals(dataContainer) && thisConnection != null
-               // but container confugrations are same and non-system connnection open
+               // but container configurations are same and non-system connection open
                // reuse this connection as system
                   ? systemDataContainer.reuseConnection(thisConnection)
                   // or open one new system
@@ -627,19 +651,27 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                // and non-system connection doens't exist - open it
                   ? thisConnection = dataContainer.openConnection(false)
                   // if already open - use it
-                  : thisConnection)
-            // system connection opened - use it
-            : systemConnection;
+                  : thisConnection);
       }
 
       protected WorkspaceStorageConnection getThisConnection() throws RepositoryException
       {
-         return thisConnection == null
-         // we need this conatiner conection
-            ? thisConnection = (systemDataContainer != dataContainer // NOSONAR
+         if (thisConnection != null)
+         {
+         // this connection opened - use it
+            return thisConnection;
+         }
+         if (systemConnectionShared != null && systemDataContainer.isSame(dataContainer))
+         {
+            // The system data container and the data container are the same
+            // and a shared system connection exists so we use it
+            return thisConnection = dataContainer.reuseConnection(systemConnectionShared);
+         }
+         // we need this container connection
+         return thisConnection = (systemDataContainer != dataContainer // NOSONAR
                // if it's different container instances
                ? dataContainer.equals(systemDataContainer) && systemConnection != null
-               // but container confugrations are same and system connnection open
+               // but container configurations are same and system connection open
                // reuse system connection as this
                   ? dataContainer.reuseConnection(systemConnection)
                   // or open one new
@@ -649,9 +681,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
                // and system connection doens't exist - open it
                   ? systemConnection = dataContainer.openConnection(false)
                   // if already open - use it
-                  : systemConnection)
-            // this connection opened - use it
-            : thisConnection;
+                  : systemConnection);
       }
 
       protected PlainChangesLog save(PlainChangesLog changesLog) throws InvalidItemStateException, RepositoryException,

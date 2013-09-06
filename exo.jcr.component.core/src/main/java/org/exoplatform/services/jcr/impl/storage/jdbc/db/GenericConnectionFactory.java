@@ -37,11 +37,11 @@ import javax.sql.DataSource;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: GenericConnectionFactory.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class GenericConnectionFactory implements WorkspaceStorageConnectionFactory
+public class GenericConnectionFactory implements WorkspaceStorageConnectionFactory, Cloneable
 {
    protected static final Log log = ExoLogger.getLogger("exo.jcr.component.core.GenericConnectionFactory");
 
-   protected final DataSource dbDataSource;
+   protected DataSource dbDataSource;
 
    protected final JDBCDataContainerConfig containerConfig;
 
@@ -52,6 +52,25 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
    {
       this.containerConfig = containerConfig;
       this.dbDataSource = dataSource;
+   }
+
+   /**
+    * Clones the current factory and uses the provided {@link DataSource} instead of the local one
+    * @param datasource the new {@link DataSource} instance to use
+    * @return a new factory with the expected {@link DataSource}
+    */
+   public GenericConnectionFactory cloneWith(DataSource datasource)
+   {
+      try
+      {
+         GenericConnectionFactory factory = (GenericConnectionFactory)this.clone();
+         factory.dbDataSource = datasource;
+         return factory;
+      }
+      catch (CloneNotSupportedException e)
+      {
+         throw new AssertionError(); // Cannot occur
+      }
    }
 
    /**

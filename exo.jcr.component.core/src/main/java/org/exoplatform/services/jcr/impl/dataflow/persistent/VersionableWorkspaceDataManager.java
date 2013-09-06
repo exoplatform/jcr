@@ -73,7 +73,6 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
     */
    public void setSystemDataManager(DataManager systemDataManager)
    {
-
       this.versionDataManager = (ShareableSupportedWorkspaceDataManager)systemDataManager;
    }
 
@@ -83,7 +82,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
    @Override
    public List<NodeData> getChildNodesData(final NodeData nodeData) throws RepositoryException
    {
-      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      if (!this.equals(versionDataManager) && isSystemDescendant(nodeData.getQPath()))
       {
          return versionDataManager.getChildNodesData(nodeData);
       }
@@ -97,7 +96,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
    public boolean getChildNodesDataByPage(NodeData nodeData, int fromOrderNum, int toOrderNum, List<NodeData> childs)
       throws RepositoryException
    {
-      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      if (!this.equals(versionDataManager) && isSystemDescendant(nodeData.getQPath()))
       {
          return versionDataManager.getChildNodesDataByPage(nodeData, fromOrderNum, toOrderNum, childs);
       }
@@ -111,7 +110,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
    public List<NodeData> getChildNodesData(final NodeData nodeData, final List<QPathEntryFilter> patternFilters)
       throws RepositoryException
    {
-      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      if (!this.equals(versionDataManager) && isSystemDescendant(nodeData.getQPath()))
       {
          return versionDataManager.getChildNodesData(nodeData, patternFilters);
       }
@@ -124,7 +123,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
    @Override
    public int getChildNodesCount(final NodeData parent) throws RepositoryException
    {
-      if (isSystemDescendant(parent.getQPath()) && !this.equals(versionDataManager))
+      if (!this.equals(versionDataManager) && isSystemDescendant(parent.getQPath()))
       {
          return versionDataManager.getChildNodesCount(parent);
       }
@@ -137,7 +136,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
    @Override
    public int getLastOrderNumber(final NodeData parent) throws RepositoryException
    {
-      if (isSystemDescendant(parent.getQPath()) && !this.equals(versionDataManager))
+      if (!this.equals(versionDataManager) && isSystemDescendant(parent.getQPath()))
       {
          return versionDataManager.getLastOrderNumber(parent);
       }
@@ -150,7 +149,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
    @Override
    public List<PropertyData> getChildPropertiesData(final NodeData nodeData) throws RepositoryException
    {
-      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      if (!this.equals(versionDataManager) && isSystemDescendant(nodeData.getQPath()))
       {
          return versionDataManager.getChildPropertiesData(nodeData);
       }
@@ -164,7 +163,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
    public List<PropertyData> getChildPropertiesData(final NodeData nodeData,
       final List<QPathEntryFilter> itemDataFilters) throws RepositoryException
    {
-      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      if (!this.equals(versionDataManager) && isSystemDescendant(nodeData.getQPath()))
       {
          return versionDataManager.getChildPropertiesData(nodeData, itemDataFilters);
       }
@@ -177,7 +176,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
    @Override
    public List<PropertyData> listChildPropertiesData(final NodeData nodeData) throws RepositoryException
    {
-      if (isSystemDescendant(nodeData.getQPath()) && !this.equals(versionDataManager))
+      if (!this.equals(versionDataManager) && isSystemDescendant(nodeData.getQPath()))
       {
          return versionDataManager.listChildPropertiesData(nodeData);
       }
@@ -202,7 +201,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
       if (parentData != null)
       {
          final QPath ipath = QPath.makeChildPath(parentData.getQPath(), name);
-         if (isSystemDescendant(ipath) && !this.equals(versionDataManager))
+         if (!this.equals(versionDataManager) && isSystemDescendant(ipath))
          {
             return versionDataManager.hasItemData(parentData, name, itemType);
          }
@@ -219,7 +218,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
       if (parentData != null)
       {
          final QPath ipath = QPath.makeChildPath(parentData.getQPath(), name);
-         if (isSystemDescendant(ipath) && !this.equals(versionDataManager))
+         if (!this.equals(versionDataManager) && isSystemDescendant(ipath))
          {
             return versionDataManager.getItemData(parentData, name, itemType, createNullItemData);
          }
@@ -292,7 +291,7 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
          PlainChangesLog changes = logIterator.nextLog();
          for (ItemState change : changes.getAllStates())
          {
-            if (isSystemDescendant(change.getData().getQPath()) && !this.equals(versionDataManager))
+            if (!this.equals(versionDataManager) && isSystemDescendant(change.getData().getQPath()))
             {
                vstates.add(change);
             }

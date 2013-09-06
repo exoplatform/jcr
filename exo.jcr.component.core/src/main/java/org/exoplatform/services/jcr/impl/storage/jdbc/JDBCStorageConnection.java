@@ -71,6 +71,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.StringTokenizer;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.PropertyType;
@@ -203,6 +204,12 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    protected final boolean readOnly;
 
    /**
+    * The total amount of times that the jdbc connection is used, this is mainly
+    * needed in case we share the connection 
+    */
+   private AtomicInteger dbConnectionTotalUsed;
+
+   /**
     * JDBCStorageConnection constructor.
     * 
     * @param dbConnection
@@ -296,31 +303,43 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    }
 
    /**
-    * {@inheritDoc}
-    */
-   public boolean equals(Object obj)
-   {
-      if (obj == this)
-      {
-         return true;
-      }
-
-      if (obj instanceof JDBCStorageConnection)
-      {
-         JDBCStorageConnection another = (JDBCStorageConnection)obj;
-         return getJdbcConnection() == another.getJdbcConnection();
-      }
-
-      return false;
-   }
-
-   /**
     * Return JDBC connection obtained from initialized data source. NOTE: Helper can obtain one new
     * connection per each call of the method or return one obtained once.
     */
    public Connection getJdbcConnection()
    {
       return dbConnection;
+   }
+
+   /**
+    * Indicates that the connection is shared. It will initialize the total amount of times that the connection is 
+    * used if not done yet and increments it.
+    */
+   void share()
+   {
+      if (dbConnectionTotalUsed == null)
+      {
+         dbConnectionTotalUsed = new AtomicInteger(1);
+      }
+      dbConnectionTotalUsed.incrementAndGet();
+   }
+
+   /**
+    * Gives the total amount of times that the connection is still used
+    */
+   int getDbConnectionTotalUsed()
+   {
+      return dbConnectionTotalUsed == null ? 1 : dbConnectionTotalUsed.get();
+   }
+
+   /**
+    * Indicates that the connection has been released so it will decrement the total amount of times that the 
+    * connection is used
+    * @return the new total amount of times that the connection is used
+    */
+   int release()
+   {
+      return dbConnectionTotalUsed == null ? 0 : dbConnectionTotalUsed.decrementAndGet();
    }
 
    /**
@@ -392,7 +411,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          {
             try
             {
-               dbConnection.rollback();
+               if (getDbConnectionTotalUsed() == 1)
+               {
+                  // We don't roll back as long as it is used
+                  dbConnection.rollback();
+               }
             }
             finally
             {
@@ -436,7 +459,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          valueChanges.clear();
          try
          {
-            dbConnection.close();
+            if (release() == 0)
+            {
+               // We don't close the connection as long as it is used
+               dbConnection.close();
+            }
          }
          catch (SQLException e)
          {
@@ -460,12 +487,17 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          closeStatements();
 
-         if (!readOnly && dbConnection.getTransactionIsolation() > Connection.TRANSACTION_READ_COMMITTED)
+         if (!readOnly && getDbConnectionTotalUsed() == 1
+            && dbConnection.getTransactionIsolation() > Connection.TRANSACTION_READ_COMMITTED)
          {
             dbConnection.rollback();
          }
 
-         dbConnection.close();
+         if (release() == 0)
+         {
+            // We don't close the connection as long as it is used
+            dbConnection.close();
+         }
       }
       catch (SQLException e)
       {
@@ -691,7 +723,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             {
                valueChanges.clear();
             }
-            dbConnection.commit();
+            if (getDbConnectionTotalUsed() == 1)
+            {
+               // We don't commit as long as it is used
+               dbConnection.commit();
+            }
          }
       }
       catch (SQLException e)
@@ -702,7 +738,11 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          try
          {
-            dbConnection.close();
+            if (release() == 0)
+            {
+               // We don't close the connection as long as it is used
+               dbConnection.close();
+            }
          }
          catch (SQLException e)
          {

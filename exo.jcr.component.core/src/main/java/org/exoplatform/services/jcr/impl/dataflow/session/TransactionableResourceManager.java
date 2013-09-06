@@ -33,6 +33,7 @@ import java.lang.ref.SoftReference;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -155,6 +156,46 @@ public class TransactionableResourceManager implements XAResource
          log.warn("Could not check if a global Tx has been started", e);
       }
       return false;
+   }
+
+   /**
+    * Registers an object to be shared within the XidContext
+    * @param key the key of the shared object
+    * @param value the shared object
+    */
+   public void putSharedObject(String key, Object value)
+   {
+      TransactionContext ctx = contexts.get();
+      if (ctx == null)
+      {
+         throw new IllegalStateException("There is no active transaction context");
+      }
+      XidContext xidCtx = ctx.getXidContext();
+      if (xidCtx == null)
+      {
+         throw new IllegalStateException("There is no active xid context");
+      }
+      xidCtx.putSharedObject(key, value);
+   }
+
+   /**
+    * Gives the shared object corresponding to the given key
+    * @param key the key of the shared object
+    * @return the corresponding shared object
+    */
+   public <T> T getSharedObject(String key)
+   {
+      TransactionContext ctx = contexts.get();
+      if (ctx == null)
+      {
+         throw new IllegalStateException("There is no active transaction context");
+      }
+      XidContext xidCtx = ctx.getXidContext();
+      if (xidCtx == null)
+      {
+         throw new IllegalStateException("There is no active xid context");
+      }
+      return xidCtx.getSharedObject(key);
    }
 
    /**
@@ -880,7 +921,7 @@ public class TransactionableResourceManager implements XAResource
    }
 
    /**
-    * This class encapsulate all the information related to a given Xid
+    * This class encapsulates all the information related to a given Xid
     * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>
     * @version $Id$
     *
@@ -897,6 +938,11 @@ public class TransactionableResourceManager implements XAResource
        * The map of all changes
        */
       private final Map<PlainChangesLog, SessionImpl> mapChanges = new LinkedHashMap<PlainChangesLog, SessionImpl>();
+
+      /**
+       * The map containing all the objects that we would like to share within the XidContext
+       */
+      private final Map<String, Object> sharedObjects = new HashMap<String, Object>();
 
       /**
        * @return the listeners
@@ -923,13 +969,34 @@ public class TransactionableResourceManager implements XAResource
       }
 
       /**
-       * Register changes for a given session
+       * Registers changes for a given session
        * @param changes the changes to add
        * @param session the session related to the changes
        */
       public void put(PlainChangesLog changes, SessionImpl session)
       {
          mapChanges.put(changes, session);
+      }
+
+      /**
+       * Registers an object to be shared within the XidContext
+       * @param key the key of the shared object
+       * @param value the shared object
+       */
+      public void putSharedObject(String key, Object value)
+      {
+         sharedObjects.put(key, value);
+      }
+
+      /**
+       * Gives the shared object corresponding to the given key
+       * @param key the key of the shared object
+       * @return the corresponding shared object
+       */
+      @SuppressWarnings("unchecked")
+      public <T> T getSharedObject(String key)
+      {
+         return (T)sharedObjects.get(key);
       }
    }
 }

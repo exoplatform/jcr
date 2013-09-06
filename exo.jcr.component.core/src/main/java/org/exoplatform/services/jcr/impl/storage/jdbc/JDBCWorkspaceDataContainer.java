@@ -55,7 +55,6 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MSSQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.SybaseConnectionFactory;
-import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.indexing.JdbcNodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
@@ -79,6 +78,9 @@ import org.picocontainer.Startable;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
@@ -89,6 +91,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.RepositoryException;
 import javax.naming.NamingException;
@@ -154,40 +157,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * Workspace configuration.
     */
    protected final WorkspaceEntry wsConfig;
-
-   /**
-    * Shared connection factory.
-    * 
-    * Issued to share JDBC connection between system and regular workspace in case of same database
-    * used for storage.
-    * 
-    */
-   class SharedConnectionFactory extends GenericConnectionFactory
-   {
-
-      /**
-       * JDBC connection.
-       */
-      final private Connection connection;
-
-      /**
-       * SharedConnectionFactory constructor.
-       */
-      SharedConnectionFactory(Connection connection, JDBCDataContainerConfig containerConfig)
-      {
-         super(null, containerConfig);
-         this.connection = connection;
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      @Override
-      public Connection getJdbcConnection() throws RepositoryException
-      {
-         return connection;
-      }
-   }
 
    /**
     * Constructor with value storage plugins.
@@ -596,8 +565,46 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
       if (original instanceof JDBCStorageConnection)
       {
-         WorkspaceStorageConnectionFactory cFactory =
-            new SharedConnectionFactory(((JDBCStorageConnection)original).getJdbcConnection(), containerConfig);
+         final JDBCStorageConnection storageConnection = (JDBCStorageConnection)original;
+         final Connection connection = storageConnection.getJdbcConnection();
+         storageConnection.share();
+         final Connection proxyConnection =
+            (Connection)Proxy.newProxyInstance(GenericConnectionFactory.class.getClassLoader(),
+               new Class[]{Connection.class}, new InvocationHandler()
+               {
+
+                  @Override
+                  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+                  {
+                     if ("close".equals(method.getName()) && storageConnection.release() > 0)
+                     {
+                        // We don't close the connection as long as it is used
+                        return null;
+                     }
+                     else if (("commit".equals(method.getName()) || "rollback".equals(method.getName()))
+                        && storageConnection.getDbConnectionTotalUsed() > 1)
+                     {
+                        // We don't commit or roll back as long as it is used
+                        return null;
+                     }
+                     return method.invoke(connection, args);
+                  }
+               });
+         GenericConnectionFactory cFactory =
+            connFactory.cloneWith((DataSource)Proxy.newProxyInstance(GenericConnectionFactory.class.getClassLoader(),
+               new Class[]{DataSource.class}, new InvocationHandler()
+               {
+
+                  @Override
+                  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
+                  {
+                     if ("getConnection".equals(method.getName()))
+                     {
+                        return proxyConnection;
+                     }
+                     return method.invoke(getDataSource(), args);
+                  }
+               }));
 
          return STATISTICS_ENABLED ? new StatisticsJDBCStorageConnection(cFactory.openConnection(false)) : cFactory
             .openConnection(false);
