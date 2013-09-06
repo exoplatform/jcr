@@ -79,7 +79,17 @@ public class TestJCRCommands extends TestCase
 
       ctx = new BasicAppContext(repService.getDefaultRepository());
 
-      // System.out.println("CTX "+ctx);
+      ctx.getSession().getRootNode().addNode("foo");
+      ctx.getSession().save();
+   }
+
+   public void tearDown() throws Exception
+   {
+      if (ctx.getSession().getRootNode().hasNode("foo"))
+      {
+         ctx.getSession().getRootNode().getNode("foo").remove();
+         ctx.getSession().save();
+      }
    }
 
    public void testCatalogInit() throws Exception
@@ -107,7 +117,7 @@ public class TestJCRCommands extends TestCase
    {
 
       Command c = cservice.getCatalog().getCommand("setProperty");
-      ctx.put("currentNode", "/test");
+      ctx.put("currentNode", "/foo");
       ctx.put("name", "testProperty");
       ctx.put("propertyType", PropertyType.TYPENAME_STRING);
       ctx.put("values", "testValue");
@@ -129,8 +139,6 @@ public class TestJCRCommands extends TestCase
 
       assertTrue(ctx.get("result") instanceof NodeIterator);
       NodeIterator nodes = (NodeIterator)ctx.get("result");
-
-      // System.out.println("> getNodes >> "+nodes.getSize());
 
       assertTrue(nodes.getSize() > 0);
    }
@@ -156,7 +164,7 @@ public class TestJCRCommands extends TestCase
    {
       Command cmd = cservice.getCatalog().getCommand("retrieveNodeCommand");
       ctx.put("currentNode", "/");
-      ctx.put("path", "test");
+      ctx.put("path", "foo");
       cmd.execute(ctx);
    }
 }
