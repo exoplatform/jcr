@@ -65,11 +65,11 @@ public class TestJCRClientCommands extends TestCase
 
    private CommandService cservice;
 
-   private static CliAppContext ctx;
+   private CliAppContext ctx;
 
    private ArrayList<String> params = new ArrayList<String>();
 
-   private final static String PARAMETERS_KEY = "parametersss";
+   private static final String PARAMETERS_KEY = "parametersss";
 
    public void setUp() throws Exception
    {
@@ -88,26 +88,26 @@ public class TestJCRClientCommands extends TestCase
       cservice = (CommandService)container.getComponentInstanceOfType(CommandService.class);
 
       // we need to login (see BasicAppContext, 38) and set current item before ctx using
-      if (ctx == null)
-      {
-         // login via Authenticator
-         Authenticator authr = (Authenticator)container.getComponentInstanceOfType(Authenticator.class);
-         String validUser =
-            authr.validateUser(new Credential[]{new UsernameCredential("root"), new PasswordCredential("exo")});
-         Identity id = authr.createIdentity(validUser);
-         ConversationState s = new ConversationState(id);
-         ConversationState.setCurrent(s);
+      // login via Authenticator
+      Authenticator authr = (Authenticator)container.getComponentInstanceOfType(Authenticator.class);
+      String validUser =
+         authr.validateUser(new Credential[]{new UsernameCredential("root"), new PasswordCredential("exo")});
+      Identity id = authr.createIdentity(validUser);
+      ConversationState s = new ConversationState(id);
+      ConversationState.setCurrent(s);
 
-         ctx = new CliAppContext(repService.getDefaultRepository(), PARAMETERS_KEY);
-         Node root = ctx.getSession().getRootNode();
-         ctx.setCurrentItem(root);
-         if (root.hasNode("testJCRClientCommands") == false)
-         {
-            Node node = root.addNode("testJCRClientCommands").addNode("childOftestJCRClientCommands");
-            node.setProperty("testProperty", "test");
-            root.save();
-         }
+      ctx = new CliAppContext(repService.getDefaultRepository(), PARAMETERS_KEY);
+      Node root = ctx.getSession().getRootNode();
+      ctx.setCurrentItem(root);
+      while (root.hasNode("testJCRClientCommands"))
+      {
+         root.getNode("testJCRClientCommands").remove();
+         root.save();
       }
+      Node node = root.addNode("testJCRClientCommands").addNode("childOftestJCRClientCommands");
+      node.setProperty("testProperty", "test");
+      root.save();
+      
       assertNotNull(ctx);
    }
 
@@ -144,6 +144,7 @@ public class TestJCRClientCommands extends TestCase
    public void testGetCtxNode() throws Exception
    {
       params.clear();
+      ctx.setCurrentItem(ctx.getSession().getRootNode().getNode("testJCRClientCommands"));
       GetNodeCommand getNodeCommand = (GetNodeCommand)cservice.getCatalog("CLI").getCommand("getnode");
       params.add("childOftestJCRClientCommands");
       ctx.put(PARAMETERS_KEY, params);
@@ -155,6 +156,7 @@ public class TestJCRClientCommands extends TestCase
    public void testGetCtxProperty() throws Exception
    {
       params.clear();
+      ctx.setCurrentItem(ctx.getSession().getRootNode().getNode("testJCRClientCommands/childOftestJCRClientCommands"));
       GetPropertyCommand getPropertyCommand = (GetPropertyCommand)cservice.getCatalog("CLI").getCommand("getproperty");
       params.add("testProperty");
       ctx.put(PARAMETERS_KEY, params);
@@ -256,10 +258,11 @@ public class TestJCRClientCommands extends TestCase
 
    public void testRemoveItemCommand() throws Exception
    {
+      ctx.setCurrentItem(ctx.getSession().getRootNode().getNode("testJCRClientCommands/childOftestJCRClientCommands"));
       RemoveItemCommand removeItemCommand = (RemoveItemCommand)cservice.getCatalog("CLI").getCommand("remove");
       removeItemCommand.execute(ctx);
 
-      assertEquals(((Node)ctx.getCurrentItem()).getName(), "childOftestJCRClientCommands2");
+      assertEquals(((Node)ctx.getCurrentItem()).getName(), "testJCRClientCommands");
    }
 
    public void testCopyNodeCommand() throws Exception
@@ -278,7 +281,7 @@ public class TestJCRClientCommands extends TestCase
    {
       params.clear();
       MoveNodeCommand moveNodeCommand = (MoveNodeCommand)cservice.getCatalog("CLI").getCommand("movenode");
-      params.add("/copyOftestJCRClientCommands");
+      params.add("/testJCRClientCommands");
       params.add("/newCopyOftestJCRClientCommands");
       ctx.put(PARAMETERS_KEY, params);
       moveNodeCommand.execute(ctx);
