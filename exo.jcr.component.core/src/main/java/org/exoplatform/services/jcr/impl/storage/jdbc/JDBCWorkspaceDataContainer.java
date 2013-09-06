@@ -1105,7 +1105,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public boolean isReindexingSupport()
    {
-      return connFactory.isReindexingSupport();
+      return connFactory.isReindexingSupported();
    }
 
    /**

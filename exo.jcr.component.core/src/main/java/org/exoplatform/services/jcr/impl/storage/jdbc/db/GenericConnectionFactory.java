@@ -119,11 +119,10 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
    }
 
    /**
-    * Indicates if component support extracting data from storage using paging.
-    * 
-    * @return boolean
+    * Indicates if the component supports extracting data from storage using paging.
+    * @return <code>true</code> if it is supported, <code>false</code> otherwise.
     */
-   public boolean isReindexingSupport()
+   public boolean isReindexingSupported()
    {
       return false;
    }
@@ -133,6 +132,15 @@ public class GenericConnectionFactory implements WorkspaceStorageConnectionFacto
     * @return <code>true</code> if the id is needed, <code>false</code> otherwise.
     */
    public boolean isIDNeededForPaging()
+   {
+      return true;
+   }
+
+   /**
+    * Indicates whether the database allows to set an offset to the query
+    * @return <code>true</code> if it is possible to set an offset, <code>false</code> otherwise.
+    */
+   public boolean isOffsetSupported()
    {
       return true;
    }
