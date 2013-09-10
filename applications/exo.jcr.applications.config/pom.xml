@@ -57,6 +57,11 @@
     </dependency>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.component.core</artifactId>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.component.ext</artifactId>
       <scope>runtime</scope>
     </dependency>
@@ -87,19 +92,25 @@
     </dependency>
     <dependency>
       <groupId>org.exoplatform.ws</groupId>
+      <artifactId>exo.ws.rest.core</artifactId>
+      <version>${org.exoplatform.ws.version}</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.exoplatform.ws</groupId>
       <artifactId>exo.ws.frameworks.servlet</artifactId>
       <version>${org.exoplatform.ws.version}</version>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-      <groupId>com.sun.xml.bind</groupId>
-      <artifactId>jaxb-impl</artifactId>
+      <groupId>org.exoplatform.jcr</groupId>
+      <artifactId>exo.jcr.framework.ftpclient</artifactId>
       <scope>runtime</scope>
     </dependency>
     <dependency>
-       <groupId>commons-io</groupId>
-       <artifactId>commons-io</artifactId>
-       <scope>runtime</scope>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <scope>provided</scope>
     </dependency>
   </dependencies>
   <profiles>
@@ -110,6 +121,22 @@
              <groupId>org.exoplatform.jcr</groupId>
              <artifactId>exo.jcr.component.core.impl.infinispan.v5</artifactId>
              <version>${project.version}</version>
+           </dependency>
+           <dependency>
+             <groupId>org.jgroups</groupId>
+             <artifactId>jgroups</artifactId>
+             <version>3.3.1.Final</version>
+           </dependency>
+           <dependency>
+             <groupId>org.exoplatform.jcr</groupId>
+             <artifactId>exo.jcr.component.core</artifactId>
+             <scope>runtime</scope>
+             <exclusions>
+               <exclusion>
+                 <groupId>org.jboss.cache</groupId>
+                 <artifactId>jbosscache-core</artifactId>
+               </exclusion>
+             </exclusions>
            </dependency>
          </dependencies>
          <properties>

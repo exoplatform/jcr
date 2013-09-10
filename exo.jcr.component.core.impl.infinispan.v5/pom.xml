@@ -103,24 +103,25 @@
                <artifactId>slf4j-api</artifactId>
             </exclusion>
          </exclusions>
-      </dependency>
-      <dependency>
-        <groupId>org.ow2.spec.ee</groupId>
-        <artifactId>ow2-jta-1.1-spec</artifactId>
-      </dependency>        
+      </dependency>     
       <!-- TCK binaries and deps for repo stub, some eXo API test -->
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-core</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>org.jboss.spec.javax.transaction</groupId>
+               <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>org.jboss.logging</groupId>
+               <artifactId>jboss-logging</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-cachestore-jdbc</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>javax.resource</groupId>
-        <artifactId>connector-api</artifactId>
-        <scope>test</scope>
       </dependency>
       <!-- ===== Databases JDBC support for tests ===== -->
       <dependency>
