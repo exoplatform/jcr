@@ -43,6 +43,8 @@ public class TestMkCol extends BaseStandaloneTest
       String folder = TestUtils.getFolderName();
       ContainerResponse response = service(WebDAVMethods.MKCOL, getPathWS() + folder, "", null, null);
       assertEquals(HTTPStatus.CREATED, response.getStatus());
+      response = serviceWithEscape(WebDAVMethods.MKCOL, getPathWS() + folder + "[2]", "", null, null);
+      assertEquals(HTTPStatus.CREATED, response.getStatus());
    }
 
    public void testMkCol() throws Exception

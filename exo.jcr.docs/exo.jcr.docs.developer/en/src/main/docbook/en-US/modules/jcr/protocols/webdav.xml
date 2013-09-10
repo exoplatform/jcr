@@ -5,68 +5,63 @@
 <section id="JCR.WebDAV">
   <title>WebDAV</title>
 
-    <para>The WebDAV protocol enables you to use the third party tools to
-    communicate with hierarchical content servers via HTTP. It is possible to
-    add and remove documents or a set of documents from a path on the server.
-    DeltaV is an extension of the WebDav protocol that allows managing
-    document versioning. Locking guarantees protection against multiple access
-    when writing resources. The ordering support allows changing the position
-    of the resource in the list and sort the directory to make the directory
-    tree viewed conveniently. The full-text search makes it easy to find the
-    necessary documents. You can search by using two languages: SQL and
-    XPATH.</para>
+  <para>The WebDAV protocol enables you to use the third party tools to
+  communicate with hierarchical content servers via HTTP. It is possible to
+  add and remove documents or a set of documents from a path on the server.
+  DeltaV is an extension of the WebDav protocol that allows managing document
+  versioning. Locking guarantees protection against multiple access when
+  writing resources. The ordering support allows changing the position of the
+  resource in the list and sort the directory to make the directory tree
+  viewed conveniently. The full-text search makes it easy to find the
+  necessary documents. You can search by using two languages: SQL and
+  XPATH.</para>
 
-    <para>In eXo JCR, we plug in the WebDAV layer - based on the code taken
-    from the extension modules of the reference implementation - on the top of
-    our JCR implementation so that it is possible to browse a workspace using
-    the third party tools (it can be Windows folders or Mac ones as well as a
-    Java WebDAV client, such as DAVExplorer or IE using File-&gt;Open as a Web
-    Folder).</para>
+  <para>In eXo JCR, we plug in the WebDAV layer - based on the code taken from
+  the extension modules of the reference implementation - on the top of our
+  JCR implementation so that it is possible to browse a workspace using the
+  third party tools (it can be Windows folders or Mac ones as well as a Java
+  WebDAV client, such as DAVExplorer or IE using File-&gt;Open as a Web
+  Folder).</para>
 
-    <para>Now WebDav is an extension of the REST service. To get the WebDav
-    server ready, you must deploy the REST application. Then, you can access
-    any workspaces of your repository by using the following URL:</para>
+  <para>Now WebDav is an extension of the REST service. To get the WebDav
+  server ready, you must deploy the REST application. Then, you can access any
+  workspaces of your repository by using the following URL:</para>
 
-    <para>Standalone mode:</para>
+  <para>Standalone mode:</para>
 
-    <para><uri>http://host:port/rest/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
+  <para><uri>http://host:port/rest/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
 
-    <para>Portal mode:</para>
+  <para>Portal mode:</para>
 
-    <para><uri>http://host:port/portal/rest/private/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
+  <para><uri>http://host:port/portal/rest/private/jcr/{RepositoryName}/{WorkspaceName}/{Path}</uri></para>
 
-    <para>When accessing the WebDAV server with the
-    URL<uri>http://localhost:8080/rest/jcr/repository/production</uri>, you
-    might also use "collaboration" (instead of "production") which is the
-    default workspace in eXo products. You will be asked to enter your login
-    and password. Those will then be checked by using the organization service
-    that can be implemented thanks to an InMemory (dummy) module or a DB
-    module or an LDAP one and the JCR user session will be created with the
-    correct JCR Credentials.</para>
+  <para>When accessing the WebDAV server with the
+  URL<uri>http://localhost:8080/rest/jcr/repository/production</uri>, you
+  might also use "collaboration" (instead of "production") which is the
+  default workspace in eXo products. You will be asked to enter your login and
+  password. Those will then be checked by using the organization service that
+  can be implemented thanks to an InMemory (dummy) module or a DB module or an
+  LDAP one and the JCR user session will be created with the correct JCR
+  Credentials.</para>
 
-    <note>
-      <para>If you try the "in ECM" option, add "@ecm" to the user's password.
-      Alternatively, you may modify jaas.conf by adding the <emphasis
-      role="bold">domain=ecm</emphasis> option as follows:</para>
+  <note>
+    <para>If you try the "in ECM" option, add "@ecm" to the user's password.
+    Alternatively, you may modify jaas.conf by adding the <emphasis
+    role="bold">domain=ecm</emphasis> option as follows:</para>
 
-      <programlisting>exo-domain {
+    <programlisting>exo-domain {
      org.exoplatform.services.security.jaas.BasicLoginModule required domain=ecm;
 };</programlisting>
-    </note>
+  </note>
 
-    <para>
-        <emphasis role="bold">Related documents</emphasis>
-    </para>
+  <para><emphasis role="bold">Related documents</emphasis></para>
 
-    <itemizedlist>
-        <listitem>
-            <para>
-                <link linkend="JCR.LinkProducerService">Link
-                    Producer
-                </link>
-            </para>
-        </listitem>
-    </itemizedlist>
+  <itemizedlist>
+    <listitem>
+      <para><link linkend="JCR.LinkProducerService">Link Producer
+      </link></para>
+    </listitem>
+  </itemizedlist>
 
   <section id="JCR.WebDAV.Configuration">
     <title>Configuration</title>
@@ -345,11 +340,12 @@
             <entry>Workspace.getQueryManager(); QueryManager.createQuery();
             Query.execute()</entry>
           </row>
-            <row>
-               <entry>ACL</entry>
 
-               <entry>Node.setPermission(...)</entry>
-             </row>
+          <row>
+            <entry>ACL</entry>
+
+            <entry>Node.setPermission(...)</entry>
+          </row>
         </tbody>
       </tgroup>
     </table>
@@ -449,5 +445,41 @@
         </listitem>
       </orderedlist>
     </section>
+  </section>
+
+  <section id="JCR.WebDAV.Restrictions.SNS">
+    <title>Same name sibling</title>
+
+    <para>The JSR 170 allows JCR nodes under specific conditions to have sub
+    nodes of the same name which is not supported by the webdav clients. To
+    workaround that, the nodes of the same name are displayed with their index
+    in case the index is higher than 1, so if for example we have 2 nodes
+    called <emphasis>foo</emphasis>, the first one will be displayed
+    <emphasis>foo</emphasis> (as before) and the second one will be displayed
+    <emphasis>foo[2]</emphasis>. Thanks to this approach, all webdav clients
+    will be able to display the entire content of your repository even if you
+    have some nodes of the same name.</para>
+
+    <para>If you want to replace a file whose name is
+    <emphasis>foo[3]</emphasis> which means that it is the 3th node called foo
+    understand the same parent node, if you paste a file with the exact same
+    name (assuming that the update policy allows it), the old file content
+    will be replaced with the new one.</para>
+
+    <note>
+      <para>As you cannot assign an index explicitly according to the JSR 170,
+      you can face some situations where the original name won't be the final
+      name. For example you copy the 3th node called <emphasis>foo</emphasis>
+      into a directory that doesn't have any node called
+      <emphasis>foo</emphasis>, in that case the original name was
+      <emphasis>foo[3]</emphasis> but the final name will be
+      <emphasis>foo</emphasis>. Those kind of use cases could be not properly
+      managed by the Webdav client, it won't find the node at the expected
+      location so it will assume that the operation failed but actually the
+      name has simply changed. As workaround, you can copy the file outside
+      webdav, then set the final name and finally put the file at the expected
+      location such that the original and final names will be
+      identical.</para>
+    </note>
   </section>
 </section>

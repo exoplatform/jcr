@@ -51,6 +51,11 @@ public class TestPut extends BaseStandaloneTest
          service(WebDAVMethods.PUT, getPathWS() + path, "", null, content.getBytes());
       assertEquals(HTTPStatus.CREATED, containerResponse.getStatus());
       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(path)));
+      path = path + "[2]";
+      containerResponse =
+               serviceWithEscape(WebDAVMethods.PUT, getPathWS() + path, "", null, content.getBytes());
+      assertEquals(HTTPStatus.CREATED, containerResponse.getStatus());
+      assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(path)));
    }
 
    public void testPutNotFound() throws Exception

@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
 import org.exoplatform.services.jcr.webdav.command.proppatch.PropPatchResponseEntity;
-import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.impl.ContainerResponse;
 
 import java.io.ByteArrayOutputStream;
@@ -50,9 +49,6 @@ public class TestPropPatch extends BaseStandaloneTest
    private final String patch =
       "<?xml version=\"1.0\"?><D:propertyupdate xmlns:D=\"DAV:\" xmlns:b=\"urn:uuid:c2f41010-65b3-11d1-a29f-00aa00c14882/\" xmlns:webdav=\"http://www.exoplatform.org/jcr/webdav\"><D:set><D:prop><webdav:Author>"
          + author + "</webdav:Author></D:prop></D:set></D:propertyupdate>";
-
-   private final String patchRemove =
-      "<?xml version=\"1.0\"?><D:propertyupdate xmlns:D=\"DAV:\" xmlns:b=\"urn:uuid:c2f41010-65b3-11d1-a29f-00aa00c14882/\" xmlns:webdav=\"http://www.exoplatform.org/jcr/webdav\"><D:remove><D:prop><webdav:Author/></D:prop></D:remove></D:propertyupdate>";
 
    @Override
    protected String getRepositoryName()
@@ -129,10 +125,8 @@ public class TestPropPatch extends BaseStandaloneTest
 
    public void testPropPatchSetWithLock2() throws Exception
    {
-
-      String fileContent = TestUtils.getFileContent();
-
       String fileName = "testPropPatchFile";
+      session.getRootNode().addNode(fileName);
 
       Node node = session.getRootNode().addNode(fileName, nt_webdave_file);
       node.setProperty(authorProp, author);
@@ -147,12 +141,12 @@ public class TestPropPatch extends BaseStandaloneTest
       node.lock(true, true);
       session.save();
 
+      fileName = fileName + "[2]";
       ContainerResponse response =
-         service(WebDAVMethods.PROPPATCH, getPathWS() + "/" + fileName, "", null, patch.getBytes());
+         serviceWithEscape(WebDAVMethods.PROPPATCH, getPathWS() + "/" + fileName, "", null, patch.getBytes());
       PropPatchResponseEntity entity = (PropPatchResponseEntity)response.getEntity();
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       entity.write(outputStream);
-      String resp = outputStream.toString();
 
       Property p = node.getProperty(authorProp);
       String str = p.getString();

@@ -45,7 +45,6 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
-import javax.jcr.Value;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
@@ -224,7 +223,7 @@ public class CollectionResource extends GenericResource
    {
       if (name.equals(DISPLAYNAME))
       {
-         return new HierarchicalProperty(name, node.getName());
+         return new HierarchicalProperty(name, node.getName() + (node.getIndex() > 1 ? "[" + node.getIndex() + "]" : ""));
 
       }
       else if (name.equals(CHILDCOUNT))
@@ -396,27 +395,27 @@ public class CollectionResource extends GenericResource
       while (children.hasNext())
       {
          Node node = children.nextNode();
-
+         String name = node.getName() + (node.getIndex() > 1 ? "[" + node.getIndex() + "]" : "");
          if (ResourceUtil.isVersioned(node))
          {
             if (ResourceUtil.isFile(node))
             {
-               resources.add(new VersionedFileResource(childURI(node.getName()), node, namespaceContext));
+               resources.add(new VersionedFileResource(childURI(name), node, namespaceContext));
             }
             else
             {
-               resources.add(new VersionedCollectionResource(childURI(node.getName()), node, namespaceContext));
+               resources.add(new VersionedCollectionResource(childURI(name), node, namespaceContext));
             }
          }
          else
          {
             if (ResourceUtil.isFile(node))
             {
-               resources.add(new FileResource(childURI(node.getName()), node, namespaceContext));
+               resources.add(new FileResource(childURI(name), node, namespaceContext));
             }
             else
             {
-               resources.add(new CollectionResource(childURI(node.getName()), node, namespaceContext));
+               resources.add(new CollectionResource(childURI(name), node, namespaceContext));
             }
          }
 
@@ -460,7 +459,7 @@ public class CollectionResource extends GenericResource
                writer.writeStartElement(XML_NODE);
                writer.writeAttribute(PREFIX_XMLNS, PREFIX_LINK);
                writer.writeAttribute(XLINK_XMLNS, XLINK_LINK);
-               writer.writeAttribute(XML_NAME, node.getName());
+               writer.writeAttribute(XML_NAME, node.getName() + (node.getIndex() > 1 ? "[" + node.getIndex() + "]" : ""));
                writer.writeAttribute(XML_HREF, rootHref + TextUtil.escape(node.getPath(), '%', true));
 
 
@@ -491,7 +490,7 @@ public class CollectionResource extends GenericResource
                {
                   Node childNode = ni.nextNode();
                   writer.writeStartElement(XML_NODE);
-                  writer.writeAttribute(XML_NAME, childNode.getName());
+                  writer.writeAttribute(XML_NAME, childNode.getName() + (childNode.getIndex() > 1 ? "[" + childNode.getIndex() + "]" : ""));
                   String childNodeHref = rootHref + TextUtil.escape(childNode.getPath(), '%', true);
                   writer.writeAttribute(XML_HREF, childNodeHref);
                   writer.writeEndElement();

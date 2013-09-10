@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.webdav.command;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
+import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.impl.ContainerResponse;
 
@@ -42,13 +43,15 @@ public class TestHead extends BaseStandaloneTest
    public void setUp() throws Exception
    {
       super.setUp();
+      session.getRootNode().addNode(TextUtil.relativizePath(path));
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
       TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
+      path = path + "[2]";
    }
 
    public void testSimpleHead() throws Exception
    {
-      ContainerResponse response = service(WebDAVMethods.HEAD, getPathWS() + path, "", null, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.HEAD, getPathWS() + path, "", null, null);
       assertEquals(HTTPStatus.OK, response.getStatus());
    }
 

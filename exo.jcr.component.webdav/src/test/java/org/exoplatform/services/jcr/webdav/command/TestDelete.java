@@ -44,9 +44,11 @@ public class TestDelete extends BaseStandaloneTest
    {
       String path = TestUtils.getFileName();
       String fileContent = TestUtils.getFileContent();
+      session.getRootNode().addNode(TextUtil.relativizePath(path));
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
       TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
-      ContainerResponse response = service(WebDAVMethods.DELETE, getPathWS() + path, "", null, null);
+      path = path + "[2]";
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.DELETE, getPathWS() + path, "", null, null);
       assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
       assertFalse(session.getRootNode().hasNode(TextUtil.relativizePath(path)));
    }
@@ -56,10 +58,12 @@ public class TestDelete extends BaseStandaloneTest
       String path = TestUtils.getFileName();
       String fileContent = TestUtils.getFileContent();
       String folderName = TestUtils.getFolderName();
+      session.getRootNode().addNode(TextUtil.relativizePath(folderName));
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
       TestUtils.addFolder(session, folderName, defaultFolderNodeType, "");
       TestUtils.addContent(session, folderName + path, inputStream, defaultFileNodeType, "");
-      ContainerResponse response = service(WebDAVMethods.DELETE, getPathWS() + folderName, "", null, null);
+      folderName = folderName + "[2]";
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.DELETE, getPathWS() + folderName, "", null, null);
       assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
       assertFalse(session.getRootNode().hasNode(TextUtil.relativizePath(folderName)));
    }
@@ -68,14 +72,16 @@ public class TestDelete extends BaseStandaloneTest
    {
       String path = TestUtils.getFileName();
       String fileContent = TestUtils.getFileContent();
+      session.getRootNode().addNode(TextUtil.relativizePath(path));
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
       TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
+      path = path + "[2]";
       String lockToken = TestUtils.lockNode(session, path, true);
-      ContainerResponse response = service(WebDAVMethods.DELETE, getPathWS() + path, "", null, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.DELETE, getPathWS() + path, "", null, null);
       assertEquals(HTTPStatus.LOCKED, response.getStatus());
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.LOCKTOKEN, lockToken);
-      response = service(WebDAVMethods.DELETE, getPathWS() + path, "", headers, null);
+      response = serviceWithEscape(WebDAVMethods.DELETE, getPathWS() + path, "", headers, null);
       assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
       assertFalse(session.getRootNode().hasNode(TextUtil.relativizePath(path)));
    }

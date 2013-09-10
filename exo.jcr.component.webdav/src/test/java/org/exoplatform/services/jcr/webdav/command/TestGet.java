@@ -27,20 +27,14 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConst;
-import org.exoplatform.services.jcr.webdav.WebDavConstants;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
+import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
 import org.exoplatform.services.rest.impl.ContainerResponse;
-import org.exoplatform.services.rest.impl.EnvironmentContext;
 import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
-import org.exoplatform.services.rest.impl.RequestHandlerImpl;
-import org.exoplatform.services.rest.tools.DummySecurityContext;
-import org.exoplatform.services.rest.tools.ResourceLauncher;
 import org.exoplatform.services.security.IdentityConstants;
-
-import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,18 +45,13 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URLDecoder;
-import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
-import javax.jcr.Credentials;
 import javax.jcr.Node;
 import javax.jcr.Session;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.SecurityContext;
 
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
@@ -79,13 +68,15 @@ public class TestGet extends BaseStandaloneTest
    public void setUp() throws Exception
    {
       super.setUp();
+      session.getRootNode().addNode(TextUtil.relativizePath(path));
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
       TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
+      path = path + "[2]";
    }
 
    public void testSimpleGet() throws Exception
    {
-      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + path, "", null, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.GET, getPathWS() + path, "", null, null);
       assertEquals(HTTPStatus.OK, response.getStatus());
       FileInputStream content = (FileInputStream)response.getEntity();
       Reader r = new InputStreamReader(content);
@@ -101,7 +92,7 @@ public class TestGet extends BaseStandaloneTest
 
    public void testNotFoundGet() throws Exception
    {
-      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + "/not-found" + path, "", null, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.GET, getPathWS() + "/not-found" + path, "", null, null);
       assertEquals(HTTPStatus.NOT_FOUND, response.getStatus());
    }
 
@@ -141,7 +132,7 @@ public class TestGet extends BaseStandaloneTest
          getPathWS() + "/jcr:system/jcr:versionStorage/" + v.getContainingHistory().getIdentifier()
             + "/1/jcr:frozenNode/rh:podcastFile";
 
-      ContainerResponse response = service(WebDAVMethods.GET, path, "", null, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.GET, path, "", null, null);
       assertEquals("Successful result expected (200), but actual is: " + response.getStatus(), 200, response
          .getStatus());
 
@@ -154,6 +145,7 @@ public class TestGet extends BaseStandaloneTest
     */
    public void testIfModifiedSinceDateParsing() throws Exception
    {
+      session.getRootNode().addNode("node");
       Node fileNode = session.getRootNode().addNode("node", "nt:file");
       fileNode.addMixin("mix:versionable");
 
@@ -173,14 +165,14 @@ public class TestGet extends BaseStandaloneTest
       fileNode.checkout();
 
       String path =
-         getPathWS() + "/" + fileNode.getName() + "?time=" + IfModifiedSince.getTimeInMillis() + "&version=1";
+         getPathWS() + "/" + fileNode.getName() + "[2]?time=" + IfModifiedSince.getTimeInMillis() + "&version=1";
 
       SimpleDateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.IF_MODIFIED_SINCE_PATTERN, Locale.US);
       String ifModifiedSinceDate = dateFormat.format(IfModifiedSince.getTime());
 
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, ifModifiedSinceDate);
-      ContainerResponse response = service(WebDAVMethods.GET, path, "", headers, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.GET, path, "", headers, null);
       assertEquals(HTTPStatus.OK, response.getStatus());
 
       headers.clear();
@@ -188,7 +180,7 @@ public class TestGet extends BaseStandaloneTest
       IfModifiedSince.add(Calendar.HOUR, +4);
       ifModifiedSinceDate = dateFormat.format(IfModifiedSince.getTime());
       headers.add(ExtHttpHeaders.IF_MODIFIED_SINCE, ifModifiedSinceDate);
-      response = service(WebDAVMethods.GET, path, "", headers, null);
+      response = serviceWithEscape(WebDAVMethods.GET, path, "", headers, null);
       assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
    }
 
@@ -197,7 +189,7 @@ public class TestGet extends BaseStandaloneTest
       String strToTest = "/absolute/path/to/file";
       String folderName = TestUtils.getFolderName();
       TestUtils.addFolder(session, folderName, defaultFolderNodeType, "");
-      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + folderName, "", null, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.GET, getPathWS() + folderName, "", null, null);
 
       assertEquals(HTTPStatus.OK, response.getStatus());
 
@@ -227,7 +219,7 @@ public class TestGet extends BaseStandaloneTest
       TestUtils.addFolder(session, folderTwo, defaultFolderNodeType, "");
 
       // get a sub-collection
-      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + folderTwo, "", null, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.GET, getPathWS() + folderTwo, "", null, null);
       assertEquals(HTTPStatus.OK, response.getStatus());
 
       // serialize response entity to string
@@ -315,7 +307,7 @@ public class TestGet extends BaseStandaloneTest
 
       String path = getPathWS() + "/folderA/folderB";
 
-      ContainerResponse response = service(WebDAVMethods.GET, path, "", null, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.GET, path, "", null, null);
       assertEquals("Successful result expected (200), but actual is: " + response.getStatus(), 200, response.getStatus());
       
       XSLTStreamingOutput XSLTout = (XSLTStreamingOutput)response.getEntity();

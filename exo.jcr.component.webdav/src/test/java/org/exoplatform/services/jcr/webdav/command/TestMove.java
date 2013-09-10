@@ -46,12 +46,14 @@ public class TestMove extends BaseStandaloneTest
    {
       String content = TestUtils.getFileContent();
       String filename = TestUtils.getFileName();
+      session.getRootNode().addNode(TextUtil.relativizePath(filename));
       InputStream inputStream = new ByteArrayInputStream(content.getBytes());
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      filename = filename + "[2]";
       String destFilename = TestUtils.getFileName();
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
       assertEquals(HTTPStatus.CREATED, response.getStatus());
       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
       Node nodeDest = session.getRootNode().getNode(TextUtil.relativizePath(destFilename));
@@ -69,12 +71,14 @@ public class TestMove extends BaseStandaloneTest
       assertNotSame(session.getWorkspace().getName(), destSession.getWorkspace().getName());
       String content = TestUtils.getFileContent();
       String filename = TestUtils.getFileName();
+      session.getRootNode().addNode(TextUtil.relativizePath(filename));
       InputStream inputStream = new ByteArrayInputStream(content.getBytes());
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      filename = filename + "[2]";
       String destFilename = TestUtils.getFileName();
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.DESTINATION, host + getPathDestWS() + destFilename);
-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
       assertEquals(HTTPStatus.CREATED, response.getStatus());
       assertTrue(destSession.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
       Node nodeDest = destSession.getRootNode().getNode(TextUtil.relativizePath(destFilename));
@@ -97,8 +101,10 @@ public class TestMove extends BaseStandaloneTest
    {
       String content = TestUtils.getFileContent();
       String filename = TestUtils.getFileName();
+      session.getRootNode().addNode(TextUtil.relativizePath(filename));
       InputStream inputStream = new ByteArrayInputStream(content.getBytes());
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      filename = filename + "[2]";
       String destFilename = TestUtils.getFileName();
 
       // prepare headers
@@ -106,7 +112,7 @@ public class TestMove extends BaseStandaloneTest
       headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
 
       // execute the query
-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
       // check if operation completed successfully, we expect a new resource to be created
       assertEquals(HTTPStatus.CREATED, response.getStatus());
 
@@ -127,30 +133,32 @@ public class TestMove extends BaseStandaloneTest
    {
       String content = TestUtils.getFileContent();
       String filename = TestUtils.getFileName();
+      session.getRootNode().addNode(TextUtil.relativizePath(filename));
       InputStream inputStream = new ByteArrayInputStream(content.getBytes());
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      filename = filename + "[2]";
 
-      String destFilename = TestUtils.getFileName() + "%20test";
+      String destFilename = TestUtils.getFileName() + " test";
 
       // prepare headers
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
 
       // execute the query
-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
       // check if operation completed successfully, we expect a new resource to be created
       assertEquals(HTTPStatus.CREATED, response.getStatus());
 
       filename = destFilename;
 
-      destFilename = TestUtils.getFileName() + "%20'test";
+      destFilename = TestUtils.getFileName() + " 'test";
 
       // prepare headers
       headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.DESTINATION, host + getPathWS() + destFilename);
 
       // execute the query
-      response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+      response = serviceWithEscape(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
       // check if operation completed successfully, we expect a new resource to be created
       assertEquals(HTTPStatus.CREATED, response.getStatus());
 
@@ -166,8 +174,10 @@ public class TestMove extends BaseStandaloneTest
    {
       String content = TestUtils.getFileContent();
       String filename = TestUtils.getFileName();
+      session.getRootNode().addNode(TextUtil.relativizePath(filename));
       InputStream inputStream = new ByteArrayInputStream(content.getBytes());
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      filename = filename + "[2]";
 
       String destFilename = TestUtils.getFileName();
       inputStream = new ByteArrayInputStream(content.getBytes());
@@ -179,7 +189,7 @@ public class TestMove extends BaseStandaloneTest
       headers.add(ExtHttpHeaders.OVERWRITE, "T");
 
       // execute the query
-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
       // check if operation completed successfully, we expect a new resource to be created
       assertEquals(HTTPStatus.NO_CONTENT, response.getStatus());
 
@@ -196,8 +206,10 @@ public class TestMove extends BaseStandaloneTest
 
       String content = TestUtils.getFileContent();
       String filename = TestUtils.getFileName();
+      session.getRootNode().addNode(TextUtil.relativizePath(filename));
       InputStream inputStream = new ByteArrayInputStream(content.getBytes());
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      filename = filename + "[2]";
 
       String destFilename = TestUtils.getFileName();
 
@@ -206,7 +218,7 @@ public class TestMove extends BaseStandaloneTest
       headers.add(ExtHttpHeaders.DESTINATION, httpsHost + getPathWS() + destFilename);
 
       // execute the query
-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
       // check if operation completed successfully, we expect a new resource to be created
       assertEquals(HTTPStatus.CREATED, response.getStatus());
 
@@ -216,14 +228,16 @@ public class TestMove extends BaseStandaloneTest
    {
       String content = TestUtils.getFileContent();
       String filename = TestUtils.getFileName();
+      session.getRootNode().addNode(TextUtil.relativizePath(filename));
       InputStream inputStream = new ByteArrayInputStream(content.getBytes());
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
       String destFilename = TestUtils.getFileName();
+      filename = filename + "[2]";
 
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
 
       headers.add(ExtHttpHeaders.DESTINATION, WORKSPACE + destFilename);
-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
 
       assertEquals(HTTPStatus.CREATED, response.getStatus());
       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
@@ -248,14 +262,16 @@ public class TestMove extends BaseStandaloneTest
 
       String content = TestUtils.getFileContent();
       String filename = TestUtils.getFileName();
+      session.getRootNode().addNode(TextUtil.relativizePath(filename));
       InputStream inputStream = new ByteArrayInputStream(content.getBytes());
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      filename = filename + "[2]";
       String destFilename = "/" + folderNameWithSpace + TestUtils.getFileName();
 
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
 
       headers.add(ExtHttpHeaders.DESTINATION, WORKSPACE + destFilename);
-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
 
       assertEquals(HTTPStatus.CREATED, response.getStatus());
       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
@@ -280,14 +296,16 @@ public class TestMove extends BaseStandaloneTest
 
       String content = TestUtils.getFileContent();
       String filename = TestUtils.getFileName();
+      session.getRootNode().addNode(TextUtil.relativizePath(filename));
       InputStream inputStream = new ByteArrayInputStream(content.getBytes());
       TestUtils.addContent(session, filename, inputStream, defaultFileNodeType, "");
+      filename = filename + "[2]";
       String destFilename = TextUtil.unescape("/" + folderNameWithSpace + TestUtils.getFileName(), '%');
 
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
 
       headers.add(ExtHttpHeaders.DESTINATION, WORKSPACE + destFilename);
-      ContainerResponse response = service(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.MOVE, getPathWS() + filename, host, headers, null);
 
       assertEquals(HTTPStatus.CREATED, response.getStatus());
       assertTrue(session.getRootNode().hasNode(TextUtil.relativizePath(destFilename)));
