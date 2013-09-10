@@ -67,6 +67,8 @@
                      <property name="jbosscache-cluster-name" value="JCR-cluster-indexer" />
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                      <property name="max-volatile-time" value="60" />
+                     <!-- We set a different default page size to test paging-->
+                     <property name="reindexing-page-size" value="20"/>
                   </properties>
                </query-handler>
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">

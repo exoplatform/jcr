@@ -68,7 +68,7 @@ public class H2ConnectionFactory extends GenericCQConnectionFactory
     * {@inheritDoc}
     */
    @Override
-   public boolean isReindexingSupport()
+   public boolean isReindexingSupported()
    {
       return false;
    }

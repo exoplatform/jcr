@@ -1275,6 +1275,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          throw new RepositoryException(e);
       }
+      if (LOG.isTraceEnabled())
+      {
+         LOG.trace("getNodesAndProperties(%s, %s, %s) = %s elements", lastNodeId, offset, limit, result.size());
+      }
 
       return result;
    }
