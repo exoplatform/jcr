@@ -462,23 +462,23 @@
 
     <para>If you want to replace a file whose name is
     <emphasis>foo[3]</emphasis> which means that it is the 3th node called foo
-    understand the same parent node, if you paste a file with the exact same
-    name (assuming that the update policy allows it), the old file content
-    will be replaced with the new one.</para>
+    under the same parent node, if you paste a file with the exact same name
+    (assuming that the update policy allows it), the old file content will be
+    replaced with the new one.</para>
 
     <note>
       <para>As you cannot assign an index explicitly according to the JSR 170,
       you can face some situations where the original name won't be the final
-      name. For example you copy the 3th node called <emphasis>foo</emphasis>
-      into a directory that doesn't have any node called
-      <emphasis>foo</emphasis>, in that case the original name was
+      name. For example, if you copy the 3th node called
+      <emphasis>foo</emphasis> into a directory that doesn't have any node
+      called <emphasis>foo</emphasis>, in that case the original name was
       <emphasis>foo[3]</emphasis> but the final name will be
-      <emphasis>foo</emphasis>. Those kind of use cases could be not properly
-      managed by the Webdav client, it won't find the node at the expected
+      <emphasis>foo</emphasis>. Those kind of use cases could not be properly
+      managed by your Webdav client, it won't find the node at the expected
       location so it will assume that the operation failed but actually the
       name has simply changed. As workaround, you can copy the file outside
-      webdav, then set the final name and finally put the file at the expected
-      location such that the original and final names will be
+      your webdav drive, then set the final name and finally put the file at
+      the expected location such that the original and final names will be
       identical.</para>
     </note>
   </section>
