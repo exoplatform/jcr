@@ -19,11 +19,13 @@ package org.exoplatform.services.jcr.impl.core;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.config.ContainerEntry;
@@ -32,6 +34,7 @@ import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.config.WorkspaceInitializerEntry;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.dataflow.NodeDataOrderComparator;
 
 /**
  * Created by The eXo Platform SAS.
@@ -45,12 +48,13 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 public class TestSVNodeDataOptimization
    extends JcrImplBaseTest
 {
-   
+   protected SessionDataManager dataManager;
    @Override
    public void setUp() throws Exception
    {
       super.setUp();
       SessionImpl ses = (SessionImpl) repository.login(credentials, "ws1");
+      dataManager= ses.getTransientNodesManager();
       if (ses != null)
       {
          try
@@ -174,16 +178,26 @@ public class TestSVNodeDataOptimization
    {
       assertTrue(dest.equals(src));
       assertEquals(src.getIndex(), dest.getIndex());
-      assertEquals(((NodeData) src.getData()).getOrderNumber(), ((NodeData) dest.getData()).getOrderNumber());
 
       NodeIterator srcIterator = src.getNodes();
       NodeIterator destIterator = dest.getNodes();
 
       assertEquals(srcIterator.getSize(), destIterator.getSize());
 
+      checkOrderEquals(src,dest) ;
       while (srcIterator.hasNext())
          checkNodeEquals((NodeImpl) srcIterator.nextNode(), (NodeImpl) destIterator.nextNode());
    }
+
+    private void checkOrderEquals(NodeImpl src, NodeImpl dest) throws RepositoryException {
+        List<NodeData> srcChildren = new ArrayList<NodeData>(dataManager.getChildNodesData((NodeData) src.getData()));
+        List<NodeData> destChildren = new ArrayList<NodeData>(dataManager.getChildNodesData((NodeData) dest.getData()));
+        Collections.sort(srcChildren, new NodeDataOrderComparator());
+        Collections.sort(destChildren, new NodeDataOrderComparator());
+        for (int i = 0; i < srcChildren.size(); i++) {
+             assertTrue(srcChildren.get(i).getQPath().getName().getAsString().equals(srcChildren.get(i).getQPath().getName().getAsString()));
+        }
+    }
 
    private WorkspaceEntry makeWorkspaceEntry(String name, String sourceName, File sysViewFile, SessionImpl ses)
    {

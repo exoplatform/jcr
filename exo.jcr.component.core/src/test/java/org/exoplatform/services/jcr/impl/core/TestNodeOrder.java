@@ -71,14 +71,15 @@ public class TestNodeOrder extends JcrImplBaseTest
       NodeIterator nodes = testNode.getNodes();
       assertEquals(4, nodes.getSize());
 
-      int order = 0;
+      int lastOrder = -1;
       for (; nodes.hasNext();)
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
          log.info(orderNumb + ": " + n.getPath());
 
-         assertEquals(order++, orderNumb);
+         assertTrue(orderNumb>lastOrder);
+         lastOrder=orderNumb;
       }
    }
 
@@ -96,14 +97,15 @@ public class TestNodeOrder extends JcrImplBaseTest
       NodeIterator nodes = testNode.getNodes();
       assertEquals(4, nodes.getSize());
 
-      int order = 0;
+      int lastOrder = -1;
       for (; nodes.hasNext();)
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
          log.info(orderNumb + ": " + n.getPath());
 
-         assertEquals(order++, orderNumb);
+         assertTrue(orderNumb>lastOrder);
+         lastOrder=orderNumb;
       }
    }
 
@@ -130,14 +132,15 @@ public class TestNodeOrder extends JcrImplBaseTest
       NodeIterator nodes = testNode.getNodes();
       assertEquals(8, nodes.getSize());
 
-      int order = 0;
+      int lastOrder = -1;
       for (; nodes.hasNext();)
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
          log.info(orderNumb + ": " + n.getPath());
 
-         assertEquals(order++, orderNumb);
+         assertTrue(orderNumb>lastOrder);
+         lastOrder=orderNumb;
       }
    }
 
@@ -164,14 +167,15 @@ public class TestNodeOrder extends JcrImplBaseTest
       NodeIterator nodes = testNode.getNodes();
       assertEquals(6, nodes.getSize());
 
-      int order = 0;
+      int lastOrder = -1;
       for (; nodes.hasNext();)
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
          log.info(orderNumb + ": " + n.getPath());
 
-         assertEquals(order++, orderNumb);
+         assertTrue(orderNumb>lastOrder);
+         lastOrder=orderNumb;
       }
    }
 
@@ -217,14 +221,15 @@ public class TestNodeOrder extends JcrImplBaseTest
       NodeIterator nodes = testNode.getNodes();
       assertEquals(8, nodes.getSize());
 
-      int order = 0;
+      int lastOrder = -1;
       for (; nodes.hasNext();)
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
          log.info(orderNumb + ": " + n.getPath());
 
-         assertEquals(order++, orderNumb);
+         assertTrue(orderNumb>lastOrder);
+         lastOrder=orderNumb;
       }
    }
 
@@ -257,14 +262,15 @@ public class TestNodeOrder extends JcrImplBaseTest
       NodeIterator nodes = testNode.getNodes();
       assertEquals(8, nodes.getSize());
 
-      int order = 0;
+      int lastOrder = -1;
       for (; nodes.hasNext();)
       {
          NodeImpl n = (NodeImpl)nodes.nextNode();
          int orderNumb = ((NodeData)n.getData()).getOrderNumber();
          log.info(orderNumb + ": " + n.getPath());
 
-         assertEquals(order++, orderNumb);
+         assertTrue(orderNumb>lastOrder);
+         lastOrder=orderNumb;
       }
    }
 
@@ -287,11 +293,11 @@ public class TestNodeOrder extends JcrImplBaseTest
 
       //check order numbers
       NodeImpl foo = (NodeImpl)list.getNode("foo");
-      assertEquals(0, ((NodeData)foo.getData()).getOrderNumber());
+      assertTrue(((NodeData)foo.getData()).getOrderNumber()>-1);
       NodeImpl juu = (NodeImpl)list.getNode("juu");
-      assertEquals(2, ((NodeData)juu.getData()).getOrderNumber());
+      assertTrue(((NodeData)juu.getData()).getOrderNumber()>((NodeData)foo.getData()).getOrderNumber());
       NodeImpl daa = (NodeImpl)list.getNode("daa");
-      assertEquals(3, ((NodeData)daa.getData()).getOrderNumber());
+      assertTrue(((NodeData)daa.getData()).getOrderNumber()>((NodeData)juu.getData()).getOrderNumber());
 
       //     list.orderBefore("daa", null);
       NodeIterator it = list.getNodes();

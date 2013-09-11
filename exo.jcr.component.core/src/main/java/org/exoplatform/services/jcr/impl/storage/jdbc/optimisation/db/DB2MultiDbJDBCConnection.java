@@ -16,9 +16,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
+import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
+import javax.jcr.RepositoryException;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -75,6 +77,8 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
             + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I"
             + " where I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ?,?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
+         "select next value for JCR_N_ORDER_NUM  from SYSIBM.SYSDUMMY1";
    }
    
    /**
@@ -97,5 +101,59 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
       findNodesAndProperties.setInt(3, limit);
 
       return findNodesAndProperties.executeQuery();
-   }   
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
+   {
+      if (findLastOrderNumberByParentId == null)
+      {
+         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
+      }
+
+      return findLastOrderNumberByParentId.executeQuery();
+   }
+
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public int getLastOrderNumber(NodeData parent) throws RepositoryException
+   {
+      checkIfOpened();
+      try
+      {
+         ResultSet count = findLastOrderNumberByParentIdentifier(getInternalId(parent.getIdentifier()));
+         try
+         {
+            if (count.next())
+            {
+               return count.getInt(1) - 1;
+            }
+            else
+            {
+               return -1;
+            }
+         }
+         finally
+         {
+            try
+            {
+               count.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
 }
