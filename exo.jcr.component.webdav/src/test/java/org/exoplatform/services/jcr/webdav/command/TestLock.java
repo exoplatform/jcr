@@ -59,8 +59,10 @@ public class TestLock extends BaseStandaloneTest
    public void setUp() throws Exception
    {
       super.setUp();
+      session.getRootNode().addNode(TextUtil.relativizePath(path));
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
       TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
+      path = path + "[2]";
    }
 
    /**
@@ -96,7 +98,7 @@ public class TestLock extends BaseStandaloneTest
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.CONTENTTYPE, MediaType.TEXT_PLAIN);
       ContainerResponse containerResponse =
-         service(WebDAVMethods.LOCK, pathWs + path, "", headers, lockRequestBody.getBytes());
+               serviceWithEscape(WebDAVMethods.LOCK, pathWs + path, "", headers, lockRequestBody.getBytes());
 
       assertEquals(HTTPStatus.OK, containerResponse.getStatus());
 
@@ -105,7 +107,7 @@ public class TestLock extends BaseStandaloneTest
       LockResultResponseEntity entity = (LockResultResponseEntity)containerResponse.getEntity();
       entity.write(outputStream);
 
-      containerResponse = service("DELETE", pathWs + path, "", null, null);
+      containerResponse = serviceWithEscape("DELETE", pathWs + path, "", null, null);
 
       assertEquals(HTTPStatus.LOCKED, containerResponse.getStatus());
       assertTrue(session.getRootNode().getNode(TextUtil.relativizePath(path)).isLocked());
@@ -131,8 +133,7 @@ public class TestLock extends BaseStandaloneTest
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add("Content-Type", MediaType.TEXT_PLAIN);
       ContainerResponse containerResponse =
-         service(WebDAVMethods.LOCK, getPathWS() + path, "", headers, lockRequestBody.getBytes());
-      MultivaluedMap<String, Object> lockResponseHeaders = containerResponse.getHttpHeaders();
+         serviceWithEscape(WebDAVMethods.LOCK, getPathWS() + path, "", headers, lockRequestBody.getBytes());
 
       assertEquals(HTTPStatus.OK, containerResponse.getStatus());
 
@@ -151,7 +152,7 @@ public class TestLock extends BaseStandaloneTest
       headers.add(ExtHttpHeaders.CONTENTTYPE, MediaType.TEXT_PLAIN);
       headers.add(ExtHttpHeaders.LOCKTOKEN, lockToken);
 
-      containerResponse = service(WebDAVMethods.LOCK, getPathWS() + path, "", headers, null);
+      containerResponse = serviceWithEscape(WebDAVMethods.LOCK, getPathWS() + path, "", headers, null);
 
       assertEquals(HTTPStatus.OK, containerResponse.getStatus());
 
@@ -177,7 +178,7 @@ public class TestLock extends BaseStandaloneTest
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.CONTENTTYPE, MediaType.TEXT_PLAIN);
       ContainerResponse containerResponse =
-         service(WebDAVMethods.LOCK, getPathWS() + path, "", headers, lockRequestBody.getBytes());
+         serviceWithEscape(WebDAVMethods.LOCK, getPathWS() + path, "", headers, lockRequestBody.getBytes());
 
       assertEquals(HTTPStatus.OK, containerResponse.getStatus());
 
@@ -193,7 +194,7 @@ public class TestLock extends BaseStandaloneTest
       // prepare to send lock request
       headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.CONTENTTYPE, MediaType.TEXT_PLAIN);
-      containerResponse = service(WebDAVMethods.LOCK, getPathWS() + path, "", headers, lockRequestBody.getBytes());
+      containerResponse = serviceWithEscape(WebDAVMethods.LOCK, getPathWS() + path, "", headers, lockRequestBody.getBytes());
 
       assertEquals(HTTPStatus.LOCKED, containerResponse.getStatus());
 
@@ -211,7 +212,7 @@ public class TestLock extends BaseStandaloneTest
    public void testLockForNonExistingWorkspace() throws Exception
    {
       ContainerResponse response =
-         service(WebDAVMethods.LOCK, getPathWS() + "_" + path, "", null, lockRequestBody.getBytes());
+         serviceWithEscape(WebDAVMethods.LOCK, getPathWS() + "_" + path, "", null, lockRequestBody.getBytes());
 
       assertEquals(HTTPStatus.CONFLICT, response.getStatus());
    }

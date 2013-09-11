@@ -101,7 +101,7 @@ public class TestPropFind extends BaseStandaloneTest
    public void setUp() throws Exception
    {
       super.setUp();
-      testPropFind = root.addNode("TestPropFind", "nt:folder");
+      testPropFind = root.addNode("TestPropFind");
    }
 
    public void testPropfindComplexContent() throws Exception
@@ -109,10 +109,12 @@ public class TestPropFind extends BaseStandaloneTest
 
       String path = testPropFind.getPath() + "/testPropfindComplexContent";
 
+      session.getRootNode().addNode(TextUtil.relativizePath(path));
       // prepare data
       Node node =
          TestUtils.addContent(session, path, new ByteArrayInputStream("file content".getBytes()), "nt:file",
             "exo:testResource", "text/plain");
+      path = path + "[2]";
 
       node.getNode("jcr:content").addNode("node", "nt:unstructured").setProperty("node-prop", "prop");
       node.getNode("jcr:content").setProperty("exo:prop", "prop");
@@ -131,8 +133,10 @@ public class TestPropFind extends BaseStandaloneTest
    {
       String content = TestUtils.getFileContent();
       String file = TestUtils.getFileName();
+      session.getRootNode().addNode(TextUtil.relativizePath(file));
       TestUtils.addContent(session, file, new ByteArrayInputStream(content.getBytes()), WEBDAV_NT_FILE, "");
-      ContainerResponse containerResponseFind = service(WebDAVMethods.PROPFIND, getPathWS() + file, "", null, null);
+      file = file + "[2]";
+      ContainerResponse containerResponseFind = serviceWithEscape(WebDAVMethods.PROPFIND, getPathWS() + file, "", null, null);
       assertEquals(HTTPStatus.MULTISTATUS, containerResponseFind.getStatus());
    }
 

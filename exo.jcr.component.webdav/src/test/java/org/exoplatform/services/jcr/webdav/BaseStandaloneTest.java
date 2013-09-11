@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
+import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ContainerResponseWriter;
@@ -139,7 +140,7 @@ public abstract class BaseStandaloneTest extends TestCase
       providers = ProviderBinder.getInstance();
       ApplicationContextImpl.setCurrent(new ApplicationContextImpl(null, null, providers));
 
-      root = session.getRootNode().addNode("webdav-test", "nt:folder");
+      root = session.getRootNode().addNode("webdav-test");
 
       // session.save();
 
@@ -172,7 +173,12 @@ public abstract class BaseStandaloneTest extends TestCase
       MultivaluedMap<String, String> headers, byte[] data) throws Exception
    {
       return service(method, requestURI, baseURI, headers, data, new DummyContainerResponseWriter());
+   }
 
+   public ContainerResponse serviceWithEscape(String method, String requestURI, String baseURI,
+      MultivaluedMap<String, String> headers, byte[] data) throws Exception
+   {
+      return service(method, escape(requestURI), baseURI, headers, data, new DummyContainerResponseWriter());
    }
 
    protected void tearDown() throws Exception
@@ -234,5 +240,10 @@ public abstract class BaseStandaloneTest extends TestCase
    public String getPathDestWS()
    {
       return "/jcr/" + repoName + "/" + DEST_WORKSPACE;
+   }
+
+   public String escape(String path)
+   {
+      return TextUtil.escape(path, '%', true);
    }
 }

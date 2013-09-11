@@ -102,18 +102,16 @@ public class PutCommand
          {
             node = (Node)session.getItem(path);
          }
-
          catch (PathNotFoundException pexc)
          {
             nullResourceLocks.checkLock(session, path, tokens);
          }
 
-         //if (node == null || "add".equals(updatePolicyType))
          if (node == null)
          {
-
-            node = session.getRootNode().addNode(TextUtil.relativizePath(path), fileNodeType);
-
+            node = session.getRootNode().addNode(TextUtil.relativizePath(path, false), fileNodeType);
+            // We set the new path
+            path = node.getPath();
             node.addNode("jcr:content", contentNodeType);
             updateContent(node, inputStream, mixins);
          }
@@ -124,7 +122,9 @@ public class PutCommand
                node = session.getRootNode().getNode(TextUtil.relativizePath(path));
                if (!node.isNodeType("mix:versionable"))
                {
-                  node = session.getRootNode().addNode(TextUtil.relativizePath(path), fileNodeType);
+                  node = session.getRootNode().addNode(TextUtil.relativizePath(path, false), fileNodeType);
+                  // We set the new path
+                  path = node.getPath();
                   node.addNode("jcr:content", contentNodeType);
                   updateContent(node, inputStream, mixins);
                }
@@ -132,7 +132,6 @@ public class PutCommand
                {
                   updateVersion(node, inputStream, autoVersion, mixins);
                }
-
             }
             else if ("create-version".equals(updatePolicyType))
             {

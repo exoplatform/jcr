@@ -95,6 +95,8 @@ public class TestAclCommand extends BaseStandaloneTest
     */
    private void testSetACLForTwoUsersOnNonPrivilegeableResource(String pathWs) throws Exception
    {
+      root.addNode(TEST_NODE_NAME);
+
       NodeImpl testNode = (NodeImpl)root.addNode(TEST_NODE_NAME, "nt:folder");
       session.save();
 
@@ -127,13 +129,13 @@ public class TestAclCommand extends BaseStandaloneTest
             + "</D:ace>" + "</D:acl>";
 
       ContainerResponse response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, pathWs + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(pathWs + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.OK, response.getStatus());
 
       session.refresh(false);
-      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME);
+      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME + "[2]");
       testNode.setPermission(USER_ROOT, new String[]{"read", "add_node", "set_property", "remove"});
       testNode.removePermission(IdentityConstants.ANY);
       session.save();
@@ -159,7 +161,7 @@ public class TestAclCommand extends BaseStandaloneTest
     */
    public void testDenyPermissionOnPrivilegeableResource() throws Exception
    {
-
+      root.addNode(TEST_NODE_NAME);
       NodeImpl testNode = (NodeImpl)root.addNode(TEST_NODE_NAME, "nt:folder");
       testNode.addMixin("mix:versionable");
       testNode.addMixin("exo:privilegeable");
@@ -195,13 +197,13 @@ public class TestAclCommand extends BaseStandaloneTest
             + "</D:deny>" + "</D:ace>" + "</D:acl>";
 
       ContainerResponse response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.OK, response.getStatus());
 
       session.refresh(false);
-      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME);
+      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME + "[2]");
 
       checkPermissionRemoved(testNode, USER_ONE, PermissionType.ADD_NODE);
       checkPermissionRemoved(testNode, USER_ONE, PermissionType.SET_PROPERTY);
@@ -219,6 +221,7 @@ public class TestAclCommand extends BaseStandaloneTest
     */
    public void testDenyAndGrantInASingleACE() throws Exception
    {
+      root.addNode(TEST_NODE_NAME);
 
       NodeImpl testNode = (NodeImpl)root.addNode(TEST_NODE_NAME, "nt:folder");
       testNode.addMixin("mix:versionable");
@@ -255,7 +258,7 @@ public class TestAclCommand extends BaseStandaloneTest
             + "<D:privilege><D:write/></D:privilege>" + "</D:grant>" + "</D:ace>" + "</D:acl>";
 
       ContainerResponse response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.BAD_REQUEST, response.getStatus());
@@ -272,6 +275,8 @@ public class TestAclCommand extends BaseStandaloneTest
     */
    public void testSetAllPermissionsForAllUsersOnPrivilegeableResource() throws Exception
    {
+      root.addNode(TEST_NODE_NAME);
+
       NodeImpl testNode = (NodeImpl)root.addNode(TEST_NODE_NAME, "nt:folder");
       testNode.addMixin("exo:owneable");
       testNode.addMixin("exo:privilegeable");
@@ -311,14 +316,14 @@ public class TestAclCommand extends BaseStandaloneTest
             + "</D:ace>" + "</D:acl>";
 
       ContainerResponse response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI,
             headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.OK, response.getStatus());
 
       session.refresh(false);
-      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME);
+      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME + "[2]");
 
       checkPermissionSet(testNode, IdentityConstants.ANY, PermissionType.ADD_NODE);
       checkPermissionSet(testNode, IdentityConstants.ANY, PermissionType.SET_PROPERTY);
@@ -336,6 +341,8 @@ public class TestAclCommand extends BaseStandaloneTest
     */
    public void testWrongGrantElementAceElementInAclBody() throws Exception
    {
+      root.addNode(TEST_NODE_NAME);
+
       NodeImpl testNode = (NodeImpl)root.addNode(TEST_NODE_NAME, "nt:folder");
       testNode.addMixin("exo:owneable");
       testNode.addMixin("exo:privilegeable");
@@ -371,7 +378,7 @@ public class TestAclCommand extends BaseStandaloneTest
             + "</D:grant>" + "</D:ace>" + "</D:acl>";
 
       ContainerResponse response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.BAD_REQUEST, response.getStatus());
@@ -381,7 +388,7 @@ public class TestAclCommand extends BaseStandaloneTest
             + "<D:all />" + "</D:principal>" + "<D:grant></D:grant>" + "</D:ace>" + "</D:acl>";
 
       response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.BAD_REQUEST, response.getStatus());
@@ -392,7 +399,7 @@ public class TestAclCommand extends BaseStandaloneTest
             + "</D:acl>";
 
       response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.BAD_REQUEST, response.getStatus());
@@ -408,6 +415,8 @@ public class TestAclCommand extends BaseStandaloneTest
     */
    public void testWrongAceElementInAclBody() throws Exception
    {
+      root.addNode(TEST_NODE_NAME);
+
       NodeImpl testNode = (NodeImpl)root.addNode(TEST_NODE_NAME, "nt:folder");
       session.save();
       testNode.addMixin("exo:owneable");
@@ -441,7 +450,7 @@ public class TestAclCommand extends BaseStandaloneTest
          "<?xml version=\"1.0\" encoding=\"utf-8\" ?>" + "<D:acl xmlns:D=\"DAV:\">" + "<D:ace>" + "</D:ace>" + "</D:acl>";
 
       ContainerResponse response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI,
             headers,
             request.getBytes(), null, ctx);
 
@@ -452,7 +461,7 @@ public class TestAclCommand extends BaseStandaloneTest
             + "</D:grant>" + "</D:ace>" + "</D:acl>";
       
       response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI,
             headers,
             request.getBytes(), null, ctx);
 
@@ -463,7 +472,7 @@ public class TestAclCommand extends BaseStandaloneTest
          + "<D:all />" + "</D:principal>" + "</D:ace>" + "</D:acl>";
       
       response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI,
             headers,
             request.getBytes(), null, ctx);
 
@@ -480,6 +489,8 @@ public class TestAclCommand extends BaseStandaloneTest
     */
    public void testWrongPrincipalElementInAclBody() throws Exception
    {
+      root.addNode(TEST_NODE_NAME);
+
       NodeImpl testNode = (NodeImpl)root.addNode(TEST_NODE_NAME, "nt:folder");
       session.save();
       testNode.addMixin("exo:owneable");
@@ -514,7 +525,7 @@ public class TestAclCommand extends BaseStandaloneTest
             + "</D:ace>" + "</D:acl>";
 
       ContainerResponse response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.BAD_REQUEST, response.getStatus());
@@ -525,7 +536,7 @@ public class TestAclCommand extends BaseStandaloneTest
             + "</D:grant>" + "</D:ace>" + "</D:acl>";
 
       response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.BAD_REQUEST, response.getStatus());
@@ -536,7 +547,7 @@ public class TestAclCommand extends BaseStandaloneTest
             + "<D:privilege><D:read /><D:write /></D:privilege>" + "</D:grant>" + "</D:ace>" + "</D:acl>";
 
       response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.BAD_REQUEST, response.getStatus());
@@ -547,7 +558,7 @@ public class TestAclCommand extends BaseStandaloneTest
             + "<D:privilege><D:read /><D:write /></D:privilege>" + "</D:grant>" + "</D:ace>" + "</D:acl>";
 
       response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.BAD_REQUEST, response.getStatus());
@@ -565,6 +576,8 @@ public class TestAclCommand extends BaseStandaloneTest
     */
    public void testSetAclForVersionableOwneablePrivilegeableCheckedOutNode() throws Exception
    {
+      root.addNode(TEST_NODE_NAME);
+
       NodeImpl testNode = (NodeImpl)root.addNode(TEST_NODE_NAME, "nt:folder");
       session.save();
       testNode.addMixin("exo:owneable");
@@ -609,13 +622,13 @@ public class TestAclCommand extends BaseStandaloneTest
       RequestHandlerImpl handler = (RequestHandlerImpl)container.getComponentInstanceOfType(RequestHandlerImpl.class);
       ResourceLauncher launcher = new ResourceLauncher(handler);
       ContainerResponse response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
       
       assertEquals(HTTPStatus.OK, response.getStatus());
 
       session.refresh(false);
-      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME);
+      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME + "[2]");
 
       checkPermissionSet(testNode, IdentityConstants.ANY, PermissionType.ADD_NODE);
       checkPermissionSet(testNode, IdentityConstants.ANY, PermissionType.SET_PROPERTY);
@@ -635,6 +648,8 @@ public class TestAclCommand extends BaseStandaloneTest
     */
    public void testSetAclForVersionableCheckedInNode() throws Exception
    {
+      root.addNode(TEST_NODE_NAME);
+
       NodeImpl testNode = (NodeImpl)root.addNode(TEST_NODE_NAME, "nt:folder");
       session.save();
       testNode.addMixin("mix:versionable");
@@ -675,13 +690,13 @@ public class TestAclCommand extends BaseStandaloneTest
       RequestHandlerImpl handler = (RequestHandlerImpl)container.getComponentInstanceOfType(RequestHandlerImpl.class);
       ResourceLauncher launcher = new ResourceLauncher(handler);
       ContainerResponse response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.OK, response.getStatus());
 
       session.refresh(false);
-      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME);
+      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME + "[2]");
 
       checkPermissionSet(testNode, USER_ONE, PermissionType.ADD_NODE);
       checkPermissionSet(testNode, USER_ONE, PermissionType.SET_PROPERTY);
@@ -701,6 +716,8 @@ public class TestAclCommand extends BaseStandaloneTest
     */
    public void testSetAclForVersionableOwneablePrivilegeableCheckedInNode() throws Exception
    {
+      root.addNode(TEST_NODE_NAME);
+
       NodeImpl testNode = (NodeImpl)root.addNode(TEST_NODE_NAME, "nt:folder");
       session.save();
       testNode.addMixin("exo:owneable");
@@ -745,13 +762,13 @@ public class TestAclCommand extends BaseStandaloneTest
       RequestHandlerImpl handler = (RequestHandlerImpl)container.getComponentInstanceOfType(RequestHandlerImpl.class);
       ResourceLauncher launcher = new ResourceLauncher(handler);
       ContainerResponse response =
-         launcher.service(WebDavConstants.WebDAVMethods.ACL, getPathWS() + testNode.getPath(), BASE_URI, headers,
+         launcher.service(WebDavConstants.WebDAVMethods.ACL, escape(getPathWS() + testNode.getPath()), BASE_URI, headers,
             request.getBytes(), null, ctx);
 
       assertEquals(HTTPStatus.OK, response.getStatus());
 
       session.refresh(false);
-      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME);
+      testNode = (NodeImpl)root.getNode(TEST_NODE_NAME + "[2]");
 
       checkPermissionSet(testNode, IdentityConstants.ANY, PermissionType.ADD_NODE);
       checkPermissionSet(testNode, IdentityConstants.ANY, PermissionType.SET_PROPERTY);
