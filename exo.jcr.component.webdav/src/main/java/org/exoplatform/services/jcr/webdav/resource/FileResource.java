@@ -204,7 +204,7 @@ public class FileResource extends GenericResource
    {
       if (name.equals(DISPLAYNAME))
       {
-         return new HierarchicalProperty(name, node.getName());
+         return new HierarchicalProperty(name, node.getName() + (node.getIndex() > 1 ? "[" + node.getIndex() + "]" : ""));
       }
       else if (name.equals(CREATIONDATE))
       {

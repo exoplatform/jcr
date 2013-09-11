@@ -22,6 +22,7 @@ import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
 import org.exoplatform.services.jcr.webdav.command.dasl.SearchResultResponseEntity;
+import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.impl.ContainerResponse;
 
@@ -82,6 +83,7 @@ public class TestSearch extends BaseStandaloneTest
    // "</D:searchrequest>";
    private void testBasicSearch(String pathWs) throws Exception
    {
+      session.getRootNode().addNode(TextUtil.relativizePath(fileName));
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
       TestUtils.addContent(session, fileName, inputStream, defaultFileNodeType, MediaType.TEXT_PLAIN);
       ContainerResponse response = service(WebDAVMethods.SEARCH, pathWs, "", null, basicSql.getBytes());

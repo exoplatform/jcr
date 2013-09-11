@@ -69,6 +69,7 @@ public class TestPropPatch extends BaseStandaloneTest
    private void testPropPatchSetWithLock2(String pathWs) throws Exception
    {
       String fileName = "testPropPatchFile";
+      session.getRootNode().addNode(fileName);
 
       Node node = session.getRootNode().addNode(fileName, nt_webdave_file);
       node.setProperty(authorProp, author);
@@ -83,8 +84,9 @@ public class TestPropPatch extends BaseStandaloneTest
       node.lock(true, true);
       session.save();
 
+      fileName = fileName + "[2]";
       ContainerResponse response =
-         service(WebDAVMethods.PROPPATCH, pathWs + "/" + fileName, "", null, patch.getBytes());
+         serviceWithEscape(WebDAVMethods.PROPPATCH, pathWs + "/" + fileName, "", null, patch.getBytes());
       PropPatchResponseEntity entity = (PropPatchResponseEntity)response.getEntity();
       ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
       entity.write(outputStream);

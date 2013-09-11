@@ -153,9 +153,42 @@ public class TextUtil
     */
    public static String relativizePath(String path)
    {
+      return relativizePath(path, true);
+   }
+
+   /**
+    * Creates relative path from string.
+    * 
+    * @param path path
+    * @param withIndex indicates whether we should keep the index or not
+    * @return relative path 
+    */
+   public static String relativizePath(String path, boolean withIndex)
+   {
 
       if (path.startsWith("/"))
-         return path.substring(1);
+         path = path.substring(1);
+      if (!withIndex && path.endsWith("]"))
+      {
+         int index = path.lastIndexOf('[');
+         return index == -1 ? path : path.substring(0, index);
+      }
+      return path;
+   }
+
+   /**
+    * Removes the index from the path if it has an index defined
+    */
+   public static String removeIndexFromPath(String path)
+   {
+      if (path.endsWith("]"))
+      {
+         int index = path.lastIndexOf('[');
+         if (index != -1)
+         {
+            return path.substring(0, index);
+         }
+      }
       return path;
    }
 
@@ -205,8 +238,14 @@ public class TextUtil
     */
    public static String nameOnly(String path)
    {
-      String[] curNames = path.split("/");
-      return curNames[curNames.length - 1];
+      int index = path.lastIndexOf('/');
+      String name = index == -1 ? path : path.substring(index + 1);
+      if (name.endsWith("]"))
+      {
+         index = name.lastIndexOf('[');
+         return index == -1 ? name : name.substring(0, index);
+      }
+      return name;
    }
 
    /**
