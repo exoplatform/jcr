@@ -128,8 +128,17 @@ public class SybaseConnectionFactory extends GenericCQConnectionFactory
     * {@inheritDoc}
     */
    @Override
-   public boolean isReindexingSupport()
+   public boolean isReindexingSupported()
    {
       return true;
-   }    
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean isOffsetSupported()
+   {
+      return false;
+   }
 }

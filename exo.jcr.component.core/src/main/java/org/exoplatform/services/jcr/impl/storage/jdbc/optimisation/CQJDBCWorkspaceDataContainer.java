@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.DB2DBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
@@ -204,7 +205,8 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
                   valueStorageProvider, maxBufferSize, swapDirectory, swapCleaner);
          }
 
-         dbInitializer = defaultDBInitializer(sqlPath);
+         dbInitializer =
+            new DB2DBInitializer(containerName, this.connFactory.getJdbcConnection(), sqlPath, multiDb);
       }
       else if (dbDialect == DBConstants.DB_DIALECT_DB2V8)
       {

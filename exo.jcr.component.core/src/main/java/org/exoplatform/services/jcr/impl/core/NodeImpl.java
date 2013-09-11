@@ -2735,7 +2735,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          }
       }
 
-      // check if resulting order would be different to current order
+      int[] order = new int[siblings.size()];
+      for (int i = 0; i < siblings.size(); i++)
+      {
+           order[i] = siblings.get(i).getOrderNumber();
+      }
+
+       // check if resulting order would be different to current order
       if (destInd == -1)
       {
          if (srcInd == siblings.size() - 1)
@@ -2785,7 +2791,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          }
 
          // skeep unchanged
-         if (sdata.getOrderNumber() == j)
+         if (sdata.getOrderNumber() == order[j])
          {
             continue;
          }
@@ -2801,14 +2807,14 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
             newData =
                new TransientNodeData(siblingPath, newData.getIdentifier(), newData.getPersistedVersion(), newData
-                  .getPrimaryTypeName(), newData.getMixinTypeNames(), j, newData.getParentIdentifier(), newData
+                  .getPrimaryTypeName(), newData.getMixinTypeNames(), order[j], newData.getParentIdentifier(), newData
                   .getACL());
          }
          else
          {
             newData =
                new TransientNodeData(newData.getQPath(), newData.getIdentifier(), newData.getPersistedVersion(),
-                  newData.getPrimaryTypeName(), newData.getMixinTypeNames(), j, newData.getParentIdentifier(), newData
+                  newData.getPrimaryTypeName(), newData.getMixinTypeNames(), order[j], newData.getParentIdentifier(), newData
                      .getACL());
          }
 

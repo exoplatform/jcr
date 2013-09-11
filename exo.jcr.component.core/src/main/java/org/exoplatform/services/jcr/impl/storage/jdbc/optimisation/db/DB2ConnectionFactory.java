@@ -144,7 +144,7 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
     * {@inheritDoc}
     */
    @Override
-   public boolean isReindexingSupport()
+   public boolean isReindexingSupported()
    {
       if (isReindexingSupport == null)
       {
@@ -246,5 +246,14 @@ public class DB2ConnectionFactory extends GenericCQConnectionFactory
       }
 
       return isReindexingSupport;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public boolean isOffsetSupported()
+   {
+      return false;
    }
 }

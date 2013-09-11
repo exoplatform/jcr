@@ -260,14 +260,6 @@
 
       <itemizedlist>
         <listitem>
-          <para>RDBMS reindexing feature use queries based on LIMIT and OFFSET
-          clauses which are not enabled by default. However, you can ensure
-          they are enabled by executing the following <programlisting>$ db2set DB2_COMPATIBILITY_VECTOR=MYS
-$ db2stop
-$ db2start</programlisting></para>
-        </listitem>
-
-        <listitem>
           <para>Statistics is collected <ulink
           url="http://publib.boulder.ibm.com/infocenter/db2luw/v9/index.jsp?topic=/com.ibm.db2.udb.admin.doc/doc/c0011762.htm">automatically</ulink>
           starting from DB2 Version 9, however it is needed to launch

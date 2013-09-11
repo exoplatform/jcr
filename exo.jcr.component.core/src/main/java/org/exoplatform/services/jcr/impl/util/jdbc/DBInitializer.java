@@ -117,12 +117,12 @@ public class DBInitializer
       });
    }
 
-   protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
+   protected boolean isSequenceExists(final Connection conn, final String sequenceName) throws SQLException
    {
       return false;
    }
 
-   private boolean isObjectExists(Connection conn, String sql, Set<String> existingTables) throws SQLException
+   protected boolean isObjectExists(Connection conn, String sql, Set<String> existingTables) throws SQLException
    {
       Matcher tMatcher = creatTablePattern.matcher(sql);
       if (tMatcher.find())
@@ -276,7 +276,7 @@ public class DBInitializer
                   LOG.debug("Execute script: \n[" + sql + "]");
                }
                final Statement finalSt = st;
-               final String finalSql = sql;
+               final String finalSql = updateQuery(sql);
                SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
                {
                   public Object run() throws Exception
@@ -357,4 +357,13 @@ public class DBInitializer
    {
 
    }
+
+   /**
+    * Update the sql query in overridden classes.
+    */
+   protected String updateQuery(String sql)
+   {
+      return sql;
+   }
+
 }

@@ -49,29 +49,16 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected String COUNT_NODES_IN_TEMPORARY_TABLE;
 
    /**
-    * SELECT_LIMIT_NODES_FROM_TEMPORARY_TABLE
-    */
-   protected String SELECT_LIMIT_NODES_FROM_TEMPORARY_TABLE;
-
-   /**
     * DELETE_TEMPORARY_TABLE_A
     */
    protected String DELETE_TEMPORARY_TABLE_A;
 
-   /**
-    * DELETE_TEMPORARY_TABLE_B
-    */
-   protected String DELETE_TEMPORARY_TABLE_B;
 
    protected PreparedStatement selectLimitOffsetNodesIntoTemporaryTable;
 
-   protected PreparedStatement selectLimitNodesInTemporaryTable;
 
    protected PreparedStatement deleteTemporaryTableA;
 
-   protected PreparedStatement deleteTemporaryTableB;
-
-   protected PreparedStatement countNodesInTemporaryTable;
 
    public SybaseMultiDbJDBCConnection(Connection dbConnection, boolean readOnly, String containerName,
       ValueStoragePluginProvider valueStorageProvider, int maxBufferSize, File swapDirectory, FileCleaner swapCleaner)
@@ -116,29 +103,23 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
       super.prepareQueries();
 
       SELECT_LIMIT_OFFSET_NODES_INTO_TEMPORARY_TABLE =
-               "select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM into "
+               "select TOP ${TOP} I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM into "
                         + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME
-                        + " from JCR_MITEM I (index JCR_PK_MITEM) where I.I_CLASS=1 AND I.ID > ? order by I.ID ASC";
+                        + " from JCR_MITEM I (index JCR_PK_MITEM) where I.I_CLASS=1 AND I.ID > ? order by I.ID" ;
 
       COUNT_NODES_IN_TEMPORARY_TABLE = "select count(*) from " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
-      SELECT_LIMIT_NODES_FROM_TEMPORARY_TABLE =
-               "select * into " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + " from "
-                        + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + " order by "
-                        + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + ".ID DESC";
-
       FIND_NODES_AND_PROPERTIES =
-               "select " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
+               "select " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME
                         + ".*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
                         + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P, "
-                        + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + " where P.PARENT_ID = "
-                        + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
+                        + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + " where P.PARENT_ID = "
+                        + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME
                         + ".ID and P.I_CLASS=2 and V.PROPERTY_ID=P.ID "
-                        + "order by " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + ".ID";
+                        + "order by " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + ".ID";
 
       DELETE_TEMPORARY_TABLE_A = "drop table " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
-      DELETE_TEMPORARY_TABLE_B = "drop table " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME;
    }
 
    /**
@@ -147,10 +128,8 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException
    {
       String tempTableAName = "tempdb..a" + IdGenerator.generate();
-      String tempTableBName = "tempdb..b" + IdGenerator.generate();
 
       boolean tempTableACreated = false;
-      boolean tempTableBCreated = false;
 
       try
       {
@@ -161,17 +140,10 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
          }
 
          selectLimitOffsetNodesIntoTemporaryTable =
-                  dbConnection.prepareStatement(SELECT_LIMIT_OFFSET_NODES_INTO_TEMPORARY_TABLE.replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName));
+            dbConnection.prepareStatement(SELECT_LIMIT_OFFSET_NODES_INTO_TEMPORARY_TABLE.replaceAll(
+               SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName).replace("${TOP}",
+               new Integer(offset + limit).toString()));
 
-         countNodesInTemporaryTable =
-                  dbConnection.prepareStatement(COUNT_NODES_IN_TEMPORARY_TABLE.replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName));
-
-         selectLimitNodesInTemporaryTable =
-                  dbConnection.prepareStatement(SELECT_LIMIT_NODES_FROM_TEMPORARY_TABLE.replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName).replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME, tempTableBName));
 
          if (findNodesAndProperties != null)
          {
@@ -180,49 +152,16 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
 
          findNodesAndProperties =
                   dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES.replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME, tempTableBName));
+                           SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName));
 
          deleteTemporaryTableA =
                   dbConnection.prepareStatement(DELETE_TEMPORARY_TABLE_A.replaceAll(
                            SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME, tempTableAName));
 
-         deleteTemporaryTableB =
-                  dbConnection.prepareStatement(DELETE_TEMPORARY_TABLE_B.replaceAll(
-                           SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME, tempTableBName));
-
-         selectLimitOffsetNodesIntoTemporaryTable.setMaxRows(limit + offset);
          selectLimitOffsetNodesIntoTemporaryTable.setString(1, lastNodeId);
          selectLimitOffsetNodesIntoTemporaryTable.execute();
 
          tempTableACreated = true;
-
-         ResultSet nodesCountInTemporaryTable = countNodesInTemporaryTable.executeQuery();
-
-         if (!nodesCountInTemporaryTable.next())
-         {
-            throw new SQLException("Can not count nodes in temporary table.");
-         }
-
-         int count = nodesCountInTemporaryTable.getInt(1);
-
-         // define newLimit if number of records in temporary table #tempA is equal offset + limit 
-         int newLimit = limit;
-
-         if (offset > count)
-         {
-            // return empty ResultSet because there are no enough nodes to return
-            return new EmptyResultSet();
-         }
-         else if (offset + limit > count)
-         {
-            // it is possible to select only count-offset nodes from temporary table #tempA
-            newLimit = count - offset;
-         }
-
-         selectLimitNodesInTemporaryTable.setMaxRows(newLimit);
-         selectLimitNodesInTemporaryTable.execute();
-
-         tempTableBCreated = true;
 
          return findNodesAndProperties.executeQuery();
       }
@@ -240,27 +179,10 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
             }
          }
 
-         if (tempTableBCreated)
-         {
-            try
-            {
-               deleteTemporaryTableB.execute();
-            }
-            catch (SQLException e)
-            {
-               LOG.warn("Can not delete temporary table " + tempTableBName);
-            }
-         }
-
          // close prepared statement since we always create new
          if (selectLimitOffsetNodesIntoTemporaryTable != null)
          {
             selectLimitOffsetNodesIntoTemporaryTable.close();
-         }
-
-         if (selectLimitNodesInTemporaryTable != null)
-         {
-            selectLimitNodesInTemporaryTable.close();
          }
 
          if (deleteTemporaryTableA != null)
@@ -268,15 +190,6 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
             deleteTemporaryTableA.close();
          }
 
-         if (deleteTemporaryTableB != null)
-         {
-            deleteTemporaryTableB.close();
-         }
-
-         if (countNodesInTemporaryTable != null)
-         {
-            countNodesInTemporaryTable.close();
-         }
       }
    }
 }

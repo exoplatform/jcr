@@ -16,11 +16,14 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
+import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 
+import javax.jcr.RepositoryException;
 import java.io.File;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -73,10 +76,22 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"
             + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I"
-            + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ?,?) J on P.PARENT_ID = J.ID"
+            + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID FETCH FIRST $rowNb ROWS ONLY) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
+      FIND_NODES_BY_PARENTID_LAZILY_CQ =
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SVALUE V, JCR_SITEM P "
+            + " join (select J.* from JCR_SITEM J where J.CONTAINER_NAME=? AND J.I_CLASS=1 and J.PARENT_ID=?"
+            + " AND J.N_ORDER_NUM  >= ? order by J.N_ORDER_NUM, J.ID FETCH FIRST $rowNb ROWS ONLY) I on P.PARENT_ID = I.ID"
+            + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
+         "VALUES NEXT VALUE FOR JCR_SITEM_SEQ";
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -85,6 +100,7 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
    {
       if (findNodesAndProperties == null)
       {
+         FIND_NODES_AND_PROPERTIES=FIND_NODES_AND_PROPERTIES.replace("$rowNb",Integer.toString(limit));
          findNodesAndProperties = dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES);
       }
       else
@@ -94,10 +110,140 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
 
       findNodesAndProperties.setString(1, containerName);
       findNodesAndProperties.setString(2, getInternalId(lastNodeId));
-      findNodesAndProperties.setInt(3, offset);
-      findNodesAndProperties.setInt(4, limit);
-      findNodesAndProperties.setString(5, containerName);
+      findNodesAndProperties.setString(3, containerName);
 
       return findNodesAndProperties.executeQuery();
-   }   
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
+   {
+      if (findLastOrderNumberByParentId == null)
+      {
+         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
+      }
+
+      return findLastOrderNumberByParentId.executeQuery();
+   }
+
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public int getLastOrderNumber(NodeData parent) throws RepositoryException
+   {
+      checkIfOpened();
+      try
+      {
+         ResultSet count = findLastOrderNumberByParentIdentifier(getInternalId(parent.getIdentifier()));
+         try
+         {
+            if (count.next())
+            {
+               return count.getInt(1) - 1;
+            }
+            else
+            {
+               return -1;
+            }
+         }
+         finally
+         {
+            try
+            {
+               count.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e);
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+
+   }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
+      throws SQLException
+   {
+      if (findNodesByParentIdLazilyCQ == null)
+      {
+         int page= toOrderNum-fromOrderNum+1 ;
+         FIND_NODES_BY_PARENTID_LAZILY_CQ=FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("$rowNb",Integer.toString(page));
+         findNodesByParentIdLazilyCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_LAZILY_CQ);
+      }
+      else
+         findNodesByParentIdLazilyCQ.clearParameters();
+
+      findNodesByParentIdLazilyCQ.setString(1, containerName);
+      findNodesByParentIdLazilyCQ.setString(2, parentCid);
+      findNodesByParentIdLazilyCQ.setInt(3, fromOrderNum);
+      findNodesByParentIdLazilyCQ.setString(4, containerName);
+
+      return findNodesByParentIdLazilyCQ.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void deleteLockProperties() throws SQLException
+   {
+      PreparedStatement removeValuesStatement = null;
+      PreparedStatement removeItemsStatement = null;
+
+      try
+      {
+         removeValuesStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM"
+               + " WHERE  I_CLASS = 2 AND CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
+         removeValuesStatement.setString(1, containerName);
+
+         removeItemsStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE  I_CLASS = 2 AND CONTAINER_NAME = ? AND"
+               + " (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
+         removeItemsStatement.setString(1, containerName);
+
+         removeValuesStatement.executeUpdate();
+         removeItemsStatement.executeUpdate();
+      }
+      finally
+      {
+         if (removeValuesStatement != null)
+         {
+            try
+            {
+               removeValuesStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+
+         if (removeItemsStatement != null)
+         {
+            try
+            {
+               removeItemsStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+      }
+   }
 }
