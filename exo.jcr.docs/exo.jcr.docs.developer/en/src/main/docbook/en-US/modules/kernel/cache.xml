@@ -315,15 +315,15 @@ public interface ExoCacheFactory {
     </note>
   </section>
 
-  <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache">
+  <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache">
     <title>eXo Cache based on JBoss Cache</title>
 
-    <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.ConfiguringExoCacheFactory">
+    <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.ConfiguringExoCacheFactory">
       <title>Configuring the ExoCacheFactory</title>
 
       <para>When you add, the eXo library in your classpath, the eXo service
       container will use the default configuration provided in the library
-      itself but of course you can still redefined the configuration if you
+      itself but of course you can still redefine the configuration if you
       wish as you can do with any components.</para>
 
       <para>The default configuration of the factory is:</para>
@@ -378,7 +378,7 @@ public interface ExoCacheFactory {
               Cache instances, each eXo Cache Instances will have his own
               cache region with its own eviction configuration. The default
               value of this parameter is <emphasis>false</emphasis>.<note>
-                  <para>This value is only the default value that cans be
+                  <para>This value is only the default value that can be
                   redefined at <envar>ExoCacheConfig</envar> level thanks to
                   the field <emphasis>allowShareableCache</emphasis> for more
                   details see the next sections.</para>
@@ -389,7 +389,7 @@ public interface ExoCacheFactory {
       </table>
     </section>
 
-    <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.AddingSpecificConfigurationForCache">
+    <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.AddingSpecificConfigurationForCache">
       <title>Adding specific configuration for a cache</title>
 
       <para>If for a given reason, you need to use a specific configuration
@@ -433,10 +433,10 @@ public interface ExoCacheFactory {
       <emphasis>jar:/conf/portal/custom-cache-configuration.xml</emphasis>.</para>
     </section>
 
-    <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.AddingCacheCreator">
+    <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.AddingCacheCreator">
       <title>Adding a cache creator</title>
 
-      <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.UnderstandingCacheCreator">
+      <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.UnderstandingCacheCreator">
         <title>Understanding a cache creator</title>
 
         <para>The factory for jboss cache, delegates the cache creation to
@@ -499,7 +499,7 @@ public interface ExoCacheCreator {
         </itemizedlist>
       </section>
 
-      <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.RegisteringCacheCreator">
+      <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.RegisteringCacheCreator">
         <title>Registering a cache creator</title>
 
         <para>You can register any cache creator that you want thanks to an
@@ -539,13 +539,13 @@ public interface ExoCacheCreator {
         eviction policy <emphasis>LRU</emphasis>.</para>
       </section>
 
-      <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.CacheCreatorsAvailable">
+      <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.CacheCreatorsAvailable">
         <title>The cache creators available</title>
 
         <para>By default, no cache creator are defined, so you need to define
         them yourself by adding them in your configuration files.</para>
 
-        <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.CacheCreatorsAvailable.LRUCacheCreator">
+        <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.CacheCreatorsAvailable.LRUCacheCreator">
           <title>LRU Cache Creator - Least Recently Used</title>
 
           <programlisting language="xml">..
@@ -588,7 +588,7 @@ public interface ExoCacheCreator {
           </table>
         </section>
 
-        <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.CacheCreatorsAvailable.FIFOCacheCreator">
+        <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.CacheCreatorsAvailable.FIFOCacheCreator">
           <title>FIFO Cache Creator - First In, First Out</title>
 
           <programlisting language="xml">...
@@ -600,7 +600,7 @@ public interface ExoCacheCreator {
 ...</programlisting>
         </section>
 
-        <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.CacheCreatorsAvailable.MRUCacheCreator">
+        <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.CacheCreatorsAvailable.MRUCacheCreator">
           <title>MRU Cache Creator - Most Recently Used</title>
 
           <programlisting language="xml">...
@@ -612,7 +612,7 @@ public interface ExoCacheCreator {
 ...</programlisting>
         </section>
 
-        <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.CacheCreatorsAvailable.LFUCacheCreator">
+        <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.CacheCreatorsAvailable.LFUCacheCreator">
           <title>LFU Cache Creator - Least Frequently Used</title>
 
           <programlisting language="xml">...
@@ -644,7 +644,7 @@ public interface ExoCacheCreator {
           </table>
         </section>
 
-        <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.CacheCreatorsAvailable.EACacheCreator">
+        <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.CacheCreatorsAvailable.EACacheCreator">
           <title>EA Cache Creator - Expiration Algorithm</title>
 
           <programlisting language="xml">...
@@ -678,10 +678,10 @@ public interface ExoCacheCreator {
       </section>
     </section>
 
-    <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.DefiningCache">
+    <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.DefiningCache">
       <title>Defining a cache</title>
 
-      <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.DefiningCache.HowDefineCache">
+      <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.DefiningCache.HowDefineCache">
         <title>How to define a cache?</title>
 
         <para>You have 2 ways to define a cache which are:</para>
@@ -696,7 +696,7 @@ public interface ExoCacheCreator {
           </listitem>
         </itemizedlist>
 
-        <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.DefiningCache.HowDefineCache.CacheServiceInitialization">
+        <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.DefiningCache.HowDefineCache.CacheServiceInitialization">
           <title>At <envar>CacheService</envar> initialization</title>
 
           <programlisting language="xml">...
@@ -725,7 +725,7 @@ public interface ExoCacheCreator {
           <emphasis>fifocache</emphasis>.</para>
         </section>
 
-        <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.DefiningCache.HowDefineCache.ExternalPlugin">
+        <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.DefiningCache.HowDefineCache.ExternalPlugin">
           <title>With an <emphasis>"external plugin"</emphasis></title>
 
           <programlisting language="xml">...
@@ -761,7 +761,7 @@ public interface ExoCacheCreator {
         </section>
       </section>
 
-      <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.DefiningCache.HowDefineDistributedLocalCache">
+      <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.DefiningCache.HowDefineDistributedLocalCache">
         <title>How to define a distributed or a local cache?</title>
 
         <para>Actually, if you use a custom configuration for your cache as
@@ -776,7 +776,7 @@ public interface ExoCacheCreator {
         configuration template that should be distributed.</para>
       </section>
 
-      <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.DefiningCache.HowShareJBossCacheInstanceBetMultipleeXoCacheInstances">
+      <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.DefiningCache.HowShareJBossCacheInstanceBetMultipleeXoCacheInstances">
         <title>How to share a JBoss Cache instance between multiple eXo Cache
         instances</title>
 
@@ -797,7 +797,7 @@ public interface ExoCacheCreator {
         global value will be used.</para>
       </section>
 
-      <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.DefiningCache.LRUCache">
+      <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.DefiningCache.LRUCache">
         <title>LRU Cache - Least Recently Used</title>
 
         <itemizedlist>
@@ -912,7 +912,7 @@ public interface ExoCacheCreator {
         </note>
       </section>
 
-      <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.DefiningCache.FIFOCache">
+      <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.DefiningCache.FIFOCache">
         <title>FIFO Cache - First In, First Out</title>
 
         <itemizedlist>
@@ -1003,7 +1003,7 @@ public interface ExoCacheCreator {
         </table>
       </section>
 
-      <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.DefiningCache.MRUCache">
+      <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.DefiningCache.MRUCache">
         <title>MRU Cache - Most Recently Used</title>
 
         <itemizedlist>
@@ -1094,7 +1094,7 @@ public interface ExoCacheCreator {
         </table>
       </section>
 
-      <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.DefiningCache.LFUCache">
+      <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.DefiningCache.LFUCache">
         <title>LFU Cache - Least Frequently Used</title>
 
         <itemizedlist>
@@ -1203,7 +1203,7 @@ public interface ExoCacheCreator {
           </note></para>
       </section>
 
-      <section id="Kernel.Cache.eXo_Cache_based_Jobss_Cache.DefiningCache.EACache">
+      <section id="Kernel.Cache.eXo_Cache_based_JBoss_Cache.DefiningCache.EACache">
         <title>EA Cache - Expiration Algorithm</title>
 
         <itemizedlist>
@@ -1268,7 +1268,7 @@ public interface ExoCacheCreator {
         &lt;name&gt;ea-with-old-config&lt;/name&gt;
         &lt;description&gt;The ea cache configuration&lt;/description&gt;
         &lt;object type="org.exoplatform.services.cache.ExoCacheConfig"&gt;
-          &lt;field name="name"&gt;&lt;string&gt;lfu-with-old-config&lt;/string&gt;&lt;/field&gt;
+          &lt;field name="name"&gt;&lt;string&gt;ea-with-old-config&lt;/string&gt;&lt;/field&gt;
           &lt;field name="maxSize"&gt;&lt;int&gt;${my-value}&lt;/int&gt;&lt;/field&gt;
           &lt;field name="liveTime"&gt;&lt;long&gt;${my-value}&lt;/long&gt;&lt;/field&gt;
           &lt;field name="implementation"&gt;&lt;string&gt;EA&lt;/string&gt;&lt;/field&gt;
@@ -1318,8 +1318,8 @@ public interface ExoCacheCreator {
 
       <para>When you add the related jar file in your classpath, the eXo
       service container will use the default configuration provided in the
-      library itself but of course you can still redefined the configuration
-      if you wish as you can do with any components.</para>
+      library itself but of course you can still redefine the configuration if
+      you wish as you can do with any components.</para>
 
       <para>The default configuration of the factory is:</para>
 
@@ -1721,9 +1721,9 @@ public interface ExoCacheCreator {
 
         <programlisting language="xml">...
       &lt;object-param&gt;
-        &lt;name&gt;myCache&lt;/name&gt;
+        &lt;name&gt;myCache-with-old-config&lt;/name&gt;
         &lt;description&gt;My cache configuration&lt;/description&gt;
-          &lt;field name="name"&gt;&lt;string&gt;lru-with-old-config&lt;/string&gt;&lt;/field&gt;
+          &lt;field name="name"&gt;&lt;string&gt;myCacheName-with-old-config&lt;/string&gt;&lt;/field&gt;
           &lt;field name="maxSize"&gt;&lt;int&gt;${my-value}&lt;/int&gt;&lt;/field&gt;
           &lt;field name="liveTime"&gt;&lt;long&gt;${my-value}&lt;/long&gt;&lt;/field&gt;
           &lt;field name="implementation"&gt;&lt;string&gt;${my-value}&lt;/string&gt;&lt;/field&gt;
@@ -1992,6 +1992,221 @@ public interface ExoCacheCreator {
         configuration provided to the
         <emphasis>DistributedCacheManager</emphasis>.</para>
       </section>
+    </section>
+  </section>
+
+  <section id="Kernel.Cache.eXo_Cache_based_Spymemcached">
+    <title>eXo Cache based on Spymemcached</title>
+
+    <section id="Kernel.Cache.eXo_Cache_based_Spymemcached.ConfiguringExoCacheFactory">
+      <title>Configuring the ExoCacheFactory</title>
+
+      <para>When you add, the eXo library in your classpath, the eXo service
+      container will use the default configuration provided in the library
+      itself but of course you can still redefine the configuration if you
+      wish as you can do with any components.</para>
+
+      <para>The default configuration of the factory is:</para>
+
+      <programlisting language="xml">&lt;component&gt;
+   &lt;key&gt;org.exoplatform.services.cache.ExoCacheFactory&lt;/key&gt;
+   &lt;type&gt;org.exoplatform.services.cache.impl.memcached.ExoCacheFactoryImpl&lt;/type&gt;
+   &lt;init-params&gt;
+      &lt;value-param&gt;
+         &lt;name&gt;memcached.locations&lt;/name&gt;
+         &lt;value&gt;${memcached.locations:127.0.0.1:11211}&lt;/value&gt;
+      &lt;/value-param&gt;
+   &lt;/init-params&gt;
+&lt;/component&gt;</programlisting>
+
+      <table>
+        <title>Fields description</title>
+
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>memcached.locations</entry>
+
+              <entry>This parameter allows you to define the locations of all
+              the memcached servers to which you would like to access. The
+              value of this parameter is a String containing whitespace or
+              comma separated host or IP addresses and port numbers of the
+              form <emphasis>"host:port host2:port"</emphasis> or
+              <emphasis>"host:port, host2:port"</emphasis>. By default, it
+              will try to access to a local server on the default memcached
+              port which is <emphasis>11211</emphasis>. This value can be
+              redefined thanks to the System property
+              <emphasis>memcached.locations</emphasis>.</entry>
+            </row>
+
+            <row>
+              <entry>default.expiration.timeout</entry>
+
+              <entry>This parameter allows you to define the default
+              expiration timeout of a cache entry. This value is in
+              milliseconds and it is set by default to 15 minutes.</entry>
+            </row>
+
+            <row>
+              <entry>connection.factory.creator</entry>
+
+              <entry>This parameter allows you to define the
+              <emphasis>ConnectionFactoryCreator</emphasis> that you would
+              like to use. The <emphasis>ConnectionFactoryCreator</emphasis>
+              is responsible for creating the
+              <emphasis>ConnectionFactory</emphasis> that will be used by
+              spymemcached. This parameter is an object parameter, the
+              expected value must be an object of type
+              <emphasis>ConnectionFactoryCreator</emphasis>. By default, it
+              will use the <emphasis>BinaryConnectionFactoryCreator</emphasis>
+              that will create a <emphasis>BinaryConnectionFactory</emphasis>
+              with the default queue length, the default buffer size and the
+              default hashing algorithm. If you would like to change the
+              default parameters of the
+              <emphasis>BinaryConnectionFactoryCreator</emphasis>, you can set
+              as value to this parameter an object of type
+              <emphasis>org.exoplatform.services.cache.impl.memcached.BinaryConnectionFactoryCreator</emphasis>
+              and then set the value of its fields which are
+              <emphasis>queueLength</emphasis> for the length of the queue,
+              <emphasis>bufferSize</emphasis> for the buffer size and
+              <emphasis>hash</emphasis> for the hashing algorithm that must be
+              the name of one algorithm defined in the enumeration
+              <emphasis>DefaultHashAlgorithm</emphasis>.<note>
+                  <para>You can define you own
+                  <emphasis>ConnectionFactoryCreator</emphasis> if needed but
+                  be aware that the ASCII protocol doesn't support some
+                  operations used by the eXoCache implementation based on
+                  spymemcached.</para>
+                </note></entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section id="Kernel.Cache.eXo_Cache_based_Spymemcached.DefiningCache">
+      <title>Defining a cache based on Spymemcached</title>
+
+      <itemizedlist>
+        <listitem>
+          <para>New configuration</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="xml">...
+       &lt;object-param&gt;
+        &lt;name&gt;mc&lt;/name&gt;
+        &lt;description&gt;The mc cache configuration&lt;/description&gt;
+        &lt;object type="org.exoplatform.services.cache.impl.memcached.MCExoCacheConfig"&gt;
+          &lt;field name="name"&gt;&lt;string&gt;mc&lt;/string&gt;&lt;/field&gt;
+          &lt;field name="expirationTimeout"&gt;&lt;long&gt;${my-value}&lt;/long&gt;&lt;/field&gt;
+        &lt;/object&gt;
+      &lt;/object-param&gt; 
+...</programlisting>
+
+      <table>
+        <title>Fields description</title>
+
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>expirationTimeout</entry>
+
+              <entry>This is the time of inactivity of a cache entry after
+              with it will be automatically evicted. The value is in
+              milliseconds.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+
+      <itemizedlist>
+        <listitem>
+          <para>Old configuration</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="xml">...
+      &lt;object-param&gt;
+        &lt;name&gt;mc-with-old-config&lt;/name&gt;
+        &lt;description&gt;The mc cache configuration&lt;/description&gt;
+        &lt;object type="org.exoplatform.services.cache.ExoCacheConfig"&gt;
+          &lt;field name="name"&gt;&lt;string&gt;mc-with-old-config&lt;/string&gt;&lt;/field&gt;
+          &lt;field name="liveTime"&gt;&lt;long&gt;${my-value}&lt;/long&gt;&lt;/field&gt;
+        &lt;/object&gt;
+      &lt;/object-param&gt; 
+...</programlisting>
+
+      <table>
+        <title>Fields description</title>
+
+        <tgroup cols="2">
+          <tbody>
+            <row>
+              <entry>liveTime</entry>
+
+              <entry>This value will be used as expiration timeout if set, if
+              not set we will use the value define in the
+              <emphasis>ExoCacheFactory</emphasis>. The value is in
+              seconds.</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </table>
+    </section>
+
+    <section id="Kernel.Cache.eXo_Cache_based_Spymemcached.Limitations">
+      <title>Known limitations</title>
+
+      <para>To be able to do what is needed for the implementation of an eXo
+      Cache based on spymemcached, we need to use the binary protocol, indeed
+      the ASCII protocol doesn't support all the required operations.</para>
+
+      <para>There are some operations such as
+      <emphasis>getCachedObjects()</emphasis>,
+      <emphasis>removeCachedObjects()</emphasis> and
+      <emphasis>select(CachedObjectSelector)</emphasis> that cannot be
+      supported because Memcached is a distributed cache that doesn't allow
+      such operations as they would cause a scalability issue, indeed all the
+      cache entries could potentially not feet into the memory of the JVM
+      which would cause an <emphasis>OutOfMemoryError</emphasis>. Moreover, it
+      could also consume a lot of IO which could overload the network.</para>
+
+      <para>The method <emphasis>putMap(Map)</emphasis> cannot be done within
+      a transaction since Memcached is not a transactional resource which
+      means that if one put fails and if other could pass, they won't be
+      reverted.</para>
+
+      <para>The method <emphasis>getCacheSize()</emphasis> gives an
+      approximate amount of cache entries that have been created locally,
+      indeed:</para>
+
+      <orderedlist>
+        <listitem>
+          <para>We have no way to be aware of any modifications done from
+          another cluster node, such that if you add a cache entry from the
+          local cluster node and another one removes it, the method
+          <emphasis>getCacheSize()</emphasis> won't provide a value up to
+          date. </para>
+        </listitem>
+
+        <listitem>
+          <para>We have no way to be notified when a cache entry has been
+          evicted, such that if you add a cache entry and it is evicted, the
+          method <emphasis>getCacheSize()</emphasis> won't provide a value up
+          to date. </para>
+        </listitem>
+      </orderedlist>
+
+      <para>Because of the exact same reasons that prevent to provide the
+      right value for the cache size, if you use a cache listener you won't be
+      notified if a cache entry has been evicted and you won't be notified of
+      any modifications of the cache that have be done from other cluster
+      nodes.</para>
+
+      <para>Finally it is not possible to set a max size for the cache, the
+      only parameter on which you can rely is the expiration timeout so you
+      need to set it properly.</para>
     </section>
   </section>
 </section>
