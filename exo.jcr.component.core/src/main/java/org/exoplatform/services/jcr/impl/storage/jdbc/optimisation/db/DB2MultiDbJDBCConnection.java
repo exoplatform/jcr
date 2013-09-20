@@ -75,8 +75,16 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_MVALUE V, JCR_MITEM P"
             + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_MITEM I"
-            + " where I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ?,?) J on P.PARENT_ID = J.ID"
+            + " where I.I_CLASS=1 AND I.ID > ? order by I.ID FETCH FIRST $rowNb ROWS ONLY) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
+      FIND_NODES_BY_PARENTID_LAZILY_CQ =
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_MITEM I, JCR_MITEM P, JCR_MVALUE V"
+            + " where I.I_CLASS=1 and I.PARENT_ID=? and I.N_ORDER_NUM >= ?  and"
+            + " P.I_CLASS=2 and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID FETCH FIRST $rowNb ROWS ONLY";
       FIND_LAST_ORDER_NUMBER_BY_PARENTID =
          "select next value for JCR_N_ORDER_NUM  from SYSIBM.SYSDUMMY1";
    }
@@ -89,6 +97,7 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
    {
       if (findNodesAndProperties == null)
       {
+         FIND_NODES_AND_PROPERTIES=FIND_NODES_AND_PROPERTIES.replace("$rowNb",Integer.toString(limit)) ;
          findNodesAndProperties = dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES);
       }
       else
@@ -97,8 +106,6 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
       }
 
       findNodesAndProperties.setString(1, getInternalId(lastNodeId));
-      findNodesAndProperties.setInt(2, offset);
-      findNodesAndProperties.setInt(3, limit);
 
       return findNodesAndProperties.executeQuery();
    }
@@ -155,5 +162,29 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
       {
          throw new RepositoryException(e);
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
+      throws SQLException
+   {
+      if (findNodesByParentIdLazilyCQ == null)
+      {
+         int page= (toOrderNum-fromOrderNum+1)- (toOrderNum-fromOrderNum+1)%3 ;
+         FIND_NODES_BY_PARENTID_LAZILY_CQ=FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("$rowNb",Integer.toString(page));
+         findNodesByParentIdLazilyCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_LAZILY_CQ);
+      }
+      else
+      {
+         findNodesByParentIdLazilyCQ.clearParameters();
+      }
+
+      findNodesByParentIdLazilyCQ.setString(1, parentCid);
+      findNodesByParentIdLazilyCQ.setInt(2, fromOrderNum);
+
+      return findNodesByParentIdLazilyCQ.executeQuery();
    }
 }

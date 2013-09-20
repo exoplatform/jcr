@@ -119,27 +119,10 @@ public class DBInitializer
 
    protected boolean isSequenceExists(final Connection conn, final String sequenceName) throws SQLException
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
-      {
-         public Boolean run()
-         {
-            return JDBCUtils.sequenceExists(sequenceName, conn);
-         }
-      });
+      return false;
    }
 
-   protected String setSequenceStartValue(final Connection conn) throws SQLException
-   {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
-      {
-         public String run()
-         {
-            return JDBCUtils.setStartValue(conn);
-         }
-      });
-   }
-
-   private boolean isObjectExists(Connection conn, String sql, Set<String> existingTables) throws SQLException
+   protected boolean isObjectExists(Connection conn, String sql, Set<String> existingTables) throws SQLException
    {
       Matcher tMatcher = creatTablePattern.matcher(sql);
       if (tMatcher.find())
@@ -291,10 +274,6 @@ public class DBInitializer
                if (LOG.isDebugEnabled())
                {
                   LOG.debug("Execute script: \n[" + sql + "]");
-               }
-               if ((creatSequencePattern.matcher(sql)).find())
-               {
-                  sql = sql.concat(setSequenceStartValue(connection));
                }
                final Statement finalSt = st;
                final String finalSql = sql;

@@ -1025,11 +1025,11 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       {
          removeValuesStatement =
             dbConnection.prepareStatement("DELETE FROM JCR_MVALUE WHERE PROPERTY_ID IN"
-               + " (SELECT ID FROM JCR_MITEM WHERE NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " (SELECT ID FROM JCR_MITEM WHERE  I_CLASS = 2 AND NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
 
          removeItemsStatement =
-            dbConnection.prepareStatement("DELETE FROM JCR_MITEM WHERE"
+            dbConnection.prepareStatement("DELETE FROM JCR_MITEM WHERE  I_CLASS = 2 AND "
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'");
 

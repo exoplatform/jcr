@@ -75,12 +75,21 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
          "select J.*, P.ID AS P_ID, P.NAME AS P_NAME, P.VERSION AS P_VERSION, P.P_TYPE, P.P_MULTIVALUED,"
             + " V.DATA, V.ORDER_NUM, V.STORAGE_DESC from JCR_SVALUE V, JCR_SITEM P"
             + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I"
-            + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID LIMIT ?,?) J on P.PARENT_ID = J.ID"
+            + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID FETCH FIRST $rowNb ROWS ONLY) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
+      FIND_NODES_BY_PARENTID_LAZILY_CQ =
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
+            + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and I.N_ORDER_NUM >= ? and "
+            + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID FETCH FIRST $rowNb ROWS ONLY";
       FIND_LAST_ORDER_NUMBER_BY_PARENTID =
          "select next value for JCR_N_ORDER_NUM  from SYSIBM.SYSDUMMY1";
    }
-   
+
    /**
     * {@inheritDoc}
     */
@@ -89,6 +98,7 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
    {
       if (findNodesAndProperties == null)
       {
+         FIND_NODES_AND_PROPERTIES=FIND_NODES_AND_PROPERTIES.replace("$rowNb",Integer.toString(limit));
          findNodesAndProperties = dbConnection.prepareStatement(FIND_NODES_AND_PROPERTIES);
       }
       else
@@ -98,9 +108,7 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
 
       findNodesAndProperties.setString(1, containerName);
       findNodesAndProperties.setString(2, getInternalId(lastNodeId));
-      findNodesAndProperties.setInt(3, offset);
-      findNodesAndProperties.setInt(4, limit);
-      findNodesAndProperties.setString(5, containerName);
+      findNodesAndProperties.setString(3, containerName);
 
       return findNodesAndProperties.executeQuery();
    }
@@ -158,5 +166,28 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
          throw new RepositoryException(e);
       }
 
+   }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
+      throws SQLException
+   {
+      if (findNodesByParentIdLazilyCQ == null)
+      {
+         int page= (toOrderNum-fromOrderNum+1)- (toOrderNum-fromOrderNum+1)%3 ;
+         FIND_NODES_BY_PARENTID_LAZILY_CQ=FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("$rowNb",Integer.toString(page));
+         findNodesByParentIdLazilyCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_LAZILY_CQ);
+      }
+      else
+         findNodesByParentIdLazilyCQ.clearParameters();
+
+      findNodesByParentIdLazilyCQ.setString(1, containerName);
+      findNodesByParentIdLazilyCQ.setString(2, parentCid);
+      findNodesByParentIdLazilyCQ.setInt(3, fromOrderNum);
+      findNodesByParentIdLazilyCQ.setString(4, containerName);
+
+      return findNodesByParentIdLazilyCQ.executeQuery();
    }
 }
