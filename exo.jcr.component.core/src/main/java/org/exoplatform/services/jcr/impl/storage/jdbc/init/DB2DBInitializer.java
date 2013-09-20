@@ -20,13 +20,18 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.ExceptionManagementHelper;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
@@ -42,6 +47,8 @@ import java.util.Set;
 
 public class DB2DBInitializer extends StorageDBInitializer
 {
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DB2DBInitializer");
+
    public DB2DBInitializer(String containerName, Connection connection, String scriptPath, boolean multiDb) throws IOException
    {
       super(containerName, connection, scriptPath, multiDb);
@@ -56,7 +63,7 @@ public class DB2DBInitializer extends StorageDBInitializer
       {
          public Boolean run()
          {
-            return JDBCUtils.sequenceExists(sequenceName, conn);
+            return sequenceExists(sequenceName, conn);
          }
       });
    }
@@ -67,7 +74,7 @@ public class DB2DBInitializer extends StorageDBInitializer
       {
          public String run()
          {
-            return JDBCUtils.setStartValue(conn);
+            return setStartValue(conn);
          }
       });
    }
@@ -179,5 +186,95 @@ public class DB2DBInitializer extends StorageDBInitializer
             LOG.error("Error of a connection closing. " + e, e);
          }
       }
+   }
+
+   private static boolean sequenceExists(String sequenceName, Connection con)
+   {
+      Statement stmt = null;
+      ResultSet trs = null;
+      try
+      {
+         String dialect = DialectDetecter.detect(con.getMetaData());
+         String query;
+         if (dialect.startsWith(DBConstants.DB_DIALECT_DB2))
+         {
+            query = "SELECT count(*) FROM SYSCAT.SEQUENCES WHERE SYSCAT.SEQUENCES.SEQNAME = '" + sequenceName + "'";
+         }
+         else
+         {
+            return false;
+         }
+         stmt = con.createStatement();
+         trs = stmt.executeQuery(query);
+         if (trs.next() && trs.getInt(1) >= 1)
+         {
+            return true;
+         }
+         else
+         {
+            return false;
+         }
+
+      }
+      catch (SQLException e)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("SQLException occurs while checking the sequence " + sequenceName, e);
+         }
+         return false;
+      }
+      finally
+      {
+         JDBCUtils.freeResources(trs, stmt, null);
+      }
+   }
+
+   private static String setStartValue(Connection con)
+   {
+
+      Statement stmt = null;
+      ResultSet trs = null;
+      try
+      {
+         String query;
+
+         if (JDBCUtils.tableExists("JCR_SITEM", con))
+         {
+            query = "select max(N_ORDER_NUM) from JCR_SITEM";
+         }
+         else if (JDBCUtils.tableExists("JCR_MITEM", con))
+         {
+            query = "select max(N_ORDER_NUM) from JCR_MITEM";
+         }
+         else
+         {
+            return " Start with -1";
+         }
+         stmt = con.createStatement();
+         trs = stmt.executeQuery(query);
+         if (trs.next() && trs.getInt(1) > 0)
+         {
+            return " Start with " + trs.getString(1);
+         }
+         else
+         {
+            return " Start with -1";
+         }
+
+      }
+      catch (SQLException e)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("SQLException occurs while update the sequence start value", e);
+         }
+         return " Start with -1";
+      }
+      finally
+      {
+         JDBCUtils.freeResources(trs, stmt, null);
+      }
+
    }
 }
