@@ -947,12 +947,12 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       {
          removeValuesStatement =
             dbConnection.prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM"
-               + " WHERE  I_CLASS = 2 AND CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " WHERE CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
          removeValuesStatement.setString(1, containerName);
 
          removeItemsStatement =
-            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE  I_CLASS = 2 AND CONTAINER_NAME = ? AND"
+            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND"
                + " (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
          removeItemsStatement.setString(1, containerName);

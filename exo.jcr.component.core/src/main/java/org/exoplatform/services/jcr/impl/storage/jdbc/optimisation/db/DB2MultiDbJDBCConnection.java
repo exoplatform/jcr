@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
 import javax.jcr.RepositoryException;
 import java.io.File;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
@@ -186,5 +187,57 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
       findNodesByParentIdLazilyCQ.setInt(2, fromOrderNum);
 
       return findNodesByParentIdLazilyCQ.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void deleteLockProperties() throws SQLException
+   {
+      PreparedStatement removeValuesStatement = null;
+      PreparedStatement removeItemsStatement = null;
+
+      try
+      {
+         removeValuesStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_MVALUE WHERE PROPERTY_ID IN"
+               + " (SELECT ID FROM JCR_MITEM WHERE  I_CLASS = 2 AND NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
+
+         removeItemsStatement =
+            dbConnection.prepareStatement("DELETE FROM JCR_MITEM WHERE  I_CLASS = 2 AND "
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'");
+
+         removeValuesStatement.executeUpdate();
+         removeItemsStatement.executeUpdate();
+      }
+      finally
+      {
+         if (removeValuesStatement != null)
+         {
+            try
+            {
+               removeValuesStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+
+         if (removeItemsStatement != null)
+         {
+            try
+            {
+               removeItemsStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+      }
    }
 }
