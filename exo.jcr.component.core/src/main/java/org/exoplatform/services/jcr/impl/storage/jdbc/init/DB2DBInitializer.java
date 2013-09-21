@@ -20,8 +20,6 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.ExceptionManagementHelper;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
-import org.exoplatform.services.jcr.impl.storage.jdbc.DialectDetecter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
@@ -68,7 +66,7 @@ public class DB2DBInitializer extends StorageDBInitializer
       });
    }
 
-   protected String setSequenceStartValue(final Connection conn) throws SQLException
+   private String setSequenceStartValue(final Connection conn) throws SQLException
    {
       return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
@@ -91,9 +89,6 @@ public class DB2DBInitializer extends StorageDBInitializer
       try
       {
          st = connection.createStatement();
-         // all DDL queries executed in separated transactions
-         // Required for SyBase, when checking table existence
-         // and performing DDLs inside single transaction.
          connection.setAutoCommit(true);
          for (String scr : scripts)
          {
@@ -188,22 +183,15 @@ public class DB2DBInitializer extends StorageDBInitializer
       }
    }
 
-   private static boolean sequenceExists(String sequenceName, Connection con)
+   private boolean sequenceExists(String sequenceName, Connection con)
    {
       Statement stmt = null;
       ResultSet trs = null;
       try
       {
-         String dialect = DialectDetecter.detect(con.getMetaData());
          String query;
-         if (dialect.startsWith(DBConstants.DB_DIALECT_DB2))
-         {
-            query = "SELECT count(*) FROM SYSCAT.SEQUENCES WHERE SYSCAT.SEQUENCES.SEQNAME = '" + sequenceName + "'";
-         }
-         else
-         {
-            return false;
-         }
+         query = "SELECT count(*) FROM SYSCAT.SEQUENCES WHERE SYSCAT.SEQUENCES.SEQNAME = '" + sequenceName + "'";
+
          stmt = con.createStatement();
          trs = stmt.executeQuery(query);
          if (trs.next() && trs.getInt(1) >= 1)
@@ -230,7 +218,7 @@ public class DB2DBInitializer extends StorageDBInitializer
       }
    }
 
-   private static String setStartValue(Connection con)
+   private String setStartValue(Connection con)
    {
 
       Statement stmt = null;
