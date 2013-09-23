@@ -275,6 +275,7 @@ public class DBInitializer
                {
                   LOG.debug("Execute script: \n[" + sql + "]");
                }
+               updateQuery(sql);
                final Statement finalSt = st;
                final String finalSql = sql;
                SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
@@ -357,4 +358,12 @@ public class DBInitializer
    {
 
    }
+   /**
+    * Update the sql query in overridden classes.
+    */
+   protected String updateQuery(String sql)
+   {
+      return sql;
+   }
+
 }

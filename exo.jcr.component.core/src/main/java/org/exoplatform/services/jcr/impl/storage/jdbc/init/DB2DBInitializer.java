@@ -66,121 +66,15 @@ public class DB2DBInitializer extends StorageDBInitializer
       });
    }
 
-   private String setSequenceStartValue(final Connection conn) throws SQLException
+   private Integer setSequenceStartValue(final Connection conn) throws SQLException
    {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
       {
-         public String run()
+         public Integer run()
          {
-            return setStartValue(conn);
+            return getStartValue(conn);
          }
       });
-   }
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public void init() throws DBInitializerException
-   {
-      String[] scripts = DBInitializerHelper.scripts(script);
-      String sql = null;
-      Statement st = null;
-      Set<String> existingTables = new HashSet<String>();
-      try
-      {
-         st = connection.createStatement();
-         connection.setAutoCommit(true);
-         for (String scr : scripts)
-         {
-            String s = DBInitializerHelper.cleanWhitespaces(scr.trim());
-            if (s.length() > 0)
-            {
-               if (isObjectExists(connection, sql = s, existingTables))
-               {
-                  continue;
-               }
-
-               if (LOG.isDebugEnabled())
-               {
-                  LOG.debug("Execute script: \n[" + sql + "]");
-               }
-               if ((creatSequencePattern.matcher(sql)).find())
-               {
-                  sql = sql.concat(setSequenceStartValue(connection));
-               }
-               final Statement finalSt = st;
-               final String finalSql = sql;
-               SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
-               {
-                  public Object run() throws Exception
-                  {
-                     finalSt.executeUpdate(finalSql);
-                     return null;
-                  }
-               });
-            }
-         }
-
-         postInit(connection);
-         LOG.info("DB schema of DataSource: '" + containerName + "' initialized succesfully");
-      }
-      catch (SQLException e)
-      {
-         if (LOG.isDebugEnabled())
-         {
-            LOG.error("Problem creating database structure.", e);
-         }
-         LOG
-            .warn("Some tables were created and not rolled back. Please make sure to drop them manually in datasource : '"
-               + containerName + "'");
-
-         boolean isAlreadyCreated = false;
-         try
-         {
-            isAlreadyCreated = isObjectExists(connection, sql, existingTables);
-         }
-         catch (SQLException ce)
-         {
-            LOG.warn("Can not check does the objects from " + sql + " exists");
-         }
-
-         if (isAlreadyCreated)
-         {
-            LOG.warn("Could not create db schema of DataSource: '" + containerName + "'. Reason: Objects form " + sql
-               + " already exists");
-         }
-         else
-         {
-            String msg =
-               "Could not create db schema of DataSource: '" + containerName + "'. Reason: " + e.getMessage() + "; "
-                  + ExceptionManagementHelper.getFullSQLExceptionMessage(e) + ". Last command: " + sql;
-
-            throw new DBInitializerException(msg, e);
-         }
-      }
-      finally
-      {
-         if (st != null)
-         {
-            try
-            {
-               st.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error("Can't close the Statement: " + e);
-            }
-         }
-
-         try
-         {
-            connection.close();
-         }
-         catch (SQLException e)
-         {
-            LOG.error("Error of a connection closing. " + e, e);
-         }
-      }
    }
 
    private boolean sequenceExists(String sequenceName, Connection con)
@@ -217,8 +111,11 @@ public class DB2DBInitializer extends StorageDBInitializer
          JDBCUtils.freeResources(trs, stmt, null);
       }
    }
-
-   private String setStartValue(Connection con)
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected Integer getStartValue(Connection con)
    {
 
       Statement stmt = null;
@@ -237,17 +134,17 @@ public class DB2DBInitializer extends StorageDBInitializer
          }
          else
          {
-            return " Start with -1";
+            return -1;
          }
          stmt = con.createStatement();
          trs = stmt.executeQuery(query);
          if (trs.next() && trs.getInt(1) > 0)
          {
-            return " Start with " + trs.getString(1);
+            return trs.getInt(1);
          }
          else
          {
-            return " Start with -1";
+            return -1;
          }
 
       }
@@ -257,12 +154,31 @@ public class DB2DBInitializer extends StorageDBInitializer
          {
             LOG.debug("SQLException occurs while update the sequence start value", e);
          }
-         return " Start with -1";
+         return -1;
       }
       finally
       {
          JDBCUtils.freeResources(trs, stmt, null);
       }
 
+   }
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected String updateQuery(String sql)
+   {
+      try
+      {
+      if ((creatSequencePattern.matcher(sql)).find())
+      {
+         sql = sql.concat(" Start with " +setSequenceStartValue(connection));
+      }
+      }
+      catch (SQLException e)
+      {
+         LOG.debug("SQLException occurs while update the sequence start value", e);
+      }
+      return sql;
    }
 }

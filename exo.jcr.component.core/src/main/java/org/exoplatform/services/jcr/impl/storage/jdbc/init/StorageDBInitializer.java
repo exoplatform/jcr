@@ -64,4 +64,12 @@ public class StorageDBInitializer extends DBInitializer
          connection.createStatement().executeUpdate(insert);
       }
    }
+   /**
+    * Init Start value for sequence.
+    */
+   protected Integer getStartValue(Connection con)
+   {
+      return 0;
+   }
+
 }
