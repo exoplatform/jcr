@@ -19,12 +19,15 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.io.IOException;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * JCR Storage DB initializer.
@@ -64,12 +67,55 @@ public class StorageDBInitializer extends DBInitializer
          connection.createStatement().executeUpdate(insert);
       }
    }
+
    /**
     * Init Start value for sequence.
     */
-   protected Integer getStartValue(Connection con)
+   protected int getStartValue(Connection con)
    {
-      return 0;
+
+      Statement stmt = null;
+      ResultSet trs = null;
+      try
+      {
+         String query;
+
+         if (JDBCUtils.tableExists("JCR_SITEM", con))
+         {
+            query = "select max(N_ORDER_NUM) from JCR_SITEM";
+         }
+         else if (JDBCUtils.tableExists("JCR_MITEM", con))
+         {
+            query = "select max(N_ORDER_NUM) from JCR_MITEM";
+         }
+         else
+         {
+            return -1;
+         }
+         stmt = con.createStatement();
+         trs = stmt.executeQuery(query);
+         if (trs.next() && trs.getInt(1) > 0)
+         {
+            return trs.getInt(1);
+         }
+         else
+         {
+            return -1;
+         }
+
+      }
+      catch (SQLException e)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("SQLException occurs while update the sequence start value", e);
+         }
+         return -1;
+      }
+      finally
+      {
+         JDBCUtils.freeResources(trs, stmt, null);
+      }
    }
 
 }

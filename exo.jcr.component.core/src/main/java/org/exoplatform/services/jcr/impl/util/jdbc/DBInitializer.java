@@ -358,6 +358,7 @@ public class DBInitializer
    {
 
    }
+
    /**
     * Update the sql query in overridden classes.
     */

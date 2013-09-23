@@ -19,21 +19,15 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.database.utils.ExceptionManagementHelper;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCUtils;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerException;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.security.PrivilegedAction;
-import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * JCR Storage DB2 initializer.
@@ -66,7 +60,7 @@ public class DB2DBInitializer extends StorageDBInitializer
       });
    }
 
-   private Integer setSequenceStartValue(final Connection conn) throws SQLException
+   private int getSequenceStartValue(final Connection conn) throws SQLException
    {
       return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
       {
@@ -111,57 +105,7 @@ public class DB2DBInitializer extends StorageDBInitializer
          JDBCUtils.freeResources(trs, stmt, null);
       }
    }
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected Integer getStartValue(Connection con)
-   {
 
-      Statement stmt = null;
-      ResultSet trs = null;
-      try
-      {
-         String query;
-
-         if (JDBCUtils.tableExists("JCR_SITEM", con))
-         {
-            query = "select max(N_ORDER_NUM) from JCR_SITEM";
-         }
-         else if (JDBCUtils.tableExists("JCR_MITEM", con))
-         {
-            query = "select max(N_ORDER_NUM) from JCR_MITEM";
-         }
-         else
-         {
-            return -1;
-         }
-         stmt = con.createStatement();
-         trs = stmt.executeQuery(query);
-         if (trs.next() && trs.getInt(1) > 0)
-         {
-            return trs.getInt(1);
-         }
-         else
-         {
-            return -1;
-         }
-
-      }
-      catch (SQLException e)
-      {
-         if (LOG.isDebugEnabled())
-         {
-            LOG.debug("SQLException occurs while update the sequence start value", e);
-         }
-         return -1;
-      }
-      finally
-      {
-         JDBCUtils.freeResources(trs, stmt, null);
-      }
-
-   }
    /**
     * {@inheritDoc}
     */
@@ -170,10 +114,10 @@ public class DB2DBInitializer extends StorageDBInitializer
    {
       try
       {
-      if ((creatSequencePattern.matcher(sql)).find())
-      {
-         sql = sql.concat(" Start with " +setSequenceStartValue(connection));
-      }
+         if ((creatSequencePattern.matcher(sql)).find())
+         {
+            sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection)));
+         }
       }
       catch (SQLException e)
       {
