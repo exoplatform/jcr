@@ -89,7 +89,7 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
             + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
       FIND_LAST_ORDER_NUMBER_BY_PARENTID =
-         "select next value for JCR_N_ORDER_NUM  from SYSIBM.SYSDUMMY1";
+         "VALUES NEXT VALUE FOR JCR_N_ORDER_NUM";
    }
    
    /**

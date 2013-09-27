@@ -82,14 +82,7 @@ public class DB2DBInitializer extends StorageDBInitializer
 
          stmt = con.createStatement();
          trs = stmt.executeQuery(query);
-         if (trs.next() && trs.getInt(1) >= 1)
-         {
-            return true;
-         }
-         else
-         {
-            return false;
-         }
+         return (trs.next() && trs.getInt(1) >= 1);
 
       }
       catch (SQLException e)

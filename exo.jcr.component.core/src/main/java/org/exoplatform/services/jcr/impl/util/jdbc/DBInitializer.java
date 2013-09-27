@@ -275,9 +275,8 @@ public class DBInitializer
                {
                   LOG.debug("Execute script: \n[" + sql + "]");
                }
-               updateQuery(sql);
                final Statement finalSt = st;
-               final String finalSql = sql;
+               final String finalSql = updateQuery(sql);
                SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
                {
                   public Object run() throws Exception
