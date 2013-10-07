@@ -293,7 +293,7 @@ public class HTTPBackupAgent implements ResourceContainer
     * @param backupManager
     *          the BackupManager
     * @param sessionProviderService
-    *          the ThreadLocalSessionProviderService
+    *          the SessionProviderService
     */
    public HTTPBackupAgent(RepositoryService repoService, BackupManager backupManager,
       SessionProviderService sessionProviderService)
