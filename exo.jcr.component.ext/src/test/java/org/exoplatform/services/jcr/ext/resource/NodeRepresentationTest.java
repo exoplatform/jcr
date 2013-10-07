@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.ext.resource;
 
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.resource.representation.NtFileNodeRepresentation;
 import org.exoplatform.services.jcr.ext.resource.representation.NtFileNodeRepresentationFactory;
@@ -51,9 +51,9 @@ public class NodeRepresentationTest extends BaseStandaloneTest
       super.setUp();
 
       // prepare SessionProviderService
-      ThreadLocalSessionProviderService sesProv =  
-         (ThreadLocalSessionProviderService)container
-            .getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
+      SessionProviderService sesProv =  
+         (SessionProviderService)container
+            .getComponentInstanceOfType(SessionProviderService.class);
       sesProv.setSessionProvider(null, new SessionProvider(new ConversationState(new Identity(session.getUserID()))));
 
       nodeRepresentationService =

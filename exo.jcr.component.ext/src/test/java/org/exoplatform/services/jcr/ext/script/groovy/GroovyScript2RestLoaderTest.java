@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.ext.script.groovy;
 
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.RESTRegistryTest.DummyContainerResponseWriter;
 import org.exoplatform.services.jcr.ext.resource.UnifiedNodeReference;
@@ -64,7 +64,7 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
 
    private ResourceBinder binder;
 
-   private ThreadLocalSessionProviderService sesProv;
+   private SessionProviderService sesProv;
 
    private Node scriptFile;
 
@@ -86,8 +86,8 @@ public class GroovyScript2RestLoaderTest extends BaseGroovyTest
       super.setUp();
 
       sesProv =
-         (ThreadLocalSessionProviderService)container
-            .getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
+         (SessionProviderService)container
+            .getComponentInstanceOfType(SessionProviderService.class);
       sesProv.setSessionProvider(null, new SessionProvider(new ConversationState(new Identity("root"))));
       binder = (ResourceBinder)container.getComponentInstanceOfType(ResourceBinder.class);
       resourceNumber = binder.getSize();

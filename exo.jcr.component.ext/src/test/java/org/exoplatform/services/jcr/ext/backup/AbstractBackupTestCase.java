@@ -29,7 +29,6 @@ import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
 import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
 import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
 import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
@@ -123,7 +122,7 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       handler = (RequestHandler)container.getComponentInstanceOfType(RequestHandler.class);
 
       SessionProviderService sessionProviderService =
-         (SessionProviderService)container.getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
+         (SessionProviderService)container.getComponentInstanceOfType(SessionProviderService.class);
       assertNotNull(sessionProviderService);
       sessionProviderService.setSessionProvider(null, new SessionProvider(new ConversationState(new Identity("root"))));
    }

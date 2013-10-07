@@ -25,7 +25,7 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.backup.BackupChain;
 import org.exoplatform.services.jcr.ext.backup.BackupChainLog;
 import org.exoplatform.services.jcr.ext.backup.BackupConfig;
@@ -283,7 +283,7 @@ public class HTTPBackupAgent implements ResourceContainer
    /**
     * Will be get session over base authenticate.
     */
-   private ThreadLocalSessionProviderService sessionProviderService;
+   private SessionProviderService sessionProviderService;
 
    /**
     * ReplicationTestService constructor.
@@ -296,7 +296,7 @@ public class HTTPBackupAgent implements ResourceContainer
     *          the ThreadLocalSessionProviderService
     */
    public HTTPBackupAgent(RepositoryService repoService, BackupManager backupManager,
-      ThreadLocalSessionProviderService sessionProviderService)
+      SessionProviderService sessionProviderService)
    {
       this.repositoryService = repoService;
       this.backupManager = (ExtendedBackupManager) backupManager;

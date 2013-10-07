@@ -20,7 +20,7 @@ package org.exoplatform.services.jcr.ext.registry;
 
 import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.security.ConversationState;
 import org.w3c.dom.Document;
@@ -36,7 +36,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 public class RegistryTest extends BaseStandaloneTest
 {
 
-   private ThreadLocalSessionProviderService sessionProviderService;
+   private SessionProviderService sessionProviderService;
 
    private static final String SERVICE_XML =
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -57,8 +57,8 @@ public class RegistryTest extends BaseStandaloneTest
 
       super.setUp();
       this.sessionProviderService =
-         (ThreadLocalSessionProviderService)container
-            .getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
+         (SessionProviderService)container
+            .getComponentInstanceOfType(SessionProviderService.class);
       // this.registry = (ConversationRegistry)
       // container.getComponentInstanceOfType(ConversationRegistry.class);
       sessionProviderService.setSessionProvider(null, new SessionProvider(ConversationState.getCurrent()));

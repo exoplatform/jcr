@@ -24,7 +24,7 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.resource.JcrURLConnection;
 import org.exoplatform.services.jcr.ext.resource.NodeRepresentationService;
@@ -71,9 +71,9 @@ public class Handler extends URLStreamHandler implements Startable
     */
    private final NodeRepresentationService nodeRepresentationService;
 
-   private final ThreadLocalSessionProviderService threadLocalSessionProviderService;
+   private final SessionProviderService threadLocalSessionProviderService;
 
-   public Handler(RepositoryService rs, NodeRepresentationService nrs, ThreadLocalSessionProviderService tsps)
+   public Handler(RepositoryService rs, NodeRepresentationService nrs, SessionProviderService tsps)
    {
       repositoryService = rs;
       nodeRepresentationService = nrs;
@@ -97,8 +97,8 @@ public class Handler extends URLStreamHandler implements Startable
       nodeRepresentationService =
          (NodeRepresentationService)container.getComponentInstanceOfType(NodeRepresentationService.class);
       threadLocalSessionProviderService =
-         (ThreadLocalSessionProviderService)container
-            .getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
+         (SessionProviderService)container
+            .getComponentInstanceOfType(SessionProviderService.class);
    }
 
    // URLStreamHandler

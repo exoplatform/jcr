@@ -25,7 +25,7 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.webdav.command.AclCommand;
 import org.exoplatform.services.jcr.webdav.command.CopyCommand;
@@ -118,7 +118,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * Local Thread SessionProvider.
     */
-   private final ThreadLocalSessionProviderService sessionProviderService;
+   private final SessionProviderService sessionProviderService;
 
    /**
     * Repository service.
@@ -172,7 +172,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @throws Exception {@link Exception}
     */
    public WebDavServiceImpl(InitParams params, RepositoryService repositoryService,
-      ThreadLocalSessionProviderService sessionProviderService) throws Exception
+      SessionProviderService sessionProviderService) throws Exception
    {
       this(repositoryService, sessionProviderService);
       this.webDavServiceInitParams = new WebDavServiceInitParams(params);
@@ -186,7 +186,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param sessionProviderService session provider service
     */
    protected WebDavServiceImpl(Map<String, String> params, RepositoryService repositoryService,
-      ThreadLocalSessionProviderService sessionProviderService) throws Exception
+      SessionProviderService sessionProviderService) throws Exception
    {
       this(repositoryService, sessionProviderService);
       this.webDavServiceInitParams = new WebDavServiceInitParams(params);
@@ -199,7 +199,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @param sessionProviderService session provider service
     */
    protected WebDavServiceImpl(RepositoryService repositoryService,
-      ThreadLocalSessionProviderService sessionProviderService)
+      SessionProviderService sessionProviderService)
    {
       this.sessionProviderService = sessionProviderService;
       this.repositoryService = repositoryService;

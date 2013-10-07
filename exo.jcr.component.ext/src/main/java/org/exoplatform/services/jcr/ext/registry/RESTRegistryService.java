@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.ext.registry;
 
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.registry.Registry.RegistryNode;
 import org.exoplatform.services.log.ExoLogger;
@@ -84,11 +84,11 @@ public class RESTRegistryService implements ResourceContainer
    private RegistryService regService;
 
    /**
-    * See {@link ThreadLocalSessionProviderService}.
+    * See {@link SessionProviderService}.
     */
-   private ThreadLocalSessionProviderService sessionProviderService;
+   private SessionProviderService sessionProviderService;
 
-   public RESTRegistryService(RegistryService regService, ThreadLocalSessionProviderService sessionProviderService)
+   public RESTRegistryService(RegistryService regService, SessionProviderService sessionProviderService)
       throws Exception
    {
       this.regService = regService;

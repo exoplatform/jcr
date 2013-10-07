@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.ext.registry;
 
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
-import org.exoplatform.services.jcr.ext.app.ThreadLocalSessionProviderService;
+import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -48,7 +48,7 @@ public class RESTRegistryTest extends BaseStandaloneTest
 
    private static final Log log = ExoLogger.getLogger("exo.jcr.component.ext.RESTRegistryTest");
 
-   private ThreadLocalSessionProviderService sessionProviderService;
+   private SessionProviderService sessionProviderService;
 
    private static final String SERVICE_XML =
       "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
@@ -68,8 +68,8 @@ public class RESTRegistryTest extends BaseStandaloneTest
 
       super.setUp();
       this.sessionProviderService =
-         (ThreadLocalSessionProviderService)container
-            .getComponentInstanceOfType(ThreadLocalSessionProviderService.class);
+         (SessionProviderService)container
+            .getComponentInstanceOfType(SessionProviderService.class);
       sessionProviderService.setSessionProvider(null, new SessionProvider(ConversationState.getCurrent()));
       restRegService = (RESTRegistryService)container.getComponentInstanceOfType(RESTRegistryService.class);
       binder = (ResourceBinder)container.getComponentInstanceOfType(ResourceBinder.class);
