@@ -209,9 +209,10 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       UPDATE_REFERENCE = "update JCR_SREF set NODE_ID=? where PROPERTY_ID=? and ORDER_NUM=?";
 
       FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
-            + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and I.N_ORDER_NUM >= ? and "
-            + " I.N_ORDER_NUM <= ? and P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SVALUE V, JCR_SITEM P "
+            + " join (select J.* from JCR_SITEM J where J.CONTAINER_NAME=? AND J.I_CLASS=1 and J.PARENT_ID=?"
+            + " order by J.N_ORDER_NUM, J.ID  LIMIT ? OFFSET ?) I on P.PARENT_ID = I.ID"
+            + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
             + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
             + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
@@ -448,13 +449,6 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       {
          findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
       }
-      else
-      {
-         findLastOrderNumberByParentId.clearParameters();
-      }
-
-      findLastOrderNumberByParentId.setString(1, this.containerConfig.containerName);
-      findLastOrderNumberByParentId.setString(2, parentIdentifier);
       return findLastOrderNumberByParentId.executeQuery();
    }
 
@@ -630,7 +624,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset , int limit)
       throws SQLException
    {
       if (findNodesByParentIdLazilyCQ == null)
@@ -644,8 +638,8 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       findNodesByParentIdLazilyCQ.setString(1, this.containerConfig.containerName);
       findNodesByParentIdLazilyCQ.setString(2, parentCid);
-      findNodesByParentIdLazilyCQ.setInt(3, fromOrderNum);
-      findNodesByParentIdLazilyCQ.setInt(4, toOrderNum);
+      findNodesByParentIdLazilyCQ.setInt(3, limit);
+      findNodesByParentIdLazilyCQ.setInt(4, offset);
       findNodesByParentIdLazilyCQ.setString(5, this.containerConfig.containerName);
 
       return findNodesByParentIdLazilyCQ.executeQuery();
@@ -1054,12 +1048,12 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       {
          removeValuesStatement =
             dbConnection.prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM"
-               + " WHERE CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " WHERE I_CLASS = 2 AND CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
          removeValuesStatement.setString(1, this.containerConfig.containerName);
 
          removeItemsStatement =
-            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND"
+            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE I_CLASS = 2 AND CONTAINER_NAME = ? AND"
                + " (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
          removeItemsStatement.setString(1, this.containerConfig.containerName);

@@ -92,6 +92,9 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
          FIND_NODES_AND_PROPERTIES.replace("from " + JCR_ITEM + " I", "from " + JCR_ITEM + " I force index (PRIMARY)");
 
       FIND_ITEM_BY_NAME = "select * from " + JCR_ITEM + " where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS";
+
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID=
+         "SELECT JCR_NEXT_VAL('JCR_N_ORDER_NUM') as nextVal";
    }
 
    /**

@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.impl.util.jdbc;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.database.utils.DialectConstants;
+import org.exoplatform.services.database.utils.DialectDetecter;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
@@ -29,6 +31,7 @@ import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashSet;
@@ -62,6 +65,10 @@ public class DBInitializer
 
    static public String SQL_TRIGGERNAME = "(([A-Z_]+JCR_[A-Z_0-9]+){1}(\\s*?|(\\(\\))*?)+)+?";
 
+   static public String SQL_CREATEFUNCTION = "^CREATE[\\s]+Function[\\s]+([^(]+).*";
+
+   static public String SQL_CREATEPROCEDURE = "^CREATE[\\s]+Procedure[\\s]+([^(]+).*";
+
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DBInitializer");
 
    protected final Connection connection;
@@ -86,6 +93,10 @@ public class DBInitializer
 
    protected final Pattern dbTriggerNamePattern;
 
+   protected final Pattern creatFunctionPattern;
+
+   protected final Pattern creatProcedurePattern;
+
    public DBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
       this.connection = connection;
@@ -99,6 +110,8 @@ public class DBInitializer
       this.creatSequencePattern = Pattern.compile(SQL_CREATESEQUENCE, Pattern.CASE_INSENSITIVE);
       this.creatTriggerPattern = Pattern.compile(SQL_CREATETRIGGER, Pattern.CASE_INSENSITIVE);
       this.dbTriggerNamePattern = Pattern.compile(SQL_TRIGGERNAME, Pattern.CASE_INSENSITIVE);
+      this.creatFunctionPattern = Pattern.compile(SQL_CREATEFUNCTION, Pattern.CASE_INSENSITIVE);
+      this.creatProcedurePattern = Pattern.compile(SQL_CREATEPROCEDURE, Pattern.CASE_INSENSITIVE);
    }
 
    protected boolean isTableExists(final Connection conn, final String tableName) throws SQLException
@@ -113,6 +126,16 @@ public class DBInitializer
    }
 
    protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
+   {
+      return false;
+   }
+
+   protected boolean isProcedureExists(Connection conn, String procedureName) throws SQLException
+   {
+      return false;
+   }
+
+   protected boolean isFunctionExists(Connection conn, String functionName) throws SQLException
    {
       return false;
    }
@@ -232,6 +255,40 @@ public class DBInitializer
             }
          }
       }
+      else if ((tMatcher = creatFunctionPattern.matcher(sql)).find())
+      {
+         tMatcher = dbObjectNamePattern.matcher(sql);
+         if (tMatcher.find())
+         {
+            // got function name
+            String functionName = sql.substring(tMatcher.start(), tMatcher.end());
+            if (isFunctionExists(conn,functionName))
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("The function '" + functionName + "' already exists.");
+               }
+               return true;
+            }
+         }
+      }
+      else if ((tMatcher = creatProcedurePattern.matcher(sql)).find())
+      {
+         tMatcher = dbObjectNamePattern.matcher(sql);
+         if (tMatcher.find())
+         {
+            // got procedure name
+            String procedureName = sql.substring(tMatcher.start(), tMatcher.end());
+            if (isProcedureExists(conn, procedureName))
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("The procedure  '" + procedureName + "' already exists.");
+               }
+               return true;
+            }
+         }
+      }
       else
       {
          if (LOG.isDebugEnabled())
@@ -271,7 +328,7 @@ public class DBInitializer
                   LOG.debug("Execute script: \n[" + sql + "]");
                }
                final Statement finalSt = st;
-               final String finalSql = sql;
+               final String finalSql = updateQuery(sql);
                SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
                {
                   public Object run() throws Exception
@@ -357,6 +414,83 @@ public class DBInitializer
       {
          String insert = DBInitializerHelper.getRootNodeInitializeScript(containerConfig);
          connection.createStatement().executeUpdate(insert);
+      }
+   }
+
+   /**
+    * Update the sql query in overridden classes.
+    */
+   protected String updateQuery(String sql)
+   {
+      return sql;
+   }
+
+   /**
+    * Init Start value for sequence.
+    */
+   protected int getStartValue(Connection con)
+   {
+
+      Statement stmt = null;
+      ResultSet trs = null;
+      try
+      {
+         String query;
+
+         if (JDBCUtils.tableExists("JCR_SITEM", con))
+         {
+            query = "select max(N_ORDER_NUM) from JCR_SITEM";
+         }
+         else if (JDBCUtils.tableExists("JCR_MITEM", con))
+         {
+            query = "select max(N_ORDER_NUM) from JCR_MITEM";
+         }
+         else if (containerConfig.dbStructureType.equals(JDBCDataContainerConfig.DatabaseStructureType.ISOLATED))
+         {
+            String[] types = {"TABLE"};
+            ResultSet rs = con.getMetaData().getTables(null, null,"JCR_I%", types);
+            if (rs.next())
+            {
+               query = "(select N_ORDER_NUM from "+rs.getString(3)+" )";
+               while (rs.next())
+               {
+                 query+=" UNION ALL  (select N_ORDER_NUM from "+rs.getString(3)+" )";
+               }
+               query+=" order by N_ORDER_NUM DESC";
+            }
+            else
+            {
+               return -1;
+            }
+
+         }
+         else
+         {
+            return -1;
+         }
+         stmt = con.createStatement();
+         trs = stmt.executeQuery(query);
+         if (trs.next() && trs.getInt(1) >= 0)
+         {
+            return trs.getInt(1);
+         }
+         else
+         {
+            return -1;
+         }
+
+      }
+      catch (SQLException e)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("SQLException occurs while update the sequence start value", e);
+         }
+         return -1;
+      }
+      finally
+      {
+         JDBCUtils.freeResources(trs, stmt, null);
       }
    }
 }

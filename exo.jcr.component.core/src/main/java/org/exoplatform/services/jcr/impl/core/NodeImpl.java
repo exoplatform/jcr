@@ -2689,6 +2689,12 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          }
       }
 
+      int[] order = new int[siblings.size()];
+      for (int i = 0; i < siblings.size(); i++)
+      {
+         order[i] = siblings.get(i).getOrderNumber();
+      }
+
       // check if resulting order would be different to current order
       if (destInd == -1)
       {
@@ -2739,7 +2745,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          }
 
          // skeep unchanged
-         if (sdata.getOrderNumber() == j)
+         if (sdata.getOrderNumber() == order[j])
          {
             continue;
          }
@@ -2755,14 +2761,14 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
             newData =
                new TransientNodeData(siblingPath, newData.getIdentifier(), newData.getPersistedVersion(), newData
-                  .getPrimaryTypeName(), newData.getMixinTypeNames(), j, newData.getParentIdentifier(), newData
+                  .getPrimaryTypeName(), newData.getMixinTypeNames(), order[j], newData.getParentIdentifier(), newData
                   .getACL());
          }
          else
          {
             newData =
                new TransientNodeData(newData.getQPath(), newData.getIdentifier(), newData.getPersistedVersion(),
-                  newData.getPrimaryTypeName(), newData.getMixinTypeNames(), j, newData.getParentIdentifier(), newData
+                  newData.getPrimaryTypeName(), newData.getMixinTypeNames(), order[j], newData.getParentIdentifier(), newData
                      .getACL());
          }
 
@@ -3443,6 +3449,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       private int fromOrderNum = 0;
 
+      private int offset=0;
+
+      private int page=0;
+
       private boolean hasNext = true;
 
       private int pos = 0;
@@ -3604,10 +3614,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       private void readNextPage(long skip) throws NoSuchElementException
       {
          List<NodeData> storedNodes = new ArrayList<NodeData>();
+         page++;
          try
          {
             hasNext =
-               dataManager.getChildNodesDataByPage(nodeData(), fromOrderNum, fromOrderNum + pageSize - 1, storedNodes);
+               dataManager.getChildNodesDataByPage(nodeData(),fromOrderNum,offset,pageSize, storedNodes);
          }
          catch (RepositoryException e)
          {
@@ -3620,6 +3631,8 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          int size = storedNodes.size();
 
          fromOrderNum = size == 0 ? fromOrderNum + pageSize : storedNodes.get(size - 1).getOrderNumber() + 1;
+
+         offset=page*pageSize;
 
          // skip some nodes
          if (size != 0)

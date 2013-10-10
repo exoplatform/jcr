@@ -55,7 +55,11 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.indexing.JdbcNodeDataIndexingIterator;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.DB2DBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.HSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.MSSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.MysqlDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
@@ -496,12 +500,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                + " in your use-case. This dialect is only dedicated to the community.");
          }
          this.connFactory = new MySQLConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new MysqlDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
       {
          this.connFactory = defaultConnectionFactory();
-         dbInitializer = defaultDBInitializer();
+         dbInitializer=new MSSQLDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DERBY))
       {
@@ -511,7 +515,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DB2))
       {
          this.connFactory = defaultConnectionFactory();
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new DB2DBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
@@ -527,7 +531,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
       {
          this.connFactory = new HSQLDBConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new HSQLDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else
       {

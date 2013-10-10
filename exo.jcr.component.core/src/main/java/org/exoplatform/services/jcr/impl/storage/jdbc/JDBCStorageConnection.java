@@ -1301,7 +1301,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
     * @throws RepositoryException
     * @throws IllegalStateException
     */
-   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childNodes)
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int offset, int pageSize, List<NodeData> childNodes)
       throws RepositoryException, IllegalStateException
    {
       // not supported by non-CQ deprecated JDBC container
@@ -2757,7 +2757,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
    protected abstract ResultSet findNodesAndProperties(String lastNodeId, int offset, int limit) throws SQLException;
 
-   protected abstract ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
+   protected abstract ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset, int limit)
       throws SQLException;
 
    protected abstract int addReference(PropertyData data) throws SQLException, IOException, InvalidItemStateException,

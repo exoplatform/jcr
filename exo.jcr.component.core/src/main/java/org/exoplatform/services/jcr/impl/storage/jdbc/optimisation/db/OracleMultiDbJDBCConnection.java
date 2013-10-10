@@ -86,9 +86,18 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
 
       FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         FIND_NODES_BY_PARENTID_LAZILY_CQ.replaceFirst("select", "select /*+ USE_NL(V) INDEX(I "
-            + JCR_IDX_ITEM_N_ORDER_NUM + ") INDEX(P " + JCR_IDX_ITEM_PARENT_FK + ") INDEX(V " + JCR_IDX_VALUE_PROPERTY
-            + ") */");
+         "select /*+ USE_NL(V) INDEX(I "
+            + JCR_IDX_ITEM_N_ORDER_NUM + ") INDEX(P " + JCR_IDX_ITEM_PARENT_FK + ") INDEX(V " + JCR_IDX_VALUE_PROPERTY+ ") */"
+            +" I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_VALUE +" V, "+JCR_ITEM +" P "
+            + " join ( select * from ( select A.*, ROWNUM r__ from ( select J.* from "+JCR_ITEM +" J "
+            + " where J.I_CLASS=1 and J.PARENT_ID=? order by J.N_ORDER_NUM, J.ID "
+            + " ) A where ROWNUM <= ?) where r__ > ?)  I on P.PARENT_ID = I.ID"
+            + " where P.I_CLASS=2 and P.PARENT_ID=I.ID and"
+            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
 
       FIND_REFERENCES = FIND_REFERENCES.replaceFirst("select", "select /*+ INDEX(R " + JCR_PK_REF + ")*/");
 
@@ -103,6 +112,8 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
             "select /*+ INDEX(I " + JCR_IDX_ITEM_PARENT_NAME + ") */"); 
 
       DELETE_ITEM = "delete /*+ INDEX(I " + JCR_PK_ITEM + ")*/ from " + JCR_ITEM + " I where I.ID=?";
+
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID ="SELECT JCR_N_ORDER_NUM.nextval FROM dual";
    }
 
    /**
@@ -125,4 +136,28 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
 
       return findNodesAndProperties.executeQuery();
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset , int limit)
+      throws SQLException
+   {
+      if (findNodesByParentIdLazilyCQ == null)
+      {
+         findNodesByParentIdLazilyCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_LAZILY_CQ);
+      }
+      else
+      {
+         findNodesByParentIdLazilyCQ.clearParameters();
+      }
+
+      findNodesByParentIdLazilyCQ.setString(1, parentCid);
+      findNodesByParentIdLazilyCQ.setInt(2, offset + limit);
+      findNodesByParentIdLazilyCQ.setInt(3, offset);
+
+      return findNodesByParentIdLazilyCQ.executeQuery();
+   }
+
 }

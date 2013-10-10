@@ -48,6 +48,17 @@ public class PostgreMultiDbJDBCConnection extends MultiDbJDBCConnection
       super(dbConnection, readOnly, containerConfig);
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void prepareQueries() throws SQLException
+   {
+      super.prepareQueries();
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
+         "SELECT NEXTVAL('JCR_N_ORDER_NUM')";
+   }
+
    @Override
    protected String getLikeExpressionEscape()
    {

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+ * Copyright (C) 2013 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -20,8 +20,10 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
-
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
@@ -30,73 +32,72 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Created by The eXo Platform SAS
- * 
- * 22.03.2007
- * 
- * For statistic compute on a user schema (PL/SQL): exec
- * DBMS_STATS.GATHER_SCHEMA_STATS(ownname=>'exoadmin')
- * 
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: OracleDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * JCR Storage DB2 initializer.
+ *
+ * Created by The eXo Platform SAS* 11.09.2013
+ *
+ * @author <a href="mailto:aboughzela@exoplatform.com">Aymen Boughzela</a>
  */
-public class OracleDBInitializer extends DBInitializer
-{
 
-   public OracleDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
+public class DB2DBInitializer extends DBInitializer
+{
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DB2DBInitializer");
+
+   public DB2DBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
       super(connection, containerConfig);
    }
-
+   /**
+    * {@inheritDoc}
+    */
    @Override
-   protected boolean isSequenceExists(Connection conn, String sequenceName) throws SQLException
+   protected boolean isSequenceExists(final Connection conn, final String sequenceName) throws SQLException
    {
-      ResultSet srs = null;
-      Statement st = null;
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
+      {
+         public Boolean run()
+         {
+            return sequenceExists(sequenceName, conn);
+         }
+      });
+   }
+
+   private int getSequenceStartValue(final Connection conn) throws SQLException
+   {
+      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
+      {
+         public Integer run()
+         {
+            return getStartValue(conn);
+         }
+      });
+   }
+
+   private boolean sequenceExists(String sequenceName, Connection con)
+   {
+      Statement stmt = null;
+      ResultSet trs = null;
       try
       {
-         st = conn.createStatement();
-         srs = st.executeQuery("SELECT " + sequenceName + ".nextval FROM DUAL");
-         if (srs.next())
-         {
-            return true;
-         }
-         return false;
+         String query;
+         query = "SELECT count(*) FROM SYSCAT.SEQUENCES WHERE SYSCAT.SEQUENCES.SEQNAME = '" + sequenceName + "'";
+
+         stmt = con.createStatement();
+         trs = stmt.executeQuery(query);
+         return (trs.next() && trs.getInt(1) >= 1);
+
       }
       catch (SQLException e)
       {
-         // check: ORA-02289: sequence does not exist
-         if (e.getMessage().indexOf("ORA-02289") >= 0)
+         if (LOG.isDebugEnabled())
          {
-            return false;
+            LOG.debug("SQLException occurs while checking the sequence " + sequenceName, e);
          }
-         throw e;
+         return false;
       }
       finally
       {
-         if (srs != null)
-         {
-            try
-            {
-               srs.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error("Can't close the ResultSet: " + e);
-            }
-         }
-
-         if (st != null)
-         {
-            try
-            {
-               st.close();
-            }
-            catch (SQLException e)
-            {
-               LOG.error("Can't close the Statement: " + e);
-            }
-         }
+         JDBCUtils.freeResources(trs, stmt, null);
       }
    }
 
@@ -118,16 +119,5 @@ public class OracleDBInitializer extends DBInitializer
          LOG.debug("SQLException occurs while update the sequence start value", e);
       }
       return sql;
-   }
-
-   private int getSequenceStartValue(final Connection conn) throws SQLException
-   {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
-      {
-         public Integer run()
-         {
-            return getStartValue(conn);
-         }
-      });
    }
 }

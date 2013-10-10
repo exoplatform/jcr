@@ -60,4 +60,14 @@ public class H2SingleDbJDBCConnection extends SingleDbJDBCConnection
       return traverseQPathSQ(cpid);
    }
 
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void prepareQueries() throws SQLException
+   {
+      super.prepareQueries();
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID ="call JCR_N_ORDER_NUM.nextval";
+   }
+
 }

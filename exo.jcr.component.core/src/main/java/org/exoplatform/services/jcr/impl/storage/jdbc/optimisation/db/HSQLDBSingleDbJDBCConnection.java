@@ -77,8 +77,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?" + " order by N_ORDER_NUM";
 
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
-         "select count(*), max(N_ORDER_NUM) from JCR_SITEM where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call next value for JCR_N_ORDER_NUM";
 
       FIND_NODES_COUNT_BY_PARENTID =
          "select count(ID) from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
@@ -173,27 +172,6 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findNodesByParentId.setString(2, this.containerConfig.containerName);
 
       return findNodesByParentId.executeQuery();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
-   {
-      if (findLastOrderNumberByParentId == null)
-      {
-         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
-      }
-      else
-      {
-         findLastOrderNumberByParentId.clearParameters();
-      }
-
-      findLastOrderNumberByParentId.setString(1, parentIdentifier);
-      findLastOrderNumberByParentId.setString(2, this.containerConfig.containerName);
-
-      return findLastOrderNumberByParentId.executeQuery();
    }
 
    /**
