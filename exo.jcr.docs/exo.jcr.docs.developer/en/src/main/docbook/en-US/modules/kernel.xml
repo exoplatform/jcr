@@ -78,5 +78,8 @@
  
    <xi:include href="kernel/auto-registration.xml"
                xmlns:xi="http://www.w3.org/2001/XInclude" />
+ 
+   <xi:include href="kernel/mt-kernel.xml"
+               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
 </chapter>

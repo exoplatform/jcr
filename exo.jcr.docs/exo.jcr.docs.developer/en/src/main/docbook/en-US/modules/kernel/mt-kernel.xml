@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="Kernel.MTKernel">
+  <title>Multi-threaded Kernel</title>
+
+  <para>There is an optional project called
+  <emphasis>exo.kernel.container.mt</emphasis> that allows you to switch to a
+  multi-threaded kernel. Indeed by default, if you have only the project
+  <emphasis>exo.kernel.container</emphasis> deployed on your application, the
+  kernel will use only one thread to create, initialize and start your
+  components.</para>
+
+  <para>To reduce the boot time of your application in case you have a lot of
+  components that can be created, initialized and started in parallel, you can
+  deploy the artifact of <emphasis>exo.kernel.container.mt</emphasis> at the
+  same location as the artifact of <emphasis>exo.kernel.container</emphasis>
+  (make sure that the versions match). At startup, the kernel will detect
+  automatically the artifact of <emphasis>exo.kernel.container.mt</emphasis>
+  and then will switch to a multi-threaded kernel. To go back to the old
+  kernel, you simply need to remove the artifact of
+  <emphasis>exo.kernel.container.mt</emphasis>.</para>
+
+  <para>The multi-threaded kernel is pre-configured to match with most use
+  cases, but you can still change the default behavior thanks to the next
+  system properties:</para>
+
+  <table>
+    <title>System Properties of the Multi-threaded kernel</title>
+
+    <tgroup cols="2">
+      <thead>
+        <row>
+          <entry align="center">Name</entry>
+
+          <entry align="center">Description</entry>
+        </row>
+      </thead>
+
+      <tbody>
+        <row>
+          <entry>org.exoplatform.container.mt.enabled</entry>
+
+          <entry>This parameter allows you to enable/disable the
+          multi-threaded mode, it is mostly used for debugging purpose. By
+          default it is set to true. It will be disabled automatically if you
+          don't have more than one processor available.</entry>
+        </row>
+
+        <row>
+          <entry>org.exoplatform.container.dmtosc.enabled</entry>
+
+          <entry>In case the multi-threaded mode is enabled, you can use this
+          parameter to enable/disable a special mode that will indicate the
+          kernel that the multi-threaded mode should be disabled once all the
+          containers have been fully started, this allows you to free the
+          resources allocated for the threads of the kernel. As we assume that
+          the multi-threaded kernel is mainly needed for the startup, we
+          decided to enable it by default such that once started, the kernel
+          will use only one thread as before.</entry>
+        </row>
+
+        <row>
+          <entry>org.exoplatform.container.as.enabled</entry>
+
+          <entry>This parameter allows you to enable/disable the
+          <emphasis>"auto solve dependency issues"</emphasis> mode. If
+          enabled, the kernel will detect automatically explicit calls to
+          <emphasis>getComponentInstanceOfType</emphasis> and/or
+          <emphasis>getComponentInstance</emphasis> in constructors or
+          initializers and if the developing mode is enabled, it will print a
+          strack trace in the log file to allow you to identify the location
+          of the incorrect code that needs to be fixed. By default it is set
+          to true.</entry>
+        </row>
+
+        <row>
+          <entry>org.exoplatform.container.mt.tps</entry>
+
+          <entry>This parameter allows you to define explicitly the total
+          amount of threads that you would like to allocate to the kernel. By
+          default it will be set to twice the total amount of processors
+          available unless this value is greater than 30, in that case it will
+          be set to 30 in order to avoid consuming too much resources for it.
+          If the default value is not suitable for you, please set this
+          parameter to a higher or lower value, if it is set explicitly it can
+          be greater than 30.</entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </table>
+
+  <note>
+    <para>To be able to launch tasks in parallel, the kernel needs to clearly
+    know the dependencies. So If you get stack traces when you enable the
+    multi-threaded kernel, it is probably due to the fact that you have some
+    implicit dependencies that you need to define explicitly to make sure that
+    those implicit dependencies are started before your component.</para>
+  </note>
+
+  <note>
+    <para>In case the kernel detects cyclic <emphasis>"create
+    dependencies"</emphasis> (dependencies that you define in the constructor)
+    between two or several components, you will get an
+    <emphasis>CyclicDependencyException</emphasis>. To fix it, you will need
+    to move the dependency of at least one component affected by this cyclic
+    dependency from the constructor to an initializer.</para>
+  </note>
+
+  <note>
+    <para>Some times the kernel has to deal with cyclic dependencies of type:
+    A has B as <emphasis>"create dependency"</emphasis> and B has A as
+    <emphasis>"init dependency"</emphasis> (dependency that you define in the
+    initializers which can be fields or methods annoted with Inject or
+    component plugins), in that case it will always make sure that B will be
+    started before A. In other words the <emphasis>"create
+    dependencies"</emphasis> of a component will always be started before the
+    component itself.</para>
+  </note>
+</section>

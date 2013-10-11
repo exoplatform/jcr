@@ -16,6 +16,8 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.picocontainer.Startable;
+
 /**
  * Created by The eXo Platform SAS. <p/> Holds SystemSearchManager instance to be accessible from
  * RepositoryContainer.<br/> Prevent SystemSearchManager instance to being started and stopped in
@@ -25,7 +27,7 @@ package org.exoplatform.services.jcr.impl.core.query;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: SystemSearchManagerHolder.java 34061 2009-07-16 11:06:01Z rainf0x $
  */
-public class SystemSearchManagerHolder
+public class SystemSearchManagerHolder implements Startable
 {
 
    protected final SystemSearchManager manager;
@@ -38,5 +40,21 @@ public class SystemSearchManagerHolder
    public SystemSearchManager get()
    {
       return manager;
+   }
+
+   /**
+    * @see org.picocontainer.Startable#start()
+    */
+   public void start()
+   {
+      if (manager != null)
+         manager.start();
+   }
+
+   /**
+    * @see org.picocontainer.Startable#stop()
+    */
+   public void stop()
+   {
    }
 }

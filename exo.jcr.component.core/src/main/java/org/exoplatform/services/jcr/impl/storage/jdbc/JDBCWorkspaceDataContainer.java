@@ -91,7 +91,6 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.RepositoryException;
 import javax.naming.NamingException;
@@ -572,8 +571,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             (Connection)Proxy.newProxyInstance(GenericConnectionFactory.class.getClassLoader(),
                new Class[]{Connection.class}, new InvocationHandler()
                {
-
-                  @Override
                   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
                   {
                      if ("close".equals(method.getName()) && storageConnection.release() > 0)
@@ -594,8 +591,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             connFactory.cloneWith((DataSource)Proxy.newProxyInstance(GenericConnectionFactory.class.getClassLoader(),
                new Class[]{DataSource.class}, new InvocationHandler()
                {
-
-                  @Override
                   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable
                   {
                      if ("getConnection".equals(method.getName()))

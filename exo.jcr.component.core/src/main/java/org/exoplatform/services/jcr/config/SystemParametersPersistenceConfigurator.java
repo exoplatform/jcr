@@ -118,7 +118,6 @@ public class SystemParametersPersistenceConfigurator
       {
          return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Map<String, String>>()
          {
-            @Override
             public Map<String, String> run() throws IOException
             {
                Map<String, String> parameters = new HashMap<String, String>();
@@ -201,7 +200,6 @@ public class SystemParametersPersistenceConfigurator
       {
          SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
          {
-            @Override
             public Void run() throws IOException
             {
                BufferedWriter bufferedWriter = null;
@@ -270,7 +268,6 @@ public class SystemParametersPersistenceConfigurator
    {
       return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Set<String>>()
       {
-         @Override
          public Set<String> run()
          {
             return System.getProperties().stringPropertyNames();

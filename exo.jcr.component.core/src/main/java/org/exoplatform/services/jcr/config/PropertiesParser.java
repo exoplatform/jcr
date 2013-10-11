@@ -221,7 +221,6 @@ public class PropertiesParser
    {
       return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Properties>()
       {
-         @Override
          public Properties run()
          {
             return System.getProperties();
