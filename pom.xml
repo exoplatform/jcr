@@ -31,7 +31,7 @@
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.16.0-Alpha2-SNAPSHOT</version>
+  <version>1.16.0-Alpha2</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
   <description>Exoplatform SAS 'eXo JCR'(JSR-170 implementation) project.</description>
