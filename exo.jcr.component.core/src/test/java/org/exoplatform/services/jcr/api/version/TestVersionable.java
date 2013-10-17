@@ -610,7 +610,7 @@ public class TestVersionable extends BaseVersionTest
       ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
       long totalNodes = vs.getNodesCount();
       final String path = testMultiThreading.getPath();
-      int threadCount = 5;
+      int threadCount = 3;
       final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
       final CountDownLatch endSignal = new CountDownLatch(threadCount);
       final AtomicReference<Exception> ex = new AtomicReference<Exception>();
@@ -684,7 +684,7 @@ public class TestVersionable extends BaseVersionTest
       ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
       long totalNodes = vs.getNodesCount();
       final String path = testMultiThreading.getPath();
-      int threadCount = 5;
+      int threadCount = 3;
       final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
       final CountDownLatch endSignal = new CountDownLatch(threadCount);
       final AtomicReference<Exception> ex = new AtomicReference<Exception>();
@@ -752,7 +752,7 @@ public class TestVersionable extends BaseVersionTest
    {
       ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
       long totalNodes = vs.getNodesCount();
-      int threadCount = 5;
+      int threadCount = 3;
       final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
       final CountDownLatch endSignal = new CountDownLatch(threadCount);
       final AtomicReference<Exception> ex = new AtomicReference<Exception>();
@@ -818,7 +818,7 @@ public class TestVersionable extends BaseVersionTest
    {
       ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
       long totalNodes = vs.getNodesCount();
-      int threadCount = 5;
+      int threadCount = 3;
       final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
       final CountDownLatch endSignal = new CountDownLatch(threadCount);
       final AtomicReference<Exception> ex = new AtomicReference<Exception>();
@@ -892,7 +892,7 @@ public class TestVersionable extends BaseVersionTest
       ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
       long totalNodes = vs.getNodesCount();
       final String path = testMultiThreading.getPath();
-      int threadCount = 5;
+      int threadCount = 3;
       final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
       final CountDownLatch endSignal = new CountDownLatch(threadCount);
       final AtomicReference<Exception> ex = new AtomicReference<Exception>();
@@ -964,7 +964,7 @@ public class TestVersionable extends BaseVersionTest
       ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
       long totalNodes = vs.getNodesCount();
       final String path = testMultiThreading.getPath();
-      int threadCount = 5;
+      int threadCount = 3;
       final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
       final CountDownLatch endSignal = new CountDownLatch(threadCount);
       final AtomicReference<Exception> ex = new AtomicReference<Exception>();
@@ -1031,7 +1031,7 @@ public class TestVersionable extends BaseVersionTest
    {
       ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
       long totalNodes = vs.getNodesCount();
-      int threadCount = 5;
+      int threadCount = 3;
       final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
       final CountDownLatch endSignal = new CountDownLatch(threadCount);
       final AtomicReference<Exception> ex = new AtomicReference<Exception>();
@@ -1095,7 +1095,7 @@ public class TestVersionable extends BaseVersionTest
    {
       ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
       long totalNodes = vs.getNodesCount();
-      int threadCount = 5;
+      int threadCount = 3;
       final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
       final CountDownLatch endSignal = new CountDownLatch(threadCount);
       final AtomicReference<Exception> ex = new AtomicReference<Exception>();
