@@ -1896,7 +1896,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private void createIndex(final Queue<Callable<Void>> tasks, final NodeData node, final ItemDataConsumer stateMgr,
       final AtomicLong count) throws IOException, RepositoryException, InterruptedException
    {
-      if (stopped.get())
+      if (stopped.get() || Thread.interrupted())
       {
          throw new InterruptedException();
       }
@@ -2043,7 +2043,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       for (NodeDataIndexing node : iterator.next())
       {
-         if (stopped.get())
+         if (stopped.get() || Thread.interrupted())
          {
             throw new InterruptedException();
          }
@@ -3605,6 +3605,11 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       private final AtomicLong count = new AtomicLong();
 
       /**
+       * All the indexing threads
+       */
+      private final Thread[] allIndexingThreads = new Thread[nThreads];
+
+      /**
        * The list of indexing tasks left to do
        */
       private final Queue<Callable<Void>> tasks = new LinkedBlockingQueue<Callable<Void>>(nThreads)
@@ -3663,6 +3668,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   catch (Exception e)
                   {
                      exception.set(e);
+                     // Interrupts all the indexing threads
+                     interruptAll();
                   }
                   finally
                   {
@@ -3790,7 +3797,20 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          for (int i = 0; i < nThreads; i++)
          {
-            (new Thread(indexingTask, "Indexing Thread #" + (i + 1))).start();
+            (allIndexingThreads[i] = new Thread(indexingTask, "Indexing Thread #" + (i + 1))).start();
+         }
+      }
+
+      /**
+       * Interrupts all the indexing threads
+       */
+      private void interruptAll()
+      {
+         for (int i = 0; i < nThreads; i++)
+         {
+            Thread t = allIndexingThreads[i];
+            if (t != null)
+               t.interrupt();
          }
       }
    }
