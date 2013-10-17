@@ -3,26 +3,27 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Core.OrganizationServiceTCKTestsConfiguration">
   <title>Organization Service TCK tests configuration</title>
-    <para>The process of launching the Organization Service TCK tests against
-    your Organization Service is quite easy. For instance you may add TCK
-    tests to your maven project and launch them during unit testing phase. To
-    do that you need to complete the next two steps:</para>
 
-    <itemizedlist>
-      <listitem>
-        <para>Configure your maven pom.xml file</para>
-      </listitem>
+  <para>The process of launching the Organization Service TCK tests against
+  your Organization Service is quite easy. For instance you may add TCK tests
+  to your maven project and launch them during unit testing phase. To do that
+  you need to complete the next two steps:</para>
 
-      <listitem>
-        <para>Configure standalone container and Organization Service</para>
+  <itemizedlist>
+    <listitem>
+      <para>Configure your maven pom.xml file</para>
+    </listitem>
 
-        <note>
-          <para>If you need more profound information you can find Organization
-          Service TCK test sources at <ulink
-          url="https://github.com/exoplatform/core/tree/stable/2.6.x/exo.core.component.organization.tests">Git</ulink></para>
-        </note>
-      </listitem>
-    </itemizedlist>
+    <listitem>
+      <para>Configure standalone container and Organization Service</para>
+
+      <note>
+        <para>If you need more profound information you can find Organization
+        Service TCK test sources at <ulink
+        url="https://github.com/exoplatform/core/tree/stable/2.6.x/exo.core.component.organization.tests">Git</ulink></para>
+      </note>
+    </listitem>
+  </itemizedlist>
 
   <section id="Core.OrganizationServiceTCKTestsConfiguration.MavenPomXmlFileConfiguration">
     <title>Maven pom.xml file configuration</title>
@@ -412,5 +413,31 @@
     and initialization data. You can find prepared test-configuration.xml file
     at <ulink
     url="https://github.com/exoplatform/jcr-services/tree/stable/1.16.x/src/test/java/conf/standalone/test-configuration.xml">Git</ulink></para>
+  </section>
+
+  <section id="Core.OrganizationServiceTCKTestsConfiguration.OptionalTests">
+    <title>Optional Tests</title>
+
+    <para>According to the implementation of the OrganizationService, some
+    fonctionnalities covered by the TCK could be hard or even impossible to
+    implement. Knowing that, some unit tests can simply be disabled using
+    system properties. The kind of unit tests that you can disable are the
+    following ones:</para>
+
+    <itemizedlist>
+      <listitem>
+        <para>Queries on users based on the login date, if you want to skip
+        those kind of unit tests, simply set the system properties
+        <emphasis>orgservice.test.configuration.skipDateTests</emphasis> to
+        <emphasis>true</emphasis>.</para>
+      </listitem>
+
+      <listitem>
+        <para>Queries on users that are case insensitive, if you want to skip
+        those kind of unit tests, simply set the system properties
+        <emphasis>orgservice.test.configuration.skipCISearchTests</emphasis>
+        to <emphasis>true</emphasis>.</para>
+      </listitem>
+    </itemizedlist>
   </section>
 </section>
