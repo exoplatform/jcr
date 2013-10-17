@@ -549,7 +549,10 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
             }
          });
          // We share the system connection to prevent deadlocks
-         txResourceManager.putSharedObject(ChangesLogPersister.class.getName(), persister.systemConnection);
+         if (persister.systemConnectionShared == null && persister.systemConnection != null)
+         {
+            txResourceManager.putSharedObject(ChangesLogPersister.class.getName(), persister.systemConnection);
+         }
       }
    }
 

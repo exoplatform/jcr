@@ -18,18 +18,26 @@
  */
 package org.exoplatform.services.jcr.api.version;
 
+import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.datamodel.ItemData;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 
 import java.io.ByteArrayInputStream;
 import java.util.Calendar;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicReference;
 
+import javax.jcr.ItemExistsException;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
-import javax.jcr.version.Version;
 import javax.jcr.version.VersionHistory;
 
 /**
@@ -113,8 +121,6 @@ public class TestVersionable extends BaseVersionTest
       contentNode.addMixin("mix:versionable");
       session.save();
       String vsUuid = contentNode.getProperty("jcr:versionHistory").getString();
-      Node vsNode = session.getNodeByUUID(vsUuid);
-      // System.out.println(vsNode.getNodes().getSize());
       for (int i = 0; i < versionsCount; i++)
       {
          contentNode.checkin();
@@ -123,8 +129,6 @@ public class TestVersionable extends BaseVersionTest
          contentNode.setProperty("jcr:data", new ByteArrayInputStream(content));
 
          session.save();
-         // /System.out.println(vsNode.getNodes().getSize());
-
       }
       testFolder.remove();
       session.save();
@@ -481,11 +485,11 @@ public class TestVersionable extends BaseVersionTest
       contentTestImage.setProperty("jcr:mimeType", "text/jpeg");
       root.save();
 
-      Version tImageV1 = testImage.checkin();
+      testImage.checkin();
       testImage.checkout();
       testImage.save();
 
-      Version v2 = l1Node.checkin();
+      l1Node.checkin();
       l1Node.checkout();
       root.save();
 
@@ -598,4 +602,561 @@ public class TestVersionable extends BaseVersionTest
       assertEquals("content_test_image_data", rTestImageContent.getProperty("jcr:data").getString());
    }
 
+   public void testMultiThreading1OnWS1() throws Exception
+   {
+      Session s = repository.login(credentials, "ws1");
+      Node testMultiThreading = s.getRootNode().addNode("testMultiThreading1");
+      s.save();
+      ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
+      long totalNodes = vs.getNodesCount();
+      final String path = testMultiThreading.getPath();
+      int threadCount = 5;
+      final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
+      final CountDownLatch endSignal = new CountDownLatch(threadCount);
+      final AtomicReference<Exception> ex = new AtomicReference<Exception>();
+      Runnable r = new Runnable()
+      {
+         public void run()
+         {
+            boolean beforeAwait = true;
+            Session session = null;
+            try
+            {
+               session = repository.login(credentials, "ws1");
+               Node testMultiThreading = (Node)session.getItem(path);
+               testMultiThreading.addMixin("mix:versionable");
+               startSignal.await();
+               beforeAwait = false;
+               session.save();
+            }
+            catch (ItemExistsException e)
+            {
+               // The mixin has been added several times so it is normal to have such issue
+            }
+            catch (RepositoryException e)
+            {
+               if (beforeAwait)
+                  ex.set(e);
+            }
+            catch (Exception e)
+            {
+               ex.set(e);
+            }
+            finally
+            {
+               if (beforeAwait)
+               {
+                  try
+                  {
+                     startSignal.await();
+                  }
+                  catch (Exception e)
+                  {
+                     // ignore me
+                  }
+               }
+               endSignal.countDown();
+               if (session != null)
+                  session.logout();
+            }
+         }
+      };
+      for (int i = 0; i < threadCount; i++)
+         new Thread(r).start();
+      endSignal.await();
+      assertEquals(totalNodes + 1, vs.getNodesCount());
+      assertEquals(totalNodes + 1, vs.getNodes().getSize());
+      // reload the node
+      testMultiThreading = (Node)s.getItem(path);
+      assertEquals(1, testMultiThreading.getMixinNodeTypes().length);
+      assertEquals("mix:versionable", testMultiThreading.getMixinNodeTypes()[0].getName());
+      s.logout();
+      if (ex.get() != null)
+         throw ex.get();
+   }
+
+   public void testMultiThreading2OnWS1() throws Exception
+   {
+      Session s = repository.login(credentials, "ws1");
+      Node testMultiThreading = s.getRootNode().addNode("testMultiThreading2");
+      testMultiThreading.addMixin("mix:referenceable");
+      s.save();
+      ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
+      long totalNodes = vs.getNodesCount();
+      final String path = testMultiThreading.getPath();
+      int threadCount = 5;
+      final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
+      final CountDownLatch endSignal = new CountDownLatch(threadCount);
+      final AtomicReference<Exception> ex = new AtomicReference<Exception>();
+      Runnable r = new Runnable()
+      {
+         public void run()
+         {
+            Session session = null;
+            boolean beforeAwait = true;
+            try
+            {
+               session = repository.login(credentials, "ws1");
+               Node testMultiThreading = (Node)session.getItem(path);
+               testMultiThreading.addMixin("mix:versionable");
+               startSignal.await();
+               beforeAwait = false;
+               session.save();
+            }
+            catch (RepositoryException e)
+            {
+               // Concurrent modifications of the property mixinTypes
+            }
+            catch (Exception e)
+            {
+               ex.set(e);
+            }
+            finally
+            {
+               if (beforeAwait)
+               {
+                  try
+                  {
+                     startSignal.await();
+                  }
+                  catch (Exception e)
+                  {
+                     // ignore me
+                  }
+               }
+               endSignal.countDown();
+               if (session != null)
+                  session.logout();
+            }
+         }
+      };
+      for (int i = 0; i < threadCount; i++)
+         new Thread(r).start();
+      endSignal.await();
+      assertEquals(totalNodes + 1, vs.getNodesCount());
+      assertEquals(totalNodes + 1, vs.getNodes().getSize());
+      // reload the node
+      testMultiThreading = (Node)s.getItem(path);
+      assertEquals(2, testMultiThreading.getMixinNodeTypes().length);
+      Set<String> mixins = new HashSet<String>();
+      mixins.add(testMultiThreading.getMixinNodeTypes()[0].getName());
+      mixins.add(testMultiThreading.getMixinNodeTypes()[1].getName());
+      assertTrue(mixins.contains("mix:referenceable"));
+      assertTrue(mixins.contains("mix:versionable"));
+      s.logout();
+      if (ex.get() != null)
+         throw ex.get();
+   }
+
+   public void testMultiThreading3OnWS1() throws Exception
+   {
+      ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
+      long totalNodes = vs.getNodesCount();
+      int threadCount = 5;
+      final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
+      final CountDownLatch endSignal = new CountDownLatch(threadCount);
+      final AtomicReference<Exception> ex = new AtomicReference<Exception>();
+      Runnable r = new Runnable()
+      {
+         public void run()
+         {
+            Session session = null;
+            boolean beforeAwait = true;
+            try
+            {
+               session = repository.login(credentials, "ws1");
+               Node testMultiThreading = session.getRootNode().addNode("testMultiThreading3");
+               testMultiThreading.addMixin("mix:versionable");
+               startSignal.await();
+               beforeAwait = false;
+               session.save();
+            }
+            catch (ItemExistsException e)
+            {
+               // The node has not been created so far
+            }
+            catch (Exception e)
+            {
+               ex.set(e);
+            }
+            finally
+            {
+               if (beforeAwait)
+               {
+                  try
+                  {
+                     startSignal.await();
+                  }
+                  catch (Exception e)
+                  {
+                     // ignore me
+                  }
+               }
+               endSignal.countDown();
+               if (session != null)
+                  session.logout();
+            }
+         }
+      };
+      for (int i = 0; i < threadCount; i++)
+         new Thread(r).start();
+      endSignal.await();
+      assertEquals(totalNodes + 1, vs.getNodesCount());
+      assertEquals(totalNodes + 1, vs.getNodes().getSize());
+      // load the node
+      Session s = repository.login(credentials, "ws1");
+      Node testMultiThreading = (Node)s.getItem("/testMultiThreading3");
+      assertEquals(1, testMultiThreading.getMixinNodeTypes().length);
+      assertEquals("mix:versionable", testMultiThreading.getMixinNodeTypes()[0].getName());
+      assertFalse(s.itemExists("/testMultiThreading3[2]"));
+      s.logout();
+      if (ex.get() != null)
+         throw ex.get();
+   }
+
+   public void testMultiThreading4OnWS1() throws Exception
+   {
+      ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
+      long totalNodes = vs.getNodesCount();
+      int threadCount = 5;
+      final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
+      final CountDownLatch endSignal = new CountDownLatch(threadCount);
+      final AtomicReference<Exception> ex = new AtomicReference<Exception>();
+      Runnable r = new Runnable()
+      {
+         public void run()
+         {
+            Session session = null;
+            boolean beforeAwait = true;
+            try
+            {
+               session = repository.login(credentials, "ws1");
+               Node testMultiThreading = session.getRootNode().addNode("testMultiThreading4");
+               testMultiThreading.addMixin("mix:referenceable");
+               testMultiThreading.addMixin("mix:versionable");
+               startSignal.await();
+               beforeAwait = false;
+               session.save();
+            }
+            catch (ItemExistsException e)
+            {
+               // The node has not been created so far
+            }
+            catch (Exception e)
+            {
+               ex.set(e);
+            }
+            finally
+            {
+               if (beforeAwait)
+               {
+                  try
+                  {
+                     startSignal.await();
+                  }
+                  catch (Exception e)
+                  {
+                     // ignore me
+                  }
+               }
+               endSignal.countDown();
+               if (session != null)
+                  session.logout();
+            }
+         }
+      };
+      for (int i = 0; i < threadCount; i++)
+         new Thread(r).start();
+      endSignal.await();
+      assertEquals(totalNodes + 1, vs.getNodesCount());
+      assertEquals(totalNodes + 1, vs.getNodes().getSize());
+      // load the node
+      Session s = repository.login(credentials, "ws1");
+      Node testMultiThreading = (Node)s.getItem("/testMultiThreading4");
+      assertEquals(2, testMultiThreading.getMixinNodeTypes().length);
+      Set<String> mixins = new HashSet<String>();
+      mixins.add(testMultiThreading.getMixinNodeTypes()[0].getName());
+      mixins.add(testMultiThreading.getMixinNodeTypes()[1].getName());
+      assertTrue(mixins.contains("mix:referenceable"));
+      assertTrue(mixins.contains("mix:versionable"));
+      assertFalse(s.itemExists("/testMultiThreading4[2]"));
+      s.logout();
+      if (ex.get() != null)
+         throw ex.get();
+   }
+
+   public void testMultiThreading1OnWS() throws Exception
+   {
+      Node testMultiThreading = root.addNode("testMultiThreading1");
+      root.save();
+      ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
+      long totalNodes = vs.getNodesCount();
+      final String path = testMultiThreading.getPath();
+      int threadCount = 5;
+      final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
+      final CountDownLatch endSignal = new CountDownLatch(threadCount);
+      final AtomicReference<Exception> ex = new AtomicReference<Exception>();
+      Runnable r = new Runnable()
+      {
+         public void run()
+         {
+            boolean beforeAwait = true;
+            Session session = null;
+            try
+            {
+               session = repository.login(credentials, "ws");
+               Node testMultiThreading = (Node)session.getItem(path);
+               testMultiThreading.addMixin("mix:versionable");
+               startSignal.await();
+               beforeAwait = false;
+               session.save();
+            }
+            catch (ItemExistsException e)
+            {
+               // The mixin has been added several times so it is normal to have such issue
+            }
+            catch (RepositoryException e)
+            {
+               if (beforeAwait)
+                  ex.set(e);
+            }
+            catch (Exception e)
+            {
+               ex.set(e);
+            }
+            finally
+            {
+               if (beforeAwait)
+               {
+                  try
+                  {
+                     startSignal.await();
+                  }
+                  catch (Exception e)
+                  {
+                     // ignore me
+                  }
+               }
+               endSignal.countDown();
+               if (session != null)
+                  session.logout();
+            }
+         }
+      };
+      for (int i = 0; i < threadCount; i++)
+         new Thread(r).start();
+      endSignal.await();
+      assertEquals(totalNodes + 1, vs.getNodesCount());
+      assertEquals(totalNodes + 1, vs.getNodes().getSize());
+      // reload the node
+      testMultiThreading = (Node)session.getItem(path);
+      assertEquals(1, testMultiThreading.getMixinNodeTypes().length);
+      assertEquals("mix:versionable", testMultiThreading.getMixinNodeTypes()[0].getName());
+      if (ex.get() != null)
+         throw ex.get();
+   }
+
+   public void testMultiThreading2OnWS() throws Exception
+   {
+      Node testMultiThreading = root.addNode("testMultiThreading2");
+      testMultiThreading.addMixin("mix:referenceable");
+      root.save();
+      ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
+      long totalNodes = vs.getNodesCount();
+      final String path = testMultiThreading.getPath();
+      int threadCount = 5;
+      final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
+      final CountDownLatch endSignal = new CountDownLatch(threadCount);
+      final AtomicReference<Exception> ex = new AtomicReference<Exception>();
+      Runnable r = new Runnable()
+      {
+         public void run()
+         {
+            Session session = null;
+            boolean beforeAwait = true;
+            try
+            {
+               session = repository.login(credentials, "ws");
+               Node testMultiThreading = (Node)session.getItem(path);
+               testMultiThreading.addMixin("mix:versionable");
+               startSignal.await();
+               beforeAwait = false;
+               session.save();
+            }
+            catch (RepositoryException e)
+            {
+               // Concurrent modifications of the property mixinTypes
+            }
+            catch (Exception e)
+            {
+               ex.set(e);
+            }
+            finally
+            {
+               if (beforeAwait)
+               {
+                  try
+                  {
+                     startSignal.await();
+                  }
+                  catch (Exception e)
+                  {
+                     // ignore me
+                  }
+               }
+               endSignal.countDown();
+               if (session != null)
+                  session.logout();
+            }
+         }
+      };
+      for (int i = 0; i < threadCount; i++)
+         new Thread(r).start();
+      endSignal.await();
+      assertEquals(totalNodes + 1, vs.getNodesCount());
+      assertEquals(totalNodes + 1, vs.getNodes().getSize());
+      // reload the node
+      testMultiThreading = (Node)session.getItem(path);
+      assertEquals(2, testMultiThreading.getMixinNodeTypes().length);
+      Set<String> mixins = new HashSet<String>();
+      mixins.add(testMultiThreading.getMixinNodeTypes()[0].getName());
+      mixins.add(testMultiThreading.getMixinNodeTypes()[1].getName());
+      assertTrue(mixins.contains("mix:referenceable"));
+      assertTrue(mixins.contains("mix:versionable"));
+      if (ex.get() != null)
+         throw ex.get();
+   }
+
+   public void testMultiThreading3OnWS() throws Exception
+   {
+      ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
+      long totalNodes = vs.getNodesCount();
+      int threadCount = 5;
+      final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
+      final CountDownLatch endSignal = new CountDownLatch(threadCount);
+      final AtomicReference<Exception> ex = new AtomicReference<Exception>();
+      Runnable r = new Runnable()
+      {
+         public void run()
+         {
+            Session session = null;
+            boolean beforeAwait = true;
+            try
+            {
+               session = repository.login(credentials, "ws");
+               Node testMultiThreading = session.getRootNode().addNode("testMultiThreading3");
+               testMultiThreading.addMixin("mix:versionable");
+               startSignal.await();
+               beforeAwait = false;
+               session.save();
+            }
+            catch (ItemExistsException e)
+            {
+               // The node has not been created so far
+            }
+            catch (Exception e)
+            {
+               ex.set(e);
+            }
+            finally
+            {
+               if (beforeAwait)
+               {
+                  try
+                  {
+                     startSignal.await();
+                  }
+                  catch (Exception e)
+                  {
+                     // ignore me
+                  }
+               }
+               endSignal.countDown();
+               if (session != null)
+                  session.logout();
+            }
+         }
+      };
+      for (int i = 0; i < threadCount; i++)
+         new Thread(r).start();
+      endSignal.await();
+      assertEquals(totalNodes + 1, vs.getNodesCount());
+      assertEquals(totalNodes + 1, vs.getNodes().getSize());
+      // load the node
+      Node testMultiThreading = (Node)session.getItem("/testMultiThreading3");
+      assertEquals(1, testMultiThreading.getMixinNodeTypes().length);
+      assertEquals("mix:versionable", testMultiThreading.getMixinNodeTypes()[0].getName());
+      assertFalse(session.itemExists("/testMultiThreading3[2]"));
+      if (ex.get() != null)
+         throw ex.get();
+   }
+
+   public void testMultiThreading4OnWS() throws Exception
+   {
+      ExtendedNode vs = (ExtendedNode)session.getNodeByIdentifier(Constants.VERSIONSTORAGE_UUID);
+      long totalNodes = vs.getNodesCount();
+      int threadCount = 5;
+      final CyclicBarrier startSignal = new CyclicBarrier(threadCount);
+      final CountDownLatch endSignal = new CountDownLatch(threadCount);
+      final AtomicReference<Exception> ex = new AtomicReference<Exception>();
+      Runnable r = new Runnable()
+      {
+         public void run()
+         {
+            Session session = null;
+            boolean beforeAwait = true;
+            try
+            {
+               session = repository.login(credentials, "ws");
+               Node testMultiThreading = session.getRootNode().addNode("testMultiThreading4");
+               testMultiThreading.addMixin("mix:referenceable");
+               testMultiThreading.addMixin("mix:versionable");
+               startSignal.await();
+               beforeAwait = false;
+               session.save();
+            }
+            catch (ItemExistsException e)
+            {
+               // The node has not been created so far
+            }
+            catch (Exception e)
+            {
+               ex.set(e);
+            }
+            finally
+            {
+               if (beforeAwait)
+               {
+                  try
+                  {
+                     startSignal.await();
+                  }
+                  catch (Exception e)
+                  {
+                     // ignore me
+                  }
+               }
+               endSignal.countDown();
+               if (session != null)
+                  session.logout();
+            }
+         }
+      };
+      for (int i = 0; i < threadCount; i++)
+         new Thread(r).start();
+      endSignal.await();
+      assertEquals(totalNodes + 1, vs.getNodesCount());
+      assertEquals(totalNodes + 1, vs.getNodes().getSize());
+      // load the node
+      Node testMultiThreading = (Node)session.getItem("/testMultiThreading4");
+      assertEquals(2, testMultiThreading.getMixinNodeTypes().length);
+      Set<String> mixins = new HashSet<String>();
+      mixins.add(testMultiThreading.getMixinNodeTypes()[0].getName());
+      mixins.add(testMultiThreading.getMixinNodeTypes()[1].getName());
+      assertTrue(mixins.contains("mix:referenceable"));
+      assertTrue(mixins.contains("mix:versionable"));
+      assertFalse(session.itemExists("/testMultiThreading4[2]"));
+      if (ex.get() != null)
+         throw ex.get();
+   }
 }

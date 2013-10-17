@@ -1,0 +1,24 @@
+diff --git a/exo.jcr.component.core/src/main/resources/conf/storage/jcr-mjdbc.mssql.sql b/exo.jcr.component.core/src/main/resources/conf/storage/jcr-mjdbc.mssql.sql
+index 5a95cb0..9f8b71c 100644
+--- a/exo.jcr.component.core/src/main/resources/conf/storage/jcr-mjdbc.mssql.sql
++++ b/exo.jcr.component.core/src/main/resources/conf/storage/jcr-mjdbc.mssql.sql
+@@ -15,6 +15,7 @@ CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT ON JCR_MITEM(PARENT_ID, NAME, I_INDEX,
+ CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_NAME ON JCR_MITEM(I_CLASS, PARENT_ID, NAME, I_INDEX, VERSION DESC);
+ CREATE UNIQUE INDEX JCR_IDX_MITEM_PARENT_ID ON JCR_MITEM(I_CLASS, PARENT_ID, ID, VERSION DESC);
+ CREATE INDEX JCR_IDX_MITEM_N_ORDER_NUM ON JCR_MITEM(I_CLASS, PARENT_ID, N_ORDER_NUM);
++CREATE INDEX JCR_IDX_MITEM_ID ON JCR_MITEM (PARENT_ID, I_CLASS, NAME, ID) INCLUDE (VERSION, I_INDEX, N_ORDER_NUM, P_TYPE, P_MULTIVALUED);
+ CREATE TABLE JCR_MVALUE(
+     ID BIGINT IDENTITY(1,1) NOT NULL,
+     DATA VARBINARY(MAX),
+diff --git a/exo.jcr.component.core/src/main/resources/conf/storage/jcr-sjdbc.mssql.sql b/exo.jcr.component.core/src/main/resources/conf/storage/jcr-sjdbc.mssql.sql
+index b2478e3..677a46c 100644
+--- a/exo.jcr.component.core/src/main/resources/conf/storage/jcr-sjdbc.mssql.sql
++++ b/exo.jcr.component.core/src/main/resources/conf/storage/jcr-sjdbc.mssql.sql
+@@ -16,6 +16,7 @@ CREATE UNIQUE INDEX JCR_IDX_SITEM_PARENT ON JCR_SITEM(CONTAINER_NAME, PARENT_ID,
+ CREATE UNIQUE INDEX JCR_IDX_SITEM_PARENT_NAME ON JCR_SITEM(I_CLASS, CONTAINER_NAME, PARENT_ID, NAME, I_INDEX, VERSION DESC);
+ CREATE UNIQUE INDEX JCR_IDX_SITEM_PARENT_ID ON JCR_SITEM(I_CLASS, CONTAINER_NAME, PARENT_ID, ID, VERSION DESC);
+ CREATE INDEX JCR_IDX_SITEM_N_ORDER_NUM ON JCR_SITEM(I_CLASS, CONTAINER_NAME, PARENT_ID, N_ORDER_NUM);
++CREATE INDEX JCR_IDX_SITEM_ID ON JCR_SITEM (PARENT_ID, CONTAINER_NAME, I_CLASS, NAME, ID);
+ CREATE TABLE JCR_SVALUE(
+     ID BIGINT IDENTITY(1,1) NOT NULL,
+     DATA VARBINARY(MAX),

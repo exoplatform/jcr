@@ -994,6 +994,21 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * {@inheritDoc}
     */
    @Override
+   public int getLastOrderNumber(final NodeData nodeData) throws RepositoryException
+   {
+      return executeAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws RepositoryException
+         {
+            return CacheableWorkspaceDataManager.super.getLastOrderNumber(nodeData);
+         }
+      });
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    public List<PropertyData> listChildPropertiesData(NodeData nodeData) throws RepositoryException
    {
       return listChildPropertiesData(nodeData, false);

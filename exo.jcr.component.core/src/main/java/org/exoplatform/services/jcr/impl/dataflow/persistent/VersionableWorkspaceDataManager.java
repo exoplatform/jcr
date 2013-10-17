@@ -275,7 +275,12 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
       return null;
    }
 
-   public void save(final CompositeChangesLog changesLog) throws RepositoryException, InvalidItemStateException
+   public void save(CompositeChangesLog changesLog) throws RepositoryException, InvalidItemStateException
+   {
+      save(changesLog, false);
+   }
+
+   public void save(CompositeChangesLog changesLog, boolean versionLogsFirst) throws RepositoryException, InvalidItemStateException
    {
 
       final ChangesLogIterator logIterator = changesLog.getLogIterator();
@@ -289,21 +294,28 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
          List<ItemState> nvstates = new ArrayList<ItemState>();
 
          PlainChangesLog changes = logIterator.nextLog();
-         for (ItemState change : changes.getAllStates())
+         if (this.equals(versionDataManager))
          {
-            if (!this.equals(versionDataManager) && isSystemDescendant(change.getData().getQPath()))
+            nvstates.addAll(changes.getAllStates());
+         }
+         else
+         {
+            for (ItemState change : changes.getAllStates())
             {
-               vstates.add(change);
-            }
-            else
-            {
-               nvstates.add(change);
+               if (isSystemDescendant(change.getData().getQPath()))
+               {
+                  vstates.add(change);
+               }
+               else
+               {
+                  nvstates.add(change);
+               }
             }
          }
 
-         if (vstates.size() > 0)
+         if (!vstates.isEmpty())
          {
-            if (nvstates.size() > 0)
+            if (!nvstates.isEmpty())
             {
                // we have pair of logs for system and non-system (this) workspaces
                final String pairId = IdGenerator.generate();
@@ -317,13 +329,13 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
                nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, changes));
             }
          }
-         else if (nvstates.size() > 0)
+         else if (!nvstates.isEmpty())
          {
             nonVersionLogs.addLog(PlainChangesLogImpl.createCopy(nvstates, changes));
          }
       }
 
-      if (versionLogs.getSize() > 0)
+      if (versionLogsFirst && versionLogs.getSize() > 0)
       {
          versionDataManager.save(versionLogs, txResourceManager);
       }
@@ -331,6 +343,11 @@ public class VersionableWorkspaceDataManager extends ShareableSupportedWorkspace
       if (nonVersionLogs.getSize() > 0)
       {
          super.save(nonVersionLogs);
+      }
+
+      if (!versionLogsFirst && versionLogs.getSize() > 0)
+      {
+         versionDataManager.save(versionLogs, txResourceManager);
       }
    }
 

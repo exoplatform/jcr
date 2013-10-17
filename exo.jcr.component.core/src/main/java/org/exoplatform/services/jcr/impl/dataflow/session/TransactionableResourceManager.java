@@ -372,7 +372,7 @@ public class TransactionableResourceManager implements XAResource
                // Add the change following the chronology order
                allChanges.addLog(entry.getKey());
             }
-            getWorkspaceDataManager().save(allChanges);
+            getWorkspaceDataManager().save(allChanges, true);
          }
          catch (RepositoryException e)
          {
