@@ -1874,7 +1874,7 @@ public class SessionDataManager implements ItemDataConsumer
                }
             } // else it's transient item
          }
-         else
+         else if (removed.getData() != null)
          {
             // No states for items left usecase
             ItemData persisted = transactionableManager.getItemData(removed.getData().getIdentifier());

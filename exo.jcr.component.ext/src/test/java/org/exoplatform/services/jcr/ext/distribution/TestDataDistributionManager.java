@@ -30,6 +30,7 @@ import java.util.concurrent.CountDownLatch;
 
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
@@ -97,8 +98,8 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       assertTrue(node4.isNodeType("nt:folder"));
       assertTrue(node4.canAddMixin("mix:referenceable"));
       assertTrue(node4.canAddMixin("exo:privilegeable"));
-      
-      dataId =  "b/a/a/a";
+
+      dataId = "b/a/a/a";
       try
       {
          type.getDataNode(parentNode, dataId);
@@ -108,7 +109,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       {
          // expected behavior
       }
-      
+
       Node node5 =
          type.getOrCreateDataNode(parentNode, dataId, "nt:folder", Collections.singletonList("mix:referenceable"));
       assertFalse(node.isSame(node5));
@@ -136,7 +137,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       {
          // expected behavior
       }
-      
+
       dataId = "c/a/a/a";
       try
       {
@@ -146,7 +147,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       catch (PathNotFoundException e)
       {
          // expected behavior
-      }     
+      }
       Node node6 =
          type.getOrCreateDataNode(parentNode, dataId, "nt:folder", Collections.singletonList("mix:referenceable"),
             permissions);
@@ -181,7 +182,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       catch (PathNotFoundException e)
       {
          // expected behavior
-      }      
+      }
    }
 
    public void testDataDistributionModeReadable() throws Exception
@@ -274,7 +275,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       assertTrue(node.getParent().getParent().getParent().canAddMixin("mix:referenceable"));
       assertTrue(node.getParent().getParent().getParent().canAddMixin("exo:privilegeable"));
       assertTrue(node.getPath().endsWith("j___/jo___/joh___/john___"));
-      
+
       dataId = "joh___";
       try
       {
@@ -302,8 +303,8 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       assertFalse(node.getParent().getParent().getParent().isNodeType("nt:folder"));
       assertTrue(node.getParent().getParent().getParent().canAddMixin("mix:referenceable"));
       assertTrue(node.getParent().getParent().getParent().canAddMixin("exo:privilegeable"));
-      assertTrue(node.getPath().endsWith("j___/jo___/joh___/joh___")); 
-      
+      assertTrue(node.getPath().endsWith("j___/jo___/joh___/joh___"));
+
       dataId = "jo___";
       try
       {
@@ -331,8 +332,8 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       assertFalse(node.getParent().getParent().getParent().isNodeType("nt:folder"));
       assertTrue(node.getParent().getParent().getParent().canAddMixin("mix:referenceable"));
       assertTrue(node.getParent().getParent().getParent().canAddMixin("exo:privilegeable"));
-      assertTrue(node.getPath().endsWith("j___/jo___/jo____/jo___"));      
-      
+      assertTrue(node.getPath().endsWith("j___/jo___/jo____/jo___"));
+
       dataId = "j___";
       try
       {
@@ -370,7 +371,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       catch (PathNotFoundException e)
       {
          // expected behavior
-      }      
+      }
    }
 
    public void testDataDistributionModeOptimized() throws Exception
@@ -443,35 +444,35 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       catch (PathNotFoundException e)
       {
          // expected behavior
-      }      
+      }
    }
-   
-//   public void testMultiThreadingNone() throws Exception
-//   {
-//      testMultiThreading(manager.getDataDistributionType(DataDistributionMode.NONE), "key/");
-//   }
-//   
-//   public void testMultiThreadingReadable() throws Exception
-//   {
-//      testMultiThreading(manager.getDataDistributionType(DataDistributionMode.READABLE), "key-");
-//   }
-//   
-//   public void testMultiThreadingOptimized() throws Exception
-//   {
-//      testMultiThreading(manager.getDataDistributionType(DataDistributionMode.OPTIMIZED), "");
-//   }
-   
-   public void testMultiThreading(final DataDistributionType type, final String dataIdPrefix) throws Exception
+
+   public void testMultiThreadingNone() throws Throwable
    {
-      final int totalElement = 50;
+      testMultiThreading(manager.getDataDistributionType(DataDistributionMode.NONE), "key/");
+   }
+
+   public void testMultiThreadingReadable() throws Throwable
+   {
+      testMultiThreading(manager.getDataDistributionType(DataDistributionMode.READABLE), "key-");
+   }
+
+   public void testMultiThreadingOptimized() throws Throwable
+   {
+      testMultiThreading(manager.getDataDistributionType(DataDistributionMode.OPTIMIZED), "");
+   }
+
+   public void testMultiThreading(final DataDistributionType type, final String dataIdPrefix) throws Throwable
+   {
+      final int totalElement = 20;
       final int totalTimes = 3;
-      int reader = 20;
-      int writer = 10;
-      int remover = 5;
+      int reader = 8;
+      int writer = 4;
+      int remover = 2;
       final CountDownLatch startSignalWriter = new CountDownLatch(1);
       final CountDownLatch startSignalOthers = new CountDownLatch(1);
       final CountDownLatch doneSignal = new CountDownLatch(reader + writer + remover);
-      final List<Exception> errors = Collections.synchronizedList(new ArrayList<Exception>());
+      final List<Throwable> errors = Collections.synchronizedList(new ArrayList<Throwable>());
       for (int i = 0; i < writer; i++)
       {
          final int index = i;
@@ -489,7 +490,16 @@ public class TestDataDistributionManager extends BaseStandaloneTest
                      Node node = (Node)session.getItem(parentNode.getPath());
                      for (int i = 0; i < totalElement; i++)
                      {
-                        type.getOrCreateDataNode(node, dataIdPrefix + i);
+                        try
+                        {
+                           Node n = type.getOrCreateDataNode(node, dataIdPrefix + i);
+                           assertFalse("The path " + n.getPath() + " should not contain any indexes", n.getPath()
+                              .contains("["));
+                        }
+                        catch (RepositoryException e)
+                        {
+                           // Ignore them, they could be due to deadlocks
+                        }
                      }
                      if (index == 0 && j == 0)
                      {
@@ -500,7 +510,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
                      sleep(50);
                   }
                }
-               catch (Exception e)
+               catch (Throwable e)
                {
                   errors.add(e);
                   startSignalOthers.countDown();
@@ -532,12 +542,14 @@ public class TestDataDistributionManager extends BaseStandaloneTest
                   for (int j = 0; j < totalTimes; j++)
                   {
                      session = repository.login(credentials, WS_NAME);
-                     Node node = (Node)session.getItem(parentNode.getPath());                  
+                     Node node = (Node)session.getItem(parentNode.getPath());
                      for (int i = 0; i < totalElement; i++)
                      {
                         try
                         {
-                           type.getDataNode(node, dataIdPrefix + i);
+                           Node n = type.getDataNode(node, dataIdPrefix + i);
+                           assertFalse("The path " + n.getPath() + " should not contain any indexes", n.getPath()
+                              .contains("["));
                         }
                         catch (PathNotFoundException e)
                         {
@@ -548,7 +560,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
                      sleep(50);
                   }
                }
-               catch (Exception e)
+               catch (Throwable e)
                {
                   errors.add(e);
                }
@@ -559,7 +571,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
                   {
                      session.logout();
                      session = null;
-                  }                  
+                  }
                }
             }
          };
@@ -578,16 +590,23 @@ public class TestDataDistributionManager extends BaseStandaloneTest
                   for (int j = 0; j < totalTimes; j++)
                   {
                      session = repository.login(credentials, WS_NAME);
-                     Node node = (Node)session.getItem(parentNode.getPath());                     
+                     Node node = (Node)session.getItem(parentNode.getPath());
                      for (int i = 0; i < totalElement; i++)
                      {
-                        type.removeDataNode(node, dataIdPrefix + i);
+                        try
+                        {
+                           type.removeDataNode(node, dataIdPrefix + i);
+                        }
+                        catch (RepositoryException e)
+                        {
+                           // Ignore them, they could be due to deadlocks
+                        }
                      }
                      session.logout();
                      sleep(50);
                   }
                }
-               catch (Exception e)
+               catch (Throwable e)
                {
                   errors.add(e);
                }
@@ -598,7 +617,7 @@ public class TestDataDistributionManager extends BaseStandaloneTest
                   {
                      session.logout();
                      session = null;
-                  }                  
+                  }
                }
             }
          };
@@ -608,10 +627,27 @@ public class TestDataDistributionManager extends BaseStandaloneTest
       for (int i = 0; i < totalElement; i++)
       {
          type.removeDataNode(parentNode, dataIdPrefix + i);
-      }      
+      }
+      for (int i = 0; i < totalElement; i++)
+      {
+         try
+         {
+            type.getDataNode(parentNode, dataIdPrefix + i);
+            fail("The node should be removed");
+         }
+         catch (PathNotFoundException e)
+         {
+            // ignore me
+         }
+      }
+      for (int i = 0; i < totalElement; i++)
+      {
+         Node n = type.getOrCreateDataNode(parentNode, dataIdPrefix + i);
+         assertFalse("The path " + n.getPath() + " should not contain any indexes", n.getPath().contains("["));
+      }
       if (!errors.isEmpty())
       {
-         for (Exception e : errors)
+         for (Throwable e : errors)
          {
             e.printStackTrace();
          }

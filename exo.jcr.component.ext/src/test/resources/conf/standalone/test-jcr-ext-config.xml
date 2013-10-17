@@ -46,10 +46,11 @@
                      </value-storage>
                   </value-storages>
                </container>
-               <cache enabled="true">
+               <cache enabled="true"
+                  class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="max-size" value="5k" />
-                     <property name="live-time" value="1h" />
+                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
+                     <property name="jbosscache-shareable" value="true" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -264,7 +265,7 @@
                </lock-manager>
             </workspace>
          </workspaces>
-      </repository>\
+      </repository>
 
       <repository name="db3" system-workspace="ws" default-workspace="ws">
          <security-domain>exo-domain</security-domain>

@@ -105,6 +105,10 @@
                   <name>jcr.test.configuration.file</name>
                   <value>${jcr.test.configuration.file}</value>
                </property>
+               <property>
+                  <name>exo.properties.url</name>
+                  <value>${properties.url.prefix}${properties.url.suffix}</value>
+               </property>
             </systemProperties>
             <includes>
               <include>org/exoplatform/services/jcr/ext/**/Test*.java</include>
