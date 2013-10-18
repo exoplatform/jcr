@@ -62,6 +62,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.MSSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.MysqlDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.SybaseDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
@@ -520,7 +521,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
          this.connFactory = defaultConnectionFactory();
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new SybaseDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_INGRES))
       {

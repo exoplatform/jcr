@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.MysqlDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.SybaseDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DB2ConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DefaultOracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.GenericCQConnectionFactory;
@@ -155,7 +156,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
          this.connFactory = new SybaseConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new SybaseDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_INGRES))
       {

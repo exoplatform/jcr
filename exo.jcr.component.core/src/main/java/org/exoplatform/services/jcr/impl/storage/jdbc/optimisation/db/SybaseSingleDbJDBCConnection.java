@@ -17,7 +17,6 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.SybaseJDBCConnectionHelper.EmptyResultSet;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.sql.Connection;
@@ -27,7 +26,7 @@ import java.sql.SQLException;
 
 /**
  * Created by The eXo Platform SAS.
- * 
+ *
  * <br/>Date: 
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
@@ -70,7 +69,7 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
     *          Workspace Storage Container configuration
     */
    public SybaseSingleDbJDBCConnection(Connection dbConnection, boolean readOnly,
-      JDBCDataContainerConfig containerConfig) throws SQLException
+                                       JDBCDataContainerConfig containerConfig) throws SQLException
    {
       super(dbConnection, readOnly, containerConfig);
    }
@@ -141,14 +140,15 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
             + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
-            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, "
+            + " and V.PROPERTY_ID=P.ID order by "+SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME+".N_ORDER_NUM, "
             + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + ".ID";
 
       DELETE_TEMPORARY_TABLE_A = "drop table " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
       DELETE_TEMPORARY_TABLE_B = "drop table " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME;
 
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID ="SELECT JCR_N_ORDER_NUM.nextval";
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec JCR_NEXT_VAL 'JCR_N_ORDER_NUM'" ;
+
    }
 
    /**
@@ -257,11 +257,11 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
                SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME, tempTableBName));
 
          deleteTemporaryTableB =
-            dbConnection.prepareStatement(DELETE_TEMPORARY_TABLE_A.replaceAll(
+            dbConnection.prepareStatement(DELETE_TEMPORARY_TABLE_B.replaceAll(
                SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME, tempTableBName));
 
          selectLimitOffsetNodesIntoTemporaryTableB.setString(1, this.containerConfig.containerName);
-         selectLimitOffsetNodesIntoTemporaryTableB.setString(2, getInternalId(parentCid));
+         selectLimitOffsetNodesIntoTemporaryTableB.setString(2, parentCid);
          selectLimitOffsetNodesIntoTemporaryTableB.setInt(3, fromOrderNum);
          selectLimitOffsetNodesIntoTemporaryTableB.execute();
 
@@ -297,5 +297,19 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
             deleteTemporaryTableB.close();
          }
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
+   {
+      if (findLastOrderNumberByParentId == null)
+      {
+         findLastOrderNumberByParentId = dbConnection.prepareCall(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
+      }
+      findLastOrderNumberByParentId.execute();
+      return (findLastOrderNumberByParentId).getResultSet();
    }
 }
