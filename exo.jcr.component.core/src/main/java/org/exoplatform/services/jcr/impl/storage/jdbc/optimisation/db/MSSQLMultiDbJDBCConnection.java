@@ -69,8 +69,8 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
 
       FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_VALUE +" V, "+JCR_ITEM +" P "
-            + " join (select TOP ${TOP} J.* from "+JCR_ITEM +" J where J.I_CLASS=1 and J.PARENT_ID=?"
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_VALUE + " V, " + JCR_ITEM + " P "
+            + " join (select TOP ${TOP} J.* from " + JCR_ITEM + " J where J.I_CLASS=1 and J.PARENT_ID=?"
             + " AND J.N_ORDER_NUM  >= ? order by J.N_ORDER_NUM, J.ID ) I on P.PARENT_ID = I.ID"
             + " where P.I_CLASS=2 and P.PARENT_ID=I.ID and"
             + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
@@ -120,7 +120,7 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset , int limit)
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset, int limit)
       throws SQLException
    {
       if (findNodesByParentIdLazilyCQ == null)

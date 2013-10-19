@@ -37,7 +37,7 @@ CREATE TABLE JCR_SREF(
 CREATE UNIQUE INDEX JCR_IDX_SREF_PROPERTY ON JCR_SREF(PROPERTY_ID, ORDER_NUM)/
 CREATE TABLE JCR_SEQ (
     name VARCHAR(20) NOT NULL,
-    value BIGINT DEFAULT 0 NOT NULL,
+    nextVal INTEGER NOT NULL,
     CONSTRAINT JCR_PK_SEQ PRIMARY KEY (name)
 )/
 CREATE PROCEDURE JCR_NEXT_VAL
@@ -45,10 +45,10 @@ CREATE PROCEDURE JCR_NEXT_VAL
 AS
     BEGIN
         SET NOCOUNT ON
-        DECLARE @value BIGINT
+        DECLARE @value INTEGER
         BEGIN TRANSACTION
             UPDATE JCR_SEQ
-            SET @value=value=value + 1
+            SET @value=nextVal=nextVal + 1
             WHERE name = @name;
         COMMIT TRANSACTION
         SELECT @value AS nextval

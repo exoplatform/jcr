@@ -20,41 +20,27 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.regex.Matcher;
 
 /**
- * JCR Storage DB2 initializer.
+ * JCR Storage H2 initializer.
  *
  * Created by The eXo Platform SAS* 11.09.2013
  *
  * @author <a href="mailto:aboughzela@exoplatform.com">Aymen Boughzela</a>
  */
 
-public class H2DBInitializer extends DBInitializer
+public class H2DBInitializer extends StorageDBInitializer
 {
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DB2DBInitializer");
 
    public H2DBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
       super(connection, containerConfig);
    }
 
-   private int getSequenceStartValue(final Connection conn) throws SQLException
-   {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
-      {
-         public Integer run()
-         {
-            return getStartValue(conn);
-         }
-      });
-   }
    /**
     * {@inheritDoc}
     */
@@ -63,9 +49,17 @@ public class H2DBInitializer extends DBInitializer
    {
       try
       {
+         Matcher tMatcher;
          if ((creatSequencePattern.matcher(sql)).find())
          {
-            sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection)+1));
+            tMatcher = dbObjectNamePattern.matcher(sql);
+            if (tMatcher.find())
+            {
+               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_N_ORDER_NUM"))
+               {
+                  sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection) + 1));
+               }
+            }
          }
       }
       catch (SQLException e)
@@ -74,4 +68,5 @@ public class H2DBInitializer extends DBInitializer
       }
       return sql;
    }
+
 }

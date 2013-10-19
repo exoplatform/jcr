@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -163,6 +164,7 @@ public class SybaseCleaningScipts extends DBCleaningScripts
       scripts.add("sp_rename " + valueTableName + ", " + valueTableName + "_OLD");
       scripts.add("sp_rename " + itemTableName + ", " + itemTableName + "_OLD");
       scripts.add("sp_rename " + refTableName + ", " + refTableName + "_OLD");
+      scripts.add("sp_rename JCR_SEQ , JCR_SEQ_OLD");
 
       scripts.add("sp_rename JCR_FK_" + valueTableSuffix + "_PROPERTY, JCR_FK_" + valueTableSuffix + "_PROPERTY_OLD");
       scripts.add("sp_rename JCR_FK_" + itemTableSuffix + "_PARENT, JCR_FK_" + itemTableSuffix + "_PARENT_OLD");
@@ -180,9 +182,36 @@ public class SybaseCleaningScipts extends DBCleaningScripts
       scripts.add("sp_rename " + valueTableName + "_OLD, " + valueTableName);
       scripts.add("sp_rename " + itemTableName + "_OLD, " + itemTableName);
       scripts.add("sp_rename " + refTableName + "_OLD, " + refTableName);
+      scripts.add("sp_rename JCR_SEQ_OLD , JCR_SEQ");
 
       scripts.add("sp_rename JCR_FK_" + valueTableSuffix + "_PROPERTY_OLD, JCR_FK_" + valueTableSuffix + "_PROPERTY");
       scripts.add("sp_rename JCR_FK_" + itemTableSuffix + "_PARENT_OLD, JCR_FK_" + itemTableSuffix + "_PARENT");
+
+      return scripts;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getOldTablesDroppingScripts()
+   {
+      List<String> scripts = new ArrayList<String>();
+
+      scripts.add("DROP TABLE JCR_SEQ_OLD");
+      scripts.addAll(super.getOldTablesDroppingScripts());
+
+      return scripts;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getTablesDroppingScripts()
+   {
+      List<String> scripts = new ArrayList<String>();
+
+      scripts.add("DROP TABLE JCR_SEQ");
+      scripts.addAll(super.getTablesDroppingScripts());
 
       return scripts;
    }

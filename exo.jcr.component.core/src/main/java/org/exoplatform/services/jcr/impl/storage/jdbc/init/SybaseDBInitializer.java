@@ -20,12 +20,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
-import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
@@ -34,34 +29,18 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * JCR Storage Mysql initializer.
+ * JCR Storage Sybase initializer.
  *
  * Created by The eXo Platform SAS* 11.09.2013
  *
  * @author <a href="mailto:aboughzela@exoplatform.com">Aymen Boughzela</a>
  */
-public class SybaseDBInitializer extends DBInitializer
+public class SybaseDBInitializer extends StorageDBInitializer
 {
 
    public SybaseDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
       super(connection, containerConfig);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected void postInit(Connection connection) throws SQLException
-   {
-      super.postInit(connection);
-      String select =
-         "select * from JCR_SEQ  where name='JCR_N_ORDER_NUM'";
-      if (!connection.createStatement().executeQuery(select).next())
-      {
-         String insert = "INSERT INTO JCR_SEQ (name, value) VALUES ('JCR_N_ORDER_NUM',"+getStartValue(connection)+")";
-         connection.createStatement().executeUpdate(insert);
-      }
    }
 
    /**
@@ -103,6 +82,22 @@ public class SybaseDBInitializer extends DBInitializer
       finally
       {
          JDBCUtils.freeResources(trs, stmt, null);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void postInit(Connection connection) throws SQLException
+   {
+      super.postInit(connection);
+      String select =
+         "select * from JCR_SEQ  where name='JCR_N_ORDER_NUM'";
+      if (!connection.createStatement().executeQuery(select).next())
+      {
+         String insert = "INSERT INTO JCR_SEQ (name, nextVal) VALUES ('JCR_N_ORDER_NUM'," + getStartValue(connection) + ")";
+         connection.createStatement().executeUpdate(insert);
       }
    }
 

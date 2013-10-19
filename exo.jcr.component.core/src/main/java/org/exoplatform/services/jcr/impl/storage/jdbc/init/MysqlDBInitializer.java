@@ -20,7 +20,6 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -33,28 +32,12 @@ import java.sql.SQLException;
  *
  * @author <a href="mailto:aboughzela@exoplatform.com">Aymen Boughzela</a>
  */
-public class MysqlDBInitializer extends DBInitializer
+public class MysqlDBInitializer extends StorageDBInitializer
 {
 
    public MysqlDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
       super(connection, containerConfig);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected void postInit(Connection connection) throws SQLException
-   {
-      super.postInit(connection);
-      String select =
-         "select * from JCR_SEQ  where name='JCR_N_ORDER_NUM'";
-      if (!connection.createStatement().executeQuery(select).next())
-      {
-         String insert = "INSERT INTO JCR_SEQ (name, nextVal) VALUES ('JCR_N_ORDER_NUM',"+getStartValue(connection)+")";
-         connection.createStatement().executeUpdate(insert);
-      }
    }
 
    /**
@@ -91,6 +74,22 @@ public class MysqlDBInitializer extends DBInitializer
       }
 
       return false;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void postInit(Connection connection) throws SQLException
+   {
+      super.postInit(connection);
+      String select =
+         "select * from JCR_SEQ  where name='JCR_N_ORDER_NUM'";
+      if (!connection.createStatement().executeQuery(select).next())
+      {
+         String insert = "INSERT INTO JCR_SEQ (name, nextVal) VALUES ('JCR_N_ORDER_NUM'," + getStartValue(connection) + ")";
+         connection.createStatement().executeUpdate(insert);
+      }
    }
 
 }

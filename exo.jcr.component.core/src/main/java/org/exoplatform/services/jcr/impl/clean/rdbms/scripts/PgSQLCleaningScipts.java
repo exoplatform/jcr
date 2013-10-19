@@ -21,6 +21,9 @@ package org.exoplatform.services.jcr.impl.clean.rdbms.scripts;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -65,5 +68,15 @@ public class PgSQLCleaningScipts extends DBCleaningScripts
       super.prepareSimpleCleaningApproachScripts();
 
       rollbackingScripts.clear();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getSequencesDroppingScripts()
+   {
+      List<String> scripts = new ArrayList<String>();
+      scripts.add("DROP SEQUENCE IF EXISTS JCR_N_ORDER_NUM");
+      return scripts;
    }
 }

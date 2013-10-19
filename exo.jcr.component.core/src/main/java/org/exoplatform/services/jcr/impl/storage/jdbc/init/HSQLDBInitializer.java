@@ -21,9 +21,6 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.database.utils.JDBCUtils;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
@@ -32,21 +29,21 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * JCR Storage DB2 initializer.
+ * JCR Storage HSQL initializer.
  *
  * Created by The eXo Platform SAS* 11.09.2013
  *
  * @author <a href="mailto:aboughzela@exoplatform.com">Aymen Boughzela</a>
  */
 
-public class HSQLDBInitializer extends DBInitializer
+public class HSQLDBInitializer extends StorageDBInitializer
 {
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.HSQLDBInitializer");
 
    public HSQLDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
       super(connection, containerConfig);
    }
+
    /**
     * {@inheritDoc}
     */
@@ -58,17 +55,6 @@ public class HSQLDBInitializer extends DBInitializer
          public Boolean run()
          {
             return sequenceExists(sequenceName, conn);
-         }
-      });
-   }
-
-   private int getSequenceStartValue(final Connection conn) throws SQLException
-   {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
-      {
-         public Integer run()
-         {
-            return getStartValue(conn);
          }
       });
    }
@@ -99,25 +85,5 @@ public class HSQLDBInitializer extends DBInitializer
       {
          JDBCUtils.freeResources(trs, stmt, null);
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected String updateQuery(String sql)
-   {
-      try
-      {
-         if ((creatSequencePattern.matcher(sql)).find())
-         {
-            sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection)));
-         }
-      }
-      catch (SQLException e)
-      {
-         LOG.debug("SQLException occurs while update the sequence start value", e);
-      }
-      return sql;
    }
 }

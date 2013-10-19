@@ -176,4 +176,14 @@ public class DB2CleaningScipts extends DBCleaningScripts
 
       rollbackingScripts.clear();
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getSequencesDroppingScripts()
+   {
+      List<String> scripts = new ArrayList<String>();
+      scripts.add("DROP SEQUENCE JCR_N_ORDER_NUM");
+      return scripts;
+   }
 }

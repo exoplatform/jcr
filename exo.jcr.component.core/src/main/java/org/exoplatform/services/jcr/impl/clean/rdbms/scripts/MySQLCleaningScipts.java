@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -143,6 +144,7 @@ public class MySQLCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE " + valueTableName + " RENAME TO " + valueTableName + "_OLD");
       scripts.add("ALTER TABLE " + itemTableName + " RENAME TO " + itemTableName + "_OLD");
       scripts.add("ALTER TABLE " + refTableName + " RENAME TO " + refTableName + "_OLD");
+      scripts.add("ALTER TABLE JCR_SEQ RENAME TO JCR_SEQ_OLD");
 
       return scripts;
    }
@@ -157,6 +159,33 @@ public class MySQLCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE " + itemTableName + "_OLD RENAME TO " + itemTableName);
       scripts.add("ALTER TABLE " + valueTableName + "_OLD RENAME TO " + valueTableName);
       scripts.add("ALTER TABLE " + refTableName + "_OLD RENAME TO " + refTableName);
+      scripts.add("ALTER TABLE JCR_SEQ_OLD RENAME TO JCR_SEQ");
+
+      return scripts;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getOldTablesDroppingScripts()
+   {
+      List<String> scripts = new ArrayList<String>();
+
+      scripts.add("DROP TABLE JCR_SEQ_OLD");
+      scripts.addAll(super.getOldTablesDroppingScripts());
+
+      return scripts;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getTablesDroppingScripts()
+   {
+      List<String> scripts = new ArrayList<String>();
+
+      scripts.add("DROP TABLE JCR_SEQ");
+      scripts.addAll(super.getTablesDroppingScripts());
 
       return scripts;
    }

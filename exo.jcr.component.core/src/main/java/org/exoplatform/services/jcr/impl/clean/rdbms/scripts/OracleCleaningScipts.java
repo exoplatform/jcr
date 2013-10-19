@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -302,6 +303,15 @@ public class OracleCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER INDEX JCR_IDX_" + refTableSuffix + "_PROPERTY_OLD RENAME TO JCR_IDX_" + refTableSuffix
          + "_PROPERTY");
 
+      return scripts;
+   }
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getSequencesDroppingScripts()
+   {
+      List<String> scripts = new ArrayList<String>();
+      scripts.add("DROP SEQUENCE JCR_N_ORDER_NUM");
       return scripts;
    }
 

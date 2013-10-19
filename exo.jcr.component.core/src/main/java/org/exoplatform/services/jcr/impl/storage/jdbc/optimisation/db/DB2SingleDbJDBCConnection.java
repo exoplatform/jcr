@@ -107,11 +107,13 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
    {
       if (findNodesByParentIdLazilyCQ == null)
       {
-         FIND_NODES_BY_PARENTID_LAZILY_CQ=FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("$rowNb",Integer.toString(limit));
+         FIND_NODES_BY_PARENTID_LAZILY_CQ = FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("$rowNb", Integer.toString(limit));
          findNodesByParentIdLazilyCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_LAZILY_CQ);
       }
       else
+      {
          findNodesByParentIdLazilyCQ.clearParameters();
+      }
 
       findNodesByParentIdLazilyCQ.setString(1, this.containerConfig.containerName);
       findNodesByParentIdLazilyCQ.setString(2, parentCid);

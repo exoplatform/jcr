@@ -20,10 +20,8 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 
 import java.io.IOException;
-import java.security.PrivilegedAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -31,16 +29,16 @@ import java.sql.Statement;
 
 /**
  * Created by The eXo Platform SAS
- * 
+ *
  * 22.03.2007
- * 
+ *
  * For statistic compute on a user schema (PL/SQL): exec
  * DBMS_STATS.GATHER_SCHEMA_STATS(ownname=>'exoadmin')
- * 
+ *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: OracleDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class OracleDBInitializer extends DBInitializer
+public class OracleDBInitializer extends StorageDBInitializer
 {
 
    public OracleDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
@@ -98,36 +96,5 @@ public class OracleDBInitializer extends DBInitializer
             }
          }
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected String updateQuery(String sql)
-   {
-      try
-      {
-         if ((creatSequencePattern.matcher(sql)).find())
-         {
-            sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection)));
-         }
-      }
-      catch (SQLException e)
-      {
-         LOG.debug("SQLException occurs while update the sequence start value", e);
-      }
-      return sql;
-   }
-
-   private int getSequenceStartValue(final Connection conn) throws SQLException
-   {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
-      {
-         public Integer run()
-         {
-            return getStartValue(conn);
-         }
-      });
    }
 }

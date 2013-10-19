@@ -105,7 +105,7 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
    {
       if (findNodesByParentIdLazilyCQ == null)
       {
-         FIND_NODES_BY_PARENTID_LAZILY_CQ=FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("$rowNb",Integer.toString(limit));
+         FIND_NODES_BY_PARENTID_LAZILY_CQ = FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("$rowNb", Integer.toString(limit));
          findNodesByParentIdLazilyCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_LAZILY_CQ);
       }
       else

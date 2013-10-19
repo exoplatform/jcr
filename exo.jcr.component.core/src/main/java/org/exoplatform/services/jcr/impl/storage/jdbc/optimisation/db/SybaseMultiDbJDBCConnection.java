@@ -301,5 +301,4 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
       findLastOrderNumberByParentId.execute();
       return (findLastOrderNumberByParentId).getResultSet();
    }
-
 }

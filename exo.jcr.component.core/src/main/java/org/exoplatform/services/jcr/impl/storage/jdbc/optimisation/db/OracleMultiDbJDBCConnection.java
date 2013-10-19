@@ -87,9 +87,9 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
 
       FIND_NODES_BY_PARENTID_LAZILY_CQ =
          "select /*+ USE_NL(V) INDEX(I "
-            + JCR_IDX_ITEM_N_ORDER_NUM + ") INDEX(P " + JCR_IDX_ITEM_PARENT_FK + ") INDEX(V " + JCR_IDX_VALUE_PROPERTY+ ") */"
-            +" I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_VALUE +" V, "+JCR_ITEM +" P "
-            + " join ( select * from ( select A.*, ROWNUM r__ from ( select J.* from "+JCR_ITEM +" J "
+            + JCR_IDX_ITEM_N_ORDER_NUM + ") INDEX(P " + JCR_IDX_ITEM_PARENT_FK + ") INDEX(V " + JCR_IDX_VALUE_PROPERTY + ") */"
+            + " I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_VALUE + " V, " + JCR_ITEM + " P "
+            + " join ( select * from ( select A.*, ROWNUM r__ from ( select J.* from " + JCR_ITEM + " J "
             + " where J.I_CLASS=1 and J.PARENT_ID=? order by J.N_ORDER_NUM, J.ID "
             + " ) A where ROWNUM <= ?) where r__ > ?)  I on P.PARENT_ID = I.ID"
             + " where P.I_CLASS=2 and P.PARENT_ID=I.ID and"
@@ -141,7 +141,7 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset , int limit)
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset, int limit)
       throws SQLException
    {
       if (findNodesByParentIdLazilyCQ == null)

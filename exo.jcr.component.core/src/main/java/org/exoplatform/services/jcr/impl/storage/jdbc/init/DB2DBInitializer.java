@@ -21,9 +21,6 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.database.utils.JDBCUtils;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
@@ -39,14 +36,14 @@ import java.sql.Statement;
  * @author <a href="mailto:aboughzela@exoplatform.com">Aymen Boughzela</a>
  */
 
-public class DB2DBInitializer extends DBInitializer
+public class DB2DBInitializer extends StorageDBInitializer
 {
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.DB2DBInitializer");
 
    public DB2DBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
       super(connection, containerConfig);
    }
+
    /**
     * {@inheritDoc}
     */
@@ -58,17 +55,6 @@ public class DB2DBInitializer extends DBInitializer
          public Boolean run()
          {
             return sequenceExists(sequenceName, conn);
-         }
-      });
-   }
-
-   private int getSequenceStartValue(final Connection conn) throws SQLException
-   {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
-      {
-         public Integer run()
-         {
-            return getStartValue(conn);
          }
       });
    }
@@ -101,23 +87,4 @@ public class DB2DBInitializer extends DBInitializer
       }
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected String updateQuery(String sql)
-   {
-      try
-      {
-         if ((creatSequencePattern.matcher(sql)).find())
-         {
-            sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection)));
-         }
-      }
-      catch (SQLException e)
-      {
-         LOG.debug("SQLException occurs while update the sequence start value", e);
-      }
-      return sql;
-   }
 }

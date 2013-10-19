@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
@@ -32,16 +31,16 @@ import java.sql.Statement;
 
 /**
  * Created by The eXo Platform SAS
- * 
+ *
  * 26.03.2007
- * 
+ *
  * PgSQL convert all db object names to lower case, so respect it.
  * Same as Ingres initializer.
- * 
+ *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: PgSQLDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
-public class PgSQLDBInitializer extends DBInitializer
+public class PgSQLDBInitializer extends StorageDBInitializer
 {
 
    public PgSQLDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
@@ -54,6 +53,7 @@ public class PgSQLDBInitializer extends DBInitializer
    {
       return super.isTableExists(conn, tableName.toUpperCase().toLowerCase());
    }
+
    /**
     * {@inheritDoc}
     */
@@ -65,17 +65,6 @@ public class PgSQLDBInitializer extends DBInitializer
          public Boolean run()
          {
             return sequenceExists(sequenceName, conn);
-         }
-      });
-   }
-
-   private int getSequenceStartValue(final Connection conn) throws SQLException
-   {
-      return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Integer>()
-      {
-         public Integer run()
-         {
-            return getStartValue(conn);
          }
       });
    }
@@ -106,29 +95,6 @@ public class PgSQLDBInitializer extends DBInitializer
       {
          JDBCUtils.freeResources(trs, stmt, null);
       }
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected String updateQuery(String sql)
-   {
-      try
-      {
-         if ((creatSequencePattern.matcher(sql)).find())
-         {
-            if ((creatSequencePattern.matcher(sql)).find())
-            {
-               sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection)));
-            }
-         }
-      }
-      catch (SQLException e)
-      {
-         LOG.debug("SQLException occurs while update the sequence start value", e);
-      }
-      return sql;
    }
 
 }
