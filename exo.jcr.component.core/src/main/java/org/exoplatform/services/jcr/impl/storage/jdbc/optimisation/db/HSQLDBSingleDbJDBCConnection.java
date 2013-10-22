@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -77,7 +78,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?" + " order by N_ORDER_NUM";
 
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call next value for JCR_N_ORDER_NUM";
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call next value for JCR_N"+ DBInitializerHelper.getItemTableSuffix(containerConfig);
 
       FIND_NODES_COUNT_BY_PARENTID =
          "select count(ID) from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";

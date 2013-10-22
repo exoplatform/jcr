@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -55,9 +56,9 @@ public class H2DBInitializer extends StorageDBInitializer
             tMatcher = dbObjectNamePattern.matcher(sql);
             if (tMatcher.find())
             {
-               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_N_ORDER_NUM"))
+               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_N"+DBInitializerHelper.getItemTableSuffix(containerConfig)))
                {
-                  sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection) + 1));
+                  sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection)+1 ));
                }
             }
          }

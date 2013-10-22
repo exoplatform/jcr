@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -67,7 +68,7 @@ public class H2SingleDbJDBCConnection extends SingleDbJDBCConnection
    protected void prepareQueries() throws SQLException
    {
       super.prepareQueries();
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call JCR_N_ORDER_NUM.nextval";
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call JCR_N"+ DBInitializerHelper.getItemTableSuffix(containerConfig)+".nextval";
    }
 
 }

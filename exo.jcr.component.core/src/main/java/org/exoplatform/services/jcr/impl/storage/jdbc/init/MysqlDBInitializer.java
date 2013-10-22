@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -64,7 +65,7 @@ public class MysqlDBInitializer extends StorageDBInitializer
       {
          if (LOG.isDebugEnabled())
          {
-            LOG.debug("SQLException occurs while checking the procedure " + functionName, e);
+            LOG.debug("SQLException occurs while checking the function " + functionName, e);
          }
          return false;
       }
@@ -84,10 +85,10 @@ public class MysqlDBInitializer extends StorageDBInitializer
    {
       super.postInit(connection);
       String select =
-         "select * from JCR_SEQ  where name='JCR_N_ORDER_NUM'";
+         "select * from JCR_SEQ  where name='JCR_N_ORDER_NUM_"+ DBInitializerHelper.getItemTableSuffix(containerConfig)+"'";
       if (!connection.createStatement().executeQuery(select).next())
       {
-         String insert = "INSERT INTO JCR_SEQ (name, nextVal) VALUES ('JCR_N_ORDER_NUM'," + getStartValue(connection) + ")";
+         String insert = "INSERT INTO JCR_SEQ (name, nextVal) VALUES ('JCR_N_ORDER_NUM_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"'," + getStartValue(connection) + ")";
          connection.createStatement().executeUpdate(insert);
       }
    }

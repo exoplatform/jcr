@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -107,7 +108,7 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
 
       DELETE_ITEM = "delete /*+ INDEX(I JCR_PK_SITEM)*/ from JCR_SITEM I where I.ID=?";
 
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID ="SELECT JCR_N_ORDER_NUM.nextval FROM dual";
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID ="SELECT JCR_N"+ DBInitializerHelper.getItemTableSuffix(containerConfig)+".nextval FROM dual";
    }
     
    /**

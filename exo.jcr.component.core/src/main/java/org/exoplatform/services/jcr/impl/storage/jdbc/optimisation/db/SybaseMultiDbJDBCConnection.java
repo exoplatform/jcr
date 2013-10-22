@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;
 
 import java.sql.Connection;
@@ -144,7 +145,7 @@ public class SybaseMultiDbJDBCConnection extends MultiDbJDBCConnection
 
       DELETE_TEMPORARY_TABLE_B = "drop table " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME;
 
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec JCR_NEXT_VAL 'JCR_N_ORDER_NUM'" ;
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec JCR_NEXT_VAL 'JCR_N_ORDER_NUM_"+ DBInitializerHelper.getItemTableSuffix(containerConfig)+"'" ;
    }
 
    /**

@@ -76,7 +76,7 @@ public class PgSQLCleaningScipts extends DBCleaningScripts
    protected Collection<String> getSequencesDroppingScripts()
    {
       List<String> scripts = new ArrayList<String>();
-      scripts.add("DROP SEQUENCE IF EXISTS JCR_N_ORDER_NUM");
+      scripts.add("DROP SEQUENCE IF EXISTS JCR_N"+itemTableSuffix);
       return scripts;
    }
 }

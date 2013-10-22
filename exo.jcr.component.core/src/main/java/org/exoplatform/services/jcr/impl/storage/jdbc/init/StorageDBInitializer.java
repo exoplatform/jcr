@@ -22,6 +22,7 @@ import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
@@ -59,9 +60,9 @@ public class StorageDBInitializer extends DBInitializer
             tMatcher = dbObjectNamePattern.matcher(sql);
             if (tMatcher.find())
             {
-               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_N_ORDER_NUM"))
+               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_N"+DBInitializerHelper.getItemTableSuffix(containerConfig)))
                {
-                  sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection) + 1));
+                  sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection) ));
                }
             }
          }
@@ -96,32 +97,10 @@ public class StorageDBInitializer extends DBInitializer
       {
          String query;
 
-         if (JDBCUtils.tableExists("JCR_SITEM", con))
+         String tableItem = DBInitializerHelper.getItemTableName(containerConfig);
+         if (JDBCUtils.tableExists(tableItem, con))
          {
-            query = "select max(N_ORDER_NUM) from JCR_SITEM";
-         }
-         else if (JDBCUtils.tableExists("JCR_MITEM", con))
-         {
-            query = "select max(N_ORDER_NUM) from JCR_MITEM";
-         }
-         else if (containerConfig.dbStructureType.equals(JDBCDataContainerConfig.DatabaseStructureType.ISOLATED))
-         {
-            String[] types = {"TABLE"};
-            ResultSet rs = con.getMetaData().getTables(null, null, "JCR_I%", types);
-            if (rs.next())
-            {
-               query = "(select N_ORDER_NUM from " + rs.getString(3) + " )";
-               while (rs.next())
-               {
-                  query += " UNION ALL  (select N_ORDER_NUM from " + rs.getString(3) + " )";
-               }
-               query += " order by N_ORDER_NUM DESC";
-            }
-            else
-            {
-               return -1;
-            }
-
+            query = "select max(N_ORDER_NUM) from " + tableItem;
          }
          else
          {

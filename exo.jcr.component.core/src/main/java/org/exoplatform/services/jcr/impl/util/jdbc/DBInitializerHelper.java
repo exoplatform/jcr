@@ -105,6 +105,7 @@ public class DBInitializerHelper
             scripts.replace("MITEM", itemTableSuffix).replace("MVALUE", valueTableSuffix)
                .replace("MREF", refTableSuffix);
       }
+      scripts = scripts.replace(" JCR_N "," JCR_N"+itemTableSuffix+" ")  ;
 
       return scripts;
    }

@@ -76,7 +76,7 @@ public class PgSQLDBInitializer extends StorageDBInitializer
       try
       {
          String query;
-         query = "SELECT count(*) FROM information_schema.sequences where sequence_name='jcr_n_order_num'";
+         query = "SELECT count(*) FROM information_schema.sequences where sequence_name='"+sequenceName.toLowerCase()+"'";
 
          stmt = con.createStatement();
          trs = stmt.executeQuery(query);

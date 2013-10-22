@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
@@ -94,10 +95,10 @@ public class MSSQLDBInitializer extends StorageDBInitializer
    {
       super.postInit(connection);
       String select =
-         "select * from JCR_SEQ  where name='JCR_N_ORDER_NUM'";
+         "select * from JCR_SEQ  where name='JCR_N_ORDER_NUM_"+ DBInitializerHelper.getItemTableSuffix(containerConfig)+"'";
       if (!connection.createStatement().executeQuery(select).next())
       {
-         String insert = "INSERT INTO JCR_SEQ (name, nextVal) VALUES ('JCR_N_ORDER_NUM'," + getStartValue(connection) + ")";
+         String insert = "INSERT INTO JCR_SEQ (name, nextVal) VALUES ('JCR_N_ORDER_NUM_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"'," + getStartValue(connection) + ")";
          connection.createStatement().executeUpdate(insert);
       }
    }
