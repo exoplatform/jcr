@@ -63,7 +63,7 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
             + " where I.I_CLASS=1 AND I.ID > ? order by I.ID FETCH FIRST $rowNb ROWS ONLY) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
       FIND_LAST_ORDER_NUMBER_BY_PARENTID =
-         "VALUES NEXT VALUE FOR JCR_N"+ DBInitializerHelper.getItemTableSuffix(containerConfig);
+         "VALUES NEXT VALUE FOR "+ JCR_ITEM_SEQ;
       FIND_NODES_BY_PARENTID_LAZILY_CQ =
          "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_VALUE +" V, "+JCR_ITEM +" P "
             + " join (select J.* from "+JCR_ITEM +" J where J.I_CLASS=1 and J.PARENT_ID=?"

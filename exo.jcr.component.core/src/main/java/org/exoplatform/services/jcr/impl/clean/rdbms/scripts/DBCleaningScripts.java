@@ -147,7 +147,6 @@ public abstract class DBCleaningScripts
    protected void prepareRenamingApproachScripts() throws DBCleanException
    {
       cleaningScripts.addAll(getTablesRenamingScripts());
-      cleaningScripts.addAll(getSequencesDroppingScripts());
       cleaningScripts.addAll(getDBInitializationScripts());
       cleaningScripts.addAll(getFKRemovingScripts());
       cleaningScripts.addAll(getConstraintsRemovingScripts());
@@ -170,7 +169,6 @@ public abstract class DBCleaningScripts
    protected void prepareDroppingTablesApproachScripts() throws DBCleanException
    {
       cleaningScripts.addAll(getTablesDroppingScripts());
-      cleaningScripts.addAll(getSequencesDroppingScripts());
       cleaningScripts.addAll(getDBInitializationScripts());
       cleaningScripts.addAll(getFKRemovingScripts());
       cleaningScripts.addAll(getIndexesDroppingScripts());
@@ -293,16 +291,6 @@ public abstract class DBCleaningScripts
       scripts.add("DROP TABLE " + valueTableName);
       scripts.add("DROP TABLE " + refTableName);
       scripts.add("DROP TABLE " + itemTableName);
-
-      return scripts;
-   }
-
-   /**
-    * Returns SQL scripts for dropping existed JCR sequences.
-    */
-   protected Collection<String> getSequencesDroppingScripts()
-   {
-      List<String> scripts = new ArrayList<String>();
 
       return scripts;
    }

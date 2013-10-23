@@ -18,10 +18,13 @@
  */
 package org.exoplatform.services.jcr.impl.clean.rdbms.scripts;
 
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -144,7 +147,8 @@ public class MySQLCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE " + valueTableName + " RENAME TO " + valueTableName + "_OLD");
       scripts.add("ALTER TABLE " + itemTableName + " RENAME TO " + itemTableName + "_OLD");
       scripts.add("ALTER TABLE " + refTableName + " RENAME TO " + refTableName + "_OLD");
-      scripts.add("ALTER TABLE JCR_SEQ RENAME TO JCR_SEQ_OLD");
+      scripts.add("ALTER TABLE JCR_"+itemTableSuffix+"_SEQ RENAME TO JCR_"+itemTableSuffix+"_SEQ_OLD");
+      scripts.add("DROP FUNCTION JCR_" + itemTableSuffix + "_NEXT_VAL");
 
       return scripts;
    }
@@ -152,14 +156,26 @@ public class MySQLCleaningScipts extends DBCleaningScripts
    /**
     * {@inheritDoc}
     */
-   protected Collection<String> getOldTablesRenamingScripts()
+   protected Collection<String> getOldTablesRenamingScripts() throws DBCleanException
    {
       Collection<String> scripts = new ArrayList<String>();
 
       scripts.add("ALTER TABLE " + itemTableName + "_OLD RENAME TO " + itemTableName);
       scripts.add("ALTER TABLE " + valueTableName + "_OLD RENAME TO " + valueTableName);
       scripts.add("ALTER TABLE " + refTableName + "_OLD RENAME TO " + refTableName);
-      scripts.add("ALTER TABLE JCR_SEQ_OLD RENAME TO JCR_SEQ");
+      scripts.add("ALTER TABLE JCR_"+itemTableSuffix+"_SEQ_OLD RENAME TO JCR_"+itemTableSuffix+"_SEQ");
+      try
+      {
+         scripts.add(DBInitializerHelper.getObjectScript("CREATE FUNCTION JCR_" + itemTableSuffix + "_NEXT_VAL", multiDb, dialect, wsEntry));
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         throw new DBCleanException(e);
+      }
+      catch (IOException e)
+      {
+         throw new DBCleanException(e);
+      }
 
       return scripts;
    }
@@ -171,7 +187,7 @@ public class MySQLCleaningScipts extends DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TABLE JCR_SEQ_OLD");
+      scripts.add("DROP TABLE JCR_"+itemTableSuffix+"_SEQ_OLD");
       scripts.addAll(super.getOldTablesDroppingScripts());
 
       return scripts;
@@ -184,7 +200,7 @@ public class MySQLCleaningScipts extends DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TABLE JCR_SEQ");
+      scripts.add("DROP TABLE JCR_"+itemTableSuffix+"_SEQ");
       scripts.addAll(super.getTablesDroppingScripts());
 
       return scripts;

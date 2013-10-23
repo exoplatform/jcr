@@ -60,7 +60,7 @@ public class StorageDBInitializer extends DBInitializer
             tMatcher = dbObjectNamePattern.matcher(sql);
             if (tMatcher.find())
             {
-               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_N"+DBInitializerHelper.getItemTableSuffix(containerConfig)))
+               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"SEQ"))
                {
                   sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection) ));
                }

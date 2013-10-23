@@ -69,7 +69,7 @@ public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected void prepareQueries() throws SQLException
    {
       super.prepareQueries();
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec JCR_NEXT_VAL 'JCR_N_ORDER_NUM_"+ DBInitializerHelper.getItemTableSuffix(containerConfig)+"'" ;
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec "+JCR_ITEM_NEXT_VAL+" 'LAST_N_ORDER_NUM'" ;
 
       FIND_NODES_BY_PARENTID_LAZILY_CQ =
          "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SVALUE V, JCR_SITEM P "

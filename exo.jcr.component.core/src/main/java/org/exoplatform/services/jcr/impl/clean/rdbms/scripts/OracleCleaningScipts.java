@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -171,6 +170,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
       Collection<String> scripts = new ArrayList<String>();
 
       scripts.add("DROP SEQUENCE " + valueTableName + "_SEQ");
+      scripts.add("DROP SEQUENCE JCR_"+itemTableSuffix+"_SEQ");
 
       scripts.addAll(super.getTablesDroppingScripts());
 
@@ -185,6 +185,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
       Collection<String> scripts = new ArrayList<String>();
 
       scripts.add("DROP SEQUENCE " + valueTableName + "_SEQ_OLD");
+      scripts.add("DROP SEQUENCE JCR_"+itemTableSuffix+"_SEQ_OLD");
 
       scripts.addAll(super.getOldTablesDroppingScripts());
 
@@ -211,6 +212,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
 
       // TRIGGER and SEQ
       scripts.add("RENAME " + valueTableName + "_SEQ TO " + valueTableName + "_SEQ_OLD");
+      scripts.add("RENAME JCR_"+itemTableSuffix+"_SEQ TO JCR_"+itemTableSuffix+"_SEQ_OLD");
       scripts.add("DROP TRIGGER BI_" + valueTableName);
 
       // JCR_ITEM
@@ -263,6 +265,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
 
       // TRIGGER and SEQ
       scripts.add("RENAME " + valueTableName + "_SEQ_OLD TO " + valueTableName + "_SEQ");
+      scripts.add("RENAME JCR_"+itemTableSuffix+"_SEQ_OLD TO JCR_"+itemTableSuffix+"_SEQ");
       try
       {
          scripts.add(DBInitializerHelper.getObjectScript("CREATE OR REPLACE trigger", multiDb, dialect, wsEntry));
@@ -303,15 +306,6 @@ public class OracleCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER INDEX JCR_IDX_" + refTableSuffix + "_PROPERTY_OLD RENAME TO JCR_IDX_" + refTableSuffix
          + "_PROPERTY");
 
-      return scripts;
-   }
-   /**
-    * {@inheritDoc}
-    */
-   protected Collection<String> getSequencesDroppingScripts()
-   {
-      List<String> scripts = new ArrayList<String>();
-      scripts.add("DROP SEQUENCE JCR_N"+itemTableSuffix);
       return scripts;
    }
 

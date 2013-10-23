@@ -240,6 +240,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             JCR_IDX_REF_PROPERTY = "JCR_IDX_MREF_PROPERTY";
             JCR_IDX_ITEM_N_ORDER_NUM = "JCR_IDX_MITEM_N_ORDER_NUM";
             JCR_IDX_ITEM_PARENT_FK = "JCR_IDX_MITEM_PARENT_FK";
+            JCR_ITEM_SEQ="JCR_MITEM_SEQ";
+            JCR_ITEM_NEXT_VAL="JCR_MITEM_NEXT_VAL";
             break;
 
          case SINGLE :
@@ -258,6 +260,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             JCR_IDX_REF_PROPERTY = "JCR_IDX_SREF_PROPERTY";
             JCR_IDX_ITEM_N_ORDER_NUM = "JCR_IDX_SITEM_N_ORDER_NUM";
             JCR_IDX_ITEM_PARENT_FK = "JCR_IDX_SITEM_PARENT_FK";
+            JCR_ITEM_SEQ="JCR_SITEM_SEQ";
+            JCR_ITEM_NEXT_VAL="JCR_SITEM_NEXT_VAL";
             break;
 
          case ISOLATED :
@@ -276,6 +280,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             JCR_IDX_REF_PROPERTY = "JCR_IDX_R" + containerConfig.dbTableSuffix + "_PROPERTY";
             JCR_IDX_ITEM_N_ORDER_NUM = "JCR_IDX_I" + containerConfig.dbTableSuffix + "_N_ORDER_NUM";
             JCR_IDX_ITEM_PARENT_FK = "JCR_IDX_I" + containerConfig.dbTableSuffix + "_PARENT_FK";
+            JCR_ITEM_SEQ="JCR_I" + containerConfig.dbTableSuffix + "_SEQ";
+            JCR_ITEM_NEXT_VAL="JCR_I" + containerConfig.dbTableSuffix + "_NEXT_VAL";
             break;
 
          default :

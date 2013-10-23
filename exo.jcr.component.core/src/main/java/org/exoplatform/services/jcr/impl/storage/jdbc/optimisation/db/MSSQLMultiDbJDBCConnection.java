@@ -80,7 +80,7 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
             + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
 
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec JCR_NEXT_VAL 'JCR_N_ORDER_NUM_"+ DBInitializerHelper.getItemTableSuffix(containerConfig)+"'" ;
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec "+JCR_ITEM_NEXT_VAL+" 'LAST_N_ORDER_NUM'" ;
    }
 
    /**

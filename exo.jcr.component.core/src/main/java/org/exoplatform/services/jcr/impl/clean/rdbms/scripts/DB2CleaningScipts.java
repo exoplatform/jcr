@@ -180,10 +180,14 @@ public class DB2CleaningScipts extends DBCleaningScripts
    /**
     * {@inheritDoc}
     */
-   protected Collection<String> getSequencesDroppingScripts()
+   protected Collection<String> getTablesDroppingScripts()
    {
-      List<String> scripts = new ArrayList<String>();
-      scripts.add("DROP SEQUENCE JCR_N"+itemTableSuffix);
+      Collection<String> scripts = new ArrayList<String>();
+
+      scripts.add("DROP SEQUENCE JCR_"+itemTableSuffix+"_SEQ");
+
+      scripts.addAll(super.getTablesDroppingScripts());
+
       return scripts;
    }
 }

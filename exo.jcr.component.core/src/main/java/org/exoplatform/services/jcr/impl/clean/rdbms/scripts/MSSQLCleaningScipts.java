@@ -77,7 +77,8 @@ public class MSSQLCleaningScipts extends DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TABLE JCR_SEQ");
+      scripts.add("DROP TABLE JCR_"+itemTableSuffix+"_SEQ");
+      scripts.add("DROP PROCEDURE JCR_" + itemTableSuffix + "_NEXT_VAL");
       scripts.addAll(super.getTablesDroppingScripts());
 
       return scripts;

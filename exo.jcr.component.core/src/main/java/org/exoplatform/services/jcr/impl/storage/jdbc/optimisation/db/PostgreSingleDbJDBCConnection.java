@@ -55,8 +55,7 @@ public class PostgreSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected void prepareQueries() throws SQLException
    {
       super.prepareQueries();
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
-         "SELECT NEXTVAL('JCR_N"+ DBInitializerHelper.getItemTableSuffix(containerConfig)+"')";
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID ="SELECT NEXTVAL('"+ JCR_ITEM_SEQ+"')";
    }
 
    protected String getLikeExpressionEscape()

@@ -95,10 +95,10 @@ public class MSSQLDBInitializer extends StorageDBInitializer
    {
       super.postInit(connection);
       String select =
-         "select * from JCR_SEQ  where name='JCR_N_ORDER_NUM_"+ DBInitializerHelper.getItemTableSuffix(containerConfig)+"'";
+         "select * from JCR_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"_SEQ  where name='LAST_N_ORDER_NUM'";
       if (!connection.createStatement().executeQuery(select).next())
       {
-         String insert = "INSERT INTO JCR_SEQ (name, nextVal) VALUES ('JCR_N_ORDER_NUM_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"'," + getStartValue(connection) + ")";
+         String insert = "INSERT INTO JCR_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"_SEQ  (name, nextVal) VALUES ('LAST_N_ORDER_NUM'," + getStartValue(connection) + ")";
          connection.createStatement().executeUpdate(insert);
       }
    }

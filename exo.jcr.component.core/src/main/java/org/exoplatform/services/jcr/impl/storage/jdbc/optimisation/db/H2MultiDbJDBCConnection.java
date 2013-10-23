@@ -68,7 +68,7 @@ public class H2MultiDbJDBCConnection extends MultiDbJDBCConnection
    protected void prepareQueries() throws SQLException
    {
       super.prepareQueries();
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call JCR_N"+ DBInitializerHelper.getItemTableSuffix(containerConfig)+".nextval";
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call "+JCR_ITEM_SEQ+".nextval";
    }
 
 }

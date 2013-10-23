@@ -148,7 +148,7 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
 
       DELETE_TEMPORARY_TABLE_B = "drop table " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME;
 
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec JCR_NEXT_VAL 'JCR_N_ORDER_NUM_"+ DBInitializerHelper.getItemTableSuffix(containerConfig)+"'" ;
+      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec "+JCR_ITEM_NEXT_VAL+" 'LAST_N_ORDER_NUM'" ;
 
    }
 
