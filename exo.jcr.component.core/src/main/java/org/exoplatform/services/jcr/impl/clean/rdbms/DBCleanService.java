@@ -466,6 +466,10 @@ public class DBCleanService
          cleanScripts.add("DROP TRIGGER BI_JCR_" + isMultiDB + "VALUE");
          cleanScripts.add("DROP SEQUENCE JCR_" + isMultiDB + "VALUE_SEQ");
       }
+      if (dialect.equalsIgnoreCase(DBConstants.DB_DIALECT_DB2))
+      {
+         cleanScripts.add("DROP SEQUENCE JCR_" + isMultiDB + "ITEM_SEQ");
+      }
 
       cleanScripts.add("DROP TABLE JCR_" + isMultiDB + "VALUE");
       cleanScripts.add("DROP TABLE JCR_" + isMultiDB + "ITEM");

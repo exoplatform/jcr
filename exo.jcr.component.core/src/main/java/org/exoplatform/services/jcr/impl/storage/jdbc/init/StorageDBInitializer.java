@@ -78,15 +78,12 @@ public class StorageDBInitializer extends DBInitializer
       ResultSet trs = null;
       try
       {
+         final String MDB = (multiDb ? "M" : "S");
          String query;
 
-         if (JDBCUtils.tableExists("JCR_SITEM", con))
+         if (JDBCUtils.tableExists("JCR_"+MDB+"ITEM", con))
          {
-            query = "select max(N_ORDER_NUM) from JCR_SITEM";
-         }
-         else if (JDBCUtils.tableExists("JCR_MITEM", con))
-         {
-            query = "select max(N_ORDER_NUM) from JCR_MITEM";
+            query = "select max(N_ORDER_NUM) from JCR_"+MDB+"ITEM";
          }
          else
          {

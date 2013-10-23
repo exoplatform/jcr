@@ -89,7 +89,7 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
             + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
             + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
       FIND_LAST_ORDER_NUMBER_BY_PARENTID =
-         "VALUES NEXT VALUE FOR JCR_N_ORDER_NUM";
+         "VALUES NEXT VALUE FOR JCR_SITEM_SEQ";
    }
 
    /**
