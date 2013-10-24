@@ -252,7 +252,8 @@
   <section id="Kernel.Container-Integration.Weld">
     <title>Weld</title>
 
-    <para>In case of Weld 2, the artifacts to deploy are
+    <para>In case of Weld 1 or 2, the artifacts to deploy are
+    <emphasis>exo.kernel.container.ext.provider.impl.weld.v</emphasis>1 or
     <emphasis>exo.kernel.container.ext.provider.impl.weld.v2</emphasis> and
     its dependencies. This artifact defines the interceptor called
     <emphasis>org.exoplatform.container.weld.WeldContainer</emphasis>. To
