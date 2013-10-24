@@ -16,6 +16,12 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+
+import org.databene.contiperf.PerfTest;
+import org.databene.contiperf.junit.ContiPerfRule;
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
@@ -36,12 +42,14 @@ import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Rule;
+import org.junit.Test;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.InvalidItemStateException;
@@ -54,220 +62,184 @@ import javax.jcr.RepositoryException;
  *          nicolas.filotto@exoplatform.com
  * 29 mars 2010  
  */
-public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
+public class TestCacheableWorkspaceDataManager
 {
-
-   private static final int READER = 100;
-
+   private static final int TOTAL_THREADS = 100;
    private static final int TIMES = 20;
+   private static final int TOTAL_TIMES = TIMES * TOTAL_THREADS;
+
+   // We need it as a variable since to be compatible with JUnit 4, the class must not extend TestCase so we
+   // cannot extend BaseVersionTest. But as we need all the logic inside, we use it as a variable
+   private JcrImplBaseTest test;
+
+   @Rule
+   public ContiPerfRule rule = new ContiPerfRule();
+
+   private final AtomicInteger step = new AtomicInteger();
+   private CyclicBarrier startSignal = new CyclicBarrier(TOTAL_THREADS);
 
    private CacheableWorkspaceDataManager cwdm;
 
    private WorkspaceDataContainer wdc;
 
    private MyWorkspaceStorageConnection con;
+   private NodeData nodeData;
 
-   @Override
+   @Before
    public void setUp() throws Exception
    {
-      super.setUp();
+      this.test = new JcrImplBaseTest();
+      test.setUp();
       this.con = new MyWorkspaceStorageConnection();
       this.wdc = new MyWorkspaceDataContainer(con);
-      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      WorkspaceContainerFacade wsc = test.getRepository().getWorkspaceContainer("ws");
       WorkspaceEntry wconf = (WorkspaceEntry)wsc.getComponent(WorkspaceEntry.class);
       this.cwdm =
          new CacheableWorkspaceDataManager(wconf, wdc, new MyWorkspaceStorageCache(),
             new SystemDataContainerHolder(wdc));
    }
 
-   @Override
-   protected void tearDown() throws Exception
+   @After
+   public void tearDown() throws Exception
    {
       this.con = null;
       this.wdc = null;
       this.cwdm = null;
-      super.tearDown();
+      test.after();
    }
 
-   private void multiThreadingTest(final MyTask task) throws Exception
-   {
-      final CountDownLatch startSignal = new CountDownLatch(1);
-      final CountDownLatch doneSignal = new CountDownLatch(READER);
-      final List<Exception> errors = Collections.synchronizedList(new ArrayList<Exception>());
-      for (int i = 0; i < READER; i++)
-      {
-         Thread thread = new Thread()
-         {
-            @Override
-            public void run()
-            {
-               try
-               {
-                  startSignal.await();
-                  for (int i = 0; i < TIMES; i++)
-                  {
-                     task.execute();
-                  }
-               }
-               catch (Exception e)
-               {
-                  errors.add(e);
-               }
-               finally
-               {
-                  doneSignal.countDown();
-               }
-            }
-         };
-         thread.start();
-      }
-      startSignal.countDown();
-      doneSignal.await();
-      if (!errors.isEmpty())
-      {
-         for (Exception e : errors)
-         {
-            e.printStackTrace();
-         }
-         throw errors.get(0);
-      }
-   }
-
+   @Test
+   @PerfTest(invocations = TOTAL_THREADS, threads = TOTAL_THREADS)
    public void testGetItemById() throws Exception
    {
       assertEquals(0, con.getItemDataByIdCalls.get());
-      MyTask task = new MyTask()
+      startSignal.await();
+      for (int i = 0; i < TIMES; i++)
       {
-         public void execute() throws Exception
-         {
-            ItemData item = cwdm.getItemData("getItemData");
-            assertNotNull(item);
-         }
-      };
-      multiThreadingTest(task);
+         ItemData item = cwdm.getItemData("getItemData");
+         assertNotNull(item);
+      }
       assertEquals(1, con.getItemDataByIdCalls.get());
    }
 
+   @Test
+   @PerfTest(invocations = TOTAL_THREADS, threads = TOTAL_THREADS)
    public void testGetItemDataByNodeDataNQPathEntry() throws Exception
    {
-      final NodeData nodeData =
-         new PersistedNodeData("getItemData", new QPath(new QPathEntry[]{}), null, 0, 1, null, null, null);
-      assertEquals(0, con.getItemDataByNodeDataNQPathEntryCalls.get());
-      MyTask task = new MyTask()
+      if (step.compareAndSet(0, 1))
       {
-         public void execute() throws Exception
-         {
-            ItemData item = cwdm.getItemData(nodeData, new QPathEntry("http://www.foo.com", "foo", 0), ItemType.NODE);
-            assertNotNull(item);
-         }
-      };
-      multiThreadingTest(task);
+         nodeData = new PersistedNodeData("getItemData", new QPath(new QPathEntry[]{}), null, 0, 1, null, null, null);
+      }
+      assertEquals(0, con.getItemDataByNodeDataNQPathEntryCalls.get());
+      startSignal.await();
+      for (int i = 0; i < TIMES; i++)
+      {
+         ItemData item = cwdm.getItemData(nodeData, new QPathEntry("http://www.foo.com", "foo", 0), ItemType.NODE);
+         assertNotNull(item);
+      }
       assertEquals(1, con.getItemDataByNodeDataNQPathEntryCalls.get());
    }
 
+   @Test
+   @PerfTest(invocations = TOTAL_THREADS, threads = TOTAL_THREADS)
    public void testGetChildPropertiesData() throws Exception
    {
-      final NodeData nodeData = new PersistedNodeData("getChildPropertiesData", null, null, 0, 1, null, null, null);
+      if (step.compareAndSet(0, 1))
+      {
+         nodeData = new PersistedNodeData("getChildPropertiesData", null, null, 0, 1, null, null, null);
+      }
       assertEquals(0, con.getChildPropertiesDataCalls.get());
-      MyTask task = new MyTask()
+      startSignal.await();
+      for (int i = 0; i < TIMES; i++)
       {
-         public void execute() throws Exception
-         {
-            List<PropertyData> properties = cwdm.getChildPropertiesData(nodeData);
-            assertNotNull(properties);
-            assertFalse(properties.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
+         List<PropertyData> properties = cwdm.getChildPropertiesData(nodeData);
+         assertNotNull(properties);
+         assertFalse(properties.isEmpty());
+      }
       assertEquals(1, con.getChildPropertiesDataCalls.get());
-      task = new MyTask()
+      startSignal.await();
+      for (int i = 0; i < TIMES; i++)
       {
-         public void execute() throws Exception
-         {
-            List<PropertyData> properties = cwdm.getChildPropertiesData(nodeData, true);
-            assertNotNull(properties);
-            assertFalse(properties.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(1 + READER * TIMES, con.getChildPropertiesDataCalls.get());
+         List<PropertyData> properties = cwdm.getChildPropertiesData(nodeData, true);
+         assertNotNull(properties);
+         assertFalse(properties.isEmpty());
+      }
+      startSignal.await();
+      assertEquals(1 + TOTAL_TIMES, con.getChildPropertiesDataCalls.get());
    }
 
+   @Test
+   @PerfTest(invocations = TOTAL_THREADS, threads = TOTAL_THREADS)
    public void testListChildPropertiesData() throws Exception
    {
-      final NodeData nodeData = new PersistedNodeData("listChildPropertiesData", null, null, 0, 1, null, null, null);
+      if (step.compareAndSet(0, 1))
+      {
+         nodeData = new PersistedNodeData("listChildPropertiesData", null, null, 0, 1, null, null, null);
+      }
       assertEquals(0, con.listChildPropertiesDataCalls.get());
-      MyTask task = new MyTask()
+      startSignal.await();
+      for (int i = 0; i < TIMES; i++)
       {
-         public void execute() throws Exception
-         {
-            List<PropertyData> properties = cwdm.listChildPropertiesData(nodeData);
-            assertNotNull(properties);
-            assertFalse(properties.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
+         List<PropertyData> properties = cwdm.listChildPropertiesData(nodeData);
+         assertNotNull(properties);
+         assertFalse(properties.isEmpty());
+      }
       assertEquals(1, con.listChildPropertiesDataCalls.get());
-      task = new MyTask()
+      startSignal.await();
+      for (int i = 0; i < TIMES; i++)
       {
-         public void execute() throws Exception
-         {
-            List<PropertyData> properties = cwdm.listChildPropertiesData(nodeData, true);
-            assertNotNull(properties);
-            assertFalse(properties.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(1 + READER * TIMES, con.listChildPropertiesDataCalls.get());
+         List<PropertyData> properties = cwdm.listChildPropertiesData(nodeData, true);
+         assertNotNull(properties);
+         assertFalse(properties.isEmpty());
+      }
+      startSignal.await();
+      assertEquals(1 + TOTAL_TIMES, con.listChildPropertiesDataCalls.get());
    }
 
+   @Test
+   @PerfTest(invocations = TOTAL_THREADS, threads = TOTAL_THREADS)
    public void testGetChildNodes() throws Exception
    {
-      final NodeData nodeData = new PersistedNodeData("getChildNodes", null, null, 0, 1, null, null, null);
+      if (step.compareAndSet(0, 1))
+      {
+         nodeData = new PersistedNodeData("getChildNodes", null, null, 0, 1, null, null, null);
+      }
       assertEquals(0, con.getChildNodesDataCalls.get());
-      MyTask task = new MyTask()
+      startSignal.await();
+      for (int i = 0; i < TIMES; i++)
       {
-         public void execute() throws Exception
-         {
-            List<NodeData> nodes = cwdm.getChildNodesData(nodeData);
-            assertNotNull(nodes);
-            assertFalse(nodes.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
+         List<NodeData> nodes = cwdm.getChildNodesData(nodeData);
+         assertNotNull(nodes);
+         assertFalse(nodes.isEmpty());
+      }
       assertEquals(1, con.getChildNodesDataCalls.get());
-      task = new MyTask()
+      startSignal.await();
+      for (int i = 0; i < TIMES; i++)
       {
-         public void execute() throws Exception
-         {
-            List<NodeData> nodes = cwdm.getChildNodesData(nodeData, true);
-            assertNotNull(nodes);
-            assertFalse(nodes.isEmpty());
-         }
-      };
-      multiThreadingTest(task);
-      assertEquals(1 + READER * TIMES, con.getChildNodesDataCalls.get());
+         List<NodeData> nodes = cwdm.getChildNodesData(nodeData, true);
+         assertNotNull(nodes);
+         assertFalse(nodes.isEmpty());
+      }
+      startSignal.await();
+      assertEquals(1 + TOTAL_TIMES, con.getChildNodesDataCalls.get());
    }
 
+   @Test
+   @PerfTest(invocations = TOTAL_THREADS, threads = TOTAL_THREADS)
    public void testGetChildNodesCount() throws Exception
    {
-      final NodeData nodeData = new PersistedNodeData("getChildNodesCount", null, null, 0, 1, null, null, null);
-      assertEquals(0, con.getChildNodesCountCalls.get());
-      MyTask task = new MyTask()
+      if (step.compareAndSet(0, 1))
       {
-         public void execute() throws Exception
-         {
-            int result = cwdm.getChildNodesCount(nodeData);
-            assertEquals(1, result);
-         }
-      };
-      multiThreadingTest(task);
+         nodeData = new PersistedNodeData("getChildNodesCount", null, null, 0, 1, null, null, null);
+      }
+      assertEquals(0, con.getChildNodesCountCalls.get());
+      startSignal.await();
+      for (int i = 0; i < TIMES; i++)
+      {
+         int result = cwdm.getChildNodesCount(nodeData);
+         assertEquals(1, result);
+      }
       assertEquals(1, con.getChildNodesCountCalls.get());
-   }
-
-   private static interface MyTask
-   {
-      void execute() throws Exception;
    }
 
    private static class MyWorkspaceStorageCache implements WorkspaceStorageCache
@@ -622,20 +594,17 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
          throw new UnsupportedOperationException();
       }
 
-      @Override
       public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
          IllegalStateException
       {
          return getItemData(parentData, name, itemType) != null;
       }
 
-      @Override
       public long getWorkspaceDataSize() throws RepositoryException
       {
          return 0;
       }
 
-      @Override
       public long getNodeDataSize(String parentId) throws RepositoryException
       {
          return 0;

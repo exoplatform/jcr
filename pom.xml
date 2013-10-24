@@ -365,7 +365,13 @@
             <artifactId>slf4j-api</artifactId>
           </exclusion>
         </exclusions>
-     </dependency>
+      </dependency>
+      <dependency>
+         <groupId>org.databene</groupId>
+         <artifactId>contiperf</artifactId>
+         <version>2.2.0</version>
+         <scope>test</scope>
+      </dependency>
     </dependencies>
   </dependencyManagement>
   <dependencies>

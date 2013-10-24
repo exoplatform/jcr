@@ -171,6 +171,15 @@ public abstract class BaseStandaloneTest extends TestCase
       holder = new ReaderSpoolFileHolder();
    }
 
+   /**
+    * This method has been added to be able to call tearDown from JUnit 4 test cases. 
+    * This is a workaround to avoid having to modify too many classes
+    */
+   public void after() throws Exception
+   {
+      tearDown();
+   }
+
    protected void tearDown() throws Exception
    {
       if (session != null)
@@ -523,6 +532,38 @@ public abstract class BaseStandaloneTest extends TestCase
    }
 
    /**
+    * @return the session
+    */
+   public SessionImpl getSession()
+   {
+      return session;
+   }
+
+   /**
+    * @return the repository
+    */
+   public RepositoryImpl getRepository()
+   {
+      return repository;
+   }
+
+   /**
+    * @return the credentials
+    */
+   public CredentialsImpl getCredentials()
+   {
+      return credentials;
+   }
+
+   /**
+    * @return the root
+    */
+   public Node getRoot()
+   {
+      return root;
+   }
+
+   /**
     * Test WorkspaceDataContainer.
     * Does nothing, must be extended in tests.
     * 
@@ -740,20 +781,17 @@ public abstract class BaseStandaloneTest extends TestCase
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
       }
 
-      @Override
       public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
          IllegalStateException
       {
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
       }
 
-      @Override
       public long getWorkspaceDataSize() throws RepositoryException
       {
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
       }
 
-      @Override
       public long getNodeDataSize(String parentId) throws RepositoryException
       {
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");

@@ -21,13 +21,9 @@ import junit.framework.TestCase;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * @author <a href="mailto:natasha.vakulenko@gmail.com">Natasha Vakulenko</a>
@@ -36,9 +32,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class TestSwapFile extends TestCase
 {
-   private static final String DIR_NAME = "../";
+   static final String DIR_NAME = "../";
 
-   private static final String FILE_NAME = "childSwapFile";
+   static final String FILE_NAME = "childSwapFile";
 
    public void testCreateTempFile()
    {
@@ -101,59 +97,6 @@ public class TestSwapFile extends TestCase
       sf.spoolDone();
 
       // File is present on the disk. It will be removed from disk space.
-      assertTrue("File should be deleted.", sf.delete());
-   }
-   
-   public void testConcurrentAccess() throws Exception
-   {
-      int totalThread = 20;
-      final CountDownLatch startSignal = new CountDownLatch(1);
-      final CountDownLatch endSignal = new CountDownLatch(totalThread);
-      final AtomicReference<Exception> ex = new AtomicReference<Exception>();
-      Runnable task = new Runnable()
-      {
-         public void run()
-         {
-            try
-            {
-               startSignal.await();
-               SwapFile sf = SwapFile.get(new File(DIR_NAME), FILE_NAME + "-testConcurrentAccess");
-               int value = 1;
-               if (sf.exists())
-               {
-                  InputStream is = new FileInputStream(sf);
-                  value = is.read() + 1;
-                  is.close();
-               }
-               OutputStream out = new FileOutputStream(sf);
-               out.write(value);
-               out.close();
-               sf.spoolDone();
-            }
-            catch (Exception e)
-            {
-               ex.set(e);
-            }
-            finally
-            {
-               endSignal.countDown();
-            }
-         }
-      };
-      for (int i = 0; i < totalThread; i++)
-      {
-         Thread t = new Thread(task);
-         t.start();
-      }
-      startSignal.countDown();
-      endSignal.await();
-      if (ex.get() != null)
-         throw ex.get();
-      SwapFile sf = SwapFile.get(new File(DIR_NAME), FILE_NAME + "-testConcurrentAccess");
-      InputStream is = new FileInputStream(sf);
-      int value = is.read();
-      is.close();
-      assertEquals("We should get the total amount of threads.", totalThread, value);
       assertTrue("File should be deleted.", sf.delete());
    }
 }

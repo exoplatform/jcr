@@ -25,7 +25,7 @@ package org.exoplatform.services.jcr;
  * @version $Id: JcrImplBaseTest.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public abstract class JcrImplBaseTest extends BaseStandaloneTest
+public class JcrImplBaseTest extends BaseStandaloneTest
 {
 
    protected final String getRepositoryName()
