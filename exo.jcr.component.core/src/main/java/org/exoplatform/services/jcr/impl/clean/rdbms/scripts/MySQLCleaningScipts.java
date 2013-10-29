@@ -147,8 +147,8 @@ public class MySQLCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE " + valueTableName + " RENAME TO " + valueTableName + "_OLD");
       scripts.add("ALTER TABLE " + itemTableName + " RENAME TO " + itemTableName + "_OLD");
       scripts.add("ALTER TABLE " + refTableName + " RENAME TO " + refTableName + "_OLD");
-      scripts.add("ALTER TABLE JCR_"+itemTableSuffix+"_SEQ RENAME TO JCR_"+itemTableSuffix+"_SEQ_OLD");
-      scripts.add("DROP FUNCTION JCR_" + itemTableSuffix + "_NEXT_VAL");
+      scripts.add("ALTER TABLE "+itemTableName+"_SEQ RENAME TO "+itemTableName+"_SEQ_OLD");
+      scripts.add("DROP FUNCTION " + itemTableName + "_NEXT_VAL");
 
       return scripts;
    }
@@ -163,10 +163,10 @@ public class MySQLCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE " + itemTableName + "_OLD RENAME TO " + itemTableName);
       scripts.add("ALTER TABLE " + valueTableName + "_OLD RENAME TO " + valueTableName);
       scripts.add("ALTER TABLE " + refTableName + "_OLD RENAME TO " + refTableName);
-      scripts.add("ALTER TABLE JCR_"+itemTableSuffix+"_SEQ_OLD RENAME TO JCR_"+itemTableSuffix+"_SEQ");
+      scripts.add("ALTER TABLE "+itemTableName+"_SEQ_OLD RENAME TO "+itemTableName+"_SEQ");
       try
       {
-         scripts.add(DBInitializerHelper.getObjectScript("CREATE FUNCTION JCR_" + itemTableSuffix + "_NEXT_VAL", multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("CREATE FUNCTION " + itemTableName + "_NEXT_VAL", multiDb, dialect, wsEntry));
       }
       catch (RepositoryConfigurationException e)
       {
@@ -187,7 +187,7 @@ public class MySQLCleaningScipts extends DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TABLE JCR_"+itemTableSuffix+"_SEQ_OLD");
+      scripts.add("DROP TABLE "+itemTableName+"_SEQ_OLD");
       scripts.addAll(super.getOldTablesDroppingScripts());
 
       return scripts;
@@ -200,7 +200,7 @@ public class MySQLCleaningScipts extends DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TABLE JCR_"+itemTableSuffix+"_SEQ");
+      scripts.add("DROP TABLE "+itemTableName+"_SEQ");
       scripts.addAll(super.getTablesDroppingScripts());
 
       return scripts;

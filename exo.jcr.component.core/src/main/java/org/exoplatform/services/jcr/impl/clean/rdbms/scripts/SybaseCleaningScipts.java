@@ -164,8 +164,8 @@ public class SybaseCleaningScipts extends DBCleaningScripts
       scripts.add("sp_rename " + valueTableName + ", " + valueTableName + "_OLD");
       scripts.add("sp_rename " + itemTableName + ", " + itemTableName + "_OLD");
       scripts.add("sp_rename " + refTableName + ", " + refTableName + "_OLD");
-      scripts.add("sp_rename JCR_"+itemTableSuffix+"_SEQ , JCR_"+itemTableSuffix+"_SEQ_OLD");
-      scripts.add("DROP procedure JCR_" + itemTableSuffix + "_NEXT_VAL");
+      scripts.add("sp_rename "+itemTableName+"_SEQ , "+itemTableName+"_SEQ_OLD");
+      scripts.add("DROP procedure " + itemTableName + "_NEXT_VAL");
 
       scripts.add("sp_rename JCR_FK_" + valueTableSuffix + "_PROPERTY, JCR_FK_" + valueTableSuffix + "_PROPERTY_OLD");
       scripts.add("sp_rename JCR_FK_" + itemTableSuffix + "_PARENT, JCR_FK_" + itemTableSuffix + "_PARENT_OLD");
@@ -183,10 +183,10 @@ public class SybaseCleaningScipts extends DBCleaningScripts
       scripts.add("sp_rename " + valueTableName + "_OLD, " + valueTableName);
       scripts.add("sp_rename " + itemTableName + "_OLD, " + itemTableName);
       scripts.add("sp_rename " + refTableName + "_OLD, " + refTableName);
-      scripts.add("sp_rename JCR_"+itemTableSuffix+"_SEQ_OLD , JCR_"+itemTableSuffix+"_SEQ");
+      scripts.add("sp_rename "+itemTableName+"_SEQ_OLD , "+itemTableName+"_SEQ");
       try
       {
-         scripts.add(DBInitializerHelper.getObjectScript("CREATE PROCEDURE JCR_" + itemTableSuffix + "_NEXT_VAL", multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("CREATE PROCEDURE " + itemTableName + "_NEXT_VAL", multiDb, dialect, wsEntry));
       }
       catch (RepositoryConfigurationException e)
       {
@@ -210,7 +210,7 @@ public class SybaseCleaningScipts extends DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TABLE JCR_"+itemTableSuffix+"_SEQ_OLD");
+      scripts.add("DROP TABLE "+itemTableName+"_SEQ_OLD");
       scripts.addAll(super.getOldTablesDroppingScripts());
 
       return scripts;
@@ -223,7 +223,7 @@ public class SybaseCleaningScipts extends DBCleaningScripts
    {
       List<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP TABLE JCR_"+itemTableSuffix+"_SEQ");
+      scripts.add("DROP TABLE "+itemTableName+"_SEQ");
       scripts.addAll(super.getTablesDroppingScripts());
 
       return scripts;

@@ -76,7 +76,7 @@ public class PgSQLCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP SEQUENCE JCR_"+itemTableSuffix+"_SEQ");
+      scripts.add("DROP SEQUENCE "+itemTableName+"_SEQ");
 
       scripts.addAll(super.getTablesDroppingScripts());
 

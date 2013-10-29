@@ -170,7 +170,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
       Collection<String> scripts = new ArrayList<String>();
 
       scripts.add("DROP SEQUENCE " + valueTableName + "_SEQ");
-      scripts.add("DROP SEQUENCE JCR_"+itemTableSuffix+"_SEQ");
+      scripts.add("DROP SEQUENCE "+itemTableName+"_SEQ");
 
       scripts.addAll(super.getTablesDroppingScripts());
 
@@ -185,7 +185,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
       Collection<String> scripts = new ArrayList<String>();
 
       scripts.add("DROP SEQUENCE " + valueTableName + "_SEQ_OLD");
-      scripts.add("DROP SEQUENCE JCR_"+itemTableSuffix+"_SEQ_OLD");
+      scripts.add("DROP SEQUENCE "+itemTableName+"_SEQ_OLD");
 
       scripts.addAll(super.getOldTablesDroppingScripts());
 
@@ -212,7 +212,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
 
       // TRIGGER and SEQ
       scripts.add("RENAME " + valueTableName + "_SEQ TO " + valueTableName + "_SEQ_OLD");
-      scripts.add("RENAME JCR_"+itemTableSuffix+"_SEQ TO JCR_"+itemTableSuffix+"_SEQ_OLD");
+      scripts.add("RENAME "+itemTableName+"_SEQ TO "+itemTableName+"_SEQ_OLD");
       scripts.add("DROP TRIGGER BI_" + valueTableName);
 
       // JCR_ITEM
@@ -265,7 +265,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
 
       // TRIGGER and SEQ
       scripts.add("RENAME " + valueTableName + "_SEQ_OLD TO " + valueTableName + "_SEQ");
-      scripts.add("RENAME JCR_"+itemTableSuffix+"_SEQ_OLD TO JCR_"+itemTableSuffix+"_SEQ");
+      scripts.add("RENAME "+itemTableName+"_SEQ_OLD TO "+itemTableName+"_SEQ");
       try
       {
          scripts.add(DBInitializerHelper.getObjectScript("CREATE OR REPLACE trigger", multiDb, dialect, wsEntry));
