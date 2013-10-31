@@ -86,11 +86,6 @@
       </dependency>
       <dependency>
         <groupId>org.exoplatform.kernel</groupId>
-        <artifactId>exo.kernel.component.ext.rpc.impl.jgroups.v3</artifactId>
-        <version>${org.exoplatform.kernel.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.exoplatform.kernel</groupId>
         <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
         <version>${org.exoplatform.kernel.version}</version>
       </dependency>                 
@@ -300,21 +295,6 @@
         <version>2.3.0</version>
       </dependency>
       <dependency>
-        <groupId>org.jboss.cache</groupId>
-        <artifactId>jbosscache-core</artifactId>
-        <version>3.2.7.GA</version>
-        <exclusions>
-          <exclusion>
-            <groupId>jgroups</groupId>
-            <artifactId>jgroups</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>org.jboss.logging</groupId>
-            <artifactId>jboss-logging-spi</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
-      <dependency>
         <groupId>org.jboss.jbossts</groupId>
         <artifactId>jbossjta</artifactId>
         <version>4.16.6.Final</version>
@@ -327,7 +307,7 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-core</artifactId>
-        <version>5.3.0.Final</version>
+        <version>5.2.7.Final</version>
         <exclusions>
           <exclusion>
             <groupId>org.jboss.spec.javax.transaction</groupId>
@@ -338,7 +318,12 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-cachestore-jdbc</artifactId>
-        <version>5.3.0.Final</version>
+        <version>5.2.7.Final</version>
+      </dependency>
+      <dependency>
+        <groupId>org.jgroups</groupId>
+        <artifactId>jgroups</artifactId>
+        <version>3.2.7.Final</version>
       </dependency>
       <dependency>
         <groupId>org.antlr</groupId>
@@ -437,7 +422,6 @@
   </build>
   <modules>
     <module>exo.jcr.component.core</module>
-    <module>exo.jcr.component.core.impl.infinispan.v5</module>
     <module>exo.jcr.component.statistics</module>
     <module>exo.jcr.component.ext</module>
     <module>exo.jcr.component.ftp</module>

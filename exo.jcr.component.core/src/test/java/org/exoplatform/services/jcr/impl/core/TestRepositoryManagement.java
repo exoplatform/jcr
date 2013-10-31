@@ -218,7 +218,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       ValueParam confPath = new ValueParam();
       confPath.setDescription("JCR configuration file");
       confPath.setName("conf-path");
-      confPath.setValue("jar:/conf/standalone/test-jcr-config-ijdbc-jbc.xml");
+      confPath.setValue("jar:/conf/standalone/test-jcr-config-ijdbc-ispn.xml");
       
       params.addParam(confPath);
       
@@ -629,8 +629,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
             for (int i = 0; i <= parameters.size(); i++)
             {
                SimpleParameterEntry spe = parameters.get(i);
-               if (spe.getName().equals("jbosscache-cl-cache.jdbc.datasource")
-                  || spe.getName().equals("infinispan-cl-cache.jdbc.datasource"))
+               if (spe.getName().equals("infinispan-cl-cache.jdbc.datasource"))
                {
                   parameters.add(i, new SimpleParameterEntry(spe.getName(), newDatasourceName));
                   break;
@@ -704,7 +703,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
          ManageableRepository repository = null;
          try
          {
-            repository = createRepositoryWithJBCorISPNQueryHandler();
+            repository = createRepositoryWithQueryHandler();
             RepositoryContainer repositoryContainer =
                helper.getRepositoryContainer(container, repository.getConfiguration().getName());
             repositoryContainersInMemory.put(repositoryContainer, null);
@@ -741,7 +740,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       }
    }
 
-   private ManageableRepository createRepositoryWithJBCorISPNQueryHandler() throws Exception
+   private ManageableRepository createRepositoryWithQueryHandler() throws Exception
    {
       RepositoryEntry repoEntry = helper.createRepositoryEntry(DatabaseStructureType.SINGLE, null, null, true);
       // modify configuration
@@ -749,19 +748,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       QueryHandlerEntry queryHandler = workspaceEntry.getQueryHandler();
       List<SimpleParameterEntry> parameters = queryHandler.getParameters();
 
-      if (!helper.ispnCacheEnabled())
-      {
-         // Use JBossCache components for core project
-         parameters.add(new SimpleParameterEntry("changesfilter-class",
-            "org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"));
-         parameters.add(new SimpleParameterEntry("jbosscache-configuration",
-            "conf/standalone/cluster/test-jbosscache-indexer.xml"));
-         parameters.add(new SimpleParameterEntry("jgroups-configuration", "jar:/conf/standalone/cluster/udp-mux.xml"));
-         parameters.add(new SimpleParameterEntry("jgroups-multiplexer-stack", "false"));
-         parameters.add(new SimpleParameterEntry("jbosscache-shareable", "true"));
-         parameters.add(new SimpleParameterEntry("jbosscache-cluster-name", "JCR-cluster-indexer"));
-      }
-      else
+      if (helper.ispnCacheEnabled())
       {
          // Use Infinispan components for core.ispn project
          parameters.add(new SimpleParameterEntry("changesfilter-class",
@@ -769,7 +756,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
          parameters.add(new SimpleParameterEntry("infinispan-configuration",
             "conf/standalone/cluster/test-infinispan-indexer.xml"));
          parameters
-            .add(new SimpleParameterEntry("jgroups-configuration", "jar:/conf/standalone/cluster/udp-mux-v3.xml"));
+            .add(new SimpleParameterEntry("jgroups-configuration", "jar:/conf/standalone/cluster/udp-mux.xml"));
          parameters.add(new SimpleParameterEntry("infinispan-cluster-name", "JCR-cluster"));
       }
 

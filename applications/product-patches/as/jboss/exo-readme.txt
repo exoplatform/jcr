@@ -4,10 +4,8 @@ To launch it, go to the bin directory and execute the following command:
 
 In Unix environment
 
-* "./standalone-ispn.sh" to launch eXo JCR with the configuration for Infinispan
-* "./standalone-jbc.sh" to launch eXo JCR with the configuration for JBoss Cache
+* "./standalone.sh" to launch eXo JCR with the configuration for Infinispan
 
 In Windows environment
 
-* "standalone-ispn.bat" to launch eXo JCR with the configuration for Infinispan
-* "standalone-jbc.bat" to launch eXo JCR with the configuration for JBoss Cache
+* "standalone.bat" to launch eXo JCR with the configuration for Infinispan

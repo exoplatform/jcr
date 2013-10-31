@@ -36,19 +36,11 @@
    
    <properties>
      <enforcer.skip>true</enforcer.skip>
-     <exo.deploy.profile>jbc</exo.deploy.profile>
      <exo.deploy.artifactId>exo.jcr.ear</exo.deploy.artifactId>
    </properties>
 
    <profiles>
-       <profile>
-           <id>ispn</id>
-           <properties>
-               <exo.deploy.profile>ispn</exo.deploy.profile>
-               <exo.deploy.artifactId>exo.jcr.ispn.ear</exo.deploy.artifactId>
-           </properties>
-       </profile>
-   <profile>
+     <profile>
       <id>deploy</id>
       <activation>
          <activeByDefault>false</activeByDefault> 
@@ -121,15 +113,11 @@
                   <copy todir="${exo.projects.directory.working}/exo-jboss/" verbose="true" overwrite="true">
                      <fileset dir="${basedir}/../product-patches/as/jboss/" />
                   </copy>
-
-                  <replace dir="${exo.projects.directory.working}/exo-jboss/bin" token="-Dexo.profiles=jbc" value="-Dexo.profiles=${exo.deploy.profile}" />
-                  <move file="${exo.projects.directory.working}/exo-jboss/bin/standalone.bat" tofile="${exo.projects.directory.working}/exo-jboss/bin/standalone-${exo.deploy.profile}.bat" />
-                  <move file="${exo.projects.directory.working}/exo-jboss/bin/standalone.sh" tofile="${exo.projects.directory.working}/exo-jboss/bin/standalone-${exo.deploy.profile}.sh" />
                </target>
             </configuration>
          </plugin>
       </plugins>
-   </build>
+     </build>
     </profile>
-   </profiles>
+  </profiles>
 </project>

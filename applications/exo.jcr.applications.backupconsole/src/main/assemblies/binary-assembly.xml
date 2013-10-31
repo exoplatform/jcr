@@ -40,21 +40,12 @@
          <excludes>
             <exclude>commons-lang:commons-lang</exclude>
             <exclude>xpp3:xpp3</exclude>
-            <exclude>org.exoplatform.tool:exo.tool.framework.junit</exclude>
             <exclude>org.exoplatform.jcr:exo.jcr.applications.backupconsole</exclude>            
-            <exclude>javax.portlet:portlet-api</exclude>
-            <exclude>javax.faces:jsf-api</exclude>
-            <exclude>javax.servlet:servlet-api</exclude>
-            <exclude>jmock:jmock</exclude>
-            <exclude>xstream:xstream</exclude>
             <exclude>commons-beanutils:commons-beanutils</exclude>
             <exclude>commons-collections:commons-collections</exclude>
-            <exclude>javax.activation:activation</exclude>
             <exclude>javax.transaction:jta</exclude>
-            <exclude>quartz:quartz</exclude>
             <exclude>javax.mail:mail</exclude>
             <exclude>javax.transaction:jta</exclude>
-            <exclude>stax:stax-api</exclude>
          </excludes>
       </dependencySet>
    </dependencySets>

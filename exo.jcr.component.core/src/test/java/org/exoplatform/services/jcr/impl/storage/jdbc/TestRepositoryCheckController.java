@@ -40,7 +40,6 @@ import org.exoplatform.services.jcr.impl.core.ItemImpl;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.core.query.SystemSearchManager;
@@ -1162,23 +1161,6 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
          queryStatement =
             "DELETE FROM \"" + lockManagerEntry.getParameterValue("infinispan-cl-cache.jdbc.table.name") + "_" + "L"
                + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_") + "\"";
-      }
-      else
-      {
-         sourceName = lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_CL_DATASOURCE);
-
-         if (lockManagerEntry.getParameterBoolean("jbosscache-shareable"))
-         {
-            queryStatement =
-               "DELETE FROM " + lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_TABLE_NAME)
-                  + " WHERE PARENT='/" + workspaceEntry.getUniqueName() + "/" + CacheableLockManagerImpl.LOCKS + "'";
-         }
-         else
-         {
-            queryStatement =
-               "DELETE FROM " + lockManagerEntry.getParameterValue(CacheableLockManagerImpl.JBOSSCACHE_JDBC_TABLE_NAME)
-                  + " WHERE PARENT='/" + CacheableLockManagerImpl.LOCKS + "'";
-         }
       }
 
       Connection conn = ((DataSource)new InitialContext().lookup(sourceName)).getConnection();

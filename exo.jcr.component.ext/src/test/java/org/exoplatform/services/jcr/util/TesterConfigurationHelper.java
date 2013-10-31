@@ -192,21 +192,30 @@ public class TesterConfigurationHelper
 
       // Lock
       LockManagerEntry lockManagerEntry = new LockManagerEntry();
-      lockManagerEntry.setType("org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl");
-      lockManagerEntry.putParameterValue("time-out", "15m");
-      lockManagerEntry.putParameterValue("jbosscache-configuration", "conf/standalone/test-jbosscache-lock.xml");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.name", "jcrlocks");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.create", "true");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.drop", "false");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.primarykey",
-         "jcrlocks_" + IdGenerator.generate());
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.fqn.column", "fqn");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.node.column", "node");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.parent.column", "parent");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.datasource", baseWorkspaceEntry.getContainer()
-         .getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME));
-      lockManagerEntry.putParameterValue("jbosscache-shareable", "${jbosscache-shareable}");
 
+      try
+      {
+         Class.forName("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl");
+
+         lockManagerEntry
+            .setType("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl");
+         lockManagerEntry.putParameterValue("infinispan-configuration", "conf/standalone/test-infinispan-lock.xml");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.table.name", "lk");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.table.create", "true");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.table.drop", "false");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.id.column", "id");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.data.column", "data");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.timestamp.column", "timestamp");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.datasource", baseWorkspaceEntry.getContainer()
+            .getParameterValue(JDBCWorkspaceDataContainer.SOURCE_NAME));
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.connectionFactory",
+            "org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory");
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw e;
+      }
+      
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();
       workspaceEntry.setContainer(containerEntry);
       workspaceEntry.setCache(cacheEntry);
@@ -344,19 +353,27 @@ public class TesterConfigurationHelper
 
       // Lock
       LockManagerEntry lockManagerEntry = new LockManagerEntry();
-      lockManagerEntry.setType("org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl");
-      lockManagerEntry.putParameterValue("time-out", "15m");
-      lockManagerEntry.putParameterValue("jbosscache-configuration", "conf/standalone/test-jbosscache-lock.xml");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.name", "jcrlocks");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.create", "true");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.drop", "false");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.primarykey",
-         "jcrlocks_" + IdGenerator.generate());
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.fqn.column", "fqn");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.node.column", "node");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.parent.column", "parent");
-      lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.datasource", dsName);
-      lockManagerEntry.putParameterValue("jbosscache-shareable", "${jbosscache-shareable}");
+      try
+      {
+         Class.forName("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl");
+
+         lockManagerEntry
+            .setType("org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl");
+         lockManagerEntry.putParameterValue("infinispan-configuration", "conf/standalone/test-infinispan-lock.xml");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.table.name", "lk");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.table.create", "true");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.table.drop", "false");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.id.column", "id");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.data.column", "data");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.timestamp.column", "timestamp");
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.datasource", dsName);
+         lockManagerEntry.putParameterValue("infinispan-cl-cache.jdbc.connectionFactory",
+            "org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory");
+      }
+      catch (ClassNotFoundException e)
+      {
+         throw e;
+      }
 
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();
       workspaceEntry.setLockManager(lockManagerEntry);

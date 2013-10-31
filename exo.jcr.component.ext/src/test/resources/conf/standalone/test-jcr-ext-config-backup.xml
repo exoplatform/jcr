@@ -49,10 +49,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-              <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+               <cache enabled="true"
+                  class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -60,19 +60,18 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db3ws" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
-                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
-                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
-                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
-                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
+                     <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
+                     <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
+                     <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
+                     <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -101,10 +100,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+               <cache enabled="true"
+                  class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -112,19 +111,18 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db3ws1" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
-                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
-                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
-                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
-                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
+                     <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
+                     <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
+                     <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
+                     <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -160,10 +158,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-              <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+               <cache enabled="true"
+                  class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -171,19 +169,18 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db4ws" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
-                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
-                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
-                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
-                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr2" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
+                     <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
+                     <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
+                     <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
+                     <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr2" />
+                     <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -212,10 +209,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-              <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+               <cache enabled="true"
+                  class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -223,24 +220,23 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db4ws1" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
-                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
-                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
-                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
-                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr2" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
+                     <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
+                     <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
+                     <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
+                     <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr2" />
+                     <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>
             </workspace>
          </workspaces>
-      </repository>    
+      </repository>
 
       <repository name="db8" system-workspace="ws" default-workspace="ws">
          <security-domain>exo-domain</security-domain>
@@ -271,10 +267,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+               <cache enabled="true"
+                  class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -282,19 +278,18 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db8ws" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
-                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
-                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
-                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
-                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr3" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
+                     <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
+                     <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
+                     <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
+                     <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr3" />
+                     <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>
             </workspace>
@@ -323,10 +318,10 @@
                      <property name="root-nodetype" value="nt:unstructured" />
                   </properties>
                </initializer>
-               <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache">
+               <cache enabled="true"
+                  class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
                   <properties>
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-config.xml" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
                   </properties>
                </cache>
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
@@ -334,23 +329,22 @@
                      <property name="index-dir" value="target/temp/jcrlucenedb/db8ws1" />
                   </properties>
                </query-handler>
-               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl">
+               <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
                   <properties>
                      <property name="time-out" value="15m" />
-                     <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-lock.xml" />
-                     <property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" />
-                     <property name="jbosscache-cl-cache.jdbc.table.create" value="true" />
-                     <property name="jbosscache-cl-cache.jdbc.table.drop" value="false" />
-                     <property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" />
-                     <property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" />
-                     <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
-                     <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
-                     <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr4" />
-                     <property name="jbosscache-shareable" value="true" />
+                     <property name="infinispan-configuration" value="conf/standalone/test-infinispan-lock.xml" />
+                     <property name="infinispan-cl-cache.jdbc.table.name" value="lk" />
+                     <property name="infinispan-cl-cache.jdbc.table.create" value="true" />
+                     <property name="infinispan-cl-cache.jdbc.table.drop" value="false" />
+                     <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
+                     <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
+                     <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
+                     <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr4" />
+                     <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>
             </workspace>
          </workspaces>
-      </repository>    
+      </repository>
    </repositories>
 </repository-service>
