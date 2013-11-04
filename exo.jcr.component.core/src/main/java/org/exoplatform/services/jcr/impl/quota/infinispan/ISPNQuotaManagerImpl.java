@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.impl.quota.BaseQuotaManager;
 import org.exoplatform.services.jcr.impl.quota.QuotaManagerException;
 import org.exoplatform.services.jcr.impl.quota.QuotaPersister;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
+import org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.rpc.RPCService;
 
@@ -95,8 +96,7 @@ public class ISPNQuotaManagerImpl extends BaseQuotaManager
 
    public static final String DEFAULT_INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN = "timestamp";
 
-   public static final String DEFAULT_INFINISPAN_JDBC_CL_CONNECTION_FACTORY =
-      "org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory";
+   public static final String DEFAULT_INFINISPAN_JDBC_CL_CONNECTION_FACTORY = ManagedConnectionFactory.class.getName();
 
    /**
     * ISPNQuotaManager constructor.

@@ -142,18 +142,7 @@ public class ManagedConnectionFactory extends ConnectionFactory
 
    public void prepare(GlobalTransaction tx) throws CacheLoaderException
    {
-      Connection con = getConnection();
-      try
-      {
-         if (con.getAutoCommit())
-         {
-            con.setAutoCommit(false);
-         }
-      }
-      catch (Exception e)
-      {
-         reportAndRethrowError("Failed to set auto-commit", e);
-      }
+      Connection con = getConnection(false);
 
       /* Connection set in ThreadLocal, no reason to return. It was previously returned for legacy purpouses
       and to trace log the connection opening in JDBC Cache Store. */
@@ -169,11 +158,27 @@ public class ManagedConnectionFactory extends ConnectionFactory
    @Override
    public Connection getConnection() throws CacheLoaderException
    {
+      return getConnection(true);
+   }
+
+   private Connection getConnection(boolean autoCommit) throws CacheLoaderException
+   {
       Connection con = connection.get();
 
       if (con == null)
       {
          con = checkoutConnection();
+         try
+         {
+            if (con.getAutoCommit() != autoCommit)
+            {
+               con.setAutoCommit(autoCommit);
+            }
+         }
+         catch (Exception e)
+         {
+            reportAndRethrowError("Failed to set auto-commit to " + autoCommit, e);
+         }
       }
 
       if (trace)
