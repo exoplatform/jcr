@@ -28,7 +28,7 @@
     <mediaobject>
       <imageobject>
         <imagedata align="center"
-                   fileref="images/diagram-standalone-index.png"/>
+                   fileref="images/diagram-standalone-index.png" />
       </imageobject>
     </mediaobject>
 
@@ -44,7 +44,7 @@
 
     <mediaobject>
       <imageobject>
-        <imagedata align="center" fileref="images/diagram-local-index.png"/>
+        <imagedata align="center" fileref="images/diagram-local-index.png" />
       </imageobject>
     </mediaobject>
 
@@ -67,7 +67,7 @@
 
     <mediaobject>
       <imageobject>
-        <imagedata align="center" fileref="images/diagram-shared-index.png"/>
+        <imagedata align="center" fileref="images/diagram-shared-index.png" />
       </imageobject>
     </mediaobject>
 
@@ -92,7 +92,7 @@
 
     <mediaobject>
       <imageobject>
-        <imagedata align="center" fileref="images/diagram-rsync-index.png"/>
+        <imagedata align="center" fileref="images/diagram-rsync-index.png" />
       </imageobject>
     </mediaobject>
 
@@ -121,11 +121,10 @@
       &lt;properties&gt;
          &lt;property name="index-dir" value="shareddir/index/db1/ws" /&gt;
          &lt;property name="changesfilter-class"
-            value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" /&gt;
-         &lt;property name="jbosscache-configuration" value="jbosscache-indexer.xml" /&gt;
+            value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" /&gt;
+         &lt;property name="infinispan-configuration" value="infinispan-indexer.xml" /&gt;
          &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-         &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
-         &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-ws" /&gt;
+         &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
          &lt;property name="max-volatile-time" value="60" /&gt;
          &lt;property name="rdbms-reindexing" value="true" /&gt;
          &lt;property name="reindexing-page-size" value="1000" /&gt;
@@ -165,46 +164,32 @@
               This must be set in cluster environment to define the clustering
               strategy to adopt. To use the Shared Indexes Strategy, you can
               set it to
-              org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter.
+              org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter.
               I you prefer the Local Indexes Strategy, you can set it to
-              org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter.</entry>
+              org.exoplatform.services.jcr.impl.core.query.ispn.LocalIndexChangesFilter.</entry>
             </row>
 
             <row>
-              <entry>jbosscache-configuration</entry>
+              <entry>infinispan-configuration</entry>
 
-              <entry>template of JBoss-cache configuration for all
-               query-handlers in repository (search, cache, locks)</entry>
+              <entry>template of Infinispan configuration for all
+              query-handlers in repository (search, cache, locks)</entry>
             </row>
 
             <row>
               <entry>jgroups-configuration</entry>
 
-                <entry>This is the path to JGroups configuration that should not
-                 be anymore jgroups' stack definitions but a normal jgroups
-                 configuration format with the shared transport configured by
-                 simply setting the jgroups property singleton_name to a unique
-                 name (it must remain unique from one portal container to
-                 another). This file is also pre-bundled with templates and is
-                 recommended for use.</entry>
+              <entry>This is the path to JGroups configuration that should not
+              be anymore jgroups' stack definitions but a normal jgroups
+              configuration format with the shared transport configured by
+              simply setting the jgroups property singleton_name to a unique
+              name (it must remain unique from one portal container to
+              another). This file is also pre-bundled with templates and is
+              recommended for use.</entry>
             </row>
 
             <row>
-              <entry>jgroups-multiplexer-stack</entry>
-
-               <entry>if set to true, it will indicate that the file
-               corresponding to the parameter jgroups-configuration is a
-               actually a file defining a set of jgroups multiplexer stacks. In
-               the XML tag jgroupsConfig within the jboss cache configuration,
-               you will then be able to set the name of the multiplexer stack
-               to use thanks to the attribute multiplexerStack. Please note
-               that the jgroups multiplexer has been deprecated by the jgroups
-               Team and has been replaced by the shared transport so it is
-               highly recommended to not use it anymore.</entry>
-            </row>
-
-            <row>
-              <entry>jbosscache-cluster-name</entry>
+              <entry>infinispan-cluster-name</entry>
 
               <entry>cluster name (must be unique)</entry>
             </row>
@@ -218,8 +203,8 @@
             <row>
               <entry>rdbms-reindexing</entry>
 
-              <entry>Indicates whether the rdbms re-indexing mechanism must
-                 be used, the default value is true.</entry>
+              <entry>Indicates whether the rdbms re-indexing mechanism must be
+              used, the default value is true.</entry>
             </row>
 
             <row>
@@ -265,8 +250,8 @@
             <row>
               <entry>max-volatile-size</entry>
 
-              <entry>The maximum volatile index size in bytes until it is written to disk.
-                 The default value is 1048576 (1MB).</entry>
+              <entry>The maximum volatile index size in bytes until it is
+              written to disk. The default value is 1048576 (1MB).</entry>
             </row>
           </tbody>
         </tgroup>
@@ -295,7 +280,7 @@
 
       <para>When running JCR in standalone usually standalone indexing is used
       also. Such parameters as "changesfilter-class", "jgroups-configuration"
-      and all the "jbosscache-*" must be skipped and not defined. Like the
+      and all the "infinispan-*" must be skipped and not defined. Like the
       configuration below.</para>
 
       <programlisting language="xml">&lt;workspace name="ws"&gt;
@@ -317,23 +302,22 @@
       <section id="JCR.QueryHandlerConfiguration.Configuration.Cluster-readyIndexingStrategies.SharedIndex">
         <title>Shared Index</title>
 
-        <para>For both cluster-ready implementations JBoss Cache, JGroups and
+        <para>For both cluster-ready implementations Infinispan, JGroups and
         Changes Filter values must be defined. Shared index requires some kind
         of remote or shared file system to be attached in a system (i.e. NFS,
         SMB or etc). Indexing directory ("indexDir" value) must point to it.
         Setting "changesfilter-class" to
-        "org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"
+        "org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter"
         will enable shared index implementation.</para>
 
         <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
    &lt;properties&gt;
       &lt;property name="index-dir" value="/mnt/nfs_drive/index/db1/ws" /&gt;
       &lt;property name="changesfilter-class"
-         value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" /&gt;
-      &lt;property name="jbosscache-configuration" value="jbosscache-indexer.xml" /&gt;
+         value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" /&gt;
+      &lt;property name="infinispan-configuration" value="infinispan-indexer.xml" /&gt;
       &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-ws" /&gt;
+      &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
       &lt;property name="max-volatile-time" value="60" /&gt;
       &lt;property name="rdbms-reindexing" value="true" /&gt;
       &lt;property name="reindexing-page-size" value="1000" /&gt;
@@ -377,12 +361,10 @@
    &lt;properties&gt;
       &lt;property name="index-dir" value="/var/data/index/repository1/production" /&gt;
       &lt;property name="changesfilter-class"
-         value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" /&gt;
-      &lt;property name="jbosscache-configuration" value="jar:/conf/portal/cluster/jbosscache-indexer.xml" /&gt;
+         value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" /&gt;
+      &lt;property name="infinispan-configuration" value="jar:/conf/portal/cluster/infinispan-indexer.xml" /&gt;
       &lt;property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" /&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer" /&gt;
-      &lt;property name="jbosscache-shareable" value="true" /&gt;
+      &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
       &lt;property name="max-volatile-time" value="60" /&gt; 
       &lt;property name="rsync-entry-name" value="index" /&gt;
       &lt;property name="rsync-entry-path" value="/var/data/index" /&gt;
@@ -430,17 +412,16 @@ pid file = rsyncd.pid
         following configuration must be applied. Indexing directory must point
         to any folder on local file system and "changesfilter-class" must be
         set to
-        "org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter".</para>
+        "org.exoplatform.services.jcr.impl.core.query.ispn.LocalIndexChangesFilter".</para>
 
         <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
    &lt;properties&gt;
       &lt;property name="index-dir" value="/mnt/nfs_drive/index/db1/ws" /&gt;
       &lt;property name="changesfilter-class"
-         value="org.exoplatform.services.jcr.impl.core.query.jbosscache.LocalIndexChangesFilter" /&gt;
-      &lt;property name="jbosscache-configuration" value="jbosscache-indexer.xml" /&gt;
+         value="org.exoplatform.services.jcr.impl.core.query.ispn.LocalIndexChangesFilter" /&gt;
+      &lt;property name="infinispan-configuration" value="infinispan-indexer.xml" /&gt;
       &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer-ws" /&gt;
+      &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
       &lt;property name="max-volatile-time" value="60" /&gt;
       &lt;property name="rdbms-reindexing" value="true" /&gt;
       &lt;property name="reindexing-page-size" value="1000" /&gt;
@@ -533,30 +514,57 @@ pid file = rsyncd.pid
       </section>
     </section>
 
-    <section id="JCR.QueryHandlerConfiguration.Configuration.JBoss-CacheTemplateConfiguration">
-      <title>JBoss-Cache template configuration</title>
+    <section id="JCR.QueryHandlerConfiguration.Configuration.ISPNTemplateConfiguration">
+      <title>Infinispan template configuration</title>
 
-      <para>JBoss-Cache template configuration for query handler is about the
+      <para>Infinispan template configuration for query handler is about the
       same for both clustered strategies.</para>
 
-      <para>jbosscache-indexer.xml</para>
+      <para>infinispan-indexer.xml</para>
 
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
+&lt;infinispan
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+      xsi:schemaLocation="urn:infinispan:config:5.2 http://www.infinispan.org/schemas/infinispan-config-5.2.xsd"
+      xmlns="urn:infinispan:config:5.2"&gt;
 
-   &lt;locking useLockStriping="false" concurrencyLevel="50000" lockParentForChildInsertRemove="false"
-      lockAcquisitionTimeout="20000" /&gt;
-   &lt;!-- Configure the TransactionManager --&gt;
-   &lt;transaction transactionManagerLookupClass="org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup" /&gt;
+    &lt;global&gt;
+      &lt;evictionScheduledExecutor factory="org.infinispan.executors.DefaultScheduledExecutorFactory"&gt;
+        &lt;properties&gt;
+          &lt;property name="threadNamePrefix" value="EvictionThread"/&gt;
+        &lt;/properties&gt;
+      &lt;/evictionScheduledExecutor&gt;
 
-   &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
-      &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
-      &lt;sync /&gt;
-   &lt;/clustering&gt;
-&lt;/jbosscache&gt;</programlisting>
+      &lt;globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/&gt;
+
+      &lt;transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="${infinispan-cluster-name}" distributedSyncTimeout="20000"&gt;
+        &lt;properties&gt;
+          &lt;property name="configurationFile" value="${jgroups-configuration}"/&gt;
+        &lt;/properties&gt;
+      &lt;/transport&gt;
+    &lt;/global&gt;
+
+    &lt;default&gt;
+      &lt;clustering mode="replication"&gt;
+        &lt;stateTransfer timeout="20000" fetchInMemoryState="false" /&gt;
+        &lt;sync replTimeout="20000"/&gt;
+      &lt;/clustering&gt;
+
+      &lt;locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="false"/&gt;
+      &lt;transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" transactionMode="TRANSACTIONAL"/&gt;
+      &lt;jmxStatistics enabled="true"/&gt;
+      &lt;eviction strategy="NONE"/&gt;
+
+      &lt;loaders passivation="false" shared="false" preload="false"&gt;
+        &lt;store class="${infinispan-cachestore-classname}" fetchPersistentState="true" ignoreModifications="false" purgeOnStartup="false"&gt;
+          &lt;async enabled="false"/&gt;
+        &lt;/store&gt;
+      &lt;/loaders&gt;
+   &lt;/default&gt;
+&lt;/infinispan&gt;</programlisting>
 
       <para>See more about template configurations <link
-      linkend="JCR.JBossCacheConfigurationTemplates">here</link>.</para>
+      linkend="JCR.ISPNConfigurationTemplates">here</link>.</para>
     </section>
   </section>
 
@@ -624,7 +632,7 @@ pid file = rsyncd.pid
       blocking whole application by using any JMX-compatible console (see
       screenshot below, "JConsole in action").<mediaobject>
           <imageobject>
-            <imagedata align="center" fileref="images/jmx-jconsole.png"/>
+            <imagedata align="center" fileref="images/jmx-jconsole.png" />
           </imageobject>
         </mediaobject>Server can continue working as expected while index is
       recreated. This depends on the flag "allow queries", passed via JMX
@@ -718,7 +726,7 @@ pid file = rsyncd.pid
 
       <mediaobject>
         <imageobject>
-          <imagedata fileref="images/search-manager-optimize.png"/>
+          <imagedata fileref="images/search-manager-optimize.png" />
         </imageobject>
       </mediaobject>
     </section>

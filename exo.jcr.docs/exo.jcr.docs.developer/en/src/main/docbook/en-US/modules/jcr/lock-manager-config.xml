@@ -17,16 +17,16 @@
 
   <itemizedlist>
     <listitem>
-      <para><classname>org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl</classname></para>
+      <para><classname>oorg.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl</classname></para>
     </listitem>
   </itemizedlist>
 
   <section id="JCR.LockManagerConfiguration.CacheableLockManagerImpl">
     <title>CacheableLockManagerImpl</title>
 
-    <para>CacheableLockManagerImpl stores Lock objects in JBoss-cache, so
+    <para>ISPNCacheableLockManagerImpl stores Lock objects in Infinispan, so
     Locks are replicable and affect on cluster, not only a single node. Also,
-    JBoss-cache has JDBCCacheLoader, so Locks will be stored to the
+    Infinispan has a JdbcStringBasedCacheStore, so Locks will be stored to the
     database.</para>
 
     <para>You can enable LockManager by adding lock-manager-configuration to
@@ -36,7 +36,7 @@
 
     <programlisting language="xml">&lt;workspace name="ws"&gt;
    ...
-   &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+   &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl"&gt;
       &lt;properties&gt;
          &lt;property name="time-out" value="15m" /&gt;
          ...
@@ -52,90 +52,105 @@
     <section id="JCR.LockManagerConfiguration.CacheableLockManagerImpl.Configuration">
       <title>Configuration</title>
 
-      <para>The configuration uses the template JBoss-cache configuration for
+      <para>The configuration uses the template Infinispan configuration for
       all LockManagers.</para>
 
       <para><citetitle>Lock template configuration</citetitle></para>
 
-      <para><filename>test-jbosscache-lock.xml</filename></para>
+      <para><filename>test-infinispan-lock.xml</filename></para>
 
       <programlisting language="xml">&lt;?xml version="1.0" encoding="UTF-8"?&gt;
-&lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
+&lt;infinispan
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+      xsi:schemaLocation="urn:infinispan:config:5.2 http://www.infinispan.org/schemas/infinispan-config-5.2.xsd"
+      xmlns="urn:infinispan:config:5.2"&gt;
 
-   &lt;locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
-      lockAcquisitionTimeout="20000" /&gt;
+    &lt;global&gt;
+      &lt;evictionScheduledExecutor factory="org.infinispan.executors.DefaultScheduledExecutorFactory"&gt;
+        &lt;properties&gt;
+          &lt;property name="threadNamePrefix" value="EvictionThread"/&gt;
+        &lt;/properties&gt;
+      &lt;/evictionScheduledExecutor&gt;
 
-   &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
-      &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
-      &lt;sync /&gt;
-   &lt;/clustering&gt;
+      &lt;globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/&gt;
 
-   &lt;loaders passivation="false" shared="true"&gt;
-      &lt;!-- All the data of the JCR locks needs to be loaded at startup --&gt;
-      &lt;preload&gt;
-         &lt;node fqn="/" /&gt;
-      &lt;/preload&gt;  
-      &lt;!--
-      For another cache-loader class you should use another template with
-      cache-loader specific parameters
-      -&gt;
-      &lt;loader class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader" async="false" fetchPersistentState="false"
-         ignoreModifications="false" purgeOnStartup="false"&gt;
-         &lt;properties&gt;
-            cache.jdbc.table.name=${jbosscache-cl-cache.jdbc.table.name}
-            cache.jdbc.table.create=${jbosscache-cl-cache.jdbc.table.create}
-            cache.jdbc.table.drop=${jbosscache-cl-cache.jdbc.table.drop}
-            cache.jdbc.table.primarykey=${jbosscache-cl-cache.jdbc.table.primarykey}
-            cache.jdbc.fqn.column=${jbosscache-cl-cache.jdbc.fqn.column}
-            cache.jdbc.fqn.type=${jbosscache-cl-cache.jdbc.fqn.type}
-            cache.jdbc.node.column=${jbosscache-cl-cache.jdbc.node.column}
-            cache.jdbc.node.type=${jbosscache-cl-cache.jdbc.node.type}
-            cache.jdbc.parent.column=${jbosscache-cl-cache.jdbc.parent.column}
-            cache.jdbc.datasource=${jbosscache-cl-cache.jdbc.datasource}
-         &lt;/properties&gt;
-      &lt;/loader&gt;
-   &lt;/loaders&gt;
-&lt;/jbosscache&gt;</programlisting>
+      &lt;transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="${infinispan-cluster-name}" distributedSyncTimeout="20000"&gt;
+        &lt;properties&gt;
+          &lt;property name="configurationFile" value="${jgroups-configuration}"/&gt;
+        &lt;/properties&gt;
+      &lt;/transport&gt;
+    &lt;/global&gt;
+
+    &lt;default&gt;
+      &lt;clustering mode="replication"&gt;
+        &lt;stateTransfer timeout="20000" fetchInMemoryState="false" /&gt;
+        &lt;sync replTimeout="20000"/&gt;
+      &lt;/clustering&gt;
+
+      &lt;locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="false"/&gt;
+      &lt;transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true"/&gt;
+      &lt;jmxStatistics enabled="true"/&gt;
+      &lt;eviction strategy="NONE"/&gt;
+
+      &lt;loaders passivation="false" shared="true" preload="true"&gt;
+        &lt;store class="org.exoplatform.services.jcr.infinispan.JdbcStringBasedCacheStore" fetchPersistentState="true" ignoreModifications="false" purgeOnStartup="false"&gt;
+          &lt;properties&gt;
+             &lt;property name="stringsTableNamePrefix" value="${infinispan-cl-cache.jdbc.table.name}"/&gt;
+             &lt;property name="idColumnName" value="${infinispan-cl-cache.jdbc.id.column}"/&gt;
+             &lt;property name="dataColumnName" value="${infinispan-cl-cache.jdbc.data.column}"/&gt;
+             &lt;property name="timestampColumnName" value="${infinispan-cl-cache.jdbc.timestamp.column}"/&gt;
+             &lt;property name="idColumnType" value="${infinispan-cl-cache.jdbc.id.type}"/&gt;
+             &lt;property name="dataColumnType" value="${infinispan-cl-cache.jdbc.data.type}"/&gt;
+             &lt;property name="timestampColumnType" value="${infinispan-cl-cache.jdbc.timestamp.type}"/&gt;
+             &lt;property name="dropTableOnExit" value="${infinispan-cl-cache.jdbc.table.drop}"/&gt;
+             &lt;property name="createTableOnStart" value="${infinispan-cl-cache.jdbc.table.create}"/&gt;
+             &lt;property name="connectionFactoryClass" value="${infinispan-cl-cache.jdbc.connectionFactory}"/&gt;
+             &lt;property name="datasourceJndiLocation" value="${infinispan-cl-cache.jdbc.datasource}"/&gt;
+          &lt;/properties&gt;
+          &lt;async enabled="false"/&gt;
+        &lt;/store&gt;
+      &lt;/loaders&gt;
+   &lt;/default&gt;
+
+&lt;/infinispan&gt;</programlisting>
 
       <note>
         <para>To prevent any consistency issue regarding the lock data +
         please ensure that your cache loader is
-        <emphasis>org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader</emphasis>
+        <emphasis>org.exoplatform.services.jcr.infinispan.JdbcStringBasedCacheStore</emphasis>
         and that your database engine is transactional.</para>
       </note>
 
       <para>As you see, all configurable parameters are filled by templates
       and will be replaced by LockManagers configuration parameters:</para>
 
-      <programlisting language="xml">&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+      <programlisting language="xml">&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl"&gt;
    &lt;properties&gt;
       &lt;property name="time-out" value="15m" /&gt;
-      &lt;property name="jbosscache-configuration" value="test-jbosscache-lock.xml" /&gt;
+      &lt;property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" /&gt;
       &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="true" /&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-locks-ws" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks_ws" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_ws_pk" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.fqn.type" value="AUTO"/&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.node.type" value="AUTO"/&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
-      &lt;property name="jbosscache-shareable" value="true" /&gt;
+      &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.table.name" value="lk" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.table.create" value="true" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.table.drop" value="false" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.id.column" value="id" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.data.column" value="data" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" /&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>
 
       <para>Configuration requirements:<itemizedlist>
           <listitem>
-            <para><parameter>jbosscache-cl-cache.jdbc.fqn.column</parameter>
-            and <parameter>jbosscache-cl-cache.jdbc.node.type</parameter> is
-            the same as cache.jdbc.fqn.type and cache.jdbc.node.type in
-            JBoss-Cache configuration. You can set those data types according
-            to your database type or set it as AUTO (or do not set at all) and
-            data type will be detected automatically.</para>
+            <para>infinispan-cl-cache.jdbc.id.type,
+            infinispan-cl-cache.jdbc.data.type and
+            infinispan-cl-cache.jdbc.timestamp.type are injected in the
+            Infinispan configuration into the property respectively
+            idColumnType, dataColumnType and timestampColumnType. You can set
+            those data types according to your database type or set it as AUTO
+            (or do not set at all) and data type will be detected
+            automatically.</para>
           </listitem>
 
           <listitem>
@@ -187,32 +202,80 @@
          oob_thread_pool.queue_max_size="100" 
          oob_thread_pool.rejection_policy="Run" /&gt;
 
+    &lt;PING timeout="2000"&lt;config xmlns="urn:org:jgroups"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/JGroups-3.2.xsd"&gt;
+    &lt;UDP
+         singleton_name="JCR-cluster" 
+         mcast_port="${jgroups.udp.mcast_port:45588}"
+         tos="8"
+         ucast_recv_buf_size="20M"
+         ucast_send_buf_size="640K"
+         mcast_recv_buf_size="25M"
+         mcast_send_buf_size="640K"
+         loopback="true"
+         max_bundle_size="64K"
+         max_bundle_timeout="30"
+         ip_ttl="${jgroups.udp.ip_ttl:8}"
+         enable_bundling="true"
+         enable_diagnostics="true"
+         thread_naming_pattern="cl"
+
+         timer_type="old"
+         timer.min_threads="4"
+         timer.max_threads="10"
+         timer.keep_alive_time="3000"
+         timer.queue_max_size="500"
+
+         thread_pool.enabled="true"
+         thread_pool.min_threads="2"
+         thread_pool.max_threads="8"
+         thread_pool.keep_alive_time="5000"
+         thread_pool.queue_enabled="true"
+         thread_pool.queue_max_size="10000"
+         thread_pool.rejection_policy="discard"
+
+         oob_thread_pool.enabled="true"
+         oob_thread_pool.min_threads="1"
+         oob_thread_pool.max_threads="8"
+         oob_thread_pool.keep_alive_time="5000"
+         oob_thread_pool.queue_enabled="false"
+         oob_thread_pool.queue_max_size="100"
+         oob_thread_pool.rejection_policy="Run"/&gt;
+
     &lt;PING timeout="2000"
-            num_initial_members="3"/&gt;
+            num_initial_members="20"/&gt;
     &lt;MERGE2 max_interval="30000"
             min_interval="10000"/&gt;
-   &lt;FD_SOCK /&gt;
-   &lt;FD timeout="10000" max_tries="5" shun="true" /&gt;
-   &lt;VERIFY_SUSPECT timeout="1500" /&gt;
-   &lt;BARRIER /&gt;
-    &lt;pbcast.NAKACK use_stats_for_retransmission="false"
-                   exponential_backoff="150"
-                   use_mcast_xmit="true" gc_lag="0"
-                   retransmit_timeout="50,300,600,1200"
-                   discard_delivered_msgs="true"/&gt;
-   &lt;UNICAST timeout="300,600,1200" /&gt;
+    &lt;FD_SOCK/&gt;
+    &lt;FD_ALL/&gt;
+    &lt;VERIFY_SUSPECT timeout="1500"  /&gt;
+    &lt;BARRIER /&gt;
+    &lt;pbcast.NAKACK2 xmit_interval="1000"
+                    xmit_table_num_rows="100"
+                    xmit_table_msgs_per_row="2000"
+                    xmit_table_max_compaction_time="30000"
+                    max_msg_batch_size="500"
+                    use_mcast_xmit="false"
+                    discard_delivered_msgs="true"/&gt;
+    &lt;UNICAST  xmit_interval="2000"
+              xmit_table_num_rows="100"
+              xmit_table_msgs_per_row="2000"
+              xmit_table_max_compaction_time="60000"
+              conn_expiry_timeout="60000"
+              max_msg_batch_size="500"/&gt;
     &lt;pbcast.STABLE stability_delay="1000" desired_avg_gossip="50000"
-                   max_bytes="1000000"/&gt;
-   &lt;VIEW_SYNC avg_send_interval="60000" /&gt;
+                   max_bytes="4M"/&gt;
     &lt;pbcast.GMS print_local_addr="true" join_timeout="3000"
-                shun="false"
                 view_bundling="true"/&gt;
-    &lt;FC max_credits="500000"
-                    min_threshold="0.20"/&gt;
-   &lt;FRAG2 frag_size="60000" /&gt;
-   &lt;!--pbcast.STREAMING_STATE_TRANSFER /--&gt;
-   &lt;pbcast.STATE_TRANSFER /&gt;
-   &lt;pbcast.FLUSH /&gt;
+    &lt;UFC max_credits="2M"
+         min_threshold="0.4"/&gt;
+    &lt;MFC max_credits="2M"
+         min_threshold="0.4"/&gt;
+    &lt;FRAG2 frag_size="60K"  /&gt;
+    &lt;RSVP resend_interval="2000" timeout="10000"/&gt;
+    &lt;pbcast.STATE_TRANSFER /&gt;
+    &lt;!-- pbcast.FLUSH  /--&gt;
 &lt;/config&gt;</programlisting>
     </section>
 
@@ -220,16 +283,18 @@
       <title id="datatypes.title">Data Types in Different Databases</title>
 
       <table>
-        <title>FQN type and node type in different databases</title>
+        <title>Data, id and timestamp type in different databases</title>
 
-        <tgroup cols="3">
+        <tgroup cols="4">
           <thead>
             <row>
               <entry>DataBase name</entry>
 
-              <entry>Node data type</entry>
+              <entry>Data type</entry>
 
-              <entry>FQN data type</entry>
+              <entry>Id type</entry>
+
+              <entry>Timestamp type</entry>
             </row>
           </thead>
 
@@ -240,14 +305,18 @@
               <entry>BLOB</entry>
 
               <entry>VARCHAR(512)</entry>
+
+              <entry>BIGINT</entry>
             </row>
 
             <row>
               <entry>HSSQL</entry>
 
-              <entry>OBJECT</entry>
+              <entry>VARBINARY(65535)</entry>
 
               <entry>VARCHAR(512)</entry>
+
+              <entry>BIGINT</entry>
             </row>
 
             <row>
@@ -256,6 +325,8 @@
               <entry>LONGBLOB</entry>
 
               <entry>VARCHAR(512)</entry>
+
+              <entry>BIGINT</entry>
             </row>
 
             <row>
@@ -264,6 +335,8 @@
               <entry>BLOB</entry>
 
               <entry>VARCHAR2(512)</entry>
+
+              <entry>NUMBER(19, 0)</entry>
             </row>
 
             <row>
@@ -272,6 +345,8 @@
               <entry>bytea</entry>
 
               <entry>VARCHAR(512)</entry>
+
+              <entry>BIGINT</entry>
             </row>
 
             <row>
@@ -280,6 +355,8 @@
               <entry>VARBINARY(MAX)</entry>
 
               <entry>VARCHAR(512)</entry>
+
+              <entry>BIGINT</entry>
             </row>
 
             <row>
@@ -288,6 +365,8 @@
               <entry>BLOB</entry>
 
               <entry>VARCHAR(512)</entry>
+
+              <entry>BIGINT</entry>
             </row>
 
             <row>
@@ -296,6 +375,8 @@
               <entry>IMAGE</entry>
 
               <entry>VARCHAR(512)</entry>
+
+              <entry>BIGINT</entry>
             </row>
 
             <row>
@@ -304,6 +385,8 @@
               <entry>long byte</entry>
 
               <entry>VARCHAR(512)</entry>
+
+              <entry>BIGINT</entry>
             </row>
           </tbody>
         </tgroup>

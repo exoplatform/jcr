@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
-<section id = "JCR.TransactionManagerLookup">
+<section id="JCR.TransactionManagerLookup">
   <title>TransactionManagerLookup</title>
 
-    <para>JBossCache class is registered as an eXo container component in the
-    <emphasis>configuration.xml</emphasis> file. </para>
+  <para>The TransactionManagerLookup of Infinispan can be registered as an eXo
+  container component in the <emphasis>configuration.xml</emphasis> file as
+  next:</para>
 
-    <programlisting language="xml">  &lt;component&gt;
-     &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
-     &lt;type&gt;org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup&lt;/type&gt;
-  &lt;/component&gt;</programlisting>
-
-    <para><emphasis>JBossStandaloneJTAManagerLookup</emphasis> is used in a standalone environment, but
-    <emphasis>GenericTransactionManagerLookup</emphasis> is used in the Application Server environment.
-    </para>
+  <programlisting language="xml">&lt;component&gt;
+   &lt;key&gt;org.infinispan.transaction.lookup.TransactionManagerLookup&lt;/key&gt;
+   &lt;type&gt;org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup&lt;/type&gt;
+&lt;/component&gt;</programlisting>
 </section>

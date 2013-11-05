@@ -10,8 +10,8 @@
     in order to save the changes of the repository configuration. See the
     <link
     linkend="JCR.eXoJCRconfiguration.PortalAndStandaloneConfiguration">eXo JCR
-    Configuration article at the 'Portal and Standalone
-    configuration'</link> section.</para>
+    Configuration article at the 'Portal and Standalone configuration'</link>
+    section.</para>
   </warning>
 
   <highlights>
@@ -23,14 +23,13 @@
     requests.</para>
   </highlights>
 
-    <para>The service
-    org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgent is
-    REST-based front-end to service
-    org.exoplatform.services.jcr.ext.backup.BackupManager. HTTPBackupAgent is
-    representation BackupManager to creation backup, restore, getting status
-    of current or completed backup/restore, etc.</para>
+  <para>The service
+  org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgent is REST-based
+  front-end to service org.exoplatform.services.jcr.ext.backup.BackupManager.
+  HTTPBackupAgent is representation BackupManager to creation backup, restore,
+  getting status of current or completed backup/restore, etc.</para>
 
-    <para>The backup client is http client for HTTPBackupAgent.</para>
+  <para>The backup client is http client for HTTPBackupAgent.</para>
 
   <section id="JCR.BackupClient.HTTPBackupAgent">
     <title>HTTPBackupAgent</title>
@@ -1603,19 +1602,18 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
               &lt;property name="index-dir" value="../temp/jcrlucenedb/backup" /&gt;
             &lt;/properties&gt;
           &lt;/query-handler&gt;
-          &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+          &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl"&gt;
              &lt;properties&gt;
                 &lt;property name="time-out" value="15m" /&gt;
-                &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
-                &lt;property name="jbosscache-shareable" value="true" /&gt;
+                &lt;property name="infinispan-configuration" value="infinispan-lock.xml" /&gt;
+                &lt;property name="infinispan-cl-cache.jdbc.table.name" value="lk" /&gt;
+                &lt;property name="infinispan-cl-cache.jdbc.table.create" value="true" /&gt;
+                &lt;property name="infinispan-cl-cache.jdbc.table.drop" value="false" /&gt;
+                &lt;property name="infinispan-cl-cache.jdbc.id.column" value="id" /&gt;
+                &lt;property name="infinispan-cl-cache.jdbc.data.column" value="data" /&gt;
+                &lt;property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" /&gt;
+                &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                &lt;property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" /&gt;
              &lt;/properties&gt;
           &lt;/lock-manager&gt;
         &lt;/workspace&gt;
@@ -1789,19 +1787,18 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                      &lt;property name="index-dir" value="../temp/jcrlucenedb/production" /&gt;
                   &lt;/properties&gt;
                &lt;/query-handler&gt;
-               &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+               &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl"&gt;
                   &lt;properties&gt;
                      &lt;property name="time-out" value="15m" /&gt;
-                     &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
-                     &lt;property name="jbosscache-shareable" value="true" /&gt;
+                     &lt;property name="infinispan-configuration" value="infinispan-lock.xml" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.table.name" value="lk" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.table.create" value="true" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.table.drop" value="false" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.id.column" value="id" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.data.column" value="data" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" /&gt;
                   &lt;/properties&gt;
                &lt;/lock-manager&gt;
             &lt;/workspace&gt;
@@ -1841,19 +1838,18 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                      &lt;property name="index-dir" value="../temp/jcrlucenedb/backup" /&gt;
                   &lt;/properties&gt;
                &lt;/query-handler&gt;
-                &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+               &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl"&gt;
                   &lt;properties&gt;
                      &lt;property name="time-out" value="15m" /&gt;
-                     &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
-                     &lt;property name="jbosscache-shareable" value="true" /&gt;
+                     &lt;property name="infinispan-configuration" value="infinispan-lock.xml" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.table.name" value="lk" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.table.create" value="true" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.table.drop" value="false" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.id.column" value="id" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.data.column" value="data" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" /&gt;
                   &lt;/properties&gt;
                &lt;/lock-manager&gt;
             &lt;/workspace&gt;
@@ -1893,19 +1889,18 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                      &lt;property name="index-dir" value="../temp/jcrlucenedb/digital-assets" /&gt;
                   &lt;/properties&gt;
                &lt;/query-handler&gt;
-               &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+               &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl"&gt;
                   &lt;properties&gt;
                      &lt;property name="time-out" value="15m" /&gt;
-                     &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
-                     &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
-                     &lt;property name="jbosscache-shareable" value="true" /&gt;
+                     &lt;property name="infinispan-configuration" value="infinispan-lock.xml" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.table.name" value="lk" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.table.create" value="true" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.table.drop" value="false" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.id.column" value="id" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.data.column" value="data" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                     &lt;property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" /&gt;
                   &lt;/properties&gt;
                &lt;/lock-manager&gt;
             &lt;/workspace&gt;

@@ -52,8 +52,8 @@
         <row>
           <entry><code>checkAll()</code></entry>
 
-          <entry>Inspect the full repository data
-             (database, value storage and search indexes).</entry>
+          <entry>Inspect the full repository data (database, value storage and
+          search indexes).</entry>
         </row>
 
         <row>
@@ -193,9 +193,10 @@
     </tgroup>
   </table>
 
-  <para>All tool activities are stored into a file, which can be found in app directory.
-  The syntax of the name of the file is <filename>report-&lt;repository name&gt;-dd-MMM-yy-HH-mm.txt</filename>.
-  </para>
+  <para>All tool activities are stored into a file, which can be found in app
+  directory. The syntax of the name of the file is
+  <filename>report-&lt;repository
+  name&gt;-dd-MMM-yy-HH-mm.txt</filename>.</para>
 
   <section id="JCR.RepositoryCheckController.RecommendationsOnHowToFixCorruptedJCR">
     <title>Recommendations on how to fix corrupted JCR manually</title>
@@ -570,54 +571,14 @@ delete from JCR_SITEM where ID = '${ID}'</programlisting>
               <para>Then compare it to nodes IDs from the LockManager's
               table.</para>
 
-              <itemizedlist>
-                <listitem>
-                  <para>JBC:<note>
-                      <para>During comparing results, be aware that for single
-                      DB configurations you need to cut off ID prefix
-                      representing workspace name for results obtained from
-                      the JCR_xITEM table.</para>
+              <para><note>
+                  <para>For ISPN lock tables which are defined for each
+                  workspace separately, you must execute queries for all lock
+                  tables to obtain information over repository.</para>
+                </note>To get all set of locked node IDs in repository, you
+              must execute the following query for each workspace.</para>
 
-                      <para>Though a single lock table is usually used for the
-                      whole repository, it is possible to configure separate
-                      DB lock tables for each workspace. In this case, you
-                      need to execute queries for each table to obtain
-                      information over repository.</para>
-                    </note></para>
-
-                  <itemizedlist>
-                    <listitem>
-                      <para>Non shareable:</para>
-
-                      <programlisting>Select fqn from ${LOCK_TABLE} where parent='/$LOCKS'</programlisting>
-                    </listitem>
-
-                    <listitem>
-                      <para>Shareable:</para>
-
-                      <para>Replace <code>${REPOSITORY_NAME}</code> with the
-                      corresponding value:</para>
-
-                      <programlisting>select fqn from ${LOCK_TABLE} where parent like '/${REPOSITORY_NAME}%/$LOCKS/' </programlisting>
-                    </listitem>
-                  </itemizedlist>
-                </listitem>
-
-                <listitem>
-                  <para>ISPN:</para>
-
-                  <para><note>
-                      <para>For ISPN lock tables which are defined for each
-                      workspace separately, you must execute queries for all
-                      lock tables to obtain information over
-                      repository.</para>
-                    </note>To get all set of locked node IDs in repository,
-                  you must execute the following query for each
-                  workspace.</para>
-
-                  <programlisting>select id from ${LOCK_TABLE}</programlisting>
-                </listitem>
-              </itemizedlist>
+              <programlisting>select id from ${LOCK_TABLE}</programlisting>
             </listitem>
 
             <listitem>
@@ -639,24 +600,9 @@ delete from JCR_SITEM where ID = '${ID}'</programlisting>
 
               <programlisting>delete from JCR_SITEM where PARENT_ID='${ID}' and (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' or NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')</programlisting>
 
-              <para>Replace <code>${ID}</code> and <code>${FQN}</code> with
-              the corresponding node ID and FQN:</para>
+              <para>Execute the following query for each workspace:</para>
 
-              <itemizedlist>
-                <listitem>
-                  <para>JBC:</para>
-
-                  <programlisting>delete from ${LOCK_TABLE} where fqn = '${FQN}'</programlisting>
-                </listitem>
-
-                <listitem>
-                  <para>ISPN:</para>
-
-                  <para>Execute the following query for each workspace:</para>
-
-                  <programlisting>delete from ${LOCK_TABLE} where id = '${ID}'</programlisting>
-                </listitem>
-              </itemizedlist>
+              <programlisting>delete from ${LOCK_TABLE} where id = '${ID}'</programlisting>
             </listitem>
           </itemizedlist></para>
       </listitem>
