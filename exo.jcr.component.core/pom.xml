@@ -882,7 +882,7 @@
          <dependencies>
             <dependency>
                <groupId>com.ibm.db2</groupId>
-               <artifactId>db2jcc</artifactId>
+               <artifactId>db2jcc4</artifactId>
                <version>9.7</version>
                <scope>test</scope>
             </dependency>
