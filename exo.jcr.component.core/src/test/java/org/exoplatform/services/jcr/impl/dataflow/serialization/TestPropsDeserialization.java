@@ -19,9 +19,14 @@
 package org.exoplatform.services.jcr.impl.dataflow.serialization;
 
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StringPersistedValueData;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.Calendar;
 import java.util.List;
 
@@ -84,4 +89,30 @@ public class TestPropsDeserialization extends JcrImplSerializationBaseTest
          checkIterator(logs.get(i).getAllStates().iterator(), destLog.get(i).getAllStates().iterator());
    }
 
+   public void testStringPersistedValueDataDeserialization() throws Exception
+   {
+      StringPersistedValueData dataBefore = new StringPersistedValueData(1, "foo");
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      ObjectOutputStream out = new ObjectOutputStream(baos);
+      out.writeObject(dataBefore);
+      out.close();
+      ObjectInputStream in = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+      StringPersistedValueData dataAfter = (StringPersistedValueData)in.readObject();
+      in.close();
+      assertEquals(1, dataAfter.getOrderNumber());
+      assertEquals("foo", dataAfter.toString());
+
+      // Empty String
+      dataBefore = new StringPersistedValueData(0, "");
+      baos = new ByteArrayOutputStream();
+      out = new ObjectOutputStream(baos);
+      out.writeObject(dataBefore);
+      out.close();
+      in = new ObjectInputStream(new ByteArrayInputStream(baos.toByteArray()));
+      dataAfter = (StringPersistedValueData)in.readObject();
+      in.close();
+      assertEquals(0, dataAfter.getOrderNumber());
+      assertNotNull(dataAfter.toString());
+      assertTrue(dataAfter.toString().isEmpty());
+   }
 }
