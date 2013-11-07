@@ -1003,20 +1003,17 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          throw new UnsupportedOperationException();
       }
 
-      @Override
       public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
          IllegalStateException
       {
          return getItemData(parentData, name, itemType) != null;
       }
 
-      @Override
       public long getWorkspaceDataSize() throws RepositoryException
       {
          return 0;
       }
 
-      @Override
       public long getNodeDataSize(String parentId) throws RepositoryException
       {
          return 0;

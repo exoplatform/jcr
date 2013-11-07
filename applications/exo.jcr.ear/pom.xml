@@ -34,7 +34,6 @@
 
   <properties>
     <enforcer.skip>true</enforcer.skip>
-    <exo.deploy.profile>jbc</exo.deploy.profile>
   </properties>
 
 

@@ -425,6 +425,37 @@ public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceL
       }
    }
 
+   public void testCheckNSetProperty() throws Exception
+   {
+      Node node = root.addNode("testCheckNSetProperty");
+      session.save();
+      if (!node.hasNode("foo"))
+      {
+         node.setProperty("foo", "foo");
+      }
+      if (!node.hasProperty("foo2"))
+      {
+         node.setProperty("foo2", "foo");
+      }
+      session.save();
+   }
+
+   public void testCheckNSetPropertyWithRefresh() throws Exception
+   {
+      Node node = root.addNode("testCheckNSetPropertyWithRefresh");
+      session.save();
+      if (!node.hasNode("foo"))
+      {
+         node.setProperty("foo", "foo");
+      }
+      if (!node.hasProperty("foo2"))
+      {
+         node.setProperty("foo2", "foo");
+      }
+      session.refresh(true);
+      session.save();
+   }
+
    public void onSaveItems(ItemStateChangesLog itemStates)
    {
       cLog = (TransactionChangesLog)itemStates;

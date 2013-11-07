@@ -68,7 +68,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
    /**
     * StreamPersistedValueData constructor for stream data with know destination file.
     * <p/>
-    * Destination file reserved for use in JBC impl.
+    * Destination file reserved for use in internal impl.
    */
    public StreamPersistedValueData(int orderNumber, InputStream stream, File destFile, SpoolConfig spoolConfig)
       throws IOException
@@ -81,7 +81,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
    /**
     * StreamPersistedValueData  constructor for data spooled to temp file with know destination file.
     * <p/>
-    * Destination file reserved for use in JBC impl.
+    * Destination file reserved for use in internal impl.
     *
     * @param orderNumber int
     * @param tempFile File

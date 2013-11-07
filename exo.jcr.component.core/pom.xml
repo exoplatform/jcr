@@ -31,12 +31,12 @@
    <name>eXo JCR :: Component :: Core Service</name>
    <description>Implementation of Core Service of Exoplatform SAS 'eXo Core' project.</description>
    <properties>
-      <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-jbc.xml</jcr.test.configuration.file>
-      <jbosscache.shareable>true</jbosscache.shareable>
+      <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-ispn.xml</jcr.test.configuration.file>
       <cache.enabled>true</cache.enabled>
       <value.storage.enabled>true</value.storage.enabled>
       <statistics.enabled>false</statistics.enabled>
       <batch.size>-1</batch.size>
+      <use.distributed.cache>false</use.distributed.cache>
       <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <test.cache.all>**/persistent/cache/**</test.cache.all>
@@ -125,7 +125,6 @@
       <dependency>
         <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
-        <version>2.6.21.Final</version>
       </dependency>
       <dependency>
          <groupId>org.jboss.jbossts</groupId>
@@ -160,29 +159,11 @@
             </exclusion>
          </exclusions>
       </dependency>
-      <!-- TCK binaries and deps for repo stub, some eXo API test -->
       <dependency>
-         <groupId>org.jboss.cache</groupId>
-         <artifactId>jbosscache-core</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>commons-logging</groupId>
-               <artifactId>commons-logging</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>jgroups</groupId>
-               <artifactId>jgroups</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.jboss.logging</groupId>
-               <artifactId>jboss-logging-spi</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.jboss.javaee</groupId>
-               <artifactId>jboss-transaction-api</artifactId>
-            </exclusion>
-         </exclusions>
+         <groupId>org.exoplatform.kernel</groupId>
+         <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
       </dependency>
+      <!-- TCK binaries and deps for repo stub, some eXo API test -->
       <dependency>
          <groupId>org.apache.jackrabbit</groupId>
          <artifactId>jackrabbit-jcr-tests</artifactId>
@@ -203,6 +184,25 @@
          <groupId>org.slf4j</groupId>
          <artifactId>slf4j-log4j12</artifactId>
          <scope>test</scope>
+      </dependency>
+      <!-- TCK binaries and deps for repo stub, some eXo API test -->
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-core</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>org.jboss.spec.javax.transaction</groupId>
+               <artifactId>jboss-transaction-api_1.1_spec</artifactId>
+            </exclusion>
+            <exclusion>
+               <groupId>org.jboss.logging</groupId>
+               <artifactId>jboss-logging</artifactId>
+            </exclusion>
+         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-cachestore-jdbc</artifactId>
       </dependency>
       <!-- ===== Databases JDBC support for tests ===== -->
       <dependency>
@@ -265,16 +265,16 @@
                      <value>target/emma/coverage.ec</value>
                   </property>
                   <property>
-                     <name>jbosscache-shareable</name>
-                     <value>${jbosscache.shareable}</value>
-                  </property>
-                  <property>
                      <name>cache-enabled</name>
                      <value>${cache.enabled}</value>
                   </property>
                   <property>
                      <name>value-storage-enabled</name>
                      <value>${value.storage.enabled}</value>
+                  </property>
+                  <property>
+                     <name>use-distributed-cache</name>
+                     <value>${use.distributed.cache}</value>
                   </property>
                   <property>
                       <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
@@ -286,12 +286,8 @@
                   </property>
                   <!-- Avoid the firewall -->
                   <property>
-                     <name>bind.address</name>
+                     <name>jgroups.bind_addr</name>
                      <value>127.0.0.1</value>
-                  </property>
-                  <property>
-                     <name>jgroups.stack</name>
-                     <value>udp</value>
                   </property>
                   <property>
                      <name>exo.jcr.config.default.all.container.batch-size</name>
@@ -535,6 +531,25 @@
                </execution>
             </executions>
          </plugin>
+         <plugin>
+            <artifactId>maven-assembly-plugin</artifactId>
+            <executions>
+               <execution>
+                  <id>jar-with-dependencies</id>
+                  <phase>package</phase>
+                  <goals>
+                     <goal>single</goal>
+                  </goals>
+                  <configuration>
+                     <primaryArtifact>false</primaryArtifact>
+                     <finalName>${project.artifactId}</finalName>
+                     <descriptors>
+                        <descriptor>${basedir}/src/main/assemblies/binary-assembly.xml</descriptor>
+                     </descriptors>
+                  </configuration>
+               </execution>
+            </executions>
+         </plugin>
       </plugins>
    </build>
    <profiles>
@@ -562,16 +577,16 @@
                            <value>target/emma/coverage.ec</value>
                         </property>
                         <property>
-                           <name>jbosscache-shareable</name>
-                           <value>${jbosscache.shareable}</value>
-                        </property>
-                        <property>
                            <name>cache-enabled</name>
                            <value>${cache.enabled}</value>
                         </property>
                         <property>
                            <name>value-storage-enabled</name>
                            <value>${value.storage.enabled}</value>
+                        </property>
+                         <property>
+                           <name>use-distributed-cache</name>
+                           <value>${use.distributed.cache}</value>
                         </property>
                          <property>
                            <name>known.issues</name>
@@ -591,12 +606,8 @@
                         </property>
                         <!-- Avoid the firewall -->
                         <property>
-                           <name>bind.address</name>
+                           <name>jgroups.bind_addr</name>
                            <value>127.0.0.1</value>
-                        </property>
-                        <property>
-                           <name>jgroups.stack</name>
-                           <value>udp</value>
                         </property>
                         <!-- Need for TCK tests -->
                         <property>
@@ -654,16 +665,16 @@
                            <value>target/emma/coverage.ec</value>
                         </property>
                         <property>
-                           <name>jbosscache-shareable</name>
-                           <value>${jbosscache.shareable}</value>
-                        </property>
-                        <property>
                             <name>cache-enabled</name>
                             <value>${cache.enabled}</value>
                         </property>
                         <property>
                             <name>value-storage-enabled</name>
                             <value>${value.storage.enabled}</value>
+                        </property>
+                        <property>
+                           <name>use-distributed-cache</name>
+                           <value>${use.distributed.cache}</value>
                         </property>
                         <property>
                            <name>known.issues</name>
@@ -683,12 +694,8 @@
                         </property>
                         <!-- Avoid the firewall -->
                         <property>
-                           <name>bind.address</name>
+                           <name>jgroups.bind_addr</name>
                            <value>127.0.0.1</value>
-                        </property>
-                        <property>
-                           <name>jgroups.stack</name>
-                           <value>udp</value>
                         </property>
                         <!-- Need for TCK tests -->
                         <property>
@@ -977,7 +984,7 @@
             <dependency>
               <groupId>com.h2database</groupId>
               <artifactId>h2</artifactId>
-              <version>1.3.161</version>
+              <version>1.3.174</version>
             </dependency>
          </dependencies>
       </profile>
@@ -997,28 +1004,28 @@
       <profile>
          <id>sjdbc</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc-jbc.xml</jcr.test.configuration.file>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-sjdbc-ispn.xml</jcr.test.configuration.file>
             <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
          </properties>
       </profile>
       <profile>
          <id>mjdbc</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-mjdbc-jbc.xml</jcr.test.configuration.file>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-mjdbc-ispn.xml</jcr.test.configuration.file>
             <properties.url.suffix>.properties</properties.url.suffix>
          </properties>
       </profile>
       <profile>
          <id>ijdbc</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-jbc.xml</jcr.test.configuration.file>
+            <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-ispn.xml</jcr.test.configuration.file>
             <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
          </properties>
       </profile> 
       <profile>
          <id>cluster</id>
          <properties>
-            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-ijdbc-jbc.xml</jcr.test.configuration.file>
+            <jcr.test.configuration.file>/conf/standalone/cluster/test-configuration-ijdbc-ispn.xml</jcr.test.configuration.file>
          </properties>
       </profile>
       <profile>
@@ -1069,4 +1076,3 @@
       </profile>
    </profiles>
 </project>
-

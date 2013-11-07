@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.cluster.load.NodeInfo;
 import org.exoplatform.services.jcr.cluster.load.ResultCollector;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.jboss.cache.CacheException;
 
 import java.util.List;
 import java.util.Random;
@@ -178,11 +177,6 @@ public class JcrQueryAvgResponseTimeTest extends JcrImplBaseTest
                sessionLocal.logout();
                sessionLocal = null;
                isSuccessful = true;
-            }
-            catch (CacheException e)
-            {
-               log.error("error on creating root attempt " + i + " from " + maxAttempts);
-               //ignore
             }
             catch (RepositoryException e)
             {

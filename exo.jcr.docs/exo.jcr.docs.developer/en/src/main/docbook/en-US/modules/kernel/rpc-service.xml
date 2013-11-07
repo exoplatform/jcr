@@ -4,62 +4,61 @@
 <section id="Kernel.RPCService">
   <title>RPC Service</title>
 
-    <para>The <emphasis>RPCService</emphasis> is only needed in a cluser
-    environment, it is used to communicate with the other cluster nodes. It
-    allows to execute a command on all the cluster nodes or on the coordinator
-    i.e. the oldest node in the cluster. The <emphasis>RPCService</emphasis>
-    has been designed to rely on JGroups capabilities and should not be used
-    for heavy load. It can be used, for example, to notify other nodes that
-    something happened or to collect some information from the other
-    nodes.</para>
+  <para>The <emphasis>RPCService</emphasis> is only needed in a cluser
+  environment, it is used to communicate with the other cluster nodes. It
+  allows to execute a command on all the cluster nodes or on the coordinator
+  i.e. the oldest node in the cluster. The <emphasis>RPCService</emphasis> has
+  been designed to rely on JGroups capabilities and should not be used for
+  heavy load. It can be used, for example, to notify other nodes that
+  something happened or to collect some information from the other
+  nodes.</para>
 
-    <para>The <emphasis>RPCService</emphasis> relies on 3 main interfaces
-    which are:</para>
+  <para>The <emphasis>RPCService</emphasis> relies on 3 main interfaces which
+  are:</para>
 
-    <itemizedlist>
-      <listitem>
-        <para>The <emphasis>org.exoplatform.services.rpc.RPCService</emphasis>
-        that defines the service itslef</para>
-      </listitem>
+  <itemizedlist>
+    <listitem>
+      <para>The <emphasis>org.exoplatform.services.rpc.RPCService</emphasis>
+      that defines the service itslef</para>
+    </listitem>
 
-      <listitem>
-        <para>The
-        <emphasis>org.exoplatform.services.rpc.RemoteCommand</emphasis> that
-        defines the command that we can execute on other nodes.</para>
-      </listitem>
+    <listitem>
+      <para>The
+      <emphasis>org.exoplatform.services.rpc.RemoteCommand</emphasis> that
+      defines the command that we can execute on other nodes.</para>
+    </listitem>
 
-      <listitem>
-        <para>The
-        <emphasis>org.exoplatform.services.rpc.TopologyChangeListener</emphasis>
-        that defines the listeners that will be notified anytime the topology
-        of the cluster changes.</para>
-      </listitem>
-    </itemizedlist>
+    <listitem>
+      <para>The
+      <emphasis>org.exoplatform.services.rpc.TopologyChangeListener</emphasis>
+      that defines the listeners that will be notified anytime the topology of
+      the cluster changes.</para>
+    </listitem>
+  </itemizedlist>
 
-    <para>The arguments that will be given to the
-    <emphasis>RemoteCommand</emphasis> must be
-    <emphasis>Serializable</emphasis> and its return type also in order to
-    prevent any issue due to the serialization. To prevent to execute any
-    <emphasis>RemoteCommand</emphasis> that could be malicious and to allow to
-    use non <emphasis>Serializable</emphasis> command, you need to register
-    the command first before using it. Since the service will keep only one
-    instance of <emphasis>RemoteCommand</emphasis> per command Id, the
-    implementation of the <emphasis>RemoteCommand</emphasis> must be thread
-    safe.</para>
+  <para>The arguments that will be given to the
+  <emphasis>RemoteCommand</emphasis> must be <emphasis>Serializable</emphasis>
+  and its return type also in order to prevent any issue due to the
+  serialization. To prevent to execute any <emphasis>RemoteCommand</emphasis>
+  that could be malicious and to allow to use non
+  <emphasis>Serializable</emphasis> command, you need to register the command
+  first before using it. Since the service will keep only one instance of
+  <emphasis>RemoteCommand</emphasis> per command Id, the implementation of the
+  <emphasis>RemoteCommand</emphasis> must be thread safe.</para>
 
-    <para>To be usable, all the <emphasis>RemoteCommand</emphasis>s must be
-    registered before being used on all the cluster nodes, which means that
-    the command registration must be done in the constructor of your component
-    in other words before that the <emphasis>RPCService</emphasis> is started.
-    If you try to launch a command that has been registered but the
-    <emphasis>RPCService</emphasis> is not yet launched, you will get an
-    <emphasis>RPCException</emphasis> due to an illegal state. This has for
-    consequences that you will be able to execute a command only once your
-    component will be started.</para>
+  <para>To be usable, all the <emphasis>RemoteCommand</emphasis>s must be
+  registered before being used on all the cluster nodes, which means that the
+  command registration must be done in the constructor of your component in
+  other words before that the <emphasis>RPCService</emphasis> is started. If
+  you try to launch a command that has been registered but the
+  <emphasis>RPCService</emphasis> is not yet launched, you will get an
+  <emphasis>RPCException</emphasis> due to an illegal state. This has for
+  consequences that you will be able to execute a command only once your
+  component will be started.</para>
 
-    <para>See an example below:</para>
+  <para>See an example below:</para>
 
-    <programlisting language="java">public class MyService implements Startable
+  <programlisting language="java">public class MyService implements Startable
 {
    private RPCService rpcService;
    private RemoteCommand sayHelloCommand;
@@ -107,59 +106,23 @@
    }
 }</programlisting>
 
-    <para>In the previous example, we register the command
-    <emphasis>sayHelloCommand</emphasis> in the constructor of
-    <emphasis>MyService</emphasis> and we execute this command in the start
-    method.</para>
+  <para>In the previous example, we register the command
+  <emphasis>sayHelloCommand</emphasis> in the constructor of
+  <emphasis>MyService</emphasis> and we execute this command in the start
+  method.</para>
 
-    <note>
-      <para>We expect to have one <emphasis>RPCService</emphasis> instance per
-      <emphasis>PortalContainer</emphasis> in a portal mode and only one
-      <emphasis>RPCService</emphasis> instance in a standalone mode</para>
-    </note>
+  <note>
+    <para>We expect to have one <emphasis>RPCService</emphasis> instance per
+    <emphasis>PortalContainer</emphasis> in a portal mode and only one
+    <emphasis>RPCService</emphasis> instance in a standalone mode</para>
+  </note>
 
   <section id="Kernel.RPCService.Configuration">
     <title>Configuration</title>
 
     <para>The configuration of the <emphasis>RPCService</emphasis> should be
-    added only in a cluster environment. See below an example of configuration
-    in case you intend to use JGroups 2 (which is mandatory if you use JBoss
-    Cache as underlying cache):</para>
-
-    <programlisting language="xml">&lt;configuration&gt;
-....  
-  &lt;component&gt;
-    &lt;key&gt;org.exoplatform.services.rpc.RPCService&lt;/key&gt;
-    &lt;type&gt;org.exoplatform.services.rpc.impl.RPCServiceImpl&lt;/type&gt;
-    &lt;init-params&gt;
-      &lt;value-param&gt;
-        &lt;name&gt;jgroups-configuration&lt;/name&gt;
-        &lt;value&gt;classpath:/udp.xml&lt;/value&gt;
-      &lt;/value-param&gt;
-      &lt;value-param&gt;
-        &lt;name&gt;jgroups-cluster-name&lt;/name&gt;
-        &lt;value&gt;RPCService-Cluster&lt;/value&gt;
-      &lt;/value-param&gt;
-      &lt;value-param&gt;
-        &lt;name&gt;jgroups-default-timeout&lt;/name&gt;
-        &lt;value&gt;0&lt;/value&gt;
-      &lt;/value-param&gt;
-      &lt;value-param&gt;
-        &lt;name&gt;allow-failover&lt;/name&gt;
-        &lt;value&gt;true&lt;/value&gt;
-      &lt;/value-param&gt;
-      &lt;value-param&gt;
-        &lt;name&gt;retry-timeout&lt;/name&gt;
-        &lt;value&gt;20000&lt;/value&gt;
-      &lt;/value-param&gt;
-    &lt;/init-params&gt;
-  &lt;/component&gt;   
-...
-&lt;/configuration&gt;</programlisting>
-
-    <para>See below an example of configuration in case you intend to use
-    JGroups 3 (which is mandatory if you use Infinispan as underlying
-    cache):</para>
+    added only in a cluster environment. See below an example of
+    configuration:</para>
 
     <programlisting language="xml">&lt;configuration&gt;
 ....  
@@ -191,9 +154,6 @@
   &lt;/component&gt;   
 ...
 &lt;/configuration&gt;</programlisting>
-
-    <para>The implementation for JGroups 3 is available in the library
-    <emphasis>exo.kernel.component.ext.rpc.impl.jgroups.v3-X.Y.Z.jar</emphasis>.</para>
 
     <table>
       <title>Fields description</title>

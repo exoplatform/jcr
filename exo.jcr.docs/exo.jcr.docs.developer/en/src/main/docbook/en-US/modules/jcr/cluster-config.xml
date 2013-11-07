@@ -43,24 +43,24 @@
         <listitem>
           <para>Ensure that you use JBossTS <link
           linkend="Kernel.TransactionService">Transaction Service</link> and
-          JBossCache <link linkend="JCR.JBossTransactionsService">Transaction
+          Infinispan <link linkend="JCR.JBossTransactionsService">Transaction
           Manager</link>. Your exo-configuration.xml must contain such
           parts:</para>
 
           <programlisting language="xml">&lt;component&gt;
-   &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
-   &lt;type&gt;org.jboss.cache.GenericTransactionManagerLookup&lt;/type&gt;^
+   &lt;key&gt;org.infinispan.transaction.lookup.TransactionManagerLookup&lt;/key&gt;
+   &lt;type&gt;org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup&lt;/type&gt;
 &lt;/component&gt;
-
+   
 &lt;component&gt;
-   &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
-   &lt;type&gt;org.exoplatform.services.transaction.jbosscache.JBossTransactionsService&lt;/type&gt;
-   &lt;init-params&gt;
-      &lt;value-param&gt;
-         &lt;name&gt;timeout&lt;/name&gt;
-         &lt;value&gt;300&lt;/value&gt;
-      &lt;/value-param&gt;
-   &lt;/init-params&gt;
+  &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.transaction.infinispan.JBossTransactionsService&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;timeout&lt;/name&gt;
+      &lt;value&gt;3000&lt;/value&gt;
+    &lt;/value-param&gt;
+  &lt;/init-params&gt;   
 &lt;/component&gt;</programlisting>
         </listitem>
 
@@ -122,13 +122,13 @@
                      &lt;property name="root-nodetype" value="nt:unstructured" /&gt;
                   &lt;/properties&gt;
                &lt;/initializer&gt;
-               &lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache"&gt;
+               &lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache"&gt;
                      see  "<link linkend="conf_cache">Cache configuration</link>" part.
                &lt;/cache&gt;
                &lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
                   see  "<link linkend="conf_indexer">Indexer configuration</link>" part.
                &lt;/query-handler&gt;
-               &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+               &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl"&gt;
                   see  "<link linkend="conf_lock_manager">Lock Manager configuration</link>" part.
                &lt;/lock-manager&gt;
             &lt;/workspace&gt;
@@ -218,13 +218,14 @@
         <listitem id="conf_cache">
           <para>Cache configuration:</para>
 
-          <programlisting language="xml">&lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache"&gt;
+          <programlisting language="xml">&lt;cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache"&gt;
    &lt;properties&gt;
-      &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-data.xml" /&gt;     &lt;!--    path to JBoss Cache configuration for data storage --&gt;
-      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                     &lt;!--    path to JGroups configuration --&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_cache" /&gt;                              &lt;!--    JBoss Cache data storage cluster name --&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
-      &lt;property name="jbosscache-shareable" value="true" /&gt;
+      &lt;!--    path to Infinispan configuration for data storage --&gt;
+      &lt;property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" /&gt;
+      &lt;!--    path to JGroups configuration --&gt;
+      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;
+      &lt;!--    Infinispan data storage cluster name --&gt;                         
+      &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;                                     
    &lt;/properties&gt;
 &lt;/cache&gt; </programlisting>
         </listitem>
@@ -234,13 +235,15 @@
 
           <programlisting language="xml">&lt;query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex"&gt;
    &lt;properties&gt;
-      &lt;property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter" /&gt;
-      &lt;property name="index-dir" value="/mnt/tornado/temp/jcrlucenedb/production" /&gt;                       &lt;!--    path within NFS where ValueStorage will hold it's data --&gt;
-      &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-indexer.xml" /&gt;    &lt;!--    path to JBoss Cache configuration for indexer --&gt;
-      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                       &lt;!--    path to JGroups configuration --&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_indexer" /&gt;                              &lt;!--    JBoss Cache indexer cluster name --&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
-      &lt;property name="jbosscache-shareable" value="true" /&gt;
+      &lt;property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" /&gt;
+      &lt;!--    path within NFS where ValueStorage will store its data --&gt;
+      &lt;property name="index-dir" value="/mnt/tornado/temp/jcrlucenedb/production" /&gt;
+      &lt;!--    path to Infinispan configuration for indexer --&gt;                       
+      &lt;property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-indexer.xml" /&gt;
+      &lt;!--    path to JGroups configuration --&gt;
+      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;
+      &lt;!--    Infinispan indexer cluster name --&gt;                      
+      &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;                         
    &lt;/properties&gt;
 &lt;/query-handler&gt; </programlisting>
         </listitem>
@@ -248,22 +251,24 @@
         <listitem id="conf_lock_manager">
           <para>Lock Manager configuration:</para>
 
-          <programlisting language="xml">&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+          <programlisting language="xml">&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl"&gt;
    &lt;properties&gt;
       &lt;property name="time-out" value="15m" /&gt;
-      &lt;property name="jbosscache-configuration" value="jar:/conf/portal/test-jbosscache-lock.xml" /&gt;       &lt;!--    path to JBoss Cache configuration for lock manager --&gt;
-      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;                       &lt;!--    path to JGroups configuration --&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR_Cluster_locks" /&gt;                                &lt;!--    JBoss Cache locks cluster name --&gt;                    
-      &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks"/&gt;                              &lt;!--    the name of the DB table where lock's data will be stored --&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true"/&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false"/&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk"/&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn"/&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node"/&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent"/&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr"/&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
-      &lt;property name="jbosscache-shareable" value="true" /&gt;
+      &lt;!--    path to Infinispan configuration for lock manager --&gt;
+      &lt;property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" /&gt;
+      &lt;!--    path to JGroups configuration --&gt;       
+      &lt;property name="jgroups-configuration" value="jar:/conf/portal/udp-mux.xml" /&gt;
+      &lt;!--    Infinispan locks cluster name --&gt;                                          
+      &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
+      &lt;!--    the prefix of the name of the DB table where lock's data will be stored --&gt;                                
+      &lt;property name="infinispan-cl-cache.jdbc.table.name" value="lk" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.table.create" value="true" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.table.drop" value="false" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.id.column" value="id" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.data.column" value="data" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" /&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>
         </listitem>
@@ -271,4 +276,3 @@
     </section>
   </section>
 </section>
-

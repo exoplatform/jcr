@@ -18,11 +18,11 @@
  */
 package org.exoplatform.services.jcr.config;
 
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ValueParam;
 import org.exoplatform.container.xml.ValuesParam;
-import org.jboss.util.property.PropertyManager;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;

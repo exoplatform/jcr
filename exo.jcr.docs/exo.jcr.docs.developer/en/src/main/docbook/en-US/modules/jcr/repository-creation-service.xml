@@ -3,9 +3,10 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="JCR.RepositoryCreationService">
   <title>RepositoryCreationService</title>
-    <para><emphasis>RepositoryCreationService</emphasis> is the service which is used to create repositories
-    in runtime. The service can be used in a standalone or cluster
-    environment.</para>
+
+  <para><emphasis>RepositoryCreationService</emphasis> is the service which is
+  used to create repositories in runtime. The service can be used in a
+  standalone or cluster environment.</para>
 
   <section id="JCR.RepositoryCreationService.Dependencies">
     <title>Dependencies</title>
@@ -107,22 +108,22 @@
 &lt;/component&gt;
 
 &lt;component&gt;
-   &lt;key&gt;org.exoplatform.services.rpc.RPCService&lt;/key&gt;
-   &lt;type&gt;org.exoplatform.services.rpc.impl.RPCServiceImpl&lt;/type&gt;
-   &lt;init-params&gt;
-      &lt;value-param&gt;
-         &lt;name&gt;jgroups-configuration&lt;/name&gt;
-         &lt;value&gt;jar:/conf/standalone/udp-mux.xml&lt;/value&gt;
-      &lt;/value-param&gt;
-      &lt;value-param&gt;
-         &lt;name&gt;jgroups-cluster-name&lt;/name&gt;
-         &lt;value&gt;RPCService-Cluster&lt;/value&gt;
-      &lt;/value-param&gt;
-      &lt;value-param&gt;
-         &lt;name&gt;jgroups-default-timeout&lt;/name&gt;
-         &lt;value&gt;0&lt;/value&gt;
-      &lt;/value-param&gt;
-   &lt;/init-params&gt;
+    &lt;key&gt;org.exoplatform.services.rpc.RPCService&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.rpc.jgv3.RPCServiceImpl&lt;/type&gt;
+    &lt;init-params&gt;
+        &lt;value-param&gt;
+            &lt;name&gt;jgroups-configuration&lt;/name&gt;
+            &lt;value&gt;jar:/conf/udp-mux.xml&lt;/value&gt;
+        &lt;/value-param&gt;
+        &lt;value-param&gt;
+            &lt;name&gt;jgroups-cluster-name&lt;/name&gt;
+            &lt;value&gt;RPCService-Cluster&lt;/value&gt;
+        &lt;/value-param&gt;
+        &lt;value-param&gt;
+            &lt;name&gt;jgroups-default-timeout&lt;/name&gt;
+            &lt;value&gt;0&lt;/value&gt;
+        &lt;/value-param&gt;
+    &lt;/init-params&gt;
 &lt;/component&gt;  
 
 &lt;component&gt;

@@ -78,7 +78,7 @@
   <xi:include href="jcr/cluster-config.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
-  <xi:include href="jcr/jbosscache-configuration-templates.xml"
+  <xi:include href="jcr/infinispan-configuration-templates.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/lock-manager-config.xml"
@@ -91,9 +91,6 @@
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/transaction-manager-lookup.xml"
-              xmlns:xi="http://www.w3.org/2001/XInclude" />
-
-  <xi:include href="jcr/ispn/ispn-integration.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
   <xi:include href="jcr/repository-creation-service.xml"

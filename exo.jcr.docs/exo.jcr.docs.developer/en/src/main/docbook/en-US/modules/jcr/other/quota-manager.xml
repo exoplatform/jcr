@@ -24,116 +24,118 @@
     </listitem>
   </orderedlist>
 
-  <para>You can define to use QuotaManager based on JbossCache or <link
-  linkend="ISPN.integration.QuotaManagerConfiguration">ISPN</link> in the
-  configuration of QuotaManager component.</para>
+  <section id="JCR.QuotaManager.Configuration">
+    <title>Quota Manager configuration</title>
 
-  <section>
-    <title>Quota Manager configuration based on JBossCache</title>
-
-    <para>To use Quota Manager along with JbossCache you need to configure it.
+    <para>To use Quota Manager along with Infinispan you need to configure it.
     An example of the configuration:</para>
 
-    <programlisting>&lt;component&gt;
-  &lt;key&gt;org.exoplatform.services.jcr.impl.quota.QuotaManager&lt;/key&gt;
-  &lt;type&gt;org.exoplatform.services.jcr.impl.quota.jbosscache.JBCQuotaManagerImpl&lt;/type&gt;
-  &lt;init-params&gt;
-    &lt;value-param&gt;
-      &lt;name&gt;exceeded-quota-behaviour&lt;/name&gt;
-      &lt;value&gt;exception&lt;/value&gt;
-    &lt;/value-param&gt;
-    &lt;properties-param&gt;
-      &lt;name&gt;cache-configuration&lt;/name&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr"/&gt;
-      &lt;property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-quota.xml" /&gt;
-      &lt;property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" /&gt;
-    &lt;/properties-param&gt;
-  &lt;/init-params&gt;
-&lt;/component&gt;</programlisting>
+    <programlisting> &lt;component&gt;
+    &lt;key&gt;org.exoplatform.services.jcr.impl.quota.QuotaManager&lt;/key&gt;
+    &lt;type&gt;org.exoplatform.services.jcr.impl.quota.infinispan.ISPNQuotaManagerImpl&lt;/type&gt;
+    &lt;init-params&gt;
+      &lt;value-param&gt;
+        &lt;name&gt;exceeded-quota-behaviour&lt;/name&gt;
+        &lt;value&gt;exception&lt;/value&gt;
+      &lt;/value-param&gt;
+      &lt;properties-param&gt;
+        &lt;name&gt;cache-configuration&lt;/name&gt;
+        &lt;description&gt;infinispan-configuration&lt;/description&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr"/&gt;
+        &lt;property name="infinispan-configuration" value="conf/standalone/test-infinispan-quota.xml" /&gt;
+        &lt;property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" /&gt;
+      &lt;/properties-param&gt;
+    &lt;/init-params&gt;
+  &lt;/component&gt;</programlisting>
 
     <itemizedlist>
       <listitem>
         <para><emphasis role="bold">exceeded-quota-behaviour</emphasis> —
         defines the behaviour of quota manager on exceeding the limits. Can be
-        warning or exception. Default value is warning. This parameter is
-        common for JbossCache based and ISPN based configuration.</para>
+        warning or exception. Default value is warning.</para>
       </listitem>
 
       <listitem>
         <para><emphasis role="bold">cache-configuration</emphasis> — in this
-        section you can define explicitely jboss cache parameters:</para>
+        section you can define explicitly the infinispan parameters:</para>
 
         <itemizedlist>
           <listitem>
-            <para><emphasis>jbosscache-cl-cache.jdbc.datasource</emphasis> —
+            <para><emphasis>infinispan-cl-cache.jdbc.datasource</emphasis> —
             mandatory property</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>jbosscache-configuration</emphasis> — mandatory
+            <para><emphasis>infinispan-configuration</emphasis> — mandatory
             property</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>jgroups-configuration</emphasis> — mandatory
+            <para><emphasis>jgroups-configuration </emphasis>— mandatory
             property</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>jbosscache-cluster-name</emphasis> — dafault value
+            <para><emphasis>infinispan-cl-cache.jdbc.connectionFactory
+            </emphasis>— dafault value —
+            org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>infinispan-cluster-name</emphasis> — dafault value
             — JCR-cluster-quota</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>jbosscache-cl-cache.jdbc.table.name</emphasis> —
-            dafault value — jcr_quota</para>
+            <para><emphasis>infinispan-cl-cache.jdbc.table.name</emphasis> —
+            dafault value — jcr</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>jbosscache-cl-cache.jdbc.table.create</emphasis> —
+            <para><emphasis>infinispan-cl-cache.jdbc.table.create</emphasis> —
             dafault value — true</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>jbosscache-cl-cache.jdbc.table.drop </emphasis>—
+            <para><emphasis>infinispan-cl-cache.jdbc.table.drop</emphasis> —
             dafault value — false</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>jbosscache-cl-cache.jdbc.table.primarykey</emphasis>
-            — dafault value — jcrquota_pk</para>
-          </listitem>
-
-          <listitem>
-            <para><emphasis>jbosscache-cl-cache.jdbc.node.type</emphasis> —
+            <para><emphasis>infinispan-cl-cache.jdbc.data.type </emphasis>—
             dafault value — auto</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>jbosscache-cl-cache.jdbc.node.column</emphasis> —
-            dafault value — node</para>
+            <para><emphasis>infinispan-cl-cache.jdbc.data.column </emphasis>—
+            dafault value — data</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>jbosscache-cl-cache.jdbc.fqn.type</emphasis> —
+            <para><emphasis>infinispan-cl-cache.jdbc.id.type </emphasis>—
             dafault value — auto</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>jbosscache-cl-cache.jdbc.fqn.column </emphasis>—
-            dafault value — fqn</para>
+            <para><emphasis>infinispan-cl-cache.jdbc.id.column </emphasis>—
+            dafault value — id</para>
           </listitem>
 
           <listitem>
-            <para><emphasis>jbosscache-cl-cache.jdbc.parent.column
-            </emphasis>— dafault value — parent</para>
+            <para><emphasis>infinispan-cl-cache.jdbc.timestamp.type</emphasis>
+            — dafault value — auto</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>infinispan-cl-cache.jdbc.timestamp.column
+            </emphasis>— dafault value — timestamp</para>
           </listitem>
         </itemizedlist>
       </listitem>
     </itemizedlist>
   </section>
 
-  <section>
+  <section id="JCR.QuotaManager.Overview">
     <title>Quota manager interface overview</title>
 
     <para>Quota manager interface declares the following methods:</para>

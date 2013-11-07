@@ -4,43 +4,41 @@
 <section id="JCRWithGateIn.HowToExtendMyGateInInstance">
   <title>How to extend my GateIn instance?</title>
 
-      <para>Since GateIn beta 2, there are a set of features added to
-      customize a GateIn instance without modifying the GateIn binary. This
-      usecase will be called <emphasis>portal extension</emphasis> in this
-      documentation. Those features are also required to be able to launch
-      several portal instances at the same time, in "eXo terminology" that
-      means to have several "portal.war".</para>
+  <para>Since GateIn beta 2, there are a set of features added to customize a
+  GateIn instance without modifying the GateIn binary. This usecase will be
+  called <emphasis>portal extension</emphasis> in this documentation. Those
+  features are also required to be able to launch several portal instances at
+  the same time, in "eXo terminology" that means to have several
+  "portal.war".</para>
 
-    <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Motivations">
-      <title>Motivations</title>
+  <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Motivations">
+    <title>Motivations</title>
 
-      <para>Up to now, to create an application over an GateIn such as
-      DMS, WCM, CS and KS, we need to modify files into the "portal.war". This
-      has many painful consequences, such as:</para>
+    <para>Up to now, to create an application over an GateIn such as DMS, WCM,
+    CS and KS, we need to modify files into the "portal.war". This has many
+    painful consequences, such as:</para>
 
-      <itemizedlist>
-        <listitem>
-          <para>It is quite hard to manage from the support point of view
-          since we never know if or how the customer changed his eXo
-          product.</para>
-        </listitem>
+    <itemizedlist>
+      <listitem>
+        <para>It is quite hard to manage from the support point of view since
+        we never know if or how the customer changed his eXo product.</para>
+      </listitem>
 
-        <listitem>
-          <para>It is hard to be able to package several eXo products (WCM,
-          CS...) as we need to merge everything manually which is quite error
-          prone.</para>
-        </listitem>
-      </itemizedlist>
+      <listitem>
+        <para>It is hard to be able to package several eXo products (WCM,
+        CS...) as we need to merge everything manually which is quite error
+        prone.</para>
+      </listitem>
+    </itemizedlist>
 
-      <para>Finally, at the very beginning, eXo was developed to be able to
-      support several portal instances (which also means several portal
-      containers) but with the time several bad practices made it impossible.
-      So it was important to review the whole code base in order to
-      help/enforce all the GateIn developers to follow the "good
-      practices".</para>
-    </section>
+    <para>Finally, at the very beginning, eXo was developed to be able to
+    support several portal instances (which also means several portal
+    containers) but with the time several bad practices made it impossible. So
+    it was important to review the whole code base in order to help/enforce
+    all the GateIn developers to follow the "good practices".</para>
+  </section>
 
-   <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites">
+  <section id="JCRWithGateIn.HowToExtendMyGateInInstance.Prerequisites">
     <title>Prerequisites</title>
 
     <para>To be able to migrate an application to GateIn, the first thing we
@@ -1479,20 +1477,21 @@ public class GadgetRegister implements ServletContextListener {
               &lt;property name="index-dir" value="../temp/jcrlucenedb/sample-ws${container.name.suffix}" /&gt;
             &lt;/properties&gt;
           &lt;/query-handler&gt;
-          &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
-             &lt;properties&gt;
-                &lt;property name="time-out" value="15m" /&gt;
-                &lt;property name="jbosscache-configuration" value="jbosscache-lock.xml" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
-                &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
-                &lt;property name="jbosscache-shareable" value="true" /&gt;
-             &lt;/properties&gt;
+          &lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl"&gt;
+              &lt;properties&gt;
+                  &lt;property name="time-out" value="15m" /&gt;
+                  &lt;property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" /&gt;
+                  &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
+                  &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
+                  &lt;property name="infinispan-cl-cache.jdbc.table.name" value="lk" /&gt;
+                  &lt;property name="infinispan-cl-cache.jdbc.table.create" value="true" /&gt;
+                  &lt;property name="infinispan-cl-cache.jdbc.table.drop" value="false" /&gt;
+                  &lt;property name="infinispan-cl-cache.jdbc.id.column" value="id" /&gt;
+                  &lt;property name="infinispan-cl-cache.jdbc.data.column" value="data" /&gt;
+                  &lt;property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" /&gt;
+                  &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                  &lt;property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" /&gt;
+              &lt;/properties&gt;
           &lt;/lock-manager&gt;
         &lt;/workspace&gt;
       &lt;/workspaces&gt;
@@ -1974,7 +1973,8 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
 
       <para>We added an example of portal extension (i.e. ability to customize
       a portal without changing anything in the portal.ear) that you can find
-      in the git repository of gatein at https://github.com/gatein/gatein-portal/tree/master/examples.</para>
+      in the git repository of gatein at
+      https://github.com/gatein/gatein-portal/tree/master/examples.</para>
     </section>
 
     <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySampleExtension">
@@ -2127,7 +2127,8 @@ public class SampleContextInitializedListener extends Listener&lt;PortalContaine
 
       <para>We added an example of new portal (i.e. ability to create a new
       portal from another portal without changing anything in the portal.ear)
-      that you can find in the git repository of gatein at https://github.com/gatein/gatein-portal/tree/master/examples.</para>
+      that you can find in the git repository of gatein at
+      https://github.com/gatein/gatein-portal/tree/master/examples.</para>
     </section>
 
     <section id="JCRWithGateIn.HowToExtendMyGateInInstance.FAQ.HowToDeploySamplePortal">

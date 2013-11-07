@@ -5,63 +5,69 @@
   <title>How to host several JCR instances on the same database
   instance?</title>
 
-    <para>Frequently, a single database instance must be shared by several
-    other applications. But some of our customers have also asked for a way to
-    host several JCR instances in the same database instance. To fulfill this
-    need, we had to review our queries and scope them to the current schema;
-    it is now possible to have one JCR instance per DB schema instead of per DB
-    instance. To benefit of the work done for this feature you will need to
-    apply the configuration changes described below.</para>
+  <para>Frequently, a single database instance must be shared by several other
+  applications. But some of our customers have also asked for a way to host
+  several JCR instances in the same database instance. To fulfill this need,
+  we had to review our queries and scope them to the current schema; it is now
+  possible to have one JCR instance per DB schema instead of per DB instance.
+  To benefit of the work done for this feature you will need to apply the
+  configuration changes described below.</para>
 
   <section id="JCR.MultiDBSchemaSupport.LockManager_Config">
     <title>LockManager configuration</title>
 
     <para>To enable this feature you need to replace
-    org.jboss.cache.loader.JDBCCacheLoader with
-    org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader in
-    JBossCache configuration file.</para>
+    org.infinispan.loaders.jdbc.stringbased.JdbcStringBasedCacheStore with
+    org.exoplatform.services.jcr.infinispan.JdbcStringBasedCacheStore in
+    Infinispan configuration file.</para>
 
     <para>Here is an example of this very part of the configuration:</para>
 
-    <programlisting language="xml">&lt;jbosscache xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="urn:jboss:jbosscache-core:config:3.1"&gt;
+    <programlisting language="xml">&lt;infinispan
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+      xsi:schemaLocation="urn:infinispan:config:5.2 http://www.infinispan.org/schemas/infinispan-config-5.2.xsd"
+      xmlns="urn:infinispan:config:5.2"&gt;
 
-   &lt;locking useLockStriping="false" concurrencyLevel="500" lockParentForChildInsertRemove="false"
-      lockAcquisitionTimeout="20000" /&gt;
+    &lt;global&gt;
+      &lt;evictionScheduledExecutor factory="org.infinispan.executors.DefaultScheduledExecutorFactory"&gt;
+        &lt;properties&gt;
+          &lt;property name="threadNamePrefix" value="EvictionThread"/&gt;
+        &lt;/properties&gt;
+      &lt;/evictionScheduledExecutor&gt;
 
-   &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
-      &lt;stateRetrieval timeout="20000" fetchInMemoryState="false" /&gt;
-      &lt;sync /&gt;
-   &lt;/clustering&gt;
+      &lt;globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/&gt;
+    &lt;/global&gt;
 
-   &lt;loaders passivation="false" shared="true"&gt;
-      &lt;!-- All the data of the JCR locks needs to be loaded at startup --&gt;
-      &lt;preload&gt;
-         &lt;node fqn="/" /&gt;
-      &lt;/preload&gt;  
-      &lt;!--
-      For another cache-loader class you should use another template with
-      cache-loader specific parameters
-      --&gt;
-      &lt;loader class=<emphasis role="bold">"org.exoplatform.services.jcr.impl.core.lock.jbosscache.JDBCCacheLoader"</emphasis> async="false" fetchPersistentState="false"
-         ignoreModifications="false" purgeOnStartup="false"&gt;
-         &lt;properties&gt;
-            cache.jdbc.table.name=${jbosscache-cl-cache.jdbc.table.name}
-            cache.jdbc.table.create=${jbosscache-cl-cache.jdbc.table.create}
-            cache.jdbc.table.drop=${jbosscache-cl-cache.jdbc.table.drop}
-            cache.jdbc.table.primarykey=${jbosscache-cl-cache.jdbc.table.primarykey}
-            cache.jdbc.fqn.column=${jbosscache-cl-cache.jdbc.fqn.column}
-            cache.jdbc.fqn.type=${jbosscache-cl-cache.jdbc.fqn.type}
-            cache.jdbc.node.column=${jbosscache-cl-cache.jdbc.node.column}
-            cache.jdbc.node.type=${jbosscache-cl-cache.jdbc.node.type}
-            cache.jdbc.parent.column=${jbosscache-cl-cache.jdbc.parent.column}
-            cache.jdbc.datasource=${jbosscache-cl-cache.jdbc.datasource}
-         &lt;/properties&gt;
-      &lt;/loader&gt;
-   &lt;/loaders&gt;
-&lt;/jbosscache&gt;</programlisting>
+    &lt;default&gt;
+      &lt;locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="false"/&gt;
+      &lt;transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" transactionMode="TRANSACTIONAL"/&gt;
+      &lt;jmxStatistics enabled="true"/&gt;
+      &lt;eviction strategy="NONE"/&gt;
+
+      &lt;loaders passivation="false" shared="true" preload="true"&gt;
+        &lt;store class="<emphasis role="bold">org.exoplatform.services.jcr.infinispan.JdbcStringBasedCacheStore</emphasis>" fetchPersistentState="true" ignoreModifications="false" purgeOnStartup="false"&gt;
+          &lt;properties&gt;
+             &lt;property name="stringsTableNamePrefix" value="${infinispan-cl-cache.jdbc.table.name}"/&gt;
+             &lt;property name="idColumnName" value="${infinispan-cl-cache.jdbc.id.column}"/&gt;
+             &lt;property name="dataColumnName" value="${infinispan-cl-cache.jdbc.data.column}"/&gt;
+             &lt;property name="timestampColumnName" value="${infinispan-cl-cache.jdbc.timestamp.column}"/&gt;
+             &lt;property name="idColumnType" value="${infinispan-cl-cache.jdbc.id.type}"/&gt;
+             &lt;property name="dataColumnType" value="${infinispan-cl-cache.jdbc.data.type}"/&gt;
+             &lt;property name="timestampColumnType" value="${infinispan-cl-cache.jdbc.timestamp.type}"/&gt;
+             &lt;property name="dropTableOnExit" value="${infinispan-cl-cache.jdbc.table.drop}"/&gt;
+             &lt;property name="createTableOnStart" value="${infinispan-cl-cache.jdbc.table.create}"/&gt;
+             &lt;property name="connectionFactoryClass" value="${infinispan-cl-cache.jdbc.connectionFactory}"/&gt;
+             &lt;property name="datasourceJndiLocation" value="${infinispan-cl-cache.jdbc.datasource}"/&gt;
+          &lt;/properties&gt;
+          &lt;async enabled="false"/&gt;
+        &lt;/store&gt;
+      &lt;/loaders&gt;
+   &lt;/default&gt;
+
+&lt;/infinispan&gt;</programlisting>
 
     <para>You can also obtain file example from <ulink
-    url="https://github.com/exoplatform/jcr/tree/stable/1.16.x/exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-jbosscache-lock.xml">GitHub</ulink>.</para>
+    url="https://github.com/exoplatform/jcr/tree/stable/1.16.x/exo.jcr.component.core/src/test/resources/conf/standalone/cluster/test-infinispan-lock.xml">GitHub</ulink>.</para>
   </section>
 
   <section id="JCR.MultiDBSchemaSupport.HibernateService_Configuration">

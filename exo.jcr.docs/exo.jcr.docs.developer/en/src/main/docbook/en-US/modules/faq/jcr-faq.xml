@@ -253,8 +253,8 @@ session.logout();
 
         <itemizedlist>
           <listitem>
-            <para>Dedicated RDBMS anyone like MySQL, Postges, Oracle and, etc
-            but just not HSSQL;</para>
+            <para>Dedicated RDBMS such as MySQL, Postges, Oracle and, etc but
+            just not HSSQL;</para>
           </listitem>
 
           <listitem>
@@ -264,32 +264,32 @@ session.logout();
           </listitem>
 
           <listitem>
-            <para>Fast network between JCR nodes.</para>
+            <para>Fast network between JCR Cluster nodes.</para>
           </listitem>
         </itemizedlist>
 
-        <para>So now, need to configure Container a bit. Check
+        <para>So now, we need to configure the Container a bit. Check
         exo-configuration.xml to be sure that you are using JBossTS
-        Transaction Service and JBossCache Transaction Manager, as shown
+        Transaction Service and Infinispan Transaction Manager, as shown
         below.</para>
 
         <programlisting language="xml">&lt;component&gt;
-   &lt;key&gt;org.jboss.cache.transaction.TransactionManagerLookup&lt;/key&gt;
-   &lt;type&gt;org.jboss.cache.GenericTransactionManagerLookup&lt;/type&gt;
+   &lt;key&gt;org.infinispan.transaction.lookup.TransactionManagerLookup&lt;/key&gt;
+   &lt;type&gt;org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup&lt;/type&gt;
 &lt;/component&gt;
-
+   
 &lt;component&gt;
-   &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
-   &lt;type&gt;org.exoplatform.services.transaction.jbosscache.JBossTransactionsService&lt;/type&gt;
-   &lt;init-params&gt;
-      &lt;value-param&gt;
-         &lt;name&gt;timeout&lt;/name&gt;
-         &lt;value&gt;300&lt;/value&gt;
-      &lt;/value-param&gt;
-   &lt;/init-params&gt;
+  &lt;key&gt;org.exoplatform.services.transaction.TransactionService&lt;/key&gt;
+  &lt;type&gt;org.exoplatform.services.transaction.infinispan.JBossTransactionsService&lt;/type&gt;
+  &lt;init-params&gt;
+    &lt;value-param&gt;
+      &lt;name&gt;timeout&lt;/name&gt;
+      &lt;value&gt;3000&lt;/value&gt;
+    &lt;/value-param&gt;
+  &lt;/init-params&gt;   
 &lt;/component&gt;</programlisting>
 
-        <para>Next stage is actually the JCR configuration. We need JBossCache
+        <para>Next stage is actually the JCR configuration. We need Infinispan
         configuration templates for : data-cache, indexer-cache and
         lock-manager-cache. Later they will be used to configure JCR's core
         components. There are pre-bundled templates in EAR or JAR in
@@ -303,44 +303,28 @@ session.logout();
             <para>&lt;cache&gt; configuration should look like this:</para>
 
             <programlisting language="xml">&lt;cache enabled="true"
-     class="org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache"&gt;
-     &lt;properties&gt;
-        &lt;property name="jbosscache-configuration" value="test-jbosscache-data.xml" /&gt;
-        &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-        &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
-        &lt;property name="jbosscache-cluster-name" value="JCR-cluster-data" /&gt;
-        &lt;property name="jbosscache-shareable" value="true"/&gt;
-     &lt;/properties&gt;
+   class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache"&gt;
+   &lt;properties&gt;
+      &lt;property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-config.xml" /&gt;
+      &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
+      &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
+   &lt;/properties&gt;
 &lt;/cache&gt;</programlisting>
 
             <itemizedlist>
               <listitem>
-                <para>"jbosscache-configuration" is the path to configuration
+                <para>"infinispan-configuration" is the path to configuration
                 template;</para>
               </listitem>
 
               <listitem>
                 <para>"jgroups-configuration" is path to JGroups configuration
-                that is multiplexer stack is used (default). This file is also
-                pre-bundled with templates and is recommended for use;</para>
+                that relies on JGroups shared transport.</para>
               </listitem>
 
               <listitem>
-                <para>"jgroups-multiplexer-stack" set to "false" with the
-                jgroups configuration with the shared transport enabled in
-                order to use the shared transport.</para>
-              </listitem>
-
-              <listitem>
-                <para>"jbosscache-cluster-name" is the name of cluster group.
-                It should be different for each workspace and each workspace
-                component. I.e.:
-                &lt;repository_name&gt;-&lt;ws_name&gt;-&lt;component(cache\|lock\|index)&gt;</para>
-              </listitem>
-
-              <listitem>
-                <para>"jbosscache-shareable" set "true" in order to share the
-                same JBoss Cache instance between several workspaces.</para>
+                <para>"infinispan-cluster-name" is the name of cluster
+                group.</para>
               </listitem>
             </itemizedlist>
           </listitem>
@@ -352,20 +336,18 @@ session.logout();
 
             <itemizedlist>
               <listitem>
-                <para>You must replace or add in &lt;query-handler&gt; block
-                the "changesfilter-class" parameter equals with:</para>
+                <para>You must replace or add in the &lt;query-handler&gt;
+                block, the "changesfilter-class" parameter equals with:</para>
 
-                <programlisting language="xml">&lt;property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.jbosscache.JBossCacheIndexChangesFilter"/&gt;</programlisting>
+                <programlisting language="xml">&lt;property name="changesfilter-class" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter"/&gt;</programlisting>
               </listitem>
 
               <listitem>
-                <para>add JBossCache-oriented configuration:</para>
+                <para>add Infinispan-oriented configuration:</para>
 
-                <programlisting language="xml">&lt;property name="jbosscache-configuration" value="test-jbosscache-indexer.xml" /&gt;
+                <programlisting language="xml">&lt;property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-indexer.xml" /&gt;
 &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-&lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
-&lt;property name="jbosscache-cluster-name" value="JCR-cluster-indexer" /&gt;
-&lt;property name="jbosscache-shareable" value="true"/&gt;
+&lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
 &lt;property name="max-volatile-time" value="60" /&gt;</programlisting>
               </listitem>
             </itemizedlist>
@@ -384,83 +366,74 @@ session.logout();
 
             <para>Maybe this is the hardest element to configure, because we
             have to define access to DB where locks will be stored. Replace
-            exsiting lock-manager configuration with shown below.</para>
+            exsiting lock-manager configuration with the next one:</para>
 
-            <programlisting language="xml">
-&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl"&gt;
+            <programlisting language="xml">&lt;lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl"&gt;
    &lt;properties&gt;
       &lt;property name="time-out" value="15m" /&gt;
-      &lt;property name="jbosscache-configuration" value="test-jbosscache-lock.xml" /&gt;
+      &lt;property name="infinispan-configuration" value="conf/standalone/cluster/test-infinispan-lock.xml" /&gt;
       &lt;property name="jgroups-configuration" value="udp-mux.xml" /&gt;
-      &lt;property name="jgroups-multiplexer-stack" value="false" /&gt;
-      &lt;property name="jbosscache-cluster-name" value="JCR-cluster-locks" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.name" value="jcrlocks" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.create" value="true" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.drop" value="false" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.table.primarykey" value="jcrlocks_pk" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.fqn.column" value="fqn" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
-      &lt;property name="jbosscache-shareable" value="true"/&gt;
+      &lt;property name="infinispan-cluster-name" value="JCR-cluster" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.table.name" value="lk" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.table.create" value="true" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.table.drop" value="false" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.id.column" value="id" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.data.column" value="data" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" /&gt;
    &lt;/properties&gt;
-&lt;/lock-manager&gt;
-
-</programlisting>
+&lt;/lock-manager&gt;</programlisting>
 
             <para>First few properties are the same as in the previous
             components, but here you can see some strange
-            "jbosscache-cl-cache.jdbc.*" properties. They define access
-            parameters for database where lock are persisted.</para>
+            "infinispan-cl-cache.jdbc.*" properties. They define access
+            parameters to the database where lock are persisted.</para>
 
             <itemizedlist>
               <listitem>
-                <para>"jbosscache-cl-cache.jdbc.table.create" - whether to
-                create it or not. Usually "true";</para>
+                <para>"infinispan-cl-cache.jdbc.table.create" - Indicate
+                whether to create the table or not at startup. Usually
+                "true";</para>
               </listitem>
 
               <listitem>
-                <para>"jbosscache-cl-cache.jdbc.table.drop" - whether to drop
-                on a start or not. Use "false";</para>
+                <para>"infinispan-cl-cache.jdbc.table.drop" - Indicate whether
+                to drop the table at startup or not. Use "false";</para>
               </listitem>
 
               <listitem>
-                <para>"jbosscache-cl-cache.jdbc.table.primarykey" - the name
-                of column with pk;</para>
+                <para>"infinispan-cl-cache.jdbc.table.name" - The prefix for
+                the name of the table where the data will be stored.;</para>
               </listitem>
 
               <listitem>
-                <para>"jbosscache-cl-cache.jdbc.fqn.column" - the name of one
-                more column. If you are not sure how to use, follow the
-                example above (if much interested, please refer to JBossCache
-                JDBCCacheLoader documentation)</para>
+                <para>"infinispan-cl-cache.jdbc.id.column" - The name of the
+                column where the id will be stored.</para>
               </listitem>
 
               <listitem>
-                <para>"jbosscache-cl-cache.jdbc.node.column" - the name of one
-                more column. If you are not sure how to use, follow the
-                example above (if much interested, please refer to JBossCache
-                JDBCCacheLoader documentation)</para>
+                <para>"infinispan-cl-cache.jdbc.data.column" - The name of the
+                column where the StoredEntry will be binary stored.
+                Mandatory.</para>
               </listitem>
 
               <listitem>
-                <para>"jbosscache-cl-cache.jdbc.parent.column" - name of one
-                more column. If you are not sure how to use, follow the
-                example above if you are not sure (if much interested, please
-                refer to JBossCache JDBCCacheLoader documentation)</para>
+                <para>"infinispan-cl-cache.jdbc.timestamp.column" - The name
+                of the column where the timestamp (Long in java) will be
+                stored.</para>
               </listitem>
 
               <listitem>
-                <para>"jbosscache-cl-cache.jdbc.datasource" - name of
-                configured in Container datasource, where you want to store
-                locks. The best idea is to use the same as for
-                workspace.</para>
+                <para>"infinispan-cl-cache.jdbc.datasource" - The name of the
+                datasource to use to store the locks. The best idea is to use
+                the same as the oned used for the workspace.</para>
               </listitem>
             </itemizedlist>
           </listitem>
         </itemizedlist>
 
-        <para>That's all. JCR is ready for running in a cluster.</para>
+        <para>That's all. The JCR is ready to join a cluster.</para>
       </section>
 
       <section id="JCR.FAQ.JCR.Core.HowToUseLuceneSpellchecker">

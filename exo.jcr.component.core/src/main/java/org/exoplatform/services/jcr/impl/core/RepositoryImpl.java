@@ -283,7 +283,7 @@ public class RepositoryImpl implements ManageableRepository
             + " is not configured. Use RepositoryImpl.configWorkspace() method");
       }
 
-      WorkspaceInitializer workspaceInitializer =
+      final WorkspaceInitializer workspaceInitializer =
          repositoryContainer.getWorkspaceContainer(workspaceName).getWorkspaceInitializer();
 
       SystemParametersPersistenceConfigurator sppc =
@@ -303,15 +303,34 @@ public class RepositoryImpl implements ManageableRepository
          return;
       }
 
-      workspaceInitializer.initWorkspace();
-      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      try
       {
-         public Void run()
+         SecurityHelper.doPrivilegedExceptionAction(new PrivilegedExceptionAction<Void>()
          {
-            wsContainer.start();
-            return null;
+            public Void run() throws Exception
+            {
+               workspaceInitializer.initWorkspace();
+               wsContainer.start();
+               return null;
+            }
+         });
+      }
+      catch (PrivilegedActionException pae)
+      {
+         Throwable cause = pae.getCause();
+         if (cause instanceof RepositoryException)
+         {
+            throw (RepositoryException)cause;
          }
-      });
+         else if (cause instanceof RuntimeException)
+         {
+            throw (RuntimeException)cause;
+         }
+         else
+         {
+            throw new RuntimeException(cause);
+         }
+      }
       LOG.info("Workspace " + workspaceName + "@" + this.name + " is initialized");
    }
 

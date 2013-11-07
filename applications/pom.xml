@@ -45,7 +45,6 @@
       <module>exo.jcr.applications.rest</module>
       <module>exo.jcr.applications.examples</module>
       <module>exo.jcr.ear</module>
-      <module>exo.jcr.ispn.ear</module>
       <module>exo.jcr.applications.jboss</module>
       <module>exo.jcr.applications.tomcat</module>
       <module>exo.jcr.applications.jetty</module>

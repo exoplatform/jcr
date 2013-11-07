@@ -72,6 +72,6 @@ rem set "JAVA_OPTS=%JAVA_OPTS% -Djboss.modules.lockless=true"
 
 rem # Add the eXo variables
 set "JCR_DATA_DIR=../standalone/data"
-set "JAVA_OPTS=%JAVA_OPTS% -Dexo.profiles=jbc -Dexo.jcr.parent.dir=%JCR_DATA_DIR% -Djava.net.preferIPv4Stack=true -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=%JCR_DATA_DIR% -DObjectStoreEnvironmentBean.objectStoreDir=%JCR_DATA_DIR%"
+set "JAVA_OPTS=%JAVA_OPTS% -Dexo.jcr.parent.dir=%JCR_DATA_DIR% -Djava.net.preferIPv4Stack=true -Dcom.arjuna.ats.arjuna.objectstore.objectStoreDir=%JCR_DATA_DIR% -DObjectStoreEnvironmentBean.objectStoreDir=%JCR_DATA_DIR%"
 
 :JAVA_OPTS_SET

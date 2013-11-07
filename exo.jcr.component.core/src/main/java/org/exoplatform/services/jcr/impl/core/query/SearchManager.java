@@ -85,7 +85,6 @@ import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCException;
 import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
-import org.jboss.cache.factories.annotations.NonVolatile;
 import org.picocontainer.Startable;
 
 import java.io.File;
@@ -122,7 +121,6 @@ import javax.jcr.query.Query;
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: SearchManager.java 1008 2009-12-11 15:14:51Z nzamosenchuk $
  */
-@NonVolatile
 @Managed
 @NameTemplate(@Property(key = "service", value = "SearchManager"))
 public class SearchManager implements Startable, MandatoryItemsPersistenceListener, Suspendable, Backupable

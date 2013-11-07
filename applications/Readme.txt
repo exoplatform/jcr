@@ -20,15 +20,13 @@ III. Deployment
    If you want to deploy Jetty, go to folder "exo.jcr.applications.Jetty" and run "mvn clean install -Pdeploy" command.
    If you want to deploy JBoss, go to folder "exo.jcr.applications.jboss" and run "mvn clean install -Pdeploy" command.
 
-IV. If you want to deploy AS with eXo JCR based on ISPN use "ispn" profile in deployment command like this "mvn clean install -Pdeploy,ispn"
-
-V. If the command has executed successfully, go to exo-working directory, choose deployed server and run :
+IV. If the command has executed successfully, go to exo-working directory, choose deployed server and run :
     In Unix environment
-       * For Tomcat "bin/eXo-jbc.sh run" (or bin/eXo-ispn.sh run) command.
-       * For Jetty "/eXo-jbc.sh" (or /eXo-ispn.sh) command.
-       * For JBoss "bin/standalone-jbc.sh" (or bin/standalone-ispn.sh) command.
+       * For Tomcat "bin/eXo.sh run" command.
+       * For Jetty "/eXo.sh" command.
+       * For JBoss "bin/standalone.sh" command.
     In Windows environment
-       * For Tomcat "bin/eXo-jbc.bat run" (or bin/eXo-ispn.bat run) command.
-       * For Jetty "/eXo-jbc.bat" (or /eXo-ispn.bat) command.
-       * For JBoss "bin/standalone-jbc.bat" (or bin/standalone-ispn.bat) command.
+       * For Tomcat "bin/eXo.bat run" command.
+       * For Jetty "/eXo.bat" command.
+       * For JBoss "bin/standalone.bat" command.
 

@@ -304,14 +304,7 @@ public class TesterConfigurationHelper
       }
       catch (ClassNotFoundException e)
       {
-         ArrayList cacheParams = new ArrayList();
-         cacheParams.add(new SimpleParameterEntry("jbosscache-configuration",
-            "conf/standalone/test-jbosscache-config.xml"));
-         cacheParams.add(new SimpleParameterEntry("jbosscache-shareable", Boolean.toString(cacheShared)));
-         cacheEntry = new CacheEntry(cacheParams);
-         cacheEntry
-            .setType("org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.JBossCacheWorkspaceStorageCache");
-         cacheEntry.setEnabled(cacheEnabled);
+         throw e;
       }
 
       LockManagerEntry lockManagerEntry = new LockManagerEntry();
@@ -337,19 +330,7 @@ public class TesterConfigurationHelper
       }
       catch (ClassNotFoundException e)
       {
-         // JBC Lock
-         lockManagerEntry.setType("org.exoplatform.services.jcr.impl.core.lock.jbosscache.CacheableLockManagerImpl");
-         lockManagerEntry.putParameterValue("jbosscache-configuration", "conf/standalone/test-jbosscache-lock.xml");
-         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.name", "jcrlocks");
-         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.create", "true");
-         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.drop", "false");
-         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.table.primarykey",
-            "jcrlocks_" + IdGenerator.generate());
-         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.fqn.column", "fqn");
-         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.node.column", "node");
-         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.parent.column", "parent");
-         lockManagerEntry.putParameterValue("jbosscache-cl-cache.jdbc.datasource", dsName);
-         lockManagerEntry.putParameterValue("jbosscache-shareable", String.valueOf(cacheShared));
+         throw e;
       }
 
       WorkspaceEntry workspaceEntry = new WorkspaceEntry();

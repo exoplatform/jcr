@@ -32,10 +32,6 @@
   <name>eXo JCR :: Applications :: Config</name>
   <description>eXo JCR applications parent pom.</description>
 
-  <properties>
-    <exo.deploy.profile>jbc</exo.deploy.profile>
-  </properties>
-
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
@@ -113,35 +109,4 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
-  <profiles>
-    <profile>
-         <id>ispn</id>
-         <dependencies>
-           <dependency>
-             <groupId>org.exoplatform.jcr</groupId>
-             <artifactId>exo.jcr.component.core.impl.infinispan.v5</artifactId>
-             <version>${project.version}</version>
-           </dependency>
-           <dependency>
-             <groupId>org.jgroups</groupId>
-             <artifactId>jgroups</artifactId>
-             <version>3.3.1.Final</version>
-           </dependency>
-           <dependency>
-             <groupId>org.exoplatform.jcr</groupId>
-             <artifactId>exo.jcr.component.core</artifactId>
-             <scope>runtime</scope>
-             <exclusions>
-               <exclusion>
-                 <groupId>org.jboss.cache</groupId>
-                 <artifactId>jbosscache-core</artifactId>
-               </exclusion>
-             </exclusions>
-           </dependency>
-         </dependencies>
-         <properties>
-           <exo.deploy.profile>ispn</exo.deploy.profile>
-         </properties>
-      </profile>
-  </profiles>
 </project>

@@ -120,7 +120,7 @@
 
    <component>
       <key>org.exoplatform.services.jcr.impl.quota.QuotaManager</key>
-      <type>org.exoplatform.services.jcr.impl.quota.jbosscache.JBCQuotaManagerImpl</type>
+      <type>org.exoplatform.services.jcr.impl.quota.infinispan.ISPNQuotaManagerImpl</type>
       <init-params>
          <value-param>
             <name>exceeded-quota-behaviour</name>
@@ -128,8 +128,9 @@
          </value-param>
          <properties-param>
             <name>cache-configuration</name>
-            <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
-            <property name="jbosscache-configuration" value="conf/standalone/test-jbosscache-quota.xml" />
+            <description>infinispan-configuration</description>
+            <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" />
+            <property name="infinispan-configuration" value="conf/standalone/test-infinispan-quota.xml" />
          </properties-param>
       </init-params>
    </component>
@@ -231,13 +232,13 @@
       </init-params>
    </component>
    <component>
-      <key>org.jboss.cache.transaction.TransactionManagerLookup</key>
-      <type>org.jboss.cache.transaction.JBossStandaloneJTAManagerLookup</type>
+      <key>org.infinispan.transaction.lookup.TransactionManagerLookup</key>
+      <type>org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup</type>
    </component>
 
    <component>
       <key>org.exoplatform.services.transaction.TransactionService</key>
-      <type>org.exoplatform.services.transaction.jbosscache.JBossTransactionsService</type>
+      <type>org.exoplatform.services.transaction.infinispan.JBossTransactionsService</type>
       <init-params>
          <value-param>
             <name>timeout</name>
