@@ -1424,17 +1424,17 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          }
       }
       // NullItemData must never be returned inside internal cache operations. 
-      PropertyData propData;
+      ItemData returnedData;
       if (modifyListsOfChild == ModifyChildOption.NOT_MODIFY)
       {
-         propData = (PropertyData)cache.putIfAbsent(new CacheId(getOwnerId(), prop.getIdentifier()), prop);
+         returnedData = (ItemData)cache.putIfAbsent(new CacheId(getOwnerId(), prop.getIdentifier()), prop);
       }
       else
       {
-         propData = (PropertyData)cache.put(new CacheId(getOwnerId(), prop.getIdentifier()), prop, true);
+         returnedData = (ItemData)cache.put(new CacheId(getOwnerId(), prop.getIdentifier()), prop, true);
       }
 
-      return (propData instanceof NullPropertyData) ? null : propData;
+      return (returnedData instanceof NullItemData) ? null : (PropertyData) returnedData;
    }
 
    protected void removeItem(ItemData item)
