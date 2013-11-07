@@ -406,7 +406,7 @@
             <dependency>
                <groupId>com.microsoft</groupId>
                <artifactId>sqljdbc</artifactId>
-               <version>3.0.1301.101</version>
+               <version>4.0.2206.100</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
