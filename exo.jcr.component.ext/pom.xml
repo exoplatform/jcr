@@ -419,7 +419,7 @@
             <dependency>
                <groupId>com.microsoft</groupId>
                <artifactId>sqljdbc</artifactId>
-               <version>3.0.1301.101</version>
+               <version>4.0.2206.100</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
@@ -432,7 +432,7 @@
          <dependencies>
             <dependency>
                <groupId>com.ibm.db2</groupId>
-               <artifactId>db2jcc</artifactId>
+               <artifactId>db2jcc4</artifactId>
                <version>9.7</version>
                <scope>test</scope>
             </dependency>
@@ -551,7 +551,7 @@
             <dependency>
               <groupId>com.h2database</groupId>
               <artifactId>h2</artifactId>
-              <version>1.3.161</version>
+              <version>1.3.174</version>
             </dependency>
          </dependencies>
       </profile>

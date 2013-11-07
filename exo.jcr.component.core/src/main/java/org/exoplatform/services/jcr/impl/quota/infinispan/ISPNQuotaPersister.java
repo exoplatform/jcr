@@ -146,12 +146,19 @@ public class ISPNQuotaPersister extends AbstractQuotaPersister
    /**
     * {@inheritDoc}
     */
-   public void setWorkspaceQuota(String repositoryName, String workspaceName, long quotaLimit)
+   public void setWorkspaceQuota(final String repositoryName, final String workspaceName, final long quotaLimit)
    {
-      String wsUniqueName = composeWorkspaceUniqueName(repositoryName, workspaceName);
-      CacheKey key = new WorkspaceQuotaKey(wsUniqueName);
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            String wsUniqueName = composeWorkspaceUniqueName(repositoryName, workspaceName);
+            CacheKey key = new WorkspaceQuotaKey(wsUniqueName);
 
-      cache.put(key, quotaLimit);
+            cache.put(key, quotaLimit);
+            return null;
+         }
+      });
    }
 
    /**
@@ -206,10 +213,17 @@ public class ISPNQuotaPersister extends AbstractQuotaPersister
    /**
     * {@inheritDoc}
     */
-   public void setRepositoryQuota(String repositoryName, long quotaLimit)
+   public void setRepositoryQuota(final String repositoryName, final long quotaLimit)
    {
-      CacheKey key = new RepositoryQuotaKey(repositoryName);
-      cache.put(key, quotaLimit);
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            CacheKey key = new RepositoryQuotaKey(repositoryName);
+            cache.put(key, quotaLimit);
+            return null;
+         }
+      });
    }
 
    /**
@@ -251,10 +265,17 @@ public class ISPNQuotaPersister extends AbstractQuotaPersister
    /**
     * {@inheritDoc}
     */
-   public void setGlobalDataSize(long dataSize)
+   public void setGlobalDataSize(final long dataSize)
    {
-      CacheKey key = new GlobalDataSizeKey();
-      cache.put(key, dataSize);
+      SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+      {
+         public Void run()
+         {
+            CacheKey key = new GlobalDataSizeKey();
+            cache.put(key, dataSize);
+            return null;
+         }
+      });
    }
 
    /**
@@ -459,10 +480,15 @@ public class ISPNQuotaPersister extends AbstractQuotaPersister
    /**
     * Returns {@link QuotaValue} otherwise throws {@link UnknownQuotaLimitException}.
     */
-   private QuotaValue getQuotaValue(CacheKey key) throws UnknownQuotaLimitException
+   private QuotaValue getQuotaValue(final CacheKey key) throws UnknownQuotaLimitException
    {
-      QuotaValue quotaValue = (QuotaValue)cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
-
+      QuotaValue quotaValue = SecurityHelper.doPrivilegedAction(new PrivilegedAction<QuotaValue>()
+      {
+         public QuotaValue run()
+         {
+            return (QuotaValue)cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
+         }
+      });
       if (quotaValue == null)
       {
          throw new UnknownQuotaLimitException("Quota was not set early");
@@ -474,10 +500,15 @@ public class ISPNQuotaPersister extends AbstractQuotaPersister
    /**
     * Returns data size value otherwise throws {@link UnknownDataSizeException}.
     */
-   private long getDataSize(CacheKey key) throws UnknownDataSizeException
+   private long getDataSize(final CacheKey key) throws UnknownDataSizeException
    {
-      Long size = (Long)cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
-
+      Long size = SecurityHelper.doPrivilegedAction(new PrivilegedAction<Long>()
+      {
+         public Long run()
+         {
+            return (Long)cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
+         }
+      });
       if (size == null)
       {
          throw new UnknownDataSizeException("Data size is unknown");

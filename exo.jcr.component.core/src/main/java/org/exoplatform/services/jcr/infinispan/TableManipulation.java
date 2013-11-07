@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.infinispan;
 
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.infinispan.loaders.CacheLoaderException;
+import org.infinispan.loaders.jdbc.DatabaseType;
 
 import java.sql.Connection;
 
@@ -36,5 +37,10 @@ public class TableManipulation extends org.infinispan.loaders.jdbc.TableManipula
    public boolean tableExists(Connection connection, String tableName) throws CacheLoaderException
    {
       return JDBCUtils.tableExists(getTableName(), connection);
+   }
+
+   public boolean isVariableLimitSupported() {
+      DatabaseType type = this.databaseType;
+      return !(type == DatabaseType.DB2 || type == DatabaseType.DB2_390 || type == DatabaseType.SYBASE);
    }
 }

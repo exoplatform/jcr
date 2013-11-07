@@ -18,14 +18,17 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
+import org.exoplatform.services.database.utils.DialectDetecter;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.checker.DummyRepair;
 import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
 import org.exoplatform.services.jcr.impl.core.lock.AbstractLockTableHandler;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 
 import javax.sql.DataSource;
@@ -92,15 +95,35 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
    {
       try
       {
-         return "\"" + lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME)
-            + "_" + "L" + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_") + "\"";
+         String dialect = getDialect();
+         String quote = "\"";
+         if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
+            quote = "`";
+         return quote + lockManagerEntry.getParameterValue(ISPNCacheableLockManagerImpl.INFINISPAN_JDBC_TABLE_NAME)
+            + "_" + "L" + workspaceEntry.getUniqueName().replace("_", "").replace("-", "_") + quote;
       }
       catch (RepositoryConfigurationException e)
       {
          throw new SQLException(e);
       }
    }
-   
+
+   private String getDialect() throws SQLException
+   {
+      Connection jdbcConn = null;
+      try
+      {
+         jdbcConn = openConnection();
+         return DialectDetecter.detect(jdbcConn.getMetaData());
+      }
+      finally
+      {
+         if (jdbcConn != null)
+         {
+            jdbcConn.close();
+         }
+      }
+   }
    /**
     * {@inheritDoc}
     */

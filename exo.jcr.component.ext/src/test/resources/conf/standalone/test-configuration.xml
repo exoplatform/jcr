@@ -617,6 +617,7 @@
                <property name="url" value="${jdbcjcr.url:jdbc:hsqldb:file:target/temp/data/db1;hsqldb.tx=mvcc}"/>
                <property name="username" value="${jdbcjcr.username:sa}"/>
                <property name="password" value="${jdbcjcr.password:}"/>
+               <property name="maxActive" value="3" />
             </properties-param>
          </init-params>
       </component-plugin>
@@ -644,6 +645,7 @@
                <property name="url" value="${jdbcjcr2.url:jdbc:hsqldb:file:target/temp/data/db2;hsqldb.tx=mvcc}"/>
                <property name="username" value="${jdbcjcr2.username:sa}"/>
                <property name="password" value="${jdbcjcr2.password:}"/>
+               <property name="maxActive" value="3" />
             </properties-param>
          </init-params>
       </component-plugin>
@@ -671,6 +673,7 @@
                <property name="url" value="${jdbcjcr3.url:jdbc:hsqldb:file:target/temp/data/db3;hsqldb.tx=mvcc}"/>
                <property name="username" value="${jdbcjcr3.username:sa}"/>
                <property name="password" value="${jdbcjcr3.password:}"/>
+               <property name="maxActive" value="3" />
             </properties-param>
          </init-params>
       </component-plugin>
@@ -698,6 +701,7 @@
                <property name="url" value="${jdbcjcr4.url:jdbc:hsqldb:file:target/temp/data/db4;hsqldb.tx=mvcc}"/>
                <property name="username" value="${jdbcjcr4.username:sa}"/>
                <property name="password" value="${jdbcjcr4.password:}"/>
+               <property name="maxActive" value="3" />
             </properties-param>
          </init-params>
       </component-plugin>
@@ -725,6 +729,7 @@
                <property name="url" value="${jdbcjcr5.url:jdbc:hsqldb:file:target/temp/data/db5;hsqldb.tx=mvcc}"/>
                <property name="username" value="${jdbcjcr5.username:sa}"/>
                <property name="password" value="${jdbcjcr5.password:}"/>
+               <property name="maxActive" value="3" />
             </properties-param>
          </init-params>
       </component-plugin>

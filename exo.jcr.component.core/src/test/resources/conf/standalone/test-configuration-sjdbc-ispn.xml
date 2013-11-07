@@ -290,7 +290,7 @@
           <property name="url" value="${jdbcjcr.url:jdbc:hsqldb:file:target/temp/data/portal;hsqldb.tx=mvcc}"/>
           <property name="username" value="${jdbcjcr.username:sa}"/>
           <property name="password" value="${jdbcjcr.password:}"/>
-          <property name="maxActive" value="250" />
+          <property name="maxActive" value="5" />
         </properties-param>
       </init-params>
     </component-plugin>
@@ -346,6 +346,7 @@
           <property name="url" value="${jdbcjcrdb2.url:jdbc:hsqldb:file:target/temp/data/portaldb2}"/>
           <property name="username" value="${jdbcjcrdb2.username:sa}"/>
           <property name="password" value="${jdbcjcrdb2.password:}"/>
+          <property name="maxActive" value="5" />
         </properties-param>
       </init-params>
     </component-plugin>
@@ -373,6 +374,7 @@
           <property name="url" value="${jdbcjcrtck.url:jdbc:hsqldb:file:target/temp/data/portaltck}"/>
           <property name="username" value="${jdbcjcrtck.username:sa}"/>
           <property name="password" value="${jdbcjcrtck.password:}"/>
+          <property name="maxActive" value="5" />
         </properties-param>
       </init-params>
     </component-plugin>
@@ -481,7 +483,7 @@
           <property name="url" value="${testdbcleaner.url:jdbc:hsqldb:file:target/temp/data/testdbcleaner}"/>
           <property name="username" value="${testdbcleaner.username:sa}"/>
           <property name="password" value="${testdbcleaner.password:}"/>
-          <property name="maxActive" value="200" />
+          <property name="maxActive" value="5" />
         </properties-param>
       </init-params>
     </component-plugin>
