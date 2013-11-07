@@ -60,6 +60,11 @@ public class StringPersistedValueData extends StringValueData implements Persist
          in.readFully(data);
          value = new String(data, Constants.DEFAULT_ENCODING);
       }
+      else
+      {
+         // The value cannot be null so it must be initialized to an empty String
+         value = "";
+      }
    }
 
    /**
