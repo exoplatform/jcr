@@ -36,7 +36,6 @@ import javax.jcr.observation.EventListener;
  * @version $Id: GroovyScript2RestUpdateListener.java 34445 2009-07-24 07:51:18Z
  *          dkatayev $
  */
-@SuppressWarnings("deprecation")
 public class GroovyScript2RestUpdateListener implements EventListener
 {
    /** Logger. */

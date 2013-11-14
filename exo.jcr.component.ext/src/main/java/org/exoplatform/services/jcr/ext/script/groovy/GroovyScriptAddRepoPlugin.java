@@ -60,7 +60,6 @@ public class GroovyScriptAddRepoPlugin extends BaseComponentPlugin
       this.repositoryService = repoService;
    }
 
-   @SuppressWarnings("unchecked")
    public Collection<URL> getRepositories()
    {
       if (params == null)

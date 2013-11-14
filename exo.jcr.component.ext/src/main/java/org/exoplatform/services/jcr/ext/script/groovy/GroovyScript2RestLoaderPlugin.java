@@ -56,7 +56,6 @@ public class GroovyScript2RestLoaderPlugin extends BaseComponentPlugin
    /** Root node for scripts. If it does not exist new one will be created. */
    private String node;
 
-   @SuppressWarnings("unchecked")
    public GroovyScript2RestLoaderPlugin(InitParams params, RepositoryService repoServiceo)
    {
       this.repositoryService = repoServiceo;
