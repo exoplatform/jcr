@@ -37,6 +37,16 @@
       </listitem>
     </itemizedlist></para>
 
+  <note>
+    <para>As the auto registration can have an impact on performance
+    especially if you try to access several times to a component that doesn't
+    exist and that cannot be auto registered, you can find a version of each
+    methods described above with a last parameter that is
+    <emphasis>autoRegistration</emphasis> that you can set to
+    <emphasis>false</emphasis> if you know that it is unnecessary to enable
+    the autoregistration in your case.</para>
+  </note>
+
   <para><emphasis>Definition by type:</emphasis></para>
 
   <para>To define a default implementation class when you try to find a
@@ -230,6 +240,6 @@ public interface MyService
     <emphasis>getComponentInstancesOfType(Class&lt;T&gt;
     componentType)</emphasis> and if you don't need to share your component
     with other containers like <emphasis>Google Guice</emphasis>,
-    <emphasis>Spring</emphasis> or <emphasis>Weld</emphasis>. </para>
+    <emphasis>Spring</emphasis> or <emphasis>Weld</emphasis>.</para>
   </note>
 </section>
