@@ -33,10 +33,10 @@ import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.util.Iterator;
 
 import javax.jcr.Node;
-import javax.jcr.Property;
+import javax.jcr.NodeIterator;
+import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
@@ -128,16 +128,16 @@ public class TestQuotas extends AbstractQuotaManagerTest
       long workspaceSize = wsQuotaManager.getWorkspaceDataSizeDirectly();
       long nodesSize = 0;
 
-      Iterator<Node> nodes = session.getRootNode().getNodes();
+      NodeIterator nodes = session.getRootNode().getNodes();
       while (nodes.hasNext())
       {
-         nodesSize += wsQuotaManager.getNodeDataSizeDirectly(nodes.next().getPath());
+         nodesSize += wsQuotaManager.getNodeDataSizeDirectly(nodes.nextNode().getPath());
       }
 
-      Iterator<Property> props = session.getRootNode().getProperties();
+      PropertyIterator props = session.getRootNode().getProperties();
       while (props.hasNext())
       {
-         PropertyImpl prop = (PropertyImpl)props.next();
+         PropertyImpl prop = (PropertyImpl)props.nextProperty();
          if (!prop.isMultiValued())
          {
             Value value = prop.getValue();
@@ -206,8 +206,8 @@ public class TestQuotas extends AbstractQuotaManagerTest
    {
       TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
       WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.ISOLATED, null);
-      wsEntry.getContainer().getParameters()
-         .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME, "false"));
+      wsEntry.getContainer().addParameter(
+         new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME, "false"));
 
       ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.ISOLATED, null);
       helper.addWorkspace(repository, wsEntry);

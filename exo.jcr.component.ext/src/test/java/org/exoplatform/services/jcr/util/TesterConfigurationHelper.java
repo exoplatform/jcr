@@ -34,10 +34,9 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
 
@@ -54,8 +53,6 @@ import javax.sql.DataSource;
  */
 public class TesterConfigurationHelper
 {
-   private static Log log = ExoLogger.getLogger("exo.jcr.component.core.ConfigurationHelper");
-
    private static TesterConfigurationHelper instance;
 
    private TesterConfigurationHelper()
@@ -139,19 +136,19 @@ public class TesterConfigurationHelper
    public WorkspaceEntry copyWorkspaceEntry(WorkspaceEntry baseWorkspaceEntry) throws Exception
    {
       // container entry
-      ArrayList<SimpleParameterEntry> params = new ArrayList<SimpleParameterEntry>();
-      params.addAll(copyList(baseWorkspaceEntry.getContainer().getParameters()));
+      List<SimpleParameterEntry> params = new ArrayList<SimpleParameterEntry>();
+      params.addAll(copyCollection(baseWorkspaceEntry.getContainer().getParameters()));
       ContainerEntry containerEntry =
                new ContainerEntry(baseWorkspaceEntry.getContainer().getType(), params);
       containerEntry.setParameters(params);
 
       // value storage
-      ArrayList<ValueStorageEntry> list = new ArrayList<ValueStorageEntry>();
+      List<ValueStorageEntry> list = new ArrayList<ValueStorageEntry>();
 
       
       for (ValueStorageEntry baseValueStorageEntry : baseWorkspaceEntry.getContainer().getValueStorages())
       {
-         ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
+         List<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
 
          for (ValueStorageFilterEntry baseValueStorageFilterEntry : baseValueStorageEntry.getFilters())
          {
@@ -164,12 +161,10 @@ public class TesterConfigurationHelper
             vsparams.add(filterEntry);
          }
 
-         ValueStorageEntry valueStorageEntry =
-                  new ValueStorageEntry(baseValueStorageEntry.getType(),vsparams);
-         ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
-         spe.addAll(copyList(baseValueStorageEntry.getParameters()));
+         List<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
+         spe.addAll(copyCollection(baseValueStorageEntry.getParameters()));
+         ValueStorageEntry valueStorageEntry = new ValueStorageEntry(baseValueStorageEntry.getType(), spe);
          valueStorageEntry.setId(baseValueStorageEntry.getId());
-         valueStorageEntry.setParameters(spe);
          valueStorageEntry.setFilters(vsparams);
 
          // containerEntry.setValueStorages();
@@ -180,13 +175,13 @@ public class TesterConfigurationHelper
 
       // Indexer
       params = new ArrayList<SimpleParameterEntry>();
-      params.addAll(copyList(baseWorkspaceEntry.getQueryHandler().getParameters()));
+      params.addAll(copyCollection(baseWorkspaceEntry.getQueryHandler().getParameters()));
       QueryHandlerEntry qEntry =
                new QueryHandlerEntry(baseWorkspaceEntry.getQueryHandler().getType(), params);
 
       // Cache
       params = new ArrayList<SimpleParameterEntry>();
-      params.addAll(copyList(baseWorkspaceEntry.getCache().getParameters()));
+      params.addAll(copyCollection(baseWorkspaceEntry.getCache().getParameters()));
       CacheEntry cacheEntry = new CacheEntry(params);
       cacheEntry.setType(baseWorkspaceEntry.getCache().getType());
 
@@ -233,7 +228,7 @@ public class TesterConfigurationHelper
     */
    public RepositoryEntry copyRepositoryEntry(RepositoryEntry baseRepositoryEntry) throws Exception
    {
-      ArrayList<WorkspaceEntry> wsEntries = new ArrayList<WorkspaceEntry>();
+      List<WorkspaceEntry> wsEntries = new ArrayList<WorkspaceEntry>();
 
       for (WorkspaceEntry wsEntry : baseRepositoryEntry.getWorkspaceEntries())
       {
@@ -260,16 +255,16 @@ public class TesterConfigurationHelper
    /**
     * Create copy of list with SimpleParameterEntry-s
     */
-   private List<SimpleParameterEntry> copyList(List<SimpleParameterEntry> baseArrayList)
+   private Collection<SimpleParameterEntry> copyCollection(Collection<SimpleParameterEntry> base)
    {
-      ArrayList<SimpleParameterEntry> arrayList = new ArrayList<SimpleParameterEntry>();
+      Collection<SimpleParameterEntry> result = new ArrayList<SimpleParameterEntry>();
 
-      for (SimpleParameterEntry baseParameter : baseArrayList)
+      for (SimpleParameterEntry baseParameter : base)
       {
-         arrayList.add(new SimpleParameterEntry(baseParameter.getName(), baseParameter.getValue()));
+         result.add(new SimpleParameterEntry(baseParameter.getName(), baseParameter.getValue()));
       }
 
-      return arrayList;
+      return result;
    }
 
    /**
@@ -298,7 +293,7 @@ public class TesterConfigurationHelper
       String wsName = "ws_" + id;
 
       // container entry
-      List params = new ArrayList();
+      List<SimpleParameterEntry> params = new ArrayList<SimpleParameterEntry>();
       params.add(new SimpleParameterEntry("source-name", dsName));
       params.add(new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE, dbStructureType.toString()));
       params.add(new SimpleParameterEntry("max-buffer-size", "204800"));
@@ -306,28 +301,25 @@ public class TesterConfigurationHelper
       params.add(new SimpleParameterEntry("swap-directory", "target/temp/swap/" + wsName));
 
       ContainerEntry containerEntry =
-         new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer",
-            (ArrayList)params);
+         new ContainerEntry("org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer", params);
       containerEntry.setParameters(params);
 
       // value storage
-      ArrayList list = new ArrayList();
+      List<ValueStorageEntry> list = new ArrayList<ValueStorageEntry>();
       if (valueStorageIds != null)
       {
          for (String vsId : valueStorageIds)
          {
-            ArrayList<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
+            List<ValueStorageFilterEntry> vsparams = new ArrayList<ValueStorageFilterEntry>();
             ValueStorageFilterEntry filterEntry = new ValueStorageFilterEntry();
             filterEntry.setPropertyType("Binary");
             vsparams.add(filterEntry);
 
-            ValueStorageEntry valueStorageEntry =
-               new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage",
-                  vsparams);
-            ArrayList<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
+            List<SimpleParameterEntry> spe = new ArrayList<SimpleParameterEntry>();
             spe.add(new SimpleParameterEntry("path", "target/temp/values/" + wsName + "-" + vsId));
+            ValueStorageEntry valueStorageEntry =
+               new ValueStorageEntry("org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage", spe);
             valueStorageEntry.setId(vsId);
-            valueStorageEntry.setParameters(spe);
             valueStorageEntry.setFilters(vsparams);
 
             // containerEntry.setValueStorages();
@@ -339,13 +331,13 @@ public class TesterConfigurationHelper
       containerEntry.setValueStorages(list);
 
       // Indexer
-      params = new ArrayList();
+      params = new ArrayList<SimpleParameterEntry>();
       params.add(new SimpleParameterEntry("index-dir", "target/temp/index/" + wsName));
       QueryHandlerEntry qEntry =
          new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", params);
       
       // Cache
-      ArrayList cacheParams = new ArrayList();
+      List<SimpleParameterEntry> cacheParams = new ArrayList<SimpleParameterEntry>();
       cacheParams.add(new SimpleParameterEntry("maxSize", "2000"));
       cacheParams.add(new SimpleParameterEntry("liveTime", "20m"));
       CacheEntry cacheEntry = new CacheEntry(cacheParams);
@@ -386,7 +378,7 @@ public class TesterConfigurationHelper
       return workspaceEntry;
    }
 
-   public List<String> getValueStorageIds(ArrayList<ValueStorageEntry> entries)
+   public List<String> getValueStorageIds(List<ValueStorageEntry> entries)
    {
       List<String> ids = new ArrayList<String>();
       if (entries != null)

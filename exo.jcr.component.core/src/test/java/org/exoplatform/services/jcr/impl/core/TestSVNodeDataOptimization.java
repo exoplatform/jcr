@@ -191,7 +191,7 @@ public class TestSVNodeDataOptimization extends JcrImplBaseTest
 
    private WorkspaceEntry makeWorkspaceEntry(String name, String sourceName, File sysViewFile, SessionImpl ses)
    {
-      WorkspaceEntry ws1e = (WorkspaceEntry)ses.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+      WorkspaceEntry ws1e = ses.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
       WorkspaceEntry ws1back = new WorkspaceEntry();
       ws1back.setName(name);
@@ -215,17 +215,17 @@ public class TestSVNodeDataOptimization extends JcrImplBaseTest
       ws1back.setInitializer(wiEntry);
 
       // Indexer
-      ArrayList qParams = new ArrayList();
+      List<SimpleParameterEntry> qParams = new ArrayList<SimpleParameterEntry>();
       qParams.add(new SimpleParameterEntry("indexDir", "target" + File.separator + name));
       QueryHandlerEntry qEntry =
          new QueryHandlerEntry("org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex", qParams);
 
       ws1back.setQueryHandler(qEntry);
 
-      ArrayList params = new ArrayList();
-      for (Iterator i = ws1back.getContainer().getParameters().iterator(); i.hasNext();)
+      List<SimpleParameterEntry> params = new ArrayList<SimpleParameterEntry>();
+      for (Iterator<SimpleParameterEntry> i = ws1back.getContainer().getParameterIterator(); i.hasNext();)
       {
-         SimpleParameterEntry p = (SimpleParameterEntry)i.next();
+         SimpleParameterEntry p = i.next();
          SimpleParameterEntry newp = new SimpleParameterEntry(p.getName(), p.getValue());
 
          if (isMultiDB(ses) && newp.getName().equals("source-name"))
@@ -253,7 +253,7 @@ public class TestSVNodeDataOptimization extends JcrImplBaseTest
 
    private boolean isMultiDB(SessionImpl session)
    {
-      WorkspaceEntry ws1e = (WorkspaceEntry)session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
+      WorkspaceEntry ws1e = session.getContainer().getComponentInstanceOfType(WorkspaceEntry.class);
 
       try
       {

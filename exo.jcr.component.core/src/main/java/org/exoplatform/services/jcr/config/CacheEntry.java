@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -38,7 +38,7 @@ public class CacheEntry extends ExtendedMappedParametrizedObjectEntry
       super(CACHE);
    }
 
-   public CacheEntry(ArrayList params)
+   public CacheEntry(List<SimpleParameterEntry> params)
    {
       super("org.exoplatform.services.jcr.impl.storage.cache.WorkspaceCache", params, CACHE);
    }

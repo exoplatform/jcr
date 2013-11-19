@@ -174,7 +174,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    {
       if (config.getLockManager() != null)
       {
-         if (config.getLockManager().getParameters() != null
+         if (config.getLockManager().hasParameters()
             && config.getLockManager().getParameterValue(TIME_OUT, null) != null)
          {
             long timeOut = config.getLockManager().getParameterTime(TIME_OUT);

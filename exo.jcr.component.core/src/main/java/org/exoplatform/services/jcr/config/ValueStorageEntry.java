@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -33,24 +33,24 @@ public class ValueStorageEntry extends ExtendedMappedParametrizedObjectEntry
    
    private String id;
 
-   private ArrayList<ValueStorageFilterEntry> filters;
+   private List<ValueStorageFilterEntry> filters;
 
    public ValueStorageEntry()
    {
       super(VALUE_STORAGE);
    }
 
-   public ValueStorageEntry(String type, ArrayList<ValueStorageFilterEntry> params)
+   public ValueStorageEntry(String type, List<SimpleParameterEntry> params)
    {
       super(type, params, VALUE_STORAGE);
    }
 
-   public ArrayList<ValueStorageFilterEntry> getFilters()
+   public List<ValueStorageFilterEntry> getFilters()
    {
       return filters;
    }
 
-   public void setFilters(ArrayList<ValueStorageFilterEntry> filters)
+   public void setFilters(List<ValueStorageFilterEntry> filters)
    {
       this.filters = filters;
    }

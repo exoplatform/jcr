@@ -19,9 +19,6 @@
 
 package org.exoplatform.services.jcr.config;
 
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-
 import java.util.List;
 
 /**
@@ -38,16 +35,13 @@ public abstract class ExtendedMappedParametrizedObjectEntry extends MappedParame
 
    private String componentName;
 
-   private static final Log LOG = ExoLogger
-      .getLogger("org.exoplatform.services.jcr.config.ExtendedMappedParametrizedObjectEntry");
-
    public ExtendedMappedParametrizedObjectEntry(String componentName)
    {
       super();
       this.componentName = componentName;
    }
 
-   public ExtendedMappedParametrizedObjectEntry(String type, List parameters, String componentName)
+   public ExtendedMappedParametrizedObjectEntry(String type, List<SimpleParameterEntry> parameters, String componentName)
    {
       super(type, parameters);
       this.componentName = componentName;
@@ -55,7 +49,7 @@ public abstract class ExtendedMappedParametrizedObjectEntry extends MappedParame
 
    public void initSystemParameterUpdater(WorkspaceEntry workspaceEntry, SystemParametersPersistenceConfigurator sppc)
    {
-      systemParameterUpdater = new SystemParameterUpdater(super.getParameters(), sppc, componentName, workspaceEntry);
+      systemParameterUpdater = new SystemParameterUpdater(this, sppc, componentName, workspaceEntry);
       systemParameterUpdater.updateSystemParameters();
    }
 
@@ -74,7 +68,7 @@ public abstract class ExtendedMappedParametrizedObjectEntry extends MappedParame
 
       if (systemParameterUpdater != null)
       {
-         systemParameterUpdater.setParameters(parameters);
+         systemParameterUpdater.setParameters(this);
       }
    }
    

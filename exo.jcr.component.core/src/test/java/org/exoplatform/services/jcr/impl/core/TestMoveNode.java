@@ -785,8 +785,8 @@ public class TestMoveNode extends JcrImplBaseTest
    {
       TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
       WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
-      wsEntry.getContainer().getParameters()
-         .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME, "false"));
+      wsEntry.getContainer().addParameter(
+         new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_RENAME, "false"));
 
       ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
@@ -802,8 +802,8 @@ public class TestMoveNode extends JcrImplBaseTest
    {
       TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
       WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
-      wsEntry.getContainer().getParameters()
-         .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME, "false"));
+      wsEntry.getContainer().addParameter(
+         new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDENTS_ON_RENAME, "false"));
 
       ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
@@ -819,8 +819,8 @@ public class TestMoveNode extends JcrImplBaseTest
    {
       TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
       WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
-      wsEntry.getContainer().getParameters()
-         .add(new SimpleParameterEntry(WorkspaceDataContainer.MAX_DESCENDANTS_NODES_ALLOWED_ON_MOVE, "2"));
+      wsEntry.getContainer().addParameter(
+         new SimpleParameterEntry(WorkspaceDataContainer.MAX_DESCENDANTS_NODES_ALLOWED_ON_MOVE, "2"));
 
       ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);
@@ -836,8 +836,8 @@ public class TestMoveNode extends JcrImplBaseTest
    {
       TesterConfigurationHelper helper = TesterConfigurationHelper.getInstance();
       WorkspaceEntry wsEntry = helper.createWorkspaceEntry(DatabaseStructureType.MULTI, null);
-      wsEntry.getContainer().getParameters()
-         .add(new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_MOVE, "false"));
+      wsEntry.getContainer().addParameter(
+         new SimpleParameterEntry(WorkspaceDataContainer.TRIGGER_EVENTS_FOR_DESCENDANTS_ON_MOVE, "false"));
 
       ManageableRepository repository = helper.createRepository(container, DatabaseStructureType.MULTI, null);
       helper.addWorkspace(repository, wsEntry);

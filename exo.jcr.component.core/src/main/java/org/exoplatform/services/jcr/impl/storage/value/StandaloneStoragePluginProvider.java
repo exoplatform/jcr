@@ -38,6 +38,7 @@ import org.exoplatform.services.log.Log;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
@@ -159,7 +160,7 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
 
                // init properties
                Properties props = new Properties();
-               List<SimpleParameterEntry> paramEntries = storageEntry.getParameters();
+               Collection<SimpleParameterEntry> paramEntries = storageEntry.getParameters();
                for (SimpleParameterEntry paramEntry : paramEntries)
                {
                   props.setProperty(paramEntry.getName(), paramEntry.getValue());

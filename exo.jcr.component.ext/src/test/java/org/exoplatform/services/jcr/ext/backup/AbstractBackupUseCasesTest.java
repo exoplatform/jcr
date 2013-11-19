@@ -16,7 +16,6 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
-import org.apache.commons.collections.map.HashedMap;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.services.jcr.RepositoryService;
@@ -35,7 +34,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -575,7 +574,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       RepositoryEntry newRE = helper.createRepositoryEntry(DatabaseStructureType.MULTI, null, null);
 
       // create workspace mappingS
-      Map<String, String> workspaceMapping = new HashedMap();
+      Map<String, String> workspaceMapping = new HashMap<String, String>();
       workspaceMapping.put(repository.getConfiguration().getSystemWorkspaceName(), newRE.getSystemWorkspaceName());
 
       File backLog = new File(bch.getLogFilePath());
@@ -617,7 +616,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       RepositoryEntry newRE = helper.createRepositoryEntry(DatabaseStructureType.MULTI, null, null);
 
       // create workspace mappingS
-      Map<String, String> workspaceMapping = new HashedMap();
+      Map<String, String> workspaceMapping = new HashMap<String, String>();
       workspaceMapping.put(repository.getConfiguration().getSystemWorkspaceName(), newRE.getSystemWorkspaceName());
 
       File backLog = new File(bch.getLogFilePath());
@@ -659,7 +658,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
       newRE.getWorkspaceEntries().get(0).getQueryHandler().setType("gg");
 
       // create workspace mappingS
-      Map<String, String> workspaceMapping = new HashedMap();
+      Map<String, String> workspaceMapping = new HashMap<String, String>();
       workspaceMapping.put(repository.getConfiguration().getSystemWorkspaceName(), newRE.getSystemWorkspaceName());
 
       File backLog = new File(bch.getLogFilePath());
@@ -1493,10 +1492,7 @@ public abstract class AbstractBackupUseCasesTest extends AbstractBackupTestCase
    // change  cofig
    WorkspaceEntry wsEntry = helper.copyWorkspaceEntry(repository.getConfiguration().getWorkspaceEntries().get(1));
 
-   List<SimpleParameterEntry> params = wsEntry.getContainer().getParameters();
-   params.set(2, new SimpleParameterEntry("max-buffer-size", "307200"));
-
-   wsEntry.getContainer().setParameters(params);
+   wsEntry.getContainer().addParameter(new SimpleParameterEntry("max-buffer-size", "307200"));
 
    backup.restoreExistingWorkspace(bchLog, repository.getConfiguration().getName(), wsEntry, false);
    checkConent(repository, repository.getConfiguration().getWorkspaceEntries().get(1).getName());

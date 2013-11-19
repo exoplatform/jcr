@@ -235,18 +235,9 @@ public class TestBackupRestore extends BaseStandaloneBackupRestoreTest
       
       for (WorkspaceEntry we : repositoryEntryIsolated.getWorkspaceEntries())
       {
-         List<SimpleParameterEntry> props = we.getContainer().getParameters();
-         
-         for (int i = 0; i < props.size(); i++)
-         {
-            SimpleParameterEntry spe = props.get(i);
-            
-            if (spe.getName().equals(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE))
-            {
-              props.set(i, new SimpleParameterEntry(spe.getName(), DatabaseStructureType.ISOLATED.toString()));
-              break;
-            }
-         }
+         we.getContainer().addParameter(
+            new SimpleParameterEntry(JDBCWorkspaceDataContainer.DB_STRUCTURE_TYPE, DatabaseStructureType.ISOLATED
+               .toString()));
       }
       
       // restore single backup on structure single to isolated

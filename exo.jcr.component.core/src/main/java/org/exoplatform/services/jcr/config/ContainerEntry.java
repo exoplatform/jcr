@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.config;
 
-import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -31,24 +31,24 @@ public class ContainerEntry extends ExtendedMappedParametrizedObjectEntry
 {
    public static final String CONTAINER = "container";
    
-   private ArrayList<ValueStorageEntry> valueStorages;
+   private List<ValueStorageEntry> valueStorages;
 
    public ContainerEntry()
    {
       super(CONTAINER);
    }
 
-   public ContainerEntry(String type, ArrayList params)
+   public ContainerEntry(String type, List<SimpleParameterEntry> params)
    {
       super(type, params, CONTAINER);
    }
 
-   public ArrayList<ValueStorageEntry> getValueStorages()
+   public List<ValueStorageEntry> getValueStorages()
    {
       return valueStorages;
    }
 
-   public void setValueStorages(ArrayList<ValueStorageEntry> valueStorages)
+   public void setValueStorages(List<ValueStorageEntry> valueStorages)
    {
       this.valueStorages = valueStorages;
    }

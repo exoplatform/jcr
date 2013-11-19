@@ -22,8 +22,8 @@ import org.exoplatform.container.configuration.ConfigurationManager;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -65,7 +65,7 @@ public class TemplateConfigurationHelper extends org.exoplatform.container.util.
     * @return
     * @throws IOException
     */
-   public InputStream fillTemplate(InputStream inputStream, List<SimpleParameterEntry> parameters) throws IOException
+   public InputStream fillTemplate(InputStream inputStream, Collection<SimpleParameterEntry> parameters) throws IOException
    {
       Map<String, String> map = new HashMap<String, String>();
       for (SimpleParameterEntry parameterEntry : parameters)
@@ -84,7 +84,7 @@ public class TemplateConfigurationHelper extends org.exoplatform.container.util.
     * @return
     * @throws IOException
     */
-   public InputStream fillTemplate(String filename, List<SimpleParameterEntry> parameters) throws IOException
+   public InputStream fillTemplate(String filename, Collection<SimpleParameterEntry> parameters) throws IOException
    {
       Map<String, String> map = new HashMap<String, String>();
       for (SimpleParameterEntry parameterEntry : parameters)

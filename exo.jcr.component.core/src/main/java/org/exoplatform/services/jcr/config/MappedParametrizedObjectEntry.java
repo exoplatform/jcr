@@ -22,8 +22,11 @@ import org.exoplatform.services.jcr.util.StringNumberParser;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS.
@@ -40,21 +43,36 @@ public abstract class MappedParametrizedObjectEntry
 
    protected String type;
 
-   protected List<SimpleParameterEntry> parameters = new ArrayList<SimpleParameterEntry>();
+   protected Map<String, SimpleParameterEntry> parameters = new LinkedHashMap<String, SimpleParameterEntry>();
 
    public MappedParametrizedObjectEntry()
    {
    }
 
-   public MappedParametrizedObjectEntry(String type, List parameters)
+   public MappedParametrizedObjectEntry(String type, List<SimpleParameterEntry> parameters)
    {
       this.type = type;
-      this.parameters = parameters;
+      setParameters(parameters);
    }
 
-   public List<SimpleParameterEntry> getParameters()
+   public Collection<SimpleParameterEntry> getParameters()
    {
-      return parameters;
+      return parameters.values();
+   }
+
+   public Iterator<SimpleParameterEntry> getParameterIterator()
+   {
+      return parameters.values().iterator();
+   }
+
+   public boolean hasParameters()
+   {
+      return !parameters.isEmpty();
+   }
+
+   public boolean hasParameter(String name)
+   {
+      return parameters.containsKey(name);
    }
 
    /**
@@ -85,31 +103,24 @@ public abstract class MappedParametrizedObjectEntry
    public String getParameterValue(String name, String defaultValue)
    {
       String value = defaultValue;
-      for (int i = 0; i < parameters.size(); i++)
+      SimpleParameterEntry p = parameters.get(name);
+      if (p != null)
       {
-         SimpleParameterEntry p = parameters.get(i);
-         if (p.getName().equals(name))
-         {
-            value = p.getValue();
-            break;
-         }
+         value = p.getValue();
       }
       return value;
    }
 
    public void putParameterValue(String name, String value)
    {
-      for (SimpleParameterEntry p : parameters)
+      SimpleParameterEntry p = parameters.get(name);
+      if (p != null)
       {
-         if (p.getName().equals(name))
-         {
-            p.setValue(value);
-            return;
-         }
+         p.setValue(value);
+         return;
       }
-
       SimpleParameterEntry newParam = new SimpleParameterEntry(name, value);
-      parameters.add(newParam);
+      addParameter(newParam);
    }
 
    /**
@@ -376,7 +387,25 @@ public abstract class MappedParametrizedObjectEntry
 
    public void setParameters(List<SimpleParameterEntry> parameters)
    {
-      this.parameters = parameters;
+      Map<String, SimpleParameterEntry> mParameters = new LinkedHashMap<String, SimpleParameterEntry>();
+      if (parameters != null)
+      {
+         for (SimpleParameterEntry param : parameters)
+         {
+            mParameters.put(param.getName(), param);
+         }
+      }
+      this.parameters = mParameters;
+   }
+
+   public void addParameter(SimpleParameterEntry param)
+   {
+      parameters.put(param.getName(), param);
+   }
+
+   public SimpleParameterEntry getParameter(String name)
+   {
+      return parameters.get(name);
    }
 
    public void setType(String type)

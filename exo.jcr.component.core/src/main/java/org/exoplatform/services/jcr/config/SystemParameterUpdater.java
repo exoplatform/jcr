@@ -24,7 +24,6 @@ import org.exoplatform.services.log.Log;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,7 +38,7 @@ public class SystemParameterUpdater
 
    private WorkspaceInitializer workspaceInitializer;
 
-   private List<SimpleParameterEntry> parameters;
+   private MappedParametrizedObjectEntry parameters;
 
    private PropertiesParser propertiesParser;
 
@@ -57,7 +56,7 @@ public class SystemParameterUpdater
 
    private SystemParametersPersistenceConfigurator sppc;
 
-   public SystemParameterUpdater(List<SimpleParameterEntry> parameters, SystemParametersPersistenceConfigurator sppc,
+   public SystemParameterUpdater(MappedParametrizedObjectEntry parameters, SystemParametersPersistenceConfigurator sppc,
       String componentName, WorkspaceEntry workspaceEntry)
    {
       this.parameters = parameters;
@@ -104,7 +103,7 @@ public class SystemParameterUpdater
          }
          else
          {
-            parameters.add(new SimpleParameterEntry(parameterName, actualForcedParameterValue));
+            parameters.addParameter(new SimpleParameterEntry(parameterName, actualForcedParameterValue));
          }
 
          updatedParameterNames.add(parameterName);
@@ -124,7 +123,7 @@ public class SystemParameterUpdater
             return;
          }
 
-         parameters.add(new SimpleParameterEntry(parameterName, actualDefaultParameterValue));
+         parameters.addParameter(new SimpleParameterEntry(parameterName, actualDefaultParameterValue));
          updatedParameterNames.add(parameterName);
          return;
       }
@@ -132,15 +131,7 @@ public class SystemParameterUpdater
 
    private SimpleParameterEntry getAlreadySetParameter(String parameterName)
    {
-      for (SimpleParameterEntry parameterEntry : parameters)
-      {
-         if (parameterEntry.getName().equals(parameterName))
-         {
-            return parameterEntry;
-         }
-      }
-
-      return null;
+      return parameters.getParameter(parameterName);
    }
 
    public void unupdateParameter(String parameterName)
@@ -158,7 +149,7 @@ public class SystemParameterUpdater
       }
    }
 
-   public void setParameters(List<SimpleParameterEntry> parameters)
+   public void setParameters(MappedParametrizedObjectEntry parameters)
    {
       this.parameters = parameters;
       updatedParameterNames.clear();

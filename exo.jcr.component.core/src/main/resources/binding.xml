@@ -22,9 +22,10 @@
           deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseTime" />
     <value name="lock-remover-max-threads" field="lockRemoverMaxThreadCount" usage="optional"
           serializer="org.exoplatform.services.jcr.util.ConfigurationFormat.serializeInt"
-		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt"  />
+          deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt"  />
     <value name="authentication-policy" field="authenticationPolicy" />
-    <collection name="workspaces" field="workspaces" item-type="org.exoplatform.services.jcr.config.WorkspaceEntry" />
+    <collection name="workspaces" field="workspaces" item-type="org.exoplatform.services.jcr.config.WorkspaceEntry" 
+                factory="org.jibx.runtime.Utility.arrayListFactory" />
   </mapping>
 
   <mapping name="workspace" class="org.exoplatform.services.jcr.config.WorkspaceEntry">
@@ -34,48 +35,49 @@
         deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseInt" />
     <structure name="container" field="container">
       <value name="class" field="type" style="attribute" />
-      <collection name="properties" field="parameters" usage="optional"
+      <collection name="properties" usage="optional"
         item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
-        factory="org.jibx.runtime.Utility.arrayListFactory" />
+        add-method="addParameter" iter-method="getParameterIterator" test-method="hasParameters"/>
       <collection name="value-storages" field="valueStorages" usage="optional"
-        item-type="org.exoplatform.services.jcr.config.ValueStorageEntry" />
+        item-type="org.exoplatform.services.jcr.config.ValueStorageEntry" 
+        factory="org.jibx.runtime.Utility.arrayListFactory"/>
     </structure>
     
     <structure name="initializer" field="initializer" usage="optional">
       <value name="class" field="type" style="attribute" usage="optional" />
-      <collection name="properties" field="parameters" usage="optional"
+      <collection name="properties" usage="optional"
         item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
-        factory="org.jibx.runtime.Utility.arrayListFactory" />
+        add-method="addParameter" iter-method="getParameterIterator" test-method="hasParameters"/>
     </structure>
 
     <structure name="cache" field="cache" usage="optional">
       <value name="enabled" field="enabled" style="attribute" />
-			<value name="class" field="type" style="attribute" usage="optional" />
-      <collection name="properties" field="parameters" usage="optional"
+      <value name="class" field="type" style="attribute" usage="optional" />
+      <collection name="properties" usage="optional"
         item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
-        factory="org.jibx.runtime.Utility.arrayListFactory" />
+        add-method="addParameter" iter-method="getParameterIterator" test-method="hasParameters"/>
     </structure>
 
     <structure name="query-handler" field="queryHandler" 
     usage="optional">
       <value name="class" field="type" style="attribute" />
-      <collection name="properties" field="parameters" usage="optional"
+      <collection name="properties" usage="optional"
         item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
-        factory="org.jibx.runtime.Utility.arrayListFactory" />
+        add-method="addParameter" iter-method="getParameterIterator" test-method="hasParameters"/>
     </structure>
 
     <structure name="access-manager" field="accessManager" usage="optional">
       <value name="class" field="type" style="attribute" />
-      <collection name="properties" field="parameters" usage="optional"
+      <collection name="properties" usage="optional"
         item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
-        factory="org.jibx.runtime.Utility.arrayListFactory" />
+        add-method="addParameter" iter-method="getParameterIterator" test-method="hasParameters"/>
     </structure>
 
     <structure name="lock-manager" field="lockManager" usage="optional">
       <value name="class" field="type" style="attribute" usage="optional" />
-      <collection name="properties" field="parameters" usage="optional"
+      <collection name="properties" usage="optional"
         item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
-        factory="org.jibx.runtime.Utility.arrayListFactory" />
+        add-method="addParameter" iter-method="getParameterIterator" test-method="hasParameters"/>
     </structure>
   </mapping>
 
@@ -87,16 +89,17 @@
   <mapping name="value-storage" class="org.exoplatform.services.jcr.config.ValueStorageEntry">
     <value name="class" field="type" style="attribute" />
     <value name="id" field="id" style="attribute" />
-    <collection name="properties" field="parameters" usage="optional"
+    <collection name="properties" usage="optional"
       item-type="org.exoplatform.services.jcr.config.SimpleParameterEntry"
-      factory="org.jibx.runtime.Utility.arrayListFactory" />
-    <collection name="filters" field="filters" item-type="org.exoplatform.services.jcr.config.ValueStorageFilterEntry" />
+      add-method="addParameter" iter-method="getParameterIterator" test-method="hasParameters"/>
+    <collection name="filters" field="filters" item-type="org.exoplatform.services.jcr.config.ValueStorageFilterEntry"
+                factory="org.jibx.runtime.Utility.arrayListFactory"/>
   </mapping>
   <mapping name="filter" class="org.exoplatform.services.jcr.config.ValueStorageFilterEntry">
     <value name="property-type" field="propertyType" style="attribute" usage="optional" />
     <value name="min-value-size" field="minValueSize" style="attribute" usage="optional"
           serializer="org.exoplatform.services.jcr.util.ConfigurationFormat.serializeLong" 
-		  deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseLong" />
+          deserializer="org.exoplatform.services.jcr.util.ConfigurationFormat.parseLong" />
     <value name="ancestor-path" field="ancestorPath" style="attribute" usage="optional" />
     <value name="property-name" field="propertyName" style="attribute" usage="optional" />
   </mapping>

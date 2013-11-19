@@ -36,7 +36,7 @@ public class QueryHandlerEntry extends ExtendedMappedParametrizedObjectEntry
       super(QUERY_HANDLER);
    }
 
-   public QueryHandlerEntry(String type, List params)
+   public QueryHandlerEntry(String type, List<SimpleParameterEntry> params)
    {
       super(type, params, QUERY_HANDLER);
    }

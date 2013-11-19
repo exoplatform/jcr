@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.config;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -34,7 +35,7 @@ import java.util.Map;
 public class RepositoryEntry extends RepositoryInfo
 {
 
-   protected ArrayList<WorkspaceEntry> workspaces;
+   protected List<WorkspaceEntry> workspaces;
 
    public RepositoryEntry()
    {
@@ -46,7 +47,7 @@ public class RepositoryEntry extends RepositoryInfo
     * 
     * @return Returns the workspaces.
     */
-   public ArrayList<WorkspaceEntry> getWorkspaceEntries()
+   public List<WorkspaceEntry> getWorkspaceEntries()
    {
       return workspaces;
    }
@@ -57,7 +58,7 @@ public class RepositoryEntry extends RepositoryInfo
     * @param workspaces
     *          the list of WorkspaceEntry-s
     */
-   public void setWorkspaceEntries(ArrayList<WorkspaceEntry> workspaces)
+   public void setWorkspaceEntries(List<WorkspaceEntry> workspaces)
    {
       this.workspaces = workspaces;
    }
@@ -80,7 +81,7 @@ public class RepositoryEntry extends RepositoryInfo
    void merge(RepositoryEntry entry)
    {
       merge((RepositoryInfo)entry);
-      ArrayList<WorkspaceEntry> workspaceEntries = entry.workspaces;
+      List<WorkspaceEntry> workspaceEntries = entry.workspaces;
       if (workspaceEntries == null || workspaceEntries.isEmpty())
       {
          return;

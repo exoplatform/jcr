@@ -576,7 +576,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
             Class
                .forName("org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache");
 
-            ArrayList cacheParams = new ArrayList();
+            List<SimpleParameterEntry> cacheParams = new ArrayList<SimpleParameterEntry>();
             cacheParams.add(new SimpleParameterEntry("infinispan-configuration",
                "conf/standalone/test-infinispan-config.xml"));
             CacheEntry cacheEntry = new CacheEntry(cacheParams);
@@ -584,7 +584,7 @@ public class TestRepositoryManagement extends JcrImplBaseTest
                .setType("org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache");
             cacheEntry.setEnabled(true);
 
-            ArrayList<WorkspaceEntry> wsList = repoEntry.getWorkspaceEntries();
+            List<WorkspaceEntry> wsList = repoEntry.getWorkspaceEntries();
 
             wsList.get(0).setCache(cacheEntry);
             repoEntry.setWorkspaceEntries(wsList);
@@ -613,29 +613,15 @@ public class TestRepositoryManagement extends JcrImplBaseTest
 
          for (WorkspaceEntry ws : repositoryEntry.getWorkspaceEntries())
          {
-            List<SimpleParameterEntry> parameters = ws.getContainer().getParameters();
-            for (int i = 0; i <= parameters.size(); i++)
+            if (ws.getContainer().hasParameter("source-name"))
             {
-               SimpleParameterEntry spe = parameters.get(i);
-               if (spe.getName().equals("source-name"))
-               {
-                  parameters.add(i, new SimpleParameterEntry(spe.getName(), newDatasourceName));
-                  break;
-               }
+               ws.getContainer().addParameter(new SimpleParameterEntry("source-name", newDatasourceName));
             }
-            ws.getContainer().setParameters(parameters);
 
-            parameters = ws.getLockManager().getParameters();
-            for (int i = 0; i <= parameters.size(); i++)
+            if (ws.getLockManager().hasParameter("infinispan-cl-cache.jdbc.datasource"))
             {
-               SimpleParameterEntry spe = parameters.get(i);
-               if (spe.getName().equals("infinispan-cl-cache.jdbc.datasource"))
-               {
-                  parameters.add(i, new SimpleParameterEntry(spe.getName(), newDatasourceName));
-                  break;
-               }
+               ws.getLockManager().addParameter(new SimpleParameterEntry("infinispan-cl-cache.jdbc.datasource", newDatasourceName));
             }
-            ws.getLockManager().setParameters(parameters);
          }
 
          service.removeRepository(repository.getConfiguration().getName());
@@ -746,18 +732,17 @@ public class TestRepositoryManagement extends JcrImplBaseTest
       // modify configuration
       WorkspaceEntry workspaceEntry = repoEntry.getWorkspaceEntries().get(0);
       QueryHandlerEntry queryHandler = workspaceEntry.getQueryHandler();
-      List<SimpleParameterEntry> parameters = queryHandler.getParameters();
 
       if (helper.ispnCacheEnabled())
       {
          // Use Infinispan components for core.ispn project
-         parameters.add(new SimpleParameterEntry("changesfilter-class",
+         queryHandler.addParameter(new SimpleParameterEntry("changesfilter-class",
             "org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter"));
-         parameters.add(new SimpleParameterEntry("infinispan-configuration",
+         queryHandler.addParameter(new SimpleParameterEntry("infinispan-configuration",
             "conf/standalone/cluster/test-infinispan-indexer.xml"));
-         parameters
-            .add(new SimpleParameterEntry("jgroups-configuration", "jar:/conf/standalone/cluster/udp-mux.xml"));
-         parameters.add(new SimpleParameterEntry("infinispan-cluster-name", "JCR-cluster"));
+         queryHandler.addParameter(new SimpleParameterEntry("jgroups-configuration",
+            "jar:/conf/standalone/cluster/udp-mux.xml"));
+         queryHandler.addParameter(new SimpleParameterEntry("infinispan-cluster-name", "JCR-cluster"));
       }
 
       return helper.createRepository(container, repoEntry);

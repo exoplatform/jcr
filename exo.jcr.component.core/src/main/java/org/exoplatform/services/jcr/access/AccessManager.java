@@ -28,6 +28,7 @@ import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.IdentityConstants;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -61,7 +62,7 @@ public abstract class AccessManager
       this.parameters = new HashMap<String, String>();
       if (wsConfig != null && wsConfig.getAccessManager() != null)
       {
-         List<SimpleParameterEntry> paramList = wsConfig.getAccessManager().getParameters();
+         Collection<SimpleParameterEntry> paramList = wsConfig.getAccessManager().getParameters();
          for (SimpleParameterEntry param : paramList)
             parameters.put(param.getName(), param.getValue());
       }
