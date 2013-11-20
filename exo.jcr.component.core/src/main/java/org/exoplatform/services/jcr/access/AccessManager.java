@@ -156,26 +156,30 @@ public abstract class AccessManager
       }
    }
 
-   private String[] parseStringPermissions(String str) throws RepositoryException
+   private static String[] parseStringPermissions(String str) throws RepositoryException
    {
       List<String> permissions = new ArrayList<String>();
-      StringTokenizer parser = new StringTokenizer(str, ",");
-
-      while (parser.hasMoreTokens())
+      int fromIndex = 0;
+      int index;
+      do
       {
-         String token = parser.nextToken();
+         index = str.indexOf(',', fromIndex);
+         String token = index == -1 ? str.substring(fromIndex) : str.substring(fromIndex, index);
+         token = token.trim();
+         fromIndex = index + 1;
+         if (token.isEmpty())
+            continue;
          if (PermissionType.READ.equals(token) || PermissionType.ADD_NODE.equals(token)
             || PermissionType.REMOVE.equals(token) || PermissionType.SET_PROPERTY.equals(token))
          {
-
             permissions.add(token);
          }
          else
          {
             throw new RepositoryException("Unknown permission entry " + token);
-
          }
       }
+      while (index != -1);
       return permissions.toArray(new String[permissions.size()]);
    }
 

@@ -48,7 +48,7 @@ class CacheQPath extends CacheKey
 
    CacheQPath(String ownerId, String parentId, QPathEntry name, ItemType itemType)
    {
-      super(ownerId, new StringBuilder().append(parentId != null ? parentId : Constants.ROOT_PARENT_UUID)
+      super(ownerId, new StringBuilder(64).append(parentId != null ? parentId : Constants.ROOT_PARENT_UUID)
          .append(name.getAsString(true)).append(itemType.toString()).toString(), parentId);
    }
 }

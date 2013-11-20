@@ -25,12 +25,6 @@
       xmlns="urn:infinispan:config:5.2">
 
     <global>
-      <evictionScheduledExecutor factory="org.infinispan.executors.DefaultScheduledExecutorFactory">
-        <properties>
-          <property name="threadNamePrefix" value="EvictionThread"/>
-        </properties>
-      </evictionScheduledExecutor>
-
       <globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/>
     </global>
 
@@ -38,7 +32,6 @@
       <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="20000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="false"/>
       <transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" transactionMode="TRANSACTIONAL"/>
       <jmxStatistics enabled="true"/>
-      <eviction strategy="NONE"/>
 
       <loaders passivation="false" shared="true" preload="true">
         <store class="org.exoplatform.services.jcr.infinispan.JdbcStringBasedCacheStore" fetchPersistentState="true" ignoreModifications="false" purgeOnStartup="false">

@@ -964,7 +964,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public void logout()
    {
-      for (int i = 0; i < lifecycleListeners.size(); i++)
+      for (int i = 0, length = lifecycleListeners.size(); i < length; i++)
       {
          lifecycleListeners.get(i).onCloseSession(this);
       }

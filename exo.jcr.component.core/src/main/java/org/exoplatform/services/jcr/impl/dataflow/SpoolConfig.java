@@ -18,7 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
-import org.exoplatform.commons.utils.PrivilegedSystemHelper;
+import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
@@ -35,7 +35,7 @@ public class SpoolConfig
 {
    public FileCleaner fileCleaner;
 
-   public File tempDirectory = new File(PrivilegedSystemHelper.getProperty("java.io.tmpdir"));
+   public File tempDirectory = new File(PropertyManager.getProperty("java.io.tmpdir"));
 
    public int maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;
 

@@ -219,49 +219,54 @@ public class CacheableSessionLockManager extends AbstractSessionLockManager
    {
       SessionImpl sessionImpl = (SessionImpl)session;
 
-      String[] nodeIds = new String[lockedNodes.size()];
-      lockedNodes.keySet().toArray(nodeIds);
-
-      for (String nodeId : nodeIds)
+      int length = lockedNodes.size();
+      if (length > 0)
       {
-         LockData lock = lockedNodes.remove(nodeId);
+         String[] nodeIds = new String[length];
+         lockedNodes.keySet().toArray(nodeIds);
 
-         if (lock.isSessionScoped() && !pendingLocks.contains(nodeId))
+         for (int i = 0; i < length; i++)
          {
-            try
-            {
-               NodeImpl node =
-                  ((NodeImpl)sessionImpl.getTransientNodesManager()
-                     .getItemByIdentifier(lock.getNodeIdentifier(), false));
+            String nodeId = nodeIds[i];
+            LockData lock = lockedNodes.remove(nodeId);
 
-               if (node != null)
+            if (lock.isSessionScoped() && !pendingLocks.contains(nodeId))
+            {
+               try
                {
-                  node.unlock();
-               }
+                  NodeImpl node =
+                     ((NodeImpl)sessionImpl.getTransientNodesManager()
+                        .getItemByIdentifier(lock.getNodeIdentifier(), false));
 
-            }
-            catch (UnsupportedRepositoryOperationException e)
-            {
-               LOG.error(e.getLocalizedMessage());
-            }
-            catch (LockException e)
-            {
-               LOG.error(e.getLocalizedMessage());
-            }
-            catch (AccessDeniedException e)
-            {
-               LOG.error(e.getLocalizedMessage());
-            }
-            catch (RepositoryException e)
-            {
-               LOG.error(e.getLocalizedMessage());
+                  if (node != null)
+                  {
+                     node.unlock();
+                  }
+
+               }
+               catch (UnsupportedRepositoryOperationException e)
+               {
+                  LOG.error(e.getLocalizedMessage());
+               }
+               catch (LockException e)
+               {
+                  LOG.error(e.getLocalizedMessage());
+               }
+               catch (AccessDeniedException e)
+               {
+                  LOG.error(e.getLocalizedMessage());
+               }
+               catch (RepositoryException e)
+               {
+                  LOG.error(e.getLocalizedMessage());
+               }
             }
          }
+         lockedNodes.clear();
       }
 
       pendingLocks.clear();
       tokens.clear();
-      lockedNodes.clear();
 
       lockManager.closeSessionLockManager(sessionID);
    }

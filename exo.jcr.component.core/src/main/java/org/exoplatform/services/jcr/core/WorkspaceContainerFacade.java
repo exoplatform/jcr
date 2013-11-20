@@ -31,6 +31,7 @@ import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.RepositoryException;
 
@@ -49,7 +50,9 @@ public final class WorkspaceContainerFacade
 
    private final WorkspaceContainer container;
 
-   private final WorkspaceResumer workspaceResumer;
+   private AtomicBoolean workspaceResumerInit = new AtomicBoolean();
+
+   private WorkspaceResumer workspaceResumer;
 
    /**
     * @param workspaceName
@@ -59,7 +62,17 @@ public final class WorkspaceContainerFacade
    {
       this.workspaceName = workspaceName;
       this.container = container;
-      this.workspaceResumer = (WorkspaceResumer)container.getComponentInstanceOfType(WorkspaceResumer.class);
+   }
+
+   private WorkspaceResumer getWorkspaceResumer()
+   {
+      if (workspaceResumerInit.get())
+         return workspaceResumer;
+      // The WorkspaceResumer can be null so to prevent being affected by the auto registration
+      // we disable it as we know that it is not needed in that case
+      this.workspaceResumer = container.getComponentInstanceOfType(WorkspaceResumer.class, false);
+      workspaceResumerInit.set(true);
+      return workspaceResumer;
    }
 
    /**
@@ -77,7 +90,7 @@ public final class WorkspaceContainerFacade
     *          component type
     * @return List<Object>
     */
-   public List getComponentInstancesOfType(Class componentType)
+   public <T> List<T> getComponentInstancesOfType(Class<T> componentType)
    {
       return container.getComponentInstancesOfType(componentType);
    }
@@ -90,7 +103,7 @@ public final class WorkspaceContainerFacade
    public Object getComponent(Object key)
    {
       if (key instanceof Class)
-         return container.getComponentInstanceOfType((Class)key);
+         return container.getComponentInstanceOfType((Class<?>)key);
       else
          return container.getComponentInstance(key);
    }
@@ -98,7 +111,7 @@ public final class WorkspaceContainerFacade
    public void addComponent(Object component)
    {
       if (component instanceof Class)
-         container.registerComponentImplementation((Class)component);
+         container.registerComponentImplementation((Class<?>)component);
       else
          container.registerComponentInstance(component);
    }
@@ -205,6 +218,7 @@ public final class WorkspaceContainerFacade
     */
    private void suspend() throws RepositoryException
    {
+      WorkspaceResumer workspaceResumer = getWorkspaceResumer();
       if (workspaceResumer != null)
       {
          workspaceResumer.onSuspend();
@@ -244,6 +258,7 @@ public final class WorkspaceContainerFacade
     */
    private void resume() throws RepositoryException
    {
+      WorkspaceResumer workspaceResumer = getWorkspaceResumer();
       if (workspaceResumer != null)
       {
          workspaceResumer.onResume();

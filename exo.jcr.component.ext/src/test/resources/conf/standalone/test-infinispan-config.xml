@@ -39,6 +39,5 @@
       <transaction transactionManagerLookupClass="org.exoplatform.services.transaction.infinispan.JBossStandaloneJTAManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" transactionMode="TRANSACTIONAL"/>
       <jmxStatistics enabled="true"/>
       <eviction strategy="LRU" threadPolicy="DEFAULT" maxEntries="1000000"/>
-      <expiration wakeUpInterval="5000"/>
    </default>
 </infinispan>
