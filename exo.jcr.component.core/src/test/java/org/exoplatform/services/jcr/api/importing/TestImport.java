@@ -2869,4 +2869,26 @@ public class TestImport extends AbstractImportTest
       }
       return isImportedNode;
    }
+
+   public void testImportEmptyReference() throws Exception
+   {
+      String content =
+         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><sv:node xmlns:nt=\"http://www.jcp.org/jcr/nt/1.0\" "
+            + "xmlns:exo=\"http://www.exoplatform.com/jcr/exo/1.0\" xmlns:jcr=\"http://www.jcp.org/jcr/1.0\""
+            + " xmlns:rma=\"http://www.rma.com/jcr/\" xmlns:sv=\"http://www.jcp.org/jcr/sv/1.0\" sv:name=\"testEmptyReference\">"
+            + "<sv:property sv:name=\"jcr:primaryType\" sv:type=\"Name\"><sv:value>nt:folder</sv:value></sv:property>"
+            + "<sv:property sv:name=\"jcr:mixinTypes\" sv:type=\"Name\"><sv:value>exo:testEmptyReference</sv:value></sv:property>"
+            + "<sv:property sv:name=\"exo:emptyRef\" sv:type=\"Reference\"><sv:value></sv:value></sv:property>"
+            + "<sv:property sv:name=\"exo:emptyRefs\" sv:type=\"Reference\"><sv:value></sv:value></sv:property>"
+            + "<sv:property sv:name=\"jcr:created\" sv:type=\"Date\"><sv:value>2013-11-25T12:53:32.829Z</sv:value></sv:property></sv:node>";
+      try
+      {
+         session.importXML(root.getPath(), new ByteArrayInputStream(content.getBytes("UTF-8")), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+         fail("A RepositoryException is expected as the empty References are not allowed");
+      }
+      catch (RepositoryException e)
+      {
+         // Expected
+      }
+   }
 }

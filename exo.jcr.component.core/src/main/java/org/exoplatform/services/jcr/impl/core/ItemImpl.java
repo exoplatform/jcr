@@ -514,7 +514,7 @@ public abstract class ItemImpl implements Item
 
       List<ValueData> valueDataList = new ArrayList<ValueData>();
 
-      // cast to required type if neccessary
+      // cast to required type if necessary
       int requiredType = def.getRequiredType();
 
       int propType = requiredType;
@@ -959,8 +959,15 @@ public abstract class ItemImpl implements Item
             InternalQName nameValue = locationFactory.parseJCRName(value.getString()).getInternalName();
             return new TransientValueData(nameValue);
          case PropertyType.REFERENCE :
-            Identifier identifier = new Identifier(value.getString());
-            return new TransientValueData(identifier);
+            try
+            {
+               Identifier identifier = new Identifier(value.getString());
+               return new TransientValueData(identifier);
+            }
+            catch (IllegalArgumentException e)
+            {
+               throw new ValueFormatException(e.getMessage());
+            }
          case ExtendedPropertyType.PERMISSION :
             PermissionValue permValue = (PermissionValue)value;
             AccessControlEntry ace = new AccessControlEntry(permValue.getIdentity(), permValue.getPermission());

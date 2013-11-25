@@ -18,6 +18,10 @@
  */
 package org.exoplatform.services.jcr.datamodel;
 
+import org.exoplatform.services.jcr.impl.Constants;
+
+import java.io.UnsupportedEncodingException;
+
 /**
  * Created by The eXo Platform SAS.
  * 
@@ -33,11 +37,26 @@ public class Identifier
    public Identifier(String stringValue)
    {
       this.string = stringValue;
+      checkValue();
    }
 
    public Identifier(byte[] value)
    {
-      this.string = new String(value);
+      try
+      {
+         this.string = new String(value, Constants.DEFAULT_ENCODING);
+      }
+      catch (UnsupportedEncodingException e)
+      {
+         throw new IllegalArgumentException("Cannot read the value", e);
+      }
+      checkValue();
+   }
+
+   private void checkValue() throws IllegalArgumentException
+   {
+      if (string == null || string.isEmpty())
+         throw new IllegalArgumentException("An identifier cannot be empty");
    }
 
    /**

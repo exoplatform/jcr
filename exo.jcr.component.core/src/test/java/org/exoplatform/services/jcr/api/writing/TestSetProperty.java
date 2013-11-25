@@ -456,6 +456,64 @@ public class TestSetProperty extends JcrAPIBaseTest implements ItemsPersistenceL
       session.save();
    }
 
+   public void testEmptyReference() throws Exception
+   {
+      Node node = root.addNode("testEmptyReference", "nt:folder");
+      node.addMixin("exo:testEmptyReference");
+      session.save();
+      try
+      {
+         node.setProperty("exo:emptyRef", "");
+         fail("A ValueFormatException was expected");
+      }
+      catch (ValueFormatException e)
+      {
+         // expected
+      }
+      try
+      {
+         node.setProperty("exo:emptyRefs", new String[]{""});
+         fail("A ValueFormatException was expected");
+      }
+      catch (ValueFormatException e)
+      {
+         // expected
+      }
+      Node ref = root.addNode("testEmptyReferenceRefNode");
+      ref.addMixin("mix:referenceable");
+      session.save();
+
+      node.setProperty("exo:emptyRef", ref);
+      node.setProperty("exo:emptyRefs", new String[]{ref.getUUID()});
+
+      session.save();
+
+      node.setProperty("exo:emptyRef", ref.getUUID());
+
+      session.save();
+      try
+      {
+         node.setProperty("exo:emptyRef", "");
+         fail("A ValueFormatException was expected");
+      }
+      catch (ValueFormatException e)
+      {
+         // expected
+         node.setProperty("exo:emptyRef", (String)null);
+      }
+      try
+      {
+         node.setProperty("exo:emptyRefs", new String[]{""});
+         fail("A ValueFormatException was expected");
+      }
+      catch (ValueFormatException e)
+      {
+         // expected
+         node.setProperty("exo:emptyRef", (String[])null);
+      }
+      session.save();
+   }
+
    public void onSaveItems(ItemStateChangesLog itemStates)
    {
       cLog = (TransactionChangesLog)itemStates;

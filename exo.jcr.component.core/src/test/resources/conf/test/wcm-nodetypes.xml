@@ -339,4 +339,17 @@
     </propertyDefinitions>
   </nodeType>
 
+  <nodeType name="exo:testEmptyReference" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+    <propertyDefinitions>
+      <propertyDefinition name="exo:badLong" requiredType="Long" autoCreated="false" mandatory="false" onParentVersion="IGNORE" protected="false" multiple="false">
+        <valueConstraints />
+      </propertyDefinition>
+      <propertyDefinition name="exo:emptyRef" requiredType="Reference" autoCreated="false" mandatory="false" onParentVersion="IGNORE" protected="false" multiple="false">
+        <valueConstraints />
+      </propertyDefinition>
+      <propertyDefinition name="exo:emptyRefs" requiredType="Reference" autoCreated="false" mandatory="false" onParentVersion="IGNORE" protected="false" multiple="true">
+        <valueConstraints />
+      </propertyDefinition>
+    </propertyDefinitions>
+  </nodeType> 
 </nodeTypes>
