@@ -41,7 +41,7 @@ public class TestJCRSerializationStream extends JcrImplSerializationBaseTest
    {
       TesterItemsPersistenceListener pl = new TesterItemsPersistenceListener(this.session);
 
-      File tempFile = this.createBLOBTempFile(50000);
+      File tempFile = this.createBLOBTempFile(10000);
 
       Node test = root.addNode("cms2").addNode("test");
       Node cool = test.addNode("nnn", "nt:file");
