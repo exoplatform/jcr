@@ -961,6 +961,48 @@ public class TestOrderBefore extends JcrAPIBaseTest
 
    }
 
+   public void testAddMixinOrderBefore() throws Exception
+   {
+      Session session = repository.login(credentials, "ws");
+      Node testBase = session.getRootNode().addNode("test");
+      session.save();
+
+      testBase.addNode("n1");
+      root.save();
+
+      Node n2 = testBase.addNode("n2");
+      testBase.orderBefore("n2", "n1");
+      n2.addMixin("exo:datetime");
+      testBase.save();
+
+      Node n3 = testBase.addNode("n3");
+      testBase.orderBefore("n3", "n2");
+      n3.addMixin("exo:datetime");
+      testBase.save();
+
+      Node n4 = testBase.addNode("n4");
+      testBase.orderBefore("n4", "n3");
+      n4.addMixin("exo:datetime");
+      testBase.save();
+
+      NodeIterator it = testBase.getNodes();
+      NodeImpl node1 = (NodeImpl)it.nextNode();
+      NodeImpl node2 = (NodeImpl)it.nextNode();
+      NodeImpl node3 = (NodeImpl)it.nextNode();
+      NodeImpl node4 = (NodeImpl)it.nextNode();
+
+      assertEquals("n4", node1.getName());
+      assertEquals("n3", node2.getName());
+      assertEquals("n2", node3.getName());
+      assertEquals("n1", node4.getName());
+
+      assertTrue(((NodeData)node1.getData()).getOrderNumber() < ((NodeData)node2.getData()).getOrderNumber());
+      assertTrue(((NodeData)node2.getData()).getOrderNumber() < ((NodeData)node3.getData()).getOrderNumber());
+      assertTrue(((NodeData)node3.getData()).getOrderNumber() < ((NodeData)node4.getData()).getOrderNumber());
+
+      session.logout();
+   }
+
    public void testDeleteOrderBefore() throws Exception
    {
       Session session = repository.login(credentials, "ws");
