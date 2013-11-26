@@ -3159,10 +3159,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       newMixin.toArray(mixins);
 
       NodeData nodeData = (NodeData)data;
+      int ordNum = ((NodeData) dataManager.getItemData(data.getIdentifier())).getOrderNumber();
 
       data =
          new TransientNodeData(nodeData.getQPath(), nodeData.getIdentifier(), nodeData.getPersistedVersion(), nodeData
-            .getPrimaryTypeName(), mixins, nodeData.getOrderNumber(), nodeData.getParentIdentifier(), nodeData.getACL());
+            .getPrimaryTypeName(), mixins, ordNum , nodeData.getParentIdentifier(), nodeData.getACL());
 
       //      ((TransientNodeData)data).setMixinTypeNames(mixins);
 
