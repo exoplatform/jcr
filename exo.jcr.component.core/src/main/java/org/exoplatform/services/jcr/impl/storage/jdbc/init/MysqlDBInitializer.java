@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
+import java.sql.Statement;
 import java.sql.SQLException;
 
 /**
@@ -50,8 +51,8 @@ public class MysqlDBInitializer extends StorageDBInitializer
       ResultSet resultSet = null;
       try
       {
-         resultSet = connection.getMetaData().getFunctions(
-            connection.getCatalog(), null, "%");
+         resultSet = conn.getMetaData().getFunctions(
+            conn.getCatalog(), null, "%");
          while (resultSet.next())
          {
 
@@ -84,12 +85,15 @@ public class MysqlDBInitializer extends StorageDBInitializer
    protected void postInit(Connection connection) throws SQLException
    {
       super.postInit(connection);
-      String select =
-         "select * from JCR_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"_SEQ  where name='LAST_N_ORDER_NUM'";
-      if (!connection.createStatement().executeQuery(select).next())
+      if (containerConfig.use_sequence_for_order_number)
       {
-         String insert = "INSERT INTO JCR_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"_SEQ  (name, nextVal) VALUES ('LAST_N_ORDER_NUM'," + getStartValue(connection) + ")";
-         connection.createStatement().executeUpdate(insert);
+         String select =
+            "select * from JCR_" + DBInitializerHelper.getItemTableSuffix(containerConfig) + "_SEQ  where name='LAST_N_ORDER_NUM'";
+         if (!connection.createStatement().executeQuery(select).next())
+         {
+            String insert = "INSERT INTO JCR_" + DBInitializerHelper.getItemTableSuffix(containerConfig) + "_SEQ  (name, nextVal) VALUES ('LAST_N_ORDER_NUM'," + getStartValue(connection) + ")";
+            connection.createStatement().executeUpdate(insert);
+         }
       }
    }
 

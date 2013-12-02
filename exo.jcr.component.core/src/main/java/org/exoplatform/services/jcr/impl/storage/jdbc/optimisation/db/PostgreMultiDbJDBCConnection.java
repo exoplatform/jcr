@@ -56,7 +56,10 @@ public class PostgreMultiDbJDBCConnection extends MultiDbJDBCConnection
    protected void prepareQueries() throws SQLException
    {
       super.prepareQueries();
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID ="SELECT NEXTVAL('"+ JCR_ITEM_SEQ+"')";
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "SELECT NEXTVAL('" + JCR_ITEM_SEQ + "')";
+      }
    }
 
    @Override

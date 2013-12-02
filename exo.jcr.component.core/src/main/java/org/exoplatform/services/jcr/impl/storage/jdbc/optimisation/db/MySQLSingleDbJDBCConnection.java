@@ -95,8 +95,11 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
       FIND_ITEM_BY_NAME =
          "select * from JCR_SITEM" + " where CONTAINER_NAME=? and PARENT_ID=? and NAME=? and I_INDEX=?"
             + " order by I_CLASS";
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID=
-         "SELECT "+JCR_ITEM_NEXT_VAL+"('LAST_N_ORDER_NUM') as nextVal";
+
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "SELECT " + JCR_ITEM_NEXT_VAL + "('LAST_N_ORDER_NUM') as nextVal";
+      }
    }
 
    /**

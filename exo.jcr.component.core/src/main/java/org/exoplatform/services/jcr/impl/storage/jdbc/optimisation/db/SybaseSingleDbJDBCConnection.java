@@ -129,26 +129,27 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
             + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME
             + ".ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID " + "order by "
             + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME + ".ID";
-
-      FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         "select " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
-            + ".*,P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA "
-            + " from JCR_SVALUE V, JCR_SITEM P, "
-            + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + " where P.PARENT_ID = "
-            + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
-            + ".ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and"
-            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
-            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
-            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
-            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
-            + " and V.PROPERTY_ID=P.ID order by "+SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME+".N_ORDER_NUM, "
-            + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + ".ID";
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         FIND_NODES_BY_PARENTID_LAZILY_CQ =
+            "select " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
+               + ".*,P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA "
+               + " from JCR_SVALUE V, JCR_SITEM P, "
+               + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + " where P.PARENT_ID = "
+               + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME
+               + ".ID and P.I_CLASS=2 and P.CONTAINER_NAME=? and"
+               + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+               + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+               + " and V.PROPERTY_ID=P.ID order by " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + ".N_ORDER_NUM, "
+               + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME + ".ID";
+         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec " + JCR_ITEM_NEXT_VAL + " 'LAST_N_ORDER_NUM'";
+      }
 
       DELETE_TEMPORARY_TABLE_A = "drop table " + SybaseJDBCConnectionHelper.TEMP_A_TABLE_NAME;
 
       DELETE_TEMPORARY_TABLE_B = "drop table " + SybaseJDBCConnectionHelper.TEMP_B_TABLE_NAME;
-
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec "+JCR_ITEM_NEXT_VAL+" 'LAST_N_ORDER_NUM'" ;
 
    }
 
@@ -231,6 +232,10 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
    @Override
    protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset, int limit) throws SQLException
    {
+      if (!containerConfig.use_sequence_for_order_number)
+      {
+         return super.findChildNodesByParentIdentifier(parentCid, fromOrderNum, offset, limit);
+      }
       String tempTableBName = "tempdb..b" + IdGenerator.generate();
 
       boolean tempTableBCreated = false;
@@ -306,6 +311,10 @@ public class SybaseSingleDbJDBCConnection extends SingleDbJDBCConnection
    @Override
    protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
    {
+      if (!containerConfig.use_sequence_for_order_number)
+      {
+         return super.findLastOrderNumberByParentIdentifier(parentIdentifier);
+      }
       if (findLastOrderNumberByParentId == null)
       {
          findLastOrderNumberByParentId = dbConnection.prepareCall(FIND_LAST_ORDER_NUMBER_BY_PARENTID);

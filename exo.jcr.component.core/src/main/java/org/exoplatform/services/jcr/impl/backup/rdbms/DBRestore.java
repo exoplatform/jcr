@@ -119,6 +119,8 @@ public class DBRestore implements DataRestore
     */
    protected final String dialect;
 
+   protected final boolean useSequence;
+
    protected final String itemTableName;
 
    /**
@@ -151,6 +153,7 @@ public class DBRestore implements DataRestore
       this.dialect = DialectDetecter.detect(jdbcConn.getMetaData());
       this.dbCleanerInAutoCommit = dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE);
       this.itemTableName = DBInitializerHelper.getItemTableName(wsConfig);
+      this.useSequence= DBInitializerHelper.getDatabaseOrderNumber(wsConfig);
    }
 
    /**
@@ -524,41 +527,42 @@ public class DBRestore implements DataRestore
 
             commitBatch();
          }
-
-         batchSize = 0;
-         if ((dialect.startsWith(DBConstants.DB_DIALECT_MYSQL) || dialect.startsWith(DBConstants.DB_DIALECT_MSSQL)
-            || dialect.startsWith(DBConstants.DB_DIALECT_SYBASE)) && tableName.equalsIgnoreCase(this.itemTableName))
+         if (useSequence)
          {
-            insertNode =
-               jdbcConn.prepareStatement("INSERT INTO " + tableName + "_SEQ  (name, nextVal) VALUES ('LAST_N_ORDER_NUM', ?)");
-            insertNode.setInt(1, getStartValue(jdbcConn, tableName));
-            insertNode.executeUpdate();
-            batchSize++;
+            batchSize = 0;
+            if ((dialect.startsWith(DBConstants.DB_DIALECT_MYSQL) || dialect.startsWith(DBConstants.DB_DIALECT_MSSQL)
+               || dialect.startsWith(DBConstants.DB_DIALECT_SYBASE)) && tableName.equalsIgnoreCase(this.itemTableName))
+            {
+               insertNode =
+                  jdbcConn.prepareStatement("INSERT INTO " + tableName + "_SEQ  (name, nextVal) VALUES ('LAST_N_ORDER_NUM', ?)");
+               insertNode.setInt(1, getStartValue(jdbcConn, tableName));
+               insertNode.executeUpdate();
+               batchSize++;
 
+            }
+            else if ((dialect.startsWith(DBConstants.DB_DIALECT_PGSQL) || dialect.startsWith(DBConstants.DB_DIALECT_DB2) || dialect.startsWith(DBConstants.DB_DIALECT_HSQLDB)
+               || dialect.startsWith(DBConstants.DB_DIALECT_H2)) && (tableName.equalsIgnoreCase(this.itemTableName)))
+
+            {
+               String update = "ALTER SEQUENCE " + tableName + "_seq" + " RESTART WITH  " + (getStartValue(jdbcConn, tableName) + 1);
+               jdbcConn.createStatement().execute(update);
+               batchSize++;
+            }
+            else if (dialect.startsWith(DBConstants.DB_DIALECT_ORACLE) && tableName.equalsIgnoreCase(this.itemTableName))
+            {
+               String update = "DROP SEQUENCE " + tableName + "_seq";
+               jdbcConn.createStatement().execute(update);
+               update = "CREATE SEQUENCE " + tableName + "_seq  INCREMENT BY 1 MINVALUE -1 NOMAXVALUE NOCACHE NOCYCLE START WITH " + (getStartValue(jdbcConn, tableName) + 1);
+               jdbcConn.createStatement().execute(update);
+               batchSize++;
+
+            }
+            if (batchSize != 0)
+            {
+
+               commitBatch();
+            }
          }
-         else if ((dialect.startsWith(DBConstants.DB_DIALECT_PGSQL) || dialect.startsWith(DBConstants.DB_DIALECT_DB2) || dialect.startsWith(DBConstants.DB_DIALECT_HSQLDB)
-            || dialect.startsWith(DBConstants.DB_DIALECT_H2)) && (tableName.equalsIgnoreCase(this.itemTableName)))
-
-         {
-            String update = "ALTER SEQUENCE " + tableName + "_seq" + " RESTART WITH  " + (getStartValue(jdbcConn, tableName) + 1);
-            jdbcConn.createStatement().execute(update);
-            batchSize++;
-         }
-         else if (dialect.startsWith(DBConstants.DB_DIALECT_ORACLE) && tableName.equalsIgnoreCase(this.itemTableName))
-         {
-            String update = "DROP SEQUENCE " + tableName + "_seq";
-            jdbcConn.createStatement().execute(update);
-            update = "CREATE SEQUENCE " + tableName + "_seq  INCREMENT BY 1 MINVALUE -1 NOMAXVALUE NOCACHE NOCYCLE START WITH " + (getStartValue(jdbcConn, tableName) + 1);
-            jdbcConn.createStatement().execute(update);
-            batchSize++;
-
-         }
-         if (batchSize != 0)
-         {
-
-            commitBatch();
-         }
-
       }
       finally
       {

@@ -70,8 +70,10 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
             + " where I.PARENT_ID=? and I.I_CLASS=2 and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
       FIND_NODES_BY_PARENTID =
          "select * from " + JCR_ITEM + " where PARENT_ID=? and I_CLASS=1" + " order by N_ORDER_NUM";
-
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call next value for "+JCR_ITEM_SEQ;
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call next value for " + JCR_ITEM_SEQ;
+      }
 
       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from " + JCR_ITEM + " where PARENT_ID=? and I_CLASS=1";
       FIND_PROPERTIES_BY_PARENTID = "select * from " + JCR_ITEM + " where PARENT_ID=? and I_CLASS=2" + " order by ID";

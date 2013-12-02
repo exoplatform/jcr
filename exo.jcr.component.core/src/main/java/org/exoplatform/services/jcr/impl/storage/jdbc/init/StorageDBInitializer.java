@@ -60,11 +60,48 @@ public class StorageDBInitializer extends DBInitializer
             tMatcher = dbObjectNamePattern.matcher(sql);
             if (tMatcher.find())
             {
-               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"SEQ"))
+               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_" + DBInitializerHelper.getItemTableSuffix(containerConfig) + "_SEQ"))
                {
-                  sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection) ));
+                  if (containerConfig.use_sequence_for_order_number)
+                  {
+                     sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection)));
+                  }
+                  else
+                  {
+                     sql = "";
+                  }
                }
             }
+         }
+         else if (((creatFunctionPattern.matcher(sql)).find()) || ((creatProcedurePattern.matcher(sql)).find()))
+         {
+            tMatcher = dbObjectNamePattern.matcher(sql);
+            if (tMatcher.find())
+            {
+               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_" + DBInitializerHelper.getItemTableSuffix(containerConfig) + "_NEXT_VAL"))
+               {
+                  if (!containerConfig.use_sequence_for_order_number)
+                  {
+                     sql = "";
+                  }
+
+               }
+            }
+         }
+         else if ((creatTablePattern.matcher(sql)).find())
+         {
+            tMatcher = dbObjectNamePattern.matcher(sql);
+            if (tMatcher.find())
+            {
+               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_" + DBInitializerHelper.getItemTableSuffix(containerConfig) + "_SEQ"))
+               {
+                  if (!containerConfig.use_sequence_for_order_number)
+                  {
+                     sql = "";
+                  }
+               }
+            }
+
          }
       }
       catch (SQLException e)

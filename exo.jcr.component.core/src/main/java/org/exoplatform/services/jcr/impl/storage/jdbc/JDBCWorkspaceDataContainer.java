@@ -131,6 +131,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    public final static String DB_STRUCTURE_TYPE = "db-structure-type";
 
    /**
+    * Use sequence for order number
+    */
+   public final static String USE_SEQUENCE_FOR_ORDER_NUMBER = "use-sequence-for-order-number";
+
+   /**
     * Suffix used in tables names when isolated-databse structure used 
     */
    public final static String DB_TABLENAME_SUFFIX = "db-tablename-suffix";
@@ -291,6 +296,16 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          // don't use new connection by default
          this.containerConfig.checkSNSNewConnection = false;
+      }
+
+      try
+      {
+         this.containerConfig.use_sequence_for_order_number =
+            wsConfig.getContainer().getParameterBoolean(USE_SEQUENCE_FOR_ORDER_NUMBER);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         this.containerConfig.use_sequence_for_order_number = false;
       }
 
       // ------------- Spool config ------------------

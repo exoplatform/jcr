@@ -194,6 +194,12 @@
       <para><emphasis role="bold">batch-size:</emphasis> the batch size.
       Default value is -1 (disabled)</para>
     </listitem>
+
+    <listitem>
+      <para><emphasis role="bold">use-sequence-for-order-number:</emphasis> Use sequence for  manage the order number (if "true").
+      Otherwise (if "false") use the old logic.
+      Default value is false (disabled)</para>
+    </listitem>
   </itemizedlist>
 
   <para>Workspace Data Container MAY support external storages for

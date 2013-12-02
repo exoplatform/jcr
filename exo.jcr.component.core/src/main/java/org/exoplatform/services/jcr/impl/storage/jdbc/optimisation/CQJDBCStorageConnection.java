@@ -1469,6 +1469,10 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    @Override
    public int getLastOrderNumber(NodeData parent) throws RepositoryException
    {
+      if (!containerConfig.use_sequence_for_order_number)
+      {
+         return super.getLastOrderNumber(parent);
+      }
       checkIfOpened();
       try
       {

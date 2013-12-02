@@ -94,12 +94,14 @@ public class MSSQLDBInitializer extends StorageDBInitializer
    protected void postInit(Connection connection) throws SQLException
    {
       super.postInit(connection);
-      String select =
-         "select * from JCR_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"_SEQ  where name='LAST_N_ORDER_NUM'";
-      if (!connection.createStatement().executeQuery(select).next())
       {
-         String insert = "INSERT INTO JCR_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"_SEQ  (name, nextVal) VALUES ('LAST_N_ORDER_NUM'," + getStartValue(connection) + ")";
-         connection.createStatement().executeUpdate(insert);
+         String select =
+            "select * from JCR_" + DBInitializerHelper.getItemTableSuffix(containerConfig) + "_SEQ  where name='LAST_N_ORDER_NUM'";
+         if (!connection.createStatement().executeQuery(select).next())
+         {
+            String insert = "INSERT INTO JCR_" + DBInitializerHelper.getItemTableSuffix(containerConfig) + "_SEQ  (name, nextVal) VALUES ('LAST_N_ORDER_NUM'," + getStartValue(connection) + ")";
+            connection.createStatement().executeUpdate(insert);
+         }
       }
    }
 

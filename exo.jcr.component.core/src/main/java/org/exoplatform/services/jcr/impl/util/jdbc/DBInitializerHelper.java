@@ -53,6 +53,11 @@ public class DBInitializerHelper
    public static final String JCR_TABLE_PREFIX = "JCR_";
 
    /**
+    * Use sequence for order number
+    */
+   public static final String USE_SEQUENCE_FOR_ORDER_NUMBER = "use-sequence-for-order-number";
+
+   /**
     * Returns SQL scripts for initialization database for defined {@link JDBCDataContainerConfig}.  
     */
    public static String prepareScripts(JDBCDataContainerConfig containerConfig) throws IOException
@@ -384,5 +389,16 @@ public class DBInitializerHelper
          wsConfig.getContainer().getParameterValue(JDBCWorkspaceDataContainer.DB_DIALECT, DBConstants.DB_DIALECT_AUTO);
 
       return dialect.toUpperCase();
+   }
+
+   /**
+    * Use sequence for order number.
+    *
+    * @param wsConfig The workspace configuration.
+    * @return true if the sequence are enable. False otherwise.
+    */
+   public static boolean getDatabaseOrderNumber(WorkspaceEntry wsConfig) throws RepositoryConfigurationException
+   {
+      return wsConfig.getContainer().getParameterBoolean(USE_SEQUENCE_FOR_ORDER_NUMBER);
    }
 }

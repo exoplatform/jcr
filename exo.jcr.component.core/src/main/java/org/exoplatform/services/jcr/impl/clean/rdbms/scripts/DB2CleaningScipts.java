@@ -184,7 +184,10 @@ public class DB2CleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP SEQUENCE "+itemTableName+"_SEQ");
+      if (useSequence)
+      {
+         scripts.add("DROP SEQUENCE " + itemTableName + "_SEQ");
+      }
 
       scripts.addAll(super.getTablesDroppingScripts());
 

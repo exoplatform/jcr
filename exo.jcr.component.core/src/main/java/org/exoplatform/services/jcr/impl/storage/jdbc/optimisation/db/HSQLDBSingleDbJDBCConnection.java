@@ -77,8 +77,10 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             + " I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?" + " order by N_ORDER_NUM";
-
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call next value for "+JCR_ITEM_SEQ;
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call next value for " + JCR_ITEM_SEQ;
+      }
 
       FIND_NODES_COUNT_BY_PARENTID =
          "select count(ID) from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";

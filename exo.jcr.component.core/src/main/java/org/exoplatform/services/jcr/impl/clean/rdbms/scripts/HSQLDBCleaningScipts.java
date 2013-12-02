@@ -78,7 +78,10 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE " + refTableName + "_OLD DROP CONSTRAINT JCR_PK_" + refTableSuffix);
 
       //rename sequences
-      scripts.add("ALTER SEQUENCE  "+itemTableName+"_SEQ RENAME TO "+itemTableName+"_SEQ_OLD");
+      if (useSequence)
+      {
+         scripts.add("ALTER SEQUENCE  " + itemTableName + "_SEQ RENAME TO " + itemTableName + "_SEQ_OLD");
+      }
 
       // renaming indexes
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT RENAME TO JCR_IDX_" + itemTableSuffix
@@ -120,7 +123,10 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
          + " PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)");
 
       //rename sequences
-      scripts.add("ALTER SEQUENCE "+itemTableName+"_SEQ_OLD RENAME TO "+itemTableName+"_SEQ");
+      if (useSequence)
+      {
+         scripts.add("ALTER SEQUENCE " + itemTableName + "_SEQ_OLD RENAME TO " + itemTableName + "_SEQ");
+      }
 
       // renaming indexes
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT_OLD RENAME TO JCR_IDX_" + itemTableSuffix
@@ -146,7 +152,10 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP SEQUENCE "+itemTableName+"_SEQ");
+      if (useSequence)
+      {
+         scripts.add("DROP SEQUENCE " + itemTableName + "_SEQ");
+      }
 
       scripts.addAll(super.getTablesDroppingScripts());
 
@@ -160,7 +169,10 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
    {
       Collection<String> scripts = new ArrayList<String>();
 
-      scripts.add("DROP SEQUENCE "+itemTableName+"_SEQ_OLD");
+      if (useSequence)
+      {
+         scripts.add("DROP SEQUENCE " + itemTableName + "_SEQ_OLD");
+      }
 
       scripts.addAll(super.getOldTablesDroppingScripts());
 

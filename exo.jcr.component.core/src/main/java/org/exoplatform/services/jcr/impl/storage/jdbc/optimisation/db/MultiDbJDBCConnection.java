@@ -210,17 +210,31 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       UPDATE_VALUE = "update " + JCR_VALUE + " set DATA=?, STORAGE_DESC=? where PROPERTY_ID=? and ORDER_NUM=?";
       UPDATE_REFERENCE = "update " + JCR_REF + " set NODE_ID=? where PROPERTY_ID=? and ORDER_NUM=?";
 
-      FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_VALUE +" V, "+JCR_ITEM +" P "
-            + " join (select J.* from "+JCR_ITEM +" J where J.I_CLASS=1 and J.PARENT_ID=?"
-            + " order by J.N_ORDER_NUM, J.ID  LIMIT ? OFFSET ?) I on P.PARENT_ID = I.ID"
-            + " where P.I_CLASS=2 and P.PARENT_ID=I.ID and"
-            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
-            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
-            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
-            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
-            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
-
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         FIND_NODES_BY_PARENTID_LAZILY_CQ =
+            "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_VALUE + " V, " + JCR_ITEM + " P "
+               + " join (select J.* from " + JCR_ITEM + " J where J.I_CLASS=1 and J.PARENT_ID=?"
+               + " order by J.N_ORDER_NUM, J.ID  LIMIT ? OFFSET ?) I on P.PARENT_ID = I.ID"
+               + " where P.I_CLASS=2 and P.PARENT_ID=I.ID and"
+               + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+               + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+               + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      }
+      else
+      {
+         FIND_NODES_BY_PARENTID_LAZILY_CQ =
+            "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_ITEM + " I, " + JCR_ITEM + " P, "
+               + JCR_VALUE + " V"
+               + " where I.I_CLASS=1 and I.PARENT_ID=? and I.N_ORDER_NUM >= ? and I.N_ORDER_NUM <= ? and"
+               + " P.I_CLASS=2 and P.PARENT_ID=I.ID and (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+               + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+               + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      }
       FIND_ACL_HOLDERS =
          "select I.PARENT_ID, I.P_TYPE " + " from " + JCR_ITEM
             + " I where I.I_CLASS=2 and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
@@ -637,6 +651,14 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       {
          findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
       }
+      else
+      {
+         findLastOrderNumberByParentId.clearParameters();
+      }
+      if (!containerConfig.use_sequence_for_order_number)
+      {
+         findLastOrderNumberByParentId.setString(1, parentIdentifier);
+      }
 
       return findLastOrderNumberByParentId.executeQuery();
    }
@@ -731,8 +753,16 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       }
 
       findNodesByParentIdLazilyCQ.setString(1, parentCid);
-      findNodesByParentIdLazilyCQ.setInt(2, limit);
-      findNodesByParentIdLazilyCQ.setInt(3, offset);
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         findNodesByParentIdLazilyCQ.setInt(2, limit);
+         findNodesByParentIdLazilyCQ.setInt(3, offset);
+      }
+      else
+      {
+         findNodesByParentIdLazilyCQ.setInt(2, fromOrderNum);
+         findNodesByParentIdLazilyCQ.setInt(3, fromOrderNum + limit - 1);
+      }
 
       return findNodesByParentIdLazilyCQ.executeQuery();
    }

@@ -86,20 +86,32 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
             + " where I.CONTAINER_NAME=? and I.I_CLASS=1 order by I.ID"
             + " ) A where ROWNUM <= ?) where r__ > ?) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         FIND_NODES_BY_PARENTID_LAZILY_CQ =
+            "select /*+ USE_NL(V) INDEX(I JCR_IDX_SITEM_N_ORDER_NUM) INDEX(P JCR_IDX_SITEM_PARENT_FK) INDEX(V JCR_IDX_SVALUE_PROPERTY) */"
+               + " I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SVALUE V, JCR_SITEM P "
+               + " join ( select * from ( select A.*, ROWNUM r__ from ( select J.* from JCR_SITEM J "
+               + " where J.CONTAINER_NAME=? and J.I_CLASS=1 and J.PARENT_ID=? order by J.N_ORDER_NUM, J.ID "
+               + " ) A where ROWNUM <= ?) where r__ > ?) I on P.PARENT_ID = I.ID"
+               + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+               + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+               + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+               + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
 
-      FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         "select /*+ USE_NL(V) INDEX(I JCR_IDX_SITEM_N_ORDER_NUM) INDEX(P JCR_IDX_SITEM_PARENT_FK) INDEX(V JCR_IDX_SVALUE_PROPERTY) */"
-            + " I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SVALUE V, JCR_SITEM P "
-            + " join ( select * from ( select A.*, ROWNUM r__ from ( select J.* from JCR_SITEM J "
-            + " where J.CONTAINER_NAME=? and J.I_CLASS=1 and J.PARENT_ID=? order by J.N_ORDER_NUM, J.ID "
-            + " ) A where ROWNUM <= ?) where r__ > ?) I on P.PARENT_ID = I.ID"
-            + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
-            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
-            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
-            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
-            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
-            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
-      
+         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "SELECT " + JCR_ITEM_SEQ + ".nextval FROM dual";
+      }
+      else
+      {
+         FIND_NODES_BY_PARENTID_LAZILY_CQ =
+            FIND_NODES_BY_PARENTID_LAZILY_CQ
+               .replaceFirst(
+                  "select",
+                  "select /*+ USE_NL(V) INDEX(I JCR_IDX_SITEM_N_ORDER_NUM) INDEX(P JCR_IDX_SITEM_PARENT_FK)"
+                     + " INDEX(V JCR_IDX_SVALUE_PROPERTY) */ ");
+      }
       FIND_ITEM_BY_NAME = FIND_ITEM_BY_NAME.replaceFirst("select", "select /*+ INDEX(I JCR_IDX_SITEM_PARENT) */");
 
       FIND_NODE_MAIN_PROPERTIES_BY_PARENTID_CQ =
@@ -108,7 +120,6 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
 
       DELETE_ITEM = "delete /*+ INDEX(I JCR_PK_SITEM)*/ from JCR_SITEM I where I.ID=?";
 
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID ="SELECT "+ JCR_ITEM_SEQ +".nextval FROM dual";
    }
     
    /**
@@ -141,6 +152,10 @@ public class OracleSingleDbJDBCConnection extends SingleDbJDBCConnection
    protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset, int limit)
       throws SQLException
    {
+      if (!containerConfig.use_sequence_for_order_number)
+      {
+        return super.findChildNodesByParentIdentifier(parentCid,fromOrderNum,offset,limit);
+      }
       if (findNodesByParentIdLazilyCQ == null)
       {
          findNodesByParentIdLazilyCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_LAZILY_CQ);

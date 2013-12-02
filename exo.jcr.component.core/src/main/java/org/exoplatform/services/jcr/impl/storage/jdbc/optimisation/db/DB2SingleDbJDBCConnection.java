@@ -62,18 +62,20 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
             + " join (select I.ID, I.PARENT_ID, I.NAME, I.VERSION, I.I_INDEX, I.N_ORDER_NUM from JCR_SITEM I"
             + " where I.CONTAINER_NAME=? AND I.I_CLASS=1 AND I.ID > ? order by I.ID FETCH FIRST $rowNb ROWS ONLY) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and V.PROPERTY_ID=P.ID order by J.ID";
-      FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SVALUE V, JCR_SITEM P "
-            + " join (select J.* from JCR_SITEM J where J.CONTAINER_NAME=? AND J.I_CLASS=1 and J.PARENT_ID=?"
-            + " AND J.N_ORDER_NUM  >= ? order by J.N_ORDER_NUM, J.ID FETCH FIRST $rowNb ROWS ONLY) I on P.PARENT_ID = I.ID"
-            + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
-            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
-            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
-            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
-            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
-            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
-         "VALUES NEXT VALUE FOR "+ JCR_ITEM_SEQ;
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "VALUES NEXT VALUE FOR " + JCR_ITEM_SEQ;
+         FIND_NODES_BY_PARENTID_LAZILY_CQ =
+            "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SVALUE V, JCR_SITEM P "
+               + " join (select J.* from JCR_SITEM J where J.CONTAINER_NAME=? AND J.I_CLASS=1 and J.PARENT_ID=?"
+               + " AND J.N_ORDER_NUM  >= ? order by J.N_ORDER_NUM, J.ID FETCH FIRST $rowNb ROWS ONLY) I on P.PARENT_ID = I.ID"
+               + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+               + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+               + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+               + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      }
    }
 
    /**
@@ -106,6 +108,10 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
    protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset, int limit)
       throws SQLException
    {
+      if (!containerConfig.use_sequence_for_order_number)
+      {
+         return super.findChildNodesByParentIdentifier(parentCid, fromOrderNum, offset, limit);
+      }
       if (findNodesByParentIdLazilyCQ == null)
       {
          FIND_NODES_BY_PARENTID_LAZILY_CQ = FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("$rowNb", Integer.toString(limit));

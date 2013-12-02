@@ -329,6 +329,10 @@ public class DBInitializer
                }
                final Statement finalSt = st;
                final String finalSql = updateQuery(sql);
+               if (finalSql.isEmpty())
+               {
+                  continue;
+               }
                SecurityHelper.doPrivilegedSQLExceptionAction(new PrivilegedExceptionAction<Object>()
                {
                   public Object run() throws Exception

@@ -56,9 +56,16 @@ public class H2DBInitializer extends StorageDBInitializer
             tMatcher = dbObjectNamePattern.matcher(sql);
             if (tMatcher.find())
             {
-               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_"+DBInitializerHelper.getItemTableSuffix(containerConfig)+"SEQ"))
+               if (sql.substring(tMatcher.start(), tMatcher.end()).equals("JCR_" + DBInitializerHelper.getItemTableSuffix(containerConfig) + "SEQ"))
                {
-                  sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection)+1 ));
+                  if (containerConfig.use_sequence_for_order_number)
+                  {
+                     sql = sql.concat(" Start with " + Integer.toString(getSequenceStartValue(connection) + 1));
+                  }
+                  else
+                  {
+                     return sql;
+                  }
                }
             }
          }

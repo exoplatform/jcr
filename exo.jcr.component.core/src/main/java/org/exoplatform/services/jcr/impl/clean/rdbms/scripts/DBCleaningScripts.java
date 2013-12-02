@@ -48,6 +48,8 @@ public abstract class DBCleaningScripts
 
    protected String refTableSuffix;
 
+   protected  boolean useSequence;
+
    protected final String dialect;
 
    protected final String workspaceName;
@@ -362,6 +364,7 @@ public abstract class DBCleaningScripts
          itemTableSuffix = DBInitializerHelper.getItemTableSuffix(wsConfig);
          valueTableSuffix = DBInitializerHelper.getValueTableSuffix(wsConfig);
          refTableSuffix = DBInitializerHelper.getRefTableSuffix(wsConfig);
+         useSequence= DBInitializerHelper.getDatabaseOrderNumber(wsConfig) ;
       }
       catch (RepositoryConfigurationException e)
       {

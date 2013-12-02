@@ -68,7 +68,10 @@ public class H2SingleDbJDBCConnection extends SingleDbJDBCConnection
    protected void prepareQueries() throws SQLException
    {
       super.prepareQueries();
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call "+JCR_ITEM_SEQ+".nextval";
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call " + JCR_ITEM_SEQ + ".nextval";
+      }
    }
 
 }
