@@ -378,9 +378,15 @@ public class TransactionableDataManager implements DataManager
    }
 
    /**
-    * {@inheritDoc}
+    * Return item data by identifier in this transient storage then in storage container.
+    *
+    * @param identifier
+    * @param checkChangesLogOnly
+    * @return existed item data or null if not found
+    * @throws RepositoryException
+    * @see org.exoplatform.services.jcr.dataflow.ItemDataConsumer#getItemData(java.lang.String)
     */
-   public ItemData getItemData(String identifier) throws RepositoryException
+   public ItemData getItemData(String identifier, boolean checkChangesLogOnly) throws RepositoryException
    {
       if (txStarted())
       {
@@ -390,7 +396,17 @@ public class TransactionableDataManager implements DataManager
             return state.isDeleted() ? null : state.getData();
          }
       }
-      return storageDataManager.getItemData(identifier);
+
+      return (checkChangesLogOnly) ? null: storageDataManager.getItemData(identifier);
+
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ItemData getItemData(String identifier) throws RepositoryException
+   {
+      return getItemData(identifier,false);
    }
 
    /**
