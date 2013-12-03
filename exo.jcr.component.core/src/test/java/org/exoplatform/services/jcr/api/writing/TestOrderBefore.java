@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
-
+import org.exoplatform.services.jcr.access.PermissionType;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -991,6 +991,87 @@ public class TestOrderBefore extends JcrAPIBaseTest
       NodeImpl node3 = (NodeImpl)it.nextNode();
       NodeImpl node4 = (NodeImpl)it.nextNode();
 
+      assertEquals("n4", node1.getName());
+      assertEquals("n3", node2.getName());
+      assertEquals("n2", node3.getName());
+      assertEquals("n1", node4.getName());
+
+      assertTrue(((NodeData)node1.getData()).getOrderNumber() < ((NodeData)node2.getData()).getOrderNumber());
+      assertTrue(((NodeData)node2.getData()).getOrderNumber() < ((NodeData)node3.getData()).getOrderNumber());
+      assertTrue(((NodeData)node3.getData()).getOrderNumber() < ((NodeData)node4.getData()).getOrderNumber());
+
+      session.logout();
+   }
+   public void testSetACLOrderBefore() throws Exception
+   {
+      Session session = repository.login(credentials, "ws");
+      NodeImpl testBase = (NodeImpl)session.getRootNode().addNode("testACL");
+      session.save();
+
+      testBase.addNode("n1");
+      root.save();
+
+      NodeImpl n2 = (NodeImpl) testBase.addNode("n2");
+      n2.addMixin("exo:privilegeable");
+      testBase.orderBefore("n2", "n1");
+      n2.setPermission("mary", new String[]{PermissionType.SET_PROPERTY});
+      testBase.save();
+
+      NodeImpl n3 = (NodeImpl) testBase.addNode("n3");
+      n3.addMixin("exo:privilegeable");
+      testBase.orderBefore("n3", "n2");
+      n3.setPermission("mary", new String[]{PermissionType.SET_PROPERTY});
+      testBase.save();
+
+      NodeImpl n4 = (NodeImpl) testBase.addNode("n4");
+      n4.addMixin("exo:privilegeable");
+      testBase.orderBefore("n4", "n3");
+      n4.setPermission("mary", new String[]{PermissionType.SET_PROPERTY});
+      testBase.save();
+
+      NodeIterator it = testBase.getNodes();
+      NodeImpl node1 = (NodeImpl)it.nextNode();
+      NodeImpl node2 = (NodeImpl)it.nextNode();
+      NodeImpl node3 = (NodeImpl)it.nextNode();
+      NodeImpl node4 = (NodeImpl)it.nextNode();
+
+      assertEquals("n4", node1.getName());
+      assertEquals("n3", node2.getName());
+      assertEquals("n2", node3.getName());
+      assertEquals("n1", node4.getName());
+
+      assertTrue(((NodeData)node1.getData()).getOrderNumber() < ((NodeData)node2.getData()).getOrderNumber());
+      assertTrue(((NodeData)node2.getData()).getOrderNumber() < ((NodeData)node3.getData()).getOrderNumber());
+      assertTrue(((NodeData)node3.getData()).getOrderNumber() < ((NodeData)node4.getData()).getOrderNumber());
+
+      session.logout();
+   }
+
+   public void testMoveOrderBefore() throws Exception
+   {
+      SessionImpl session = (SessionImpl)repository.login(credentials, WORKSPACE);
+      Node testMove = session.getRootNode().addNode("testMove");
+
+      testMove.addNode("n1");
+      session.save();
+      testMove.addNode("n2");
+      testMove.orderBefore("n2", "n1");
+      testMove.addNode("n3");
+      testMove.orderBefore("n3", "n2");
+      testMove.addNode("n4");
+      testMove.orderBefore("n4", "n3");
+
+      session.move(testMove.getPath(), "/dest");
+
+      session.save();
+      session.logout();
+
+      session = (SessionImpl)repository.login(credentials, WORKSPACE);
+      NodeIterator it = session.getRootNode().getNode("dest").getNodes();
+      NodeImpl node1 = (NodeImpl)it.nextNode();
+      NodeImpl node2 = (NodeImpl)it.nextNode();
+      NodeImpl node3 = (NodeImpl)it.nextNode();
+      NodeImpl node4 = (NodeImpl)it.nextNode();
       assertEquals("n4", node1.getName());
       assertEquals("n3", node2.getName());
       assertEquals("n2", node3.getName());
