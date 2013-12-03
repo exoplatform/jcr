@@ -3144,13 +3144,9 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
    }
 
-   private void setACL(AccessControlList acl) throws RepositoryException
+   private void setACL(AccessControlList acl)
    {
-      NodeData nodeData = (NodeData) dataManager.getItemData(data.getIdentifier(),true);
-      if (nodeData == null)
-      {
-         nodeData = (NodeData)data;
-      }
+      NodeData nodeData = (NodeData)data;
       data =
          new TransientNodeData(nodeData.getQPath(), nodeData.getIdentifier(), nodeData.getPersistedVersion(), nodeData
             .getPrimaryTypeName(), nodeData.getMixinTypeNames(), nodeData.getOrderNumber(), nodeData
