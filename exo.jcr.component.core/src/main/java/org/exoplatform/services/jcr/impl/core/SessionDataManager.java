@@ -307,11 +307,12 @@ public class SessionDataManager implements ItemDataConsumer
     * Return item data by identifier in this transient storage then in workspace container.
     * 
     * @param identifier
+    * @param checkChangesLogOnly
     * @return existed item data or null if not found
     * @throws RepositoryException
     * @see org.exoplatform.services.jcr.dataflow.ItemDataConsumer#getItemData(java.lang.String)
     */
-   public ItemData getItemData(String identifier) throws RepositoryException
+   public ItemData getItemData(String identifier,boolean checkChangesLogOnly) throws RepositoryException
    {
       ItemData data = null;
       // 1. Try in transient changes
@@ -319,7 +320,7 @@ public class SessionDataManager implements ItemDataConsumer
       if (state == null)
       {
          // 2. Try from txdatamanager
-         data = transactionableManager.getItemData(identifier);
+         data = transactionableManager.getItemData(identifier,checkChangesLogOnly);
          data = updatePathIfNeeded(data);
       }
       else if (!state.isDeleted())
@@ -327,6 +328,19 @@ public class SessionDataManager implements ItemDataConsumer
          data = state.getData();
       }
       return data;
+   }
+
+   /**
+    * Return item data by identifier in this transient storage then in workspace container.
+    *
+    * @param identifier
+    * @return existed item data or null if not found
+    * @throws RepositoryException
+    * @see org.exoplatform.services.jcr.dataflow.ItemDataConsumer#getItemData(java.lang.String)
+    */
+   public ItemData getItemData(String identifier) throws RepositoryException
+   {
+      return getItemData(identifier,false);
    }
 
    /**
