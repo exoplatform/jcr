@@ -238,7 +238,7 @@ public interface WorkspaceStorageConnection
     *          will contain the resulted child nodes
     * @return true if there are data to retrieve for next request and false in other case 
     */
-   boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
+   boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int offset, int pageSize, List<NodeData> childs)
       throws RepositoryException;
    
    /**

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+ * Copyright (C) 2013 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -21,7 +21,7 @@ package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
@@ -30,70 +30,78 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Created by The eXo Platform SAS
+ * JCR Storage Sybase initializer.
  *
- * 26.03.2007
+ * Created by The eXo Platform SAS* 11.09.2013
  *
- * PgSQL convert all db object names to lower case, so respect it.
- * Same as Ingres initializer.
- *
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: PgSQLDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @author <a href="mailto:aboughzela@exoplatform.com">Aymen Boughzela</a>
  */
-public class PgSQLDBInitializer extends StorageDBInitializer
+public class SybaseDBInitializer extends StorageDBInitializer
 {
 
-   public PgSQLDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
+   public SybaseDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
       super(connection, containerConfig);
-   }
-
-   @Override
-   protected boolean isTableExists(Connection conn, String tableName) throws SQLException
-   {
-      return super.isTableExists(conn, tableName.toUpperCase().toLowerCase());
    }
 
    /**
     * {@inheritDoc}
     */
    @Override
-   protected boolean isSequenceExists(final Connection conn, final String sequenceName) throws SQLException
+   protected boolean isProcedureExists(final Connection conn, final String procedureName) throws SQLException
    {
       return SecurityHelper.doPrivilegedAction(new PrivilegedAction<Boolean>()
       {
          public Boolean run()
          {
-            return sequenceExists(sequenceName, conn);
+            return procedureExists(procedureName, conn);
          }
       });
    }
 
-   private boolean sequenceExists(String sequenceName, Connection con)
+   private boolean procedureExists(String procedureName, Connection con)
    {
       Statement stmt = null;
       ResultSet trs = null;
       try
       {
          String query;
-         query = "SELECT count(*) FROM information_schema.sequences where sequence_name='"+sequenceName.toLowerCase()+"'";
-
+         query = "select count(*) from sysobjects where type='P' and name='" + procedureName + "'";
          stmt = con.createStatement();
          trs = stmt.executeQuery(query);
          return (trs.next() && trs.getInt(1) >= 1);
-
       }
       catch (SQLException e)
       {
          if (LOG.isDebugEnabled())
          {
-            LOG.debug("SQLException occurs while checking the sequence " + sequenceName, e);
+            LOG.debug("SQLException occurs while checking the procedure " + procedureName, e);
          }
          return false;
+
       }
       finally
       {
          JDBCUtils.freeResources(trs, stmt, null);
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void postInit(Connection connection) throws SQLException
+   {
+      super.postInit(connection);
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         String select =
+            "select * from JCR_" + DBInitializerHelper.getItemTableSuffix(containerConfig) + "_SEQ  where name='LAST_N_ORDER_NUM'";
+         if (!connection.createStatement().executeQuery(select).next())
+         {
+            String insert = "INSERT INTO JCR_" + DBInitializerHelper.getItemTableSuffix(containerConfig) + "_SEQ  (name, nextVal) VALUES ('LAST_N_ORDER_NUM'," + getStartValue(connection) + ")";
+            connection.createStatement().executeUpdate(insert);
+         }
       }
    }
 

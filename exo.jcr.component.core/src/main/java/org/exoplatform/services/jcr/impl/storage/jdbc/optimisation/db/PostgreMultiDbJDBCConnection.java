@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -46,6 +47,19 @@ public class PostgreMultiDbJDBCConnection extends MultiDbJDBCConnection
       JDBCDataContainerConfig containerConfig) throws SQLException
    {
       super(dbConnection, readOnly, containerConfig);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void prepareQueries() throws SQLException
+   {
+      super.prepareQueries();
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "SELECT NEXTVAL('" + JCR_ITEM_SEQ + "')";
+      }
    }
 
    @Override

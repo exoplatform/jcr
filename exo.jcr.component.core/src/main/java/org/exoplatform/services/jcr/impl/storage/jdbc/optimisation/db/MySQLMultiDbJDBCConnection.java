@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -92,6 +93,11 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
          FIND_NODES_AND_PROPERTIES.replace("from " + JCR_ITEM + " I", "from " + JCR_ITEM + " I force index (PRIMARY)");
 
       FIND_ITEM_BY_NAME = "select * from " + JCR_ITEM + " where PARENT_ID=? and NAME=? and I_INDEX=? order by I_CLASS";
+
+      if (containerConfig.use_sequence_for_order_number)
+      {
+         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "SELECT " + JCR_ITEM_NEXT_VAL + "('LAST_N_ORDER_NUM') as nextVal";
+      }
    }
 
    /**
