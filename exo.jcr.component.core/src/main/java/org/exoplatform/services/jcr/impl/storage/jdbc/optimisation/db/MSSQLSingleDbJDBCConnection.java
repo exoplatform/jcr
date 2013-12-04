@@ -114,6 +114,10 @@ public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    @Override
    protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
    {
+      if (!containerConfig.use_sequence_for_order_number)
+      {
+         return super.findLastOrderNumberByParentIdentifier(parentIdentifier);
+      }
       if (findLastOrderNumberByParentId == null)
       {
          findLastOrderNumberByParentId = dbConnection.prepareCall(FIND_LAST_ORDER_NUMBER_BY_PARENTID);

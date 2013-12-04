@@ -94,6 +94,7 @@ public class MSSQLDBInitializer extends StorageDBInitializer
    protected void postInit(Connection connection) throws SQLException
    {
       super.postInit(connection);
+      if (containerConfig.use_sequence_for_order_number)
       {
          String select =
             "select * from JCR_" + DBInitializerHelper.getItemTableSuffix(containerConfig) + "_SEQ  where name='LAST_N_ORDER_NUM'";
