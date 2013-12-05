@@ -3,15 +3,15 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Kernel.ServiceConfigurationinDetail">
   <title>Service Configuration in Detail</title>
-  
-    <para>This section shows you how to set up a sample service with some
-    configurations and how to access the configuration parameters. The
-    later sections describe all details of the configuration file (parameters,
-    object-params, plugins, imports, and more). It also shows how to access the
-    configuration values. You may consider this document as a <emphasis
-    role="bold">reference</emphasis>, but you can also use this document as a
-    <emphasis role="bold">tutorial</emphasis> and read it from the beginning
-    to the end.</para>
+
+  <para>This section shows you how to set up a sample service with some
+  configurations and how to access the configuration parameters. The later
+  sections describe all details of the configuration file (parameters,
+  object-params, plugins, imports, and more). It also shows how to access the
+  configuration values. You may consider this document as a <emphasis
+  role="bold">reference</emphasis>, but you can also use this document as a
+  <emphasis role="bold">tutorial</emphasis> and read it from the beginning to
+  the end.</para>
 
   <para><emphasis role="bold">Related documents</emphasis></para>
 
@@ -122,8 +122,8 @@ public interface ArticleStatsService {
       <title>Init Parameters</title>
 
       <para>You see your service has a configuration file, but you wonder how
-      the file can gain access to its configuration. Imagine that you
-      are asked to implement two different calculation methods: fast and
+      the file can gain access to its configuration. Imagine that you are
+      asked to implement two different calculation methods: fast and
       exact.</para>
 
       <para>You create one init parameter containing the calculation methods.
@@ -153,8 +153,8 @@ public interface ArticleStatsService {
         role="bold">totally free</emphasis>. You can provide as many <emphasis
         role="bold">value-param</emphasis>, <emphasis
         role="bold">property-param</emphasis>, and <emphasis
-        role="bold">properties</emphasis> as you wish, and you can give them any
-        names or values. You only must respect the xml structure.</para>
+        role="bold">properties</emphasis> as you wish, and you can give them
+        any names or values. You only must respect the xml structure.</para>
       </note>
 
       <para>Now let's see how our service can read this configuration. The
@@ -690,7 +690,42 @@ public class LDAPConnectionConfig {
         the configuration manager that it needs to interprete the URL as an
         <emphasis>absolute path</emphasis>. For example
         <emphasis>file:///path/to/my/file.xml</emphasis> will be understood as
-        an obsolute path.</para>
+        an absolute path.</para>
+      </listitem>
+
+      <listitem>
+        <para><emphasis role="bold">ar</emphasis>: this prefix allows you to
+        access to a file even if it is inside an archive (a zip file). The
+        path used must be absolute and in case your file is inside an archive
+        you will need to provide the path within the archive using "!/" as
+        separator between the path of the archive and the path inside the
+        archive. It is also possible to get a file from an archive that is
+        itself inside another archive but it is not possible to go any
+        further. So for example, here are the types of supported URL: </para>
+
+        <itemizedlist>
+          <listitem>
+            <para><emphasis>ar:/path/to/my/file.xml</emphasis> will allow you
+            to access to the file <emphasis>file.xml</emphasis>, in this case
+            you could also use <emphasis>file:</emphasis> for the exact same
+            result.</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>ar:/path/to/my/archive.zip!/path/to/my/file.xml</emphasis>
+            will allow you to access to the file <emphasis>file.xml</emphasis>
+            that is inside the archive
+            <emphasis>archive.zip</emphasis>.</para>
+          </listitem>
+
+          <listitem>
+            <para>ar:/path/to/my/archive.zip!/path/to/my/archive2.zip!/path/to/my/file.xml
+            will allow you to access to the file <emphasis>file.xml</emphasis>
+            that is inside the archive <emphasis>archive2.zip</emphasis> which
+            is itself inside the archive
+            <emphasis>archive.zip</emphasis>.</para>
+          </listitem>
+        </itemizedlist>
       </listitem>
 
       <listitem>
@@ -746,8 +781,8 @@ public class LDAPConnectionConfig {
 
     <note>
       <para>For more details about the exo configuration directory please
-      refer to the <emphasis>Configuration
-      Retrieval</emphasis> section.</para>
+      refer to the <emphasis>Configuration Retrieval</emphasis>
+      section.</para>
     </note>
   </section>
 </section>

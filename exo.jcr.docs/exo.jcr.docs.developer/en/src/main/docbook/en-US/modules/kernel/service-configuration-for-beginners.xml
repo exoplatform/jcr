@@ -3,13 +3,15 @@
 "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
 <section id="Kernel.ServiceConfigurationforBeginners">
   <title>Service Configuration for Beginners</title>
-    <para>This section provides you the basic knowledge
-    about modes, services and containers. You will find out where the service
-    configuration files should be placed, and you will also see the overriding
-    mechanism of configurations. </para>
-    <para>Finally, you will understand how the container
-    creates the services one after the other and what <emphasis>Inversion of
-    Control</emphasis> really means.</para>
+
+  <para>This section provides you the basic knowledge about modes, services
+  and containers. You will find out where the service configuration files
+  should be placed, and you will also see the overriding mechanism of
+  configurations.</para>
+
+  <para>Finally, you will understand how the container creates the services
+  one after the other and what <emphasis>Inversion of Control</emphasis>
+  really means.</para>
 
   <para><emphasis role="bold">Related documents</emphasis></para>
 
@@ -41,10 +43,10 @@
     just replace "exo-tomcat" by your folder name.</para>
 
     <note>
-      <para>If you only installed Gatein or eXo Platform, the folder paths are a slightly different.
-          You wil need to replace exo-tomcat with your tomcat home directory.</para>
+      <para>If you only installed Gatein or eXo Platform, the folder paths are
+      a slightly different. You wil need to replace exo-tomcat with your
+      tomcat home directory.</para>
     </note>
-
   </section>
 
   <section id="Kernel.ServiceConfigurationforBeginners.Services">
@@ -177,8 +179,8 @@
 
     <itemizedlist>
       <listitem>
-        <para>Portal mode: The service runs embedded in the GateIn. In
-        this mode a <classname>PortalContainer</classname> is used.</para>
+        <para>Portal mode: The service runs embedded in the GateIn. In this
+        mode a <classname>PortalContainer</classname> is used.</para>
       </listitem>
 
       <listitem>
@@ -233,8 +235,8 @@
     <para><emphasis role="bold">PicoContainer</emphasis> All containers
     inherit from the ExoContainer class which itself inherits from a
     <classname>PicoContainer</classname>. <ulink
-    url="http://picocontainer.codehaus.org/">PicoContainer</ulink> is a framework
-    which allows eXo to apply the IoC (<link
+    url="http://picocontainer.codehaus.org/">PicoContainer</ulink> is a
+    framework which allows eXo to apply the IoC (<link
     linkend="Kernel.InversionOfControl">Inversion of Control</link>)
     principles. The precise implementations of any service is unknown at
     compile time. Various implementations can be used, eXo supplies different
@@ -252,14 +254,17 @@
       <para>"In your java code you have to use</para>
 
       <programlisting language="java">ExoContainer myContainer = ExoContainerContext.getCurrentContainer();</programlisting>
-      <para>in order to access to the current container. It doesn't greatly matter
-      to your application if the current container is a
+
+      <para>in order to access to the current container. It doesn't greatly
+      matter to your application if the current container is a
       <classname>PortalContainer</classname> or a
       <classname>StandaloneContainer</classname>. Once you have your container
-      you may access to any service registered in this container using</para>      
+      you may access to any service registered in this container using</para>
+
       <programlisting language="java">MyService myService = (MyService) myContainer.getComponentInstance(MyService.class);</programlisting>
-      <para> You easily realize that <classname>MyService.class</classname> is the
-      name of the service interface.</para>
+
+      <para>You easily realize that <classname>MyService.class</classname> is
+      the name of the service interface.</para>
     </note>
   </section>
 
@@ -285,8 +290,17 @@
       <orderedlist>
         <listitem>
           <para>Services default <classname>RootContainer</classname>
-          configurations from JAR files
-          <emphasis>/conf/configuration.xml</emphasis></para>
+          configurations from JAR files <emphasis>at
+          /conf/configuration.xml</emphasis></para>
+        </listitem>
+
+        <listitem>
+          <para>Configurations from EAR and WAR files at
+          <emphasis>/META-INF/exo-conf/configuration.xml</emphasis>. In case
+          of an EAR, if the configuration file could be found inside the
+          META-INF forlder, it will use only this file and will ignore
+          configuration files in the META-INF folder of the web applications
+          included in the EAR file.</para>
         </listitem>
 
         <listitem>
@@ -356,10 +370,6 @@
 
       <orderedlist>
         <listitem>
-          <para>Take over the configurations of the RootContainer</para>
-        </listitem>
-
-        <listitem>
           <para>Default PortalContainer configurations from all JAR files
           (folder <emphasis>/conf/portal/configuration.xml</emphasis>)</para>
         </listitem>
@@ -390,9 +400,9 @@
       <para><emphasis role="bold">Multiple Portals</emphasis> Be aware that
       you might set up several different portals ("admin", "mexico", etc.),
       and each of these portals will use a different PortalContainer. And each
-      of these PortalContainers can be configured separately. As of GateIn
-      you also will be able to provide configurations from outside the
-      jars and wars or webapps. Put a configuration file in
+      of these PortalContainers can be configured separately. As of GateIn you
+      also will be able to provide configurations from outside the jars and
+      wars or webapps. Put a configuration file in
       <emphasis>exo-tomcat/exo-conf/portal/$portal_name/configuration.xml</emphasis>
       where <parameter>$portal_name</parameter> is the name of the portal you
       want to configure for . But normally you only have one portal which is
@@ -400,10 +410,10 @@
       <emphasis>exo-tomcat/exo-conf/portal/portal/configuration.xml</emphasis>.</para>
 
       <note>
-        <para>GateIn you can override the external configuration
-        location with the system property <emphasis>exo.conf.dir</emphasis>.
-        If the property exists its value will be used as path to the eXo
-        configuration directory, that means this is an alternative to
+        <para>GateIn you can override the external configuration location with
+        the system property <emphasis>exo.conf.dir</emphasis>. If the property
+        exists its value will be used as path to the eXo configuration
+        directory, that means this is an alternative to
         <emphasis>exo-tomcat/exo-conf</emphasis>. Just put this property in
         the command line: <emphasis>java
         -Dexo.conf.dir=/path/to/exo/conf</emphasis> or use eXo.bat or eXo.sh.
@@ -465,7 +475,9 @@
 
           <orderedlist>
             <listitem>
-              <para>Take over the configurations of the RootContainer</para>
+              <para>Default <emphasis>StandaloneContainer</emphasis>
+              configurations from JAR files (folder
+              <emphasis>/conf/configuration.xml</emphasis>)</para>
             </listitem>
 
             <listitem>
@@ -493,7 +505,9 @@
 
           <orderedlist>
             <listitem>
-              <para>Take over the configurations of the RootContainer</para>
+              <para>Default <emphasis>StandaloneContainer</emphasis>
+              configurations from JAR files (folder
+              <emphasis>/conf/configuration.xml</emphasis>)</para>
             </listitem>
 
             <listitem>
@@ -560,10 +574,10 @@
 
     <note>
       <para>What happens if one service has more than one constructor? The
-      container always tries first to use the constructor with a maximum number
-      of arguments, if this is not possible the container continues step by step
-      with constructors that have less arguments until arriving at the
-      zero-argument constructor (if there is any).</para>
+      container always tries first to use the constructor with a maximum
+      number of arguments, if this is not possible the container continues
+      step by step with constructors that have less arguments until arriving
+      at the zero-argument constructor (if there is any).</para>
     </note>
   </section>
 
@@ -636,8 +650,8 @@
         </listitem>
       </itemizedlist>
 
-      <para><emphasis role="bold">Dependency Injection</emphasis>. You also saw
-      two types of dependency injections:</para>
+      <para><emphasis role="bold">Dependency Injection</emphasis>. You also
+      saw two types of dependency injections:</para>
 
       <itemizedlist>
         <listitem>
@@ -740,15 +754,18 @@ import jndi:/localhost/portal/WEB-INF/conf/jcr/jcr-configuration.xml
   <section id="Kernel.ServiceConfigurationforBeginners.FurtherReading">
     <title>Further Reading</title>
 
-    <para>Do you feel yourself to be an expert now? Not yet? Get a deeper look and read this
-    <link linkend="Kernel.ServicesWiring">Services Wiring</link> article. You
-    read so much about configuration, that you should wonder what the <link
+    <para>Do you feel yourself to be an expert now? Not yet? Get a deeper look
+    and read this <link linkend="Kernel.ServicesWiring">Services Wiring</link>
+    article. You read so much about configuration, that you should wonder what
+    the <link
     linkend="Kernel.ContainerConfiguration.ConfigurationNamespace">XML Schema
     of the configuration file</link> looks like.</para>
 
     <para>If you wish to see examples of service configurations you should
-    study the <ulink url="https://github.com/exoplatform/core/tree/stable/2.6.x">Core.</ulink> Where you find descriptions of
-    some eXo's core services. Finally you might wish to read more about <ulink
+    study the <ulink
+    url="https://github.com/exoplatform/core/tree/stable/2.6.x">Core.</ulink>
+    Where you find descriptions of some eXo's core services. Finally you might
+    wish to read more about <ulink
     url="http://picocontainer.codehaus.org/">PicoContainer</ulink>.</para>
   </section>
 </section>

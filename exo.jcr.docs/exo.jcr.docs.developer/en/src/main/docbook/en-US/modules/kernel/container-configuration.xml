@@ -89,7 +89,17 @@
         <orderedlist>
           <listitem>
             <para>Services default <envar>RootContainer</envar> configurations
-            from JAR files <emphasis>/conf/configuration.xml</emphasis></para>
+            from JAR files at
+            <emphasis>/conf/configuration.xml</emphasis></para>
+          </listitem>
+
+          <listitem>
+            <para>Configurations from EAR and WAR files at
+            <emphasis>/META-INF/exo-conf/configuration.xml</emphasis>. In case
+            of an EAR, if the configuration could be found inside the META-INF
+            forlder, it will use only this file and will ignore configuration
+            files in the META-INF folder of the web applications included in
+            the EAR file.</para>
           </listitem>
 
           <listitem>
@@ -100,12 +110,12 @@
 
           <listitem>
             <para>Services default <envar>PortalContainer</envar>
-            configurations from JAR files
-            <emphasis>/conf/portal/configuration.xml</emphasis></para>
+            configurations from JAR files <emphasis>at
+            /conf/portal/configuration.xml</emphasis></para>
           </listitem>
 
           <listitem>
-            <para>Web applications configurations from WAR files
+            <para>Web applications configurations from WAR files at
             <emphasis>/WEB-INF/conf/configuration.xml</emphasis></para>
           </listitem>
 
@@ -127,24 +137,19 @@
 
         <orderedlist>
           <listitem>
-            <para>Services default <envar>RootContainer</envar> configurations
-            from JAR files <emphasis>/conf/configuration.xml</emphasis></para>
-          </listitem>
-
-          <listitem>
-            <para>External <envar>RootContainer</envar> configuration can be
-            found at
-            <emphasis>$AS_HOME/exo-conf/configuration.xml</emphasis></para>
+            <para>Services default <envar>StandaloneContainer</envar>
+            configurations from JAR files <emphasis>at
+            /conf/configuration.xml</emphasis></para>
           </listitem>
 
           <listitem>
             <para>Services default <envar>StandaloneContainer</envar>
-            configurations from JAR files
+            configurations from JAR files at
             <emphasis>/conf/portal/configuration.xml</emphasis></para>
           </listitem>
 
           <listitem>
-            <para>Web applications configurations from WAR files
+            <para>Web applications configurations from WAR files at
             <emphasis>/WEB-INF/conf/configuration.xml</emphasis></para>
           </listitem>
 
@@ -258,7 +263,10 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
         <note>
           <para>The name of the configuration folder that is by default
           <emphasis>"exo-conf"</emphasis>, can be changed thanks to the System
-          property <emphasis>exo.conf.dir.name</emphasis>.</para>
+          property <emphasis>exo.conf.dir.name</emphasis>. Warning even if we
+          modify the configuration folder, it will remain "exo-conf" for the
+          files that we retrieve from the META-INF folder. This affects only
+          the externalized configuration files.</para>
         </note>
 
         <note>
@@ -270,6 +278,25 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
           current JAR/WAR) will replace the previous one. The last one will be
           applied to the service during the services start phase.</para>
         </note>
+
+        <note>
+          <para>To be able to retrieve the configuration files inside the EAR
+          and WAR files, the kernel does a lookup inside the standard folders
+          where we deploy the archives. If for some reasons, you would need to
+          redefine the list of folders where the archives are deployed, you
+          can use the System property <emphasis>exo.archive.dirs</emphasis>
+          and set it to a comma separated list of paths relative to the
+          <emphasis>$AS_HOME</emphasis>.</para>
+        </note>
+
+        <warning>
+          <para>The EAR and WAR files from which the kernel gets the
+          configuration files for the RootContainer, are found thanks to a
+          lookup inside the standard deployment folders but so far those
+          folders are only properly defined in case of JBoss AS, Tomcat and
+          Jetty. For other application servers, you will need to use the
+          System property described in the previous note. </para>
+        </warning>
 
         <warning>
           <para>Take care to have no dependencies between configurations from
@@ -756,8 +783,8 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
                 "xml". The path will be interpreted as follows:<orderedlist>
                     <listitem>
                       <para>The path doesn't contain any prefix of type
-                      "classpath:", "jar:" or "file:", we assume that the file
-                      could be externalized so we apply the following
+                      "classpath:", "jar:", "ar:", or "file:", we assume that
+                      the file could be externalized so we apply the following
                       rules:<orderedlist>
                           <listitem>
                             <para>A file exists at
@@ -898,8 +925,8 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
                 interpreted as follows:<orderedlist>
                     <listitem>
                       <para>The path doesn't contain any prefix of type
-                      "classpath:", "jar:" or "file:", we assume that the file
-                      could be externalized so we apply the following
+                      "classpath:", "jar:", "ar:" or "file:", we assume that
+                      the file could be externalized so we apply the following
                       rules:<orderedlist>
                           <listitem>
                             <para>A file exists at
