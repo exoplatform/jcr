@@ -97,7 +97,7 @@
             <para>Configurations from EAR and WAR files at
             <emphasis>/META-INF/exo-conf/configuration.xml</emphasis>. In case
             of an EAR, if the configuration could be found inside the META-INF
-            forlder, it will use only this file and will ignore configuration
+            folder, it will use only this file and will ignore configuration
             files in the META-INF folder of the web applications included in
             the EAR file.</para>
           </listitem>
@@ -295,7 +295,7 @@ StandaloneContainer.addConfigurationURL(containerConf);</programlisting>
           lookup inside the standard deployment folders but so far those
           folders are only properly defined in case of JBoss AS, Tomcat and
           Jetty. For other application servers, you will need to use the
-          System property described in the previous note. </para>
+          System property described in the previous note.</para>
         </warning>
 
         <warning>

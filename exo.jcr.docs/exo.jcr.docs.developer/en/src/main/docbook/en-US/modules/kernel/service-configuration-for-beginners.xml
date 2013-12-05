@@ -298,7 +298,7 @@
           <para>Configurations from EAR and WAR files at
           <emphasis>/META-INF/exo-conf/configuration.xml</emphasis>. In case
           of an EAR, if the configuration file could be found inside the
-          META-INF forlder, it will use only this file and will ignore
+          META-INF folder, it will use only this file and will ignore
           configuration files in the META-INF folder of the web applications
           included in the EAR file.</para>
         </listitem>
