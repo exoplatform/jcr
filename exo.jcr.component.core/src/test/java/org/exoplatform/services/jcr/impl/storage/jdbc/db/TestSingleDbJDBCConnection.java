@@ -20,6 +20,7 @@ import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCConnectionTestBase;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.HSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializer;
 
 import java.sql.Connection;
@@ -44,7 +45,7 @@ public class TestSingleDbJDBCConnection extends JDBCConnectionTestBase
       containerConfig.containerName = "ws3";
       containerConfig.initScriptPath = scriptPath;
       containerConfig.dbStructureType = dbStructureType;
-      new DBInitializer(getJNDIConnection(), containerConfig).init();
+      new HSQLDBInitializer(getJNDIConnection(), containerConfig).init();
    }
 
    @Override

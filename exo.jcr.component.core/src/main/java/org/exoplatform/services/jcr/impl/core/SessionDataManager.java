@@ -839,7 +839,7 @@ public class SessionDataManager implements ItemDataConsumer
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(final NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
+   public boolean getChildNodesDataByPage(final NodeData parent, int fromOrderNum,int offset, int pageSize, List<NodeData> childs)
       throws RepositoryException
    {
       long start = 0;
@@ -854,7 +854,7 @@ public class SessionDataManager implements ItemDataConsumer
          boolean hasNext = false;
          if (!isNew(parent.getIdentifier()))
          {
-            hasNext = transactionableManager.getChildNodesDataByPage(parent, fromOrderNum, toOrderNum, childs);
+            hasNext = transactionableManager.getChildNodesDataByPage(parent, fromOrderNum, offset, pageSize, childs);
          }
 
          // merge data

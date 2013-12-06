@@ -34,6 +34,7 @@
       <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-jbc.xml</jcr.test.configuration.file>
       <jbosscache.shareable>true</jbosscache.shareable>
       <cache.enabled>true</cache.enabled>
+      <use.sequence>false</use.sequence>
       <value.storage.enabled>true</value.storage.enabled>
       <statistics.enabled>false</statistics.enabled>
       <batch.size>-1</batch.size>
@@ -295,6 +296,10 @@
                   <property>
                      <name>cache-enabled</name>
                      <value>${cache.enabled}</value>
+                  </property>
+                  <property>
+                     <name>use-sequence</name>
+                     <value>${use.sequence}</value>
                   </property>
                   <property>
                      <name>value-storage-enabled</name>
@@ -594,6 +599,10 @@
                            <value>${cache.enabled}</value>
                         </property>
                         <property>
+                           <name>use-sequence</name>
+                           <value>${use.sequence}</value>
+                        </property>
+                        <property>
                            <name>value-storage-enabled</name>
                            <value>${value.storage.enabled}</value>
                         </property>
@@ -684,6 +693,10 @@
                         <property>
                             <name>cache-enabled</name>
                             <value>${cache.enabled}</value>
+                        </property>
+                        <property>
+                            <name>use-sequence</name>
+                            <value>${use.sequence}</value>
                         </property>
                         <property>
                             <name>value-storage-enabled</name>
@@ -1017,6 +1030,12 @@
          <id>value-storage-disabled</id>
          <properties>
             <value.storage.enabled>false</value.storage.enabled>
+         </properties>
+      </profile>
+      <profile>
+         <id>use-sequence</id>
+         <properties>
+            <use.sequence>true</use.sequence>
          </properties>
       </profile>
       <profile>
