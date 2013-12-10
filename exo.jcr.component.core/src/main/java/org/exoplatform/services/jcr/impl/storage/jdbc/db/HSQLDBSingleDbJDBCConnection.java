@@ -146,27 +146,6 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
-   {
-      if (findLastOrderNumberByParentId == null)
-      {
-         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
-      }
-      else
-      {
-         findLastOrderNumberByParentId.clearParameters();
-      }
-
-      findLastOrderNumberByParentId.setString(1, parentIdentifier);
-      findLastOrderNumberByParentId.setString(2, this.containerConfig.containerName);
-
-      return findLastOrderNumberByParentId.executeQuery();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
    protected ResultSet findChildNodesCountByParentIdentifier(String parentCid) throws SQLException
    {
       if (findNodesCountByParentId == null)
