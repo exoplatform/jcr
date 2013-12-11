@@ -920,13 +920,13 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(final NodeData nodeData, int fromOrderNum, int toOrderNum,
+   public boolean getChildNodesDataByPage(final NodeData nodeData, int fromOrderNum, int offset, int pageSize,
       List<NodeData> childNodes) throws RepositoryException
    {
       final WorkspaceStorageConnection con = dataContainer.openConnection();
       try
       {
-         return con.getChildNodesDataByPage(nodeData, fromOrderNum, toOrderNum, childNodes);
+         return con.getChildNodesDataByPage(nodeData, fromOrderNum, offset,pageSize, childNodes);
       }
       finally
       {
