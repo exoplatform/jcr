@@ -170,4 +170,9 @@ public class JDBCDataContainerConfig
     */
    public int batchSize;
 
+   /**
+    * Use sequence for order number.
+    */
+   public boolean useSequenceForOrderNumber;
+
 }

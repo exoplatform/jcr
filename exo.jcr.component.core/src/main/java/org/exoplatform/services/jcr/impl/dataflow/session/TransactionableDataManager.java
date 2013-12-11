@@ -105,10 +105,10 @@ public class TransactionableDataManager implements DataManager
    /**
     * {@inheritDoc}
     */
-   public boolean getChildNodesDataByPage(final NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
+   public boolean getChildNodesDataByPage(final NodeData parent, int fromOrderNum, int offset,int pageSize, List<NodeData> childs)
       throws RepositoryException
    {
-      boolean hasNext = storageDataManager.getChildNodesDataByPage(parent, fromOrderNum, toOrderNum, childs);
+      boolean hasNext = storageDataManager.getChildNodesDataByPage(parent, fromOrderNum, offset,pageSize, childs);
 
       if (txStarted())
       {

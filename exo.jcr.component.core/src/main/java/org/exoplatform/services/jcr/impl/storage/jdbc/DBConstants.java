@@ -103,6 +103,16 @@ public class DBConstants extends DialectConstants
    protected String JCR_IDX_ITEM_N_ORDER_NUM;
    
    /**
+    * JCR_ITEM_SEQ
+    */
+   protected String JCR_ITEM_SEQ;
+
+   /**
+    * JCR_ITEM_NEXT_VAL
+    */
+   protected String JCR_ITEM_NEXT_VAL;
+
+   /**
     * JCR_IDX_ITEM_PARENT_FK
     */
    protected String JCR_IDX_ITEM_PARENT_FK;

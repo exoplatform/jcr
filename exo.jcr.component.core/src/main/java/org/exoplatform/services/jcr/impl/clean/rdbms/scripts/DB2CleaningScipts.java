@@ -176,4 +176,21 @@ public class DB2CleaningScipts extends DBCleaningScripts
 
       rollbackingScripts.clear();
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getTablesDroppingScripts()
+   {
+      Collection<String> scripts = new ArrayList<String>();
+
+      if (useSequence)
+      {
+         scripts.add("DROP SEQUENCE " + itemTableName + "_SEQ");
+      }
+
+      scripts.addAll(super.getTablesDroppingScripts());
+
+      return scripts;
+   }
 }

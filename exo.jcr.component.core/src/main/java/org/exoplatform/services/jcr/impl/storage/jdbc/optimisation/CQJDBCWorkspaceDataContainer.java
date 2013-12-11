@@ -24,11 +24,16 @@ import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.DB2DBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.H2DBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.HSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.MSSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.MysqlDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.SybaseDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DB2ConnectionFactory;
-import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DB2MYSConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.DefaultOracleConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.GenericCQConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db.H2ConnectionFactory;
@@ -131,32 +136,27 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
          }
 
          this.connFactory = new MySQLConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new MysqlDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
       {
          this.connFactory = new MSSQLConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new MSSQLDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DERBY))
       {
          this.connFactory = defaultConnectionFactory();
          dbInitializer = defaultDBInitializer();
       }
-      else if (containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_DB2_MYS))
-      {
-         this.connFactory = new DB2MYSConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
-      }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DB2))
       {
          this.connFactory = new DB2ConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new DB2DBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
          this.connFactory = new SybaseConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new SybaseDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_INGRES))
       {
@@ -168,12 +168,12 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
       {
          this.connFactory = new HSQLDBConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new HSQLDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_H2))
       {
          this.connFactory = new H2ConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new H2DBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else
       {

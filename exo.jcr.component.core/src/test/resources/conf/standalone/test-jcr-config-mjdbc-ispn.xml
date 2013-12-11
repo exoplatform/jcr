@@ -37,6 +37,7 @@
                      <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws" />
+                     <property name="use-sequence-for-order-number" value="${use-sequence}" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -93,6 +94,7 @@
                      <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws1" />
+                     <property name="use-sequence-for-order-number" value="${use-sequence}" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -146,6 +148,7 @@
                      <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws2" />
+                     <property name="use-sequence-for-order-number" value="${use-sequence}" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws2" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -200,6 +203,7 @@
                      <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws3" />
+                     <property name="use-sequence-for-order-number" value="${use-sequence}" />
                   </properties>
                   <value-storages>
                       <!--
@@ -285,6 +289,7 @@
                      <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/wsdb2" />
+                     <property name="use-sequence-for-order-number" value="${use-sequence}" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -338,6 +343,7 @@
                      <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws1db2" />
+                     <property name="use-sequence-for-order-number" value="${use-sequence}" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -402,6 +408,7 @@
                      <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/wstck" />
+                     <property name="use-sequence-for-order-number" value="${use-sequence}" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -462,6 +469,7 @@
                      <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws1tck" />
+                     <property name="use-sequence-for-order-number" value="${use-sequence}" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws1" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">
@@ -521,6 +529,7 @@
                      <property name="db-structure-type" value="multi" />
                      <property name="max-buffer-size" value="200k" />
                      <property name="swap-directory" value="target/temp/swap/ws2tck" />
+                     <property name="use-sequence-for-order-number" value="${use-sequence}" />
                   </properties>
                   <value-storages>
                      <value-storage id="ws2" class="org.exoplatform.services.jcr.impl.storage.value.fs.TreeFileValueStorage">

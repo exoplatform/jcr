@@ -21,6 +21,8 @@ package org.exoplatform.services.jcr.impl.clean.rdbms.scripts;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -65,5 +67,22 @@ public class PgSQLCleaningScipts extends DBCleaningScripts
       super.prepareSimpleCleaningApproachScripts();
 
       rollbackingScripts.clear();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   protected Collection<String> getTablesDroppingScripts()
+   {
+      Collection<String> scripts = new ArrayList<String>();
+
+      if (useSequence)
+      {
+         scripts.add("DROP SEQUENCE " + itemTableName + "_SEQ");
+      }
+
+      scripts.addAll(super.getTablesDroppingScripts());
+
+      return scripts;
    }
 }
