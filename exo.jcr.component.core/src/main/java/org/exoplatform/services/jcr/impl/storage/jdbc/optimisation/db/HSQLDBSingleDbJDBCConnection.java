@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -79,9 +80,10 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             + " I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?" + " order by N_ORDER_NUM";
-
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
-         "select count(*), max(N_ORDER_NUM) from JCR_SITEM where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
+      if (containerConfig.useSequenceForOrderNumber)
+      {
+         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call next value for " + JCR_ITEM_SEQ;
+      }
 
       FIND_NODES_COUNT_BY_PARENTID =
          "select count(ID) from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
@@ -186,27 +188,6 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findNodesByParentId.setString(2, this.containerConfig.containerName);
 
       return findNodesByParentId.executeQuery();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
-   {
-      if (findLastOrderNumberByParentId == null)
-      {
-         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
-      }
-      else
-      {
-         findLastOrderNumberByParentId.clearParameters();
-      }
-
-      findLastOrderNumberByParentId.setString(1, parentIdentifier);
-      findLastOrderNumberByParentId.setString(2, this.containerConfig.containerName);
-
-      return findLastOrderNumberByParentId.executeQuery();
    }
 
    /**

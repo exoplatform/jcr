@@ -385,4 +385,29 @@ public class DBInitializerHelper
 
       return dialect.toUpperCase();
    }
+
+   /**
+    * Use sequence for order number.
+    *
+    * @param wsConfig The workspace configuration.
+    * @return true if the sequence are enable. False otherwise.
+    */
+   public static boolean useSequenceForOrderNumber(WorkspaceEntry wsConfig, String dbDialect) throws RepositoryConfigurationException
+   {
+      try
+      {
+         if (wsConfig.getContainer().getParameterValue(JDBCWorkspaceDataContainer.USE_SEQUENCE_FOR_ORDER_NUMBER, JDBCWorkspaceDataContainer.USE_SEQUENCE_AUTO).equalsIgnoreCase(JDBCWorkspaceDataContainer.USE_SEQUENCE_AUTO))
+         {
+            return JDBCWorkspaceDataContainer.useSequenceDefaultValue(dbDialect);
+         }
+         else
+         {
+            return wsConfig.getContainer().getParameterBoolean(JDBCWorkspaceDataContainer.USE_SEQUENCE_FOR_ORDER_NUMBER);
+         }
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         return JDBCWorkspaceDataContainer.useSequenceDefaultValue(dbDialect);
+      }
+   }
 }

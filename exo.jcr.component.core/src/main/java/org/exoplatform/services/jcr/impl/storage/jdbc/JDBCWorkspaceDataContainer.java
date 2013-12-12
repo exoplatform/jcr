@@ -54,6 +54,11 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.db.GenericConnectionFactor
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MSSQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.DB2DBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.HSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.MSSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.MysqlDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.SybaseDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.SybaseConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.indexing.JdbcNodeDataIndexingIterator;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
@@ -130,6 +135,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    public final static String DB_STRUCTURE_TYPE = "db-structure-type";
 
    /**
+    * Use sequence for order number
+    */
+   public final static String USE_SEQUENCE_FOR_ORDER_NUMBER = "use-sequence-for-order-number";
+
+   /**
     * Suffix used in tables names when isolated-databse structure used 
     */
    public final static String DB_TABLENAME_SUFFIX = "db-tablename-suffix";
@@ -138,6 +148,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * Describe which type of RDBMS will be used (DB creation metadata etc.)
     */
    public final static String DB_DIALECT = "dialect";
+
+   /**
+    * USE_SEQUENCE_AUTO.
+    */
+   public final static String USE_SEQUENCE_AUTO = "auto";
 
    public final static String DB_FORCE_QUERY_HINTS = "force.query.hints";
 
@@ -256,6 +271,23 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          // don't use new connection by default
          this.containerConfig.checkSNSNewConnection = false;
+      }
+
+      try
+      {
+         if (wsConfig.getContainer().getParameterValue(USE_SEQUENCE_FOR_ORDER_NUMBER, USE_SEQUENCE_AUTO).equalsIgnoreCase(USE_SEQUENCE_AUTO))
+         {
+            this.containerConfig.useSequenceForOrderNumber = useSequenceDefaultValue(this.containerConfig.dbDialect);
+         }
+         else
+         {
+            this.containerConfig.useSequenceForOrderNumber =
+               wsConfig.getContainer().getParameterBoolean(USE_SEQUENCE_FOR_ORDER_NUMBER);
+         }
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         this.containerConfig.useSequenceForOrderNumber = useSequenceDefaultValue(this.containerConfig.dbDialect);
       }
 
       // ------------- Spool config ------------------
@@ -466,12 +498,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                + " in your use-case. This dialect is only dedicated to the community.");
          }
          this.connFactory = new MySQLConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new MysqlDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
       {
          this.connFactory = new MSSQLConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer=new MSSQLDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DERBY))
       {
@@ -481,12 +513,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DB2))
       {
          this.connFactory = defaultConnectionFactory();
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new DB2DBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
          this.connFactory = new SybaseConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new SybaseDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_INGRES))
       {
@@ -496,7 +528,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
       {
          this.connFactory = new HSQLDBConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new HSQLDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else
       {
@@ -1141,6 +1173,57 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          throw new RepositoryException("Datasource '" + containerConfig.dbSourceName
             + "' is not bound in this context.", e);
+      }
+   }
+
+   /**
+    * use-sequence value according to dialect
+    */
+   public static boolean useSequenceDefaultValue(String  dbDialect)
+   {
+      if (dbDialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
+      {
+         return true;
+      }
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_PGSQL))
+      {
+         return true;
+      }
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
+      {
+         return false;
+      }
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
+      {
+         return false;
+      }
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_DERBY))
+      {
+         return false;
+      }
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_DB2))
+      {
+         return false;
+      }
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
+      {
+         return false;
+      }
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_INGRES))
+      {
+         return false;
+      }
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
+      {
+         return true;
+      }
+      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_H2))
+      {
+         return true;
+      }
+      else
+      {
+         return false;
       }
    }
 

@@ -512,7 +512,7 @@ public class SingleDbJDBCConnection extends JDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset, int limit)
       throws SQLException
    {
       throw new UnsupportedOperationException("findChildNodesByParentIdentifier is not supported for old queries");

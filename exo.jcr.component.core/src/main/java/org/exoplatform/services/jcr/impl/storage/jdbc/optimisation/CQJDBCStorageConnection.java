@@ -521,14 +521,14 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childNodes)
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int offset, int pageSize, List<NodeData> childNodes)
       throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
       ResultSet resultSet = null;
       try
       {
-         resultSet = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()), fromOrderNum, toOrderNum);
+         resultSet = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()),fromOrderNum, offset, pageSize);
          TempNodeData data = null;
          while (resultSet.next())
          {
@@ -559,7 +559,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             childNodes.add(nodeData);
          }
 
-         return childNodes.size() != 0 ? true : getLastOrderNumber(parent) > toOrderNum;
+         return childNodes.size() != 0 ? true : getLastOrderNumber(parent) > (fromOrderNum+pageSize-1);
       }
       catch (SQLException e)
       {
@@ -1480,6 +1480,50 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          throw new RepositoryException(e);
       }
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public int getLastOrderNumber(NodeData parent) throws RepositoryException
+   {
+      if (!containerConfig.useSequenceForOrderNumber)
+      {
+         return super.getLastOrderNumber(parent);
+      }
+      checkIfOpened();
+      try
+      {
+         ResultSet count = findLastOrderNumberByParentIdentifier(getInternalId(parent.getIdentifier()));
+         try
+         {
+            if (count.next())
+            {
+               return count.getInt(1) - 1;
+            }
+            else
+            {
+               return -1;
+            }
+         }
+         finally
+         {
+            try
+            {
+               count.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
 
    /**
     * {@inheritDoc} 

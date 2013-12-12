@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.clean.rdbms.scripts;
 
+
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
@@ -25,16 +26,17 @@ import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
 import java.util.ArrayList;
 import java.util.Collection;
 
+
 /**
- * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
- * @version $Id: HSQLDBCleaningScipts.java 34360 2009-07-22 23:58:59Z tolusha $
+ * @author <a href="aboughzela@exoplatform.com">Aymen Boughzela</a>
+ * @version $Id: H2CleaningScipts.java $
  */
-public class HSQLDBCleaningScipts extends DBCleaningScripts
+public class H2CleaningScipts extends DBCleaningScripts
 {
    /**
-    * HSQLDBCleanScipts constructor.
+    * H2CleanScipts constructor.
     */
-   public HSQLDBCleaningScipts(String dialect, RepositoryEntry rEntry) throws DBCleanException
+   public H2CleaningScipts(String dialect, RepositoryEntry rEntry) throws DBCleanException
    {
       super(dialect, rEntry);
 
@@ -42,9 +44,9 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
    }
 
    /**
-    * HSQLDBCleanScipts constructor.
+    * H2CleanScipts constructor.
     */
-   public HSQLDBCleaningScipts(String dialect, WorkspaceEntry wEntry) throws DBCleanException
+   public H2CleaningScipts(String dialect, WorkspaceEntry wEntry) throws DBCleanException
    {
       super(dialect, wEntry);
 
@@ -76,12 +78,6 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE " + itemTableName + "_OLD DROP CONSTRAINT JCR_PK_" + itemTableSuffix);
       scripts.add("ALTER TABLE " + valueTableName + "_OLD DROP CONSTRAINT JCR_PK_" + valueTableSuffix);
       scripts.add("ALTER TABLE " + refTableName + "_OLD DROP CONSTRAINT JCR_PK_" + refTableSuffix);
-
-      //rename sequences
-      if (useSequence)
-      {
-         scripts.add("ALTER SEQUENCE  " + itemTableName + "_SEQ RENAME TO " + itemTableName + "_SEQ_OLD");
-      }
 
       // renaming indexes
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT RENAME TO JCR_IDX_" + itemTableSuffix
@@ -122,12 +118,6 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE  " + refTableName + " ADD CONSTRAINT JCR_PK_" + refTableSuffix
          + " PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)");
 
-      //rename sequences
-      if (useSequence)
-      {
-         scripts.add("ALTER SEQUENCE " + itemTableName + "_SEQ_OLD RENAME TO " + itemTableName + "_SEQ");
-      }
-
       // renaming indexes
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT_OLD RENAME TO JCR_IDX_" + itemTableSuffix
          + "_PARENT");
@@ -162,20 +152,4 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
       return scripts;
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   protected Collection<String> getOldTablesDroppingScripts()
-   {
-      Collection<String> scripts = new ArrayList<String>();
-
-      if (useSequence)
-      {
-         scripts.add("DROP SEQUENCE " + itemTableName + "_SEQ_OLD");
-      }
-
-      scripts.addAll(super.getOldTablesDroppingScripts());
-
-      return scripts;
-   }
 }
