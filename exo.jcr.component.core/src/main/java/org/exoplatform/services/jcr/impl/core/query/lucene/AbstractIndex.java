@@ -251,7 +251,7 @@ abstract class AbstractIndex
       if (indexReader == null || !indexReader.isCurrent())
       {
          IndexReader reader = IndexReader.open(getDirectory(), null, false, termInfosIndexDivisor);
-         // if modeHandler != null and mode==READ_ONLY, then reader should be with transient deleteions.
+         // if modeHandler != null and mode==READ_ONLY, then reader should be with transient deletions.
          // This is used to transiently update reader in clustered environment when some documents have 
          // been deleted. If index reader not null and already contains some transient deletions, but it
          // is no more current, it will be re-created loosing deletions. They will already be applied by
