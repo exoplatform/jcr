@@ -400,7 +400,7 @@ public abstract class QueryResultImpl implements QueryResult
             break;
          }
          // check access
-         if (!docOrder || isAccessGranted(sn))
+         if (isAccessGranted(sn))
          {
             collector.add(sn);
          }

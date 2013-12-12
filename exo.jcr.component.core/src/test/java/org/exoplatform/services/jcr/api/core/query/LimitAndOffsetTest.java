@@ -19,14 +19,24 @@ package org.exoplatform.services.jcr.api.core.query;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.impl.core.query.QueryImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.QueryResultImpl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class LimitAndOffsetTest extends AbstractQueryTest {
 
@@ -146,6 +156,46 @@ public class LimitAndOffsetTest extends AbstractQueryTest {
         nodes = result.getNodes();
         assertEquals(1, nodes.getSize());
         assertEquals(3, ((QueryResultImpl) result).getTotalSize());
+    }
+
+    public void testOffsetAndLimitWithSetPermissions() throws Exception {
+        Map<String, String[]> per = new HashMap<String, String[]>();
+        Map<String, String[]> per1 = new HashMap<String, String[]>();
+        per.put("*:/platform/administrators", PermissionType.ALL);
+        per.put("*:/platform/users", PermissionType.ALL);
+        per1.put("*:/platform/administrators", PermissionType.ALL);
+        Node node1 = testRootNode.addNode("node1");
+        Node a = node1.addNode("a");
+        a.setProperty("title", "a");
+        a.addMixin("mix:versionable");
+        a.addMixin("exo:privilegeable");
+        ((ExtendedNode)a).setPermissions(per);
+        testRootNode.save();
+
+        Node b = node1.addNode("b");
+        b.addMixin("mix:versionable");
+        b.setProperty("title", "b");
+        b.addMixin("exo:privilegeable");
+        ((ExtendedNode)b).setPermissions(per);
+        testRootNode.save();
+
+        Node c = node1.addNode("c");
+        c.addMixin("mix:versionable");
+        c.setProperty("title", "c");
+        c.addMixin("exo:privilegeable");
+        ((ExtendedNode)c).setPermissions(per1);
+        testRootNode.save();
+
+        Session session = superuser.getRepository().login(new CredentialsImpl("mary", "exo".toCharArray()));
+
+        Query query = session.getWorkspace().getQueryManager().createQuery(
+                "Select * from nt:base where jcr:path like '/testroot/node1/%'" +
+                        "and not jcr:path like '/testroot/node1/%/%' order by title desc",Query.SQL);
+        ((QueryImpl)query).setOffset(2);
+        ((QueryImpl)query).setLimit(2);
+
+        long size = query.execute().getNodes().getSize();
+        assertEquals(0, size);
     }
 
 }
