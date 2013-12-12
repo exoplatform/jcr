@@ -45,14 +45,12 @@ public class RefCountingIndexReader
         refCount++;
     }
 
-    //TODO TO FIX
-//    /**
-//     * @return the current reference count value.
-//     */
-//    @Override
-//   public synchronized int getRefCount() {
-//        return refCount;
-//    }
+    /**
+     * @return the current reference count value.
+     */
+    public synchronized int getRefCounter() {
+        return refCount;
+    }
 
     //-----------------------< ReleaseableIndexReader >--------------------------
 

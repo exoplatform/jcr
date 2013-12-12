@@ -19,7 +19,6 @@ package org.exoplatform.services.jcr.impl.core.query;
 import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.analysis.StopAnalyzer;
 import org.apache.lucene.analysis.WhitespaceAnalyzer;
-import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -101,9 +100,9 @@ public class TestIndexingConfig extends BaseQueryTest
       IndexingConfigurationImpl indexingConfigurationImpl = (IndexingConfigurationImpl)searchIndex.getIndexingConfig();
       assertNotNull(indexingConfigurationImpl);
 
-      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + simple, new SimpleAnalyzer(Version.LUCENE_30));
-      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + whitespace, new WhitespaceAnalyzer(Version.LUCENE_30));
-      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + stop, new StopAnalyzer(Version.LUCENE_30));
+      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + simple, new SimpleAnalyzer(Version.LUCENE_36));
+      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + whitespace, new WhitespaceAnalyzer(Version.LUCENE_36));
+      indexingConfigurationImpl.addPropertyAnalyzer("FULL:" + stop, new StopAnalyzer(Version.LUCENE_36));
       testRoot = testSession.getRootNode().addNode("testrootAnalyzers");
       root.save();
    }

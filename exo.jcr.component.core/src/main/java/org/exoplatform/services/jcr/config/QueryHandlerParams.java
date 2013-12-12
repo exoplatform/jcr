@@ -65,8 +65,6 @@ public interface QueryHandlerParams
 
    public static final String PARAM_INDEXING_CONFIGURATION_CLASS = "indexing-configuration-class";
 
-   public static final String PARAM_MAX_FIELD_LENGTH = "max-field-length";
-
    public static final String PARAM_MAX_MERGE_DOCS = "max-merge-docs";
 
    public static final String PARAM_MERGE_FACTOR = "merge-factor";

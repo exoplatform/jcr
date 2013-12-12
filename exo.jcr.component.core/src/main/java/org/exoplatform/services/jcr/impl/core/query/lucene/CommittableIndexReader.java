@@ -71,39 +71,22 @@ class CommittableIndexReader extends FilterIndexReader {
      * Increments the modification count.
      */
     protected void doDelete(int n) throws CorruptIndexException, IOException {
-        super.doDelete(n);
-        modCount.incrementAndGet();
+        if (transientDeletions) {
+            deletedDocs.add(n);
+            modCount.incrementAndGet(); // doDelete won't be executed, so incrementing modCount
+        } else {
+            super.doDelete(n);
+            modCount.incrementAndGet();
+        }
     }
-
-    // TODO: TO FIX
-//    /**
-//     * {@inheritDoc}
-//     */
-//    @Override
-//    public void deleteDocument(int docNum) throws StaleReaderException, CorruptIndexException,
-//       LockObtainFailedException, IOException {
-//       // skip acquiring write lock
-//       if (transientDeletions)
-//       {
-//           deletedDocs.add(docNum);
-//           modCount.incrementAndGet(); // doDelete won't be executed, so incrementing modCount
-//       }
-//       else
-//       {
-//           super.deleteDocument(docNum);
-//       }
-//    }
 
     @Override
     public boolean isDeleted(int n) {
-       if (transientDeletions)
-       {
-           return deletedDocs.contains(n);
-       }
-       else
-       {
-           return super.isDeleted(n);
-       }
+        if (transientDeletions) {
+            return deletedDocs.contains(n);
+        } else {
+            return super.isDeleted(n);
+        }
     }
 
     //------------------------< additional methods >----------------------------

@@ -154,7 +154,7 @@ public final class MoreLikeThis
     * Default analyzer to parse source doc with.
     * @see #getAnalyzer
     */
-   public static final Analyzer DEFAULT_ANALYZER = new StandardAnalyzer(Version.LUCENE_30);
+   public static final Analyzer DEFAULT_ANALYZER = new StandardAnalyzer(Version.LUCENE_36);
 
    /**
     * Ignore terms with less than this frequency in the source doc.

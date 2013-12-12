@@ -130,7 +130,7 @@ public class JcrQueryParser extends QueryParser
          String[] terms = synonymProvider.getSynonyms(termStr);
          for (int i = 0; i < terms.length; i++)
          {
-            synonyms.add(new BooleanClause(getFieldQuery(field, terms[i]), BooleanClause.Occur.SHOULD));
+            synonyms.add(new BooleanClause(getFieldQuery(field, terms[i], quoted), BooleanClause.Occur.SHOULD));
          }
       }
       if (synonyms.size() == 1)

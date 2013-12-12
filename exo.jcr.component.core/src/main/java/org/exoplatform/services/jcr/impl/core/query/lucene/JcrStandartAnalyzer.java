@@ -24,7 +24,7 @@ import org.exoplatform.commons.utils.SecurityHelper;
 
 import java.io.Reader;
 import java.security.PrivilegedAction;
-import java.util.Collections;
+import java.util.Set;
 
 /**
  * This is the global jackrabbit lucene analyzer. By default, all
@@ -47,7 +47,7 @@ public final class JcrStandartAnalyzer extends Analyzer
    {
       public Analyzer run()
       {
-         return new StandardAnalyzer(Version.LUCENE_30, Collections.EMPTY_SET);
+         return new StandardAnalyzer(Version.LUCENE_30, (Set<?>)null);
       }
    });
 

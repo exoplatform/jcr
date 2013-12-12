@@ -142,11 +142,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public static final int DEFAULT_MERGE_FACTOR = 10;
 
    /**
-    * the default value for property {@link #maxFieldLength}.
-    */
-   public static final int DEFAULT_MAX_FIELD_LENGTH = 10000;
-
-   /**
     * The default value for property {@link #extractorBackLog}.
     */
    public static final int DEFAULT_EXTRACTOR_BACK_LOG = Integer.MAX_VALUE;
@@ -266,11 +261,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * mergeFactor config parameter
     */
    private int mergeFactor = DEFAULT_MERGE_FACTOR;
-
-   /**
-    * maxFieldLength config parameter
-    */
-   private int maxFieldLength = DEFAULT_MAX_FIELD_LENGTH;
 
    /**
     * extractorPoolSize config parameter
@@ -2506,44 +2496,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       return cacheSize;
    }
-
-   public void setMaxFieldLength(int length)
-   {
-      maxFieldLength = length;
-   }
-
-   public int getMaxFieldLength()
-   {
-      return maxFieldLength;
-   }
-
-   //
-   // /**
-   // * Sets the list of text extractors (and text filters) to use for
-   // * extracting text content from binary properties. The list must be
-   // * comma (or whitespace) separated, and contain fully qualified class
-   // * names of the {@link TextExtractor} (and {@link
-   // org.apache.jackrabbit.core.query.TextFilter}) classes
-   // * to be used. The configured classes must all have a public default
-   // * constructor.
-   // *
-   // * @param filterClasses comma separated list of class names
-   // */
-   // public void setTextFilterClasses(String filterClasses)
-   // {
-   // this.textFilterClasses = filterClasses;
-   // }
-
-   // /**
-   // * Returns the fully qualified class names of the text filter instances
-   // * currently in use. The names are comma separated.
-   // *
-   // * @return class names of the text filters in use.
-   // */
-   // public String getTextFilterClasses()
-   // {
-   // return textFilterClasses;
-   // }
 
    /**
     * Tells the query handler how many result should be fetched initially when
