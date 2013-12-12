@@ -730,9 +730,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                {
                   Term idTerm = new Term(FieldNames.UUID, it.next());
                   int num = volatileIndex.removeDocument(idTerm);
-                  if (num > 0 && log.isDebugEnabled())
+                  if (num > 0 && LOG.isDebugEnabled())
                   {
-                     log.debug(idTerm.text() + " has been found in the volatile index");
+                     LOG.debug(idTerm.text() + " has been found in the volatile index");
                   }
                   for (int i = indexes.size() - 1; i >= 0; i--)
                   {
@@ -741,9 +741,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                      if (indexNames.contains(idx.getName()))
                      {
                         num = idx.removeDocument(idTerm);
-                        if (num > 0 && log.isDebugEnabled())
+                        if (num > 0 && LOG.isDebugEnabled())
                         {
-                           log.debug(idTerm.text() + " has been in the persisted index " + i);
+                           LOG.debug(idTerm.text() + " has been in the persisted index " + i);
                         }
                      }
                   }
@@ -3079,16 +3079,16 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                if (index.indexNames.contains(idx.getName()))
                {
                   num = idx.removeDocument(idTerm);
-                  if (num > 0 && log.isDebugEnabled())
+                  if (num > 0 && LOG.isDebugEnabled())
                   {
-                     log.debug(idTerm.text() + " has been found in the persisted index " + i);
+                     LOG.debug(idTerm.text() + " has been found in the persisted index " + i);
                   }
                }
             }
          }
-         else if (log.isDebugEnabled())
+         else if (LOG.isDebugEnabled())
          {
-            log.debug(idTerm.text() + " has been found in the volatile index");
+            LOG.debug(idTerm.text() + " has been found in the volatile index");
          }
       }
 
