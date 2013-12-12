@@ -42,6 +42,11 @@ class DerefQuery extends Query
 {
 
    /**
+    * The serial version UDI
+    */
+   private static final long serialVersionUID = 3414283404598890177L;
+
+   /**
     * The context query
     */
    private final Query contextQuery;
@@ -126,7 +131,7 @@ class DerefQuery extends Query
     * {@inheritDoc}
     */
    @Override
-   public void extractTerms(Set terms)
+   public void extractTerms(Set<Term> terms)
    {
       // no terms to extract
    }
@@ -155,6 +160,8 @@ class DerefQuery extends Query
     */
    private class DerefWeight extends Weight
    {
+
+      private static final long serialVersionUID = 8633819810846476967L;
 
       /**
        * The searcher in use

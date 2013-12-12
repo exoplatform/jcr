@@ -73,12 +73,12 @@ class IndexMerger extends Thread implements IndexListener
     * List of id <code>Term</code> that identify documents that were deleted
     * while a merge was running.
     */
-   private final List deletedDocuments = Collections.synchronizedList(new ArrayList());
+   private final List<Term> deletedDocuments = Collections.synchronizedList(new ArrayList<Term>());
 
    /**
     * List of <code>IndexBucket</code>s in ascending document limit.
     */
-   private final List indexBuckets = new ArrayList();
+   private final List<IndexBucket> indexBuckets = new ArrayList<IndexBucket>();
 
    /**
     * The <code>MultiIndex</code> this index merger is working on.
@@ -127,6 +127,7 @@ class IndexMerger extends Thread implements IndexListener
     * @param name the name of the index.
     * @param numDocs the number of documents it contains.
     */
+   @SuppressWarnings("unchecked")
    void indexAdded(String name, int numDocs)
    {
       if (numDocs < 0)
@@ -187,9 +188,9 @@ class IndexMerger extends Thread implements IndexListener
             long targetMergeDocs = bucket.upper;
             targetMergeDocs = Math.min(targetMergeDocs * mergeFactor, maxMergeDocs);
             // sum up docs in bucket
-            List indexesToMerge = new ArrayList();
+            List<Index> indexesToMerge = new ArrayList<Index>();
             int mergeDocs = 0;
-            for (Iterator it = bucket.iterator(); it.hasNext() && mergeDocs <= targetMergeDocs;)
+            for (Iterator<Index> it = bucket.iterator(); it.hasNext() && mergeDocs <= targetMergeDocs;)
             {
                indexesToMerge.add(it.next());
             }
@@ -234,6 +235,7 @@ class IndexMerger extends Thread implements IndexListener
     * Signals this <code>IndexMerger</code> to stop and waits until it
     * has terminated.
     */
+   @SuppressWarnings("unchecked")
    void dispose()
    {
       log.debug("dispose IndexMerger");
@@ -440,7 +442,7 @@ class IndexMerger extends Thread implements IndexListener
     * many document it contains. <code>Index</code> is comparable using the
     * number of documents it contains.
     */
-   private static final class Index implements Comparable
+   private static final class Index implements Comparable<Index>
    {
 
       /**
@@ -474,9 +476,8 @@ class IndexMerger extends Thread implements IndexListener
        *         Index is less than, equal to, or greater than the specified
        *         Index.
        */
-      public int compareTo(Object o)
+      public int compareTo(Index other)
       {
-         Index other = (Index)o;
          int val = numDocs < other.numDocs ? -1 : (numDocs == other.numDocs ? 0 : 1);
          if (val != 0)
          {
@@ -523,8 +524,10 @@ class IndexMerger extends Thread implements IndexListener
     * <code>IndexBucket</code> contains {@link Index}es with documents less
     * or equal the document limit of the bucket.
     */
-   private static final class IndexBucket extends ArrayList
+   private static final class IndexBucket extends ArrayList<Index>
    {
+
+      private static final long serialVersionUID = 1885162315017837466L;
 
       /**
        * The lower document limit.

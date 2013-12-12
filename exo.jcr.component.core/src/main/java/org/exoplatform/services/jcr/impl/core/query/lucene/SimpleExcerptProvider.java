@@ -64,7 +64,7 @@ public class SimpleExcerptProvider implements ExcerptProvider
     */
    public String getExcerpt(String id, int maxFragments, int maxFragmentSize) throws IOException
    {
-      StringBuffer text = new StringBuffer();
+      StringBuilder text = new StringBuilder();
       try
       {
          ItemData node = ism.getItemData(id);

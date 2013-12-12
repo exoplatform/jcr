@@ -24,10 +24,12 @@ import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.index.TermPositions;
 import org.apache.lucene.store.Directory;
+import org.apache.lucene.util.Version;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,7 +110,7 @@ public class IndexMigration
       try
       {
          IndexWriter writer =
-            new IndexWriter(migrationDir, new JcrStandartAnalyzer(), IndexWriter.MaxFieldLength.UNLIMITED);
+            new IndexWriter(migrationDir, new IndexWriterConfig(Version.LUCENE_36, new JcrStandartAnalyzer()));
          try
          {
             IndexReader r = new MigrationIndexReader(IndexReader.open(index.getDirectory()));

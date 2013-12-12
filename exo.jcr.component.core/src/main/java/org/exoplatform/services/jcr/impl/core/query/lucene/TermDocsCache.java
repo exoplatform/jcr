@@ -62,7 +62,8 @@ public class TermDocsCache
    /**
     * Map of {@link Term#text()} that are unknown to the underlying index.
     */
-   private final Map unknownValues = Collections.synchronizedMap(new LRUMap(100));
+   @SuppressWarnings("unchecked")
+   private final Map<String, String> unknownValues = Collections.synchronizedMap(new LRUMap(100));
 
    /**
     * The cache of the {@link #CACHE_SIZE} most frequently requested TermDocs.
@@ -90,6 +91,7 @@ public class TermDocsCache
     * @return the term docs for the given term.
     * @throws IOException if an error occurs while reading from the index.
     */
+   @SuppressWarnings("unchecked")
    public TermDocs termDocs(final Term t) throws IOException
    {
       if (t==null || t.field() != field)
@@ -118,10 +120,10 @@ public class TermDocsCache
                CacheEntry[] entries = (CacheEntry[])cache.values().toArray(new CacheEntry[cache.size()]);
                Arrays.sort(entries);
                int threshold = entries[CACHE_SIZE / 2].numAccessed;
-               for (Iterator it = cache.entrySet().iterator(); it.hasNext();)
+               for (Iterator<Map.Entry<String, CacheEntry>> it = cache.entrySet().iterator(); it.hasNext();)
                {
-                  Map.Entry e = (Map.Entry)it.next();
-                  if (((CacheEntry)e.getValue()).numAccessed <= threshold)
+                  Map.Entry<String, CacheEntry> e = it.next();
+                  if (e.getValue().numAccessed <= threshold)
                   {
                      // prune
                      it.remove();
@@ -303,16 +305,15 @@ public class TermDocsCache
       }
    }
 
-   private static final class CacheEntry implements Comparable
+   private static final class CacheEntry implements Comparable<CacheEntry>
    {
 
       private volatile int numAccessed = 1;
 
       private volatile BitSet bits;
 
-      public int compareTo(Object o)
+      public int compareTo(CacheEntry other)
       {
-         CacheEntry other = (CacheEntry)o;
          return (numAccessed < other.numAccessed ? -1 : (numAccessed == other.numAccessed ? 0 : 1));
       }
    }

@@ -76,7 +76,8 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
    /**
     * Map of reusable JCRSQL parser instances indexed by NamespaceResolver.
     */
-   private static Map parsers = new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
+   @SuppressWarnings("unchecked")
+   private static Map<LocationFactory, JCRSQLParser> parsers = new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
 
    /**
     * The root node of the sql query syntax tree
@@ -106,7 +107,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
    /**
     * List of PathQueryNode constraints that need to be merged
     */
-   private final List pathConstraints = new ArrayList();
+   private final List<MergingPathQueryNode> pathConstraints = new ArrayList<MergingPathQueryNode>();
 
    /**
     * The query node factory.
@@ -147,7 +148,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
          JCRSQLParser parser;
          synchronized (parsers)
          {
-            parser = (JCRSQLParser)parsers.get(resolver);
+            parser = parsers.get(resolver);
             if (parser == null)
             {
                parser = new JCRSQLParser(new StringReader(statement));
@@ -245,9 +246,9 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
             {
                // merge path nodes
                MergingPathQueryNode path = null;
-               for (Iterator it = pathConstraints.iterator(); it.hasNext();)
+               for (Iterator<MergingPathQueryNode> it = pathConstraints.iterator(); it.hasNext();)
                {
-                  path = (MergingPathQueryNode)it.next();
+                  path = it.next();
                   if (path.needsMerge())
                   {
                      break;
@@ -913,7 +914,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
       {
          return pattern;
       }
-      StringBuffer translated = new StringBuffer(pattern.length());
+      StringBuilder translated = new StringBuilder(pattern.length());
       boolean escaped = false;
       for (int i = 0; i < pattern.length(); i++)
       {
@@ -998,7 +999,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
        * @param validJcrSystemNodeTypeNames names of valid node types under
        *        /jcr:system.
        */
-      MergingPathQueryNode(int operation, List validJcrSystemNodeTypeNames)
+      MergingPathQueryNode(int operation, List<InternalQName> validJcrSystemNodeTypeNames)
       {
          super(null, validJcrSystemNodeTypeNames);
          if (operation != QueryNode.TYPE_OR && operation != QueryNode.TYPE_AND && operation != QueryNode.TYPE_NOT)
@@ -1126,7 +1127,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
       {
          // compact this
          MergingPathQueryNode compacted = new MergingPathQueryNode(QueryNode.TYPE_OR, getValidJcrSystemNodeTypeNames());
-         for (Iterator it = operands.iterator(); it.hasNext();)
+         for (Iterator<QueryNode> it = operands.iterator(); it.hasNext();)
          {
             LocationStepQueryNode step = (LocationStepQueryNode)it.next();
             if (step.getIncludeDescendants() && step.getNameTest() == null)
@@ -1156,8 +1157,8 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
             if (nodes[i].operands.size() == compacted.operands.size())
             {
                boolean match = true;
-               Iterator compactedSteps = compacted.operands.iterator();
-               Iterator otherSteps = nodes[i].operands.iterator();
+               Iterator<QueryNode> compactedSteps = compacted.operands.iterator();
+               Iterator<QueryNode> otherSteps = nodes[i].operands.iterator();
                while (match && compactedSteps.hasNext())
                {
                   LocationStepQueryNode n1 = (LocationStepQueryNode)compactedSteps.next();
@@ -1177,7 +1178,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
             throw new NoSuchElementException("Merging not possible with any node.");
          }
          // construct new list
-         List mergedList = new ArrayList(Arrays.asList(nodes));
+         List<MergingPathQueryNode> mergedList = new ArrayList<MergingPathQueryNode>(Arrays.asList(nodes));
          mergedList.remove(matchedNode);
          mergedList.add(compacted);
          return (MergingPathQueryNode[])mergedList.toArray(new MergingPathQueryNode[mergedList.size()]);
@@ -1192,7 +1193,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
        */
       boolean needsMerge()
       {
-         for (Iterator it = operands.iterator(); it.hasNext();)
+         for (Iterator<QueryNode> it = operands.iterator(); it.hasNext();)
          {
             LocationStepQueryNode step = (LocationStepQueryNode)it.next();
             if (step.getIncludeDescendants() && step.getNameTest() == null)

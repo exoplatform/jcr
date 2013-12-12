@@ -29,6 +29,11 @@ public class IndexOfflineRepositoryException extends RepositoryException
 {
 
    /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 6605682968923297623L;
+
+   /**
     * Constructs a new instance of this class with the specified detail
     * message and root cause.
     *

@@ -40,7 +40,8 @@ class VolatileIndex extends AbstractIndex
    /**
     * Map of pending documents to add to the index
     */
-   private final Map pending = new LinkedMap();
+   @SuppressWarnings("unchecked")
+   private final Map<String, Document> pending = new LinkedMap();
 
    /**
     * Number of documents that are buffered before they are added to the index.
@@ -76,7 +77,7 @@ class VolatileIndex extends AbstractIndex
    {
       for (int i = 0; i < docs.length; i++)
       {
-         Document old = (Document)pending.put(docs[i].get(FieldNames.UUID), docs[i]);
+         Document old = pending.put(docs[i].get(FieldNames.UUID), docs[i]);
          if (old != null)
          {
             Util.disposeDocument(old);
@@ -102,7 +103,7 @@ class VolatileIndex extends AbstractIndex
    @Override
    int removeDocument(Term idTerm) throws IOException
    {
-      Document doc = (Document)pending.remove(idTerm.text());
+      Document doc = pending.remove(idTerm.text());
       int num;
       if (doc != null)
       {

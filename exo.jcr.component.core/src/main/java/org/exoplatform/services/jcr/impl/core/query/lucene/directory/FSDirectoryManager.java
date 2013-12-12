@@ -37,6 +37,7 @@ import java.security.PrivilegedExceptionAction;
  * <code>FSDirectoryManager</code> implements a directory manager for
  * {@link FSDirectory} instances.
  */
+@SuppressWarnings("unchecked")
 public class FSDirectoryManager implements DirectoryManager
 {
 

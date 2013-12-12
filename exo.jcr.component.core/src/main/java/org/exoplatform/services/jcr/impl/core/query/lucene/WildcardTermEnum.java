@@ -58,7 +58,7 @@ class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
     /**
      * Flag that indicates the end of the term enum.
      */
-    private boolean endEnum = false;
+    private boolean endEnum;
 
     /**
      * The input for the pattern matcher.
@@ -168,12 +168,12 @@ class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
         /**
          * The matching terms
          */
-        private final Map orderedTerms = new LinkedHashMap();
+        private final Map<Term, Integer> orderedTerms = new LinkedHashMap<Term, Integer>();
 
         /**
          * Iterator over all matching terms
          */
-        private final Iterator it;
+        private final Iterator<Term> it;
 
         public LowerUpperCaseTermEnum(IndexReader reader,
                                       String field,
@@ -196,7 +196,7 @@ class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
 
             if (!neverMatches) {
                 // create range scans
-                List rangeScans = new ArrayList(2);
+                List<RangeScan> rangeScans = new ArrayList<RangeScan>(2);
                 try {
                     int idx = 0;
                     while (idx < pattern.length()
@@ -212,11 +212,11 @@ class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
                                 new Term(field, prefix), new Term(field, limit)));
                     } else {
                         // start with initial lower case
-                        StringBuffer lowerLimit = new StringBuffer(patternPrefix.toUpperCase());
+                        StringBuilder lowerLimit = new StringBuilder(patternPrefix.toUpperCase());
                         lowerLimit.setCharAt(0, Character.toLowerCase(lowerLimit.charAt(0)));
                         String prefix = FieldNames.createNamedValue(propName, lowerLimit.toString());
 
-                        StringBuffer upperLimit = new StringBuffer(patternPrefix.toLowerCase());
+                        StringBuilder upperLimit = new StringBuilder(patternPrefix.toLowerCase());
                         upperLimit.append('\uFFFF');
                         String limit = FieldNames.createNamedValue(propName, upperLimit.toString());
                         rangeScans.add(new RangeScan(reader,
@@ -224,7 +224,7 @@ class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
 
                         // second scan with upper case start
                         prefix = FieldNames.createNamedValue(propName, patternPrefix.toUpperCase());
-                        upperLimit = new StringBuffer(patternPrefix.toLowerCase());
+                        upperLimit = new StringBuilder(patternPrefix.toLowerCase());
                         upperLimit.setCharAt(0, Character.toUpperCase(upperLimit.charAt(0)));
                         upperLimit.append('\uFFFF');
                         limit = FieldNames.createNamedValue(propName, upperLimit.toString());
@@ -233,8 +233,8 @@ class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
                     }
 
                     // do range scans with pattern matcher
-                    for (Iterator it = rangeScans.iterator(); it.hasNext(); ) {
-                        RangeScan scan = (RangeScan) it.next();
+                    for (Iterator<RangeScan> it = rangeScans.iterator(); it.hasNext(); ) {
+                        RangeScan scan = it.next();
                         do {
                             Term t = scan.term();
                             if (t != null) {
@@ -248,9 +248,9 @@ class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
 
                 } finally {
                     // close range scans
-                    Iterator it = rangeScans.iterator();
+                    Iterator<RangeScan> it = rangeScans.iterator();
                     while (it.hasNext()) {
-                        RangeScan scan = (RangeScan) it.next();
+                        RangeScan scan = it.next();
                         try 
                         {
                             scan.close();
@@ -310,7 +310,7 @@ class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
          * <code>null</code> if there is no next.
          */
         private void getNext() {
-            current = it.hasNext() ? (Term) it.next() : null;
+            current = it.hasNext() ? it.next() : null;
         }
     }
 }

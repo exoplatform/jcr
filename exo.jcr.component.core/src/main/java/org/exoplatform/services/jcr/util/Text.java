@@ -124,7 +124,7 @@ public class Text
 
       MessageDigest md = MessageDigest.getInstance(algorithm);
       byte[] digest = md.digest(data);
-      StringBuffer res = new StringBuffer(digest.length * 2);
+      StringBuilder res = new StringBuilder(digest.length * 2);
       for (int i = 0; i < digest.length; i++)
       {
          byte b = digest[i];
@@ -205,7 +205,7 @@ public class Text
     */
    public static String implode(String[] arr, String delim)
    {
-      StringBuffer buf = new StringBuffer();
+      StringBuilder buf = new StringBuilder();
       for (int i = 0; i < arr.length; i++)
       {
          if (i > 0)
@@ -240,7 +240,7 @@ public class Text
          return text;
       }
       int lastPos = 0;
-      StringBuffer sb = new StringBuffer(text.length());
+      StringBuilder sb = new StringBuilder(text.length());
       while (pos != -1)
       {
          sb.append(text.substring(lastPos, pos));
@@ -269,7 +269,7 @@ public class Text
       {
          throw new IllegalArgumentException("null argument");
       }
-      StringBuffer buf = null;
+      StringBuilder buf = null;
       int length = text.length();
       int pos = 0;
       for (int i = 0; i < length; i++)
@@ -284,7 +284,7 @@ public class Text
             case '\'' :
                if (buf == null)
                {
-                  buf = new StringBuffer();
+                  buf = new StringBuilder();
                }
                if (i > 0)
                {
@@ -418,7 +418,7 @@ public class Text
       {
          BitSet validChars = isPath ? URISaveEx : URISave;
          byte[] bytes = string.getBytes("utf-8");
-         StringBuffer out = new StringBuffer(bytes.length);
+         StringBuilder out = new StringBuilder(bytes.length);
          for (int i = 0; i < bytes.length; i++)
          {
             int c = bytes[i] & 0xff;
@@ -554,7 +554,7 @@ public class Text
     */
    public static String escapeIllegalJcrChars(String name)
    {
-      StringBuffer buffer = new StringBuffer(name.length() * 2);
+      StringBuilder buffer = new StringBuilder(name.length() * 2);
       for (int i = 0; i < name.length(); i++)
       {
          char ch = name.charAt(i);
@@ -584,7 +584,7 @@ public class Text
     */
    public static String unescapeIllegalJcrChars(String name)
    {
-      StringBuffer buffer = new StringBuffer(name.length());
+      StringBuilder buffer = new StringBuilder(name.length());
       int i = name.indexOf('%');
       while (i > -1 && i + 2 < name.length())
       {
@@ -842,7 +842,7 @@ public class Text
    public static String replaceVariables(Properties variables, String value, boolean ignoreMissing)
       throws IllegalArgumentException
    {
-      StringBuffer result = new StringBuffer();
+      StringBuilder result = new StringBuilder();
 
       // Value:
       // +--+-+--------+-+-----------------+

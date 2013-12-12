@@ -21,7 +21,6 @@ import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.Collector;
-import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Scorer;
 import org.apache.lucene.search.Similarity;
 
@@ -58,11 +57,6 @@ class MatchAllScorer extends Scorer
    private BitSet docFilter;
 
    /**
-    * Explanation object. the same for all docs
-    */
-   private final Explanation matchExpl;
-
-   /**
     * Creates a new MatchAllScorer.
     *
     * @param reader the IndexReader
@@ -75,7 +69,6 @@ class MatchAllScorer extends Scorer
       super(Similarity.getDefault());
       this.reader = reader;
       this.field = field;
-      matchExpl = new Explanation(Similarity.getDefault().idf(reader.maxDoc(), reader.maxDoc()), "matchAll");
       calculateDocFilter();
    }
 
@@ -155,10 +148,12 @@ class MatchAllScorer extends Scorer
    private void calculateDocFilter() throws IOException
    {
       PerQueryCache cache = PerQueryCache.getInstance();
-      Map readerCache = (Map)cache.get(MatchAllScorer.class, reader);
+      @SuppressWarnings("unchecked")
+      Map<String, BitSet> readerCache = 
+               (Map<String, BitSet>)cache.get(MatchAllScorer.class, reader);
       if (readerCache == null)
       {
-         readerCache = new HashMap();
+         readerCache = new HashMap<String, BitSet>();
          cache.put(MatchAllScorer.class, reader, readerCache);
       }
       // get BitSet for field

@@ -17,8 +17,8 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.analysis.TokenStream;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.index.Payload;
 import org.exoplatform.services.jcr.impl.Constants;
 
@@ -47,7 +47,7 @@ public final class SingletonTokenStream extends TokenStream implements Externali
    /**
     * The term attribute of the current token
     */
-   private TermAttribute termAttribute;
+   private CharTermAttribute termAttribute;
 
    /**
     * The payload attribute of the current token
@@ -61,7 +61,7 @@ public final class SingletonTokenStream extends TokenStream implements Externali
     */
    public SingletonTokenStream()
    {
-      termAttribute = addAttribute(TermAttribute.class);
+      termAttribute = addAttribute(CharTermAttribute.class);
       payloadAttribute = addAttribute(PayloadAttribute.class);
    }
 
@@ -77,7 +77,7 @@ public final class SingletonTokenStream extends TokenStream implements Externali
    {
       this.value = value;
       this.payload = payload;
-      termAttribute = addAttribute(TermAttribute.class);
+      termAttribute = addAttribute(CharTermAttribute.class);
       payloadAttribute = addAttribute(PayloadAttribute.class);
    }
 
@@ -103,7 +103,8 @@ public final class SingletonTokenStream extends TokenStream implements Externali
          return false;
       }
       clearAttributes();
-      termAttribute.setTermBuffer(value);
+      termAttribute.setEmpty();
+      termAttribute.append(value);
       payloadAttribute.setPayload(payload);
       consumed = true;
       return true;

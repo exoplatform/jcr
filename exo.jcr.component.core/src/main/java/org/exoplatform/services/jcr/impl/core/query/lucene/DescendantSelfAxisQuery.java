@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
@@ -24,7 +25,6 @@ import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.Sort;
 import org.apache.lucene.search.Weight;
-import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.hits.AbstractHitCollector;
 import org.slf4j.Logger;
@@ -47,6 +47,11 @@ import javax.jcr.RepositoryException;
  */
 class DescendantSelfAxisQuery extends Query implements JcrQuery
 {
+
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = -6384454109961093757L;
 
    /**
     * The logger instance for this class.
@@ -196,7 +201,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
    @Override
    public String toString(String field)
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("DescendantSelfAxisQuery(");
       sb.append(contextQuery);
       sb.append(", ");
@@ -211,7 +216,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
     * {@inheritDoc}
     */
    @Override
-   public void extractTerms(Set terms)
+   public void extractTerms(Set<Term> terms)
    {
       contextQuery.extractTerms(terms);
       subQuery.extractTerms(terms);
@@ -260,7 +265,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
       if (sort.getSort().length == 0 && subQueryMatchesAll())
       {
          // maps path String to NodeId
-         Map startingPoints = new TreeMap();
+         Map<String, ScoreNode> startingPoints = new TreeMap<String, ScoreNode>();
          QueryHits result = searcher.evaluate(getContextQuery());
          try
          {
@@ -294,9 +299,9 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
 
          // prune overlapping starting points
          String previousPath = null;
-         for (Iterator it = startingPoints.keySet().iterator(); it.hasNext();)
+         for (Iterator<String> it = startingPoints.keySet().iterator(); it.hasNext();)
          {
-            String path = (String)it.next();
+            String path = it.next();
             // if the previous path is a prefix of this path then the
             // current path is obsolete
             if (previousPath != null && path.startsWith(previousPath))
@@ -309,13 +314,11 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
             }
          }
 
-         final Iterator scoreNodes = startingPoints.values().iterator();
+         final Iterator<ScoreNode> scoreNodes = startingPoints.values().iterator();
          return new AbstractQueryHits()
          {
 
             private NodeTraversingQueryHits currentTraversal;
-
-            private SessionDataManager itemMgr = session.getTransientNodesManager();
 
             {
                fetchNextTraversal();
@@ -356,7 +359,7 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
                }
                if (scoreNodes.hasNext())
                {
-                  ScoreNode sn = (ScoreNode)scoreNodes.next();
+                  ScoreNode sn = scoreNodes.next();
                   try
                   {
                      //Node node = session.getNodeById(sn.getNodeId());
@@ -389,6 +392,8 @@ class DescendantSelfAxisQuery extends Query implements JcrQuery
     */
    private class DescendantSelfAxisWeight extends Weight
    {
+
+      private static final long serialVersionUID = 8607634068040635882L;
 
       /**
        * The searcher in use

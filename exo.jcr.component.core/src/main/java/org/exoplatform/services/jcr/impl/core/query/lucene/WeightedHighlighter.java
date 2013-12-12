@@ -16,11 +16,10 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermPositionVector;
 import org.apache.lucene.index.TermVectorOffsetInfo;
 import org.apache.lucene.util.PriorityQueue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -40,11 +39,6 @@ import java.util.Set;
  */
 public class WeightedHighlighter extends DefaultHighlighter
 {
-
-   /**
-    * The logger instance for this class.
-    */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.WeightedHighlighter");
 
    /**
     * Punctuation characters that mark the end of a sentence.
@@ -74,7 +68,7 @@ public class WeightedHighlighter extends DefaultHighlighter
     * @param excerptEnd    this string is appended to the excerpt
     * @param fragmentStart this string is prepended to every fragment
     * @param fragmentEnd   this string is appended to the end of every
-    *                      fragement.
+    *                      fragment.
     * @param hlStart       the string used to prepend a highlighted token, for
     *                      example <tt>&quot;&lt;b&gt;&quot;</tt>
     * @param hlEnd         the string used to append a highlighted token, for
@@ -85,7 +79,7 @@ public class WeightedHighlighter extends DefaultHighlighter
     * @return a String with text fragments where tokens from the query are
     *         highlighted
     */
-   public static String highlight(TermPositionVector tvec, Set queryTerms, String text, String excerptStart,
+   public static String highlight(TermPositionVector tvec, Set<Term> queryTerms, String text, String excerptStart,
       String excerptEnd, String fragmentStart, String fragmentEnd, String hlStart, String hlEnd, int maxFragments,
       int surround) throws IOException
    {
@@ -103,7 +97,7 @@ public class WeightedHighlighter extends DefaultHighlighter
     * @return a String with text fragments where tokens from the query are
     *         highlighted
     */
-   public static String highlight(TermPositionVector tvec, Set queryTerms, String text, int maxFragments, int surround)
+   public static String highlight(TermPositionVector tvec, Set<Term> queryTerms, String text, int maxFragments, int surround)
       throws IOException
    {
       return highlight(tvec, queryTerms, text, START_EXCERPT, END_EXCERPT, START_FRAGMENT_SEPARATOR,
@@ -121,7 +115,7 @@ public class WeightedHighlighter extends DefaultHighlighter
          return createDefaultExcerpt(text, excerptStart, excerptEnd, fragmentStart, fragmentEnd, surround * 2);
       }
 
-      PriorityQueue bestFragments = new FragmentInfoPriorityQueue(maxFragments);
+      PriorityQueue<FragmentInfo> bestFragments = new FragmentInfoPriorityQueue(maxFragments);
       for (int i = 0; i < offsets.length; i++)
       {
          if (offsets[i].getEndOffset() <= text.length())
@@ -149,24 +143,24 @@ public class WeightedHighlighter extends DefaultHighlighter
 
       // retrieve fragment infos from queue and fill into list, least
       // fragment comes out first
-      List infos = new LinkedList();
+      List<FragmentInfo> infos = new LinkedList<FragmentInfo>();
       while (bestFragments.size() > 0)
       {
-         FragmentInfo fi = (FragmentInfo)bestFragments.pop();
+         FragmentInfo fi = bestFragments.pop();
          infos.add(0, fi);
       }
 
-      Map offsetInfos = new IdentityHashMap();
+      Map<TermVectorOffsetInfo, Object> offsetInfos = new IdentityHashMap<TermVectorOffsetInfo, Object>();
       // remove overlapping fragment infos
-      Iterator it = infos.iterator();
+      Iterator<FragmentInfo> it = infos.iterator();
       while (it.hasNext())
       {
-         FragmentInfo fi = (FragmentInfo)it.next();
+         FragmentInfo fi = it.next();
          boolean overlap = false;
-         Iterator fit = fi.iterator();
+         Iterator<TermVectorOffsetInfo> fit = fi.iterator();
          while (fit.hasNext() && !overlap)
          {
-            TermVectorOffsetInfo oi = (TermVectorOffsetInfo)fit.next();
+            TermVectorOffsetInfo oi = fit.next();
             if (offsetInfos.containsKey(oi))
             {
                overlap = true;
@@ -178,7 +172,7 @@ public class WeightedHighlighter extends DefaultHighlighter
          }
          else
          {
-            Iterator oit = fi.iterator();
+            Iterator<TermVectorOffsetInfo> oit = fi.iterator();
             while (oit.hasNext())
             {
                offsetInfos.put(oit.next(), null);
@@ -187,7 +181,7 @@ public class WeightedHighlighter extends DefaultHighlighter
       }
 
       // create excerpts
-      StringBuffer sb = new StringBuffer(excerptStart);
+      StringBuilder sb = new StringBuilder(excerptStart);
       it = infos.iterator();
       while (it.hasNext())
       {
@@ -196,10 +190,10 @@ public class WeightedHighlighter extends DefaultHighlighter
          int limit = Math.max(0, fi.getStartOffset() / 2 + fi.getEndOffset() / 2 - surround);
          int len = startFragment(sb, text, fi.getStartOffset(), limit);
          TermVectorOffsetInfo lastOffsetInfo = null;
-         Iterator fIt = fi.iterator();
+         Iterator<TermVectorOffsetInfo> fIt = fi.iterator();
          while (fIt.hasNext())
          {
-            TermVectorOffsetInfo oi = (TermVectorOffsetInfo)fIt.next();
+            TermVectorOffsetInfo oi = fIt.next();
             if (lastOffsetInfo != null)
             {
                // fill in text between terms
@@ -231,7 +225,7 @@ public class WeightedHighlighter extends DefaultHighlighter
     * @return the length of the start fragment that was appended to
     *         <code>sb</code>.
     */
-   private static int startFragment(StringBuffer sb, String text, int offset, int limit)
+   private static int startFragment(StringBuilder sb, String text, int offset, int limit)
    {
       if (limit == 0)
       {
@@ -269,7 +263,7 @@ public class WeightedHighlighter extends DefaultHighlighter
     * @param offset the end offset of the last matching term in the fragment.
     * @param limit  do not go further than <code>limit</code>.
     */
-   private static void endFragment(StringBuffer sb, String text, int offset, int limit)
+   private static void endFragment(StringBuilder sb, String text, int offset, int limit)
    {
       if (limit == text.length())
       {
@@ -291,7 +285,7 @@ public class WeightedHighlighter extends DefaultHighlighter
 
    private static class FragmentInfo
    {
-      ArrayList offsetInfosList;
+      List<TermVectorOffsetInfo> offsetInfosList;
 
       int startOffset;
 
@@ -303,7 +297,7 @@ public class WeightedHighlighter extends DefaultHighlighter
 
       public FragmentInfo(TermVectorOffsetInfo offsetinfo, int maxFragmentSize)
       {
-         offsetInfosList = new ArrayList();
+         offsetInfosList = new ArrayList<TermVectorOffsetInfo>();
          offsetInfosList.add(offsetinfo);
          startOffset = offsetinfo.getStartOffset();
          endOffset = offsetinfo.getEndOffset();
@@ -348,7 +342,7 @@ public class WeightedHighlighter extends DefaultHighlighter
          return true;
       }
 
-      public Iterator iterator()
+      public Iterator<TermVectorOffsetInfo> iterator()
       {
          return offsetInfosList.iterator();
       }
@@ -370,7 +364,7 @@ public class WeightedHighlighter extends DefaultHighlighter
 
    }
 
-   private static class FragmentInfoPriorityQueue extends PriorityQueue
+   private static class FragmentInfoPriorityQueue extends PriorityQueue<FragmentInfo>
    {
 
       public FragmentInfoPriorityQueue(int size)
@@ -385,10 +379,8 @@ public class WeightedHighlighter extends DefaultHighlighter
        * is considered the lesser. This will result in a queue that keeps the
        * {@link FragmentInfo} with the best quality.
        */
-      protected boolean lessThan(Object a, Object b)
+      protected boolean lessThan(FragmentInfo infoA, FragmentInfo infoB)
       {
-         FragmentInfo infoA = (FragmentInfo)a;
-         FragmentInfo infoB = (FragmentInfo)b;
          if (infoA.getQuality() == infoB.getQuality())
          {
             return infoA.getStartOffset() > infoB.getStartOffset();

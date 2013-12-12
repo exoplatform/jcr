@@ -58,6 +58,11 @@ class ChildAxisQuery extends Query implements JcrQuery
 {
 
    /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = -5244160386770496131L;
+
+   /**
     * The logger instance for this class.
     */
    private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.ChildAxisQuery");
@@ -207,7 +212,7 @@ class ChildAxisQuery extends Query implements JcrQuery
     * {@inheritDoc}
     */
    @Override
-   public void extractTerms(Set terms)
+   public void extractTerms(Set<Term> terms)
    {
       contextQuery.extractTerms(terms);
    }
@@ -259,7 +264,7 @@ class ChildAxisQuery extends Query implements JcrQuery
    @Override
    public String toString(String field)
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("ChildAxisQuery(");
       sb.append(contextQuery);
       sb.append(", ");
@@ -298,6 +303,8 @@ class ChildAxisQuery extends Query implements JcrQuery
     */
    private class ChildAxisWeight extends Weight
    {
+
+      private static final long serialVersionUID = -2558140386233461135L;
 
       /**
        * The searcher in use
@@ -706,7 +713,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       public Hits getHits() throws IOException
       {
          // read the uuids of the context nodes
-         Map uuids = new HashMap();
+         Map<Integer, String> uuids = new HashMap<Integer, String>();
          for (int i = contextHits.next(); i > -1; i = contextHits.next())
          {
             String uuid = reader.document(i, FieldSelectors.UUID).get(FieldNames.UUID);
@@ -715,9 +722,9 @@ class ChildAxisQuery extends Query implements JcrQuery
 
          // get child node entries for each hit
          Hits childrenHits = new AdaptingHits();
-         for (Iterator it = uuids.values().iterator(); it.hasNext();)
+         for (Iterator<String> it = uuids.values().iterator(); it.hasNext();)
          {
-            String uuid = (String)it.next();
+            String uuid = it.next();
             try
             {
                if (nameTest != null && version.getVersion() >= IndexFormatVersion.V4.getVersion())
@@ -814,7 +821,7 @@ class ChildAxisQuery extends Query implements JcrQuery
       /**
        * The document numbers of the context hits.
        */
-      private final Set docIds = new HashSet();
+      private final Set<Integer> docIds = new HashSet<Integer>();
 
       /**
        * Creates a new hierarchy resolving children calculator.

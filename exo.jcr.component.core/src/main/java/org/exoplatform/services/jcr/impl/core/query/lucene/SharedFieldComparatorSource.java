@@ -106,7 +106,7 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
     * @throws java.io.IOException if an error occurs
     */
    @Override
-   public FieldComparator newComparator(String propertyName, int numHits, int sortPos, boolean reversed)
+   public FieldComparator<?> newComparator(String propertyName, int numHits, int sortPos, boolean reversed)
       throws IOException
    {
 
@@ -133,13 +133,13 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
       }
    }
 
-   protected FieldComparator createCompoundComparator(int numHits, QPath path, SimpleFieldComparator simple)
+   protected FieldComparator<?> createCompoundComparator(int numHits, QPath path, SimpleFieldComparator simple)
    {
       return new CompoundScoreFieldComparator(new FieldComparator[]{simple, new RelPathFieldComparator(path, numHits)},
          numHits);
    }
 
-   protected FieldComparator createSimpleComparator(int numHits, QPath path) throws IllegalNameException
+   protected FieldComparator<?> createSimpleComparator(int numHits, QPath path) throws IllegalNameException
    {
       return new SimpleFieldComparator(nsMappings.translatePath(path), field, numHits);
    }
@@ -258,15 +258,15 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
     */
    static class CompoundScoreFieldComparator extends AbstractFieldComparator
    {
-      private final FieldComparator[] fieldComparators;
+      private final FieldComparator<?>[] fieldComparators;
 
       /**
        * Create a new instance of the <code>FieldComparator</code>.
        *
-       * @param fieldComparators  delegatees
+       * @param fieldComparators  delegates
        * @param numHits           the number of values
        */
-      public CompoundScoreFieldComparator(FieldComparator[] fieldComparators, int numHits)
+      public CompoundScoreFieldComparator(FieldComparator<?>[] fieldComparators, int numHits)
       {
          super(numHits);
          this.fieldComparators = fieldComparators;
@@ -275,7 +275,7 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
       @Override
       public Comparable<?> sortValue(int doc)
       {
-         for (FieldComparator fieldComparator : fieldComparators)
+         for (FieldComparator<?> fieldComparator : fieldComparators)
          {
             if (fieldComparator instanceof FieldComparatorBase)
             {
@@ -293,7 +293,7 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
       @Override
       public void setNextReader(IndexReader reader, int docBase) throws IOException
       {
-         for (FieldComparator fieldComparator : fieldComparators)
+         for (FieldComparator<?> fieldComparator : fieldComparators)
          {
             fieldComparator.setNextReader(reader, docBase);
          }

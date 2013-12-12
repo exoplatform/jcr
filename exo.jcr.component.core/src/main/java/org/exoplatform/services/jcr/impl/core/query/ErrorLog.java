@@ -101,6 +101,7 @@ public class ErrorLog
    {
       SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Void>()
       {
+         @SuppressWarnings("resource")
          public Void run() throws Exception
          {
             // set file size;

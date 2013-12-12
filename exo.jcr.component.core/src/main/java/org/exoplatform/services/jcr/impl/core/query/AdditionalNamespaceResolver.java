@@ -47,7 +47,7 @@ public class AdditionalNamespaceResolver implements NamespaceAccessor {
      * @param namespaces namespace properties
      */
     public AdditionalNamespaceResolver(Properties namespaces) {
-        Enumeration prefixes = namespaces.propertyNames();
+        Enumeration<?> prefixes = namespaces.propertyNames();
         while (prefixes.hasMoreElements()) {
             String prefix = (String) prefixes.nextElement();
             addNamespace(prefix, namespaces.getProperty(prefix));
@@ -105,7 +105,7 @@ public class AdditionalNamespaceResolver implements NamespaceAccessor {
 
    public String[] getAllNamespacePrefixes() throws RepositoryException
    {
-      Set keySet = prefixToURI.keySet();
+      Set<Object> keySet = prefixToURI.keySet();
       return (String[])keySet.toArray(new String[keySet.size()]);
    }
 

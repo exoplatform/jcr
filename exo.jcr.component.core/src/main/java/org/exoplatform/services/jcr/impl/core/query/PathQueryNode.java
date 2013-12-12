@@ -16,12 +16,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.impl.Constants;
+
 import java.util.List;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.impl.Constants;
 
 /**
  * Implements a query node that defines a path restriction.
@@ -31,12 +31,12 @@ public class PathQueryNode extends NAryQueryNode {
     /**
      * Flag indicating whether this path is absolute.
      */
-    private boolean absolute = false;
+    private boolean absolute;
 
     /**
      * List of valid node type names under /jcr:system
      */
-    private final List validJcrSystemNodeTypeNames;
+    private final List<InternalQName> validJcrSystemNodeTypeNames;
 
     /**
      * Empty step node array.
@@ -49,7 +49,7 @@ public class PathQueryNode extends NAryQueryNode {
      *
      * @param parent the parent query node.
      */
-    protected PathQueryNode(QueryNode parent, List validJcrSystemNodeTypeNames) {
+    protected PathQueryNode(QueryNode parent, List<InternalQName> validJcrSystemNodeTypeNames) {
         super(parent);
         this.validJcrSystemNodeTypeNames = validJcrSystemNodeTypeNames;
     }
@@ -59,7 +59,7 @@ public class PathQueryNode extends NAryQueryNode {
      *
      * @return a list of valid node types under /jcr:system.
      */
-    public List getValidJcrSystemNodeTypeNames() {
+    public List<InternalQName> getValidJcrSystemNodeTypeNames() {
         return validJcrSystemNodeTypeNames;
     }
 

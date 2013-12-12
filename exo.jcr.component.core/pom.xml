@@ -93,24 +93,6 @@
          <artifactId>lucene-spellchecker</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.apache.lucene</groupId>
-         <artifactId>lucene-memory</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>org.apache.lucene</groupId>
-        <artifactId>lucene-wordnet</artifactId>
-         <exclusions>
-            <exclusion>
-               <groupId>org.apache.lucene</groupId>
-               <artifactId>lucene-core</artifactId>
-            </exclusion>
-            <exclusion>
-               <groupId>org.apache.lucene</groupId>
-               <artifactId>lucene-analyzers</artifactId>
-            </exclusion>
-         </exclusions>
-      </dependency>
-      <dependency>
          <groupId>javax.transaction</groupId>
          <artifactId>jta</artifactId>
       </dependency>

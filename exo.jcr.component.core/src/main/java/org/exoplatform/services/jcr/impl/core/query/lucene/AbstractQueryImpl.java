@@ -72,12 +72,12 @@ public abstract class AbstractQueryImpl implements ExecutableQuery
    /**
     * Set&lt;Name>, where Name is a variable name in the query statement.
     */
-   private final Set variableNames = new HashSet();
+   private final Set<InternalQName> variableNames = new HashSet<InternalQName>();
 
    /**
     * Binding of variable name to value. Maps {@link Name} to {@link Value}.
     */
-   private final Map bindValues = new HashMap();
+   private final Map<InternalQName, Value> bindValues = new HashMap<InternalQName, Value>();
 
    /**
     * Creates a new query instance from a query string.
@@ -173,10 +173,10 @@ public abstract class AbstractQueryImpl implements ExecutableQuery
    }
 
    /**
-    * @return an unmodifieable map, which contains the variable names and their
+    * @return an unmodifiable map, which contains the variable names and their
     *         respective value.
     */
-   protected Map getBindVariableValues()
+   protected Map<InternalQName, Value> getBindVariableValues()
    {
       return Collections.unmodifiableMap(bindValues);
    }

@@ -47,9 +47,9 @@ class Recovery
    private final RedoLog redoLog;
 
    /**
-    * The ids of the uncommitted transactions. Set of Integer objects.
+    * The ids of the uncommitted transactions. Set of Long objects.
     */
-   private final Set losers = new HashSet();
+   private final Set<Long> losers = new HashSet<Long>();
 
    /**
     * Creates a new Recovery instance.
@@ -97,12 +97,12 @@ class Recovery
     */
    private void run() throws IOException
    {
-      List actions = redoLog.getActions();
+      List<MultiIndex.Action> actions = redoLog.getActions();
 
       // find loser transactions
-      for (Iterator it = actions.iterator(); it.hasNext();)
+      for (Iterator<MultiIndex.Action> it = actions.iterator(); it.hasNext();)
       {
-         MultiIndex.Action a = (MultiIndex.Action)it.next();
+         MultiIndex.Action a = it.next();
          if (a.getType() == MultiIndex.Action.TYPE_START)
          {
             losers.add(new Long(a.getTransactionId()));
@@ -115,7 +115,7 @@ class Recovery
 
       // find last volatile commit without changes from a loser
       int lastSafeVolatileCommit = -1;
-      Set transactionIds = new HashSet();
+      Set<Long> transactionIds = new HashSet<Long>();
       for (int i = 0; i < actions.size(); i++)
       {
          MultiIndex.Action a = (MultiIndex.Action)actions.get(i);

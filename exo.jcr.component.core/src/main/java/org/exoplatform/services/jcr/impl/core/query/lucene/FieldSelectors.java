@@ -25,13 +25,16 @@ import org.apache.lucene.document.FieldSelectorResult;
 public class FieldSelectors {
 
     /**
-     * Do not instanciate.
+     * Do not instantiate.
      */
     private FieldSelectors() {
     }
 
     public static final FieldSelector UUID = new FieldSelector() {
-        /**
+
+      private static final long serialVersionUID = 3737773026616637630L;
+
+      /**
          * Only accepts {@link FieldNames#UUID}.
          *
          * @param fieldName the field name to check.
@@ -47,7 +50,10 @@ public class FieldSelectors {
     };
 
     public static final FieldSelector UUID_AND_PARENT = new FieldSelector() {
-        /**
+
+      private static final long serialVersionUID = -960131754808856489L;
+
+      /**
          * Accepts {@link FieldNames#UUID} and {@link FieldNames#PARENT}.
          *
          * @param fieldName the field name to check.
@@ -65,7 +71,10 @@ public class FieldSelectors {
     };
 
     public static final FieldSelector UUID_AND_PARENT_AND_INDEX = new FieldSelector() {
-        /**
+
+      private static final long serialVersionUID = -843362688405506469L;
+
+      /**
          * Accepts {@link FieldNames#UUID}, {@link FieldNames#PARENT} 
          * and {@link FieldNames#INDEX}.
          *
@@ -86,7 +95,10 @@ public class FieldSelectors {
     };
 
     public static final FieldSelector PATH = new FieldSelector() {
-       /**
+
+      private static final long serialVersionUID = 7091521615198386842L;
+
+      /**
         * Accepts {@link FieldNames#PATH}.
         *
         * @param fieldName the field name to check.

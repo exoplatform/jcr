@@ -165,7 +165,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
    /**
     *  Flushes all cache content to underlying CacheStore
     */
-   @SuppressWarnings({"rawtypes", "unchecked"})
+   @SuppressWarnings("rawtypes")
    protected void doPushState()
    {
       final boolean debugEnabled = LOG.isDebugEnabled();

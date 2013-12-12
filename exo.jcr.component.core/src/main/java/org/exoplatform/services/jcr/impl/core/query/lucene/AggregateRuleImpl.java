@@ -146,7 +146,7 @@ class AggregateRuleImpl implements AggregateRule
    {
       if (nodeState.getPrimaryTypeName().equals(nodeTypeName))
       {
-         List nodeStates = new ArrayList();
+         List<NodeData> nodeStates = new ArrayList<NodeData>();
          for (int i = 0; i < nodeIncludes.length; i++)
          {
             nodeStates.addAll(Arrays.asList(nodeIncludes[i].resolve(nodeState)));
@@ -167,7 +167,7 @@ class AggregateRuleImpl implements AggregateRule
    {
       if (nodeState.getPrimaryTypeName().equals(nodeTypeName))
       {
-         List propStates = new ArrayList();
+         List<PropertyData> propStates = new ArrayList<PropertyData>();
          for (int i = 0; i < propertyIncludes.length; i++)
          {
             propStates.addAll(Arrays.asList(propertyIncludes[i].resolvePropertyStates(nodeState)));
@@ -210,7 +210,7 @@ class AggregateRuleImpl implements AggregateRule
     */
    private NodeInclude[] getNodeIncludes(Node config) throws IllegalNameException, RepositoryException
    {
-      List includes = new ArrayList();
+      List<NodeInclude> includes = new ArrayList<NodeInclude>();
       NodeList childNodes = config.getChildNodes();
       for (int i = 0; i < childNodes.getLength(); i++)
       {
@@ -257,7 +257,7 @@ class AggregateRuleImpl implements AggregateRule
     */
    private PropertyInclude[] getPropertyIncludes(Node config) throws IllegalNameException, RepositoryException
    {
-      List includes = new ArrayList();
+      List<PropertyInclude> includes = new ArrayList<PropertyInclude>();
       NodeList childNodes = config.getChildNodes();
       for (int i = 0; i < childNodes.getLength(); i++)
       {
@@ -290,7 +290,7 @@ class AggregateRuleImpl implements AggregateRule
     */
    private static String getTextContent(Node node)
    {
-      StringBuffer content = new StringBuffer();
+      StringBuilder content = new StringBuilder();
       NodeList nodes = node.getChildNodes();
       for (int i = 0; i < nodes.getLength(); i++)
       {
@@ -397,7 +397,7 @@ class AggregateRuleImpl implements AggregateRule
        * @throws ItemStateException if an error occurs while accessing node
        *                            states.
        */
-      protected void resolve(NodeData nodeState, List collector, int offset) throws RepositoryException
+      protected void resolve(NodeData nodeState, List<NodeData> collector, int offset) throws RepositoryException
       {
          QPathEntry currentName = pattern.getEntries()[offset];// [offset].getName();
          List<NodeData> cne;
@@ -468,7 +468,7 @@ class AggregateRuleImpl implements AggregateRule
        */
       NodeData[] resolve(NodeData nodeState) throws RepositoryException
       {
-         List nodeStates = new ArrayList();
+         List<NodeData> nodeStates = new ArrayList<NodeData>();
          resolve(nodeState, nodeStates, 0);
          return (NodeData[])nodeStates.toArray(new NodeData[nodeStates.size()]);
       }
@@ -496,16 +496,16 @@ class AggregateRuleImpl implements AggregateRule
        */
       PropertyData[] resolvePropertyStates(NodeData nodeState) throws RepositoryException
       {
-         List nodeStates = new ArrayList();
+         List<NodeData> nodeStates = new ArrayList<NodeData>();
          resolve(nodeState, nodeStates, 0);
-         List propStates = new ArrayList();
-         for (Iterator it = nodeStates.iterator(); it.hasNext();)
+         List<PropertyData> propStates = new ArrayList<PropertyData>();
+         for (Iterator<NodeData> it = nodeStates.iterator(); it.hasNext();)
          {
-            NodeData state = (NodeData)it.next();
+            NodeData state = it.next();
             ItemData prop = ism.getItemData(state, new QPathEntry(propertyName, 1), ItemType.PROPERTY);
             if (prop != null && !prop.isNode())
             {
-               propStates.add(prop);
+               propStates.add((PropertyData)prop);
             }
 
             //                if (state.hasPropertyName(propertyName)) {

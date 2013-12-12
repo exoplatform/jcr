@@ -80,10 +80,6 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
    private ItemDataConsumer ism;
 
    /**
-    * A hierarchy resolver for the item state manager.
-    */
-   // private HierarchyManager hmgr;
-   /**
     * The {@link IndexingRule}s inside this configuration.
     */
    private Map<InternalQName, List<IndexingRule>> configElements = new HashMap<InternalQName, List<IndexingRule>>();
@@ -624,7 +620,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
     */
    private static String getTextContent(Node node)
    {
-      StringBuffer content = new StringBuffer();
+      StringBuilder content = new StringBuilder();
       NodeList nodes = node.getChildNodes();
       for (int i = 0; i < nodes.getLength(); i++)
       {
@@ -1045,7 +1041,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
       boolean evaluate(final NodeData context)
       {
          // get iterator along specified axis
-         Iterator nodeStates;
+         Iterator<NodeData> nodeStates;
          if (axis == SELF)
          {
             nodeStates = Collections.singletonList(context).iterator();
@@ -1067,7 +1063,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
          {
             try
             {
-               nodeStates = new Iterator()
+               nodeStates = new Iterator<NodeData>()
                {
 
                   private NodeData next = (NodeData)ism.getItemData(context.getParentIdentifier());
@@ -1082,7 +1078,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                      return next != null;
                   }
 
-                  public Object next()
+                  public NodeData next()
                   {
                      NodeData tmp = next;
                      try
@@ -1106,7 +1102,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
             }
             catch (RepositoryException e)
             {
-               nodeStates = Collections.EMPTY_LIST.iterator();
+               nodeStates = Collections.<NodeData>emptyList().iterator();
             }
          }
          else if (axis == PARENT)
@@ -1120,18 +1116,18 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
                }
                else
                {
-                  nodeStates = Collections.EMPTY_LIST.iterator();
+                  nodeStates = Collections.<NodeData>emptyList().iterator();
                }
             }
             catch (RepositoryException e)
             {
-               nodeStates = Collections.EMPTY_LIST.iterator();
+               nodeStates = Collections.<NodeData>emptyList().iterator();
             }
          }
          else
          {
             // unsupported axis
-            nodeStates = Collections.EMPTY_LIST.iterator();
+            nodeStates = Collections.<NodeData>emptyList().iterator();
          }
 
          // check node type, name and property value for each
@@ -1139,7 +1135,7 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
          {
             try
             {
-               NodeData current = (NodeData)nodeStates.next();
+               NodeData current = nodeStates.next();
                if ((elementTest != null) && !current.getPrimaryTypeName().equals(elementTest))
                {
                   continue;

@@ -23,6 +23,7 @@ import org.apache.lucene.document.AbstractField;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
+import org.apache.lucene.index.FieldInfo.IndexOptions;
 
 import java.io.Externalizable;
 import java.io.IOException;
@@ -180,7 +181,13 @@ public class ChangesHolder implements Externalizable
       }
       field.setBoost(boost);
       field.setOmitNorms((flags & OMIT_NORMS_FLAG) > 0);
-      field.setOmitTermFreqAndPositions((flags & OMIT_TF_FLAG) > 0);
+      IndexOptions indexOptions;
+      if ((flags & OMIT_TF_FLAG) > 0) {
+         indexOptions = IndexOptions.DOCS_ONLY;
+       } else {
+         indexOptions = IndexOptions.DOCS_AND_FREQS_AND_POSITIONS;
+       }
+      field.setIndexOptions(indexOptions);
       return field;
    }
 
@@ -257,7 +264,6 @@ public class ChangesHolder implements Externalizable
    /**
     * {@inheritDoc}
     */
-   @SuppressWarnings("unchecked")
    public void writeExternal(ObjectOutput out) throws IOException
    {
       int length = remove.size();
@@ -378,7 +384,7 @@ public class ChangesHolder implements Externalizable
       {
          flags |= LAZY_FLAG;
       }
-      if (field instanceof AbstractField && ((AbstractField)field).getOmitTermFreqAndPositions())
+      if (field instanceof AbstractField && ((AbstractField)field).getIndexOptions() == IndexOptions.DOCS_ONLY)
       {
          flags |= OMIT_TF_FLAG;
       }

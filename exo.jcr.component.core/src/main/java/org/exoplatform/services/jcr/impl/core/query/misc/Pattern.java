@@ -343,7 +343,7 @@ public abstract class Pattern
 
       public String toString()
       {
-         return new StringBuffer().append("(").append(pattern1).append("|").append(pattern2).append(")").toString();
+         return new StringBuilder().append("(").append(pattern1).append("|").append(pattern2).append(")").toString();
       }
    }
 
@@ -377,7 +377,7 @@ public abstract class Pattern
 
       public String toString()
       {
-         return new StringBuffer().append("(").append(pattern1).append(", ").append(pattern2).append(")").toString();
+         return new StringBuilder().append("(").append(pattern1).append(", ").append(pattern2).append(")").toString();
       }
    }
 
@@ -438,7 +438,7 @@ public abstract class Pattern
 
       public String toString()
       {
-         return new StringBuffer().append("(").append(pattern).append(")*").toString();
+         return new StringBuilder().append("(").append(pattern).append(")*").toString();
       }
 
    }
@@ -491,7 +491,7 @@ public abstract class Pattern
 
       public String toString()
       {
-         return new StringBuffer().append("\"").append(path).append("\"").toString();
+         return new StringBuilder().append("\"").append(path).append("\"").toString();
       }
    }
 
@@ -543,7 +543,7 @@ public abstract class Pattern
 
       public String toString()
       {
-         return new StringBuffer().append("\"").append(name).append("\"").toString();
+         return new StringBuilder().append("\"").append(name).append("\"").toString();
       }
    }
 
@@ -579,7 +579,7 @@ public abstract class Pattern
 
       public String toString()
       {
-         return new StringBuffer().append("\"{").append(namespaceUriStr).append("}").append(localNameStr).append("\"")
+         return new StringBuilder().append("\"{").append(namespaceUriStr).append("}").append(localNameStr).append("\"")
             .toString();
       }
    }

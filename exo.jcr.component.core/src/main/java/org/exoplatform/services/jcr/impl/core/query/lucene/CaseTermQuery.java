@@ -39,6 +39,11 @@ import java.util.Map;
 abstract class CaseTermQuery extends MultiTermQuery implements TransformConstants
 {
 
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = -4178467977221437090L;
+
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.CaseTermQuery");
 
    /**
@@ -68,7 +73,7 @@ abstract class CaseTermQuery extends MultiTermQuery implements TransformConstant
    @Override
    public String toString(String field)
    {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       if (!term.field().equals(field))
       {
          buffer.append(term.field());
@@ -82,6 +87,8 @@ abstract class CaseTermQuery extends MultiTermQuery implements TransformConstant
    static final class Upper extends CaseTermQuery
    {
 
+      private static final long serialVersionUID = 4125411301640753714L;
+
       Upper(Term term)
       {
          super(term, TRANSFORM_UPPER_CASE);
@@ -90,6 +97,8 @@ abstract class CaseTermQuery extends MultiTermQuery implements TransformConstant
 
    static final class Lower extends CaseTermQuery
    {
+
+      private static final long serialVersionUID = -2496607808944458354L;
 
       Lower(Term term)
       {
@@ -122,22 +131,22 @@ abstract class CaseTermQuery extends MultiTermQuery implements TransformConstant
             if (term.text().length() > nameLength)
             {
                // start with initial lower case
-               StringBuffer lowerLimit = new StringBuffer(propName);
+               StringBuilder lowerLimit = new StringBuilder(propName);
                String termStr = termText.toString();
                String upperTermStr = termStr.toUpperCase();
                String lowerTermStr = termStr.toLowerCase();
 
                lowerLimit.append(upperTermStr);
                lowerLimit.setCharAt(nameLength, Character.toLowerCase(lowerLimit.charAt(nameLength)));
-               StringBuffer upperLimit = new StringBuffer(propName);
+               StringBuilder upperLimit = new StringBuilder(propName);
                upperLimit.append(lowerTermStr);
                rangeScans.add(new RangeScan(reader, new Term(term.field(), lowerLimit.toString()), new Term(term
                   .field(), upperLimit.toString())));
 
                // second scan with upper case start
-               lowerLimit = new StringBuffer(propName);
+               lowerLimit = new StringBuilder(propName);
                lowerLimit.append(upperTermStr);
-               upperLimit = new StringBuffer(propName);
+               upperLimit = new StringBuilder(propName);
                upperLimit.append(lowerTermStr);
                upperLimit.setCharAt(nameLength, Character.toUpperCase(upperLimit.charAt(nameLength)));
                rangeScans.add(new RangeScan(reader, new Term(term.field(), lowerLimit.toString()), new Term(term

@@ -90,7 +90,7 @@ public class ISO9075
       else
       {
          // encode
-         StringBuffer encoded = new StringBuffer();
+         StringBuilder encoded = new StringBuilder();
          for (int i = 0; i < name.length(); i++)
          {
             if (i == 0)
@@ -190,9 +190,9 @@ public class ISO9075
     * @param c
     *          the character to encode
     * @param b
-    *          the encoded character is appended to <code>StringBuffer</code> <code>b</code>.
+    *          the encoded character is appended to <code>StringBuilder</code> <code>b</code>.
     */
-   private static void encode(char c, StringBuffer b)
+   private static void encode(char c, StringBuilder b)
    {
       b.append("_x");
       String hex = Integer.toHexString(c);

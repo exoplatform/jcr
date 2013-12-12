@@ -24,7 +24,6 @@ import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 import org.exoplatform.commons.utils.ISO8601;
-import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
@@ -80,24 +79,10 @@ import javax.jcr.query.InvalidQueryException;
  */
 public class LuceneQueryBuilder implements QueryNodeVisitor
 {
-   /**
-    * Namespace URI for xpath functions
-    */
-   private static final String NS_FN_PREFIX = "fn";
 
    public static final String NS_FN_URI = "http://www.w3.org/2005/xpath-functions";
 
-   /**
-    * Deprecated namespace URI for xpath functions
-    */
-   private static final String NS_FN_OLD_PREFIX = "fn_old";
-
    public static final String NS_FN_OLD_URI = "http://www.w3.org/2004/10/xpath-functions";
-
-   /**
-    * Namespace URI for XML schema
-    */
-   private static final String NS_XS_PREFIX = "xs";
 
    public static final String NS_XS_URI = "http://www.w3.org/2001/XMLSchema";
 
@@ -120,11 +105,6 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
     * The shared item state manager of the workspace.
     */
    private final ItemDataConsumer sharedItemMgr;
-
-   // /**
-   // * A hierarchy manager based on {@link #sharedItemMgr} to resolve paths.
-   // */
-   // private final HierarchyManager hmgr;
 
    /**
     * Namespace mappings to internal prefixes
@@ -159,9 +139,7 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
    /**
     * Exceptions thrown during tree translation
     */
-   private final List exceptions = new ArrayList();
-
-   private final NodeTypeDataManager nodeTypeDataManager;
+   private final List<Exception> exceptions = new ArrayList<Exception>();
 
    private final VirtualTableResolver<Query> virtualTableResolver;
 
@@ -176,8 +154,6 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
     *            of the user executing this query.
     * @param sharedItemMgr
     *            the shared item state manager of the workspace.
-    * @param hmgr
-    *            a hierarchy manager based on sharedItemMgr.
     * @param nsMappings
     *            namespace resolver for internal prefixes.
     * @param analyzer
@@ -194,7 +170,6 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
     */
    private LuceneQueryBuilder(QueryRootNode root, SessionImpl session,
       ItemDataConsumer sharedItemMgr,
-      // HierarchyManager hmgr,
       NamespaceMappings nsMappings, Analyzer analyzer, PropertyTypeRegistry propReg, SynonymProvider synonymProvider,
       IndexFormatVersion indexFormatVersion, VirtualTableResolver<Query> virtualTableResolver,
       IndexingConfiguration indexConfig) throws RepositoryException
@@ -202,14 +177,12 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       this.root = root;
       this.session = session;
       this.sharedItemMgr = sharedItemMgr;
-      // this.hmgr = hmgr;
       this.nsMappings = nsMappings;
       this.analyzer = analyzer;
       this.propRegistry = propReg;
       this.synonymProvider = synonymProvider;
       this.indexFormatVersion = indexFormatVersion;
       this.virtualTableResolver = virtualTableResolver;
-      this.nodeTypeDataManager = session.getWorkspace().getNodeTypesHolder();
       this.resolver = new LocationFactory(nsMappings);
       this.indexConfig = indexConfig;
    }
@@ -252,8 +225,8 @@ public class LuceneQueryBuilder implements QueryNodeVisitor
       Query q = builder.createLuceneQuery();
       if (builder.exceptions.size() > 0)
       {
-         StringBuffer msg = new StringBuffer();
-         for (Iterator it = builder.exceptions.iterator(); it.hasNext();)
+         StringBuilder msg = new StringBuilder();
+         for (Iterator<Exception> it = builder.exceptions.iterator(); it.hasNext();)
          {
             msg.append(it.next().toString()).append('\n');
          }

@@ -205,7 +205,7 @@ public abstract class JCRPath
             }
          }
 
-         StringBuffer sb = new StringBuffer(super.getAsString());
+         StringBuilder sb = new StringBuilder(super.getAsString());
          if (showIndex || getIndex() > 1)
             sb.append("[").append(index).append("]");
          String res = sb.toString();

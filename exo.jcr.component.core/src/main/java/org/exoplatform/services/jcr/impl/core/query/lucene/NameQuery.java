@@ -16,9 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.util.Set;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
@@ -27,12 +24,20 @@ import org.apache.lucene.search.Query;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 
+import java.io.IOException;
+import java.util.Set;
+
 /**
  * <code>NameQuery</code> implements a query for the name of a node.
  */
 public class NameQuery extends Query {
 
-    /**
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 6411494650704435343L;
+
+   /**
      * The node name.
      */
     private final InternalQName nodeName;
@@ -96,7 +101,7 @@ public class NameQuery extends Query {
     /**
      * {@inheritDoc}
      */
-    public void extractTerms(Set terms) {
+    public void extractTerms(Set<Term> terms) {
     }
 
     /**

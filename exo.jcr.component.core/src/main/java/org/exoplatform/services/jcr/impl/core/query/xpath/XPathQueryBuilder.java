@@ -223,7 +223,8 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
     /**
      * Map of reusable XPath parser instances indexed by NamespaceResolver.
      */
-    private static final Map parsers = new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
+    @SuppressWarnings("unchecked")
+   private static final Map<LocationFactory, XPath> parsers = new ReferenceMap(ReferenceMap.WEAK, ReferenceMap.WEAK);
 
     /**
      * The root <code>QueryNode</code>
@@ -238,7 +239,7 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
     /**
      * List of exceptions that are created while building the query tree
      */
-    private final List exceptions = new ArrayList();
+    private final List<Exception> exceptions = new ArrayList<Exception>();
 
     /**
      * Temporary relative path
@@ -272,7 +273,7 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
             // get parser
             XPath parser;
             synchronized (parsers) {
-                parser = (XPath) parsers.get(resolver);
+                parser = parsers.get(resolver);
                 if (parser == null) {
                     parser = new XPath(new StringReader(statement));
                     parsers.put(resolver, parser);

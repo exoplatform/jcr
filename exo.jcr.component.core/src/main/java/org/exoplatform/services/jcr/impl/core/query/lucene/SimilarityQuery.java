@@ -16,8 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.analysis.Analyzer;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
@@ -25,13 +23,20 @@ import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.Query;
 
+import java.io.IOException;
+
 /**
  * <code>SimilarityQuery</code> implements a query that returns similar nodes
  * for a given node UUID.
  */
 public class SimilarityQuery extends Query {
 
-    /**
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 3336035430784964269L;
+
+   /**
      * The UUID of the node for which to find similar nodes.
      */
     private final String uuid;

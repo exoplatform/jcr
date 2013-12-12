@@ -341,7 +341,7 @@ abstract class DocId {
          * @return a String representation for this <code>DocId</code>.
          */
         public String toString() {
-            StringBuffer sb = new StringBuffer("MultiUUIDDocId(");
+            StringBuilder sb = new StringBuilder("MultiUUIDDocId(");
             String separator = "";
             for (int i = 0; i < docIds.length; i++) {
                 sb.append(separator);

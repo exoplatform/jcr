@@ -50,12 +50,12 @@ public class IndexInfos
    /**
     * For new segment names.
     */
-   private int counter = 0;
+   private int counter;
 
    /**
     * Flag that indicates if index infos needs to be written to disk.
     */
-   private boolean dirty = false;
+   private boolean dirty;
 
    /**
     * List of index names
@@ -131,9 +131,10 @@ public class IndexInfos
             {
                // clear current lists
                InputStream in = new IndexInputStream(dir.openInput(name));
+               DataInputStream di = null;
                try
                {
-                  DataInputStream di = new DataInputStream(in);
+                  di = new DataInputStream(in);
                   counter = di.readInt();
                   for (int i = di.readInt(); i > 0; i--)
                   {
@@ -144,6 +145,8 @@ public class IndexInfos
                }
                finally
                {
+                  if (di != null)
+                     di.close();
                   in.close();
                }
             }
@@ -171,9 +174,10 @@ public class IndexInfos
             }
 
             OutputStream out = new IndexOutputStream(dir.createOutput(name + ".new"));
+            DataOutputStream dataOut = null;
             try
             {
-               DataOutputStream dataOut = new DataOutputStream(out);
+               dataOut = new DataOutputStream(out);
                dataOut.writeInt(counter);
                dataOut.writeInt(indexes.size());
                for (int i = 0; i < indexes.size(); i++)
@@ -183,6 +187,8 @@ public class IndexInfos
             }
             finally
             {
+               if (dataOut != null)
+                  dataOut.close();
                out.close();
             }
             // delete old

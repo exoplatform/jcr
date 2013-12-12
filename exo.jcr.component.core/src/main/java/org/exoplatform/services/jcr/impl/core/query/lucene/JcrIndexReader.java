@@ -16,11 +16,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
-
+import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.util.ReaderUtil;
+
+import java.io.IOException;
 
 /**
  * <code>JackrabbitIndexReader</code> wraps an index reader and
@@ -125,4 +126,15 @@ public final class JcrIndexReader
         // This solution confirmed via Lucene mailing-list on May 27 2010.
         return null;
     }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public FieldInfos getFieldInfos()
+   {
+      return ReaderUtil.getMergedFieldInfos(in);
+   }
+
+    
 }

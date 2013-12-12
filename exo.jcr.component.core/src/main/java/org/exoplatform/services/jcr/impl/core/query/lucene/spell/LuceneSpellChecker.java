@@ -297,7 +297,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
          {
             // replace words in statement in reverse order because length
             // of statement will change
-            StringBuffer sb = new StringBuffer(statement);
+            StringBuilder sb = new StringBuilder(statement);
             for (int i = suggestions.length - 1; i >= 0; i--)
             {
                TokenData t = tokens.get(i);

@@ -31,6 +31,7 @@ import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.search.TermQuery;
 import org.apache.lucene.util.PriorityQueue;
+import org.apache.lucene.util.ReaderUtil;
 import org.apache.lucene.util.Version;
 
 import java.io.File;
@@ -529,9 +530,7 @@ public final class MoreLikeThis
    {
       if (fieldNames == null)
       {
-         // gather list of valid fields from lucene
-         Collection<String> fields = ir.getFieldNames(IndexReader.FieldOption.INDEXED);
-         fieldNames = fields.toArray(new String[fields.size()]);
+         setFieldNames();
       }
 
       return createQuery(retrieveTerms(docNum));
@@ -546,12 +545,17 @@ public final class MoreLikeThis
    {
       if (fieldNames == null)
       {
-         // gather list of valid fields from lucene
-         Collection<String> fields = ir.getFieldNames(IndexReader.FieldOption.INDEXED);
-         fieldNames = fields.toArray(new String[fields.size()]);
+         setFieldNames();
       }
 
       return like(new FileReader(f));
+   }
+
+   private void setFieldNames()
+   {
+      // gather list of valid fields from lucene
+      Collection<String> fields = ReaderUtil.getIndexedFields(ir);
+      fieldNames = fields.toArray(new String[fields.size()]);
    }
 
    /**
@@ -690,7 +694,7 @@ public final class MoreLikeThis
     */
    public String describeParams()
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuilder sb = new StringBuilder();
       sb.append("\t" + "maxQueryTerms  : " + maxQueryTerms + "\n");
       sb.append("\t" + "minWordLen     : " + minWordLen + "\n");
       sb.append("\t" + "maxWordLen     : " + maxWordLen + "\n");

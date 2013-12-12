@@ -97,13 +97,13 @@ public abstract class QueryNode {
      * @throws RepositoryException
      */
     public String dump() throws RepositoryException {
-        StringBuffer tmp = new StringBuffer();
+        StringBuilder tmp = new StringBuilder();
         QueryTreeDump.dump(this, tmp);
         return tmp.toString();
     }
 
     /**
-     * Accepts a {@link QueryNodeVisitor} and calls the apropriate <code>visit</code>
+     * Accepts a {@link QueryNodeVisitor} and calls the appropriate <code>visit</code>
      * method on the visitor depending on the concrete implementation of
      * this <code>QueryNode</code>.
      *

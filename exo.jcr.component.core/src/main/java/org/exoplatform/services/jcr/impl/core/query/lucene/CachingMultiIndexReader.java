@@ -16,15 +16,14 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Extends a <code>MultiReader</code> with support for cached <code>TermDocs</code>
@@ -42,7 +41,7 @@ public final class CachingMultiIndexReader
     /**
      * Map of {@link OffsetReader}s, identified by creation tick.
      */
-    private final Map readersByCreationTick = new HashMap();
+    private final Map<Long, OffsetReader> readersByCreationTick = new HashMap<Long, OffsetReader>();
 
     /**
      * Document number cache if available. May be <code>null</code>.
@@ -215,34 +214,6 @@ public final class CachingMultiIndexReader
             return r.offset + docId.getDocNumber();
         }
         return -1;
-    }
-
-    /**
-     * Returns the reader index for document <code>n</code>.
-     * Implementation copied from lucene MultiReader class.
-     *
-     * @param n document number.
-     * @return the reader index.
-     */
-    private int readerIndex(int n) {
-        int lo = 0;                                      // search starts array
-        int hi = subReaders.length - 1;                  // for first element less
-
-        while (hi >= lo) {
-            int mid = (lo + hi) >> 1;
-            int midValue = starts[mid];
-            if (n < midValue) {
-                hi = mid - 1;
-            } else if (n > midValue) {
-                lo = mid + 1;
-            } else {                                      // found a match
-                while (mid + 1 < subReaders.length && starts[mid + 1] == midValue) {
-                    mid++;                                  // scan to last match
-                }
-                return mid;
-            }
-        }
-        return hi;
     }
 
     //-----------------------< OffsetTermDocs >---------------------------------

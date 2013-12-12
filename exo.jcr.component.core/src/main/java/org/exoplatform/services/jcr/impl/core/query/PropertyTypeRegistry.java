@@ -21,8 +21,6 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.core.nodetype.PropertyDefinitionData;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerListener;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,9 +40,6 @@ import javax.jcr.PropertyType;
 public class PropertyTypeRegistry implements NodeTypeManagerListener
 {
 
-   /** The logger instance for this class */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.PropertyTypeRegistry");
-
    /**
     * Empty <code>TypeMapping</code> array as return value if no type is
     * found
@@ -55,7 +50,7 @@ public class PropertyTypeRegistry implements NodeTypeManagerListener
    private final NodeTypeDataManager registry;
 
    /** Property Name to TypeMapping[] mapping */
-   private final Map typeMapping = new HashMap();
+   private final Map<InternalQName, TypeMapping[]> typeMapping = new HashMap<InternalQName, TypeMapping[]>();
 
    /**
     * Creates a new <code>PropertyTypeRegistry</code> instance. This instance
@@ -82,7 +77,7 @@ public class PropertyTypeRegistry implements NodeTypeManagerListener
    {
       synchronized (typeMapping)
       {
-         TypeMapping[] types = (TypeMapping[])typeMapping.get(propName);
+         TypeMapping[] types = typeMapping.get(propName);
          if (types != null)
          {
             return types;
@@ -109,7 +104,7 @@ public class PropertyTypeRegistry implements NodeTypeManagerListener
                {
                   InternalQName name = propDefs[i].getName();
                   // only remember defined property types
-                  TypeMapping[] types = (TypeMapping[])typeMapping.get(name);
+                  TypeMapping[] types = typeMapping.get(name);
                   if (types == null)
                   {
                      types = new TypeMapping[1];
@@ -139,12 +134,12 @@ public class PropertyTypeRegistry implements NodeTypeManagerListener
       // remove all TypeMapping instances refering to this ntName
       synchronized (typeMapping)
       {
-         Map modified = new HashMap();
-         for (Iterator it = typeMapping.keySet().iterator(); it.hasNext();)
+         Map<InternalQName, TypeMapping[]> modified = new HashMap<InternalQName, TypeMapping[]>();
+         for (Iterator<InternalQName> it = typeMapping.keySet().iterator(); it.hasNext();)
          {
-            InternalQName propName = (InternalQName)it.next();
-            TypeMapping[] mapping = (TypeMapping[])typeMapping.get(propName);
-            List remove = null;
+            InternalQName propName = it.next();
+            TypeMapping[] mapping = typeMapping.get(propName);
+            List<TypeMapping> remove = null;
             for (int i = 0; i < mapping.length; i++)
             {
                if (mapping[i].ntName.equals(ntName))
@@ -152,7 +147,7 @@ public class PropertyTypeRegistry implements NodeTypeManagerListener
                   if (remove == null)
                   {
                      // not yet created
-                     remove = new ArrayList(mapping.length);
+                     remove = new ArrayList<TypeMapping>(mapping.length);
                   }
                   remove.add(mapping[i]);
                }
@@ -167,7 +162,7 @@ public class PropertyTypeRegistry implements NodeTypeManagerListener
                else
                {
                   // only some removed
-                  List remaining = new ArrayList(Arrays.asList(mapping));
+                  List<TypeMapping> remaining = new ArrayList<TypeMapping>(Arrays.asList(mapping));
                   remaining.removeAll(remove);
                   modified.put(propName, remaining.toArray(new TypeMapping[remaining.size()]));
                }

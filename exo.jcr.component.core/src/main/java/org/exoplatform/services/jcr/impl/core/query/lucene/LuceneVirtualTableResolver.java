@@ -27,8 +27,6 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,11 +45,6 @@ public class LuceneVirtualTableResolver extends NodeTypeVirtualTableResolver<Que
 {
 
    private final LocationFactory locationFactory;
-
-   /**
-    * Class logger.
-    */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.LuceneVirtualTableResolver");
 
    private final String mixinTypesField;
 

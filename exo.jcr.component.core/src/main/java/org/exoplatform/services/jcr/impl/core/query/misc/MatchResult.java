@@ -26,8 +26,6 @@ import javax.jcr.RepositoryException;
  */
 public class MatchResult
 {
-   private final QPath path;
-
    private final int pathLength;
 
    private int matchPos;
@@ -42,10 +40,6 @@ public class MatchResult
    MatchResult(QPath path, int pos, int length)
    {
       super();
-      //        if (!path.isNormalized()) {
-      //            throw new IllegalArgumentException("Path not normalized");
-      //        }
-      this.path = path;
       this.matchPos = pos;
       this.matchLength = length;
       this.pathLength = path.getEntries().length;

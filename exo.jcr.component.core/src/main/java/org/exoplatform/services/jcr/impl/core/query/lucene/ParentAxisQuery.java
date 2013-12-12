@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
@@ -41,9 +42,9 @@ class ParentAxisQuery extends Query
 {
 
    /**
-    * Default score is 1.0f.
+    * The serial version UID
     */
-   private static final Float DEFAULT_SCORE = new Float(1.0f);
+   private static final long serialVersionUID = 7770846380860073525L;
 
    /**
     * The context query
@@ -105,7 +106,7 @@ class ParentAxisQuery extends Query
     * {@inheritDoc}
     */
    @Override
-   public void extractTerms(Set terms)
+   public void extractTerms(Set<Term> terms)
    {
       contextQuery.extractTerms(terms);
    }
@@ -147,6 +148,8 @@ class ParentAxisQuery extends Query
     */
    private class ParentAxisWeight extends Weight
    {
+
+      private static final long serialVersionUID = 6284240441543692705L;
 
       /**
        * The searcher in use
