@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
@@ -723,129 +724,141 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   LOG.warn("unable to prepare index reader " + "for queries during update", e);
                }
             }
-            ReadOnlyIndexReader lastIndexReader = null;
-            try
+            synchronized (updateMonitor)
             {
-               for (Iterator<String> it = remove.iterator(); it.hasNext();)
-               {
-                  Term idTerm = new Term(FieldNames.UUID, it.next());
-                  int num = volatileIndex.removeDocument(idTerm);
-                  if (num == 0)
-                  {
-                     for (int i = indexes.size() - 1; i >= 0; i--)
+                 ReadOnlyIndexReader[] readers = null;
+                 try
+                 {
+                     for (Iterator<String> it = remove.iterator(); it.hasNext(); )
                      {
-                        // only look in registered indexes
-                        PersistentIndex idx = indexes.get(i);
-                        if (indexNames.contains(idx.getName()))
-                        {
-                           num = idx.removeDocument(idTerm);
-                           if (num > 0)
-                           {
-                              break;
-                           }
-                        }
+                         Term idTerm = new Term(FieldNames.UUID, it.next());
+                         int num = volatileIndex.removeDocument(idTerm);
+                         if (num == 0)
+                         {
+                             for (int i = indexes.size() - 1; i >= 0; i--)
+                             {
+                                 // only look in registered indexes
+                                 PersistentIndex idx = indexes.get(i);
+                                 if (indexNames.contains(idx.getName()))
+                                 {
+                                     num = idx.removeDocument(idTerm);
+                                     if (num > 0)
+                                     {
+                                         if (LOG.isDebugEnabled())
+                                             LOG.debug(idTerm.text() + " has been found in the persisted index " + i);
+                                         break;
+                                     }
+                                 }
+                             }
+                         }
+                         else if (LOG.isDebugEnabled())
+                         {
+                             LOG.debug(idTerm.text() + " has been found in the volatile index");
+                         }
                      }
-                  }
+                     // try to avoid getting index reader for each doc
+                     IndexReader indexReader = null;
 
-               }
-
-               // try to avoid getting index reader for each doc
-               int lastIndexReaderId = indexes.size() - 1;
-               // check, index list can be empty
-               try
-               {
-                  lastIndexReader =
-                     (lastIndexReaderId >= 0) ? (indexes.get(lastIndexReaderId)).getReadOnlyIndexReader() : null;
-               }
-               catch (Throwable e) //NOSONAR
-               {
-                  // this is safe index reader retrieval. The last index already closed, possibly merged or 
-                  // any other exception that occurs here
-                  if (LOG.isTraceEnabled())
-                  {
-                     LOG.trace("An exception occurred: " + e.getMessage());
-                  }
-               }
-
-               for (Iterator<Document> it = add.iterator(); it.hasNext();)
-               {
-                  Document doc = it.next();
-                  if (doc != null)
-                  {
-                     // check if this item should be placed in own volatile index
-                     // usually it must be indexed, but exception if it exists in persisted index
-                     boolean addDoc = true;
-
-                     // make this check safe if something goes wrong
-                     String uuid = doc.get(FieldNames.UUID);
-                     // if remove contains uuid, node should be re-indexed
-                     // if not, than should be checked if node present in the last persisted index
-                     if (!remove.contains(uuid))
+                     for (Iterator<Document> it = add.iterator(); it.hasNext(); )
                      {
-                        // if index list changed, get the reader on the latest index
-                        // or if index reader is not current
-                        if (lastIndexReaderId != indexes.size() - 1
-                           || (lastIndexReader != null && !lastIndexReader.isCurrent()))
-                        {
-                           // safe release reader
-                           if (lastIndexReader != null)
-                           {
-                              lastIndexReader.release();
-                           }
-                           lastIndexReaderId = indexes.size() - 1;
-                           try
-                           {
-                              lastIndexReader = (indexes.get(lastIndexReaderId)).getReadOnlyIndexReader();
-                           }
-                           catch (Throwable e) //NOSONAR
-                           {
-                              // this is safe index reader retrieval. The last index already closed, 
-                              // possibly merged or any other exception that occurs here
-                              lastIndexReader = null;
-                              lastIndexReaderId = -1;
-                           }
-                        }
-                        // if indexReader exists (it is possible that no persisted indexes exists on start)
-                        if (lastIndexReader != null)
-                        {
-                           try
-                           {
-                              // reader from resisted index should be 
-                              TermDocs termDocs = lastIndexReader.termDocs(new Term(FieldNames.UUID, uuid));
-                              // node should be indexed if not found in persistent index
-                              addDoc = termDocs == null;
-                           }
-                           catch (Exception e)
-                           {
-                              LOG.debug("Some exception occured, during index check");
-                           }
-                        }
-                     }
+                         Document doc = it.next();
+                         if (doc != null)
+                         {
+                             // check if this item should be placed in own volatile index
+                             // usually it must be indexed, but exception if it exists in persisted index
+                             boolean addDoc = true;
 
-                     if (addDoc)
-                     {
-                        volatileIndex.addDocuments(new Document[]{doc});
-                        // reset volatile index if needed
-                        if (volatileIndex.getRamSizeInBytes() >= handler.getMaxVolatileIndexSize())
-                        {
-                           // to avoid out of memory 
-                           resetVolatileIndex();
-                        }
+                             // make this check safe if something goes wrong
+                             String uuid = doc.get(FieldNames.UUID);
+                             // if remove contains uuid, node should be re-indexed
+                             // if not, than should be checked if node present in the last persisted index
+                             if (!remove.contains(uuid))
+                             {
+                                 // if index list changed, get the reader on the latest index
+                                 // or if index reader is not current
+                                 if (indexReader == null)
+                                 {
+                                     try
+                                     {
+                                         readers = getReadOnlyIndexReaders(false, false);
+                                         indexReader = new MultiReader(readers);
+                                     }
+                                     catch (Throwable e)
+                                     {
+                                         // this is safe index reader retrieval. The last index already closed, possibly merged or
+                                         // any other exception that occurs here
+                                         LOG.warn("Could not create the MultiReader :" + e.getLocalizedMessage());
+                                         LOG.debug("Could not create the MultiReader", e);
+                                     }
+                                 }
+                                 if ((indexReader != null && !indexReader.isCurrent()))
+                                 {
+                                     // safe release reader
+                                     if (indexReader != null)
+                                     {
+                                         for (ReadOnlyIndexReader reader : readers)
+                                         {
+                                             reader.release();
+                                         }
+                                     }
+                                     try
+                                     {
+                                         readers = getReadOnlyIndexReaders(false, false);
+                                         indexReader = new MultiReader(readers);
+                                     }
+                                     catch (Throwable e)
+                                     {
+                                         // this is safe index reader retrieval. The last index already closed, possibly merged or
+                                         // any other exception that occurs here
+                                         LOG.warn("Could not create the MultiReader :" + e.getLocalizedMessage());
+                                         LOG.debug("Could not create the MultiReader", e);
+                                     }
+                                 }
+                                 // if indexReader exists (it is possible that no persisted indexes exists on start)
+                                 if (indexReader != null)
+                                 {
+                                     TermDocs termDocs = null;
+                                     try
+                                     {
+                                         // reader from resisted index should be
+                                         termDocs = indexReader.termDocs(new Term(FieldNames.UUID, uuid));
+                                         // node should be indexed if not found in persistent index
+                                         addDoc = !termDocs.next();
+                                     }
+                                     catch (Exception e)
+                                     {
+                                         LOG.debug("Some exception occured, during index check");
+                                     }
+                                     finally
+                                     {
+                                         if (termDocs != null)
+                                             termDocs.close();
+                                     }
+                                 }
+                             }
+                             if (addDoc)
+                             {
+                                 volatileIndex.addDocuments(new Document[]{doc});
+                             }
+                             else if (LOG.isDebugEnabled())
+                             {
+                                 LOG.debug("Could find the document {} in the last persisted index", uuid);
+                             }
+                         }
                      }
-                  }
-               }
-            }
-            finally
-            {
-               // don't forget to release a reader anyway
-               if (lastIndexReader != null)
-               {
-                  lastIndexReader.release();
-               }
-               synchronized (updateMonitor)
-               {
-                  releaseMultiReader();
-               }
+                 }
+                 finally
+                 {
+                     // don't forget to release a reader anyway
+                     if (readers != null)
+                     {
+                         for (ReadOnlyIndexReader reader : readers)
+                         {
+                             reader.release();
+                         }
+                     }
+                     releaseMultiReader();
+                 }
             }
             return null;
          }
@@ -1390,32 +1403,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                // meantime -> check again
                if (multiReader == null)
                {
-                  // if index in offline mode, due to hot async reindexing,
-                  // need to return the reader containing only stale indexes (old),
-                  // without newly created.
-                  List<PersistentIndex> persistedIndexesList = online.get() ? indexes : staleIndexes;
-                  List<ReadOnlyIndexReader> readerList = new ArrayList<ReadOnlyIndexReader>();
-                  for (int i = 0; i < persistedIndexesList.size(); i++)
-                  {
-                     PersistentIndex pIdx = persistedIndexesList.get(i);
-
-                     if (indexNames.contains(pIdx.getName()))
-                     {
-                        try
-                        {
-                           readerList.add(pIdx.getReadOnlyIndexReader(initCache));
-                        }
-                        catch (FileNotFoundException e)
-                        {
-                           if (directoryManager.hasDirectory(pIdx.getName()))
-                           {
-                              throw e;
-                           }
-                        }
-                     }
-                  }
-                  readerList.add(volatileIndex.getReadOnlyIndexReader());
-                  ReadOnlyIndexReader[] readers = readerList.toArray(new ReadOnlyIndexReader[readerList.size()]);
+                  ReadOnlyIndexReader[] readers = getReadOnlyIndexReaders(initCache, true);
                   multiReader = new CachingMultiIndexReader(readers, cache);
                }
                multiReader.acquire();
@@ -1425,6 +1413,38 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       });
 
    }
+
+    private ReadOnlyIndexReader[] getReadOnlyIndexReaders(boolean initCache, boolean withVolatileIndex)
+            throws IOException, FileNotFoundException
+    {
+        // if index in offline mode, due to hot async reindexing,
+        // need to return the reader containing only stale indexes (old),
+        // without newly created.
+        List<PersistentIndex> persistedIndexesList = online.get() ? indexes : staleIndexes;
+        List<ReadOnlyIndexReader> readerList = new ArrayList<ReadOnlyIndexReader>();
+        for (int i = 0; i < persistedIndexesList.size(); i++)
+        {
+            PersistentIndex pIdx = persistedIndexesList.get(i);
+
+            if (indexNames.contains(pIdx.getName()))
+            {
+                try
+                {
+                    readerList.add(pIdx.getReadOnlyIndexReader(initCache));
+                }
+                catch (FileNotFoundException e)
+                {
+                    if (directoryManager.hasDirectory(pIdx.getName()))
+                    {
+                        throw e;
+                    }
+                }
+            }
+        }
+        if (withVolatileIndex)
+            readerList.add(volatileIndex.getReadOnlyIndexReader());
+        return readerList.toArray(new ReadOnlyIndexReader[readerList.size()]);
+    }
 
    /**
     * Returns the volatile index.
@@ -1608,7 +1628,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
    /**
     * Removes the <code>index</code> from the list of active sub indexes. The
-    * Index is not acutally deleted right away, but postponed to the
+    * Index is not actually deleted right away, but postponed to the
     * transaction commit.
     * <p/>
     * This method does not close the index, but rather expects that the index
@@ -3073,12 +3093,20 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                if (index.indexNames.contains(idx.getName()))
                {
                   num = idx.removeDocument(idTerm);
-                  if (num > 0)
+                  if (num > 0 )
                   {
-                     return;
+                      if (LOG.isDebugEnabled())
+                      {
+                      LOG.debug(idTerm.text() + " has been found in the persisted index " + i);
+                      }
+                      return;
                   }
                }
             }
+         }
+         else if (LOG.isDebugEnabled())
+         {
+            LOG.debug(idTerm.text() + " has been found in the volatile index");
          }
       }
 
@@ -3402,6 +3430,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                // remove from list, cause this segment of index still present and indexes list contains
                // PersistentIndex instance related to this index..
                newList.remove(name);
+               // Release everything to make sure that we see the
+               // latest changes
+               index.releaseWriterAndReaders();
             }
          }
          // now newList contains ONLY new, added indexes, deleted indexes, are removed from list.
@@ -3425,6 +3456,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
             indexes.add(index);
          }
+          // Reset the volatile index to be exactly like the master
+          resetVolatileIndex();
       }
    }
 
@@ -3442,10 +3475,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             {
                synchronized (updateMonitor)
                {
-                  // Coordinator set cluster-wide updateInProgress only in case of persistent flush, which
-                  // invokes volatile reset. So if RO cluster node received this notification, it means that 
-                  // coordinator flushed volatile.
-                  resetVolatileIndex();
                   updateMonitor.notifyAll();
                   releaseMultiReader();
                }
