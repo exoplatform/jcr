@@ -730,23 +730,23 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                {
                   Term idTerm = new Term(FieldNames.UUID, it.next());
                   int num = volatileIndex.removeDocument(idTerm);
-                  if (num == 0)
+                  if (num > 0 && LOG.isDebugEnabled())
                   {
-                     for (int i = indexes.size() - 1; i >= 0; i--)
+                     LOG.debug(idTerm.text() + " has been found in the volatile index");
+                  }
+                  for (int i = indexes.size() - 1; i >= 0; i--)
+                  {
+                     // only look in registered indexes
+                     PersistentIndex idx = indexes.get(i);
+                     if (indexNames.contains(idx.getName()))
                      {
-                        // only look in registered indexes
-                        PersistentIndex idx = indexes.get(i);
-                        if (indexNames.contains(idx.getName()))
+                        num = idx.removeDocument(idTerm);
+                        if (num > 0 && LOG.isDebugEnabled())
                         {
-                           num = idx.removeDocument(idTerm);
-                           if (num > 0)
-                           {
-                              break;
-                           }
+                           LOG.debug(idTerm.text() + " has been in the persisted index " + i);
                         }
                      }
                   }
-
                }
 
                // try to avoid getting index reader for each doc
@@ -808,16 +808,22 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                         // if indexReader exists (it is possible that no persisted indexes exists on start)
                         if (lastIndexReader != null)
                         {
+                           TermDocs termDocs = null;
                            try
                            {
                               // reader from resisted index should be 
-                              TermDocs termDocs = lastIndexReader.termDocs(new Term(FieldNames.UUID, uuid));
+                              termDocs = lastIndexReader.termDocs(new Term(FieldNames.UUID, uuid));
                               // node should be indexed if not found in persistent index
-                              addDoc = termDocs == null;
+                              addDoc = !termDocs.next();
                            }
                            catch (Exception e)
                            {
                               LOG.debug("Some exception occured, during index check");
+                           }
+                           finally
+                           {
+                              if (termDocs != null)
+                                 termDocs.close();
                            }
                         }
                      }
@@ -1607,7 +1613,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
 
    /**
     * Removes the <code>index</code> from the list of active sub indexes. The
-    * Index is not acutally deleted right away, but postponed to the
+    * Index is not actually deleted right away, but postponed to the
     * transaction commit.
     * <p/>
     * This method does not close the index, but rather expects that the index
@@ -3071,12 +3077,16 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                if (index.indexNames.contains(idx.getName()))
                {
                   num = idx.removeDocument(idTerm);
-                  if (num > 0)
+                  if (num > 0 && LOG.isDebugEnabled())
                   {
-                     return;
+                     LOG.debug(idTerm.text() + " has been found in the persisted index " + i);
                   }
                }
             }
+         }
+         else if (LOG.isDebugEnabled())
+         {
+            LOG.debug(idTerm.text() + " has been found in the volatile index");
          }
       }
 
@@ -3400,6 +3410,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                // remove from list, cause this segment of index still present and indexes list contains
                // PersistentIndex instance related to this index..
                newList.remove(name);
+               // Release everything to make sure that we see the
+               // latest changes
+               index.releaseWriterAndReaders();
             }
          }
          // now newList contains ONLY new, added indexes, deleted indexes, are removed from list.
