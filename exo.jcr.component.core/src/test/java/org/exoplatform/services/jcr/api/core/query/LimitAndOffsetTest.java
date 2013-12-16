@@ -169,33 +169,47 @@ public class LimitAndOffsetTest extends AbstractQueryTest {
         a.setProperty("title", "a");
         a.addMixin("mix:versionable");
         a.addMixin("exo:privilegeable");
-        ((ExtendedNode)a).setPermissions(per);
+        ((ExtendedNode) a).setPermissions(per);
         testRootNode.save();
 
         Node b = node1.addNode("b");
         b.addMixin("mix:versionable");
         b.setProperty("title", "b");
         b.addMixin("exo:privilegeable");
-        ((ExtendedNode)b).setPermissions(per);
+        ((ExtendedNode) b).setPermissions(per);
         testRootNode.save();
 
         Node c = node1.addNode("c");
         c.addMixin("mix:versionable");
         c.setProperty("title", "c");
         c.addMixin("exo:privilegeable");
-        ((ExtendedNode)c).setPermissions(per1);
+        ((ExtendedNode) c).setPermissions(per1);
         testRootNode.save();
 
         Session session = superuser.getRepository().login(new CredentialsImpl("mary", "exo".toCharArray()));
 
         Query query = session.getWorkspace().getQueryManager().createQuery(
                 "Select * from nt:base where jcr:path like '/testroot/node1/%'" +
-                        "and not jcr:path like '/testroot/node1/%/%' order by title desc",Query.SQL);
-        ((QueryImpl)query).setOffset(2);
-        ((QueryImpl)query).setLimit(2);
-
+                        "and not jcr:path like '/testroot/node1/%/%' order by title desc", Query.SQL);
+        ((QueryImpl) query).setOffset(2);
+        ((QueryImpl) query).setLimit(2);
         long size = query.execute().getNodes().getSize();
         assertEquals(0, size);
+
+        Node d = node1.addNode("d");
+        d.addMixin("mix:versionable");
+        d.setProperty("title", "d");
+        d.addMixin("exo:privilegeable");
+        ((ExtendedNode) d).setPermissions(per);
+        testRootNode.save();
+
+        ((QueryImpl) query).setOffset(1);
+        ((QueryImpl) query).setLimit(2);
+        size = query.execute().getNodes().getSize();
+        assertEquals(2, size);
+
+        session.logout();
+
     }
 
 }
