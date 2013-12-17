@@ -19,14 +19,24 @@ package org.exoplatform.services.jcr.api.core.query;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryManager;
 import javax.jcr.query.QueryResult;
 
 
+import org.exoplatform.services.jcr.access.AccessControlEntry;
+import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.impl.core.query.QueryImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.QueryResultImpl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class LimitAndOffsetTest extends AbstractQueryTest {
 
@@ -146,6 +156,103 @@ public class LimitAndOffsetTest extends AbstractQueryTest {
         nodes = result.getNodes();
         assertEquals(1, nodes.getSize());
         assertEquals(3, ((QueryResultImpl) result).getTotalSize());
+    }
+
+    public void testOffsetAndLimitWithSetPermissions() throws Exception {
+
+        String query = "Select * from nt:base where jcr:path like '/testroot/node1/%'" +
+                " and not jcr:path like '/testroot/node1/%/%'  order by title asc";
+        checkResultOffsetAndLimit(query);
+    }
+
+    public void testOffsetAndLimitWithSetPermissions1() throws Exception {
+
+        String query = "Select * from nt:base where jcr:path like '/testroot/node1/%'" +
+                " and not jcr:path like '/testroot/node1/%/%'";
+        checkResultOffsetAndLimit(query);
+    }
+
+    private void checkResultOffsetAndLimit(String sqlQuery) throws Exception {
+        addTestNodes();
+        Session session = superuser.getRepository().login(new CredentialsImpl("mary", "exo".toCharArray()));
+        Query query = session.getWorkspace().getQueryManager().createQuery(sqlQuery, Query.SQL);
+        ((QueryImpl) query).setOffset(2);
+        ((QueryImpl) query).setLimit(2);
+        QueryResult queryResult = query.execute();
+        assertNotNull(queryResult);
+        NodeIterator iter = queryResult.getNodes();
+
+        String[] result = new String[]{"f", "h"};
+        int p = 0;
+        while (iter.hasNext()) {
+            assertEquals(result[p], iter.nextNode().getName());
+            p++;
+        }
+        long size = queryResult.getNodes().getSize();
+        assertEquals(2, size);
+
+        session.logout();
+    }
+
+    private void addTestNodes() throws Exception {
+        Map<String, String[]> per = new HashMap<String, String[]>();
+        Map<String, String[]> per1 = new HashMap<String, String[]>();
+        per.put("*:/platform/administrators", PermissionType.ALL);
+        per.put("*:/platform/users", PermissionType.ALL);
+        per1.put("*:/platform/administrators", PermissionType.ALL);
+        Node node1 = testRootNode.addNode("node1");
+
+        Node a = node1.addNode("a");
+        a.setProperty("title", "a");
+        a.addMixin("exo:privilegeable");
+        ((ExtendedNode) a).setPermissions(per1);
+
+        Node b = node1.addNode("b");
+        b.setProperty("title", "b");
+        b.addMixin("exo:privilegeable");
+        ((ExtendedNode) b).setPermissions(per);
+
+        Node c = node1.addNode("c");
+        c.setProperty("title", "c");
+        c.addMixin("exo:privilegeable");
+        ((ExtendedNode) c).setPermissions(per1);
+
+        Node d = node1.addNode("d");
+        d.setProperty("title", "d");
+        d.addMixin("exo:privilegeable");
+        ((ExtendedNode) d).setPermissions(per);
+
+        Node e = node1.addNode("e");
+        e.setProperty("title", "e");
+        e.addMixin("exo:privilegeable");
+        ((ExtendedNode) e).setPermissions(per1);
+
+        Node f = node1.addNode("f");
+        f.setProperty("title", "f");
+        f.addMixin("exo:privilegeable");
+        ((ExtendedNode) f).setPermissions(per);
+
+        Node g = node1.addNode("g");
+        g.setProperty("title", "g");
+        g.addMixin("exo:privilegeable");
+        ((ExtendedNode) g).setPermissions(per1);
+
+        Node h = node1.addNode("h");
+        h.setProperty("title", "h");
+        h.addMixin("exo:privilegeable");
+        ((ExtendedNode) h).setPermissions(per);
+
+        Node i = node1.addNode("i");
+        i.setProperty("title", "i");
+        i.addMixin("exo:privilegeable");
+        ((ExtendedNode) i).setPermissions(per1);
+
+        Node j = node1.addNode("j");
+        j.setProperty("title", "j");
+        j.addMixin("exo:privilegeable");
+        ((ExtendedNode) j).setPermissions(per);
+
+        testRootNode.save();
     }
 
 }

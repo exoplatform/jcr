@@ -331,7 +331,7 @@ public abstract class QueryResultImpl implements QueryResult
          if (resultNodes.isEmpty() && offset > 0)
          {
             // collect result offset into dummy list
-            collectScoreNodes(result, new ArrayList(), offset);
+            collectScoreNodes(result, new ArrayList(), offset, true);
          }
          else
          {
@@ -343,7 +343,7 @@ public abstract class QueryResultImpl implements QueryResult
          {
             time = System.currentTimeMillis();
          }
-         collectScoreNodes(result, resultNodes, maxResultSize);
+         collectScoreNodes(result, resultNodes, maxResultSize,false);
          if (LOG.isDebugEnabled())
          {
             LOG.debug("retrieved ScoreNodes in {} ms", new Long(System.currentTimeMillis() - time));
@@ -385,10 +385,11 @@ public abstract class QueryResultImpl implements QueryResult
     * @param hits the raw hits.
     * @param collector where the access checked score nodes are collected.
     * @param maxResults the maximum number of results in the collector.
+    * @param isOffset if true the access is checked for the offset result.
     * @throws IOException if an error occurs while reading from hits.
     * @throws RepositoryException if an error occurs while checking access rights.
     */
-   private void collectScoreNodes(MultiColumnQueryHits hits, List collector, long maxResults) throws IOException,
+   private void collectScoreNodes(MultiColumnQueryHits hits, List collector, long maxResults, boolean isOffset) throws IOException,
       RepositoryException
    {
       while (collector.size() < maxResults)
@@ -400,7 +401,7 @@ public abstract class QueryResultImpl implements QueryResult
             break;
          }
          // check access
-         if (!docOrder || isAccessGranted(sn))
+         if ((!docOrder && !isOffset ) || isAccessGranted(sn))
          {
             collector.add(sn);
          }
