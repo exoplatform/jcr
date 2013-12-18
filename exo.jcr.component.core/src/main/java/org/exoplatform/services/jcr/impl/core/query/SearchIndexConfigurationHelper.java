@@ -118,6 +118,10 @@ public class SearchIndexConfigurationHelper
       {
          searchIndex.setIndexingConfigurationClass(value);
       }
+      else if (QueryHandlerParams.PARAM_MAX_FIELD_LENGTH.equals(name))
+      {
+         searchIndex.setMaxFieldLength(StringNumberParser.parseInt(value));
+      }
       else if (QueryHandlerParams.PARAM_MAX_MERGE_DOCS.equals(name))
       {
          searchIndex.setMaxMergeDocs(StringNumberParser.parseInt(value));

@@ -78,6 +78,9 @@ abstract class AbstractIndex
    /** Compound file flag */
    private boolean useCompoundFile = true;
 
+   /** maxFieldLength config parameter */
+   private int maxFieldLength = SearchIndex.DEFAULT_MAX_FIELD_LENGTH;
+
    /** termInfosIndexDivisor config parameter */
    private int termInfosIndexDivisor = SearchIndex.DEFAULT_TERM_INFOS_INDEX_DIVISOR;
 
@@ -540,6 +543,18 @@ abstract class AbstractIndex
          {
             log.error("Can't set \"UseCompoundFile\". Merge policy is not an instance of LogMergePolicy. ");
          }
+      }
+   }
+
+   /**
+    * The lucene index writer property: maxFieldLength
+    */
+   void setMaxFieldLength(int maxFieldLength)
+   {
+      this.maxFieldLength = maxFieldLength;
+      if (indexWriter != null)
+      {
+         indexWriter.setMaxFieldLength(this.maxFieldLength);
       }
    }
 

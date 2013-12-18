@@ -142,6 +142,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public static final int DEFAULT_MERGE_FACTOR = 10;
 
    /**
+    * the default value for property {@link #maxFieldLength}.
+    */
+   public static final int DEFAULT_MAX_FIELD_LENGTH = 10000;
+
+   /**
     * The default value for property {@link #extractorBackLog}.
     */
    public static final int DEFAULT_EXTRACTOR_BACK_LOG = Integer.MAX_VALUE;
@@ -261,6 +266,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * mergeFactor config parameter
     */
    private int mergeFactor = DEFAULT_MERGE_FACTOR;
+
+   /**
+    * maxFieldLength config parameter
+    */
+   private int maxFieldLength = DEFAULT_MAX_FIELD_LENGTH;
 
    /**
     * extractorPoolSize config parameter
@@ -2495,6 +2505,16 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public int getCacheSize()
    {
       return cacheSize;
+   }
+
+   public void setMaxFieldLength(int length)
+   {
+      maxFieldLength = length;
+   }
+
+   public int getMaxFieldLength()
+   {
+      return maxFieldLength;
    }
 
    /**

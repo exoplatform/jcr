@@ -124,6 +124,17 @@
           </row>
 
           <row>
+            <entry>max-field-length</entry>
+
+            <entry>10000</entry>
+
+            <entry>The number of words that are fulltext indexed at most per
+            property.</entry>
+
+            <entry>1.9</entry>
+          </row>
+
+          <row>
             <entry>cache-size</entry>
 
             <entry>1000</entry>
@@ -359,11 +370,10 @@
         </tbody>
       </tgroup>
     </table>
-
     <note>
-      <para>The Maximum number of clauses permitted per BooleanQuery, can be
-      changed via the System property org.apache.lucene.maxClauseCount. The
-      default value of this parameter is Integer.MAX_VALUE.</para>
+       <para>The Maximum number of clauses permitted per BooleanQuery,
+              can be changed via the System property org.apache.lucene.maxClauseCount.
+             The default value of this parameter is Integer.MAX_VALUE.</para>
     </note>
   </section>
 

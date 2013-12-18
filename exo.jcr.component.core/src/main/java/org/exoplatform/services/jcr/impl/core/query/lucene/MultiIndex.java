@@ -338,6 +338,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          PersistentIndex index =
             new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, directoryManager,
                modeHandler);
+         index.setMaxFieldLength(handler.getMaxFieldLength());
          index.setUseCompoundFile(handler.getUseCompoundFile());
          index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
          indexes.add(index);
@@ -1198,6 +1199,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          }
          throw e;
       }
+      index.setMaxFieldLength(handler.getMaxFieldLength());
       index.setUseCompoundFile(handler.getUseCompoundFile());
       index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
 
@@ -1795,6 +1797,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       volatileIndex = new VolatileIndex(handler.getTextAnalyzer(), handler.getSimilarity());
       volatileIndex.setUseCompoundFile(handler.getUseCompoundFile());
+      volatileIndex.setMaxFieldLength(handler.getMaxFieldLength());
       volatileIndex.setBufferSize(handler.getBufferSize());
    }
 
@@ -3431,6 +3434,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             PersistentIndex index =
                new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, directoryManager,
                   modeHandler);
+            index.setMaxFieldLength(handler.getMaxFieldLength());
             index.setUseCompoundFile(handler.getUseCompoundFile());
             index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
             indexes.add(index);

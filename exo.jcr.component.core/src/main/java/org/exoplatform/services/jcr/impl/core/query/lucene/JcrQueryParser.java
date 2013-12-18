@@ -135,7 +135,7 @@ public class JcrQueryParser extends QueryParser
       }
       if (synonyms.size() == 1)
       {
-         return ((BooleanClause)synonyms.get(0)).getQuery();
+         return synonyms.get(0).getQuery();
       }
       else
       {

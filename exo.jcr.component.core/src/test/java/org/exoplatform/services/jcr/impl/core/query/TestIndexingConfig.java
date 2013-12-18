@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.impl.core.query;
 import org.apache.lucene.analysis.SimpleAnalyzer;
 import org.apache.lucene.analysis.StopAnalyzer;
 import org.apache.lucene.analysis.WhitespaceAnalyzer;
+import org.apache.lucene.document.Document;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
@@ -71,11 +72,6 @@ public class TestIndexingConfig extends BaseQueryTest
    // analyzer
 
    Node testRoot = null;
-
-   /**
-    * Class logger.
-    */
-   private final Log log = ExoLogger.getLogger("exo.jcr.component.core.TestIndexingConfig");
 
    private SearchManager searchManager;
 
