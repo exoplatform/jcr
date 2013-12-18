@@ -160,36 +160,22 @@ public class LimitAndOffsetTest extends AbstractQueryTest {
 
     public void testOffsetAndLimitWithSetPermissions() throws Exception {
 
-        addTestNodes();
-        Session session = superuser.getRepository().login(new CredentialsImpl("mary", "exo".toCharArray()));
-        Query query = session.getWorkspace().getQueryManager().createQuery(
-                "Select * from nt:base where jcr:path like '/testroot/node1/%'" +
-                        "and not jcr:path like '/testroot/node1/%/%' order by title desc", Query.SQL);
-        ((QueryImpl) query).setOffset(2);
-        ((QueryImpl) query).setLimit(2);
-        QueryResult queryResult = query.execute();
-        assertNotNull(queryResult);
-        NodeIterator iter = queryResult.getNodes();
-
-        String[] result = new String[]{"f", "d"};
-        int p = 0;
-        while (iter.hasNext()) {
-            assertEquals(result[p], iter.nextNode().getName());
-            p++;
-        }
-        long size = queryResult.getNodes().getSize();
-        assertEquals(2, size);
-
-        session.logout();
+        String query = "Select * from nt:base where jcr:path like '/testroot/node1/%'" +
+                " and not jcr:path like '/testroot/node1/%/%'  order by title asc";
+        checkResultOffsetAndLimit(query);
     }
 
     public void testOffsetAndLimitWithSetPermissions1() throws Exception {
 
+        String query = "Select * from nt:base where jcr:path like '/testroot/node1/%'" +
+                " and not jcr:path like '/testroot/node1/%/%'";
+        checkResultOffsetAndLimit(query);
+    }
+
+    private void checkResultOffsetAndLimit(String sqlQuery) throws Exception {
         addTestNodes();
         Session session = superuser.getRepository().login(new CredentialsImpl("mary", "exo".toCharArray()));
-        Query query = session.getWorkspace().getQueryManager().createQuery(
-                "Select * from nt:base where jcr:path like '/testroot/node1/%'" +
-                        "and not jcr:path like '/testroot/node1/%/%' ", Query.SQL);
+        Query query = session.getWorkspace().getQueryManager().createQuery(sqlQuery, Query.SQL);
         ((QueryImpl) query).setOffset(2);
         ((QueryImpl) query).setLimit(2);
         QueryResult queryResult = query.execute();
