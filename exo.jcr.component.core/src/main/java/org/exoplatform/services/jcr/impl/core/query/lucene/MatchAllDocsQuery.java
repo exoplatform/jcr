@@ -30,7 +30,12 @@ import javax.jcr.RepositoryException;
 public class MatchAllDocsQuery
         extends org.apache.lucene.search.MatchAllDocsQuery
         implements JcrQuery {
-    
+
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = -5002771154307146872L;
+
    private IndexingConfiguration indexConfig;
 
    /**

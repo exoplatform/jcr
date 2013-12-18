@@ -48,7 +48,7 @@ public class JcrQueryParser extends QueryParser
     */
    public JcrQueryParser(String fieldName, Analyzer analyzer, SynonymProvider synonymProvider)
    {
-      super(Version.LUCENE_30, fieldName, analyzer);
+      super(Version.LUCENE_36, fieldName, analyzer);
       this.synonymProvider = synonymProvider;
       setAllowLeadingWildcard(true);
       setDefaultOperator(Operator.AND);
@@ -60,7 +60,7 @@ public class JcrQueryParser extends QueryParser
    public Query parse(String textsearch) throws ParseException
    {
       // replace escaped ' with just '
-      StringBuffer rewritten = new StringBuffer();
+      StringBuilder rewritten = new StringBuilder();
       // the default lucene query parser recognizes 'AND' and 'NOT' as
       // keywords.
       textsearch = textsearch.replaceAll("AND", "and");
@@ -121,21 +121,21 @@ public class JcrQueryParser extends QueryParser
     * @return Resulting {@link Query} built for the term
     * @exception ParseException throw in overridden method to disallow
     */
-   protected Query getSynonymQuery(String field, String termStr) throws ParseException
+   protected Query getSynonymQuery(String field, String termStr, boolean quoted) throws ParseException
    {
-      List synonyms = new ArrayList();
-      synonyms.add(new BooleanClause(getFieldQuery(field, termStr), BooleanClause.Occur.SHOULD));
+      List<BooleanClause> synonyms = new ArrayList<BooleanClause>();
+      synonyms.add(new BooleanClause(getFieldQuery(field, termStr, quoted), BooleanClause.Occur.SHOULD));
       if (synonymProvider != null)
       {
          String[] terms = synonymProvider.getSynonyms(termStr);
          for (int i = 0; i < terms.length; i++)
          {
-            synonyms.add(new BooleanClause(getFieldQuery(field, terms[i]), BooleanClause.Occur.SHOULD));
+            synonyms.add(new BooleanClause(getFieldQuery(field, terms[i], quoted), BooleanClause.Occur.SHOULD));
          }
       }
       if (synonyms.size() == 1)
       {
-         return ((BooleanClause)synonyms.get(0)).getQuery();
+         return synonyms.get(0).getQuery();
       }
       else
       {
@@ -146,16 +146,17 @@ public class JcrQueryParser extends QueryParser
    /**
     * {@inheritDoc}
     */
-   protected Query getFieldQuery(String field, String queryText) throws ParseException
+   @Override
+   protected Query getFieldQuery(String field, String queryText, boolean quoted) throws ParseException
    {
       if (queryText.startsWith("~"))
       {
          // synonym query
-         return getSynonymQuery(field, queryText.substring(1));
+         return getSynonymQuery(field, queryText.substring(1), quoted);
       }
       else
       {
-         return super.getFieldQuery(field, queryText, true);
+         return super.getFieldQuery(field, queryText, quoted);
       }
    }
 
@@ -187,7 +188,7 @@ public class JcrQueryParser extends QueryParser
     */
    private String translateWildcards(String input)
    {
-      StringBuffer translated = new StringBuffer(input.length());
+      StringBuilder translated = new StringBuilder(input.length());
       boolean escaped = false;
       for (int i = 0; i < input.length(); i++)
       {

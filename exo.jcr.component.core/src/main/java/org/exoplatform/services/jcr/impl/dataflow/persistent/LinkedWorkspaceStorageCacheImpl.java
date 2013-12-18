@@ -1473,7 +1473,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
             {
                LOG.debug(name + ", getChildNodes() " + parentData.getQPath().getAsString() + " "
                   + parentData.getIdentifier());
-               final StringBuffer blog = new StringBuffer();
+               final StringBuilder blog = new StringBuilder();
                if (cn != null)
                {
                   blog.append("\n");
@@ -1530,7 +1530,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
             {
                LOG.debug(name + ", getChildNodesCount() " + parentData.getQPath().getAsString() + " "
                   + parentData.getIdentifier());
-               final StringBuffer blog = new StringBuffer();
+               final StringBuilder blog = new StringBuilder();
                if (cn != null)
                {
                   blog.append("\n");
@@ -1587,7 +1587,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
             {
                LOG.debug(name + ", getChildProperties() " + parentData.getQPath().getAsString() + " "
                   + parentData.getIdentifier());
-               final StringBuffer blog = new StringBuffer();
+               final StringBuilder blog = new StringBuilder();
                if (cp != null)
                {
                   blog.append("\n");
@@ -1659,7 +1659,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
             {
                LOG.debug(name + ", listChildProperties() " + parentData.getQPath().getAsString() + " "
                   + parentData.getIdentifier());
-               final StringBuffer blog = new StringBuffer();
+               final StringBuilder blog = new StringBuilder();
                if (cp != null)
                {
                   blog.append("\n");

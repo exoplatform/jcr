@@ -16,9 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexReader;
-
-import java.util.Collection;
+import org.apache.lucene.util.ReaderUtil;
 
 /**
  * This class indicates the lucene index format that is used.
@@ -107,13 +107,13 @@ public class IndexFormatVersion {
      * index reader.
      */
     public static IndexFormatVersion getVersion(IndexReader indexReader) {
-        Collection fields = indexReader.getFieldNames(
-                IndexReader.FieldOption.ALL);
-        if ((fields.contains(FieldNames.INDEX) && fields.contains(FieldNames.PATH))|| indexReader.numDocs() == 0) {
+        FieldInfos fields = ReaderUtil.getMergedFieldInfos(indexReader);
+        if ((fields.fieldInfo(FieldNames.INDEX) != null && fields.fieldInfo(FieldNames.PATH) != null) 
+            || indexReader.numDocs() == 0) {
            return IndexFormatVersion.V4;
-        } else if (fields.contains(FieldNames.LOCAL_NAME)) {
+        } else if (fields.fieldInfo(FieldNames.LOCAL_NAME) != null) {
             return IndexFormatVersion.V3;
-        } else if (fields.contains(FieldNames.PROPERTIES_SET)) {
+        } else if (fields.fieldInfo(FieldNames.PROPERTIES_SET) != null) {
             return IndexFormatVersion.V2;
         } else {
             return IndexFormatVersion.V1;

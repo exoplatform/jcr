@@ -33,9 +33,9 @@ public class OrderQueryNode extends QueryNode
 {
 
    /**
-    * The order spects
+    * The order specs
     */
-   private final List specs = new ArrayList();
+   private final List<OrderSpec> specs = new ArrayList<OrderSpec>();
 
    /**
     * Creates a new <code>OrderQueryNode</code> with a reference to a parent
@@ -103,7 +103,7 @@ public class OrderQueryNode extends QueryNode
    }
 
    /**
-    * Returns <code>true</code> if the property <code>i</code> should be orderd
+    * Returns <code>true</code> if the property <code>i</code> should be ordered
     * ascending. If <code>false</code> the property is ordered descending.
     *
     * @param i index of the property
@@ -113,7 +113,7 @@ public class OrderQueryNode extends QueryNode
     */
    public boolean isAscending(int i) throws IndexOutOfBoundsException
    {
-      return ((OrderSpec)specs.get(i)).ascending;
+      return specs.get(i).ascending;
    }
 
    /**
@@ -155,7 +155,7 @@ public class OrderQueryNode extends QueryNode
       private final QPath property;
 
       /**
-       * If <code>true</code> this property is orderd ascending
+       * If <code>true</code> this property is ordered ascending
        */
       private boolean ascending;
 

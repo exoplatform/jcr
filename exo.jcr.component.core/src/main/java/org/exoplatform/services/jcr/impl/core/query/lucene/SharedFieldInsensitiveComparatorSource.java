@@ -44,12 +44,12 @@ public class SharedFieldInsensitiveComparatorSource extends SharedFieldComparato
    /**
     * {@inheritDoc}
     */
-   protected FieldComparator createSimpleComparator(int numHits, QPath path) throws IllegalNameException
+   protected FieldComparator<?> createSimpleComparator(int numHits, QPath path) throws IllegalNameException
    {
       return new SimpleFieldInsensitiveComparator(nsMappings.translatePath(path), field, numHits);
    }
 
-   protected FieldComparator createCompoundComparator(int numHits, QPath path, SimpleFieldComparator simple)
+   protected FieldComparator<?> createCompoundComparator(int numHits, QPath path, SimpleFieldComparator simple)
    {
       return new CompoundScoreFieldInsensitiveComparator(new FieldComparator[]{simple,
          new RelPathFieldComparator(path, numHits)}, numHits);
@@ -83,7 +83,7 @@ public class SharedFieldInsensitiveComparatorSource extends SharedFieldComparato
       /**
        * Constructor CompoundScoreFieldInsensitiveComparator. 
        */
-      public CompoundScoreFieldInsensitiveComparator(FieldComparator[] fieldComparators, int numHits)
+      public CompoundScoreFieldInsensitiveComparator(FieldComparator<?>[] fieldComparators, int numHits)
       {
          super(fieldComparators, numHits);
       }

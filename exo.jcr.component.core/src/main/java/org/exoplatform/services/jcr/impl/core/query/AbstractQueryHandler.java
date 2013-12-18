@@ -22,8 +22,6 @@ import org.exoplatform.services.jcr.impl.core.query.lucene.DefaultIndexUpdateMon
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexUpdateMonitor;
 import org.exoplatform.services.jcr.impl.core.query.lucene.MultiIndex;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -31,15 +29,10 @@ import java.util.Iterator;
 import javax.jcr.RepositoryException;
 
 /**
- * Implements default behaviour for some methods of {@link QueryHandler}.
+ * Implements default behavior for some methods of {@link QueryHandler}.
  */
 public abstract class AbstractQueryHandler implements QueryHandler
 {
-
-   /**
-    * Logger instance for this class
-    */
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.AbstractQueryHandler");
 
    /**
     * The context for this query handler.

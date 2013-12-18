@@ -57,7 +57,7 @@ class CachingIndexReader extends FilterIndexReader
 
    /**
     * BitSet where bits that correspond to document numbers are set for
-    * shareable nodes.
+    * sharable nodes.
     */
    private final BitSet shareableNodes;
 
@@ -95,7 +95,7 @@ class CachingIndexReader extends FilterIndexReader
 
    /**
     * Creates a new <code>CachingIndexReader</code> based on
-    * <code>delegatee</code>
+    * <code>delegate</code>
     *
     * @param delegatee the base <code>IndexReader</code>.
     * @param cache     a document number cache, or <code>null</code> if not
@@ -104,6 +104,7 @@ class CachingIndexReader extends FilterIndexReader
     *                  when this index reader is constructed.
     * @throws IOException if an error occurs while reading from the index.
     */
+   @SuppressWarnings("unchecked")
    CachingIndexReader(IndexReader delegatee, DocNumberCache cache, boolean initCache) throws IOException
    {
       super(delegatee);
@@ -128,7 +129,8 @@ class CachingIndexReader extends FilterIndexReader
          cacheInitializer.run();
       }
       // limit cache to 1% of maxDoc(), but at least 10.
-      this.docNumber2uuid = Collections.synchronizedMap(new LRUMap(Math.max(10, delegatee.maxDoc() / 100)));
+      this.docNumber2uuid =
+         (Map<Integer, String>)Collections.synchronizedMap(new LRUMap(Math.max(10, delegatee.maxDoc() / 100)));
       this.termDocsCache = new TermDocsCache(delegatee, FieldNames.PROPERTIES);
    }
 
@@ -453,7 +455,7 @@ class CachingIndexReader extends FilterIndexReader
          {
             time = System.currentTimeMillis();
          }
-         final Map docs = new HashMap();
+         final Map<Object, NodeInfo> docs = new HashMap<Object, NodeInfo>();
          // read UUIDs
          collectTermDocs(reader, new Term(FieldNames.UUID, ""), new TermDocsCollector()
          {
@@ -463,7 +465,7 @@ class CachingIndexReader extends FilterIndexReader
                while (tDocs.next())
                {
                   int doc = tDocs.doc();
-                  // skip shareable nodes
+                  // skip sharable nodes
                   if (!shareableNodes.get(doc))
                   {
                      NodeInfo info = new NodeInfo(doc, uuid);
@@ -482,10 +484,10 @@ class CachingIndexReader extends FilterIndexReader
                while (tDocs.next())
                {
                   Integer docId = new Integer(tDocs.doc());
-                  NodeInfo info = (NodeInfo)docs.get(docId);
+                  NodeInfo info = docs.get(docId);
                   if (info == null)
                   {
-                     // shareable node, see above
+                     // sharable node, see above
                   }
                   else
                   {
@@ -503,11 +505,11 @@ class CachingIndexReader extends FilterIndexReader
          }
 
          double foreignParents = 0;
-         Iterator it = docs.values().iterator();
+         Iterator<NodeInfo> it = docs.values().iterator();
          while (it.hasNext())
          {
-            NodeInfo info = (NodeInfo)it.next();
-            NodeInfo parent = (NodeInfo)docs.get(info.parent);
+            NodeInfo info = it.next();
+            NodeInfo parent = docs.get(info.parent);
             if (parent != null)
             {
                parents[info.docId] = DocId.create(parent.docId);

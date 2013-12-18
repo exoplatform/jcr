@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Searcher;
 import org.apache.lucene.search.Weight;
@@ -28,7 +29,12 @@ import java.util.Set;
  */
 class MatchAllQuery extends Query {
 
-    private final String field;
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = -2400976814962542982L;
+
+   private final String field;
 
    /**
     * Creates a new <code>MatchAllQuery</code> .
@@ -53,7 +59,7 @@ class MatchAllQuery extends Query {
     @Override
    public Weight createWeight(Searcher searcher) {
         return new MatchAllWeight(this, searcher, field);
-    }
+   }
 
     /**
      * Returns the String "%".
@@ -64,12 +70,12 @@ class MatchAllQuery extends Query {
     @Override
    public String toString(String field) {
         return "%";
-    }
+   }
 
     /**
      * Does nothing but simply returns. There are no terms to extract.
      */
     @Override
-   public void extractTerms(Set terms) {
-    }
+   public void extractTerms(Set<Term> terms) {
+   }
 }

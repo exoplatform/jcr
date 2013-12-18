@@ -19,8 +19,6 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.FilterIndexReader;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.StaleReaderException;
-import org.apache.lucene.store.LockObtainFailedException;
 
 import java.io.IOException;
 import java.util.Set;
@@ -34,7 +32,7 @@ import java.util.concurrent.atomic.AtomicLong;
 class CommittableIndexReader extends FilterIndexReader {
 
     /**
-     * A modification count on this index reader. Initialied with
+     * A modification count on this index reader. Initialized with
      * {@link IndexReader#getVersion()} and incremented with every call to
      * {@link #doDelete(int)}.
      */
@@ -73,38 +71,22 @@ class CommittableIndexReader extends FilterIndexReader {
      * Increments the modification count.
      */
     protected void doDelete(int n) throws CorruptIndexException, IOException {
-        super.doDelete(n);
-        modCount.incrementAndGet();
+        if (transientDeletions) {
+            deletedDocs.add(n);
+            modCount.incrementAndGet(); // doDelete won't be executed, so incrementing modCount
+        } else {
+            super.doDelete(n);
+            modCount.incrementAndGet();
+        }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override
-    public void deleteDocument(int docNum) throws StaleReaderException, CorruptIndexException,
-       LockObtainFailedException, IOException {
-       // skip acquiring write lock
-       if (transientDeletions)
-       {
-           deletedDocs.add(docNum);
-           modCount.incrementAndGet(); // doDelete won't be executed, so incrementing modCount
-       }
-       else
-       {
-           super.deleteDocument(docNum);
-       }
-    }
-   
     @Override
     public boolean isDeleted(int n) {
-       if (transientDeletions)
-       {
-           return deletedDocs.contains(n);
-       }
-       else
-       {
-           return super.isDeleted(n);
-       }
+        if (transientDeletions) {
+            return deletedDocs.contains(n);
+        } else {
+            return super.isDeleted(n);
+        }
     }
 
     //------------------------< additional methods >----------------------------

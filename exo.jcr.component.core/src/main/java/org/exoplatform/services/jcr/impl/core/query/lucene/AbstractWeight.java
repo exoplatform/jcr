@@ -31,6 +31,11 @@ abstract class AbstractWeight extends Weight
 {
 
    /**
+    * The serial UID
+    */
+   private static final long serialVersionUID = 4670072762617933491L;
+
+   /**
     * The searcher for this weight.
     */
    protected final Searcher searcher;

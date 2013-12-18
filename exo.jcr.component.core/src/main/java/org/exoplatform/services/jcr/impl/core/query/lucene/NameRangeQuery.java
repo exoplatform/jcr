@@ -16,10 +16,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
-import javax.jcr.RepositoryException;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause;
@@ -29,11 +25,20 @@ import org.apache.lucene.util.ToStringUtils;
 import org.exoplatform.services.jcr.datamodel.IllegalNameException;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 
+import java.io.IOException;
+
+import javax.jcr.RepositoryException;
+
 /**
  * <code>NameRangeQuery</code>...
  */
 public class NameRangeQuery extends Query
 {
+
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 3063269883302995392L;
 
    /**
     * The lower name. May be <code>null</code> if <code>upperName</code> is not
@@ -115,7 +120,7 @@ public class NameRangeQuery extends Query
     */
    public String toString(String field)
    {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       buffer.append("name():");
       buffer.append(inclusive ? "[" : "{");
       buffer.append(lowerName != null ? lowerName.toString() : "null");

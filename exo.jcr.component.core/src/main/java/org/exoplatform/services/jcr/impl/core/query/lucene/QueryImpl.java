@@ -149,7 +149,7 @@ public class QueryImpl extends AbstractQueryImpl
    protected InternalQName[] getSelectProperties() throws RepositoryException
    {
       // get select properties
-      List selectProps = new ArrayList();
+      List<InternalQName> selectProps = new ArrayList<InternalQName>();
       selectProps.addAll(Arrays.asList(root.getSelectProperties()));
       if (selectProps.size() == 0)
       {

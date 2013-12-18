@@ -708,6 +708,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    {
       SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
       {
+         @SuppressWarnings("resource")
          public Object run() throws Exception
          {
             // make sure a reader is available during long updates
@@ -2593,7 +2594,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       @Override
       public String toString()
       {
-         StringBuffer logLine = new StringBuffer();
+         StringBuilder logLine = new StringBuilder();
          logLine.append(Long.toString(getTransactionId()));
          logLine.append(' ');
          logLine.append(Action.ADD_INDEX);
@@ -2767,7 +2768,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       @Override
       public String toString()
       {
-         StringBuffer logLine = new StringBuffer(ENTRY_LENGTH);
+         StringBuilder logLine = new StringBuilder(ENTRY_LENGTH);
          logLine.append(Long.toString(getTransactionId()));
          logLine.append(' ');
          logLine.append(Action.ADD_NODE);
@@ -2905,7 +2906,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       @Override
       public String toString()
       {
-         StringBuffer logLine = new StringBuffer();
+         StringBuilder logLine = new StringBuilder();
          logLine.append(Long.toString(getTransactionId()));
          logLine.append(' ');
          logLine.append(Action.CREATE_INDEX);
@@ -2995,7 +2996,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       @Override
       public String toString()
       {
-         StringBuffer logLine = new StringBuffer();
+         StringBuilder logLine = new StringBuilder();
          logLine.append(Long.toString(getTransactionId()));
          logLine.append(' ');
          logLine.append(Action.DELETE_INDEX);
@@ -3098,7 +3099,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       @Override
       public String toString()
       {
-         StringBuffer logLine = new StringBuffer(ENTRY_LENGTH);
+         StringBuilder logLine = new StringBuilder(ENTRY_LENGTH);
          logLine.append(Long.toString(getTransactionId()));
          logLine.append(' ');
          logLine.append(Action.DELETE_NODE);
@@ -3217,7 +3218,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       @Override
       public String toString()
       {
-         StringBuffer logLine = new StringBuffer();
+         StringBuilder logLine = new StringBuilder();
          logLine.append(Long.toString(getTransactionId()));
          logLine.append(' ');
          logLine.append(Action.VOLATILE_COMMIT);
@@ -3280,7 +3281,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       @Override
       public String toString()
       {
-         StringBuffer logLine = new StringBuffer();
+         StringBuilder logLine = new StringBuilder();
          logLine.append(Long.toString(getTransactionId()));
          logLine.append(' ');
          logLine.append(Action.OFFLINE_INVOKE);
@@ -3866,7 +3867,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       for (PersistentIndex index : indexes)
       {
          IndexWriter writer = index.getIndexWriter();
-         writer.optimize();
+         writer.forceMerge(1, true);
       }
    }
 

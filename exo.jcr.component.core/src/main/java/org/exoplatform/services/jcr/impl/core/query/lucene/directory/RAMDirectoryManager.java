@@ -16,13 +16,13 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene.directory;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.store.RAMDirectory;
 import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
+
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * <code>RAMDirectoryManager</code> implements a directory manager for
@@ -33,7 +33,7 @@ public class RAMDirectoryManager implements DirectoryManager {
     /**
      * Map of directories. Key=String(directory name), Value=Directory.
      */
-    private final Map directories = new HashMap();
+    private final Map<String, Directory> directories = new HashMap<String, Directory>();
 
     /**
      * {@inheritDoc}
@@ -55,7 +55,7 @@ public class RAMDirectoryManager implements DirectoryManager {
      */
     public Directory getDirectory(String name) {
         synchronized (directories) {
-            Directory dir = (Directory) directories.get(name);
+            Directory dir = directories.get(name);
             if (dir == null) {
                 dir = new RAMDirectory();
                 directories.put(name, dir);
@@ -92,7 +92,7 @@ public class RAMDirectoryManager implements DirectoryManager {
             if (directories.containsKey(to)) {
                 return false;
             }
-            Directory dir = (Directory) directories.remove(from);
+            Directory dir = directories.remove(from);
             if (dir == null) {
                 return false;
             }

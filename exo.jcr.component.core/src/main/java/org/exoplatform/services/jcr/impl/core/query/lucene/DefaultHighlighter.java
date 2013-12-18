@@ -16,19 +16,20 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import org.apache.lucene.document.Field; //NOSONAR
+import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TermPositionVector;
+import org.apache.lucene.index.TermVectorOffsetInfo;
+import org.exoplatform.services.jcr.util.Text;
+
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
-
-import org.apache.lucene.document.Field; //NOSONAR
-import org.apache.lucene.index.Term;
-import org.apache.lucene.index.TermPositionVector;
-import org.apache.lucene.index.TermVectorOffsetInfo;
-import org.exoplatform.services.jcr.util.Text;
 
 /**
  * This is an adapted version of the <code>FulltextHighlighter</code> posted in
@@ -80,7 +81,7 @@ public class DefaultHighlighter {
      * @param excerptEnd    this string is appended to the excerpt
      * @param fragmentStart this string is prepended to every fragment
      * @param fragmentEnd   this string is appended to the end of every
-     *                      fragement.
+     *                      fragment.
      * @param hlStart       the string used to prepend a highlighted token, for
      *                      example <tt>&quot;&lt;b&gt;&quot;</tt>
      * @param hlEnd         the string used to append a highlighted token, for
@@ -92,7 +93,7 @@ public class DefaultHighlighter {
      *         highlighted
      */
     public static String highlight(TermPositionVector tvec,
-                                   Set queryTerms,
+                                   Set<Term> queryTerms,
                                    String text,
                                    String excerptStart,
                                    String excerptEnd,
@@ -119,7 +120,7 @@ public class DefaultHighlighter {
      *         highlighted
      */
     public static String highlight(TermPositionVector tvec,
-                                   Set queryTerms,
+                                   Set<Term> queryTerms,
                                    String text,
                                    int maxFragments,
                                    int surround)
@@ -133,7 +134,7 @@ public class DefaultHighlighter {
      * @see #highlight(TermPositionVector, Set, String, String, String, String, String, String, String, int, int)
      */
     protected String doHighlight(TermPositionVector tvec,
-                                 Set queryTerms,
+                                 Set<Term> queryTerms,
                                  String text,
                                  String excerptStart,
                                  String excerptEnd,
@@ -144,11 +145,11 @@ public class DefaultHighlighter {
                                  int maxFragments,
                                  int surround) throws IOException {
         String[] terms = new String[queryTerms.size()];
-        Iterator it = queryTerms.iterator();
+        Iterator<Term> it = queryTerms.iterator();
         for (int i = 0; it.hasNext(); i++) {
-            terms[i] = ((Term) it.next()).text();
+            terms[i] = it.next().text();
         }
-        ArrayList list = new ArrayList();
+        List<TermVectorOffsetInfo> list = new ArrayList<TermVectorOffsetInfo>();
         int[] tvecindexes = tvec.indexesOf(terms, 0, terms.length);
         for (int i = 0; i < tvecindexes.length; i++) {
             TermVectorOffsetInfo[] termoffsets = tvec.getOffsets(tvecindexes[i]);
@@ -182,7 +183,7 @@ public class DefaultHighlighter {
                     fragmentStart, fragmentEnd, surround * 2);
         }
         int lastOffset = offsets.length; // Math.min(10, offsets.length); // 10 terms is plenty?
-        ArrayList fragmentInfoList = new ArrayList();
+        List<FragmentInfo> fragmentInfoList = new ArrayList<FragmentInfo>();
         if (offsets[0].getEndOffset() <= text.length()) {
             FragmentInfo fi = new FragmentInfo(offsets[0], surround * 2);
             for (int i = 1; i < lastOffset; i++) {
@@ -208,7 +209,7 @@ public class DefaultHighlighter {
         Collections.sort(fragmentInfoList, new FragmentInfoScoreSorter());
 
         // extract best fragments
-        ArrayList bestFragmentsList = new ArrayList();
+        List<FragmentInfo> bestFragmentsList = new ArrayList<FragmentInfo>();
         for (int i = 0; i < Math.min(fragmentInfoList.size(), maxFragments); i++) {
             bestFragmentsList.add(fragmentInfoList.get(i));
         }
@@ -218,7 +219,7 @@ public class DefaultHighlighter {
 
         // merge #maxFragments fragments
         StringReader reader = new StringReader(text);
-        StringBuffer sb = new StringBuffer(excerptStart);
+        StringBuilder sb = new StringBuilder(excerptStart);
         int pos = 0;
         char[] cbuf;
         int skip;
@@ -226,7 +227,7 @@ public class DefaultHighlighter {
         int skippedChars;
         int firstWhitespace;
         for (int i = 0; i < bestFragmentsList.size(); i++) {
-            FragmentInfo fi = (FragmentInfo) bestFragmentsList.get(i);
+            FragmentInfo fi = bestFragmentsList.get(i);
             fi.trim();
             nextStart = fi.getStartOffset();
             skip = nextStart - pos;
@@ -299,8 +300,8 @@ public class DefaultHighlighter {
                     new String(cbuf, skippedChars, cbuf.length - skippedChars)));
 
             // iterate terms
-            for (Iterator iter = fi.iterator(); iter.hasNext();) {
-                TermVectorOffsetInfo ti = (TermVectorOffsetInfo) iter.next();
+            for (Iterator<TermVectorOffsetInfo> iter = fi.iterator(); iter.hasNext();) {
+                TermVectorOffsetInfo ti = iter.next();
                 nextStart = ti.getStartOffset();
                 if (nextStart - pos > 0) {
                     cbuf = new char[nextStart - pos];
@@ -374,13 +375,13 @@ public class DefaultHighlighter {
                                           String fragmentEnd,
                                           int maxLength) throws IOException {
         StringReader reader = new StringReader(text);
-        StringBuffer excerpt = new StringBuffer(excerptStart);
+        StringBuilder excerpt = new StringBuilder(excerptStart);
         excerpt.append(fragmentStart);
         if (!text.isEmpty()) {
             int min = excerpt.length();
             char[] buf = new char[maxLength];
             int len = reader.read(buf);
-            StringBuffer tmp = new StringBuffer();
+            StringBuilder tmp = new StringBuilder();
             tmp.append(buf, 0, len);
             if (len == buf.length) {
                 for (int i = tmp.length() - 1; i > min; i--) {
@@ -398,14 +399,14 @@ public class DefaultHighlighter {
     }
 
     private static class FragmentInfo {
-        ArrayList offsetInfosList;
+        List<TermVectorOffsetInfo> offsetInfosList;
         int startOffset;
         int endOffset;
         int mergeGap;
         int numTerms;
 
         public FragmentInfo(TermVectorOffsetInfo offsetinfo, int mergeGap) {
-            offsetInfosList = new ArrayList();
+            offsetInfosList = new ArrayList<TermVectorOffsetInfo>();
             offsetInfosList.add(offsetinfo);
             startOffset = offsetinfo.getStartOffset();
             endOffset = offsetinfo.getEndOffset();
@@ -423,16 +424,12 @@ public class DefaultHighlighter {
             return true;
         }
 
-        public Iterator iterator() {
+        public Iterator<TermVectorOffsetInfo> iterator() {
             return offsetInfosList.iterator();
         }
 
         public int getStartOffset() {
             return startOffset;
-        }
-
-        public int getEndOffset() {
-            return endOffset;
         }
 
         public int numTerms() {
@@ -441,9 +438,9 @@ public class DefaultHighlighter {
 
         public void trim() {
             int end = startOffset + (mergeGap / 2);
-            Iterator it = offsetInfosList.iterator();
+            Iterator<TermVectorOffsetInfo> it = offsetInfosList.iterator();
             while (it.hasNext()) {
-                TermVectorOffsetInfo tvoi = (TermVectorOffsetInfo) it.next();
+                TermVectorOffsetInfo tvoi = it.next();
                 if (tvoi.getStartOffset() > end) {
                     it.remove();
                 }
@@ -452,12 +449,12 @@ public class DefaultHighlighter {
     }
 
     private static class FragmentInfoScoreSorter
-            implements java.util.Comparator {
-        public int compare(Object o1, Object o2) {
-            int s1 = ((FragmentInfo) o1).numTerms();
-            int s2 = ((FragmentInfo) o2).numTerms();
+            implements java.util.Comparator<FragmentInfo> {
+        public int compare(FragmentInfo o1, FragmentInfo o2) {
+            int s1 = o1.numTerms();
+            int s2 = o2.numTerms();
             if (s1 == s2) {
-                return ((FragmentInfo) o1).getStartOffset() < ((FragmentInfo) o2).getStartOffset() ? -1 : 1;
+                return o1.getStartOffset() < o2.getStartOffset() ? -1 : 1;
             }
             return s1 > s2 ? -1 : 1;
         }
@@ -468,10 +465,10 @@ public class DefaultHighlighter {
     }
 
     private static class FragmentInfoPositionSorter
-            implements java.util.Comparator {
-        public int compare(Object o1, Object o2) {
-            int s1 = ((FragmentInfo) o1).getStartOffset();
-            int s2 = ((FragmentInfo) o2).getStartOffset();
+            implements java.util.Comparator<FragmentInfo> {
+        public int compare(FragmentInfo o1, FragmentInfo o2) {
+            int s1 = o1.getStartOffset();
+            int s2 = o2.getStartOffset();
             if (s1 == s2) {
                 return 0;
             }
@@ -484,10 +481,10 @@ public class DefaultHighlighter {
     }
 
     private static class TermVectorOffsetInfoSorter
-            implements java.util.Comparator {
-        public int compare(Object o1, Object o2) {
-            int s1 = ((TermVectorOffsetInfo) o1).getStartOffset();
-            int s2 = ((TermVectorOffsetInfo) o2).getStartOffset();
+            implements java.util.Comparator<TermVectorOffsetInfo> {
+        public int compare(TermVectorOffsetInfo o1, TermVectorOffsetInfo o2) {
+            int s1 = o1.getStartOffset();
+            int s2 = o2.getStartOffset();
             if (s1 == s2) {
                 return 0;
             }

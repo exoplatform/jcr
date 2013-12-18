@@ -159,7 +159,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
                      if (!nodeTypeDataManager.isNodeType(requiredPrimaryTypes[i], child.getPrimaryTypeName(),
                         child.getMixinTypeNames()))
                      {
-                        StringBuffer buffer = new StringBuffer();
+                        StringBuilder buffer = new StringBuilder();
                         buffer.append("Fail to change ");
                         buffer.append(recipientDefinitionData.getName().getAsString());
                         buffer.append(" node definition for ");
@@ -195,7 +195,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
                      if (!nodeTypeDataManager.isNodeType(requiredPrimaryTypes[i], child.getPrimaryTypeName(),
                         child.getMixinTypeNames()))
                      {
-                        StringBuffer buffer = new StringBuffer();
+                        StringBuilder buffer = new StringBuilder();
                         buffer.append("Fail to change ");
                         buffer.append(recipientDefinitionData.getName().getAsString());
                         buffer.append(" node definition for ");
@@ -250,7 +250,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
                   {
                      if (child2.getQPath().getIndex() > 1)
                      {
-                        StringBuffer buffer = new StringBuffer();
+                        StringBuilder buffer = new StringBuilder();
                         buffer.append("Fail to change ");
                         buffer.append(recipientName.getAsString());
                         buffer.append(" node definition for ");
@@ -281,7 +281,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
                   {
                      if (child2.getQPath().getIndex() > 1)
                      {
-                        StringBuffer buffer = new StringBuffer();
+                        StringBuilder buffer = new StringBuilder();
                         buffer.append("Fail to change ");
                         buffer.append(recipientName.getAsString());
                         buffer.append(" node definition for ");

@@ -72,7 +72,7 @@ public class StringConverter
    public static String normalizeString(String s, boolean canonical)
    {
 
-      StringBuffer strBuf = new StringBuffer();
+      StringBuilder strBuf = new StringBuilder();
       int len = (s != null) ? s.length() : 0;
       for (int i = 0; i < len; i++)
       {
@@ -100,7 +100,7 @@ public class StringConverter
    public static String denormalizeString(String s)
    {
 
-      StringBuffer strBuf = new StringBuffer();
+      StringBuilder strBuf = new StringBuilder();
       int len = (s != null) ? s.length() : 0;
       int i = 0;
       while (i < len)

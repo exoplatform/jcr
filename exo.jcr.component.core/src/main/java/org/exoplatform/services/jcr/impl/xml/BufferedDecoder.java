@@ -143,7 +143,7 @@ public class BufferedDecoder extends Base64.Decoder
             out.close();
             BufferedInputStream is = new BufferedInputStream(PrivilegedFileHelper.fileInputStream(fileBuffer));
 
-            StringBuffer fileData = new StringBuffer(DEFAULT_READ_BUFFER_SIZE);
+            StringBuilder fileData = new StringBuilder(DEFAULT_READ_BUFFER_SIZE);
 
             byte[] buf = new byte[bufferSize];
             int numRead = 0;

@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
 import org.apache.lucene.search.BooleanQuery;
@@ -52,6 +53,11 @@ public class WildcardQuery extends Query implements Transformable
 {
 
    /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = -376896975523503868L;
+
+   /**
     * Logger instance for this class.
     */
    private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.WildcardQuery");
@@ -72,7 +78,7 @@ public class WildcardQuery extends Query implements Transformable
    private final String pattern;
 
    /**
-    * How property values are tranformed before they are matched using the
+    * How property values are transformed before they are matched using the
     * provided pattern.
     */
    private int transform = TRANSFORM_NONE;
@@ -132,6 +138,7 @@ public class WildcardQuery extends Query implements Transformable
    @Override
    public Query rewrite(IndexReader reader) throws IOException
    {
+      @SuppressWarnings("serial")
       Query stdWildcardQuery = new MultiTermQuery()
       {
          @Override
@@ -144,7 +151,7 @@ public class WildcardQuery extends Query implements Transformable
          @Override
          public String toString(String field)
          {
-            StringBuffer buffer = new StringBuffer();
+            StringBuilder buffer = new StringBuilder();
             buffer.append(field);
             buffer.append(':');
             buffer.append(ToStringUtils.boost(getBoost()));
@@ -192,7 +199,7 @@ public class WildcardQuery extends Query implements Transformable
     * {@inheritDoc}
     */
    @Override
-   public void extractTerms(Set terms)
+   public void extractTerms(Set<Term> terms)
    {
       if (multiTermQuery != null)
       {
@@ -205,6 +212,8 @@ public class WildcardQuery extends Query implements Transformable
     */
    private class WildcardQueryWeight extends AbstractWeight
    {
+
+      private static final long serialVersionUID = 4836918187825730908L;
 
       /**
        * Creates a new <code>WildcardQueryWeight</code> instance using
@@ -310,7 +319,7 @@ public class WildcardQuery extends Query implements Transformable
       /**
        * The map to store the results.
        */
-      private final Map resultMap;
+      private final Map<String, BitSet> resultMap;
 
       /**
        * Creates a new WildcardQueryScorer.
@@ -325,10 +334,11 @@ public class WildcardQuery extends Query implements Transformable
          this.cacheKey = field + '\uFFFF' + propName + '\uFFFF' + transform + '\uFFFF' + pattern;
          // check cache
          PerQueryCache cache = PerQueryCache.getInstance();
-         Map m = (Map)cache.get(WildcardQueryScorer.class, reader);
+         @SuppressWarnings("unchecked")
+         Map<String, BitSet> m = (Map<String, BitSet>)cache.get(WildcardQueryScorer.class, reader);
          if (m == null)
          {
-            m = new HashMap();
+            m = new HashMap<String, BitSet>();
             cache.put(WildcardQueryScorer.class, reader, m);
          }
          resultMap = m;

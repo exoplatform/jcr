@@ -77,7 +77,7 @@ public class TextFieldExtractor extends AbstractField
          {
             if (extract == null)
             {
-               StringBuffer textExtract = new StringBuffer();
+               StringBuilder textExtract = new StringBuilder();
                char[] buffer = new char[1024];
                int len;
                try

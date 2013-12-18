@@ -44,6 +44,11 @@ public class RangeQuery extends Query implements Transformable
 {
 
    /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 6232103337968115020L;
+
+   /**
     * The lower term. May be <code>null</code> if <code>upperTerm</code> is not
     * <code>null</code>.
     */
@@ -180,7 +185,7 @@ public class RangeQuery extends Query implements Transformable
     */
    public String toString(String field)
    {
-      StringBuffer buffer = new StringBuffer();
+      StringBuilder buffer = new StringBuilder();
       if (!getField().equals(field))
       {
          buffer.append(getField());
@@ -202,7 +207,7 @@ public class RangeQuery extends Query implements Transformable
    /**
     * {@inheritDoc}
     */
-   public void extractTerms(Set terms)
+   public void extractTerms(Set<Term> terms)
    {
       if (stdRangeQuery != null)
       {
@@ -225,6 +230,8 @@ public class RangeQuery extends Query implements Transformable
     */
    private class RangeQueryWeight extends AbstractWeight
    {
+
+      private static final long serialVersionUID = -3768950544626254226L;
 
       /**
        * Creates a new <code>RangeQueryWeight</code> instance using
@@ -343,7 +350,7 @@ public class RangeQuery extends Query implements Transformable
       {
          super(similarity);
          this.reader = reader;
-         StringBuffer key = new StringBuffer();
+         StringBuilder key = new StringBuilder();
          key.append(lowerTerm != null ? lowerTerm.field() : upperTerm.field());
          key.append('\uFFFF');
          key.append(lowerTerm != null ? lowerTerm.text() : "");
@@ -458,7 +465,7 @@ public class RangeQuery extends Query implements Transformable
          else
          {
             // first enumerate terms using lower case start character
-            StringBuffer termText = new StringBuffer(propNameLength + 1);
+            StringBuilder termText = new StringBuilder(propNameLength + 1);
             termText.append(lowerTerm.text().subSequence(0, propNameLength));
             char startCharacter = lowerTerm.text().charAt(propNameLength);
             termText.append(Character.toLowerCase(startCharacter));

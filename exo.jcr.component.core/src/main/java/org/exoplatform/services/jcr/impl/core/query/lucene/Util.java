@@ -55,9 +55,9 @@ public class Util
     */
    public static void disposeDocument(final Document old)
    {
-      for (Iterator it = old.getFields().iterator(); it.hasNext();)
+      for (Iterator<Fieldable> it = old.getFields().iterator(); it.hasNext();)
       {
-         Fieldable f = (Fieldable)it.next();
+         Fieldable f = it.next();
          try
          {
             if (f.readerValue() != null)
@@ -138,7 +138,7 @@ public class Util
     * @param value an internal value.
     * @return a comparable for the given <code>value</code>.
     */
-   public static Comparable getComparable(ValueData value, int type) throws UnsupportedEncodingException,
+   public static Comparable<?> getComparable(ValueData value, int type) throws UnsupportedEncodingException,
       IllegalStateException, IOException, IllegalNameException, RepositoryException
    {
       switch (type)
@@ -179,7 +179,8 @@ public class Util
     *         should come after <code>c2</code><br> <code>0</code> if they
     *         are equal.
     */
-   public static int compare(Comparable c1, Comparable c2)
+   @SuppressWarnings("unchecked")
+   public static <A, B> int compare(Comparable<A> c1, Comparable<B> c2)
    {
       if (c1 == c2) // NOSONAR
       {
@@ -195,7 +196,7 @@ public class Util
       }
       else if (c1.getClass() == c2.getClass())
       {
-         return c1.compareTo(c2);
+         return c1.compareTo((A)c2);
       }
       else
       {
@@ -217,7 +218,7 @@ public class Util
       // - escape all non alphabetic characters
       // - escape constructs like \<alphabetic char> into \\<alphabetic char>
       // - replace non escaped _ % into . and .*
-      StringBuffer regexp = new StringBuffer();
+      StringBuilder regexp = new StringBuilder();
       boolean escaped = false;
       for (int i = 0; i < likePattern.length(); i++)
       {

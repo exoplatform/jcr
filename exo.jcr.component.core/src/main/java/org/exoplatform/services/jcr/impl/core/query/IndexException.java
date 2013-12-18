@@ -18,9 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
-
 import javax.jcr.RepositoryException;
 
 /**
@@ -35,11 +32,6 @@ public class IndexException extends RepositoryException
     * 
     */
    private static final long serialVersionUID = 2247843831064852072L;
-
-   /**
-    * Class logger.
-    */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.IndexException");
 
    /**
     * 

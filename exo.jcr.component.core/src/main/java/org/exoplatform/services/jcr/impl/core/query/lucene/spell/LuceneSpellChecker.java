@@ -297,7 +297,7 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
          {
             // replace words in statement in reverse order because length
             // of statement will change
-            StringBuffer sb = new StringBuffer(statement);
+            StringBuilder sb = new StringBuilder(statement);
             for (int i = suggestions.length - 1; i >= 0; i--)
             {
                TokenData t = tokens.get(i);
@@ -552,8 +552,8 @@ public class LuceneSpellChecker implements org.exoplatform.services.jcr.impl.cor
                                     long time = System.currentTimeMillis();
                                     Dictionary dict = new LuceneDictionary(reader, FieldNames.FULLTEXT);
                                     LOG.debug("Starting spell checker index refresh");
-                                    spellChecker.indexDictionary(dict, new IndexWriterConfig(Version.LUCENE_30,
-                                       new StandardAnalyzer(Version.LUCENE_30)), true);
+                                    spellChecker.indexDictionary(dict, new IndexWriterConfig(Version.LUCENE_36,
+                                       new StandardAnalyzer(Version.LUCENE_36)), true);
                                     time = System.currentTimeMillis() - time;
                                     time = time / 1000;
                                     LOG.info("Spell checker index refreshed in: " + new Long(time) + " s.");

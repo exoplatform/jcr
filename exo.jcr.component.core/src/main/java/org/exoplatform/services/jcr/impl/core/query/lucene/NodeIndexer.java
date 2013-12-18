@@ -34,9 +34,7 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
-import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
-import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -117,9 +115,7 @@ public class NodeIndexer
     * List of {@link FieldNames#FULLTEXT} fields which should not be used in
     * an excerpt.
     */
-   protected List doNotUseInExcerpt = new ArrayList();
-
-   private ValueFactoryImpl vFactory;
+   protected List<Fieldable> doNotUseInExcerpt = new ArrayList<Fieldable>();
 
    /**
     * Creates a new node indexer.
@@ -128,17 +124,15 @@ public class NodeIndexer
     * @param stateProvider the persistent item state manager to retrieve properties.
     * @param mappings      internal namespace mappings.
     * @param extractor     content extractor
-    * @param fileCleanerHolder file cleaner holder for {@link ValueFactoryImpl}
     */
    public NodeIndexer(NodeDataIndexing node, ItemDataConsumer stateProvider, NamespaceMappings mappings,
-      DocumentReaderService extractor, FileCleanerHolder fileCleanerHolder)
+      DocumentReaderService extractor)
    {
       this.node = node;
       this.stateProvider = stateProvider;
       this.mappings = mappings;
       this.resolver = new LocationFactory(mappings);
       this.extractor = extractor;
-      this.vFactory = new ValueFactoryImpl(this.resolver, fileCleanerHolder);
    }
 
    /**
@@ -257,9 +251,9 @@ public class NodeIndexer
       }
 
       // now add fields that are not used in excerpt (must go at the end)
-      for (Iterator it = doNotUseInExcerpt.iterator(); it.hasNext();)
+      for (Iterator<Fieldable> it = doNotUseInExcerpt.iterator(); it.hasNext();)
       {
-         doc.add((Fieldable)it.next());
+         doc.add(it.next());
       }
       return doc;
    }

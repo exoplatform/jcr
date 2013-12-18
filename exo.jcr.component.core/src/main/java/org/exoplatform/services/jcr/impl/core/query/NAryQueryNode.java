@@ -36,7 +36,7 @@ public abstract class NAryQueryNode extends QueryNode {
     /**
      * The list of operands / children
      */
-    protected List operands = null;
+    protected List<QueryNode> operands = null;
 
     /**
      * Creates a new <code>NAryQueryNode</code> with a reference to a parent
@@ -58,7 +58,7 @@ public abstract class NAryQueryNode extends QueryNode {
     public NAryQueryNode(QueryNode parent, QueryNode[] operands) {
         super(parent);
         if (operands.length > 0) {
-            this.operands = new ArrayList();
+            this.operands = new ArrayList<QueryNode>();
             this.operands.addAll(Arrays.asList(operands));
         }
     }
@@ -70,7 +70,7 @@ public abstract class NAryQueryNode extends QueryNode {
      */
     public void addOperand(QueryNode operand) {
         if (operands == null) {
-            operands = new ArrayList();
+            operands = new ArrayList<QueryNode>();
         }
         operands.add(operand);
     }
@@ -88,7 +88,7 @@ public abstract class NAryQueryNode extends QueryNode {
             return false;
         }
         // JCR-1650 search the operand without relying on Object#equals(Object)
-        Iterator it = operands.iterator();
+        Iterator<QueryNode> it = operands.iterator();
         while (it.hasNext()) {
             if (it.next() == operand) {
                 it.remove();
@@ -138,14 +138,14 @@ public abstract class NAryQueryNode extends QueryNode {
             return EMPTY;
         }
 
-        List result = new ArrayList(operands.size());
+        List<Object> result = new ArrayList<Object>(operands.size());
         for (int i = 0; i < operands.size(); i++) {
-            Object r = ((QueryNode) operands.get(i)).accept(visitor, data);
+           Object r = operands.get(i).accept(visitor, data);
             if (r != null) {
                 result.add(r);
             }
         }
-        return result.toArray();
+        return (Object[])result.toArray();
     }
 
     /**
@@ -166,7 +166,7 @@ public abstract class NAryQueryNode extends QueryNode {
         if (operands == null) {
             return false;
         }
-        for (Iterator iter = operands.iterator(); iter.hasNext();) {
+        for (Iterator<QueryNode> iter = operands.iterator(); iter.hasNext();) {
             QueryNode queryNode = (QueryNode) iter.next();
             if (queryNode.needsSystemTree()) {
                 return true;

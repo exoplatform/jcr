@@ -16,11 +16,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
+
+import java.io.IOException;
 
 /**
  * <code>ScoreNode</code> implements a simple container which holds a mapping
@@ -108,7 +108,7 @@ public final class ScoreNode {
     }
 
     public String toString() {
-        StringBuffer sb = new StringBuffer(id.toString());
+        StringBuilder sb = new StringBuilder(id.toString());
         sb.append("(");
         if (doc != -1) {
             sb.append(doc);

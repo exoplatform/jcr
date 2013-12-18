@@ -47,7 +47,7 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
    private ScoreNodeIterator orderedNodes;
 
    /** Unordered list of {@link ScoreNode}[]s. */
-   private final List scoreNodes;
+   private final List<ScoreNode[]> scoreNodes;
 
    /** ItemManager to turn UUIDs into Node instances */
    protected final ItemDataConsumer itemMgr;
@@ -68,7 +68,7 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
     * @param selectorIndex apply document order on the score nodes with this
     *                      selectorIndex.
     */
-   DocOrderScoreNodeIterator(ItemDataConsumer itemMgr, List scoreNodes, int selectorIndex)
+   DocOrderScoreNodeIterator(ItemDataConsumer itemMgr, List<ScoreNode[]> scoreNodes, int selectorIndex)
    {
       this.itemMgr = itemMgr;
       this.scoreNodes = scoreNodes;
@@ -188,7 +188,7 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
          if (invalidIDs.size() > 0)
          {
             // previous sort run was not successful -> remove failed uuids
-            List tmp = new ArrayList();
+            List<ScoreNode[]> tmp = new ArrayList<ScoreNode[]>();
             for (int i = 0; i < nodes.length; i++)
             {
                if (!invalidIDs.contains(nodes[i][selectorIndex].getNodeId()))
@@ -393,14 +393,8 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
 
          // if we get here something went wrong
          // remove both identifiers from array
-         if (n1 != null)
-            invalidIDs.add(n1.getNodeId());
-         else
-            LOG.warn("Null ScoreNode n1 will not be added into invalid identifiers set");
-         if (n2 != null)
-            invalidIDs.add(n2.getNodeId());
-         else
-            LOG.warn("Null ScoreNode n2 will not be added into invalid identifiers set");
+         invalidIDs.add(n1.getNodeId());
+         invalidIDs.add(n2.getNodeId());
 
          // terminate sorting
          throw new SortFailedException();
@@ -412,5 +406,7 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
     */
    private static final class SortFailedException extends RuntimeException
    {
+
+      private static final long serialVersionUID = 3079054269187311527L;
    }
 }

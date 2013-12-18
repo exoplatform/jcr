@@ -17,6 +17,7 @@
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import org.apache.lucene.index.IndexReader;
+import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Explanation;
 import org.apache.lucene.search.Query;
 import org.apache.lucene.search.Scorer;
@@ -35,6 +36,11 @@ import java.util.Set;
  */
 class NotQuery extends Query
 {
+
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = -4085065039508050885L;
 
    /**
     * The context query to invert.
@@ -77,7 +83,7 @@ class NotQuery extends Query
     * {@inheritDoc}
     */
    @Override
-   public void extractTerms(Set terms)
+   public void extractTerms(Set<Term> terms)
    {
       context.extractTerms(terms);
    }
@@ -104,6 +110,8 @@ class NotQuery extends Query
     */
    private class NotQueryWeight extends Weight
    {
+
+      private static final long serialVersionUID = -6183967599441741625L;
 
       /**
        * The searcher to access the index.

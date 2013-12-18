@@ -67,17 +67,17 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     /**
      * List of exception objects created while creating the SQL string
      */
-    private final List exceptions = new ArrayList();
+    private final List<Exception> exceptions = new ArrayList<Exception>();
 
     /**
      * List of node types
      */
-    private final List nodeTypes = new ArrayList();
+    private final List<InternalQName> nodeTypes = new ArrayList<InternalQName>();
 
     private QueryFormat(QueryRootNode root, LocationFactory resolver)
             throws RepositoryException {
         this.resolver = resolver;
-        statement = root.accept(this, new StringBuffer()).toString();
+        statement = root.accept(this, new StringBuilder()).toString();
         if (exceptions.size() > 0) {
             Exception e = (Exception) exceptions.get(0);
             throw new InvalidQueryException(e.getMessage(), e);
@@ -116,7 +116,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     //-------------< QueryNodeVisitor interface >-------------------------------
 
     public Object visit(QueryRootNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         try {
             sb.append("SELECT");
 
@@ -137,7 +137,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
             // node type restrictions are within predicates of location nodes
             // therefore we write the where clause first to a temp string to
             // collect the node types.
-            StringBuffer tmp = new StringBuffer();
+            StringBuilder tmp = new StringBuilder();
             LocationStepQueryNode[] steps = node.getLocationNode().getPathSteps();
             QueryNode[] predicates = steps[steps.length - 1].getPredicates();
             // are there any relevant predicates?
@@ -158,8 +158,8 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
             // node types have been collected by now
             String comma = "";
             int ntCount = 0;
-            for (Iterator it = nodeTypes.iterator(); it.hasNext(); ntCount++) {
-               InternalQName nt = (InternalQName) it.next();
+            for (Iterator<InternalQName> it = nodeTypes.iterator(); it.hasNext(); ntCount++) {
+               InternalQName nt = it.next();
                 sb.append(comma).append(" ");
                 appendName(nt, resolver, sb);
                 comma = ",";
@@ -201,7 +201,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(OrQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         boolean bracket = false;
         if (node.getParent() instanceof LocationStepQueryNode
                 || node.getParent() instanceof AndQueryNode
@@ -225,7 +225,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(AndQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         boolean bracket = false;
         if (node.getParent() instanceof NotQueryNode) {
             bracket = true;
@@ -254,7 +254,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(NotQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         QueryNode[] operands = node.getOperands();
         if (operands.length > 0) {
             sb.append("NOT ");
@@ -264,7 +264,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(ExactQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         try {
             appendName(node.getPropertyName(), resolver, sb);
         } catch (NamespaceException e) {
@@ -280,7 +280,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(TextsearchQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         // escape quote
         String query = node.getQuery().replaceAll("'", "''");
         sb.append("CONTAINS(");
@@ -304,7 +304,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(PathQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         try {
             if (containsDescendantOrSelf(node)) {
                 sb.append("(");
@@ -338,7 +338,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
             } else if (containsAllChildrenMatch(node)) {
                sb.append(resolver.createJCRName(Constants.JCR_PATH).getAsString());
                 sb.append(" LIKE '");
-                StringBuffer path = new StringBuffer();
+                StringBuilder path = new StringBuilder();
                 LocationStepQueryNode[] steps = node.getPathSteps();
                 for (int i = 0; i < steps.length; i++) {
                     if (steps[i].getNameTest() == null
@@ -374,7 +374,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(LocationStepQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         if (node.getNameTest() == null) {
             sb.append("%");
         } else {
@@ -404,9 +404,9 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(RelationQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         try {
-            StringBuffer propName = new StringBuffer();
+            StringBuilder propName = new StringBuilder();
             QPath relPath = node.getRelativePath();
             if (relPath == null) {
                 propName.append(".");
@@ -477,7 +477,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(OrderQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         sb.append(" ORDER BY");
         OrderQueryNode.OrderSpec[] specs = node.getOrderSpecs();
         if (specs.length > 0) {
@@ -506,7 +506,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(PropertyFunctionQueryNode node, Object data) {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         String functionName = node.getFunctionName();
         if (functionName.equals(PropertyFunctionQueryNode.LOWER_CASE)) {
             sb.insert(0, "LOWER(").append(")");
@@ -521,7 +521,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     //------------------------< internal >--------------------------------------
 
     /**
-     * Appends the <code>name</code> to the <code>StringBuffer</code>
+     * Appends the <code>name</code> to the <code>StringBuilder</code>
      * <code>b</code> using the <code>NamespaceResolver</code>
      * <code>resolver</code>. The <code>name</code> is put in double quotes
      * if the local part of <code>name</code> contains a space character.
@@ -533,7 +533,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
      */
     private static void appendName(InternalQName name,
                                    LocationFactory resolver,
-                                   StringBuffer b)
+                                   StringBuilder b)
             throws RepositoryException {
         boolean quote = name.getName().indexOf(' ') > -1;
         if (quote) {
@@ -545,7 +545,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
         }
     }
 
-    private void appendValue(RelationQueryNode node, StringBuffer b) {
+    private void appendValue(RelationQueryNode node, StringBuilder b) {
         if (node.getValueType() == TYPE_LONG) {
             b.append(node.getLongValue());
         } else if (node.getValueType() == TYPE_DOUBLE) {

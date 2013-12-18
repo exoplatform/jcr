@@ -50,12 +50,12 @@ public class IndexInfos
    /**
     * For new segment names.
     */
-   private int counter = 0;
+   private int counter;
 
    /**
     * Flag that indicates if index infos needs to be written to disk.
     */
-   private boolean dirty = false;
+   private boolean dirty;
 
    /**
     * List of index names

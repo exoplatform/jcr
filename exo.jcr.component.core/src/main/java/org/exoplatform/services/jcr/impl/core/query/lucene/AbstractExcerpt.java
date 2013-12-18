@@ -116,7 +116,7 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
             exProvider.init(query, index);
             return exProvider.getExcerpt(id, maxFragments, maxFragmentSize);
          }
-         StringBuffer text = new StringBuffer();
+         StringBuilder text = new StringBuilder();
          String separator = "";
          for (int i = 0; i < fields.length; i++)
          {

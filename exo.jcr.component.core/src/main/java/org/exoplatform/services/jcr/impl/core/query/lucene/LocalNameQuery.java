@@ -16,19 +16,24 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
-import java.io.IOException;
-import java.util.Set;
-
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.Query;
+
+import java.io.IOException;
+import java.util.Set;
 
 /**
  * <code>LocalNameQuery</code> implements a query for the local name of a node.
  */
 public class LocalNameQuery extends Query {
 
-    /**
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 235655337620030844L;
+
+   /**
      * The local name of a node.
      */
     private final String localName;
@@ -64,7 +69,7 @@ public class LocalNameQuery extends Query {
     /**
      * {@inheritDoc}
      */
-    public void extractTerms(Set terms) {
+    public void extractTerms(Set<Term> terms) {
     }
 
     /**

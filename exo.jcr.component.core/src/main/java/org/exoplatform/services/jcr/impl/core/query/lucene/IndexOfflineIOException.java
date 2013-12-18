@@ -30,6 +30,11 @@ import java.io.IOException;
 public class IndexOfflineIOException extends IOException
 {
    /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 2649735930345026898L;
+
+   /**
     * @param string description
     */
    public IndexOfflineIOException(String string)

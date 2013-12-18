@@ -43,6 +43,11 @@ public class QueryHitsQuery extends Query implements JcrQuery
 {
 
    /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 1792102915934638979L;
+
+   /**
     * The underlying query hits.
     */
    private final QueryHits hits;
@@ -79,7 +84,7 @@ public class QueryHitsQuery extends Query implements JcrQuery
     * {@inheritDoc}
     */
    @Override
-   public void extractTerms(Set terms)
+   public void extractTerms(Set<Term> terms)
    {
       // no terms
    }
@@ -108,6 +113,8 @@ public class QueryHitsQuery extends Query implements JcrQuery
     */
    public class QueryHitsQueryWeight extends Weight
    {
+
+      private static final long serialVersionUID = 2350015748527849558L;
 
       /**
        * The similarity.
@@ -214,7 +221,7 @@ public class QueryHitsQuery extends Query implements JcrQuery
       {
          super(similarity);
          ScoreNode node;
-         Set<Integer> sortedDocs = new TreeSet();
+         Set<Integer> sortedDocs = new TreeSet<Integer>();
          try
          {
             while ((node = hits.nextScoreNode()) != null)

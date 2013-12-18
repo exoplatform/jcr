@@ -19,8 +19,6 @@
 package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import org.picocontainer.Startable;
 
 import java.util.ArrayList;
@@ -39,11 +37,6 @@ import javax.jcr.RepositoryException;
 public class RepositoryIndexSearcherHolder implements Startable
 {
    private final List<SearchManager> indexSearchers;
-
-   /**
-    * Class logger.
-    */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.RepositoryIndexSearcherHolder");
 
    /**
     * @param indexSearchers

@@ -24,7 +24,12 @@ import org.apache.lucene.index.Term;
  */
 public class LocalNameRangeQuery extends RangeQuery {
 
-    /**
+   /**
+    * The serial version UID 
+    */
+   private static final long serialVersionUID = -488699477564470677L;
+
+   /**
      * Creates a new <code>LocalNameRangeQuery</code>. The lower or the upper
      * bound may be null, but not both!
      *

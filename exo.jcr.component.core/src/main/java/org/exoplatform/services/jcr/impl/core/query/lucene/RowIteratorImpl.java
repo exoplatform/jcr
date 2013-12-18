@@ -62,12 +62,6 @@ class RowIteratorImpl implements RowIterator
    private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.RowIteratorImpl");
 
    /**
-    * The QValue factory.
-    */
-   // private static final QValueFactory QVALUE_FACTORY =
-   // QValueFactoryImpl.getInstance();
-
-   /**
     * The name of the excerpt function without prefix but with left
     * parenthesis.
     */
@@ -97,12 +91,12 @@ class RowIteratorImpl implements RowIterator
    /**
     * Set of select property <code>Name</code>s.
     */
-   private Set propertySet;
+   private Set<InternalQName> propertySet;
 
    /**
     * List of valid selector {@link Name}s.
     */
-   private final List selectorNames = new ArrayList();
+   private final List<InternalQName> selectorNames = new ArrayList<InternalQName>();
 
    /**
     * The item manager of the session that executes the query.
@@ -391,7 +385,7 @@ class RowIteratorImpl implements RowIterator
          if (propertySet == null)
          {
             // create the set first
-            Set tmp = new HashSet();
+            Set<InternalQName> tmp = new HashSet<InternalQName>();
             tmp.addAll(Arrays.asList(properties));
             propertySet = tmp;
          }

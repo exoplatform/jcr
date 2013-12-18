@@ -21,8 +21,8 @@ import org.apache.commons.collections.Transformer;
 import org.apache.commons.collections.collection.TransformedCollection;
 import org.apache.commons.collections.iterators.TransformIterator;
 import org.apache.lucene.analysis.Analyzer;
+import org.apache.lucene.analysis.tokenattributes.CharTermAttribute;
 import org.apache.lucene.analysis.tokenattributes.PayloadAttribute;
-import org.apache.lucene.analysis.tokenattributes.TermAttribute;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
 import org.apache.lucene.document.Fieldable;
@@ -1115,6 +1115,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * {@inheritDoc}
     */
+   @SuppressWarnings({"rawtypes", "unchecked"})
    public ChangesHolder getChanges(Iterator<String> remove, Iterator<NodeData> add)
    {
       final Map<String, NodeData> aggregateRoots = new HashMap<String, NodeData>();
@@ -1331,6 +1332,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          FieldComparatorSource scs = queryImpl.isCaseInsensitiveOrder() ? this.sics : this.scs;
          Sort sort = new Sort(createSortFields(orderProps, orderSpecs, scs));
          final IndexReader reader = getIndexReader(queryImpl.needsSystemTree());
+         @SuppressWarnings("resource")
          JcrIndexSearcher searcher = new JcrIndexSearcher(session, reader, getContext().getItemStateManager());
          searcher.setSimilarity(getSimilarity());
          return new FilterMultiColumnQueryHits(searcher.execute(query, sort, resultFetchHint,
@@ -1626,8 +1628,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       IndexFormatVersion indexFormatVersion) throws RepositoryException
    {
       NodeIndexer indexer =
-         new NodeIndexer(node, getContext().getItemStateManager(), nsMappings, extractor, getContext()
-            .getCleanerHolder());
+         new NodeIndexer(node, getContext().getItemStateManager(), nsMappings, extractor);
       indexer.setSupportHighlighting(supportHighlighting);
       indexer.setIndexingConfiguration(indexingConfig);
       indexer.setIndexFormatVersion(indexFormatVersion);
@@ -1957,10 +1958,10 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                            // SingleTokenStream
                            //t = field.tokenStreamValue().next(t);
                            field.tokenStreamValue().incrementToken();
-                           TermAttribute term = field.tokenStreamValue().getAttribute(TermAttribute.class);
+                           CharTermAttribute term = field.tokenStreamValue().getAttribute(CharTermAttribute.class);
                            PayloadAttribute payload = field.tokenStreamValue().getAttribute(PayloadAttribute.class);
 
-                           String value = new String(term.termBuffer(), 0, term.termLength());
+                           String value = new String(term.buffer(), 0, term.length());
 
                            if (value.startsWith(namePrefix))
                            {
@@ -1971,8 +1972,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                               String path = getNamespaceMappings().translatePath(p);
                               value = FieldNames.createNamedValue(path, value);
 
-                              term.setTermBuffer(value);
-                              doc.add(new Field(field.name(), new SingletonTokenStream(term.term(), payload
+                              term.setEmpty();
+                              term.append(value);
+                              doc.add(new Field(field.name(), new SingletonTokenStream(term.toString(), payload
                                  .getPayload())));
                               doc.add(new Field(FieldNames.AGGREGATED_NODE_UUID, parent.getIdentifier(),
                                  Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
@@ -2217,43 +2219,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
       // ---------------------------< internal
       // >-------------------------------
-
-      /**
-       * Returns the reader index for document <code>n</code>. Implementation
-       * copied from lucene MultiReader class.
-       * 
-       * @param n
-       *            document number.
-       * @return the reader index.
-       */
-      private int readerIndex(int n)
-      {
-         int lo = 0; // search starts array
-         int hi = subReaders.length - 1; // for first element less
-
-         while (hi >= lo)
-         {
-            int mid = (lo + hi) >> 1;
-            int midValue = starts[mid];
-            if (n < midValue)
-            {
-               hi = mid - 1;
-            }
-            else if (n > midValue)
-            {
-               lo = mid + 1;
-            }
-            else
-            { // found a match
-               while (mid + 1 < subReaders.length && starts[mid + 1] == midValue)
-               {
-                  mid++; // scan to last match
-               }
-               return mid;
-            }
-         }
-         return hi;
-      }
 
       @Override
       public boolean equals(Object obj)
@@ -2552,34 +2517,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       return maxFieldLength;
    }
 
-   //
-   // /**
-   // * Sets the list of text extractors (and text filters) to use for
-   // * extracting text content from binary properties. The list must be
-   // * comma (or whitespace) separated, and contain fully qualified class
-   // * names of the {@link TextExtractor} (and {@link
-   // org.apache.jackrabbit.core.query.TextFilter}) classes
-   // * to be used. The configured classes must all have a public default
-   // * constructor.
-   // *
-   // * @param filterClasses comma separated list of class names
-   // */
-   // public void setTextFilterClasses(String filterClasses)
-   // {
-   // this.textFilterClasses = filterClasses;
-   // }
-
-   // /**
-   // * Returns the fully qualified class names of the text filter instances
-   // * currently in use. The names are comma separated.
-   // *
-   // * @return class names of the text filters in use.
-   // */
-   // public String getTextFilterClasses()
-   // {
-   // return textFilterClasses;
-   // }
-
    /**
     * Tells the query handler how many result should be fetched initially when
     * a query is executed.
@@ -2692,14 +2629,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * @param className
     *            the name of a class that implements {@link ExcerptProvider}.
     */
+   @SuppressWarnings("unchecked")
    public void setExcerptProviderClass(String className)
    {
       try
       {
-         Class clazz = ClassLoading.forName(className, this);
+         Class<?> clazz = ClassLoading.forName(className, this);
          if (ExcerptProvider.class.isAssignableFrom(clazz))
          {
-            excerptProviderClass = clazz;
+            excerptProviderClass = (Class<? extends ExcerptProvider>)clazz;
          }
          else
          {
@@ -2750,14 +2688,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *            the name of the class that implements
     *            {@link IndexingConfiguration}.
     */
+   @SuppressWarnings("unchecked")
    public void setIndexingConfigurationClass(String className)
    {
       try
       {
-         Class clazz = ClassLoading.forName(className, this);
+         Class<?> clazz = ClassLoading.forName(className, this);
          if (IndexingConfiguration.class.isAssignableFrom(clazz))
          {
-            indexingConfigurationClass = clazz;
+            indexingConfigurationClass = (Class<? extends IndexingConfiguration>)clazz;
          }
          else
          {
@@ -2786,14 +2725,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * @param className
     *            name of the class that implements {@link SynonymProvider}.
     */
+   @SuppressWarnings("unchecked")
    public void setSynonymProviderClass(String className)
    {
       try
       {
-         Class clazz = ClassLoading.forName(className, this);
+         Class<?> clazz = ClassLoading.forName(className, this);
          if (SynonymProvider.class.isAssignableFrom(clazz))
          {
-            synonymProviderClass = clazz;
+            synonymProviderClass = (Class<? extends SynonymProvider>)clazz;
          }
          else
          {
@@ -2830,14 +2770,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * @param className
     *            name of the class that implements {@link SpellChecker}.
     */
+   @SuppressWarnings("unchecked")
    public void setSpellCheckerClass(String className)
    {
       try
       {
-         Class clazz = ClassLoading.forName(className, this);
+         Class<?> clazz = ClassLoading.forName(className, this);
          if (SpellChecker.class.isAssignableFrom(clazz))
          {
-            spellCheckerClass = clazz;
+            spellCheckerClass = (Class<? extends SpellChecker>)clazz;
          }
          else
          {

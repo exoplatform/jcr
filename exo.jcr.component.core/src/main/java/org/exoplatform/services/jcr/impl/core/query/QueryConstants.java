@@ -303,10 +303,10 @@ public interface QueryConstants {
      * Operation names
      */
     final ConstantNameProvider OPERATION_NAMES = new ConstantNameProvider() {
-        private final Map operationNames;
+        private final Map<Integer, String> operationNames;
 
         {
-            Map map = new HashMap();
+            Map<Integer, String> map = new HashMap<Integer, String>();
             map.put(new Integer(OPERATION_BETWEEN), OP_NAME_BETWEEN);
             map.put(new Integer(OPERATION_EQ_VALUE), OP_NAME_EQ_VALUE);
             map.put(new Integer(OPERATION_EQ_GENERAL), OP_NAME_EQ_GENERAL);
@@ -330,7 +330,7 @@ public interface QueryConstants {
         }
 
         public String getName(int constant) {
-            String name = (String) operationNames.get(new Integer(constant));
+            String name = operationNames.get(new Integer(constant));
             return name == null? OP_NAME_UNKNOW : name;
         }
     };
@@ -339,10 +339,10 @@ public interface QueryConstants {
      * Type names
      */
     final ConstantNameProvider TYPE_NAMES = new ConstantNameProvider() {
-        private final Map typeNames;
+        private final Map<Integer, String> typeNames;
 
         {
-            Map map = new HashMap();
+            Map<Integer, String> map = new HashMap<Integer, String>();
             map.put(new Integer(TYPE_DATE), TYPE_NAME_DATE);
             map.put(new Integer(TYPE_DOUBLE), TYPE_NAME_DOUBLE);
             map.put(new Integer(TYPE_LONG), TYPE_NAME_LONG);
@@ -353,7 +353,7 @@ public interface QueryConstants {
         }
 
         public String getName(int constant) {
-            String name = (String) typeNames.get(new Integer(constant));
+            String name = typeNames.get(new Integer(constant));
             return name == null? TYPE_NAME_UNKNOWN : name;
         }
     };

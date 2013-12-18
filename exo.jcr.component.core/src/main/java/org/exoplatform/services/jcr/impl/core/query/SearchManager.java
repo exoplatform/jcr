@@ -16,12 +16,15 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.apache.lucene.index.FieldInfo;
+import org.apache.lucene.index.FieldInfos;
 import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
+import org.apache.lucene.util.ReaderUtil;
 import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PropertyManager;
@@ -97,7 +100,6 @@ import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -514,10 +516,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          try
          {
             reader = ((SearchIndex)handler).getIndexReader();
-            final Collection<?> fields = reader.getFieldNames(IndexReader.FieldOption.ALL);
-            for (final Object field : fields)
+            FieldInfos infos = ReaderUtil.getMergedFieldInfos(reader);
+            for (FieldInfo info : infos)
             {
-               fildsSet.add((String)field);
+               fildsSet.add(info.name);
             }
          }
          catch (IOException e)
@@ -919,6 +921,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * @throws NoSuchMethodException 
     * @throws SecurityException 
     */
+   @SuppressWarnings("unchecked")
    protected IndexerChangesFilter initializeChangesFilter() throws RepositoryException,
       RepositoryConfigurationException
 

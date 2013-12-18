@@ -67,12 +67,12 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     /**
      * List of exception objects created while creating the XPath string
      */
-    private final List exceptions = new ArrayList();
+    private final List<Exception> exceptions = new ArrayList<Exception>();
 
     private QueryFormat(QueryRootNode root, LocationFactory resolver)
             throws RepositoryException {
         this.resolver = resolver;
-        statement = root.accept(this, new StringBuffer()).toString();
+        statement = root.accept(this, new StringBuilder()).toString();
         if (exceptions.size() > 0) {
             Exception e = (Exception) exceptions.get(0);
             throw new InvalidQueryException(e.getMessage(), e);
@@ -111,7 +111,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     //-------------< QueryNodeVisitor interface >-------------------------------
 
     public Object visit(QueryRootNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         node.getLocationNode().accept(this, data);
         InternalQName[] selectProps = node.getSelectProperties();
         if (selectProps.length > 0) {
@@ -142,7 +142,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(OrQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         boolean bracket = false;
         if (node.getParent() instanceof AndQueryNode) {
             bracket = true;
@@ -164,7 +164,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(AndQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         String and = "";
         QueryNode[] operands = node.getOperands();
         for (int i = 0; i < operands.length; i++) {
@@ -176,7 +176,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(NotQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         QueryNode[] operands = node.getOperands();
         if (operands.length > 0) {
             try {
@@ -192,7 +192,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(ExactQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         sb.append("@");
         try {
             InternalQName name = encode(node.getPropertyName());
@@ -212,7 +212,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(TextsearchQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         try {
             sb.append(resolver.createJCRName(XPathQueryBuilder.JCR_CONTAINS).getAsString());
             sb.append("(");
@@ -249,7 +249,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(PathQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         if (node.isAbsolute()) {
             sb.append("/");
         }
@@ -264,7 +264,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(LocationStepQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         if (node.getIncludeDescendants()) {
             sb.append('/');
         }
@@ -321,7 +321,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(DerefQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         try {
             sb.append(resolver.createJCRName(XPathQueryBuilder.JCR_DEREF).getAsString());
             sb.append("(@");
@@ -340,10 +340,10 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(RelationQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         try {
 
-            StringBuffer propPath = new StringBuffer();
+            StringBuilder propPath = new StringBuilder();
             // only encode if not position function
              QPath relPath = node.getRelativePath();
             if (relPath == null) {
@@ -438,7 +438,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(OrderQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         sb.append(" order by");
         OrderQueryNode.OrderSpec[] specs = node.getOrderSpecs();
         String comma = "";
@@ -472,7 +472,7 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     }
 
     public Object visit(PropertyFunctionQueryNode node, Object data) throws RepositoryException {
-        StringBuffer sb = (StringBuffer) data;
+        StringBuilder sb = (StringBuilder) data;
         String functionName = node.getFunctionName();
         try {
             if (functionName.equals(PropertyFunctionQueryNode.LOWER_CASE)) {
@@ -493,14 +493,14 @@ class QueryFormat implements QueryNodeVisitor, QueryConstants {
     //----------------------------< internal >----------------------------------
 
     /**
-     * Appends the value of a relation node to the <code>StringBuffer</code>
+     * Appends the value of a relation node to the <code>StringBuilder</code>
      * <code>sb</code>.
      *
      * @param node the relation node.
      * @param b    where to append the value.
     * @throws RepositoryException 
      */
-    private void appendValue(RelationQueryNode node, StringBuffer b)
+    private void appendValue(RelationQueryNode node, StringBuilder b)
             throws RepositoryException {
         if (node.getValueType() == TYPE_LONG) {
             b.append(node.getLongValue());

@@ -20,7 +20,7 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
  * Represents a boolean that implement {@link Comparable}. This class can
  * be removed when we move to Java 5.
  */
-public final class ComparableBoolean implements Comparable {
+public final class ComparableBoolean implements Comparable<ComparableBoolean> {
 
     private static final ComparableBoolean TRUE = new ComparableBoolean(true);
 
@@ -32,8 +32,7 @@ public final class ComparableBoolean implements Comparable {
         this.value = value;
     }
 
-    public int compareTo(Object o) {
-        ComparableBoolean b = (ComparableBoolean) o;
+    public int compareTo(ComparableBoolean b) {
         return (b.value == value ? 0 : (value ? 1 : -1));
     }
 

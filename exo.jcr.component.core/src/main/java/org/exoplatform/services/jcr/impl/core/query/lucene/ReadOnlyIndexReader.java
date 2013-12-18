@@ -182,7 +182,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
    /**
     * @exception UnsupportedOperationException always
     */
-   protected final void doCommit(Map commitUserData)
+   protected final void doCommit(Map<String, String> commitUserData)
    {
       if (!hasChanges)
       {

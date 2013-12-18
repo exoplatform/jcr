@@ -43,7 +43,7 @@ public class QueryManagerImpl implements QueryManager
    /**
     * List of all supported query languages
     */
-   private static final List SUPPORTED_QUERIES_LIST = Collections.unmodifiableList(Arrays.asList(SUPPORTED_QUERIES));
+   private static final List<String> SUPPORTED_QUERIES_LIST = Collections.unmodifiableList(Arrays.asList(SUPPORTED_QUERIES));
 
    /**
     * The <code>Session</code> for this QueryManager.

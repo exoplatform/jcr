@@ -16,18 +16,18 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import java.util.Arrays;
-
-import javax.jcr.RepositoryException;
-
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 
+import java.util.Arrays;
+
+import javax.jcr.RepositoryException;
+
 
 
 /**
- * Utility class to dump a {@link QueryNode} tree to a StringBuffer.
+ * Utility class to dump a {@link QueryNode} tree to a StringBuilder.
  */
 public class QueryTreeDump implements QueryNodeVisitor {
 
@@ -56,7 +56,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
      * @param buffer where to dump the tree.
      * @throws RepositoryException
      */
-    private QueryTreeDump(QueryNode node, StringBuffer buffer) throws RepositoryException {
+    private QueryTreeDump(QueryNode node, StringBuilder buffer) throws RepositoryException {
         node.accept(this, buffer);
     }
 
@@ -66,12 +66,12 @@ public class QueryTreeDump implements QueryNodeVisitor {
      * @param buffer a string buffer where to dump the tree structure.
      * @throws RepositoryException
      */
-    public static void dump(QueryNode node, StringBuffer buffer) throws RepositoryException {
+    public static void dump(QueryNode node, StringBuilder buffer) throws RepositoryException {
         new QueryTreeDump(node, buffer);
     }
 
     public Object visit(QueryRootNode node, Object data) throws RepositoryException {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append("+ Root node");
         buffer.append("\n");
         // select properties
@@ -99,7 +99,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(OrQueryNode node, Object data) throws RepositoryException {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ OrQueryNode");
         buffer.append("\n");
@@ -108,7 +108,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(AndQueryNode node, Object data) throws RepositoryException {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ AndQueryNode");
         buffer.append("\n");
@@ -117,7 +117,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(NotQueryNode node, Object data) throws RepositoryException {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ NotQueryNode");
         buffer.append("\n");
@@ -126,7 +126,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(ExactQueryNode node, Object data) {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ ExactQueryNode: ");
         buffer.append(" Prop=").append(node.getPropertyName());
@@ -136,7 +136,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(NodeTypeQueryNode node, Object data) {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ NodeTypeQueryNode: ");
         buffer.append(" Prop=").append(node.getPropertyName().getAsString());
@@ -146,7 +146,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(TextsearchQueryNode node, Object data) {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ TextsearchQueryNode: ");
         buffer.append(" Path=");
@@ -171,7 +171,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(PathQueryNode node, Object data) throws RepositoryException {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ PathQueryNode");
         buffer.append("\n");
@@ -180,7 +180,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(LocationStepQueryNode node, Object data) throws RepositoryException {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ LocationStepQueryNode: ");
         buffer.append(" NodeTest=");
@@ -204,7 +204,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(RelationQueryNode node, Object data) throws RepositoryException {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ RelationQueryNode: Op: ");
         buffer.append(QueryConstants.OPERATION_NAMES.getName(node.getOperation()));
@@ -236,7 +236,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(OrderQueryNode node, Object data) {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ OrderQueryNode");
         buffer.append("\n");
@@ -252,7 +252,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(DerefQueryNode node, Object data) throws RepositoryException {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ DerefQueryNode: ");
         buffer.append(" NodeTest=");
@@ -276,7 +276,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
     }
 
     public Object visit(PropertyFunctionQueryNode node, Object data) {
-        StringBuffer buffer = (StringBuffer) data;
+        StringBuilder buffer = (StringBuilder) data;
         buffer.append(PADDING, 0, indent);
         buffer.append("+ PropertyFunctionQueryNode: ");
         buffer.append(node.getFunctionName());
@@ -284,7 +284,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
         return buffer;
     }
 
-    private void traverse(QueryNode[] node, StringBuffer buffer) throws RepositoryException {
+    private void traverse(QueryNode[] node, StringBuilder buffer) throws RepositoryException {
         indent += 2;
         if (indent > PADDING.length) {
             char[] tmp = new char[indent * 2];
@@ -304,7 +304,7 @@ public class QueryTreeDump implements QueryNodeVisitor {
      * @param relPath a relative path.
      * @param buffer the buffer where to append the path.
      */
-    private static void appendPath(QPath relPath, StringBuffer buffer) {
+    private static void appendPath(QPath relPath, StringBuilder buffer) {
          QPathEntry[] elements = relPath.getEntries();
         String slash = "";
         for (int i = 0; i < elements.length; i++) {

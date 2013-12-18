@@ -30,7 +30,12 @@ import java.io.IOException;
  */
 class MatchAllWeight extends AbstractWeight {
 
-    /**
+   /**
+    * The serial version UID
+    */
+   private static final long serialVersionUID = 3728644743899151526L;
+
+   /**
      * Name of the field to match.
      */
     private final String field;

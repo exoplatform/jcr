@@ -30,7 +30,7 @@ class PerQueryCache {
     /**
      * The internal map of this <code>PerQueryCache</code>.
      */
-    private final Map map = new HashMap();
+    private final Map<Key, Object> map = new HashMap<Key, Object>();
 
     /**
      * Private constructor.
@@ -41,13 +41,13 @@ class PerQueryCache {
     /**
      * The per thread cache instance.
      */
-    private static final ThreadLocal CACHE = new ThreadLocal();
+    private static final ThreadLocal<PerQueryCache> CACHE = new ThreadLocal<PerQueryCache>();
 
     /**
      * @return <code>PerQueryCache</code> for the current thread.
      */
     static PerQueryCache getInstance() {
-        PerQueryCache cache = (PerQueryCache) CACHE.get();
+        PerQueryCache cache = CACHE.get();
         if (cache == null) {
             cache = new PerQueryCache();
             CACHE.set(cache);
@@ -64,7 +64,7 @@ class PerQueryCache {
      * @return the value assigned to <code>type</code> and <code>key</code> or
      *         <code>null</code> if it does not exist in the cache.
      */
-    Object get(Class type, Object key) {
+    Object get(Class<?> type, Object key) {
         return map.get(new Key(type, key));
     }
 
@@ -78,7 +78,7 @@ class PerQueryCache {
      * @return the existing value in the cache assigned to <code>type</code> and
      *         <code>key</code> or <code>null</code> if there was none.
      */
-    Object put(Class type, Object key, Object value) {
+    Object put(Class<?> type, Object key, Object value) {
         return map.put(new Key(type, key), value);
     }
 
@@ -97,7 +97,7 @@ class PerQueryCache {
         /**
          * The query type.
          */
-        private final Class type;
+        private final Class<?> type;
 
         /**
          * The key object.
@@ -110,7 +110,7 @@ class PerQueryCache {
          * @param type the query type.
          * @param key the key object.
          */
-        private Key(Class type, Object key) {
+        private Key(Class<?> type, Object key) {
             this.type = type;
             this.key = key;
         }

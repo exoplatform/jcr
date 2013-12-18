@@ -216,9 +216,10 @@ class RedoLog
          return;
       }
       InputStream in = new IndexInputStream(dir.openInput(REDO_LOG));
+      BufferedReader reader = null;
       try
       {
-         BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+         reader = new BufferedReader(new InputStreamReader(in));
          String line;
          while ((line = reader.readLine()) != null)
          {
@@ -234,6 +235,17 @@ class RedoLog
       }
       finally
       {
+         if (reader != null)
+         {
+            try
+            {
+               reader.close();
+            }
+            catch (IOException e)
+            {
+               log.warn("Exception while closing redo log: " + e.toString());
+            }
+         }
          if (in != null)
          {
             try

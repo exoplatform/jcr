@@ -101,7 +101,7 @@ public abstract class QueryResultImpl implements QueryResult
     * <p/>
     * The exact type is: <code>List&lt;ScoreNode[]></code>
     */
-   private final List resultNodes = new ArrayList();
+   private final List<ScoreNode[]> resultNodes = new ArrayList<ScoreNode[]>();
 
    /**
     * This is the raw number of results that matched the query. This number
@@ -331,7 +331,7 @@ public abstract class QueryResultImpl implements QueryResult
          if (resultNodes.isEmpty() && offset > 0)
          {
             // collect result offset into dummy list
-            collectScoreNodes(result, new ArrayList(), offset, true);
+            collectScoreNodes(result, new ArrayList<ScoreNode[]>(), offset, true);
          }
          else
          {
@@ -389,7 +389,7 @@ public abstract class QueryResultImpl implements QueryResult
     * @throws IOException if an error occurs while reading from hits.
     * @throws RepositoryException if an error occurs while checking access rights.
     */
-   private void collectScoreNodes(MultiColumnQueryHits hits, List collector, long maxResults, boolean isOffset) throws IOException,
+   private void collectScoreNodes(MultiColumnQueryHits hits, List<ScoreNode[]> collector, long maxResults, boolean isOffset) throws IOException,
       RepositoryException
    {
       while (collector.size() < maxResults)

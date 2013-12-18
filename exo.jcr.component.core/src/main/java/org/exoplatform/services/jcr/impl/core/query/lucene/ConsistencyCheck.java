@@ -64,7 +64,7 @@ class ConsistencyCheck
    /**
     * All the document UUIDs within the index.
     */
-   private Set documentUUIDs;
+   private Set<String> documentUUIDs;
 
    /**
     * List of all errors.
@@ -175,9 +175,9 @@ class ConsistencyCheck
    private void run() throws IOException, RepositoryException
    {
       // UUIDs of multiple nodes in the index
-      Set multipleEntries = new HashSet();
+      Set<String> multipleEntries = new HashSet<String>();
       // collect all documents UUIDs
-      documentUUIDs = new HashSet();
+      documentUUIDs = new HashSet<String>();
       CachingMultiIndexReader reader = index.getIndexReader();
       try
       {
@@ -214,9 +214,9 @@ class ConsistencyCheck
       }
 
       // create multiple entries errors
-      for (Iterator it = multipleEntries.iterator(); it.hasNext();)
+      for (Iterator<String> it = multipleEntries.iterator(); it.hasNext();)
       {
-         errors.add(new MultipleEntries((String)it.next()));
+         errors.add(new MultipleEntries(it.next()));
       }
 
       reader = index.getIndexReader();

@@ -59,12 +59,12 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
    /**
     * Map of uris indexed by prefixes
     */
-   private Map prefixToURI = new HashMap();
+   private Map<String, String> prefixToURI = new HashMap<String, String>();
 
    /**
     * Map of prefixes indexed by uris
     */
-   private Map uriToPrefix = new HashMap();
+   private Map<String, String> uriToPrefix = new HashMap<String, String>();
 
    /**
     * Current prefix count.
@@ -99,7 +99,7 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
       {
          throw new NamespaceException(prefix + ": is not a registered namespace prefix.");
       }
-      return (String)prefixToURI.get(prefix);
+      return prefixToURI.get(prefix);
    }
 
    /**
@@ -114,7 +114,7 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
     */
    public synchronized String getNamespacePrefixByURI(String uri) throws NamespaceException
    {
-      String prefix = (String)uriToPrefix.get(uri);
+      String prefix = uriToPrefix.get(uri);
       if (prefix == null)
       {
          // make sure prefix is not taken
@@ -157,7 +157,7 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
             props.load(in);
 
             // read mappings from properties
-            Iterator iter = props.keySet().iterator();
+            Iterator<Object> iter = props.keySet().iterator();
             while (iter.hasNext())
             {
                String prefix = (String)iter.next();
@@ -186,11 +186,11 @@ public class FileBasedNamespaceMappings extends AbstractNamespaceMappings
       Properties props = new Properties();
 
       // store mappings in properties
-      Iterator iter = prefixToURI.keySet().iterator();
+      Iterator<String> iter = prefixToURI.keySet().iterator();
       while (iter.hasNext())
       {
-         String prefix = (String)iter.next();
-         String uri = (String)prefixToURI.get(prefix);
+         String prefix = iter.next();
+         String uri = prefixToURI.get(prefix);
          props.setProperty(prefix, uri);
       }
 

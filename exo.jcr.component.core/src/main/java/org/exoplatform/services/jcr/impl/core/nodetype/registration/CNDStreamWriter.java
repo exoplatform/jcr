@@ -202,7 +202,7 @@ public class CNDStreamWriter
       }
 
       /** Print attributes */
-      StringBuffer attributes = new StringBuffer();
+      StringBuilder attributes = new StringBuilder();
       //      if (nodeTypeData.isAbstract())
       //      {
       //         attributes += "abstract ";
@@ -268,7 +268,7 @@ public class CNDStreamWriter
       out.write(listToString(propertyDefinition.getDefaultValues(), "'", "\r\n    = ", " "));
 
       /** Print attributes */
-      StringBuffer attributes = new StringBuffer();
+      StringBuilder attributes = new StringBuilder();
 
       if (propertyDefinition.isAutoCreated())
       {
@@ -359,7 +359,7 @@ public class CNDStreamWriter
          out.write("\r\n    = " + qNameToString(nodeDefinition.getDefaultPrimaryType()));
       }
 
-      StringBuffer attributes = new StringBuffer();
+      StringBuilder attributes = new StringBuilder();
 
       if (nodeDefinition.isAutoCreated())
       {
@@ -407,7 +407,7 @@ public class CNDStreamWriter
     */
    private String listToString(String[] list, String quote, String beforeString, String afterString)
    {
-      StringBuffer result = new StringBuffer();
+      StringBuilder result = new StringBuilder();
 
       if (list != null && list.length > 0)
       {

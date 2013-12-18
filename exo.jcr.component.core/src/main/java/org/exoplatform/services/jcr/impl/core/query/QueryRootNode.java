@@ -16,12 +16,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
-
-import org.exoplatform.services.jcr.datamodel.InternalQName;
 
 
 
@@ -41,7 +41,7 @@ public class QueryRootNode extends QueryNode {
      * The list of property names (as {@link org.exoplatform.services.jcr.impl.core.query.adapter.Name}s
      * to select.
      */
-    private final List selectProperties = new ArrayList();
+    private final List<InternalQName> selectProperties = new ArrayList<InternalQName>();
 
     /**
      * The list of property names to order the result nodes. Might be null

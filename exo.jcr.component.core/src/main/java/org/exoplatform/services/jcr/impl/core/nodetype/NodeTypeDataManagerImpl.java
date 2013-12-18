@@ -758,7 +758,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       else if (!recipientsMixVersionable && ancestorIsMixVersionable)
       {
 
-         final StringBuffer buffer = new StringBuffer();
+         final StringBuilder buffer = new StringBuilder();
          buffer.append("Fail to change  node type from ");
          buffer.append(ancestorDefinition.getName().getAsString());
          buffer.append(" to ");
@@ -979,7 +979,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       {
          if (nodes.size() > 0)
          {
-            final StringBuffer buffer = new StringBuffer();
+            final StringBuilder buffer = new StringBuilder();
             buffer.append("Fail to change ");
             buffer.append(recipientDefinition.getName().getAsString());
             buffer.append(" node type from mix:versionable = true  to mix:versionable = false");
@@ -1055,7 +1055,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
          if (nodes.size() > 0)
          {
-            final StringBuffer buffer = new StringBuffer();
+            final StringBuilder buffer = new StringBuilder();
             buffer.append("Fail to change ");
             buffer.append(recipientDefinition.getName().getAsString());
             buffer.append(" node type from IsMixin=");

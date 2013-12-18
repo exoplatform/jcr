@@ -23,6 +23,7 @@ import org.apache.lucene.index.IndexWriter;
 import org.apache.lucene.index.IndexWriterConfig;
 import org.apache.lucene.index.LogMergePolicy;
 import org.apache.lucene.index.Term;
+import org.apache.lucene.index.TieredMergePolicy;
 import org.apache.lucene.search.Similarity;
 import org.apache.lucene.store.Directory;
 import org.apache.lucene.util.Version;
@@ -129,7 +130,7 @@ abstract class AbstractIndex
 
       if (!isExisting)
       {
-         IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_30, analyzer);
+         IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_36, analyzer);
          indexWriter = new IndexWriter(directory, config);
          // immediately close, now that index has been created
          indexWriter.close();
@@ -149,7 +150,7 @@ abstract class AbstractIndex
    }
 
    /**
-    * Returns <code>true</code> if this index was openend on a directory with
+    * Returns <code>true</code> if this index was opened on a directory with
     * an existing index in it; <code>false</code> otherwise.
     *
     * @return <code>true</code> if there was an index present when this index
@@ -210,7 +211,7 @@ abstract class AbstractIndex
 
    /**
     * Removes the document from this index. This call will not invalidate
-    * the shared reader. If a subclass whishes to do so, it should overwrite
+    * the shared reader. If a subclass wishes to do so, it should overwrite
     * this method and call {@link #invalidateSharedReader()}.
     *
     * @param idTerm the id term of the document to remove.
@@ -280,7 +281,7 @@ abstract class AbstractIndex
          else
          {
             // reader outdated
-            if (readOnlyReader.getRefCount() == 1)
+            if (readOnlyReader.getRefCounter() == 1)
             {
                // not in use, except by this index
                // update the reader
@@ -310,7 +311,7 @@ abstract class AbstractIndex
       if (sharedReader == null)
       {
          // create new shared reader
-         IndexReader reader = IndexReader.open(getDirectory(), null, true, termInfosIndexDivisor);
+         IndexReader reader = IndexReader.open(getDirectory(), termInfosIndexDivisor);
          CachingIndexReader cr = new CachingIndexReader(reader, cache, initCache);
          sharedReader = new SharedIndexReader(cr);
       }
@@ -348,11 +349,15 @@ abstract class AbstractIndex
       }
       if (indexWriter == null)
       {
-         IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_30, analyzer);
+         IndexWriterConfig config = new IndexWriterConfig(Version.LUCENE_36, analyzer);
          config.setSimilarity(similarity);
          if (config.getMergePolicy() instanceof LogMergePolicy)
          {
             ((LogMergePolicy)config.getMergePolicy()).setUseCompoundFile(useCompoundFile);
+         }
+         else if (config.getMergePolicy() instanceof TieredMergePolicy)
+         {
+            ((TieredMergePolicy)config.getMergePolicy()).setUseCompoundFile(useCompoundFile);
          }
          else
          {
@@ -397,7 +402,7 @@ abstract class AbstractIndex
       if (optimize)
       {
          IndexWriter writer = getIndexWriter();
-         writer.optimize();
+         writer.forceMerge(1, true);
          writer.close();
          indexWriter = null;
       }
@@ -528,6 +533,11 @@ abstract class AbstractIndex
          {
             ((LogMergePolicy)config.getMergePolicy()).setUseCompoundFile(useCompoundFile);
             ((LogMergePolicy)config.getMergePolicy()).setNoCFSRatio(1.0);
+         }
+         else if (config.getMergePolicy() instanceof TieredMergePolicy)
+         {
+            ((TieredMergePolicy)config.getMergePolicy()).setUseCompoundFile(useCompoundFile);
+            ((TieredMergePolicy)config.getMergePolicy()).setNoCFSRatio(1.0);
          }
          else
          {

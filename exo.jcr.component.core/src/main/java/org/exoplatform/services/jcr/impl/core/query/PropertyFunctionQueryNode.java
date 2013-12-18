@@ -49,10 +49,10 @@ public class PropertyFunctionQueryNode extends QueryNode {
     /**
      * The set of supported function names.
      */
-    private static final Set SUPPORTED_FUNCTION_NAMES;
+    private static final Set<String> SUPPORTED_FUNCTION_NAMES;
 
     static {
-        Set tmp = new HashSet();
+        Set<String> tmp = new HashSet<String>();
         tmp.add(UPPER_CASE);
         tmp.add(LOWER_CASE);
         SUPPORTED_FUNCTION_NAMES = Collections.unmodifiableSet(tmp);
