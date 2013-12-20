@@ -31,6 +31,9 @@
   <packaging>rar</packaging>
   <name>eXo JCR :: Connector :: JCA</name>
   <description>Implementation of JCA resource adapter of Exoplatform SAS 'eXo JCR' project.</description>
+    <properties>
+        <manifest.entries/>
+    </properties>
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
@@ -114,9 +117,26 @@
             <manifest>
               <addClasspath>true</addClasspath>
             </manifest>
+              <manifestEntries>
+                  <Dependencies>${manifest.entries}</Dependencies>
+              </manifestEntries>
           </archive>
         </configuration>
       </plugin>
     </plugins>
   </build>
+  <profiles>
+      <profile>
+          <id>gatein</id>
+          <properties>
+              <manifest.entries>javax.jcr.api,org.gatein.lib,org.gatein.sso</manifest.entries>
+          </properties>
+      </profile>
+      <profile>
+          <id>platform</id>
+          <properties>
+              <manifest.entries>deployment.platform.ear</manifest.entries>
+          </properties>
+      </profile>
+  </profiles>
 </project>
