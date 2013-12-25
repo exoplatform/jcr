@@ -67,10 +67,6 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
 
    private final Cache<Serializable, Object> cache;
 
-   /**
-    * Flag notifies if this IndexInfos is from system search manager or not.
-    */
-   private boolean system;
 
    /**
     * Used to retrieve the current mode
@@ -80,7 +76,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
    /**
     * This FQN points to cache node, where list of indexes for this {@link IndexInfos} instance is stored.
     */
-   private final Fqn namesFqn;
+   private final Fqn<?> namesFqn;
 
    /**
     * @param cache instance of JbossCache that is used to deliver index names
@@ -144,7 +140,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
          }
          catch (IOException e)
          {
-            log.error("Cannot read the list of indexe names", e);
+            log.error("Cannot read the list of index names", e);
          }
       }
       else
@@ -168,8 +164,25 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
          // check if cache not stopped already, this can occur on server's stop
          if (cache.getCacheStatus() == CacheStatus.STARTED)
          {
-            // write to cache
-            PrivilegedJBossCacheHelper.put(cache, namesFqn, LIST_KEY, getNames());
+            boolean originLocal = cache.getInvocationContext().isOriginLocal();
+            try
+            {
+               if (!originLocal)
+               {
+                  // Enforce replication
+                  cache.getInvocationContext().setOriginLocal(true);
+               }
+               // write to cache
+               PrivilegedJBossCacheHelper.put(cache, namesFqn, LIST_KEY, getNames());
+            }
+            finally
+            {
+               if (!originLocal)
+               {
+                  // Set to the initial value
+                  cache.getInvocationContext().setOriginLocal(originLocal);
+               }
+            }
          }
       }
    }
@@ -179,6 +192,7 @@ public class JBossCacheIndexInfos extends IndexInfos implements IndexerIoModeLis
     * only in READ_ONLY mode.
     * @param event
     */
+   @SuppressWarnings("unchecked")
    @NodeModified
    public void cacheNodeModified(NodeModifiedEvent event)
    {
