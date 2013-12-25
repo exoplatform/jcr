@@ -55,7 +55,7 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
 
    private final Cache<Serializable, Object> cache;
 
-   private boolean localUpdateInProgress = false;
+   private volatile boolean localUpdateInProgress;
 
    private static final String INDEX_PARAMETERS = "$index_parameters".intern();
 
@@ -73,7 +73,7 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
    /**
     * This FQN points to cache node, where list of indexes for this {@link IndexInfos} instance is stored.
     */
-   private final Fqn parametersFqn;
+   private final Fqn<?> parametersFqn;
 
    /**
     * @param cache instance of JbossCache that is used to deliver index names
@@ -150,14 +150,20 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
       {
          throw new IllegalStateException("Unable to set updateInProgress value in IndexerIoMode.READ_ONLY mode");
       }
+      boolean originLocal = true;
       try
       {
          // anyway set local update in progress
          localUpdateInProgress = updateInProgress;
          if (persitentUpdate)
          {
-            PrivilegedJBossCacheHelper.put(cache, parametersFqn, PARAMETER_NAME, new Boolean(updateInProgress));
-
+             originLocal = cache.getInvocationContext().isOriginLocal();
+             if (!originLocal)
+             {
+                 // Enforce replication
+                 cache.getInvocationContext().setOriginLocal(true);
+             }
+             PrivilegedJBossCacheHelper.put(cache, parametersFqn, PARAMETER_NAME, new Boolean(updateInProgress));
          }
          for (IndexUpdateMonitorListener listener : listeners)
          {
@@ -168,6 +174,14 @@ public class JBossCacheIndexUpdateMonitor implements IndexUpdateMonitor, Indexer
       catch (CacheException e)
       {
          log.error("Fail to change updateInProgress mode to " + updateInProgress, e);
+      }
+      finally
+      {
+          if (!originLocal)
+          {
+              // Set to the initial value
+              cache.getInvocationContext().setOriginLocal(originLocal);
+          }
       }
    }
 
