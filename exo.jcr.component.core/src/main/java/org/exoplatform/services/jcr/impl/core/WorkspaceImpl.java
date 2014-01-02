@@ -469,6 +469,8 @@ public class WorkspaceImpl implements ExtendedWorkspace
       session.getTransientNodesManager().reloadItems(initializer);
       // persist the changes
       session.getTransientNodesManager().getTransactManager().save(changes);
+
+      session.getActionHandler().postMove(srcNode, destNode);
    }
 
    /**

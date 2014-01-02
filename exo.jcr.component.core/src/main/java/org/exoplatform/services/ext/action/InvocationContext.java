@@ -48,7 +48,7 @@ public class InvocationContext extends HashMap implements Context
    public static final String CURRENT_ITEM = "currentItem".intern();
 
    /**
-    * Current item.
+    * Previous item.
     */
    public static final String PREVIOUS_ITEM = "previousItem".intern();
 

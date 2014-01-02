@@ -373,4 +373,37 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       assertEquals(1, dAction.getActionExecuterCount());
    }
 
+   public void testMoveAction() throws  RepositoryException
+   {
+      SessionActionCatalog catalog =container.getComponentInstanceOfType(SessionActionCatalog.class);
+      catalog.clear();
+
+      Node n1 = root.addNode("n1");
+      Node n2 = root.addNode("n2");
+      Node n3 = root.addNode("n3");
+
+      root.save();
+
+      SessionEventMatcher matcher =
+                new SessionEventMatcher(ExtendedEvent.MOVE, new QPath[]{((NodeImpl)root).getInternalPath()}, true, null,
+                        new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder);
+      DummyAction dAction = new DummyAction();
+
+      catalog.addAction(matcher, dAction);
+
+      assertEquals(0, dAction.getActionExecuterCount());
+      session.move(n1.getPath(), n2.getPath());
+      session.save();
+      assertEquals(1, dAction.getActionExecuterCount());
+
+      Condition cond = new Condition();
+      cond.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.MOVE);
+
+      assertEquals(1, catalog.getActions(cond).size());
+
+      session.getWorkspace().move(n3.getPath(), n2.getPath());
+      session.save();
+      assertEquals(2, dAction.getActionExecuterCount());
+   }
+
 }

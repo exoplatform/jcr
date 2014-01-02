@@ -1086,6 +1086,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
             triggerEventsForDescendants, maxDescendantNodesAllowed);
 
       getTransientNodesManager().move((NodeData)srcNode.getData(), initializer);
+
+      this.getActionHandler().postMove(srcNode, destNode);
    }
 
    /**

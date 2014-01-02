@@ -472,6 +472,43 @@ public class SessionActionInterceptor
       }
    }
 
+   public void postMove(NodeImpl srcNode, NodeImpl destNode) throws RepositoryException
+   {
+      if (catalog == null)
+      {
+          return;
+      }
+
+      if (activeItem == null)
+      {
+          activeItem = srcNode;
+      }
+      else
+      {
+          return;
+      }
+
+      try
+      {
+          Condition conditions = new Condition();
+          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.MOVE);
+          conditions.put(SessionEventMatcher.PATH_KEY, srcNode.getInternalPath());
+          conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)srcNode.getData()));
+          conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
+
+          InvocationContext ctx = new InvocationContext();
+          ctx.put(InvocationContext.CURRENT_ITEM, destNode);
+          ctx.put(InvocationContext.PREVIOUS_ITEM, srcNode);
+          ctx.put(InvocationContext.EVENT, ExtendedEvent.MOVE);
+          ctx.put(InvocationContext.EXO_CONTAINER, container);
+          launch(conditions, ctx);
+      }
+      finally
+      {
+          activeItem = null;
+      }
+   }
+
    private InternalQName[] readNodeTypeNames(NodeData node)
    {
       InternalQName primaryTypeName = node.getPrimaryTypeName();

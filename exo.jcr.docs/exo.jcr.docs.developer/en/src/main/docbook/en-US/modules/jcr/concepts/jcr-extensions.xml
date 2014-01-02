@@ -126,7 +126,7 @@
 
       <para>The list of supported Event names: <emphasis role="bold">addNode,
       addProperty, changeProperty, removeProperty, removeNode, addMixin,
-      removeMixin, lock, unlock, checkin, checkout, read.</emphasis></para>
+      removeMixin, lock, unlock, checkin, checkout, read, move.</emphasis></para>
 
       <programlisting language="xml">&lt;component&gt;
    &lt;type&gt;org.exoplatform.services.jcr.impl.ext.action.SessionActionCatalog&lt;/type&gt;
