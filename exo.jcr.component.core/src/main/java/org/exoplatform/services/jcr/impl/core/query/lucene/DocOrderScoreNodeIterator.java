@@ -256,7 +256,7 @@ class DocOrderScoreNodeIterator implements ScoreNodeIterator
          ScoreNode n2 = nodes2[selectorIndex];
          // handle null values
          // null is considered less than any value
-         if (n1 == n2)
+         if (n1.equals(n2))
          {
             return 0;
          }

@@ -18,6 +18,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene.synonym;
 
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
@@ -80,11 +83,13 @@ import java.util.TreeSet;
  */
 public class SynonymMap {
 
+ private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.SynonymMap");
+
   /** the index data; Map<String word, String[] synonyms> */
   private final HashMap<String,String[]> table;
   
   private static final String[] EMPTY = new String[0];
-  
+
   private static final boolean DEBUG = false;
 
   /**
@@ -288,7 +293,9 @@ public class SynonymMap {
         ArrayList<String> words = group2Words.get(group.get(i));
         for (int j=words.size(); --j >= 0; ) { // add all words       
           String synonym = words.get(j); // note that w and word are interned
-          if (synonym != word) { // a word is implicitly it's own synonym
+          if (!synonym.equals(word))
+          {
+            // a word is implicitly it's own synonym
             synonyms.add(synonym);
           }
         }
@@ -311,10 +318,20 @@ public class SynonymMap {
   }
 
   private HashMap<String,String[]> optimize(HashMap<String,String[]> word2Syns, HashMap<String,String> internedWords) {
-    if (DEBUG) {
-      System.err.println("before gc");
-      for (int i=0; i < 10; i++) System.gc();
-      System.err.println("after gc");
+    if (DEBUG)
+    {
+      if (LOG.isDebugEnabled())
+      {
+          LOG.debug("before gc");
+      }
+      for (int i=0; i < 10; i++)
+      {
+          System.gc();
+      }
+      if (LOG.isDebugEnabled())
+      {
+          LOG.debug("after gc");
+      }
     }
     
     // collect entries
@@ -352,15 +369,24 @@ public class SynonymMap {
       word2Syns.remove(words[j]);
       word2Syns.put(internedWords.get(words[j]), syns);
     }
-    
+
     if (DEBUG) {
       words = null;
       allSynonyms = null;
       internedWords = null;
       allWords = null;
-      System.err.println("before gc");
-      for (int i=0; i < 10; i++) System.gc();
-      System.err.println("after gc");
+      if (LOG.isDebugEnabled())
+      {
+          LOG.debug("before gc");
+      }
+      for (int i=0; i < 10; i++)
+      {
+          System.gc();
+      }
+      if (LOG.isDebugEnabled())
+      {
+          LOG.debug("after gc");
+      }
     }
     return word2Syns;
   }

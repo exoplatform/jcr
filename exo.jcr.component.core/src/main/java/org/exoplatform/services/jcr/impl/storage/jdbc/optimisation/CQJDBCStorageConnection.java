@@ -1736,7 +1736,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   if (results[i] == 0)
                   {
                      ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
-                     if (data == FAKE_NODE)
+                     if (data.equals(FAKE_NODE))
                      {
                         throw new RepositoryException("Current item cannot be found");                           
                      }
@@ -1766,7 +1766,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   if (results[i] == 0)
                   {
                      ItemData data = getCurrentItem(currentChange, i, FAKE_PROPERTY);
-                     if (data == FAKE_PROPERTY)
+                     if (data.equals(FAKE_PROPERTY))
                      {
                         throw new RepositoryException("Current item cannot be found");                           
                      }
@@ -1785,7 +1785,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   if (results[i] == 0)
                   {
                      ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
-                     if (data == FAKE_NODE)
+                     if (data.equals(FAKE_NODE))
                      {
                         throw new RepositoryException("Current item cannot be found");                           
                      }
@@ -1805,7 +1805,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   if (results[i] == 0)
                   {
                      ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
-                     if (data == FAKE_NODE)
+                     if (data.equals(FAKE_NODE))
                      {
                         throw new RepositoryException("Current item cannot be found");                           
                      }

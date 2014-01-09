@@ -126,7 +126,7 @@ public class DummyRPCServiceImpl implements RPCService
       {
          return command.execute(args);
       }
-      catch (Throwable e)
+      catch (Throwable e)//NOSONAR
       {
          throw new RPCException(e.getMessage(), e);
       }
