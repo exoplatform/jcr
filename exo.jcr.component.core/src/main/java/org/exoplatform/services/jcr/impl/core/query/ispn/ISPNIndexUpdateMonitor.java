@@ -60,7 +60,7 @@ public class ISPNIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoMode
     */
    private final Cache<Serializable, Object> cache;
 
-   private boolean localUpdateInProgress = false;
+   private volatile boolean localUpdateInProgress;
 
    private static final String INDEX_PARAMETERS = "$index_parameters".intern();
 
@@ -214,6 +214,7 @@ public class ISPNIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoMode
     * @param event
     *          CacheEntryModifiedEvent
     */
+   @SuppressWarnings("unchecked")
    @CacheEntryModified
    public void cacheEntryModified(CacheEntryModifiedEvent<Serializable, Object> event)
    {
