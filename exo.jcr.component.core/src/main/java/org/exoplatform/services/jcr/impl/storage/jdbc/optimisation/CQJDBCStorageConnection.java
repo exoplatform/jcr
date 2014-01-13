@@ -1736,7 +1736,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   if (results[i] == 0)
                   {
                      ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
-                     if (data.equals(FAKE_NODE))
+                     if (data == FAKE_NODE) //NOSONAR
                      {
                         throw new RepositoryException("Current item cannot be found");                           
                      }
@@ -1766,7 +1766,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   if (results[i] == 0)
                   {
                      ItemData data = getCurrentItem(currentChange, i, FAKE_PROPERTY);
-                     if (data.equals(FAKE_PROPERTY))
+                     if (data == FAKE_PROPERTY) //NOSONAR
                      {
                         throw new RepositoryException("Current item cannot be found");                           
                      }
@@ -1785,7 +1785,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   if (results[i] == 0)
                   {
                      ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
-                     if (data.equals(FAKE_NODE))
+                     if (data == FAKE_NODE) //NOSONAR
                      {
                         throw new RepositoryException("Current item cannot be found");                           
                      }
@@ -1805,7 +1805,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                   if (results[i] == 0)
                   {
                      ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
-                     if (data.equals(FAKE_NODE))
+                     if (data == FAKE_NODE) //NOSONAR
                      {
                         throw new RepositoryException("Current item cannot be found");                           
                      }
@@ -2135,8 +2135,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * to String builder sb.
     * 
     * @param sb StringBuilder
-    * @param indexConstraint 
-    * @param pattern
+    * @param entry
+    * @param indexConstraint
     */
    protected void appendPattern(StringBuilder sb, QPathEntry entry, boolean indexConstraint)
    {
