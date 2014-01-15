@@ -130,10 +130,16 @@ public class IndexerCacheLoader extends AbstractWriteOnlyCacheLoader
          }
          finally
          {
-            if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+            boolean cacheModeLocal = cache.getInvocationContext().getOptionOverrides().isCacheModeLocal();
+            try
             {
+               cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(true);
                // remove the data from the cache
                cache.removeNode(name);
+            }
+            finally
+            {
+               cache.getInvocationContext().getOptionOverrides().setCacheModeLocal(cacheModeLocal);
             }
          }
       }
