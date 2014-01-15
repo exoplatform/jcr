@@ -36,6 +36,7 @@ import org.infinispan.loaders.CacheLoaderException;
 
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -59,30 +60,6 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
    protected final Map<String, Indexer> indexers = new HashMap<String, Indexer>();
 
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.IndexerCacheLoader");//NOSONAR
-
-   /**
-    * Executor used to remove all the entries that have already been treated. We
-    * need it because starting from ISPN 5.1 even changes applied in auto commit
-    * mode are done within a transaction so if we try to drop the entries
-    * directly we get an IllegalStateException because the operation is done
-    * during a commit and if we try to execute it outside the transaction we
-    * create a deadlock as the lock on the entry is hold by the suspended transaction
-    */
-   private static final ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(new ThreadFactory()
-   {
-      private final ThreadGroup group;
-      {
-         SecurityManager s = System.getSecurityManager();
-         group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
-      }
-
-      public Thread newThread(Runnable r)
-      {
-         Thread t = new Thread(group, r, "IndexerCacheStoreCleaner", 0);
-         t.setDaemon(true);
-         return t;
-      }
-   });
 
    /**
     * This method will register a new Indexer according to the given parameters. 
@@ -140,19 +117,10 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
          }
          finally
          {
-            if (getModeHandler().getMode() == IndexerIoMode.READ_WRITE)
-            {
-               // remove the data from the cache
-               EXECUTOR.submit(new Runnable()
-               {
-                  public void run()
-                  {
-                     cache.getAdvancedCache()
-                        .withFlags(Flag.SKIP_LOCKING, Flag.FORCE_ASYNCHRONOUS, Flag.SKIP_REMOTE_LOOKUP)
-                        .removeAsync(key);
-                  }
-               });
-            }
+            // Purge the cache to prevent memory leak
+            cache.getAdvancedCache()
+               .withFlags(Flag.CACHE_MODE_LOCAL, Flag.IGNORE_RETURN_VALUES)
+               .removeAsync(key);
          }
       }
    }
@@ -239,7 +207,7 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
    public Set<InternalCacheEntry> load(int numEntries) throws CacheLoaderException
    {
       // This cacheStore only accepts data
-      return null;
+      return Collections.emptySet();
    }
 
    /**
@@ -248,7 +216,7 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
    public Set<InternalCacheEntry> loadAll() throws CacheLoaderException
    {
       // This cacheStore only accepts data
-      return null;
+      return Collections.emptySet();
    }
 
    /**
@@ -257,7 +225,7 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
    public Set<Object> loadAllKeys(Set<Object> keysToExclude) throws CacheLoaderException
    {
       // This cacheStore only accepts data
-      return null;
+      return Collections.emptySet();
    }
 
 }

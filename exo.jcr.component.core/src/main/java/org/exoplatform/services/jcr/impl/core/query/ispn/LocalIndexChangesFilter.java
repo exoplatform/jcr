@@ -49,7 +49,7 @@ import javax.jcr.RepositoryException;
  * it own volatile, merger, local list of persisted indexes and stand-alone 
  * UpdateInProgressMonitor implementation. 
  * This implementation is similar to ISPNIndexChangesFilter but does not use
- * ISPNIndexInfoss and ISPNIndexUpdateMonitor classes.
+ * ISPNIndexInfos and ISPNIndexUpdateMonitor classes.
  *
  * @author <a href="mailto:anatoliy.bazko@gmail.com">Anatoliy Bazko</a>
  * @version $Id: LocalIndexChangesFilter.java 34360 2009-07-22 23:58:59Z tolusha $
@@ -110,7 +110,17 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter implements Loc
    protected void doUpdateIndex(ChangesFilterListsWrapper changes)
    {
       ChangesKey changesKey = new ChangesKey(wsId, IdGenerator.generate());
-      cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING).put(changesKey, changes);
+      try
+      {
+         cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(changesKey, changes);
+      }
+      finally
+      {
+         // Purge the cache to prevent memory leak
+         cache.getAdvancedCache()
+            .withFlags(Flag.CACHE_MODE_LOCAL, Flag.IGNORE_RETURN_VALUES)
+            .remove(changesKey);
+      }
    }
 
    /**

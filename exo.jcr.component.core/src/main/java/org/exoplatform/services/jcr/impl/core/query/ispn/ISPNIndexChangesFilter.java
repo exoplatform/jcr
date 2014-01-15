@@ -150,7 +150,7 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
       // rsync configured
       if (rsyncEntryName != null)
       {
-         return new RsyncIndexInfos(wsId, cache, system, modeHandler, ((SearchIndex)handler).getContext()
+         return new RsyncIndexInfos(wsId, cache, system, modeHandler, handler.getContext()
             .getIndexDirectory(), rsyncPort, rsyncEntryName, rsyncEntryPath, rsyncUserName, rsyncPassword);
       }
       else
@@ -168,7 +168,17 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
    protected void doUpdateIndex(ChangesFilterListsWrapper changes)
    {
       ChangesKey changesKey = new ChangesKey(wsId, IdGenerator.generate());
-      cache.getAdvancedCache().withFlags(Flag.SKIP_LOCKING).put(changesKey, changes);
+      try
+      {
+         cache.getAdvancedCache().withFlags(Flag.IGNORE_RETURN_VALUES).put(changesKey, changes);
+      }
+      finally
+      {
+         // Purge the cache to prevent memory leak
+         cache.getAdvancedCache()
+            .withFlags(Flag.CACHE_MODE_LOCAL, Flag.IGNORE_RETURN_VALUES)
+            .remove(changesKey);
+      }
    }
 
    /**

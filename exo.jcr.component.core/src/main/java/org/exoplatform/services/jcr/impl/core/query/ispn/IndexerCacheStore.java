@@ -77,14 +77,13 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
    public void init(CacheLoaderConfig config, Cache<?, ?> cache, StreamingMarshaller m) throws CacheLoaderException
    {
       super.init(config, cache, m);
-      this.cacheManager = cache == null ? null : (EmbeddedCacheManager)cache.getCacheManager();
+      this.cacheManager = cache == null ? null : cache.getCacheManager();
       listener = new CacheListener();
       cacheManager.addListener(listener);
    }
 
    /**
-    * Set the mode handler
-    * @param modeHandler
+    * Get the mode handler
     */
    public IndexerIoModeHandler getModeHandler()
    {
@@ -182,7 +181,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
       Set keys = dc.keySet();
       InternalCacheEntry entry;
       // collect all cache entries into the following map:
-      // <WS ID> : <Concated lists of added/removed nodes>
+      // <WS ID> : <Contracted lists of added/removed nodes>
       for (Object k : keys)
       {
          if ((entry = dc.get(k)) != null)
