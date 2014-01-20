@@ -64,6 +64,10 @@ public class ItemState implements Externalizable
 
    public static final int ADDED_AUTO_CREATED_NODES = 128;
 
+   public static final int MOVED = 256;
+
+   public static final int ORDERED = 512;
+
    /**
     * underlying item data
     */
@@ -230,6 +234,16 @@ public class ItemState implements Externalizable
       return (state == ADDED_AUTO_CREATED_NODES);
    }
 
+   public boolean isMoved()
+   {
+      return state == MOVED;
+   }
+
+   public boolean isOrdered()
+   {
+      return state == ORDERED;
+   }
+
    public boolean isEventFire()
    {
       return eventFire;
@@ -375,6 +389,26 @@ public class ItemState implements Externalizable
       return new ItemState(data, UNCHANGED, false, null, isInternalCreated);
    }
 
+   public static ItemState createMovedState(ItemData data, QPath oldPath)
+   {
+       return new ItemState(data, MOVED, true, null,false, false, oldPath);
+   }
+
+   public static ItemState createMovedState(ItemData data, boolean isInternalCreated, QPath oldPath)
+   {
+      return new ItemState(data, MOVED, true, null, isInternalCreated, false, oldPath);
+   }
+
+   public static ItemState createOrderedState(ItemData data, QPath oldPath)
+   {
+      return new ItemState(data, ORDERED, true, null,false, false, oldPath);
+   }
+
+   public static ItemState createOrderedState(ItemData data, boolean isInternalCreated, QPath oldPath)
+   {
+      return new ItemState(data, ORDERED, true, null, isInternalCreated, false, oldPath);
+   }
+
    public static String nameFromValue(int stateValue)
    {
       switch (stateValue)
@@ -395,6 +429,10 @@ public class ItemState implements Externalizable
             return "PATH_CHANGED";
          case ADDED_AUTO_CREATED_NODES :
             return "ADDED_AUTO_CREATED_NODES";
+         case MOVED :
+            return "MOVED";
+         case ORDERED :
+            return "ORDERED";
          default :
             return "UNDEFINED STATE";
       }

@@ -780,7 +780,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    /**
     * Return Node corresponding to this Node.
     * 
-    * @param correspSession
+    * @param corrSession
     *          session on corresponding Workspace
     * @return NodeData corresponding Node
     * @throws ItemNotFoundException
@@ -2739,6 +2739,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       int sameNameIndex = 0;
       List<ItemState> changes = new ArrayList<ItemState>();
       ItemState deleteState = null;
+      ItemState orderState = null;
       for (int j = 0; j < siblings.size(); j++)
       {
          NodeData sdata = siblings.get(j);
@@ -2802,6 +2803,17 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             state.eraseEventFire();
             changes.add(state);
          }
+      }
+      if (destPath != null && srcPath != null && srcPath.getName().getAsString().equals(destPath.getName().getAsString()))
+      {
+         NodeImpl srcNode = (NodeImpl)dataManager.getItem(srcPath, false);
+         NodeImpl desNode = (NodeImpl)dataManager.getItem(destPath, false);
+         orderState = ItemState.createOrderedState(desNode.nodeData() ,true,srcPath);
+         session.getActionHandler().postMove(srcNode, desNode);
+      }
+      if (orderState != null)
+      {
+          dataManager.getChangesLog().add(orderState);
       }
       // delete state first
       if (deleteState != null)

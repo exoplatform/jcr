@@ -18,7 +18,9 @@
  */
 package org.exoplatform.services.jcr.observation;
 
+import javax.jcr.RepositoryException;
 import javax.jcr.observation.Event;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS.
@@ -69,5 +71,54 @@ public interface ExtendedEvent extends Event
    public static final int UNLOCK = 8388608;
 
    public static final int READ = 16777216;
+
+   public static final int NODE_MOVED  = 33554432;
+
+   /**
+    * Returns the identifier associated with this event or <code>null</code> if
+    * this event has no associated identifier. The meaning of the associated
+    * identifier depends upon the type of the event. See event type constants
+    * above.
+    *
+    * @return the identifier associated with this event or <code>null</code>.
+    * @throws javax.jcr.RepositoryException if an error occurs.
+    * @since JCR 2.0
+    */
+   public String getIdentifier() throws RepositoryException;
+
+   /**
+    * Returns the information map associated with this event. The meaning of
+    * the map depends upon the type of the event. See event type constants
+    * above.
+    *
+    * @return A <code>Map</code> containing parameter information for instances
+    *         of a <code>NODE_MOVED</code> event.
+    * @throws RepositoryException if an error occurs.
+    * @since JCR 2.0
+    */
+   public Map getInfo() throws RepositoryException;
+
+   /**
+    * Returns the user data set through {@link ObservationManager#setUserData}
+    * on the <code>ObservationManager</code> bound to the <code>Session</code>
+    * that caused the event.
+    *
+    * @return The user data string.
+    * @throws RepositoryException if an error occurs.
+    * @since JCR 2.0
+    */
+   public String getUserData() throws RepositoryException;
+
+   /**
+    * Returns the date when the change was persisted that caused this event.
+    * The date is represented as a millisecond value that is an offset from the
+    * Epoch, January 1, 1970 00:00:00.000 GMT (Gregorian). The granularity of
+    * the returned value is implementation dependent.
+    *
+    * @return the date when the change was persisted that caused this event.
+    * @throws RepositoryException if an error occurs.
+    * @since JCR 2.0
+    */
+   public long getDate() throws RepositoryException;
 
 }

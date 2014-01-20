@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.api.observation;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.Log;
 
 import java.util.Calendar;
@@ -184,6 +185,55 @@ public class TestObservationManager extends JcrAPIBaseTest
       file.remove();
       session.save();
       checkEventNumAndCleanCounter(1);
+   }
+
+   public void testMoveNodeEvents() throws Exception
+   {
+      session.getWorkspace().getObservationManager().addEventListener(new DummyListener(log),
+              ExtendedEvent.NODE_MOVED, "/", true, null, null, false);
+
+      Node n1 = testRoot.addNode("n1");
+      Node n2 = testRoot.addNode("n2");
+      Node n3 = testRoot.addNode("n3");
+
+      session.move(n1.getPath(), n2.getPath());
+      session.save();
+
+      checkEventNumAndCleanCounter(1);
+
+      session.getWorkspace().move(n2.getPath(), n3.getPath());
+      session.save();
+
+      checkEventNumAndCleanCounter(1);
+   }
+
+   public void testOrderNodeEvents() throws Exception
+   {
+      session.getWorkspace().getObservationManager().addEventListener(new DummyListener(log),
+                ExtendedEvent.NODE_MOVED, "/", true, null, null, false);
+
+      testRoot.addNode("n1");
+      testRoot.addNode("n2");
+      testRoot.addNode("n1");
+      testRoot.addNode("n3");
+      testRoot.addNode("n2");
+      testRoot.addNode("n4");
+      testRoot.save();
+       
+      testRoot.orderBefore("n1[2]","n1");
+      session.save();
+
+      checkEventNumAndCleanCounter(1);
+
+      testRoot.orderBefore("n2","n3");
+      session.save();
+
+      checkEventNumAndCleanCounter(0);
+
+      testRoot.orderBefore("n4","n2[2]");
+      session.save();
+
+      checkEventNumAndCleanCounter(0);
    }
 
    public void testPropertyEventGeneration() throws RepositoryException

@@ -36,10 +36,13 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.SessionRegistry;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.util.EntityCollection;
+import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.observation.Event;
@@ -139,8 +142,31 @@ public class ActionLauncher implements ItemsPersistenceListener
 
                            String path =
                               userSession.getLocationFactory().createJCRPath(item.getQPath()).getAsString(false);
+                           if (eventType== ExtendedEvent.NODE_MOVED)
+                           {
+                               String oldPath =
+                                       userSession.getLocationFactory().createJCRPath(itemState.getOldPath()).getAsString(false);
+                               Map<String, String> info = new HashMap<String, String>();
+                               long timestamp = System.currentTimeMillis();
+                               if(itemState.isMoved())
+                               {
+                                   info.put(ExtendedEventImpl.SRC_ABS_PATH, oldPath);
+                                   info.put(ExtendedEventImpl.DEST_ABS_PATH, path);
+                               }
+                               else if (itemState.isOrdered())
+                               {
+                                   info.put(ExtendedEventImpl.SRC_CHILD_REL_PATH, oldPath);
+                                   info.put(ExtendedEventImpl.DEST_CHILD_REL_PATH, path);
+                               }
 
-                           events.add(new EventImpl(eventType, path, userSession.getUserID()));
+                               events.add(new ExtendedEventImpl(eventType, path, item.getIdentifier(), userSession.getUserID(),null, timestamp, info));
+                           }
+                            else
+                           {
+                               events.add(new EventImpl(eventType, path, userSession.getUserID()));
+
+                           }
+
                         }
                      }
                      catch (RepositoryException e)
@@ -286,6 +312,10 @@ public class ActionLauncher implements ItemsPersistenceListener
          else if (state.isDeleted())
          {
             return Event.NODE_REMOVED;
+         }
+         else if (state.isMoved() || state.isOrdered())
+         {
+             return ExtendedEvent.NODE_MOVED;
          }
          else if (state.isUpdated())
          {

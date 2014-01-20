@@ -381,11 +381,13 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       Node n1 = root.addNode("n1");
       Node n2 = root.addNode("n2");
       Node n3 = root.addNode("n3");
+      root.addNode("n2");
+      root.addNode("n4");
 
       root.save();
 
       SessionEventMatcher matcher =
-                new SessionEventMatcher(ExtendedEvent.MOVE, new QPath[]{((NodeImpl)root).getInternalPath()}, true, null,
+                new SessionEventMatcher(ExtendedEvent.NODE_MOVED, new QPath[]{((NodeImpl)root).getInternalPath()}, true, null,
                         new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder);
       DummyAction dAction = new DummyAction();
 
@@ -397,13 +399,22 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       assertEquals(1, dAction.getActionExecuterCount());
 
       Condition cond = new Condition();
-      cond.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.MOVE);
+      cond.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.NODE_MOVED);
 
       assertEquals(1, catalog.getActions(cond).size());
 
       session.getWorkspace().move(n3.getPath(), n2.getPath());
       session.save();
       assertEquals(2, dAction.getActionExecuterCount());
+
+      root.orderBefore("n2[2]","n2");
+      session.save();
+      assertEquals(3, dAction.getActionExecuterCount());
+
+      root.orderBefore("n4","n2");
+      session.save();
+      assertEquals(3, dAction.getActionExecuterCount());
+
    }
 
 }

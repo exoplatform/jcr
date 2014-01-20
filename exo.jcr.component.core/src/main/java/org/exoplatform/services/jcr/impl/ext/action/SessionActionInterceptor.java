@@ -491,7 +491,7 @@ public class SessionActionInterceptor
       try
       {
           Condition conditions = new Condition();
-          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.MOVE);
+          conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.NODE_MOVED);
           conditions.put(SessionEventMatcher.PATH_KEY, srcNode.getInternalPath());
           conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)srcNode.getData()));
           conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);

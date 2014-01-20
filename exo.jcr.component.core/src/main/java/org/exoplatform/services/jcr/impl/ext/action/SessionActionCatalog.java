@@ -194,9 +194,9 @@ public class SessionActionCatalog extends ActionCatalog
          {
             res |= ExtendedEvent.READ;
          }
-         else if (name.equalsIgnoreCase("move"))
+         else if (name.equalsIgnoreCase("moveNode"))
          {
-            res |= ExtendedEvent.MOVE;
+            res |= ExtendedEvent.NODE_MOVED;
          }
          else
          {

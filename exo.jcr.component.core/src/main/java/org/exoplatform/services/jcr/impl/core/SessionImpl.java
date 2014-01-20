@@ -29,6 +29,7 @@ import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.NamespaceAccessor;
 import org.exoplatform.services.jcr.core.SessionLifecycleListener;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
+import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
@@ -1078,6 +1079,11 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       if (!srcNode.checkLocking())
       {
          throw new LockException("Source parent node " + srcNode.getPath() + " is locked ");
+      }
+      if(destNode != null)
+      {
+           ItemState state = ItemState.createMovedState(destNode.nodeData(),true,srcNodePath.getInternalPath());
+           dataManager.getChangesLog().add(state);
       }
 
       ItemDataMoveVisitor initializer =

@@ -46,6 +46,8 @@ public class ExtendedEventType
 
    public static final String PROPERTY_CHANGED = "Property is changed";
 
+   public static final String NODE_MOVED = "Node is moved";
+
    public static final String SAVE = "Save";
 
    public static final String MOVE = "Move";
@@ -100,6 +102,8 @@ public class ExtendedEventType
             return PROPERTY_REMOVED;
          case Event.PROPERTY_CHANGED :
             return PROPERTY_CHANGED;
+         case ExtendedEvent.NODE_MOVED :
+            return NODE_MOVED;
          case ExtendedEvent.SAVE :
             return SAVE;
          case ExtendedEvent.MOVE :
@@ -158,6 +162,8 @@ public class ExtendedEventType
          return Event.PROPERTY_REMOVED;
       else if (name.equals(PROPERTY_CHANGED))
          return Event.PROPERTY_CHANGED;
+      else if (name.equals(NODE_MOVED))
+         return ExtendedEvent.NODE_MOVED;
       else if (name.equals(SAVE))
          return ExtendedEvent.SAVE;
       else if (name.equals(MOVE))

@@ -464,6 +464,11 @@ public class WorkspaceImpl implements ExtendedWorkspace
       
       srcNode.getData().accept(initializer);
       PlainChangesLog changes = new PlainChangesLogImpl(initializer.getAllStates(), session);
+      if(destNode != null)
+      {
+         ItemState state = ItemState.createMovedState(destNode.nodeData(),true,srcNodePath.getInternalPath());
+         changes.add(state);
+      }
 
       // reload items pool
       session.getTransientNodesManager().reloadItems(initializer);
