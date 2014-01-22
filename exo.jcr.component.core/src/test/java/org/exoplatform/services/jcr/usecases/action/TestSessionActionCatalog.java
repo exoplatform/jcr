@@ -412,13 +412,11 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       assertEquals("/n3/n6", ((NodeImpl) dAction.getInfo().get(InvocationContext.CURRENT_ITEM)).getPath());
 
       session.getWorkspace().move(n5.getPath(), n3.getPath() + "/n7");
-      session.save();
       assertEquals(3, dAction.getActionExecuterCount());
       assertEquals("/n5", ((NodeImpl)dAction.getInfo().get(InvocationContext.PREVIOUS_ITEM)).getPath());
       assertEquals("/n3/n7", ((NodeImpl) dAction.getInfo().get(InvocationContext.CURRENT_ITEM)).getPath());
 
       session.getWorkspace().move("/n3/n6", "/n3/n7");
-      session.save();
       assertEquals(4, dAction.getActionExecuterCount());
       assertEquals("/n3/n6", ((NodeImpl)dAction.getInfo().get(InvocationContext.PREVIOUS_ITEM)).getPath());
       assertEquals("/n3/n7[2]", ((NodeImpl) dAction.getInfo().get(InvocationContext.CURRENT_ITEM)).getPath());

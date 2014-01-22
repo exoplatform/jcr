@@ -149,16 +149,16 @@ public class ActionLauncher implements ItemsPersistenceListener
                                Map<String, String> info = new HashMap<String, String>();
                                if(itemState.isMoved())
                                {
-                                   info.put(EventImpl.SRC_ABS_PATH, oldPath);
-                                   info.put(EventImpl.DEST_ABS_PATH, path);
+                                   info.put(ExtendedEvent.SRC_ABS_PATH, oldPath);
+                                   info.put(ExtendedEvent.DEST_ABS_PATH, path);
                                }
                                else if (itemState.isOrdered())
                                {
-                                   info.put(EventImpl.SRC_CHILD_REL_PATH, oldPath);
-                                   info.put(EventImpl.DEST_CHILD_REL_PATH, path);
+                                   info.put(ExtendedEvent.SRC_CHILD_REL_PATH, oldPath);
+                                   info.put(ExtendedEvent.DEST_CHILD_REL_PATH, path);
                                }
 
-                               events.add(new EventImpl(eventType, path, item.getIdentifier(), info));
+                               events.add(new EventImpl(eventType, path, userSession.getUserID(), info));
                            }
                             else
                            {

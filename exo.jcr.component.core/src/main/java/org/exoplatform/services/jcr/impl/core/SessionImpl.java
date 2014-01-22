@@ -29,7 +29,6 @@ import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.NamespaceAccessor;
 import org.exoplatform.services.jcr.core.SessionLifecycleListener;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
-import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
@@ -1088,7 +1087,8 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       getTransientNodesManager().move((NodeData)srcNode.getData(), initializer);
 
-      this.getActionHandler().postMove(srcNode,(NodeImpl)dataManager.getItemByIdentifier(srcNode.getIdentifier(),false));
+      this.getActionHandler().postMove(srcNode, (NodeImpl) dataManager.
+         readItem(initializer.getItemMoveState().getData(), destParentNode.nodeData(), false, false));
    }
 
    /**

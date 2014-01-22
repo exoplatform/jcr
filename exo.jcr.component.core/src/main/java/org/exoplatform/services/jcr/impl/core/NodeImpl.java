@@ -2630,15 +2630,15 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       {
          return;
       }
-      ItemImpl srcNode= dataManager.getItem(srcPath,false);
-      ItemImpl desNode=null;
+      ItemData srcItem= dataManager.getItemData(srcPath);
+      ItemData desItem=null;
       // check existence
-      if (srcNode == null)
+      if (srcItem == null)
       {
          throw new ItemNotFoundException(getPath() + " has no child node with name " + srcPath.getName().getAsString());
       }
 
-      if (destPath != null && (desNode= dataManager.getItem(destPath,false)) == null)
+      if (destPath != null && (desItem= dataManager.getItemData(destPath)) == null)
       {
          throw new ItemNotFoundException(getPath() + " has no child node with name " + destPath.getName().getAsString());
       }
@@ -2805,9 +2805,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       }
       if (destPath != null && srcPath.getName().getAsString().equals(destPath.getName().getAsString()))
       {
-         ItemState orderState = ItemState.createOrderedState(desNode.getData(), srcPath);
+         ItemState orderState = ItemState.createOrderedState(desItem, srcPath);
          dataManager.getChangesLog().add(orderState);
-         session.getActionHandler().postMove((NodeImpl)srcNode, (NodeImpl)desNode);
+         session.getActionHandler().postMove((NodeImpl) dataManager.readItem(srcItem, null, false, false),
+            (NodeImpl) dataManager.readItem(desItem, null, false, false));
       }
       // delete state first
       if (deleteState != null)

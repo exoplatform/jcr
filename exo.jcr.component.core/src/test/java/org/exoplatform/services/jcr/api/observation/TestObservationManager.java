@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.api.observation;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.core.observation.EventImpl;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.Log;
 
@@ -211,13 +210,11 @@ public class TestObservationManager extends JcrAPIBaseTest
       assertEquals("/testRoot/n3/n6", listener.getInfo().get(ExtendedEvent.DEST_ABS_PATH));
 
       session.getWorkspace().move("/testRoot/n3/n6","/testRoot/n7");
-      session.save();
       checkEventNumAndCleanCounter(1);
       assertEquals("/testRoot/n3/n6", listener.getInfo().get(ExtendedEvent.SRC_ABS_PATH));
       assertEquals("/testRoot/n7", listener.getInfo().get(ExtendedEvent.DEST_ABS_PATH));
 
       session.getWorkspace().move("/testRoot/n3","/testRoot/n7");
-      session.save();
       checkEventNumAndCleanCounter(1);
       assertEquals("/testRoot/n3", listener.getInfo().get(ExtendedEvent.SRC_ABS_PATH));
       assertEquals("/testRoot/n7[2]", listener.getInfo().get(ExtendedEvent.DEST_ABS_PATH));
@@ -382,7 +379,7 @@ public class TestObservationManager extends JcrAPIBaseTest
             {
                 try
                 {
-                    info=((EventImpl)event).getInfo();
+                    info=((ExtendedEvent)event).getInfo();
                 }
                 catch (RepositoryException e)
                 {

@@ -461,16 +461,17 @@ public class WorkspaceImpl implements ExtendedWorkspace
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
             (NodeData)srcParentNode.getData(), nodeTypeManager, session.getTransientNodesManager(), true,
             triggerEventsForDescendants, session.maxDescendantNodesAllowed);
-      
+
       srcNode.getData().accept(initializer);
       PlainChangesLog changes = new PlainChangesLogImpl(initializer.getAllStates(), session);
 
       // reload items pool
       session.getTransientNodesManager().reloadItems(initializer);
+
+      session.getActionHandler().postMove(srcNode, (NodeImpl) session.getTransientNodesManager().
+         readItem(initializer.getItemMoveState().getData(), destParentNode.nodeData(), false, false));
       // persist the changes
       session.getTransientNodesManager().getTransactManager().save(changes);
-
-      session.getActionHandler().postMove(srcNode, (NodeImpl)session.getTransientNodesManager().getItemByIdentifier(srcNode.getIdentifier(), false));
    }
 
    /**
