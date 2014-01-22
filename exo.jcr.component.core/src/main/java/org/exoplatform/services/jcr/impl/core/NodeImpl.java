@@ -2630,16 +2630,16 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       {
          return;
       }
-
+      ItemImpl srcNode= dataManager.getItem(srcPath,false);
+      ItemImpl desNode=null;
       // check existence
-      if (dataManager.getItemData(srcPath) == null)
+      if (srcNode == null)
       {
          throw new ItemNotFoundException(getPath() + " has no child node with name " + srcPath.getName().getAsString());
       }
 
-      if (destPath != null && dataManager.getItemData(destPath) == null)
+      if (destPath != null && (desNode= dataManager.getItem(destPath,false)) == null)
       {
-
          throw new ItemNotFoundException(getPath() + " has no child node with name " + destPath.getName().getAsString());
       }
 
@@ -2650,7 +2650,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       if (destPath != null && srcPath.getDepth() != destPath.getDepth())
       {
-         throw new ItemNotFoundException("Source and destenation is not relative paths of depth one, "
+         throw new ItemNotFoundException("Source and destination is not relative paths of depth one, "
             + "i.e. is not a childs of same parent node");
       }
 
@@ -2739,7 +2739,6 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       int sameNameIndex = 0;
       List<ItemState> changes = new ArrayList<ItemState>();
       ItemState deleteState = null;
-      ItemState orderState = null;
       for (int j = 0; j < siblings.size(); j++)
       {
          NodeData sdata = siblings.get(j);
@@ -2804,16 +2803,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             changes.add(state);
          }
       }
-      if (destPath != null && srcPath != null && srcPath.getName().getAsString().equals(destPath.getName().getAsString()))
+      if (destPath != null && srcPath.getName().getAsString().equals(destPath.getName().getAsString()))
       {
-         NodeImpl srcNode = (NodeImpl)dataManager.getItem(srcPath, false);
-         NodeImpl desNode = (NodeImpl)dataManager.getItem(destPath, false);
-         orderState = ItemState.createOrderedState(desNode.nodeData() ,true,srcPath);
-         session.getActionHandler().postMove(srcNode, desNode);
-      }
-      if (orderState != null)
-      {
-          dataManager.getChangesLog().add(orderState);
+         ItemState orderState = ItemState.createOrderedState(desNode.getData(), srcPath);
+         dataManager.getChangesLog().add(orderState);
+         session.getActionHandler().postMove((NodeImpl)srcNode, (NodeImpl)desNode);
       }
       // delete state first
       if (deleteState != null)

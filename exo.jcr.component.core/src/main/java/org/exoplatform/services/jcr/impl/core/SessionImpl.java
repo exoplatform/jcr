@@ -1080,11 +1080,6 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       {
          throw new LockException("Source parent node " + srcNode.getPath() + " is locked ");
       }
-      if(destNode != null)
-      {
-           ItemState state = ItemState.createMovedState(destNode.nodeData(),true,srcNodePath.getInternalPath());
-           dataManager.getChangesLog().add(state);
-      }
 
       ItemDataMoveVisitor initializer =
          new ItemDataMoveVisitor((NodeData)destParentNode.getData(), destNodePath.getName().getInternalName(),
@@ -1093,7 +1088,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       getTransientNodesManager().move((NodeData)srcNode.getData(), initializer);
 
-      this.getActionHandler().postMove(srcNode, destNode);
+      this.getActionHandler().postMove(srcNode,(NodeImpl)dataManager.getItemByIdentifier(srcNode.getIdentifier(),false));
    }
 
    /**

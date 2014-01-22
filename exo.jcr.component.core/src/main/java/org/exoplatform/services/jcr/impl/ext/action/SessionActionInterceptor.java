@@ -499,7 +499,7 @@ public class SessionActionInterceptor
           InvocationContext ctx = new InvocationContext();
           ctx.put(InvocationContext.CURRENT_ITEM, destNode);
           ctx.put(InvocationContext.PREVIOUS_ITEM, srcNode);
-          ctx.put(InvocationContext.EVENT, ExtendedEvent.MOVE);
+          ctx.put(InvocationContext.EVENT, ExtendedEvent.NODE_MOVED);
           ctx.put(InvocationContext.EXO_CONTAINER, container);
           launch(conditions, ctx);
       }

@@ -147,19 +147,18 @@ public class ActionLauncher implements ItemsPersistenceListener
                                String oldPath =
                                        userSession.getLocationFactory().createJCRPath(itemState.getOldPath()).getAsString(false);
                                Map<String, String> info = new HashMap<String, String>();
-                               long timestamp = System.currentTimeMillis();
                                if(itemState.isMoved())
                                {
-                                   info.put(ExtendedEventImpl.SRC_ABS_PATH, oldPath);
-                                   info.put(ExtendedEventImpl.DEST_ABS_PATH, path);
+                                   info.put(EventImpl.SRC_ABS_PATH, oldPath);
+                                   info.put(EventImpl.DEST_ABS_PATH, path);
                                }
                                else if (itemState.isOrdered())
                                {
-                                   info.put(ExtendedEventImpl.SRC_CHILD_REL_PATH, oldPath);
-                                   info.put(ExtendedEventImpl.DEST_CHILD_REL_PATH, path);
+                                   info.put(EventImpl.SRC_CHILD_REL_PATH, oldPath);
+                                   info.put(EventImpl.DEST_CHILD_REL_PATH, path);
                                }
 
-                               events.add(new ExtendedEventImpl(eventType, path, item.getIdentifier(), userSession.getUserID(),null, timestamp, info));
+                               events.add(new EventImpl(eventType, path, item.getIdentifier(), info));
                            }
                             else
                            {

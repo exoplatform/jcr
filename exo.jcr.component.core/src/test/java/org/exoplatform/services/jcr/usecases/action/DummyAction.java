@@ -20,6 +20,10 @@ package org.exoplatform.services.jcr.usecases.action;
 
 import org.apache.commons.chain.Context;
 import org.exoplatform.services.command.action.Action;
+import org.exoplatform.services.ext.action.InvocationContext;
+import org.exoplatform.services.jcr.observation.ExtendedEvent;
+
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS.
@@ -32,9 +36,12 @@ public class DummyAction implements Action
 {
    private int actionExecuterCount = 0;
 
+   private Context info;
+
    public boolean execute(Context ctx) throws Exception
    {
       actionExecuterCount++;
+      info=ctx;
       return false;
    }
 
@@ -46,6 +53,11 @@ public class DummyAction implements Action
    public void setActionExecuterCount(int actionExecuterCount)
    {
       this.actionExecuterCount = actionExecuterCount;
+   }
+
+   public Map<String, Object> getInfo()
+   {
+      return info;
    }
 
 }

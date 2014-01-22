@@ -18,7 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.observation;
 
+import org.exoplatform.services.jcr.observation.ExtendedEvent;
+
+import javax.jcr.RepositoryException;
 import javax.jcr.observation.Event;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS.
@@ -27,7 +32,7 @@ import javax.jcr.observation.Event;
  * @version $Id: EventImpl.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class EventImpl implements Event
+public class EventImpl implements Event, ExtendedEvent
 {
 
    private int type;
@@ -36,12 +41,20 @@ public class EventImpl implements Event
 
    private String userId;
 
+   private Map<String, String> info;
+
    public EventImpl(int type, String path, String userId)
    {
 
       this.type = type;
       this.userId = userId;
       this.path = path;
+   }
+
+   public EventImpl(int type, String path,String userId,Map<String, String> info)
+   {
+      this(type,path,userId);
+      this.info = new HashMap<String, String>(info);
    }
 
    /**
@@ -66,6 +79,14 @@ public class EventImpl implements Event
    public String getUserID()
    {
       return this.userId;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public Map<String, String> getInfo() throws RepositoryException
+   {
+      return info;
    }
 
 }

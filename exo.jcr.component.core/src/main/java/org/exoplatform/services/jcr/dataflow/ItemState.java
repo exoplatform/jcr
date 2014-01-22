@@ -308,7 +308,6 @@ public class ItemState implements Externalizable
     * creates ADDED item state shortcut for new ItemState(data, ADDED, true, true, null)
     * 
     * @param data
-    * @param needValidation
     * @return
     */
    public static ItemState createAddedState(ItemData data)
@@ -325,7 +324,6 @@ public class ItemState implements Externalizable
     * creates UPDATED item state shortcut for new ItemState(data, UPDATED, true, true, null)
     * 
     * @param data
-    * @param needValidation
     * @return
     */
    public static ItemState createUpdatedState(ItemData data)
@@ -342,7 +340,6 @@ public class ItemState implements Externalizable
     * creates DELETED item state shortcut for new ItemState(data, DELETED, true, true, null)
     * 
     * @param data
-    * @param needValidation
     * @return
     */
    public static ItemState createDeletedState(ItemData data)
@@ -359,7 +356,6 @@ public class ItemState implements Externalizable
     * creates RENAMED item state shortcut for new ItemState(data, RENAMED, true, true, null)
     * 
     * @param data
-    * @param needValidation
     * @return
     */
    public static ItemState createRenamedState(ItemData data)
@@ -376,7 +372,6 @@ public class ItemState implements Externalizable
     * creates UNCHANGED item state shortcut for new ItemState(data, UNCHANGED, false, false, null)
     * 
     * @param data
-    * @param needValidation
     * @return
     */
    public static ItemState createUnchangedState(ItemData data)
@@ -391,22 +386,12 @@ public class ItemState implements Externalizable
 
    public static ItemState createMovedState(ItemData data, QPath oldPath)
    {
-       return new ItemState(data, MOVED, true, null,false, false, oldPath);
-   }
-
-   public static ItemState createMovedState(ItemData data, boolean isInternalCreated, QPath oldPath)
-   {
-      return new ItemState(data, MOVED, true, null, isInternalCreated, false, oldPath);
+      return new ItemState(data, MOVED, true, null,true, false, oldPath);
    }
 
    public static ItemState createOrderedState(ItemData data, QPath oldPath)
    {
-      return new ItemState(data, ORDERED, true, null,false, false, oldPath);
-   }
-
-   public static ItemState createOrderedState(ItemData data, boolean isInternalCreated, QPath oldPath)
-   {
-      return new ItemState(data, ORDERED, true, null, isInternalCreated, false, oldPath);
+      return new ItemState(data, ORDERED, true, null,true, false, oldPath);
    }
 
    public static String nameFromValue(int stateValue)

@@ -262,6 +262,11 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
 
       parents.push(newNode);
 
+      if (level == 0)
+      {
+         addStates.add(ItemState.createMovedState(newNode,node.getQPath()));
+      }
+
       // ancestorToSave is a parent node
       // if level == 0 set internal create as false for validating on save
       addStates.add(new ItemState(newNode, ItemState.RENAMED, level == 0, ancestorToSave, false, level == 0));
