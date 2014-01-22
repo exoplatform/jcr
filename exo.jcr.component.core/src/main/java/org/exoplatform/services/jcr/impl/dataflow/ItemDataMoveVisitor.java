@@ -77,6 +77,11 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
    protected List<ItemState> addStates = new ArrayList<ItemState>();
 
    /**
+    * The moved item state.
+    */
+   protected ItemState moveState ;
+
+   /**
     * The variable shows necessity of preservation <code>Identifier</code>, not generate new one, at
     * transformation of <code>Item</code>.
     */
@@ -262,6 +267,12 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
 
       parents.push(newNode);
 
+      if (level == 0)
+      {
+         moveState=ItemState.createMovedState(newNode,node.getQPath());
+         addStates.add(moveState);
+      }
+
       // ancestorToSave is a parent node
       // if level == 0 set internal create as false for validating on save
       addStates.add(new ItemState(newNode, ItemState.RENAMED, level == 0, ancestorToSave, false, level == 0));
@@ -405,4 +416,12 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
    {
       return addStates;
    }
+
+   /**
+    * Returns the item move state
+    */
+    public ItemState getItemMoveState()
+    {
+        return moveState;
+    }
 }

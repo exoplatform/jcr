@@ -780,7 +780,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
    /**
     * Return Node corresponding to this Node.
     * 
-    * @param correspSession
+    * @param corrSession
     *          session on corresponding Workspace
     * @return NodeData corresponding Node
     * @throws ItemNotFoundException
@@ -2630,16 +2630,16 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       {
          return;
       }
-
+      ItemData srcItem= dataManager.getItemData(srcPath);
+      ItemData desItem=null;
       // check existence
-      if (dataManager.getItemData(srcPath) == null)
+      if (srcItem == null)
       {
          throw new ItemNotFoundException(getPath() + " has no child node with name " + srcPath.getName().getAsString());
       }
 
-      if (destPath != null && dataManager.getItemData(destPath) == null)
+      if (destPath != null && (desItem= dataManager.getItemData(destPath)) == null)
       {
-
          throw new ItemNotFoundException(getPath() + " has no child node with name " + destPath.getName().getAsString());
       }
 
@@ -2650,7 +2650,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       if (destPath != null && srcPath.getDepth() != destPath.getDepth())
       {
-         throw new ItemNotFoundException("Source and destenation is not relative paths of depth one, "
+         throw new ItemNotFoundException("Source and destination is not relative paths of depth one, "
             + "i.e. is not a childs of same parent node");
       }
 
@@ -2802,6 +2802,13 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             state.eraseEventFire();
             changes.add(state);
          }
+      }
+      if (destPath != null && srcPath.getName().getAsString().equals(destPath.getName().getAsString()))
+      {
+         ItemState orderState = ItemState.createOrderedState(desItem, srcPath);
+         dataManager.getChangesLog().add(orderState);
+         session.getActionHandler().postMove((NodeImpl) dataManager.readItem(srcItem, null, false, false),
+            (NodeImpl) dataManager.readItem(desItem, null, false, false));
       }
       // delete state first
       if (deleteState != null)

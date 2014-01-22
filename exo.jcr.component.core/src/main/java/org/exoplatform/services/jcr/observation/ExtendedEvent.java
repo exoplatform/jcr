@@ -18,7 +18,9 @@
  */
 package org.exoplatform.services.jcr.observation;
 
+import javax.jcr.RepositoryException;
 import javax.jcr.observation.Event;
+import java.util.Map;
 
 /**
  * Created by The eXo Platform SAS.
@@ -70,4 +72,52 @@ public interface ExtendedEvent extends Event
 
    public static final int READ = 16777216;
 
+   /**
+    * Generated on persist when a node is moved. <ul> <li>{@link #getPath}
+    * returns the absolute path of the destination of the move.</li> <li>{@link
+    * #getIdentifier} returns the identifier of the moved node. <li> {@link
+    * #getInfo} If the method that caused this event was a {@link
+    * javax.jcr.Session#move Session.move} or {@link javax.jcr.Workspace#move
+    * Workspace.move} then the returned {@link java.util.Map Map} has keys
+    * <code>srcAbsPath</code> and <code>destAbsPath</code> with values
+    * corresponding to the parameters passed to the <code>move</code> method.
+    * <p>
+    * If the method that caused this event was a {@link
+    * javax.jcr.Node#orderBefore Node.orderBefore} then the returned
+    * <code>Map</code> has keys <code>srcChildRelPath</code> and
+    * <code>destChildRelPath</code> with values corresponding to the parameters
+    * passed to the <code>orderBefore</code> method. </li> </ul>
+    */
+   public static final int NODE_MOVED  = 33554432;
+
+   /**
+    * The key <code>srcAbsPath</code> in the info map.
+    */
+   public static final String SRC_ABS_PATH = "srcAbsPath";
+
+   /**
+    * The key <code>destAbsPath</code> in the info map.
+    */
+   public static final String DEST_ABS_PATH = "destAbsPath";
+
+   /**
+    * The key <code>srcChildRelPath</code> in the info map.
+    */
+   public static final String SRC_CHILD_REL_PATH = "srcChildRelPath";
+
+   /**
+    * The key <code>destChildRelPath</code> in the info map.
+    */
+   public static final String DEST_CHILD_REL_PATH = "destChildRelPath";
+
+   /**
+    * Returns the information map associated with this event. The meaning of
+    * the map depends upon the type of the event. See event type constants
+    * above.
+    *
+    * @return A <code>Map</code> containing parameter information for instances
+    *         of a <code>NODE_MOVED</code> event.
+    * @throws RepositoryException if an error occurs.
+    */
+   public Map getInfo() throws RepositoryException;
 }

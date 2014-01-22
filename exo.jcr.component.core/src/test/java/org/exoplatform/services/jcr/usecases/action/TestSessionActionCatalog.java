@@ -22,6 +22,7 @@ import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.ObjectParameter;
 import org.exoplatform.services.command.action.ActionMatcher;
 import org.exoplatform.services.command.action.Condition;
+import org.exoplatform.services.ext.action.InvocationContext;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -39,6 +40,7 @@ import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
@@ -372,5 +374,80 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       tnode.removeMixin("exo:owneable");
       assertEquals(1, dAction.getActionExecuterCount());
    }
+
+   public void testMoveAction() throws  RepositoryException
+   {
+      SessionActionCatalog catalog =container.getComponentInstanceOfType(SessionActionCatalog.class);
+      catalog.clear();
+
+      Node n1 = root.addNode("n1");
+      Node n2 = n1.addNode("n2");
+      Node n3 = root.addNode("n3");
+      Node n4 = root.addNode("n4");
+      Node n5 = root.addNode("n5");
+      root.save();
+
+      SessionEventMatcher matcher =
+                new SessionEventMatcher(ExtendedEvent.NODE_MOVED, new QPath[]{((NodeImpl)root).getInternalPath()}, true, null,
+                        new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder);
+      DummyAction dAction = new DummyAction();
+      catalog.addAction(matcher, dAction);
+
+      assertEquals(0, dAction.getActionExecuterCount());
+      session.move(n4.getPath(), n2.getPath());
+      session.save();
+      assertEquals(1, dAction.getActionExecuterCount());
+      assertEquals("/n4", ((NodeImpl)dAction.getInfo().get(InvocationContext.PREVIOUS_ITEM)).getPath());
+      assertEquals("/n1/n2[2]", ((NodeImpl)dAction.getInfo().get(InvocationContext.CURRENT_ITEM)).getPath());
+
+
+      Condition cond = new Condition();
+      cond.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.NODE_MOVED);
+      assertEquals(1, catalog.getActions(cond).size());
+
+      session.move(n1.getPath(), n3.getPath() + "/n6");
+      session.save();
+      assertEquals(2, dAction.getActionExecuterCount());
+      assertEquals("/n1", ((NodeImpl)dAction.getInfo().get(InvocationContext.PREVIOUS_ITEM)).getPath());
+      assertEquals("/n3/n6", ((NodeImpl) dAction.getInfo().get(InvocationContext.CURRENT_ITEM)).getPath());
+
+      session.getWorkspace().move(n5.getPath(), n3.getPath() + "/n7");
+      assertEquals(3, dAction.getActionExecuterCount());
+      assertEquals("/n5", ((NodeImpl)dAction.getInfo().get(InvocationContext.PREVIOUS_ITEM)).getPath());
+      assertEquals("/n3/n7", ((NodeImpl) dAction.getInfo().get(InvocationContext.CURRENT_ITEM)).getPath());
+
+      session.getWorkspace().move("/n3/n6", "/n3/n7");
+      assertEquals(4, dAction.getActionExecuterCount());
+      assertEquals("/n3/n6", ((NodeImpl)dAction.getInfo().get(InvocationContext.PREVIOUS_ITEM)).getPath());
+      assertEquals("/n3/n7[2]", ((NodeImpl) dAction.getInfo().get(InvocationContext.CURRENT_ITEM)).getPath());
+   }
+
+   public void testOrderAction() throws  RepositoryException
+   {
+      SessionActionCatalog catalog =container.getComponentInstanceOfType(SessionActionCatalog.class);
+      catalog.clear();
+
+      root.addNode("n1");
+      root.addNode("n2");
+      root.addNode("n2");
+      root.addNode("n3");
+      session.save();
+
+      SessionEventMatcher matcher =
+               new SessionEventMatcher(ExtendedEvent.NODE_MOVED, new QPath[]{((NodeImpl) root).getInternalPath()}, true, null,
+                       new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder);
+      DummyAction dAction = new DummyAction();
+      catalog.addAction(matcher, dAction);
+
+      root.orderBefore("n2[2]", "n2");
+      session.save();
+      assertEquals(1, dAction.getActionExecuterCount());
+      assertEquals("/n2[2]", ((NodeImpl)dAction.getInfo().get(InvocationContext.PREVIOUS_ITEM)).getPath());
+      assertEquals("/n2", ((NodeImpl) dAction.getInfo().get(InvocationContext.CURRENT_ITEM)).getPath());
+
+      root.orderBefore("n3", "n1");
+      session.save();
+      assertEquals(1, dAction.getActionExecuterCount());
+    }
 
 }

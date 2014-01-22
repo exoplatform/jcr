@@ -64,6 +64,10 @@ public class ItemState implements Externalizable
 
    public static final int ADDED_AUTO_CREATED_NODES = 128;
 
+   public static final int MOVED = 256;
+
+   public static final int ORDERED = 512;
+
    /**
     * underlying item data
     */
@@ -230,6 +234,16 @@ public class ItemState implements Externalizable
       return (state == ADDED_AUTO_CREATED_NODES);
    }
 
+   public boolean isMoved()
+   {
+      return state == MOVED;
+   }
+
+   public boolean isOrdered()
+   {
+      return state == ORDERED;
+   }
+
    public boolean isEventFire()
    {
       return eventFire;
@@ -294,7 +308,6 @@ public class ItemState implements Externalizable
     * creates ADDED item state shortcut for new ItemState(data, ADDED, true, true, null)
     * 
     * @param data
-    * @param needValidation
     * @return
     */
    public static ItemState createAddedState(ItemData data)
@@ -311,7 +324,6 @@ public class ItemState implements Externalizable
     * creates UPDATED item state shortcut for new ItemState(data, UPDATED, true, true, null)
     * 
     * @param data
-    * @param needValidation
     * @return
     */
    public static ItemState createUpdatedState(ItemData data)
@@ -328,7 +340,6 @@ public class ItemState implements Externalizable
     * creates DELETED item state shortcut for new ItemState(data, DELETED, true, true, null)
     * 
     * @param data
-    * @param needValidation
     * @return
     */
    public static ItemState createDeletedState(ItemData data)
@@ -345,7 +356,6 @@ public class ItemState implements Externalizable
     * creates RENAMED item state shortcut for new ItemState(data, RENAMED, true, true, null)
     * 
     * @param data
-    * @param needValidation
     * @return
     */
    public static ItemState createRenamedState(ItemData data)
@@ -362,7 +372,6 @@ public class ItemState implements Externalizable
     * creates UNCHANGED item state shortcut for new ItemState(data, UNCHANGED, false, false, null)
     * 
     * @param data
-    * @param needValidation
     * @return
     */
    public static ItemState createUnchangedState(ItemData data)
@@ -373,6 +382,16 @@ public class ItemState implements Externalizable
    public static ItemState createUnchangedState(ItemData data, boolean isInternalCreated)
    {
       return new ItemState(data, UNCHANGED, false, null, isInternalCreated);
+   }
+
+   public static ItemState createMovedState(ItemData data, QPath oldPath)
+   {
+      return new ItemState(data, MOVED, true, null,true, false, oldPath);
+   }
+
+   public static ItemState createOrderedState(ItemData data, QPath oldPath)
+   {
+      return new ItemState(data, ORDERED, true, null,true, false, oldPath);
    }
 
    public static String nameFromValue(int stateValue)
@@ -395,6 +414,10 @@ public class ItemState implements Externalizable
             return "PATH_CHANGED";
          case ADDED_AUTO_CREATED_NODES :
             return "ADDED_AUTO_CREATED_NODES";
+         case MOVED :
+            return "MOVED";
+         case ORDERED :
+            return "ORDERED";
          default :
             return "UNDEFINED STATE";
       }

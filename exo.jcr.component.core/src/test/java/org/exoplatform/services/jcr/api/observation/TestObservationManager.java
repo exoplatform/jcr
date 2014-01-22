@@ -21,9 +21,11 @@ package org.exoplatform.services.jcr.api.observation;
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
+import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.log.Log;
 
 import java.util.Calendar;
+import java.util.Map;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
@@ -46,10 +48,6 @@ public class TestObservationManager extends JcrAPIBaseTest
 {
 
    private static int counter;
-
-   private EventListener listener;
-
-   private EventListener listener1;
 
    private Node testRoot;
 
@@ -186,6 +184,67 @@ public class TestObservationManager extends JcrAPIBaseTest
       checkEventNumAndCleanCounter(1);
    }
 
+   public void testMoveNodeEvents() throws Exception
+   {
+      DummyListener listener = new DummyListener(log);
+      session.getWorkspace().getObservationManager().addEventListener(listener,
+              ExtendedEvent.NODE_MOVED, "/", true, null, null, false);
+
+      Node n1 = testRoot.addNode("n1");
+      Node n2 = n1.addNode("n2");
+      Node n3 = testRoot.addNode("n3");
+      Node n4 = testRoot.addNode("n4");
+      n4.addNode("n5");
+      session.save();
+
+      session.move(n4.getPath(), n2.getPath());
+      session.save();
+      checkEventNumAndCleanCounter(1);
+      assertEquals("/testRoot/n4", listener.getInfo().get(ExtendedEvent.SRC_ABS_PATH));
+      assertEquals("/testRoot/n1/n2[2]", listener.getInfo().get(ExtendedEvent.DEST_ABS_PATH));
+
+      session.move(n1.getPath(), n3.getPath()+"/n6");
+      session.save();
+      checkEventNumAndCleanCounter(1);
+      assertEquals("/testRoot/n1", listener.getInfo().get(ExtendedEvent.SRC_ABS_PATH));
+      assertEquals("/testRoot/n3/n6", listener.getInfo().get(ExtendedEvent.DEST_ABS_PATH));
+
+      session.getWorkspace().move("/testRoot/n3/n6","/testRoot/n7");
+      checkEventNumAndCleanCounter(1);
+      assertEquals("/testRoot/n3/n6", listener.getInfo().get(ExtendedEvent.SRC_ABS_PATH));
+      assertEquals("/testRoot/n7", listener.getInfo().get(ExtendedEvent.DEST_ABS_PATH));
+
+      session.getWorkspace().move("/testRoot/n3","/testRoot/n7");
+      checkEventNumAndCleanCounter(1);
+      assertEquals("/testRoot/n3", listener.getInfo().get(ExtendedEvent.SRC_ABS_PATH));
+      assertEquals("/testRoot/n7[2]", listener.getInfo().get(ExtendedEvent.DEST_ABS_PATH));
+   }
+
+   public void testOrderNodeEvents() throws Exception
+   {
+      DummyListener listener = new DummyListener(log);
+      session.getWorkspace().getObservationManager().addEventListener(listener,
+                ExtendedEvent.NODE_MOVED, "/", true, null, null, false);
+
+      testRoot.addNode("n1");
+      testRoot.addNode("n2");
+      testRoot.addNode("n1");
+      testRoot.addNode("n3");
+      testRoot.addNode("n2");
+      testRoot.addNode("n4");
+      testRoot.save();
+       
+      testRoot.orderBefore("n1[2]","n1");
+      session.save();
+      checkEventNumAndCleanCounter(1);
+      assertEquals("/testRoot/n1[2]", listener.getInfo().get(ExtendedEvent.SRC_CHILD_REL_PATH));
+      assertEquals("/testRoot/n1", listener.getInfo().get(ExtendedEvent.DEST_CHILD_REL_PATH));
+
+      testRoot.orderBefore("n2","n3");
+      session.save();
+      checkEventNumAndCleanCounter(0);
+   }
+
    public void testPropertyEventGeneration() throws RepositoryException
    {
       ObservationManager observationManager = this.workspace.getObservationManager();
@@ -303,6 +362,8 @@ public class TestObservationManager extends JcrAPIBaseTest
    {
       private Log log;
 
+      private Map<String, String> info ;
+
       public DummyListener(Log log)
       {
          this.log = log;
@@ -314,6 +375,17 @@ public class TestObservationManager extends JcrAPIBaseTest
          {
             Event event = events.nextEvent();
             counter++;
+            if(event.getType()== ExtendedEvent.NODE_MOVED)
+            {
+                try
+                {
+                    info=((ExtendedEvent)event).getInfo();
+                }
+                catch (RepositoryException e)
+                {
+                   log.error(e.getMessage(),e);
+                }
+            }
             try
             {
                if (log.isDebugEnabled())
@@ -324,6 +396,10 @@ public class TestObservationManager extends JcrAPIBaseTest
                e.printStackTrace();
             }
          }
+      }
+      public Map<String, String> getInfo()
+      {
+         return info;
       }
    }
 

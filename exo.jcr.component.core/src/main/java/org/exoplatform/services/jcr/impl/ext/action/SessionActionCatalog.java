@@ -194,6 +194,10 @@ public class SessionActionCatalog extends ActionCatalog
          {
             res |= ExtendedEvent.READ;
          }
+         else if (name.equalsIgnoreCase("moveNode"))
+         {
+            res |= ExtendedEvent.NODE_MOVED;
+         }
          else
          {
             log.error("Unknown event type '" + name + "' ignored");
