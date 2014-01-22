@@ -30,7 +30,7 @@
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.14.13-GA</version>
+  <version>1.14.14-GA-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
 
