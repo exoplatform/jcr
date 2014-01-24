@@ -108,32 +108,124 @@
     <emphasis>exo.jcr.connectors.jca</emphasis> and groupId
     <emphasis>org.exoplatform.jcr</emphasis>.</para>
 
-    <para>Then you will need to configure the connector itself, for example
+    <para><emphasis role="bold">To deploy JCA module on standalone mode :</emphasis></para>
+    <orderedlist>
+        <listitem>
+            <para>Run "mvn clean install -DskipTests=true" from the root of the jcr project.</para>
+        </listitem>
+        <listitem>
+            <para>Get/download the JBoss AS 7 bundle.</para>
+        </listitem>
+        <listitem>
+            <para>Deploy the whole ear file corresponding to the artifactId <emphasis>exo.jcr.ear</emphasis> and groupId
+                <emphasis>org.exoplatform.jcr</emphasis></para>
+        </listitem>
+        <listitem>
+            <para>Configure the resource adapter in <emphasis>JBOSS_HOME/standalone/configuration/standalone.xml</emphasis>
+                , you should replace : </para>
+            <programlisting>
+                &lt;subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/&gt;
+            </programlisting>
+            <para>by :</para>
+            <programlisting>
+                &lt;subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"&gt;
+                &lt;resource-adapters&gt;
+                &lt;resource-adapter&gt;
+                &lt;archive&gt;exo.jcr.ear.ear#exo-jcr.rar&lt;/archive&gt;
+                &lt;transaction-support&gt;XATransaction&lt;/transaction-support&gt;
+                &lt;connection-definitions&gt;
+                &lt;connection-definition class-name="org.exoplatform.connectors.jcr.impl.adapter.ManagedSessionFactory"
+                jndi-name="java:/jcr/Repository"&gt;
+                &lt;config-property name="PortalContainer"&gt;portal&lt;/config-property&gt;
+                &lt;config-property name="Repository"&gt;repository&lt;/config-property&gt;
+                &lt;/connection-definition&gt;
+                &lt;/connection-definitions&gt;
+                &lt;/resource-adapter&gt;
+                &lt;/resource-adapters&gt;
+                &lt;/subsystem&gt;
+            </programlisting>
+        </listitem>
+    </orderedlist>
 
-            for JBoss AS, you need to configure the resource adapter in <emphasis>JBOSS_HOME/standalone/configuration/standalone.xml</emphasis>.
-            you should replace</para>
+    <para><emphasis role="bold">To deploy JCA module on Platform :</emphasis></para>
 
-          <programlisting>
-           &lt;subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/&gt;
-          </programlisting>
-          <para> by the following content:</para>
+    <orderedlist>
+        <listitem>
+            <para>Get/download the JBoss bundle of platform 4 or higher</para>
+        </listitem>
+        <listitem>
+            <para>Go to folder "exo.jcr.connectors.jca" and run "mvn clean install -Pplatform" command.</para>
+        </listitem>
+        <listitem>
+            <para>Deploy exo.jcr.connectors.jca/target/exo.jcr.connectors.jca-1.15.x-GA.rar in
+                <emphasis>PLATFORM_HOME/standalone/deployments/</emphasis> of platform 4 bundle,
+                and rename it to exo-jcr.rar</para>
+        </listitem>
+        <listitem>
+            <para>Configure the resource adapter in <emphasis>PLATFORM_HOME/standalone/configuration/standalone-exo.xml</emphasis>
+                , you should replace :</para>
+            <programlisting>
+                  &lt;subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"/&gt;
+            </programlisting>
+            <para>by</para>
+            <programlisting>
+                &lt;subsystem xmlns="urn:jboss:domain:resource-adapters:1.1"&gt;
+                &lt;resource-adapters&gt;
+                &lt;resource-adapter&gt;
+                &lt;archive&gt;exo-jcr.rar&lt;/archive&gt;
+                &lt;transaction-support&gt;XATransaction&lt;/transaction-support&gt;
+                &lt;connection-definitions&gt;
+                &lt;connection-definition class-name="org.exoplatform.connectors.jcr.impl.adapter.ManagedSessionFactory"
+                jndi-name="java:/jcr/Repository"&gt;
+                &lt;config-property name="PortalContainer"&gt;portal&lt;/config-property&gt;
+                &lt;config-property name="Repository"&gt;repository&lt;/config-property&gt;
+                &lt;/connection-definition&gt;
+                &lt;/connection-definitions&gt;
+                &lt;/resource-adapter&gt;
+                &lt;/resource-adapters&gt;
+                &lt;/subsystem&gt;
+            </programlisting>
+        </listitem>
+    </orderedlist>
 
-          <programlisting>
-                     &lt;subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"&gt;
-                 &lt;resource-adapters&gt;
-                    &lt;resource-adapter&gt;
-                       &lt;archive&gt;exo.jcr.ear.ear#exo-jcr.rar&lt;/archive&gt;
-                       &lt;transaction-support&gt;XATransaction&lt;/transaction-support&gt;
-                       &lt;connection-definitions&gt;
-                          &lt;connection-definition class-name="org.exoplatform.connectors.jcr.impl.adapter.ManagedSessionFactory"
-                                                 jndi-name="java:/jcr/Repository"&gt;
-                             &lt;config-property name="PortalContainer"&gt;portal&lt;/config-property&gt;
-                            &lt;config-property name="Repository"&gt;repository&lt;/config-property&gt;
-                         &lt;/connection-definition&gt;
-                       &lt;/connection-definitions&gt;
-                    &lt;/resource-adapter&gt;
-                 &lt;/resource-adapters&gt;
-              &lt;/subsystem&gt;
-          </programlisting>
+    <para><emphasis role="bold">To deploy JCA module on Gatein/JPP:</emphasis></para>
+
+    <orderedlist>
+        <listitem>
+            <para>Get/download the JBoss bundle of GateIn 3.5/JPP6 or higher</para>
+        </listitem>
+        <listitem>
+            <para>Go to folder "exo.jcr.connectors.jca" and run "mvn clean install -Pgatein" command.</para>
+        </listitem>
+        <listitem>
+            <para>Deploy exo.jcr.connectors.jca/target/exo.jcr.connectors.jca-1.15.x-GA.rar in
+                <emphasis>GATEIN_HOME/standalone/deployments/</emphasis> and rename it to exo-jcr.rar</para>
+        </listitem>
+        <listitem>
+        <para>Configure the resource adapter in <emphasis>GATEIN_HOME/standalone/configuration/standalone.xml</emphasis>
+            , you should replace : </para>
+        <programlisting>
+            &lt;subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"/&gt;
+        </programlisting>
+        <para>by</para>
+        <programlisting>
+            &lt;subsystem xmlns="urn:jboss:domain:resource-adapters:1.0"&gt;
+            &lt;resource-adapters&gt;
+            &lt;resource-adapter&gt;
+            &lt;archive&gt;exo-jcr.rar&lt;/archive&gt;
+            &lt;transaction-support&gt;XATransaction&lt;/transaction-support&gt;
+            &lt;connection-definitions&gt;
+            &lt;connection-definition class-name="org.exoplatform.connectors.jcr.impl.adapter.ManagedSessionFactory"
+            jndi-name="java:/jcr/Repository"&gt;
+            &lt;config-property name="PortalContainer"&gt;portal&lt;/config-property&gt;
+            &lt;config-property name="Repository"&gt;repository&lt;/config-property&gt;
+            &lt;/connection-definition&gt;
+            &lt;/connection-definitions&gt;
+            &lt;/resource-adapter&gt;
+            &lt;/resource-adapters&gt;
+            &lt;/subsystem&gt;
+        </programlisting>
+        </listitem>
+    </orderedlist>
   </section>
 </section>
