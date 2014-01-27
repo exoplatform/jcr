@@ -343,6 +343,16 @@
    <component> 
       <type>org.exoplatform.services.jcr.ext.resource.jcr.Handler</type> 
    </component>
+   <component>
+      <key>org.exoplatform.services.naming.InitialContextInitializer</key>
+      <type>org.exoplatform.services.naming.InitialContextInitializer</type>
+      <init-params>
+         <properties-param>
+            <name>default-properties</name>
+            <description>Default initial context properties</description>
+         </properties-param>
+      </init-params>
+   </component>
 
    <external-component-plugins>
       <target-component>org.exoplatform.services.naming.InitialContextInitializer</target-component>
