@@ -470,10 +470,10 @@ public class RepositoryImpl implements ManageableRepository
 
       List<ComponentAdapter<WorkspaceContainer>> adapters = repositoryContainer.getComponentAdaptersOfType(WorkspaceContainer.class);
       List<String> workspaceNames = new ArrayList<String>();
-      for (int i = 0; i < adapters.size(); i++)
+      for (int i = 0, length = adapters.size(); i < length; i++)
       {
          ComponentAdapter<WorkspaceContainer> adapter = adapters.get(i);
-         String workspaceName = new String((String)adapter.getComponentKey());
+         String workspaceName = (String)adapter.getComponentKey();
 
          try
          {
@@ -481,7 +481,7 @@ public class RepositoryImpl implements ManageableRepository
                .isWorkspaceInitialized())
                workspaceNames.add(workspaceName);
          }
-         catch (RuntimeException e)
+         catch (Exception e)
          {
             LOG.warn(e.getLocalizedMessage());
          }

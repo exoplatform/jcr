@@ -232,9 +232,10 @@ public interface WorkspaceStorageConnection
     * @param fromOrderNum
     *          the returned list of child nodes should not contain the node with order number 
     *          less than <code>fromOrderNum</code>
-    * @param toOrderNum   
-    *          the returned list of child nodes should not contain the node with order number 
-    *          more than <code>toOrderNum</code>            
+    * @param offset
+    *          the position of the first element to retrieve.
+    * @param pageSize
+    *          the total amount of element expected per page.
     * @param childs
     *          will contain the resulted child nodes
     * @return true if there are data to retrieve for next request and false in other case 

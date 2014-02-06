@@ -145,15 +145,16 @@ public class ScratchWorkspaceInitializer implements WorkspaceInitializer
    {
    }
 
-   public boolean isWorkspaceInitialized()
+   public boolean isWorkspaceInitialized() throws RepositoryException
    {
       try
       {
-         return dataManager.getItemData(Constants.ROOT_UUID) == null ? false : true;
+         return dataManager.getItemData(Constants.ROOT_UUID) != null;
       }
       catch (RepositoryException e)
       {
-         return false;
+         throw new RepositoryException("Cannot check if the workspace '" + workspaceName
+            + "' has already been initialized", e);
       }
    }
 

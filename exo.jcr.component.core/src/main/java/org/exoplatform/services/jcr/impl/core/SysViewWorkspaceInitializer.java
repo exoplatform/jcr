@@ -896,17 +896,18 @@ public class SysViewWorkspaceInitializer implements WorkspaceInitializer
    /**
     * {@inheritDoc}
     */
-   public boolean isWorkspaceInitialized()
+   public boolean isWorkspaceInitialized() throws RepositoryException
    {
       try
       {
          // If someone invoke isWorkspaceInitialized() during restore action then NullNodeData for root node will be pushed
-         // into the cache and will be there even restore is finished and data will be placed into DB. 
-         return isRestoreInProgress ? false : dataManager.getItemData(Constants.ROOT_UUID) != null;
+         // into the cache and will be there even restore is finished and data will be placed into DB.
+         return !isRestoreInProgress && dataManager.getItemData(Constants.ROOT_UUID) != null;
       }
       catch (RepositoryException e)
       {
-         return false;
+         throw new RepositoryException("Cannot check if the workspace '" + workspaceName
+            + "' has already been initialized", e);
       }
    }
 }

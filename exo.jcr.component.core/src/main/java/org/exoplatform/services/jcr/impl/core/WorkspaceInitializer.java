@@ -43,11 +43,11 @@ public interface WorkspaceInitializer extends Startable
    public static final String ROOT_PERMISSIONS_PARAMETER = "root-permissions";
 
    /**
-    * Tell if the worksapce is initialize.
+    * Tell if the workspace is initialize.
     * 
     * @return boolean, if true - the workspace is initialized, false - otherwise.
     */
-   boolean isWorkspaceInitialized();
+   boolean isWorkspaceInitialized() throws RepositoryException;
 
    /**
     * Perform the workspace initialization process.

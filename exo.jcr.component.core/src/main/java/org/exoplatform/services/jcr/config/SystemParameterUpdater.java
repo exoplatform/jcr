@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.impl.core.WorkspaceInitializer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import javax.jcr.RepositoryException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -183,16 +184,24 @@ public class SystemParameterUpdater
          }
          else
          {
-            if (workspaceInitializer.isWorkspaceInitialized())
+            try
             {
-               if (LOG.isWarnEnabled())
+               if (workspaceInitializer.isWorkspaceInitialized())
                {
-                  LOG.warn("Parameter "
-                     + parameterName
-                     + " is not overridden because workspace is already initialized and parameter is set to 'before-initialize'"
-                     + " via system properties in the "
-                     + SystemParametersPersistenceConfigurator.class.getSimpleName());
+                  if (LOG.isWarnEnabled())
+                  {
+                     LOG.warn("Parameter "
+                        + parameterName
+                        + " is not overridden because workspace is already initialized and parameter is set to 'before-initialize'"
+                        + " via system properties in the "
+                        + SystemParametersPersistenceConfigurator.class.getSimpleName());
+                  }
+                  return false;
                }
+            }
+            catch (RepositoryException e)
+            {
+               LOG.error("Could not know if the workspace has been initialized or not:" + e.getMessage());
                return false;
             }
          }
@@ -212,13 +221,23 @@ public class SystemParameterUpdater
       {
          parametersToValidate.remove(mapEntry.getKey());
 
-         if (workspaceInitializer.isWorkspaceInitialized())
+         try
+         {
+            if (workspaceInitializer.isWorkspaceInitialized())
+            {
+               sppc.rollback();
+
+               throw new IllegalStateException("Unable to override parameter '" + mapEntry.getKey()
+                  + "' set in system property because this operation is allowed only for non initialized workspaces",
+                  mapEntry.getValue());
+            }
+         }
+         catch (RepositoryException e)
          {
             sppc.rollback();
-
-            throw new IllegalStateException("Unable to override parameter '" + mapEntry.getKey()
-               + "' set in system property because this operation is allowed only for non initialized workspaces",
-               mapEntry.getValue());
+            throw new IllegalStateException("Unable to override parameters without being able to know if the workspace " +
+               "has been initialized or not",
+               e);
          }
       }
    }
