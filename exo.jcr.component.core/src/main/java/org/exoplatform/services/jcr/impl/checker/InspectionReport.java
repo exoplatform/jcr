@@ -28,7 +28,11 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Text-based inspection log implementation.
@@ -49,6 +53,14 @@ public class InspectionReport
    private boolean reportHasInconsistency;
 
    private String reportPath;
+
+   private boolean isMulti;
+
+   private ThreadLocal<List<String>> comments=new ThreadLocal<List<String>>();
+
+   private ThreadLocal<List<String>> logBrokenObjects=new ThreadLocal<List<String>>();
+
+   private ThreadLocal<Map<String,Throwable>> logExceptions=new ThreadLocal<Map<String,Throwable>>();
 
    /**
     * InspectionReport constructor.
@@ -71,6 +83,35 @@ public class InspectionReport
 
    }
 
+   public void init()
+   {
+      comments.set(new ArrayList<String>());
+      logBrokenObjects.set(new ArrayList<String>());
+      logExceptions.set(new HashMap<String, Throwable>());
+   }
+
+   public synchronized void flush() throws IOException
+   {
+      for (String message : comments.get())
+      {
+         writeLine(message);
+      }
+      for (String brokenObject : logBrokenObjects.get())
+      {
+         writeLine(brokenObject);
+         writer.write(DELIMITER);
+      }
+      for (String key : logExceptions.get().keySet())
+      {
+         writeLine(key);
+         writeStackTrace(logExceptions.get().get(key));
+      }
+      logExceptions.get().clear();
+      comments.get().clear();
+      logBrokenObjects.get().clear();
+      writer.flush();
+   }
+
    /**
     * Indicates if report has inconsistency info or not.
     */
@@ -84,8 +125,15 @@ public class InspectionReport
     */
    public void logComment(String message) throws IOException
    {
-      writeLine(message);
-      writer.flush();
+      if (isMulti)
+      {
+         comments.get().add(message);
+      }
+      else
+      {
+         writeLine(message);
+         writer.flush();
+      }
    }
 
    /**
@@ -93,8 +141,15 @@ public class InspectionReport
     */
    public void logDescription(String description) throws IOException
    {
-      writeLine(description);
-      writer.flush();
+      if (isMulti)
+      {
+         comments.get().add(description);
+      }
+      else
+      {
+         writeLine(description);
+         writer.flush();
+      }
    }
 
    /**
@@ -104,9 +159,17 @@ public class InspectionReport
    {
       setInconsistency();
 
-      writer.write(brokenObject);
-      writer.write(DELIMITER);
-      writer.flush();
+      if (isMulti)
+      {
+         logBrokenObjects.get().add(brokenObject);
+      }
+      else
+      {
+         writer.write(brokenObject);
+         writer.write(DELIMITER);
+         writer.flush();
+
+      }
    }
 
    /**
@@ -115,10 +178,17 @@ public class InspectionReport
    public void logExceptionAndSetInconsistency(String message, Throwable e) throws IOException
    {
       setInconsistency();
+      if (isMulti)
+      {
+         logExceptions.get().put(message, e);
+      }
+      else
+      {
+         writeLine(message);
+         writeStackTrace(e);
+         writer.flush();
 
-      writeLine(message);
-      writeStackTrace(e);
-      writer.flush();
+      }
    }
 
    /**
@@ -166,5 +236,21 @@ public class InspectionReport
          writeLine("Cause:");
          writeStackTrace(ourCause);
       }
+   }
+
+   /**
+    * Enable MultiThreading mode.
+    */
+   public void enableMultiThreadingMode()
+   {
+      this.isMulti = true;
+   }
+
+   /**
+    * Disable MultiThreading mode.
+    */
+   public void disableMultiThreadingMode()
+   {
+      this.isMulti = false;
    }
 }

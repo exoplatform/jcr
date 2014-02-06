@@ -198,6 +198,39 @@
   <filename>report-&lt;repository
   name&gt;-dd-MMM-yy-HH-mm.txt</filename>.</para>
 
+  <table>
+        <title>Configuration methods.</title>
+
+        <tgroup cols="2">
+            <thead>
+                <row>
+                    <entry>Operation</entry>
+
+                    <entry>Description</entry>
+                </row>
+            </thead>
+
+            <tbody>
+                <row>
+                    <entry><code>getCheckingThreadPoolSize()</code></entry>
+
+                    <entry>Get the number of threads used for checking and repairing repository.</entry>
+                 </row>
+
+                 <row>
+                    <entry><code>setCheckingThreadPoolSize()</code></entry>
+
+                    <entry>Set the number of threads used for checking and repairing repository.</entry>
+                </row>
+            </tbody>
+        </tgroup>
+  </table>
+
+  <note>
+        <para>By default, the <emphasis role="bold">RepositoryCheckController</emphasis> uses only one
+            thread to check and repair your repository.</para>
+  </note>
+
   <section id="JCR.RepositoryCheckController.RecommendationsOnHowToFixCorruptedJCR">
     <title>Recommendations on how to fix corrupted JCR manually</title>
 

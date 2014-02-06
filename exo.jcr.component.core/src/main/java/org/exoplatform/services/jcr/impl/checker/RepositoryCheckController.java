@@ -38,6 +38,12 @@ import org.picocontainer.Startable;
 
 import java.io.IOException;
 import java.security.PrivilegedAction;
+import java.util.Queue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.RepositoryException;
 
@@ -69,6 +75,16 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
 
    public static final String CONFIRMATION_FAILED_MESSAGE =
       "For starting auto-repair function please enter \"YES\" as method parameter";
+
+   /**
+    * Use MultiThreading for the checking consistency.
+    */
+   private  boolean isMultiThreading ;
+
+    /**
+     * The total amount of threads used for checking consistency
+     */
+   private  int nThreads = 1;
 
    /**
     * The list of available storages for checking.
@@ -161,6 +177,20 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       }
    }
 
+   @Managed
+   @ManagedDescription("Set the number of threads used for checking and repairing repository.")
+   public void setCheckingThreadPoolSize(int nbThread)
+   {
+      this.nThreads = nbThread ;
+   }
+
+   @Managed
+   @ManagedDescription("Get the number of threads used for checking and repairing repository.")
+   public int getCheckingThreadPoolSize()
+   {
+      return nThreads  ;
+   }
+
    public String checkAndRepair(final DataStorage[] storages, final boolean autoRepair)
    {
       return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
@@ -182,6 +212,8 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
 
    protected String checkAndRepairAction(DataStorage[] storages, boolean autoRepair)
    {
+      isMultiThreading = (nThreads>1);
+
       try
       {
          createNewReport();
@@ -194,8 +226,25 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       try
       {
          suspendRepository();
+         if(isMultiThreading)
+         {
+            try
+            {
+               lastReport.enableMultiThreadingMode();
+               MultithreadedChecking checking = new MultithreadedChecking(storages, autoRepair);
+               return checking.startThreads();
+            }
+            catch (IOException e)
+            {
+               return getExceptionDuringCheckingMessage(e);
+            }
 
-         return doCheckAndRepair(storages, autoRepair);
+         }
+         else
+         {
+            return doCheckAndRepair(storages, autoRepair);
+
+         }
       }
       catch (RepositoryException e)
       {
@@ -227,29 +276,33 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    {
       try
       {
-         for (DataStorage storage : storages)
-         {
-            switch (storage)
-            {
-               case DB :
-                  doCheckDataBase(autoRepair);
-                  break;
-
-               case VALUE_STORAGE :
-                  doCheckValueStorage(autoRepair);
-                  break;
-
-               case LUCENE_INDEX :
-                  doCheckIndex(autoRepair);
-                  break;
-            }
-         }
-
+         doCheckAndRepair(storages, autoRepair, null);
          return logAndGetCheckingResultMessage();
       }
       catch (Throwable e) //NOSONAR
       {
          return logAndGetExceptionDuringCheckingMessage(e);
+      }
+   }
+
+   private void doCheckAndRepair(DataStorage[] storages, boolean autoRepair, Queue<Callable<Void>> tasks) throws IOException, RepositoryException
+   {
+      for (DataStorage storage : storages)
+      {
+         switch (storage)
+         {
+            case DB :
+               doCheckDataBase(autoRepair,tasks);
+               break;
+
+            case VALUE_STORAGE :
+               doCheckValueStorage(autoRepair,tasks);
+               break;
+
+            case LUCENE_INDEX :
+               doCheckIndex(autoRepair,tasks);
+               break;
+         }
       }
    }
 
@@ -319,38 +372,110 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       }
    }
 
-   private void doCheckDataBase(boolean autoRepair)
+   private void flush()
    {
-      for (String wsName : repository.getWorkspaceNames())
+      try
       {
-         logComment("Check DB consistency. Workspace " + wsName);
-
-         JDBCWorkspaceDataContainerChecker jdbcChecker = getJDBCChecker(wsName);
-         jdbcChecker.checkDataBase(autoRepair);
-         jdbcChecker.checkLocksInDataBase(autoRepair);
+         lastReport.flush();
+      }
+        catch (IOException e)
+      {
+         LOG.error(e.getMessage(), e);
       }
    }
 
-   private void doCheckValueStorage(boolean autoRepair)
+   private void doCheckDataBase(final boolean autoRepair,Queue<Callable<Void>> tasks) throws IOException
    {
-      for (String wsName : repository.getWorkspaceNames())
+      for (final String wsName : repository.getWorkspaceNames())
       {
-         logComment("Check ValueStorage consistency. Workspace " + wsName);
-         getJDBCChecker(wsName).checkValueStorage(autoRepair);
+         if(isMultiThreading)
+         {
+            Callable<Void> task = new Callable<Void>()
+            {
+               public Void call() throws Exception
+               {
+                  checkDatabase(autoRepair,wsName);
+                  flush();
+                  return null;
+               }
+            };
+            tasks.offer(task);
+         }
+         else
+         {
+            checkDatabase(autoRepair, wsName);
+         }
       }
    }
 
-   private void doCheckIndex(boolean autoRepair) throws RepositoryException, IOException
+   private void checkDatabase(boolean autoRepair, String wsName)
+   {
+      logComment("Check DB consistency. Workspace " + wsName);
+      JDBCWorkspaceDataContainerChecker jdbcChecker = getJDBCChecker(wsName);
+      jdbcChecker.checkDataBase(autoRepair);
+      jdbcChecker.checkLocksInDataBase(autoRepair);
+   }
+
+   private void doCheckValueStorage(final boolean autoRepair,Queue<Callable<Void>> tasks) throws IOException
+   {
+      for (final String wsName : repository.getWorkspaceNames())
+      {
+         if(isMultiThreading)
+         {
+            Callable<Void> task = new Callable<Void>()
+            {
+               public Void call() throws Exception
+               {
+                  checkValueStorage(autoRepair,wsName);
+                  flush();
+                  return null;
+               }
+            };
+            tasks.offer(task);
+         }
+         else
+         {
+            checkValueStorage(autoRepair, wsName);
+         }
+      }
+   }
+
+   private void checkValueStorage(boolean autoRepair, String wsName)
+   {
+      logComment("Check ValueStorage consistency. Workspace " + wsName);
+      getJDBCChecker(wsName).checkValueStorage(autoRepair);
+   }
+
+   private void doCheckIndex(boolean autoRepair,Queue<Callable<Void>> tasks) throws RepositoryException, IOException
+   {
+      for (final String wsName : repository.getWorkspaceNames())
+      {
+         if (isMultiThreading)
+         {
+            Callable<Void> task = new Callable<Void>()
+            {
+               public Void call() throws Exception
+               {
+                  checkIndex(wsName);
+                  flush();
+                  return null;
+               }
+            };
+            tasks.offer(task);
+         }
+         else
+         {
+            checkIndex(wsName);
+         }
+      }
+   }
+
+   private void checkIndex(String wsName) throws IOException, RepositoryException
    {
       final String systemWS = repository.getConfiguration().getSystemWorkspaceName();
-      for (String wsName : repository.getWorkspaceNames())
-      {
-         logComment("Check SearchIndex consistency. Workspace " + wsName);
-
-         SearchManager searchManager = (SearchManager)getComponent(SearchManager.class, wsName);
-
-         searchManager.checkIndex(lastReport, systemWS.equals(wsName));
-      }
+      logComment("Check SearchIndex consistency. Workspace " + wsName);
+      SearchManager searchManager = (SearchManager)getComponent(SearchManager.class, wsName);
+      searchManager.checkIndex(lastReport, systemWS.equals(wsName));
    }
 
    private JDBCWorkspaceDataContainerChecker getJDBCChecker(String wsName)
@@ -395,5 +520,158 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
     */
    public void stop()
    {
+   }
+
+   private class MultithreadedChecking
+   {
+      /**
+       * This instance of {@link AtomicReference} will contain the exception meet if any exception has occurred
+       */
+      private final AtomicReference<Exception> exception = new AtomicReference<Exception>();
+
+      /**
+       * The total amount of threads currently working
+       */
+      private final AtomicInteger runningThreads = new AtomicInteger();
+
+      /**
+       * The {@link java.util.concurrent.CountDownLatch} used to notify that the checking is over
+       */
+      private final CountDownLatch endSignal = new CountDownLatch(nThreads);
+
+      /**
+       * All the checking threads
+       */
+      private final Thread[] allCheckingThreads = new Thread[nThreads];
+
+      /**
+       * The list of checking tasks left to do
+       */
+      private Queue<Callable<Void>> tasks;
+
+      /**
+       * The task that all the checking threads have to execute
+       */
+      private final Runnable checkingTask = new Runnable()
+      {
+         public void run()
+         {
+            lastReport.init();
+            while (!Thread.currentThread().isInterrupted() && exception.get() == null)
+            {
+               Callable<Void> task;
+               while (exception.get() == null && (task = tasks.poll()) != null)
+               {
+                  try
+                  {
+                     task.call();
+                  }
+                  catch (InterruptedException e)
+                  {
+                     Thread.currentThread().interrupt();
+                  }
+                  catch (Exception e)
+                  {
+                     exception.set(e);
+                  }
+                  finally
+                  {
+                     synchronized (runningThreads)
+                     {
+                        runningThreads.decrementAndGet();
+                        runningThreads.notifyAll();
+                     }
+                  }
+               }
+               synchronized (runningThreads)
+               {
+                  if (!Thread.currentThread().isInterrupted() && exception.get() == null && (runningThreads.get() > 0))
+                  {
+                     try
+                     {
+                        runningThreads.wait();
+                     }
+                     catch (InterruptedException e)
+                     {
+                        Thread.currentThread().interrupt();
+                     }
+                  }
+                  else
+                  {
+                     break;
+                  }
+               }
+            }
+            endSignal.countDown();
+         }
+      };
+
+      /**
+       * MultithreadedChecking constructor.
+       */
+      public MultithreadedChecking(final DataStorage[] storages, final boolean autoRepair) throws IOException, RepositoryException
+      {
+         tasks = new LinkedBlockingQueue<Callable<Void>>()
+         {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            public Callable<Void> poll()
+            {
+               Callable<Void> task;
+               synchronized (runningThreads)
+               {
+                  if ((task = super.poll()) != null)
+                  {
+                     runningThreads.incrementAndGet();
+                  }
+               }
+               return task;
+            }
+
+            @Override
+            public boolean offer(Callable<Void> o)
+            {
+               if (super.offer(o))
+               {
+                  synchronized (runningThreads)
+                  {
+                     runningThreads.notifyAll();
+                  }
+                  return true;
+               }
+               return false;
+            }
+         };
+         doCheckAndRepair(storages, autoRepair, tasks);
+      }
+
+      /**
+       * Starts all the checking threads
+       */
+      public String startThreads() throws IOException, RepositoryException
+      {
+         for (int i = 0; i < nThreads; i++)
+         {
+            (allCheckingThreads[i] = new Thread(checkingTask, "checking Thread #" + (i + 1))).start();
+         }
+         try
+         {
+            endSignal.await();
+            if (exception.get() != null)
+            {
+               lastReport.disableMultiThreadingMode();
+               return logAndGetExceptionDuringCheckingMessage(exception.get());
+            }
+         }
+         catch (InterruptedException e)
+         {
+            Thread.currentThread().interrupt();
+            lastReport.disableMultiThreadingMode();
+            return logAndGetExceptionDuringCheckingMessage(exception.get());
+         }
+         lastReport.disableMultiThreadingMode();
+         return logAndGetCheckingResultMessage();
+      }
    }
 }
