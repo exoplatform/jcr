@@ -54,13 +54,7 @@ public class InspectionReport
 
    private String reportPath;
 
-   private boolean isMulti;
-
-   private ThreadLocal<List<String>> comments=new ThreadLocal<List<String>>();
-
-   private ThreadLocal<List<String>> logBrokenObjects=new ThreadLocal<List<String>>();
-
-   private ThreadLocal<Map<String,Throwable>> logExceptions=new ThreadLocal<Map<String,Throwable>>();
+   private ThreadLocal<InspectionReportContext> reportContext=new ThreadLocal<InspectionReportContext>();
 
    /**
     * InspectionReport constructor.
@@ -83,33 +77,33 @@ public class InspectionReport
 
    }
 
-   public void init()
+   public void init(boolean isMulti)
    {
-      comments.set(new ArrayList<String>());
-      logBrokenObjects.set(new ArrayList<String>());
-      logExceptions.set(new HashMap<String, Throwable>());
+      if (isMulti)
+      {
+         reportContext.set(new InspectionReportContext());;
+      }
+      else
+      {
+         reportContext = null;
+      }
    }
 
    public synchronized void flush() throws IOException
    {
-      for (String message : comments.get())
+      for (String message : reportContext.get().getComments())
       {
-         writeLine(message);
+         writeMessage(message);
       }
-      for (String brokenObject : logBrokenObjects.get())
+      for (String brokenObject : reportContext.get().getBrokenObjects())
       {
-         writeLine(brokenObject);
-         writer.write(DELIMITER);
+         writeBrokenObject(brokenObject);
       }
-      for (String key : logExceptions.get().keySet())
+      for (String key : reportContext.get().getLogExceptions().keySet())
       {
-         writeLine(key);
-         writeStackTrace(logExceptions.get().get(key));
+         writException(key, reportContext.get().getLogExceptions().get(key));
       }
-      logExceptions.get().clear();
-      comments.get().clear();
-      logBrokenObjects.get().clear();
-      writer.flush();
+      reportContext.get().clear();
    }
 
    /**
@@ -125,14 +119,13 @@ public class InspectionReport
     */
    public void logComment(String message) throws IOException
    {
-      if (isMulti)
+      if (reportContext.get() != null)
       {
-         comments.get().add(message);
+         reportContext.get().addComment(message);
       }
       else
       {
-         writeLine(message);
-         writer.flush();
+         writeMessage(message);
       }
    }
 
@@ -141,15 +134,21 @@ public class InspectionReport
     */
    public void logDescription(String description) throws IOException
    {
-      if (isMulti)
+      // The ThreadLocal has been initialized so we know that we are in multithreaded mode.
+      if (reportContext.get() != null)
       {
-         comments.get().add(description);
+         reportContext.get().addComment(description);
       }
       else
       {
-         writeLine(description);
-         writer.flush();
+         writeMessage(description);
       }
+   }
+
+   private void writeMessage(String message) throws IOException
+   {
+      writeLine(message);
+      writer.flush();
    }
 
    /**
@@ -158,18 +157,22 @@ public class InspectionReport
    public void logBrokenObjectAndSetInconsistency(String brokenObject) throws IOException
    {
       setInconsistency();
-
-      if (isMulti)
+      // The ThreadLocal has been initialized so we know that we are in multithreaded mode.
+      if (reportContext.get() != null)
       {
-         logBrokenObjects.get().add(brokenObject);
+         reportContext.get().addBrokenObject(brokenObject);
       }
       else
       {
-         writer.write(brokenObject);
-         writer.write(DELIMITER);
-         writer.flush();
-
+         writeBrokenObject(brokenObject);
       }
+   }
+
+   private void writeBrokenObject(String brokenObject) throws IOException
+   {
+      writer.write(brokenObject);
+      writer.write(DELIMITER);
+      writer.flush();
    }
 
    /**
@@ -178,17 +181,22 @@ public class InspectionReport
    public void logExceptionAndSetInconsistency(String message, Throwable e) throws IOException
    {
       setInconsistency();
-      if (isMulti)
+      // The ThreadLocal has been initialized so we know that we are in multithreaded mode.
+      if (reportContext.get() != null)
       {
-         logExceptions.get().put(message, e);
+         reportContext.get().addLogException(message, e);
       }
       else
       {
-         writeLine(message);
-         writeStackTrace(e);
-         writer.flush();
-
+         writException(message, e);
       }
+   }
+
+   private void writException(String message, Throwable e) throws IOException
+   {
+      writeLine(message);
+      writeStackTrace(e);
+      writer.flush();
    }
 
    /**
@@ -238,19 +246,47 @@ public class InspectionReport
       }
    }
 
-   /**
-    * Enable MultiThreading mode.
-    */
-   public void enableMultiThreadingMode()
+   private static class InspectionReportContext
    {
-      this.isMulti = true;
-   }
+      private final List<String> comments = new ArrayList<String>();
+      private final List<String> logBrokenObjects = new ArrayList<String>();
+      private final Map<String, Throwable> logExceptions = new HashMap<String, Throwable>();
 
-   /**
-    * Disable MultiThreading mode.
-    */
-   public void disableMultiThreadingMode()
-   {
-      this.isMulti = false;
+      public void addComment(String message)
+      {
+         comments.add(message);
+      }
+
+      public void addBrokenObject(String brokenObject)
+      {
+         logBrokenObjects.add(brokenObject);
+      }
+
+      public void addLogException(String message, Throwable e)
+      {
+         logExceptions.put(message, e);
+      }
+
+      public void clear()
+      {
+         comments.clear();
+         logBrokenObjects.clear();
+         logExceptions.clear();
+      }
+
+      public List<String> getComments()
+      {
+         return comments;
+      }
+
+      public List<String> getBrokenObjects()
+      {
+         return logBrokenObjects;
+      }
+
+      public Map<String, Throwable> getLogExceptions()
+      {
+         return logExceptions;
+      }
    }
 }

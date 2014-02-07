@@ -21,6 +21,7 @@ package org.exoplatform.services.jcr.impl.checker;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
+import org.exoplatform.management.annotations.ManagedName;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -43,7 +44,6 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.jcr.RepositoryException;
 
@@ -75,16 +75,6 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
 
    public static final String CONFIRMATION_FAILED_MESSAGE =
       "For starting auto-repair function please enter \"YES\" as method parameter";
-
-   /**
-    * Use MultiThreading for the checking consistency.
-    */
-   private  boolean isMultiThreading ;
-
-    /**
-     * The total amount of threads used for checking consistency
-     */
-   private  int nThreads = 1;
 
    /**
     * The list of available storages for checking.
@@ -123,38 +113,87 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    public String checkAll()
    {
       return checkAndRepair(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE, DataStorage.LUCENE_INDEX},
-         false);
+         false, 1);
+   }
+
+   @Managed
+   @ManagedDescription("Check repository data consistency. DB data, value storage and lucene index will be checked. "
+      + "Set nThreads parameter to configure the number of threads.")
+   public String checkAll(@ManagedName("nThreads") int nThreads)
+   {
+      return checkAndRepair(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE, DataStorage.LUCENE_INDEX},
+         false, nThreads);
    }
 
    @Managed
    @ManagedDescription("Check repository database consistency.")
    public String checkDataBase()
    {
-      return checkAndRepair(new DataStorage[]{DataStorage.DB}, false);
+      return checkAndRepair(new DataStorage[]{DataStorage.DB}, false, 1);
+   }
+
+   @Managed
+   @ManagedDescription("Check repository database consistency. "
+      + "Set nThreads parameter to configure the number of threads.")
+   public String checkDataBase(@ManagedName("nThreads") int nThreads)
+   {
+      return checkAndRepair(new DataStorage[]{DataStorage.DB}, false, nThreads);
    }
 
    @Managed
    @ManagedDescription("Check repository value storage consistency.")
    public String checkValueStorage()
    {
-      return checkAndRepair(new DataStorage[]{DataStorage.VALUE_STORAGE}, false);
+      return checkAndRepair(new DataStorage[]{DataStorage.VALUE_STORAGE}, false, 1);
+   }
+
+   @Managed
+   @ManagedDescription("Check repository value storage consistency. "
+      + "Set nThreads parameter to configure the number of threads")
+   public String checkValueStorage(@ManagedName("nThreads") int nThreads)
+   {
+      return checkAndRepair(new DataStorage[]{DataStorage.VALUE_STORAGE}, false, nThreads);
    }
 
    @Managed
    @ManagedDescription("Check repository search index consistency.")
    public String checkIndex()
    {
-      return checkAndRepair(new DataStorage[]{DataStorage.LUCENE_INDEX}, false);
+      return checkAndRepair(new DataStorage[]{DataStorage.LUCENE_INDEX}, false, 1);
+   }
+
+   @Managed
+   @ManagedDescription("Check repository search index consistency. "
+      + "Set nThreads parameter to configure the number of threads")
+   public String checkIndex(@ManagedName("nThreads") int nThreads)
+   {
+      return checkAndRepair(new DataStorage[]{DataStorage.LUCENE_INDEX}, false, nThreads);
    }
 
    @Managed
    @ManagedDescription("Auto-repair inconsistencies for value storage. "
-      + "Don't forget to backup your data first. Set parameter to \"YES\" for enabling auto-repair feature")
-   public String repairValueStorage(String confirmation)
+      + "Don't forget to backup your data first. Set confirmation parameter to \"YES\" for enabling auto-repair feature.")
+   public String repairValueStorage(@ManagedName("confirmation") String confirmation)
    {
       if (confirmation.equalsIgnoreCase("YES"))
       {
-         return checkAndRepair(new DataStorage[]{DataStorage.VALUE_STORAGE}, true);
+         return checkAndRepair(new DataStorage[]{DataStorage.VALUE_STORAGE}, true, 1);
+      }
+      else
+      {
+         return CONFIRMATION_FAILED_MESSAGE;
+      }
+   }
+
+   @Managed
+   @ManagedDescription("Auto-repair inconsistencies for value storage. "
+      + "Don't forget to backup your data first. Set confirmation parameter to \"YES\" for enabling auto-repair feature. "
+      + "Set nThreads parameter to configure the number of threads")
+   public String repairValueStorage(@ManagedName("confirmation") String confirmation, @ManagedName("nThreads") int nThreads)
+   {
+      if (confirmation.equalsIgnoreCase("YES"))
+      {
+         return checkAndRepair(new DataStorage[]{DataStorage.VALUE_STORAGE}, true, nThreads);
       }
       else
       {
@@ -164,12 +203,12 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
 
    @Managed
    @ManagedDescription("Auto-repair inconsistencies for database. "
-      + "Don't forget to backup your data first. Set parameter to \"YES\" for enabling auto-repair feature")
-   public String repairDataBase(String confirmation)
+      + "Don't forget to backup your data first. Set confirmation parameter to \"YES\" for enabling auto-repair feature.")
+   public String repairDataBase(@ManagedName("confirmation") String confirmation)
    {
       if (confirmation.equalsIgnoreCase("YES"))
       {
-         return checkAndRepair(new DataStorage[]{DataStorage.DB}, true);
+         return checkAndRepair(new DataStorage[]{DataStorage.DB}, true, 1);
       }
       else
       {
@@ -178,26 +217,28 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    }
 
    @Managed
-   @ManagedDescription("Set the number of threads used for checking and repairing repository.")
-   public void setCheckingThreadPoolSize(int nbThread)
+   @ManagedDescription("Auto-repair inconsistencies for database. "
+      + "Don't forget to backup your data first. Set confirmation parameter to \"YES\" for enabling auto-repair feature. "
+      + "Set nThreads parameter to configure the number of threads.")
+   public String repairDataBase(@ManagedName("confirmation") String confirmation, @ManagedName("nThreads") int nThreads)
    {
-      this.nThreads = nbThread ;
+      if (confirmation.equalsIgnoreCase("YES"))
+      {
+         return checkAndRepair(new DataStorage[]{DataStorage.DB}, true, nThreads);
+      }
+      else
+      {
+         return CONFIRMATION_FAILED_MESSAGE;
+      }
    }
 
-   @Managed
-   @ManagedDescription("Get the number of threads used for checking and repairing repository.")
-   public int getCheckingThreadPoolSize()
-   {
-      return nThreads  ;
-   }
-
-   public String checkAndRepair(final DataStorage[] storages, final boolean autoRepair)
+   public String checkAndRepair(final DataStorage[] storages, final boolean autoRepair, final int nThreads)
    {
       return SecurityHelper.doPrivilegedAction(new PrivilegedAction<String>()
       {
          public String run()
          {
-            return checkAndRepairAction(storages, autoRepair);
+            return checkAndRepairAction(storages, autoRepair, nThreads);
          }
       });
    }
@@ -210,10 +251,8 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       return lastReport != null ? lastReport.getReportPath() : null;
    }
 
-   protected String checkAndRepairAction(DataStorage[] storages, boolean autoRepair)
+   protected String checkAndRepairAction(DataStorage[] storages, boolean autoRepair, int nThreads)
    {
-      isMultiThreading = (nThreads>1);
-
       try
       {
          createNewReport();
@@ -226,24 +265,22 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       try
       {
          suspendRepository();
-         if(isMultiThreading)
+         if(nThreads > 1)
          {
             try
             {
-               lastReport.enableMultiThreadingMode();
-               MultithreadedChecking checking = new MultithreadedChecking(storages, autoRepair);
-               return checking.startThreads();
+               MultithreadedChecking checking = new MultithreadedChecking(storages, autoRepair, nThreads);
+               return checking.startThreads(nThreads);
             }
             catch (IOException e)
             {
                return getExceptionDuringCheckingMessage(e);
             }
-
          }
          else
          {
+            lastReport.init(false);
             return doCheckAndRepair(storages, autoRepair);
-
          }
       }
       catch (RepositoryException e)
@@ -372,30 +409,17 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       }
    }
 
-   private void flush()
-   {
-      try
-      {
-         lastReport.flush();
-      }
-        catch (IOException e)
-      {
-         LOG.error(e.getMessage(), e);
-      }
-   }
-
    private void doCheckDataBase(final boolean autoRepair,Queue<Callable<Void>> tasks) throws IOException
    {
       for (final String wsName : repository.getWorkspaceNames())
       {
-         if(isMultiThreading)
+         if(tasks != null)
          {
             Callable<Void> task = new Callable<Void>()
             {
                public Void call() throws Exception
                {
                   checkDatabase(autoRepair,wsName);
-                  flush();
                   return null;
                }
             };
@@ -420,14 +444,13 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    {
       for (final String wsName : repository.getWorkspaceNames())
       {
-         if(isMultiThreading)
+         if(tasks != null)
          {
             Callable<Void> task = new Callable<Void>()
             {
                public Void call() throws Exception
                {
                   checkValueStorage(autoRepair,wsName);
-                  flush();
                   return null;
                }
             };
@@ -450,14 +473,13 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    {
       for (final String wsName : repository.getWorkspaceNames())
       {
-         if (isMultiThreading)
+         if (tasks != null)
          {
             Callable<Void> task = new Callable<Void>()
             {
                public Void call() throws Exception
                {
                   checkIndex(wsName);
-                  flush();
                   return null;
                }
             };
@@ -525,11 +547,6 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    private class MultithreadedChecking
    {
       /**
-       * This instance of {@link AtomicReference} will contain the exception meet if any exception has occurred
-       */
-      private final AtomicReference<Exception> exception = new AtomicReference<Exception>();
-
-      /**
        * The total amount of threads currently working
        */
       private final AtomicInteger runningThreads = new AtomicInteger();
@@ -537,12 +554,12 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       /**
        * The {@link java.util.concurrent.CountDownLatch} used to notify that the checking is over
        */
-      private final CountDownLatch endSignal = new CountDownLatch(nThreads);
+      private final CountDownLatch endSignal;
 
       /**
        * All the checking threads
        */
-      private final Thread[] allCheckingThreads = new Thread[nThreads];
+      private final Thread[] allCheckingThreads;
 
       /**
        * The list of checking tasks left to do
@@ -556,11 +573,11 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       {
          public void run()
          {
-            lastReport.init();
-            while (!Thread.currentThread().isInterrupted() && exception.get() == null)
+            lastReport.init(true);
+            while (!Thread.currentThread().isInterrupted())
             {
                Callable<Void> task;
-               while (exception.get() == null && (task = tasks.poll()) != null)
+               while ((task = tasks.poll()) != null)
                {
                   try
                   {
@@ -572,10 +589,18 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
                   }
                   catch (Exception e)
                   {
-                     exception.set(e);
+                     logAndGetExceptionDuringCheckingMessage(e);
                   }
                   finally
                   {
+                     try
+                     {
+                        lastReport.flush();
+                     }
+                     catch (IOException e)
+                     {
+                        LOG.error(e.getMessage(), e);
+                     }
                      synchronized (runningThreads)
                      {
                         runningThreads.decrementAndGet();
@@ -585,7 +610,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
                }
                synchronized (runningThreads)
                {
-                  if (!Thread.currentThread().isInterrupted() && exception.get() == null && (runningThreads.get() > 0))
+                  if (!Thread.currentThread().isInterrupted()  && (runningThreads.get() > 0))
                   {
                      try
                      {
@@ -609,8 +634,11 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       /**
        * MultithreadedChecking constructor.
        */
-      public MultithreadedChecking(final DataStorage[] storages, final boolean autoRepair) throws IOException, RepositoryException
+      public MultithreadedChecking(final DataStorage[] storages, final boolean autoRepair, int nThreads) throws IOException, RepositoryException
       {
+         endSignal = new CountDownLatch(nThreads);
+         allCheckingThreads = new Thread[nThreads];
+
          tasks = new LinkedBlockingQueue<Callable<Void>>()
          {
             private static final long serialVersionUID = 1L;
@@ -649,7 +677,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       /**
        * Starts all the checking threads
        */
-      public String startThreads() throws IOException, RepositoryException
+      public String startThreads(int nThreads) throws IOException, RepositoryException
       {
          for (int i = 0; i < nThreads; i++)
          {
@@ -658,19 +686,12 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
          try
          {
             endSignal.await();
-            if (exception.get() != null)
-            {
-               lastReport.disableMultiThreadingMode();
-               return logAndGetExceptionDuringCheckingMessage(exception.get());
-            }
          }
          catch (InterruptedException e)
          {
             Thread.currentThread().interrupt();
-            lastReport.disableMultiThreadingMode();
-            return logAndGetExceptionDuringCheckingMessage(exception.get());
+            return logAndGetExceptionDuringCheckingMessage(e);
          }
-         lastReport.disableMultiThreadingMode();
          return logAndGetCheckingResultMessage();
       }
    }
