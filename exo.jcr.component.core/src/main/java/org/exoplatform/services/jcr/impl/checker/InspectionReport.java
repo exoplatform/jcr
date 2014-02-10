@@ -54,7 +54,7 @@ public class InspectionReport
 
    private String reportPath;
 
-   private ThreadLocal<InspectionReportContext> reportContext=new ThreadLocal<InspectionReportContext>();
+   private final ThreadLocal<InspectionReportContext> reportContext=new ThreadLocal<InspectionReportContext>();
 
    /**
     * InspectionReport constructor.
@@ -81,11 +81,11 @@ public class InspectionReport
    {
       if (isMulti)
       {
-         reportContext.set(new InspectionReportContext());;
+         reportContext.set(new InspectionReportContext());
       }
       else
       {
-         reportContext = null;
+         reportContext.remove();
       }
    }
 
@@ -101,9 +101,9 @@ public class InspectionReport
       }
       for (String key : reportContext.get().getLogExceptions().keySet())
       {
-         writException(key, reportContext.get().getLogExceptions().get(key));
+         writeException(key, reportContext.get().getLogExceptions().get(key));
       }
-      reportContext.get().clear();
+      reportContext.remove();
    }
 
    /**
@@ -188,11 +188,11 @@ public class InspectionReport
       }
       else
       {
-         writException(message, e);
+         writeException(message, e);
       }
    }
 
-   private void writException(String message, Throwable e) throws IOException
+   private void writeException(String message, Throwable e) throws IOException
    {
       writeLine(message);
       writeStackTrace(e);
@@ -265,13 +265,6 @@ public class InspectionReport
       public void addLogException(String message, Throwable e)
       {
          logExceptions.put(message, e);
-      }
-
-      public void clear()
-      {
-         comments.clear();
-         logBrokenObjects.clear();
-         logExceptions.clear();
       }
 
       public List<String> getComments()

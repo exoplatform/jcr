@@ -112,8 +112,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    @ManagedDescription("Check repository data consistency. DB data, value storage and lucene index will be checked.")
    public String checkAll()
    {
-      return checkAndRepair(new DataStorage[]{DataStorage.DB, DataStorage.VALUE_STORAGE, DataStorage.LUCENE_INDEX},
-         false, 1);
+      return checkAll(1);
    }
 
    @Managed
@@ -129,7 +128,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    @ManagedDescription("Check repository database consistency.")
    public String checkDataBase()
    {
-      return checkAndRepair(new DataStorage[]{DataStorage.DB}, false, 1);
+      return checkDataBase(1);
    }
 
    @Managed
@@ -144,7 +143,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    @ManagedDescription("Check repository value storage consistency.")
    public String checkValueStorage()
    {
-      return checkAndRepair(new DataStorage[]{DataStorage.VALUE_STORAGE}, false, 1);
+      return checkValueStorage(1);
    }
 
    @Managed
@@ -159,7 +158,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    @ManagedDescription("Check repository search index consistency.")
    public String checkIndex()
    {
-      return checkAndRepair(new DataStorage[]{DataStorage.LUCENE_INDEX}, false, 1);
+      return checkIndex(1);
    }
 
    @Managed
@@ -177,7 +176,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    {
       if (confirmation.equalsIgnoreCase("YES"))
       {
-         return checkAndRepair(new DataStorage[]{DataStorage.VALUE_STORAGE}, true, 1);
+         return repairValueStorage(confirmation,1);
       }
       else
       {
@@ -208,7 +207,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
    {
       if (confirmation.equalsIgnoreCase("YES"))
       {
-         return checkAndRepair(new DataStorage[]{DataStorage.DB}, true, 1);
+         return repairDataBase(confirmation, 1);
       }
       else
       {
@@ -270,7 +269,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
             try
             {
                MultithreadedChecking checking = new MultithreadedChecking(storages, autoRepair, nThreads);
-               return checking.startThreads(nThreads);
+               return checking.startThreads();
             }
             catch (IOException e)
             {
@@ -557,6 +556,11 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       private final CountDownLatch endSignal;
 
       /**
+       * The total amount of threads used for the checking
+       */
+      private final int nThreads;
+
+      /**
        * All the checking threads
        */
       private final Thread[] allCheckingThreads;
@@ -573,7 +577,6 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       {
          public void run()
          {
-            lastReport.init(true);
             while (!Thread.currentThread().isInterrupted())
             {
                Callable<Void> task;
@@ -581,6 +584,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
                {
                   try
                   {
+                     lastReport.init(true);
                      task.call();
                   }
                   catch (InterruptedException e)
@@ -636,6 +640,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
        */
       public MultithreadedChecking(final DataStorage[] storages, final boolean autoRepair, int nThreads) throws IOException, RepositoryException
       {
+         this.nThreads=nThreads;
          endSignal = new CountDownLatch(nThreads);
          allCheckingThreads = new Thread[nThreads];
 
@@ -677,7 +682,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       /**
        * Starts all the checking threads
        */
-      public String startThreads(int nThreads) throws IOException, RepositoryException
+      public String startThreads() throws IOException, RepositoryException
       {
          for (int i = 0; i < nThreads; i++)
          {
