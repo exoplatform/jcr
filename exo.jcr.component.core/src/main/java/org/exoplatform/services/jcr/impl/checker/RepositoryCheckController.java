@@ -174,14 +174,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       + "Don't forget to backup your data first. Set confirmation parameter to \"YES\" for enabling auto-repair feature.")
    public String repairValueStorage(@ManagedName("confirmation") String confirmation)
    {
-      if (confirmation.equalsIgnoreCase("YES"))
-      {
-         return repairValueStorage(confirmation,1);
-      }
-      else
-      {
-         return CONFIRMATION_FAILED_MESSAGE;
-      }
+      return repairValueStorage(confirmation,1);
    }
 
    @Managed
@@ -205,14 +198,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       + "Don't forget to backup your data first. Set confirmation parameter to \"YES\" for enabling auto-repair feature.")
    public String repairDataBase(@ManagedName("confirmation") String confirmation)
    {
-      if (confirmation.equalsIgnoreCase("YES"))
-      {
-         return repairDataBase(confirmation, 1);
-      }
-      else
-      {
-         return CONFIRMATION_FAILED_MESSAGE;
-      }
+      return repairDataBase(confirmation, 1);
    }
 
    @Managed
@@ -556,11 +542,6 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
       private final CountDownLatch endSignal;
 
       /**
-       * The total amount of threads used for the checking
-       */
-      private final int nThreads;
-
-      /**
        * All the checking threads
        */
       private final Thread[] allCheckingThreads;
@@ -640,7 +621,6 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
        */
       public MultithreadedChecking(final DataStorage[] storages, final boolean autoRepair, int nThreads) throws IOException, RepositoryException
       {
-         this.nThreads=nThreads;
          endSignal = new CountDownLatch(nThreads);
          allCheckingThreads = new Thread[nThreads];
 
@@ -684,7 +664,7 @@ public class RepositoryCheckController extends AbstractRepositorySuspender imple
        */
       public String startThreads() throws IOException, RepositoryException
       {
-         for (int i = 0; i < nThreads; i++)
+         for (int i = 0; i < allCheckingThreads.length; i++)
          {
             (allCheckingThreads[i] = new Thread(checkingTask, "checking Thread #" + (i + 1))).start();
          }
