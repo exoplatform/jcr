@@ -198,6 +198,17 @@
   <filename>report-&lt;repository
   name&gt;-dd-MMM-yy-HH-mm.txt</filename>.</para>
 
+  <note>
+        <para>You can use the JMX parameter  <emphasis role="bold">nThreads</emphasis>,
+            to set the number of threads used for checking and repairing repository
+            (by default, the RepositoryCheckController uses a single thread).</para>
+  </note>
+
+  <warning>
+    <para>When the multi threaded mode is used, The RepositoryCheckController uses more memory.
+         So, it is recommended to avoid setting a large number of threads.</para>
+  </warning>
+
   <section id="JCR.RepositoryCheckController.RecommendationsOnHowToFixCorruptedJCR">
     <title>Recommendations on how to fix corrupted JCR manually</title>
 

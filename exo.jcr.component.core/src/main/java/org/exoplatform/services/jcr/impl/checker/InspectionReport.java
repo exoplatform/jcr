@@ -28,7 +28,11 @@ import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Text-based inspection log implementation.
@@ -49,6 +53,8 @@ public class InspectionReport
    private boolean reportHasInconsistency;
 
    private String reportPath;
+
+   private final ThreadLocal<InspectionReportContext> reportContext=new ThreadLocal<InspectionReportContext>();
 
    /**
     * InspectionReport constructor.
@@ -71,6 +77,35 @@ public class InspectionReport
 
    }
 
+   public void init(boolean isMulti)
+   {
+      if (isMulti)
+      {
+         reportContext.set(new InspectionReportContext());
+      }
+      else
+      {
+         reportContext.remove();
+      }
+   }
+
+   public synchronized void flush() throws IOException
+   {
+      for (String message : reportContext.get().getComments())
+      {
+         writeMessage(message);
+      }
+      for (String brokenObject : reportContext.get().getBrokenObjects())
+      {
+         writeBrokenObject(brokenObject);
+      }
+      for (String key : reportContext.get().getLogExceptions().keySet())
+      {
+         writeException(key, reportContext.get().getLogExceptions().get(key));
+      }
+      reportContext.remove();
+   }
+
    /**
     * Indicates if report has inconsistency info or not.
     */
@@ -84,8 +119,14 @@ public class InspectionReport
     */
    public void logComment(String message) throws IOException
    {
-      writeLine(message);
-      writer.flush();
+      if (reportContext.get() != null)
+      {
+         reportContext.get().addComment(message);
+      }
+      else
+      {
+         writeMessage(message);
+      }
    }
 
    /**
@@ -93,7 +134,20 @@ public class InspectionReport
     */
    public void logDescription(String description) throws IOException
    {
-      writeLine(description);
+      // The ThreadLocal has been initialized so we know that we are in multithreaded mode.
+      if (reportContext.get() != null)
+      {
+         reportContext.get().addComment(description);
+      }
+      else
+      {
+         writeMessage(description);
+      }
+   }
+
+   private void writeMessage(String message) throws IOException
+   {
+      writeLine(message);
       writer.flush();
    }
 
@@ -103,7 +157,19 @@ public class InspectionReport
    public void logBrokenObjectAndSetInconsistency(String brokenObject) throws IOException
    {
       setInconsistency();
+      // The ThreadLocal has been initialized so we know that we are in multithreaded mode.
+      if (reportContext.get() != null)
+      {
+         reportContext.get().addBrokenObject(brokenObject);
+      }
+      else
+      {
+         writeBrokenObject(brokenObject);
+      }
+   }
 
+   private void writeBrokenObject(String brokenObject) throws IOException
+   {
       writer.write(brokenObject);
       writer.write(DELIMITER);
       writer.flush();
@@ -115,7 +181,19 @@ public class InspectionReport
    public void logExceptionAndSetInconsistency(String message, Throwable e) throws IOException
    {
       setInconsistency();
+      // The ThreadLocal has been initialized so we know that we are in multithreaded mode.
+      if (reportContext.get() != null)
+      {
+         reportContext.get().addLogException(message, e);
+      }
+      else
+      {
+         writeException(message, e);
+      }
+   }
 
+   private void writeException(String message, Throwable e) throws IOException
+   {
       writeLine(message);
       writeStackTrace(e);
       writer.flush();
@@ -165,6 +243,43 @@ public class InspectionReport
       {
          writeLine("Cause:");
          writeStackTrace(ourCause);
+      }
+   }
+
+   private static class InspectionReportContext
+   {
+      private final List<String> comments = new ArrayList<String>();
+      private final List<String> logBrokenObjects = new ArrayList<String>();
+      private final Map<String, Throwable> logExceptions = new HashMap<String, Throwable>();
+
+      public void addComment(String message)
+      {
+         comments.add(message);
+      }
+
+      public void addBrokenObject(String brokenObject)
+      {
+         logBrokenObjects.add(brokenObject);
+      }
+
+      public void addLogException(String message, Throwable e)
+      {
+         logExceptions.put(message, e);
+      }
+
+      public List<String> getComments()
+      {
+         return comments;
+      }
+
+      public List<String> getBrokenObjects()
+      {
+         return logBrokenObjects;
+      }
+
+      public Map<String, Throwable> getLogExceptions()
+      {
+         return logExceptions;
       }
    }
 }

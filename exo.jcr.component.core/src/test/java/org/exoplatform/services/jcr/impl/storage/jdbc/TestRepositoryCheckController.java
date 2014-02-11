@@ -117,6 +117,19 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       ManageableRepository db1 = repositoryService.getRepository("db1");
       TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(db1);
 
+      checkDatabase(checkController, 1);
+   }
+
+   public void testCheckDataBaseMultiThreading() throws Exception
+   {
+      ManageableRepository db1 = repositoryService.getRepository("db1");
+      TesterRepositoryCheckController checkController = new TesterRepositoryCheckController(db1);
+
+      checkDatabase(checkController, 5);
+   }
+
+   private void checkDatabase(TesterRepositoryCheckController checkController, int nThreads) throws Exception
+   {
       SessionImpl session = (SessionImpl)repository.login(credentials, "ws1");
       Node testRoot = session.getRootNode().addNode("testRoot");
       Node exoTrash = testRoot.addNode("exo:trash");
@@ -128,7 +141,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
       session.save();
 
-      assertResult(checkController.checkIndex(), checkController.getLastReportPath(), true);
+      assertResult(checkController.checkIndex(nThreads), checkController.getLastReportPath(), true);
 
       QueryManager qman = session.getWorkspace().getQueryManager();
 
@@ -140,7 +153,7 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
       session.save();
 
-      assertResult(checkController.checkIndex(), checkController.getLastReportPath(), true);
+      assertResult(checkController.checkIndex(nThreads), checkController.getLastReportPath(), true);
 
       q = qman.createQuery("SELECT * FROM nt:base WHERE jcr:path LIKE '/testRoot/%'", Query.SQL);
       assertEquals(4, q.execute().getNodes().getSize());
@@ -237,13 +250,29 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
       //assertTrue(checkController.checkValueStorage().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
    }
 
+   public void testCheckValueStorageMultiThreading() throws Exception
+   {
+      TesterRepositoryCheckController checkController =
+         new TesterRepositoryCheckController(repositoryService.getRepository("db1"));
+
+      assertResult(checkController.checkValueStorage(5), checkController.getLastReportPath(), true);
+    }
+
    public void testCheckIndex() throws Exception
    {
       TesterRepositoryCheckController checkController =
          new TesterRepositoryCheckController(repositoryService.getRepository("db1"));
 
+
       assertResult(checkController.checkIndex(), checkController.getLastReportPath(), true);
-      //assertTrue(checkController.checkIndex().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+   }
+
+   public void testCheckIndexMultiThreading() throws Exception
+   {
+      TesterRepositoryCheckController checkController =
+         new TesterRepositoryCheckController(repositoryService.getRepository("db1"));
+
+      assertResult(checkController.checkIndex(5), checkController.getLastReportPath(), true);
    }
 
    public void testCheckAll() throws Exception
@@ -253,6 +282,15 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
       assertResult(checkController.checkAll(), checkController.getLastReportPath(), true);
       //assertTrue(checkController.checkAll().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
+   }
+
+   public void testCheckAllMultiThreading() throws Exception
+   {
+      TesterRepositoryCheckController checkController =
+         new TesterRepositoryCheckController(repositoryService.getRepository("db1"));
+
+      assertResult(checkController.checkAll(5), checkController.getLastReportPath(), true);
+        //assertTrue(checkController.checkAll().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
    }
 
    /**
