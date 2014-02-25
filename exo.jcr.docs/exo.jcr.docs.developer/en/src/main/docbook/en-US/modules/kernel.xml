@@ -82,4 +82,7 @@
    <xi:include href="kernel/mt-kernel.xml"
                xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+   <xi:include href="kernel/hikariCP-pools-configuration.xml"
+               xmlns:xi="http://www.w3.org/2001/XInclude" />
+
 </chapter>

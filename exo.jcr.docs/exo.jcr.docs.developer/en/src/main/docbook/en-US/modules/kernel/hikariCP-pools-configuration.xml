@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+   "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="Kernel.HikariCP">
+  <title>HikariCP connection pool</title>
+
+  <para>By default eXo JCR uses Apache DBCP connection pool. eXo JCR offers the possibility to use <ulink
+     url="http://brettwooldridge.github.io/HikariCP/">HikariCP</ulink>  as Java database connection pool (JDBC Pool).
+   If you intend to use <emphasis role="bold">HikariCP</emphasis> connection pool , you will have to configure
+   the object factory parameter of the component plugin org.exoplatform.services.naming.BindReferencePlugin
+   as <emphasis role="bold">org.exoplatform.services.hikari.HikariDataSourceFactory </emphasis>,
+   and set the hikariCP properties </para>
+
+  <para>A configuration example :</para>
+  <programlisting language="xml">
+       &lt;external-component-plugins&gt;
+    &lt;target-component&gt;org.exoplatform.services.naming.InitialContextInitializer&lt;/target-component&gt;
+    &lt;component-plugin&gt;
+      &lt;name&gt;bind.datasource&lt;/name&gt;
+      &lt;set-method&gt;addPlugin&lt;/set-method&gt;
+      &lt;type&gt;org.exoplatform.services.naming.BindReferencePlugin&lt;/type&gt;
+      &lt;init-params&gt;
+        &lt;value-param&gt;
+          &lt;name&gt;bind-name&lt;/name&gt;
+          &lt;value&gt;jdbcexo&lt;/value&gt;
+        &lt;/value-param&gt;
+        &lt;value-param&gt;
+          &lt;name&gt;class-name&lt;/name&gt;
+          &lt;value&gt;javax.sql.DataSource&lt;/value&gt;
+        &lt;/value-param&gt;
+        &lt;value-param&gt;
+          &lt;name&gt;factory&lt;/name&gt;
+	  &lt;value&gt;org.exoplatform.services.hikari.HikariDataSourceFactory&lt;/value&gt;
+        &lt;/value-param&gt;
+        &lt;properties-param&gt;
+          &lt;name&gt;ref-addresses&lt;/name&gt;
+          &lt;description&gt;ref-addresses&lt;/description&gt;
+          &lt;property name="dataSourceClassName" value="com.mysql.jdbc.jdbc2.optional.MysqlDataSource" /&gt;
+          &lt;property name="dataSource.url" value="jdbc:mysql://localhost/portal" /&gt;
+          &lt;property name="dataSource.user" value="root" /&gt;
+          &lt;property name="dataSource.password" value="admin" /&gt;
+          &lt;property name="maximumPoolSize" value="600" /&gt;
+          &lt;property name="minimumPoolSize" value="5" /&gt;
+	  &lt;property name="dataSource.cachePrepStmts" value="true" /&gt;
+	  &lt;property name="dataSource.prepStmtCacheSize" value="250" /&gt;
+	  &lt;property name="dataSource.prepStmtCacheSqlLimit" value="2048" /&gt;
+	  &lt;property name="dataSource.useServerPrepStmts" value="true" /&gt;
+        &lt;/properties-param&gt;
+      &lt;/init-params&gt;
+    &lt;/component-plugin&gt;
+  &lt;/external-component-plugins&gt;
+  </programlisting>
+</section>
