@@ -1581,6 +1581,20 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
         </section>
       </section>
 
+      <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.GetListDependencies">
+        <title>How to get the actual list of dependencies?</title>
+
+        <para>When you have a complex project with a lot of extensions, it
+        could be interesting to know the actual list of dependencies ordered
+        by priority. You can get this list at server startup by simply adding
+        the System property
+        <emphasis>org.exoplatform.container.configuration.debug</emphasis> to
+        your launch command. You will then get an info message in your log
+        file of the next type:</para>
+
+        <para><programlisting>The dependencies ordered by priority of the portal container 'portal' are: portal, dashboard, exoadmin, eXoGadgets, eXoGadgetServer, rest, web</programlisting></para>
+      </section>
+
       <section id="Kernel.ContainerConfiguration.UnderstandingHowConfigurationFilesLoaded.AdvancedConceptsForPortalContainers.DisableDynamicallyPortalContainer">
         <title>Disable dynamically a portal container</title>
 
@@ -1657,7 +1671,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
     </section>
   </section>
 
-  <section>
+  <section id="Kernel.ContainerConfiguration.HotReloading">
     <title>eXo Container hot reloading</title>
 
     <para>In developing mode (that you can enable by setting the system
@@ -1666,7 +1680,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
     hot reload all the eXo containers, one given portal container or a set of
     portal containers.</para>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.ManualHotReloading">
       <title>Manual hot reloading</title>
 
       <para>You can manually hot reload your eXo containers using the JMX
@@ -1687,7 +1701,7 @@ complex-value=${my-var1}-${my-var2}</programlisting></para>
       </itemizedlist>
     </section>
 
-    <section>
+    <section id="Kernel.ContainerConfiguration.AutoHotReloading">
       <title>Automatic hot reloading</title>
 
       <para>In developing mode if for some reason a web application is
