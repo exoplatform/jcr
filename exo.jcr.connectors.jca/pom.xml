@@ -25,14 +25,14 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>1.16.0-CR1-SNAPSHOT</version>
+    <version>1.16.0-CR1</version>
   </parent>
   <artifactId>exo.jcr.connectors.jca</artifactId>
   <packaging>rar</packaging>
   <name>eXo JCR :: Connector :: JCA</name>
   <description>Implementation of JCA resource adapter of Exoplatform SAS 'eXo JCR' project.</description>
   <properties>
-    <manifest.entries/>
+    <manifest.entries />
   </properties>
   <dependencies>
     <dependency>
