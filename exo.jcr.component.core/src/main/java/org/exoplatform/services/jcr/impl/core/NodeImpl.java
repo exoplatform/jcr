@@ -2645,13 +2645,12 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       if (!checkedOut())
       {
-         throw new VersionException(" cannot change child node ordering of a checked-in node ");
+         throw new VersionException("Cannot change child node ordering of a checked-in node ");
       }
 
       if (destPath != null && srcPath.getDepth() != destPath.getDepth())
       {
-         throw new ItemNotFoundException("Source and destination is not relative paths of depth one, "
-            + "i.e. is not a childs of same parent node");
+         throw new ItemNotFoundException("Source and destination must have the same parent node");
       }
 
       List<NodeData> siblings = new ArrayList<NodeData>(dataManager.getChildNodesData(nodeData()));
@@ -2794,13 +2793,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          if (sdata.getQPath().equals(srcPath))
          {
             deleteState = new ItemState(sdata, ItemState.DELETED, true, null, false, false);
-            changes.add(new ItemState(newData, ItemState.UPDATED, true, null, false, true));
+            changes.add(new ItemState(newData, ItemState.UPDATED, true, null, false, true, srcPath));
          }
          else
          {
-            ItemState state = ItemState.createUpdatedState(newData);
-            state.eraseEventFire();
-            changes.add(state);
+            changes.add(new ItemState(newData, ItemState.UPDATED, false, null, false, true, destPath));
          }
       }
       if (destPath != null && srcPath.getName().getAsString().equals(destPath.getName().getAsString()))

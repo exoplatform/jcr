@@ -195,4 +195,16 @@ public abstract class PersistedItemData implements ItemData, Externalizable
 
       out.writeInt(version);
    }
+
+   /**
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return this.getClass().getSimpleName() + " [id=" + id + ", qpath=" + qpath + ", parentId=" + parentId + ", version=" + version
+         + "]";
+   }
+
+   
 }

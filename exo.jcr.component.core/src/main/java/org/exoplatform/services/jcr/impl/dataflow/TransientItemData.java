@@ -222,4 +222,13 @@ public abstract class TransientItemData implements ItemData, Externalizable
       out.writeInt(persistedVersion);
    }
 
+   /**
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return getClass().getSimpleName() + " [identifier=" + identifier + ", parentIdentifier=" + parentIdentifier
+         + ", persistedVersion=" + persistedVersion + ", qpath=" + qpath + "]";
+   }
 }

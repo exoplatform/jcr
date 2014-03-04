@@ -26,6 +26,7 @@ import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.xml.importing.ACLInitializationHelper;
+import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -382,6 +383,27 @@ public class ImportNodeData extends TransientNodeData implements ImportItemData
       this.versionHistoryIdentifier = versionHistoryIdentifier;
    }
 
+   /**
+    * Factory method
+    * 
+    * @param parent NodeData
+    * @param name  InternalQName
+    * @param primaryTypeName InternalQName
+    * @param index int
+    * @param orderNumber int
+    * @return
+    */
+   public static ImportNodeData createNodeData(NodeData parent, InternalQName name, InternalQName primaryTypeName,
+      int index, int orderNumber)
+   {
+      ImportNodeData nodeData = null;
+      QPath path = QPath.makeChildPath(parent.getQPath(), name, index);
+      nodeData =
+         new ImportNodeData(path, IdGenerator.generate(), -1, primaryTypeName, new InternalQName[0], orderNumber,
+            parent.getIdentifier(), parent.getACL());
+      return nodeData;
+   }
+   
    public static ImportNodeData createCopy(NodeData source)
    {
       return new ImportNodeData(source.getQPath(), source.getIdentifier(), source.getPersistedVersion(), source
