@@ -20,11 +20,11 @@ package org.exoplatform.services.jcr.impl.value;
 
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
@@ -96,30 +96,21 @@ public class TestDateValueFormat extends JcrImplBaseTest
       Node dateParent = testRoot.addNode("date node");
       dateParent.setProperty("calendar", date, PropertyType.DATE);
 
-      // TimeZone tz = TimeZone.getTimeZone("GMT-03:00");
+      TimeZone tz = TimeZone.getTimeZone("GMT-03:00");
       Calendar cdate = Calendar.getInstance();
 
       // Calendar cdate = Calendar.getInstance();
       SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ", Locale.US);
-      // sdf.setTimeZone(tz);
+      sdf.setTimeZone(tz);
 
       Date d = sdf.parse(javaDate);
-      // log.info("parse " + sdf.format(d));
-      // cdate.setTimeZone(TimeZone.getTimeZone("GMT-05:00"));
+      cdate.setTimeZone(tz);
       cdate.setTime(d);
-      // log.info("calendar " + sdf.format(cdate.getTime()));
 
-      // assertEquals("Dates must be equals", date,
-      // dateParent.getProperty("calendar").getString());
       assertEquals("Dates must be equals", cdate, dateParent.getProperty("calendar").getDate());
 
       testRoot.save();
 
       assertEquals("Dates must be equals", cdate, dateParent.getProperty("calendar").getDate());
-   }
-
-   public void testArabicProblem() throws ParseException
-   {
-      SimpleDateFormat format = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
    }
 }
