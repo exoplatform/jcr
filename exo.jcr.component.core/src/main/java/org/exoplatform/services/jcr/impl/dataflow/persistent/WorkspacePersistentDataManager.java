@@ -661,8 +661,29 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
 
             if (prevState.getData() instanceof PersistedItemData)
             {
-               // use existing if persisted 
-               newData = prevState.getData();
+               if (prevState.isDeleted() && prevState.getData() instanceof PersistedPropertyData)
+               {
+                  // If we delete a property, we need to ensure that there is no values
+                  PersistedPropertyData propertyData = (PersistedPropertyData)prevState.getData();
+                  List<ValueData> values = propertyData.getValues();
+                  if (values != null && !values.isEmpty())
+                  {
+                     newData =
+                        new PersistedPropertyData(propertyData.getIdentifier(), propertyData.getQPath(),
+                           propertyData.getParentIdentifier(), propertyData.getPersistedVersion() + 1,
+                           propertyData.getType(), propertyData.isMultiValued(), null);
+                  }
+                  else
+                  {
+                     // there is no values, we can keep it as it is
+                     newData = prevState.getData();
+                  }
+               }
+               else
+               {
+                  // use existing if persisted 
+                  newData = prevState.getData();
+               }
             }
             else
             {

@@ -479,4 +479,15 @@ public class ItemState implements Externalizable
       data = (ItemData)in.readObject();
    }
 
+   /**
+    * @see java.lang.Object#toString()
+    */
+   @Override
+   public String toString()
+   {
+      return "ItemState [data=" + data + ", state=" + state + ", isPersisted=" + isPersisted + ", internallyCreated="
+         + internallyCreated + ", eventFire=" + eventFire + ", ancestorToSave=" + ancestorToSave + ", oldPath="
+         + oldPath + "]";
+   }
+
 }

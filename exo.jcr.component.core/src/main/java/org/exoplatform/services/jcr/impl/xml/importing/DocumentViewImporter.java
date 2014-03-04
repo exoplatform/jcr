@@ -41,8 +41,6 @@ import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.value.BaseValue;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
-import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
-import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.util.ISO9075;
@@ -144,8 +142,8 @@ public class DocumentViewImporter extends BaseXmlImporter
       }
       else
       {
-         TransientNodeData nodeData =
-            TransientNodeData.createNodeData(getParent(), Constants.JCR_XMLTEXT, Constants.NT_UNSTRUCTURED,
+         ImportNodeData nodeData =
+            ImportNodeData.createNodeData(getParent(), Constants.JCR_XMLTEXT, Constants.NT_UNSTRUCTURED,
                getNodeIndex(getParent(), Constants.JCR_XMLTEXT, null), getNextChildOrderNum(getParent()));
 
          changesLog.add(new ItemState(nodeData, ItemState.ADDED, true, getAncestorToSave()));
@@ -424,8 +422,7 @@ public class DocumentViewImporter extends BaseXmlImporter
                   }
                }
 
-               newProperty =
-                  TransientPropertyData.createPropertyData(getParent(), propName, pType, isMultivalue, values);
+               newProperty = ImportPropertyData.createPropertyData(getParent(), propName, pType, isMultivalue, values);
 
                if (nodeData.isMixVersionable())
                {
@@ -515,7 +512,7 @@ public class DocumentViewImporter extends BaseXmlImporter
          binaryValue.getAsStream().close();
 
          newProperty =
-            TransientPropertyData.createPropertyData(getParent(), propName, PropertyType.BINARY, false, binaryValue);
+            ImportPropertyData.createPropertyData(getParent(), propName, PropertyType.BINARY, false, binaryValue);
       }
       catch (DecodingException e)
       {
@@ -538,7 +535,7 @@ public class DocumentViewImporter extends BaseXmlImporter
          valuesData.add(new TransientValueData(mixinQname));
       }
 
-      newProperty = TransientPropertyData.createPropertyData(getParent(), key, PropertyType.NAME, true, valuesData);
+      newProperty = ImportPropertyData.createPropertyData(getParent(), key, PropertyType.NAME, true, valuesData);
       return newProperty;
    }
 
@@ -550,7 +547,7 @@ public class DocumentViewImporter extends BaseXmlImporter
          log.debug("Property NAME: " + primaryTypeName);
       }
       newProperty =
-         TransientPropertyData.createPropertyData(getParent(), Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
+         ImportPropertyData.createPropertyData(getParent(), Constants.JCR_PRIMARYTYPE, PropertyType.NAME, false,
             new TransientValueData(primaryTypeName));
       return newProperty;
    }
@@ -563,14 +560,14 @@ public class DocumentViewImporter extends BaseXmlImporter
       if (nodeData.getQPath().isDescendantOf(Constants.JCR_VERSION_STORAGE_PATH))
       {
          newProperty =
-            TransientPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
-                     new TransientValueData(properyValueUUID));
+            ImportPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
+               new TransientValueData(properyValueUUID));
       }
       else
       {
          newProperty =
-                  TransientPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
-                           new TransientValueData(nodeData.getIdentifier()));
+            ImportPropertyData.createPropertyData(getParent(), Constants.JCR_UUID, PropertyType.STRING, false,
+               new TransientValueData(nodeData.getIdentifier()));
       }
       
       return newProperty;
