@@ -22,6 +22,7 @@ import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 
 import javax.jcr.Node;
@@ -126,11 +127,17 @@ public class TestLockImpl extends JcrImplBaseTest
       JDBCWorkspaceDataContainer container =
          (JDBCWorkspaceDataContainer)repository.getWorkspaceContainer("ws").getComponent(
             JDBCWorkspaceDataContainer.class);
+      CacheableWorkspaceDataManager dataManager =
+         (CacheableWorkspaceDataManager)repository.getWorkspaceContainer("ws").getComponent(
+            CacheableWorkspaceDataManager.class);
 
       System.setProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE, "true");
       try
       {
+         // Remove info from the db
          container.start();
+         // Remove info from the cache
+         dataManager.start();
       }
       finally
       {
@@ -167,7 +174,7 @@ public class TestLockImpl extends JcrImplBaseTest
       // node should not be locked after removing lock data from lock tables
       assertFalse(node.isLocked());
    }
-   
+
    public void testLoadLocksAfterStopStart() throws Exception
    {
       Node node = session.getRootNode().addNode("testLock");

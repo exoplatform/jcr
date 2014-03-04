@@ -194,7 +194,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          }
       }
    }
-   
+
    /**
     * Tries to get buffer and if it is null throws an exception otherwise returns buffer. 
     * 
@@ -229,10 +229,6 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       if (local && changesList.get() == null)
       {
          beginTransaction();
-      }
-      if (!local && this.local.get())
-      {
-
       }
       this.local.set(local);
    }
@@ -569,14 +565,9 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
 
    public void putOnly(Fqn fqn, Serializable key, Object value)
    {
-      putOnly(fqn, key, value, false);
-   }
-
-   public void putOnly(Fqn fqn, Serializable key, Object value, boolean skipApplyToBuffer)
-   {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
       changesContainer.add(new PutKeyValueContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
-         local.get(), useExpiration, expirationTimeOut, skipApplyToBuffer));
+         local.get(), useExpiration, expirationTimeOut));
    }
 
    /**
@@ -609,7 +600,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       return null;
    }
    
-   public Object putInBuffer(Fqn fqn, Serializable key, Object value, boolean skipApplyToBuffer)
+   public Object putInBuffer(Fqn fqn, Serializable key, Object value)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
 
@@ -617,7 +608,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       Object prevObject = getObjectFromChangesContainer(changesContainer, fqn, key);
 
       changesContainer.add(new PutKeyValueContainer(fqn, key, value, parentCache, changesContainer.getHistoryIndex(),
-         local.get(), useExpiration, expirationTimeOut, skipApplyToBuffer));
+         local.get(), useExpiration, expirationTimeOut));
 
       if (prevObject != null)
       {
@@ -923,12 +914,12 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       }
 
       public abstract void apply();
-            
+
       public boolean isTxRequired()
       {
          return false;
       }
-      
+
       void applyToBuffer(CompressedChangesBuffer buffer)
       {
          // By default we don't do anything
@@ -1003,14 +994,14 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          setCacheLocalMode();
          cache.put(fqn, key, value);
       }
-           
+
       @Override
       public boolean isTxRequired()
       {
          return true;
       }
    }
-   
+
    /**
     * Put  container.
     */
@@ -1020,15 +1011,12 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
 
       private final Object value;
 
-      private final boolean skipApplyToBuffer;
-
       public PutKeyValueContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
-         int historicalIndex, boolean local, boolean useExpiration, long timeOut, boolean skipApplyToBuffer)
+         int historicalIndex, boolean local, boolean useExpiration, long timeOut)
       {
          super(fqn, ChangesType.PUT_KEY, cache, historicalIndex, local, useExpiration, timeOut);
          this.key = key;
          this.value = value;
-         this.skipApplyToBuffer = skipApplyToBuffer;
       }
 
       @Override
@@ -1046,8 +1034,6 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       void applyToBuffer(CompressedChangesBuffer buffer)
       {
-         if (skipApplyToBuffer)
-            return;
          buffer.put(fqn, key, value);
       }
    }
@@ -1119,12 +1105,12 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             cache.put(fqn, key, null);
          }
       }
-      
+
       @Override
       public boolean isTxRequired()
       {
          return true;
-      }      
+      }
    }
 
    /**
@@ -1250,12 +1236,12 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             cache.put(fqn, key, newSet);
          }
       }
-      
+
       @Override
       public boolean isTxRequired()
       {
          return false;
-      }      
+      }
    }
 
    /**
@@ -1366,6 +1352,11 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       {
          setCacheLocalMode();
          cache.removeNode(fqn);
+      }
+
+      void applyToBuffer(CompressedChangesBuffer buffer)
+      {
+         buffer.put(fqn, null, null);
       }
    }
 }

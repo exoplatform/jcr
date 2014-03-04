@@ -2431,7 +2431,6 @@ public class TestImport extends AbstractImportTest
       assertEquals("john", ((ExtendedNode)session.getItem("/testRoot/subroot/node")).getACL().getOwner());
    }
 
-   
    public void testImportCreateNew() throws Exception
    {
       for (int i = 0; i < 4; i++)
@@ -2549,7 +2548,6 @@ public class TestImport extends AbstractImportTest
       session2.logout();
    }
 
-   
    private Node createNodeJCR2125(Node parentNode) throws Exception
    {
       Node root = parentNode.addNode("JCR-2125");
@@ -2597,7 +2595,7 @@ public class TestImport extends AbstractImportTest
       n = root.getNode("Node-3[4]");
       n.setProperty("name", "new value 3-2");
       n.getNode("SubNode-3-4").remove();
-      n.addNode("SubNode-3-2").addNode("SubNode-3-2");      
+      n.addNode("SubNode-3-2").addNode("SubNode-3-2");
       root.getNode("Node-3[5]").setProperty("name", "new value 3-5");
       root.getNode("Node-4").setProperty("name", "new value 4");
       session.save();
@@ -2744,14 +2742,16 @@ public class TestImport extends AbstractImportTest
          {
             totalNode3 = 3;
             totalOtherNodes = 2;
-         }         
+         }
       }
       if (ni.getSize() == 2)
       {
          assertTrue(node.hasNode("Node-1"));
          assertTrue(node.getNode("Node-1").getPath().startsWith(node.getPath()));
+         assertTrue(node.getNode("Node-1").getProperty("jcr:primaryType").getPath().startsWith(node.getNode("Node-1").getPath()));
          assertTrue(node.hasNode("Node-3"));
          assertTrue(node.getNode("Node-3").getPath().startsWith(node.getPath()));
+         assertTrue(node.getNode("Node-3").getProperty("jcr:primaryType").getPath().startsWith(node.getNode("Node-3").getPath()));
       }
       else if (ni.getSize() == (totalNode3 + totalOtherNodes))
       {
@@ -2795,8 +2795,12 @@ public class TestImport extends AbstractImportTest
                   assertTrue(subNode.hasNode("SubNode-3-" + suffix));
                   Node n = subNode.getNode("SubNode-3-" + suffix);
                   assertTrue(subNode.getPath() + " should be a sub path of " + n.getPath(), n.getPath().startsWith(subNode.getPath()));
+                  assertTrue(n.getProperty("jcr:primaryType").getPath().startsWith(n.getPath()));
+                  assertTrue(subNode.getProperty("jcr:primaryType").getPath().startsWith(subNode.getPath()));
                   assertTrue(subNode.hasNode("SubNode-3-" + suffix + "/SubNode-3-" + suffix));
                   assertTrue(n.getNode("SubNode-3-" + suffix).getPath().startsWith(n.getPath()));
+                  assertTrue(n.getNode("SubNode-3-" + suffix).getProperty("jcr:primaryType").getPath()
+                     .startsWith(n.getNode("SubNode-3-" + suffix).getPath()));
                }
                else if (inTemp && uuidBehavior == ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING)
                {
@@ -2818,7 +2822,7 @@ public class TestImport extends AbstractImportTest
                   {
                      suffix = 2;
                      oldValue = false;
-                  }                  
+                  }
                   else if (subNode.getIndex() == 5)
                   {
                      suffix = 4;
@@ -2833,8 +2837,18 @@ public class TestImport extends AbstractImportTest
                   assertTrue(subNode.hasNode("SubNode-3-" + suffix));
                   Node n = subNode.getNode("SubNode-3-" + suffix);
                   assertTrue(subNode.getPath() + " should be a sub path of " + n.getPath(), n.getPath().startsWith(subNode.getPath()));
+                  assertTrue(n.getPath() + " should be a sub path of " + n.getProperty("jcr:primaryType").getPath(), n
+                     .getProperty("jcr:primaryType").getPath().startsWith(n.getPath()));
+                  assertTrue(subNode.getPath() + " should be a sub path of "
+                     + subNode.getProperty("jcr:primaryType").getPath(), subNode.getProperty("jcr:primaryType")
+                     .getPath().startsWith(subNode.getPath()));
                   assertTrue(subNode.hasNode("SubNode-3-" + suffix + "/SubNode-3-" + suffix));
                   assertTrue(n.getNode("SubNode-3-" + suffix).getPath().startsWith(n.getPath()));
+                  assertTrue(
+                     n.getNode("SubNode-3-" + suffix).getPath() + " should be a sub path of "
+                        + n.getNode("SubNode-3-" + suffix).getProperty("jcr:primaryType").getPath(),
+                     n.getNode("SubNode-3-" + suffix).getProperty("jcr:primaryType").getPath()
+                        .startsWith(n.getNode("SubNode-3-" + suffix).getPath()));
                }
                else
                {
@@ -2844,8 +2858,12 @@ public class TestImport extends AbstractImportTest
                   assertTrue(subNode.hasNode("SubNode-3-" + subNode.getIndex()));
                   Node n = subNode.getNode("SubNode-3-" + subNode.getIndex());
                   assertTrue(n.getPath().startsWith(subNode.getPath()));
+                  assertTrue(n.getProperty("jcr:primaryType").getPath().startsWith(n.getPath()));
+                  assertTrue(subNode.getProperty("jcr:primaryType").getPath().startsWith(subNode.getPath()));
                   assertTrue(subNode.hasNode("SubNode-3-" + subNode.getIndex() + "/SubNode-3-" + subNode.getIndex()));
                   assertTrue(n.getNode("SubNode-3-" + subNode.getIndex()).getPath().startsWith(n.getPath()));
+                  assertTrue(n.getNode("SubNode-3-" + subNode.getIndex()).getProperty("jcr:primaryType").getPath()
+                     .startsWith(n.getNode("SubNode-3-" + subNode.getIndex()).getPath()));
                }
             }
             else
@@ -2857,8 +2875,12 @@ public class TestImport extends AbstractImportTest
                assertTrue(subNode.hasNode("SubNode-" + subNode.getName().substring(5)));
                Node n = subNode.getNode("SubNode-" + subNode.getName().substring(5));
                assertTrue(n.getPath().startsWith(subNode.getPath()));
+               assertTrue(n.getProperty("jcr:primaryType").getPath().startsWith(n.getPath()));
+               assertTrue(subNode.getProperty("jcr:primaryType").getPath().startsWith(subNode.getPath()));
                assertTrue(subNode.hasNode("SubNode-" + subNode.getName().substring(5) + "/SubNode-" + subNode.getName().substring(5)));
                assertTrue(n.getNode("SubNode-" + subNode.getName().substring(5)).getPath().startsWith(n.getPath()));
+               assertTrue(n.getNode("SubNode-" + subNode.getName().substring(5)).getProperty("jcr:primaryType").getPath()
+                  .startsWith(n.getNode("SubNode-" + subNode.getName().substring(5)).getPath()));
             }
          }
          isImportedNode = true;

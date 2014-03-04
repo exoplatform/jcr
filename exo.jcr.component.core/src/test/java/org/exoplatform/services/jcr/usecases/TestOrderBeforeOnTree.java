@@ -22,7 +22,9 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 
 import javax.jcr.Node;
+import javax.jcr.Property;
 import javax.jcr.PropertyIterator;
+import javax.jcr.Session;
 
 /**
  * Created by The eXo Platform SAS.
@@ -106,5 +108,179 @@ public class TestOrderBeforeOnTree extends BaseUsecasesTest
             assertEquals(expectedPath, p.getInternalPath().makeParentPath());
          }
       }
+   }
+
+   public void testOrderBeforeNoSameNameSiblings() throws Exception
+   {
+      Node testRoot = root.addNode("testOrderBeforeNoSameNameSiblings");
+      root.save();
+
+      Node testRootS1 = testRoot;
+
+      Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
+
+
+      testRootS1.addNode("a"); // a
+
+      testRootS1.save();
+
+      Node node2 = testRootS2.addNode("b"); // b
+      Node node3 = testRootS2.addNode("c"); // c
+      testRootS2.save();
+
+      testRootS1.orderBefore("c", "b");// -> a, c, b
+      testRootS1.save(); // save step 1
+
+      testRootS2.refresh(true);
+      Property p2 = node2.getProperty("jcr:primaryType");
+      assertTrue(p2.getPath() + " doesn't start with " + node2.getPath(), p2.getPath().startsWith(node2.getPath()));
+      Property p3 = node3.getProperty("jcr:primaryType");
+      assertTrue(p3.getPath() + " doesn't start with " + node3.getPath(), p3.getPath().startsWith(node3.getPath()));
+   }
+
+   public void testOrderBeforeNoSameNameSiblingsRemoveBefore() throws Exception
+   {
+      Node testRoot = root.addNode("testOrderBeforeNoSameNameSiblingsRemoveBefore");
+      root.save();
+
+      Node testRootS1 = testRoot;
+
+      Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
+
+
+      Node nS1_1 = testRootS1.addNode("a"); // a
+
+      testRootS1.save();
+
+      Node node2 = testRootS2.addNode("b"); // b
+      Node node3 = testRootS2.addNode("c"); // c
+      testRootS2.save();
+
+      nS1_1.remove();
+      testRootS1.orderBefore("c", "b");// -> a, c, b
+      testRootS1.save(); // save step 1
+
+      testRootS2.refresh(true);
+      Property p2 = node2.getProperty("jcr:primaryType");
+      assertTrue(p2.getPath() + " doesn't start with " + node2.getPath(), p2.getPath().startsWith(node2.getPath()));
+      Property p3 = node3.getProperty("jcr:primaryType");
+      assertTrue(p3.getPath() + " doesn't start with " + node3.getPath(), p3.getPath().startsWith(node3.getPath()));
+   }
+
+   public void testOrderBeforeNoSameNameSiblingsRemoveAfter() throws Exception
+   {
+      Node testRoot = root.addNode("testOrderBeforeNoSameNameSiblingsRemoveAfter");
+      root.save();
+
+      Node testRootS1 = testRoot;
+
+      Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
+
+
+      Node nS1_1 = testRootS1.addNode("a"); // a
+
+      testRootS1.save();
+
+      Node node2 = testRootS2.addNode("b"); // b
+      Node node3 = testRootS2.addNode("c"); // c
+      testRootS2.save();
+
+      testRootS1.orderBefore("c", "b");// -> a, c, b
+      nS1_1.remove();
+      testRootS1.save(); // save step 1
+
+      testRootS2.refresh(true);
+      Property p2 = node2.getProperty("jcr:primaryType");
+      assertTrue(p2.getPath() + " doesn't start with " + node2.getPath(), p2.getPath().startsWith(node2.getPath()));
+      Property p3 = node3.getProperty("jcr:primaryType");
+      assertTrue(p3.getPath() + " doesn't start with " + node3.getPath(), p3.getPath().startsWith(node3.getPath()));
+   }
+
+   public void testOrderBeforeSameNameSiblings() throws Exception
+   {
+      Node testRoot = root.addNode("testOrderBeforeSameNameSiblings");
+      root.save();
+
+      Node testRootS1 = testRoot;
+
+      Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
+
+
+      testRootS1.addNode("node"); // node[1]
+
+      testRootS1.save();
+
+      Node node2 = testRootS2.addNode("node"); // node[2]
+      Node node3 = testRootS2.addNode("node"); // node[3]
+      testRootS2.save();
+
+      testRootS1.orderBefore("node[3]", "node[2]");// node[3] -> node[2], node[2] -> node[3]
+      testRootS1.save(); // save step 1
+
+      testRootS2.refresh(true);
+      Property p2 = node2.getProperty("jcr:primaryType");
+      assertTrue(p2.getPath() + " doesn't start with " + node2.getPath(), p2.getPath().startsWith(node2.getPath()));
+      Property p3 = node3.getProperty("jcr:primaryType");
+      assertTrue(p3.getPath() + " doesn't start with " + node3.getPath(), p3.getPath().startsWith(node3.getPath()));
+   }
+
+   public void testOrderBeforeSameNameSiblingsRemoveAfter() throws Exception
+   {
+      Node testRoot = root.addNode("testOrderBeforeSameNameSiblingsRemoveAfter");
+      root.save();
+
+      Node testRootS1 = testRoot;
+
+      Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
+
+
+      Node nS1_1 = testRootS1.addNode("node"); // node[1]
+
+      testRootS1.save();
+
+      Node node2 = testRootS2.addNode("node"); // node[2]
+      Node node3 = testRootS2.addNode("node"); // node[3]
+      testRootS2.save();
+
+      testRootS1.orderBefore("node[3]", "node[2]");// node[3] -> node[2], node[2] -> node[3]
+      nS1_1.remove();// remove node[1]
+      testRootS1.save(); // save step 1
+
+      testRootS2.refresh(true);
+      Property p2 = node2.getProperty("jcr:primaryType");
+      assertTrue(p2.getPath() + " doesn't start with " + node2.getPath(), p2.getPath().startsWith(node2.getPath()));
+      Property p3 = node3.getProperty("jcr:primaryType");
+      assertTrue(p3.getPath() + " doesn't start with " + node3.getPath(), p3.getPath().startsWith(node3.getPath()));
+   }
+
+   public void testOrderBeforeSameNameSiblingsRemoveAfterRemoveRoot() throws Exception
+   {
+      Node testRoot = root.addNode("testOrderBeforeSameNameSiblingsRemoveAfterRemoveRoot");
+      root.save();
+
+      Node testRootS1 = testRoot;
+
+      Session s2 = repository.login(credentials, testRootS1.getSession().getWorkspace().getName());
+      final Node testRootS2 = (Node)s2.getItem(testRootS1.getPath());
+
+
+      Node nS1_1 = testRootS1.addNode("node"); // node[1]
+      testRootS1.save();
+
+      testRootS2.addNode("node"); // node[2]
+      testRootS2.addNode("node"); // node[3]
+      testRootS2.save();
+
+      testRootS1.orderBefore("node[3]", "node[2]");// node[3] -> node[2], node[2] -> node[3]
+      nS1_1.remove();// remove node[1]
+      testRootS1.save(); // save step 1
+
+      testRoot.remove();
+      root.save();
    }
 }

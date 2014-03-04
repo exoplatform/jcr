@@ -209,7 +209,7 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
                   }
 
                   QPath siblingPath = QPath.makeChildPath(srcParent.getQPath(), child.getQPath().getName(), srcIndex);
-                  
+
                   TransientNodeData sibling =
                      new TransientNodeData(siblingPath, child.getIdentifier(), persistedVersion,
                         child.getPrimaryTypeName(), child.getMixinTypeNames(), child.getOrderNumber(),
@@ -289,12 +289,12 @@ public class ItemDataMoveVisitor extends ItemDataTraversingVisitor
             {
                deleteStates.remove(i);
             }
-            addStates.add(pathChangedState);
+            addStates.add(0, pathChangedState);
          }
       }
       else if (!triggerEventsForDescendants.booleanValue())
       {
-         addStates.add(new ItemState(newNode, ItemState.PATH_CHANGED, false, ancestorToSave, false, false, node
+         addStates.add(0, new ItemState(newNode, ItemState.PATH_CHANGED, false, ancestorToSave, false, false, node
             .getQPath()));
       }
    }
