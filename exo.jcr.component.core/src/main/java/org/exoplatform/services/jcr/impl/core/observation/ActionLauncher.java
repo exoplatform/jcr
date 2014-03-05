@@ -228,7 +228,7 @@ public class ActionLauncher implements ItemsPersistenceListener
          return true;
       }
 
-      // assotiated parent is node itself for node and parent for property ????
+      // associated parent is node itself for node and parent for property ????
       for (int i = 0; i < criteria.getIdentifier().length; i++)
       {
          if (item.isNode() && criteria.getIdentifier()[i].equals(item.getIdentifier()))
@@ -282,7 +282,12 @@ public class ActionLauncher implements ItemsPersistenceListener
          InternalQName name = locationFactory.parseJCRName(criteria.getNodeTypeName()[i]).getInternalName();
          NodeTypeData criteriaNT = ntManager.getNodeType(name);
          InternalQName[] testQNames;
-         if (criteriaNT.isMixin())
+         if (criteriaNT == null)
+         {
+            LOG.warn("The nodetype '{}' defined in the criteria of the listener is unknown.", criteria.getNodeTypeName()[i]);
+            continue;
+         }
+         else if (criteriaNT.isMixin())
          {
             testQNames = node.getMixinTypeNames();
          }

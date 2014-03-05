@@ -89,7 +89,7 @@ public class TestObservationManager extends JcrAPIBaseTest
    {
       ObservationManager observationManager = this.workspace.getObservationManager();
       assertEquals(0, observationManager.getRegisteredEventListeners().getSize());
-      EventListener listener = new DummyListener(this.log);
+      EventListener listener = new DummyListener(log);
       observationManager.addEventListener(listener, Event.PROPERTY_ADDED | Event.NODE_ADDED, "/", true,
          new String[]{"0"}, new String[]{"nt:base"}, false);
       assertEquals(1, observationManager.getRegisteredEventListeners().getSize());
@@ -119,7 +119,7 @@ public class TestObservationManager extends JcrAPIBaseTest
       // ObservationManager observationManager =
       // this.workspace.getObservationManager();
       ObservationManager observationManager = repository.getSystemSession("ws").getWorkspace().getObservationManager();
-      EventListener listener = new DummyListener(this.log);
+      EventListener listener = new DummyListener(log);
 
       // Add/remove node by explicit path
       observationManager.addEventListener(listener, Event.NODE_ADDED | Event.NODE_REMOVED, "/childNode", false, null,
@@ -248,7 +248,7 @@ public class TestObservationManager extends JcrAPIBaseTest
    public void testPropertyEventGeneration() throws RepositoryException
    {
       ObservationManager observationManager = this.workspace.getObservationManager();
-      EventListener listener = new DummyListener(this.log);
+      EventListener listener = new DummyListener(log);
 
       if (log.isDebugEnabled())
          log.debug("SET PROP>>");
@@ -276,7 +276,7 @@ public class TestObservationManager extends JcrAPIBaseTest
     * public void testMultiEventGeneration() throws RepositoryException {
     * ObservationManager observationManager =
     * this.workspace.getObservationManager(); EventListener listener = new
-    * SimpleListener(this.log); observationManager.addEventListener(listener,
+    * SimpleListener(log); observationManager.addEventListener(listener,
     * Event.NODE_ADDED|Event.PROPERTY_ADDED
     * |Event.PROPERTY_REMOVED|Event.NODE_REMOVED|Event.PROPERTY_CHANGED, "/",
     * true, null, null, false); Node node = root.addNode("childNode",
@@ -292,8 +292,8 @@ public class TestObservationManager extends JcrAPIBaseTest
    {
 
       ObservationManager observationManager = this.workspace.getObservationManager();
-      EventListener listener = new DummyListener(this.log);
-      EventListener listener1 = new DummyListener1(this.log);
+      EventListener listener = new DummyListener(log);
+      EventListener listener1 = new DummyListener1(log);
 
       observationManager.addEventListener(listener, Event.NODE_ADDED | Event.PROPERTY_ADDED | Event.PROPERTY_REMOVED
          | Event.NODE_REMOVED | Event.PROPERTY_CHANGED, "/testRoot", true, null, null, false);
@@ -326,7 +326,7 @@ public class TestObservationManager extends JcrAPIBaseTest
 
       checkEventNumAndCleanCounter(0);
 
-      EventListener listener = new DummyListener(this.log);
+      EventListener listener = new DummyListener(log);
       observationManager.addEventListener(listener, Event.NODE_ADDED | Event.PROPERTY_ADDED | Event.PROPERTY_REMOVED
          | Event.NODE_REMOVED | Event.PROPERTY_CHANGED, "/", true, null, null, false);
 
@@ -342,7 +342,7 @@ public class TestObservationManager extends JcrAPIBaseTest
    {
       ObservationManager observationManager = this.workspace.getObservationManager();
       testRoot.addNode("testRemoveSourceNode");
-      EventListener listener = new RemoveDummyListener(this.log, this.repository, this.credentials);
+      EventListener listener = new RemoveDummyListener(log, this.repository, this.credentials);
       observationManager.addEventListener(listener, Event.NODE_ADDED, "/", true, null, null, false);
       root.save();
       Session session2 = repository.login(credentials, "ws2");
@@ -350,6 +350,25 @@ public class TestObservationManager extends JcrAPIBaseTest
       assertFalse(session.itemExists("/testRoot/testRemoveSourceNode"));
       assertTrue(session2.itemExists("/testRemoveSourceNode"));
       observationManager.removeEventListener(listener);
+   }
+
+   public void testWithAnUnknownNodeType() throws RepositoryException
+   {
+      ObservationManager observationManager = this.workspace.getObservationManager();
+      checkEventNumAndCleanCounter(0);
+
+      EventListener listener = new DummyListener(log);
+      try
+      {
+         observationManager.addEventListener(listener, Event.NODE_ADDED, "/", true, null, new String[]{"nt:anUnknownNodeType"}, false);
+         testRoot.addNode("testWithAnUnknownNodeType");
+         root.save();
+         checkEventNumAndCleanCounter(0);
+      }
+      finally
+      {
+         observationManager.removeEventListener(listener);
+      }
    }
 
    private void checkEventNumAndCleanCounter(int cnt)
