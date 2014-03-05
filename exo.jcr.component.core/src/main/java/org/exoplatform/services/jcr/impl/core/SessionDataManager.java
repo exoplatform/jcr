@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.SharedDataManager;
+import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.datamodel.IllegalPathException;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.ItemType;
@@ -37,7 +38,6 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
-import org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeManagerImpl;
 import org.exoplatform.services.jcr.impl.core.version.ChildVersionRemoveVisitor;
 import org.exoplatform.services.jcr.impl.core.version.VersionHistoryImpl;
 import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
@@ -46,6 +46,7 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.LocalWorkspaceDataManagerStub;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.SimplePersistedSize;
 import org.exoplatform.services.jcr.impl.dataflow.session.SessionChangesLog;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableDataManager;
 import org.exoplatform.services.log.ExoLogger;
@@ -1276,8 +1277,6 @@ public class SessionDataManager implements ItemDataConsumer
 
       boolean fireEvent = !isNew(itemData.getIdentifier());
 
-      NodeTypeManagerImpl ntManager = (NodeTypeManagerImpl)session.getWorkspace().getNodeTypeManager();
-
       // if node mix:versionable vs will be removed from Item.remove method.
       boolean checkRemoveChildVersionStorages = false;
       if (itemData.isNode())
@@ -2221,7 +2220,7 @@ public class SessionDataManager implements ItemDataConsumer
             for (ItemData itemData : desc)
             {
                retval.add(itemData);
-               if (deep)
+               if (deep && itemData.isNode())
                {
                   retval.addAll(mergeList(itemData, dataManager, true, action));
                }
@@ -2281,6 +2280,16 @@ public class SessionDataManager implements ItemDataConsumer
                   {
                      continue outer;
                   }
+               }
+               if (!childProp.getQPath().isDescendantOf(parent.getQPath(), true))
+               {
+                  // In case we get the data from the cache, we need to set the correct path
+                  QPath qpath = QPath.makeChildPath(parent.getQPath(), childProp.getQPath().getName());
+                  childProp =
+                     new PersistedPropertyData(childProp.getIdentifier(), qpath, childProp.getParentIdentifier(),
+                        childProp.getPersistedVersion(), childProp.getType(), childProp.isMultiValued(),
+                        childProp.getValues(), new SimplePersistedSize(
+                           ((PersistedPropertyData)childProp).getPersistedSize()));
                }
                ret.put(childProp.getIdentifier(), childProp);
             }

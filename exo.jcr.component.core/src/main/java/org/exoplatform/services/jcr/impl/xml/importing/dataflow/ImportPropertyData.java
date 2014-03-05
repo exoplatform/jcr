@@ -18,9 +18,12 @@
  */
 package org.exoplatform.services.jcr.impl.xml.importing.dataflow;
 
+import org.exoplatform.services.jcr.datamodel.InternalQName;
+import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
+import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -68,6 +71,20 @@ public class ImportPropertyData extends TransientPropertyData implements ImportI
       boolean multiValued)
    {
       super(path, identifier, version, type, parentIdentifier, multiValued);
+   }
+
+   /**
+    * @param path qpath
+    * @param identifier id
+    * @param version persisted version
+    * @param type property type
+    * @param parentIdentifier parentId
+    * @param multiValued multi-valued state
+    */
+   public ImportPropertyData(QPath path, String identifier, int version, int type, String parentIdentifier,
+      boolean multiValued, ValueData value)
+   {
+      super(path, identifier, version, type, parentIdentifier, multiValued, value);
    }
 
    /**
@@ -137,4 +154,23 @@ public class ImportPropertyData extends TransientPropertyData implements ImportI
       values.add(value);
    }
 
+   /**
+    * Factory method.
+    *
+    * @param parent NodeData
+    * @param name InternalQName
+    * @param type int
+    * @param multiValued boolean
+    * @param value ValueData
+    * @return TransientPropertyData
+    */
+   public static ImportPropertyData createPropertyData(NodeData parent, InternalQName name, int type,
+      boolean multiValued, ValueData value)
+   {
+      QPath path = QPath.makeChildPath(parent.getQPath(), name);
+      ImportPropertyData propData =
+         new ImportPropertyData(path, IdGenerator.generate(), -1, type, parent.getIdentifier(), multiValued, value);
+
+      return propData;
+   }
 }

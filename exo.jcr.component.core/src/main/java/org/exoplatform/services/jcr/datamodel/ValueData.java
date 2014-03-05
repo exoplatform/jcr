@@ -77,7 +77,7 @@ public interface ValueData
     * <code>stream</code>.
     * 
     * @param stream
-    *          - destenation OutputStream
+    *          - destination OutputStream
     * @param length
     *          - data length to be read
     * @param position

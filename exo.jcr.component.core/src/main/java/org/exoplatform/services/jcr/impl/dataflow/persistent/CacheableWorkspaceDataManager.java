@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.annotations.ManagedDescription;
@@ -40,10 +41,13 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.backup.BackupException;
+import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.ResumeException;
 import org.exoplatform.services.jcr.impl.backup.SuspendException;
 import org.exoplatform.services.jcr.impl.backup.Suspendable;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManager;
 import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableResourceManagerListener;
@@ -2474,7 +2478,29 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    public void start()
    {
       initRemoteCommands();
-      
+      // Remove all locks records directly from the cache by cleaning the entire cache to prevent inconsistencies
+      boolean deleteLocks =
+         "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
+            "false"));
+      if (deleteLocks && this.cache instanceof Backupable)
+      {
+         SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+         {
+            public Void run()
+            {
+               try
+               {
+                  ((Backupable)CacheableWorkspaceDataManager.this.cache).clean();
+               }
+               catch (BackupException e)
+               {
+                  LOG.warn("Could not clean the cache to remove all the locks", e);
+               }
+               return null;
+            }
+         });
+      }
+
       isStopped.set(false);
 
       try
