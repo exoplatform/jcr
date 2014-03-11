@@ -3267,7 +3267,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
       protected void fetchNext() throws RepositoryException
       {
-         if (iter.hasNext())
+    	 // We use a while loop instead of re-calling fetchNext if canRead(item)
+    	 // returns false to avoid affecting the call stack because if we have
+    	 // a lot of items and we have canRead(item) that returns false too
+    	 // many consecutive times, we will get a StackOverflowError like in JCR-2283
+         while (iter.hasNext())
          {
             ItemData item = iter.next();
 
@@ -3275,18 +3279,10 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
             if (canRead(item))
             {
                next = session.getTransientNodesManager().readItem(item, nodeData(), true, false);
-            }
-            else
-            {
-               // try next
-               next = null;
-               fetchNext();
+               return;
             }
          }
-         else
-         {
-            next = null;
-         }
+         next = null;
       }
 
       protected boolean canRead(ItemData item)
