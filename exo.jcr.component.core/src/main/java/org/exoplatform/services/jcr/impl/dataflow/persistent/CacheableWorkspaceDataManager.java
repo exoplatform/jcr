@@ -1029,7 +1029,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Saves the list of changes from this storage using the given resource manager
     * 
-    * @param changes
+    * @param changesLog
     *          to commit
     * @param txResourceManager
     *          the resource manager to use
@@ -2460,7 +2460,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @ManagedDescription("Reloads the bloom filters used to efficiently manage the ACLs")
    public boolean reloadFilters()
    {
-      return loadFilters(false);
+      return loadFilters(false, false);
    }
 
    /**
@@ -2518,15 +2518,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          return;
       }
 
-      loadFilters(true);
+      loadFilters(true, true);
    }
 
    /**
     * Loads the bloom filters
     * @param cleanOnFail clean everything if an error occurs
+    * @param asynchronous make the bloom filters loading asynchronous
     * @return <code>true</code> if the filters could be loaded successfully, <code>false</code> otherwise.
     */
-   protected boolean loadFilters(boolean cleanOnFail)
+   protected boolean loadFilters(final boolean cleanOnFail, boolean asynchronous)
    {
       if (!filtersSupported.get())
       {
@@ -2539,6 +2540,27 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       filtersEnabled.set(false);
       this.filterPermissions = new BloomFilter<String>(bfProbability, bfElementNumber);
       this.filterOwner = new BloomFilter<String>(bfProbability, bfElementNumber);
+
+      if (asynchronous)
+      {
+         new Thread(new Runnable()
+         {
+            public void run()
+            {
+               doLoadFilters(cleanOnFail);
+            }
+         }, "BloomFilter-Loader-" + dataContainer.getName()).start();
+
+         return true;
+      }
+      else
+      {
+         return doLoadFilters(cleanOnFail);
+      }
+   }
+
+   private boolean doLoadFilters(boolean cleanOnFail)
+   {
       boolean fails = true;
       List<ACLHolder> holders = null;
       try

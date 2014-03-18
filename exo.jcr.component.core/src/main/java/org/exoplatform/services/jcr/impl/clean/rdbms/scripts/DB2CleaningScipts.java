@@ -127,6 +127,7 @@ public class DB2CleaningScipts extends DBCleaningScripts
       scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_NAME");
       scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_ID");
       scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM");
+      scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_NAME");
       scripts.add("DROP INDEX JCR_IDX_" + valueTableSuffix + "_PROPERTY");
       scripts.add("DROP INDEX JCR_IDX_" + refTableSuffix + "_PROPERTY");
 
@@ -149,6 +150,8 @@ public class DB2CleaningScipts extends DBCleaningScripts
          scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_PARENT_ID ON "
             + itemTableName, multiDb, dialect, wsEntry));
          scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM ON "
+            + itemTableName, multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_NAME ON "
             + itemTableName, multiDb, dialect, wsEntry));
          scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + valueTableSuffix + "_PROPERTY ON "
             + valueTableName, multiDb, dialect, wsEntry));

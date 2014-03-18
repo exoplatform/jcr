@@ -120,6 +120,7 @@ public class OracleCleaningScipts extends DBCleaningScripts
       scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_NAME");
       scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_PARENT_ID");
       scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM");
+      scripts.add("DROP INDEX JCR_IDX_" + itemTableSuffix + "_NAME");
       scripts.add("DROP INDEX JCR_IDX_" + valueTableSuffix + "_PROPERTY");
       scripts.add("DROP INDEX JCR_IDX_" + refTableSuffix + "_PROPERTY");
 
@@ -144,6 +145,8 @@ public class OracleCleaningScipts extends DBCleaningScripts
          scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_PARENT_ID ON "
             + itemTableName, multiDb, dialect, wsEntry));
          scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM ON "
+            + itemTableName, multiDb, dialect, wsEntry));
+         scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + itemTableSuffix + "_NAME ON "
             + itemTableName, multiDb, dialect, wsEntry));
          scripts.add(DBInitializerHelper.getObjectScript("JCR_IDX_" + valueTableSuffix + "_PROPERTY ON "
             + valueTableName, multiDb, dialect, wsEntry));
@@ -240,6 +243,8 @@ public class OracleCleaningScipts extends DBCleaningScripts
          + "_PARENT_ID_OLD");
       scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM RENAME TO JCR_IDX_" + itemTableSuffix
          + "_N_ORDER_NUM_OLD");
+      scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_NAME RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_NAME_OLD");
 
       // JCR_REF
       scripts.add("ALTER TABLE " + refTableName + " RENAME TO " + refTableName + "_OLD");
@@ -307,6 +312,8 @@ public class OracleCleaningScipts extends DBCleaningScripts
          + "_PARENT_ID");
       scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM_OLD RENAME TO JCR_IDX_" + itemTableSuffix
          + "_N_ORDER_NUM");
+      scripts.add("ALTER INDEX JCR_IDX_" + itemTableSuffix + "_NAME_OLD RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_NAME");
 
       // REF
       scripts.add("ALTER TABLE " + refTableName + "_OLD RENAME TO " + refTableName + "");
