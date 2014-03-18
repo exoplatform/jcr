@@ -2549,7 +2549,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                doLoadFilters(cleanOnFail);
             }
-         }, "BloomFiltering-" + dataContainer.getName()).start();
+         }, "BloomFilter-Loader-" + dataContainer.getName()).start();
 
          return true;
       }
