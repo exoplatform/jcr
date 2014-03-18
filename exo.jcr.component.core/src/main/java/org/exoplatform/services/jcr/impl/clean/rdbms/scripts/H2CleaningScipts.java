@@ -88,6 +88,8 @@ public class H2CleaningScipts extends DBCleaningScripts
          + "_PARENT_ID_OLD");
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM RENAME TO JCR_IDX_" + itemTableSuffix
          + "_N_ORDER_NUM_OLD");
+      scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_NAME RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_NAME_OLD");
       scripts.add("ALTER INDEX  JCR_IDX_" + valueTableSuffix + "_PROPERTY RENAME TO JCR_IDX_" + valueTableSuffix
          + "_PROPERTY_OLD");
       scripts.add("ALTER INDEX  JCR_IDX_" + refTableSuffix + "_PROPERTY RENAME TO JCR_IDX_" + refTableSuffix
@@ -127,6 +129,8 @@ public class H2CleaningScipts extends DBCleaningScripts
          + "_PARENT_ID");
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_N_ORDER_NUM_OLD RENAME TO JCR_IDX_" + itemTableSuffix
          + "_N_ORDER_NUM");
+      scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_NAME_OLD RENAME TO JCR_IDX_" + itemTableSuffix
+         + "_NAME");
       scripts.add("ALTER INDEX  JCR_IDX_" + valueTableSuffix + "_PROPERTY_OLD RENAME TO JCR_IDX_" + valueTableSuffix
          + "_PROPERTY");
       scripts.add("ALTER INDEX  JCR_IDX_" + refTableSuffix + "_PROPERTY_OLD RENAME TO JCR_IDX_" + refTableSuffix
