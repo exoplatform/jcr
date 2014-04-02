@@ -31,6 +31,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceTxListener;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
@@ -122,7 +123,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
  * @version $Id: ISPNCacheWorkspaceStorageCache.java 3514 2010-11-22 16:14:36Z nzamosenchuk $
  */
-public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable, Startable
+public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable, Startable, ItemsPersistenceTxListener
 {
    private static final Log LOG = ExoLogger//NOSONAR
       .getLogger("exo.jcr.component.core.impl.infinispan.v5.ISPNCacheWorkspaceStorageCache");//NOSONAR
@@ -719,6 +720,22 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    /**
     * {@inheritDoc}
     */
+   public void afterCommit()
+   {
+      cache.afterCommit();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void afterComplete()
+   {
+      cache.afterComplete();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public void onSaveItems(final ItemStateChangesLog itemStates)
    {
       //  if something happen we will rollback changes
@@ -1291,7 +1308,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             cache.addToList(new CacheNodesId(getOwnerId(), node.getParentIdentifier()), node.getIdentifier(),
                modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
 
-            cache.remove(new CacheNodesByPageId(getOwnerId(), node.getParentIdentifier()));
+            cache.invalidate(new CacheNodesByPageId(getOwnerId(), node.getParentIdentifier()));
          }
       }
 
@@ -1449,7 +1466,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          {
             cache.removeFromPatternList(new CachePatternNodesId(getOwnerId(), item.getParentIdentifier()), item);
             cache.removeFromList(new CacheNodesId(getOwnerId(), item.getParentIdentifier()), item.getIdentifier());
-            cache.remove(new CacheNodesByPageId(getOwnerId(), item.getParentIdentifier()));
+            cache.invalidate(new CacheNodesByPageId(getOwnerId(), item.getParentIdentifier()));
          }
 
          cache.remove(new CacheNodesId(getOwnerId(), item.getIdentifier()));

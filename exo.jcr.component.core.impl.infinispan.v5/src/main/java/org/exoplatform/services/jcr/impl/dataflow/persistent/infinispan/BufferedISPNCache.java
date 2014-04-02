@@ -36,6 +36,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.util.concurrent.NotifyingFuture;
 
 import java.security.PrivilegedAction;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,12 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
 import javax.transaction.Status;
-import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 /**
@@ -69,6 +65,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    private final AdvancedCache<CacheKey, Object> parentCache;
 
    private final ThreadLocal<CompressedISPNChangesBuffer> changesList = new ThreadLocal<CompressedISPNChangesBuffer>();
+   private final ThreadLocal<List<ChangesContainer>> invalidations = new ThreadLocal<List<ChangesContainer>>();
 
    private ThreadLocal<Boolean> local = new ThreadLocal<Boolean>();
 
@@ -100,8 +97,16 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
 
       private final Boolean allowLocalChanges;
 
+      protected final boolean invalidation;
+
       public ChangesContainer(CacheKey key, ChangesType changesType, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean localMode, Boolean allowLocalChanges)
+      {
+         this(key, changesType, cache, historicalIndex, localMode, allowLocalChanges, false);
+      }
+
+      public ChangesContainer(CacheKey key, ChangesType changesType, AdvancedCache<CacheKey, Object> cache,
+         int historicalIndex, boolean localMode, Boolean allowLocalChanges, boolean invalidation)
       {
          this.key = key;
          this.changesType = changesType;
@@ -109,6 +114,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          this.historicalIndex = historicalIndex;
          this.localMode = localMode;
          this.allowLocalChanges = allowLocalChanges;
+         this.invalidation = invalidation;
       }
 
       /**
@@ -167,6 +173,12 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       public boolean isTxRequired()
       {
          return false;
+      }
+
+
+      public boolean isInvalidation()
+      {
+         return invalidation && !localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1;
       }
 
       void applyToBuffer(CompressedISPNChangesBuffer buffer)
@@ -253,7 +265,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       public AddToListContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache, boolean forceModify,
          int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
-         super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
+         super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges, true);
          this.value = value;
          this.forceModify = forceModify;
       }
@@ -261,6 +273,13 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         {
+            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+            // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
+            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+            return;
+         }
          // force writeLock on next read
          Object existingObject = cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
          Set<Object> newSet = new HashSet<Object>();
@@ -288,13 +307,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             LOG.error("Unexpected object found by key " + key.toString() + ". Expected Set, but found:"
                + existingObject.getClass().getName());
          }
-         else if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
-         {
-            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
-            // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
-            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
-            return;
-         }
       }
 
       @Override
@@ -315,13 +327,21 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       public AddToPatternListContainer(CacheKey key, ItemData value, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
-         super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
+         super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges, true);
          this.itemData = value;
       }
 
       @Override
       public void apply()
       {
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         {
+            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+            // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
+            // to reload them from the db
+            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+            return;
+         }
          // force writeLock on next read
          Object existingObject = cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
 
@@ -350,13 +370,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             LOG.error("Unexpected object found by key " + key.toString() + ". Expected Map, but found:"
                + existingObject.getClass().getName());
          }
-         else if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
-         {
-            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
-            // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
-            // to reload them from the db
-            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
-         }
       }
 
       @Override
@@ -377,13 +390,20 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       public RemoveFromListContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
-         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges);
+         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges, true);
          this.value = value;
       }
 
       @Override
       public void apply()
       {
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         {
+            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+            // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
+            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+            return;
+         }
          // force writeLock on next read
          Object existingObject = cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
 
@@ -421,13 +441,20 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       public RemoveFromPatternListContainer(CacheKey key, ItemData value, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
-         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges);
+         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges, true);
          this.itemData = value;
       }
 
       @Override
       public void apply()
       {
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         {
+            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+            // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
+            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+            return;
+         }
          // force writeLock on next read
          Object existingObject = cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
 
@@ -469,6 +496,12 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          boolean local, Boolean allowLocalChanges)
       {
          super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges);
+      }
+
+      public RemoveObjectContainer(CacheKey key, AdvancedCache<CacheKey, Object> cache, int historicalIndex,
+         boolean local, Boolean allowLocalChanges, boolean invalidation)
+      {
+         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges, invalidation);
       }
 
       @Override
@@ -996,6 +1029,16 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    }
 
    /**
+    * Invalidates an object
+    */
+   protected void invalidate(Object key)
+   {
+      CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new RemoveObjectContainer((CacheKey)key, parentCache, changesContainer.getHistoryIndex(),
+         local.get(), allowLocalChanges, true));
+   }
+
+   /**
     * {@inheritDoc}
     */
    public int size()
@@ -1095,11 +1138,21 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     */
    private void commitChanges(TransactionManager tm, List<ChangesContainer> containers)
    {
+      boolean hasInvalidation = false;
+      List<ChangesContainer> invalidations = null;
       for (ChangesContainer cacheChange : containers)
       {
          boolean isTxCreated = false;
          try
          {
+            if (cacheChange.isInvalidation() && tm != null && tm.getStatus() == Status.STATUS_ACTIVE)
+            {
+               hasInvalidation = true;
+               if (invalidations == null)
+                  invalidations = new ArrayList<ChangesContainer>();
+               invalidations.add(cacheChange);
+               continue;
+            }
             if (cacheChange.isTxRequired() && tm != null && tm.getStatus() == Status.STATUS_NO_TRANSACTION)
             {
                // No tx exists so we create a new tx
@@ -1111,11 +1164,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                isTxCreated = true;
             }
          }
-         catch (SystemException e)
-         {
-            LOG.warn("Could not create a new tx", e);
-         }
-         catch (NotSupportedException e)
+         catch (Exception e)//NOSONAR
          {
             LOG.warn("Could not create a new tx", e);
          }
@@ -1152,32 +1201,47 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                }
                tm.commit();
             }
-            catch (SystemException e)
-            {
-               LOG.warn("Could not commit the tx", e);
-            }
-            catch (SecurityException e)
-            {
-               LOG.warn("Could not commit the tx", e);
-            }
-            catch (IllegalStateException e)
-            {
-               LOG.warn("Could not commit the tx", e);
-            }
-            catch (RollbackException e)
-            {
-               LOG.warn("Could not commit the tx", e);
-            }
-            catch (HeuristicMixedException e)
-            {
-               LOG.warn("Could not commit the tx", e);
-            }
-            catch (HeuristicRollbackException e)
+            catch (Exception e)//NOSONAR
             {
                LOG.warn("Could not commit the tx", e);
             }
          }
       }
+      if (hasInvalidation)
+      {
+         this.invalidations.set(invalidations);
+      }
+   }
+
+   void afterCommit()
+   {
+      List<ChangesContainer> invalidations = this.invalidations.get();
+      if (invalidations != null)
+      {
+         try
+         {
+            for (ChangesContainer invalidation : invalidations)
+            {
+               try
+               {
+                  invalidation.apply();
+               }
+               catch (RuntimeException e)//NOSONAR
+               {
+                  LOG.error("Could not invalidate " + invalidation.getKey(), e);
+               }
+            }
+         }
+         finally
+         {
+            this.invalidations.remove();
+         }
+      }
+   }
+
+   void afterComplete()
+   {
+      invalidations.remove();
    }
 
    /**

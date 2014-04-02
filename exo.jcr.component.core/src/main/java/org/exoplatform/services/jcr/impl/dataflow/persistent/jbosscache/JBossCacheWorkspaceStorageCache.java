@@ -28,6 +28,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
+import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceTxListener;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
@@ -122,7 +123,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com">Peter Nedonosko</a>
  * @version $Id: JBossCacheWorkspaceStorageCache.java 13869 2008-05-05 08:40:10Z pnedonosko $
  */
-public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, Startable, Backupable
+public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, Startable, Backupable, ItemsPersistenceTxListener
 {
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheWorkspaceStorageCache");
@@ -902,6 +903,22 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    /**
     * {@inheritDoc}
     */
+   public void afterCommit()
+   {
+      cache.afterCommit();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void afterComplete()
+   {
+      cache.afterComplete();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public void onSaveItems(final ItemStateChangesLog itemStates)
    {
       //  if something happen we will rollback changes 
@@ -1623,8 +1640,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                ITEM_LIST, node);
             cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
                node.getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
-
-            cache.removeNode(makeChildListFqn(childNodesByPageList, node.getParentIdentifier()));
+            cache.invalidateNode(makeChildListFqn(childNodesByPageList, node.getParentIdentifier()));
          }
       }
 
@@ -1787,7 +1803,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                PATTERN_OBJ, ITEM_LIST, item);
 
             // remove from CHILD_NODES_BY_PAGE_LIST of parent
-            cache.removeNode(makeChildListFqn(childNodesByPageList, item.getParentIdentifier()));
+            cache.invalidateNode(makeChildListFqn(childNodesByPageList, item.getParentIdentifier()));
          }
 
          // remove from CHILD_NODES as parent
