@@ -45,6 +45,29 @@ public class CompressedISPNChangesBuffer
    private final Map<CacheKey, Object> lastChanges = new HashMap<CacheKey, Object>();
 
    /**
+    * Indicates whether or not the invalidation is enabled
+    */
+   private final boolean invalidationEnabled;
+
+   public CompressedISPNChangesBuffer()
+   {
+      this(false);
+   }
+
+   public CompressedISPNChangesBuffer(boolean invalidationEnabled)
+   {
+      this.invalidationEnabled = invalidationEnabled;
+   }
+
+   /**
+    * Indicates whether or not the invalidation is enabled
+    */
+   public boolean isInvalidationEnabled()
+   {
+      return invalidationEnabled;
+   }
+
+   /**
     * Adds new modification container to buffer and performs optimization if needed. Optimization doesn't iterate
     * over lists and uses HashMaps. So each optimization duration doesn't depend on list size.  
     * 
@@ -53,6 +76,7 @@ public class CompressedISPNChangesBuffer
    public void add(ChangesContainer container)
    {
       changes.add(container);
+      container.setInvalidation(invalidationEnabled);
       container.applyToBuffer(this);
    }
 

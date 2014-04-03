@@ -33,10 +33,11 @@ import org.infinispan.config.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.transaction.LocalTransaction;
+import org.infinispan.transaction.TransactionTable;
 import org.infinispan.util.concurrent.NotifyingFuture;
 
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,6 +48,7 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.transaction.Status;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -65,7 +67,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    private final AdvancedCache<CacheKey, Object> parentCache;
 
    private final ThreadLocal<CompressedISPNChangesBuffer> changesList = new ThreadLocal<CompressedISPNChangesBuffer>();
-   private final ThreadLocal<List<ChangesContainer>> invalidations = new ThreadLocal<List<ChangesContainer>>();
 
    private ThreadLocal<Boolean> local = new ThreadLocal<Boolean>();
 
@@ -73,6 +74,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     * Allow to perform local cache changes.
     */
    private final Boolean allowLocalChanges;
+
+   private volatile TransactionTable tt;
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.BufferedISPNCache");//NOSONAR
 
@@ -97,7 +100,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
 
       private final Boolean allowLocalChanges;
 
-      protected final boolean invalidation;
+      protected boolean invalidation;
 
       public ChangesContainer(CacheKey key, ChangesType changesType, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean localMode, Boolean allowLocalChanges)
@@ -114,7 +117,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          this.historicalIndex = historicalIndex;
          this.localMode = localMode;
          this.allowLocalChanges = allowLocalChanges;
-         this.invalidation = invalidation;
+         this.invalidation = invalidation && !localMode;
       }
 
       /**
@@ -178,7 +181,12 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
 
       public boolean isInvalidation()
       {
-         return invalidation && !localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1;
+         return invalidation;
+      }
+
+      void setInvalidation(boolean invalidationEnabled)
+      {
+         invalidation &= invalidationEnabled;
       }
 
       void applyToBuffer(CompressedISPNChangesBuffer buffer)
@@ -273,7 +281,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
-         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         if (invalidation)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
@@ -334,7 +342,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
-         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         if (invalidation)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
@@ -397,7 +405,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
-         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         if (invalidation)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
@@ -448,7 +456,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
-         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         if (invalidation)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
@@ -1100,8 +1108,39 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     */
    public void beginTransaction()
    {
-      changesList.set(new CompressedISPNChangesBuffer());
+      // We enabled the invalidation only if we have more than 1 cluster node and we are not in a global transaction
+      changesList.set(new CompressedISPNChangesBuffer(parentCache.getRpcManager() != null
+         && parentCache.getCacheManager().getMembers().size() > 1 && getCurrentLocalTransaction() == null));
       local.set(false);
+   }
+
+   /**
+    * Gives the current LocalTransaction if it exists, <code>null</code> otherwise
+    * @return
+    */
+   private LocalTransaction getCurrentLocalTransaction()
+   {
+      try
+      {
+         TransactionManager tm = getTransactionManager();
+         if (tm == null)
+            return null;
+         Transaction tx = tm.getTransaction();
+         if (tx == null)
+            return null;
+         int status = tx.getStatus();
+         if (status != Status.STATUS_ACTIVE && status != Status.STATUS_PREPARING && status != Status.STATUS_MARKED_ROLLBACK)
+         {
+            LOG.warn("The status of the transaction was not valid: {}", status);
+            return null;
+         }
+         return getTransactionTable().getLocalTransaction(tx);
+      }
+      catch (Exception e)//NOSONAR
+      {
+         LOG.warn("Could not get the current local tx", e);
+      }
+      return null;
    }
 
    /**
@@ -1123,7 +1162,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       try
       {
          final List<ChangesContainer> containers = changesContainer.getSortedList();
-         commitChanges(tm, containers);
+         commitChanges(tm, containers, changesContainer.isInvalidationEnabled());
       }
       finally
       {
@@ -1132,27 +1171,97 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       }
    }
 
+   private TransactionTable getTransactionTable()
+   {
+      // We lazy get the LockManager to make sure that we get the right instance
+      if (tt == null)
+      {
+         synchronized (this)
+         {
+            this.tt = parentCache.getComponentRegistry().getComponent(TransactionTable.class);
+         }
+      }
+      return tt;
+   }
+
    /**
     * @param tm
     * @param containers
     */
-   private void commitChanges(TransactionManager tm, List<ChangesContainer> containers)
+   private void commitChanges(TransactionManager tm, List<ChangesContainer> containers, boolean invalidationEnabled)
    {
-      boolean hasInvalidation = false;
-      List<ChangesContainer> invalidations = null;
+      if (invalidationEnabled)
+      {
+         // The invalidation is enabled
+         Transaction tx = null;
+         LocalTransaction lt = null;
+         // First we invalidate the cache entries outside the current transaction
+         // to limit the risk of getting deadlocks
+         try
+         {
+            for (Iterator<ChangesContainer> it = containers.iterator(); it.hasNext();)
+            {
+               ChangesContainer cacheChange = it.next();
+               if (cacheChange.isInvalidation())
+               {
+                  // The current cache change is a cache entry to invalidate
+                  if (lt == null)
+                  {
+                     // We get the current local transaction
+                     lt = getCurrentLocalTransaction();
+                     if (lt == null)
+                     {
+                        // There is no current local transaction so no need to continue
+                        break;
+                     }
+                  }
+                  // We get the current owner
+                  Object owner = parentCache.getLockManager().getOwner(cacheChange.getKey());
+                  if (owner == null || !owner.equals(lt))
+                  {
+                     // The node is not locked or is locked by another transaction so
+                     if (tx == null)
+                     {
+                        try
+                        {
+                           tx = tm.suspend();
+                        }
+                        catch (Exception e)//NOSONAR
+                        {
+                           LOG.warn("Could not suspend the tx", e);
+                        }
+                     }
+                     if (tx != null)
+                     {
+                        // We apply the invalidation outside the transaction
+                        cacheChange.apply();
+                        // We remove it to avoid calling it twice
+                        it.remove();
+                     }
+                  }
+               }
+            }
+         }
+         finally
+         {
+            if (tx != null)
+            {
+               try
+               {
+                  tm.resume(tx);
+               }
+               catch (Exception e)//NOSONAR
+               {
+                  LOG.error("Could not resume the tx", e);
+               }
+            }
+         }
+      }
       for (ChangesContainer cacheChange : containers)
       {
          boolean isTxCreated = false;
          try
          {
-            if (cacheChange.isInvalidation() && tm != null && tm.getStatus() == Status.STATUS_ACTIVE)
-            {
-               hasInvalidation = true;
-               if (invalidations == null)
-                  invalidations = new ArrayList<ChangesContainer>();
-               invalidations.add(cacheChange);
-               continue;
-            }
             if (cacheChange.isTxRequired() && tm != null && tm.getStatus() == Status.STATUS_NO_TRANSACTION)
             {
                // No tx exists so we create a new tx
@@ -1207,41 +1316,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             }
          }
       }
-      if (hasInvalidation)
-      {
-         this.invalidations.set(invalidations);
-      }
-   }
-
-   void afterCommit()
-   {
-      List<ChangesContainer> invalidations = this.invalidations.get();
-      if (invalidations != null)
-      {
-         try
-         {
-            for (ChangesContainer invalidation : invalidations)
-            {
-               try
-               {
-                  invalidation.apply();
-               }
-               catch (RuntimeException e)//NOSONAR
-               {
-                  LOG.error("Could not invalidate " + invalidation.getKey(), e);
-               }
-            }
-         }
-         finally
-         {
-            this.invalidations.remove();
-         }
-      }
-   }
-
-   void afterComplete()
-   {
-      invalidations.remove();
    }
 
    /**

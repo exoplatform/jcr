@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
-import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceTxListener;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
@@ -123,7 +122,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="mailto:peter.nedonosko@exoplatform.com">Peter Nedonosko</a>
  * @version $Id: JBossCacheWorkspaceStorageCache.java 13869 2008-05-05 08:40:10Z pnedonosko $
  */
-public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, Startable, Backupable, ItemsPersistenceTxListener
+public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, Startable, Backupable
 {
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.JBossCacheWorkspaceStorageCache");
@@ -898,22 +897,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    public void remove(ItemData item)
    {
       removeItem(item);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void afterCommit()
-   {
-      cache.afterCommit();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void afterComplete()
-   {
-      cache.afterComplete();
    }
 
    /**

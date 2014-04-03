@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
-import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceTxListener;
 import org.exoplatform.services.jcr.dataflow.persistent.MandatoryItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
@@ -357,7 +356,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    * This class is a decorator on the top of the {@link WorkspaceStorageCache} to manage the case
    * where the cache is disabled at the beginning then potentially enabled later
    */
-   private class CacheItemsPersistenceListener implements MandatoryItemsPersistenceListener, ItemsPersistenceTxListener
+   private class CacheItemsPersistenceListener implements MandatoryItemsPersistenceListener
    {
       /**
        * {@inheritDoc}
@@ -375,28 +374,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          if (cache.isEnabled())
          {
             cache.onSaveItems(itemStates);
-         }
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public void afterCommit()
-      {
-         if (cache.isEnabled() && cache instanceof ItemsPersistenceTxListener)
-         {
-            ((ItemsPersistenceTxListener)cache).afterCommit();
-         }
-      }
-
-      /**
-       * {@inheritDoc}
-       */
-      public void afterComplete()
-      {
-         if (cache.isEnabled() && cache instanceof ItemsPersistenceTxListener)
-         {
-            ((ItemsPersistenceTxListener)cache).afterComplete();
          }
       }
    }
@@ -1119,46 +1096,33 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          }
          else
          {
+            doBegin();
             try
             {
-               doBegin();
-               try
-               {
-                  super.save(logWrapper, txResourceManager);
-               }
-               catch (RepositoryException e)
-               {
-                  doRollback();
-                  throw e;
-               }
-               catch (Exception e)
-               {
-                  doRollback();
-                  throw new RepositoryException("Could not save the changes", e);
-               }
-               doCommit();
-               // notify listeners after storage commit
-               notifySaveItems(logWrapper.getChangesLog(), false);
+               super.save(logWrapper, txResourceManager);
             }
-            finally
+            catch (RepositoryException e)
             {
-               afterComplete();
+               doRollback();
+               throw e;
             }
+            catch (Exception e)
+            {
+               doRollback();
+               throw new RepositoryException("Could not save the changes", e);
+            }
+            doCommit();
+            // notify listeners after storage commit
+            notifySaveItems(logWrapper.getChangesLog(), false);
          }
       }
       else
       {
-         try
-         {
-            // save normally 
-            super.save(logWrapper, txResourceManager);
-            // notify listeners after storage commit
-            notifySaveItems(logWrapper.getChangesLog(), false);
-         }
-         finally
-         {
-            afterComplete();
-         }
+         // save normally 
+         super.save(logWrapper, txResourceManager);
+
+         // notify listeners after storage commit
+         notifySaveItems(logWrapper.getChangesLog(), false);
       }
    }
 
@@ -1244,36 +1208,28 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
             public void onAfterCompletion(int status) throws Exception
             {
-               try
+               if (status == Status.STATUS_COMMITTED)
                {
-                  if (status == Status.STATUS_COMMITTED)
+                  // Since the tx is successfully committed we can call components non tx aware
+
+                  // The listeners will need to be executed outside the current tx so we suspend
+                  // the current tx we can face enlistment issues on product like ISPN
+                  transactionManager.suspend();
+
+                  SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
                   {
-                     // Since the tx is successfully committed we can call components non tx aware
-
-                     // The listeners will need to be executed outside the current tx so we suspend
-                     // the current tx we can face enlistment issues on product like ISPN
-                     transactionManager.suspend();
-
-                     SecurityHelper.doPrivilegedAction(new PrivilegedAction<Void>()
+                     public Void run()
                      {
-                        public Void run()
-                        {
-                           notifySaveItems(logWrapper.getChangesLog(), false);
-                           return null;
-                        }
-                     });
-                     // Since the resume method could cause issue with some TM at this stage, we don't resume the tx
-                  }
-               }
-               finally
-               {
-                  afterComplete();
+                        notifySaveItems(logWrapper.getChangesLog(), false);
+                        return null;
+                     }
+                  });
+                  // Since the resume method could cause issue with some TM at this stage, we don't resume the tx
                }
             }
 
             public void onAbort() throws Exception
             {
-               afterComplete();
             }
          });
       }

@@ -125,7 +125,7 @@ public class AddNRemoveNodeTest extends JcrAPIBaseTest
       }
       log.info("Launching the threads");
       startSignal.countDown();
-      log.info("Waiting until we reach {} iterations");
+      log.info("Waiting until we reach {} iterations", MAX_ITERATIONS);
       endSignal.await();
    }
 }

@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
 import org.exoplatform.services.jcr.dataflow.TransactionChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListenerFilter;
-import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceTxListener;
 import org.exoplatform.services.jcr.dataflow.persistent.MandatoryItemsPersistenceListener;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedItemData;
 import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
@@ -1225,10 +1224,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          {
             mlistener.onSaveItems(changesLog);
          }
-         else if (!isListenerTXAware && mlistener instanceof ItemsPersistenceTxListener)
-         {
-            ((ItemsPersistenceTxListener)mlistener).afterCommit();
-         }
       }
 
       for (ItemsPersistenceListener listener : listeners)
@@ -1236,32 +1231,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          if (listener.isTXAware() == isListenerTXAware && isListenerAccepted(listener))
          {
             listener.onSaveItems(changesLog);
-         }
-         else if (!isListenerTXAware && listener instanceof ItemsPersistenceTxListener)
-         {
-            ((ItemsPersistenceTxListener)listener).afterCommit();
-         }
-      }
-   }
-
-   /**
-    * Calls {@link ItemsPersistenceTxListener#afterComplete()} on all the listeners
-    */
-   protected void afterComplete()
-   {
-      for (MandatoryItemsPersistenceListener mlistener : mandatoryListeners)
-      {
-         if (mlistener instanceof ItemsPersistenceTxListener)
-         {
-            ((ItemsPersistenceTxListener)mlistener).afterComplete();
-         }
-      }
-
-      for (ItemsPersistenceListener listener : listeners)
-      {
-         if (listener instanceof ItemsPersistenceTxListener)
-         {
-            ((ItemsPersistenceTxListener)listener).afterComplete();
          }
       }
    }

@@ -42,11 +42,12 @@ import org.jboss.cache.config.Configuration.CacheMode;
 import org.jboss.cache.eviction.ExpirationAlgorithmConfig;
 import org.jboss.cache.factories.ComponentRegistry;
 import org.jboss.cache.interceptors.base.CommandInterceptor;
+import org.jboss.cache.lock.LockManager;
+import org.jboss.cache.transaction.GlobalTransaction;
 import org.jgroups.Address;
 
 import java.io.Serializable;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -54,6 +55,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.transaction.Status;
+import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -72,7 +74,6 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    private final CacheSPI<Serializable, Object> parentCache;
 
    private final ThreadLocal<CompressedChangesBuffer> changesList = new ThreadLocal<CompressedChangesBuffer>();
-   private final ThreadLocal<List<ChangesContainer>> invalidations = new ThreadLocal<List<ChangesContainer>>();
 
    private ThreadLocal<Boolean> local = new ThreadLocal<Boolean>();
 
@@ -81,6 +82,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    private final long expirationTimeOut;
 
    private final TransactionManager tm;
+
+   private volatile LockManager lm;
 
    protected static final Log LOG =
       ExoLogger.getLogger("org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache");
@@ -96,13 +99,27 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       this.expirationTimeOut = expirationTimeOut;
    }
 
+   public LockManager getLockManager()
+   {
+      // We lazy get the LockManager to make sure that we get the right instance
+      if (lm == null)
+      {
+         synchronized (this)
+         {
+            this.lm = parentCache.getComponentRegistry().getComponent(LockManager.class);
+         }
+      }
+      return lm;
+   }
+
    /**
     * Start buffering process.
     */
    public void beginTransaction()
    {
-
-      changesList.set(new CompressedChangesBuffer());
+      // We enabled the invalidation only if we have more than 1 cluster node and we are not in a global transaction
+      changesList.set(new CompressedChangesBuffer(parentCache.getConfiguration().getCacheMode() != CacheMode.LOCAL
+         && parentCache.getMembers().size() > 1 && parentCache.getTransactionTable().getCurrentTransaction(false) == null));
       local.set(false);
    }
 
@@ -124,7 +141,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       try
       {
          final List<ChangesContainer> containers = changesContainer.getSortedList();
-         commitChanges(containers);
+         commitChanges(containers, changesContainer.isInvalidationEnabled());
       }
       finally
       {
@@ -136,23 +153,80 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
    /**
     * @param containers
     */
-   private void commitChanges(List<ChangesContainer> containers)
+   private void commitChanges(List<ChangesContainer> containers, boolean invalidationEnabled)
    {
-      boolean hasInvalidation = false;
-      List<ChangesContainer> invalidations = null;
+      if (invalidationEnabled)
+      {
+         // The invalidation is enabled
+         Transaction tx = null;
+         GlobalTransaction gt = null;
+         // First we invalidate the cache entries outside the current transaction
+         // to limit the risk of getting deadlocks
+         try
+         {
+            for (Iterator<ChangesContainer> it = containers.iterator(); it.hasNext();)
+            {
+               ChangesContainer cacheChange = it.next();
+               if (cacheChange.isInvalidation())
+               {
+                  // The current cache change is a cache entry to invalidate
+                  if (gt == null)
+                  {
+                     // We get the current global transaction
+                     gt = parentCache.getCurrentTransaction();
+                     if (gt == null)
+                     {
+                        // There is no current transaction so no need to continue
+                        break;
+                     }
+                  }
+                  // We get the current owner
+                  Object owner = getLockManager().getWriteOwner(cacheChange.getFqn());
+                  if (owner == null || !owner.equals(gt))
+                  {
+                     // The node is not locked or is locked by another transaction so
+                     if (tx == null)
+                     {
+                        try
+                        {
+                           tx = tm.suspend();
+                        }
+                        catch (Exception e)//NOSONAR
+                        {
+                           LOG.warn("Could not suspend the tx", e);
+                        }
+                     }
+                     if (tx != null)
+                     {
+                        // We apply the invalidation outside the transaction
+                        cacheChange.apply();
+                        // We remove it to avoid calling it twice
+                        it.remove();
+                     }
+                  }
+               }
+            }
+         }
+         finally
+         {
+            if (tx != null)
+            {
+               try
+               {
+                  tm.resume(tx);
+               }
+               catch (Exception e)//NOSONAR
+               {
+                  LOG.error("Could not resume the tx", e);
+               }
+            }
+         }
+      }
       for (ChangesContainer cacheChange : containers)
       {
          boolean isTxCreated = false;
          try
          {
-            if (cacheChange.isInvalidation() && tm != null && tm.getStatus() == Status.STATUS_ACTIVE)
-            {
-               hasInvalidation = true;
-               if (invalidations == null)
-                  invalidations = new ArrayList<ChangesContainer>();
-               invalidations.add(cacheChange);
-               continue;
-            }
             if (cacheChange.isTxRequired() && tm != null && tm.getStatus() == Status.STATUS_NO_TRANSACTION)
             {
                // No tx exists so we create a new tx
@@ -207,41 +281,6 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             }
          }
       }
-      if (hasInvalidation)
-      {
-         this.invalidations.set(invalidations);
-      }
-   }
-
-   void afterCommit()
-   {
-      List<ChangesContainer> invalidations = this.invalidations.get();
-      if (invalidations != null)
-      {
-         try
-         {
-            for (ChangesContainer invalidation : invalidations)
-            {
-               try
-               {
-                  invalidation.apply();
-               }
-               catch (RuntimeException e)//NOSONAR
-               {
-                  LOG.error("Could not invalidate " + invalidation.getFqn(), e);
-               }
-            }
-         }
-         finally
-         {
-            this.invalidations.remove();
-         }
-      }
-   }
-
-   void afterComplete()
-   {
-      invalidations.remove();
    }
 
    /**
@@ -918,7 +957,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
 
       protected final long timeOut;
 
-      protected final boolean invalidation;
+      protected boolean invalidation;
 
       public ChangesContainer(Fqn fqn, ChangesType changesType, Cache<Serializable, Object> cache, int historicalIndex,
          boolean localMode, boolean useExpiration, long timeOut)
@@ -937,7 +976,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          this.localMode = localMode;
          this.useExpiration = useExpiration;
          this.timeOut = timeOut;
-         this.invalidation = invalidation;
+         this.invalidation = invalidation && !localMode;
       }
 
       /**
@@ -999,8 +1038,12 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
 
       public boolean isInvalidation()
       {
-         return invalidation && !localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL
-            && cache.getMembers().size() > 1;
+         return invalidation;
+      }
+
+      void setInvalidation(boolean invalidationEnabled)
+      {
+         invalidation &= invalidationEnabled;
       }
 
       void applyToBuffer(CompressedChangesBuffer buffer)
@@ -1150,7 +1193,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       public void apply()
       {
-         if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL && cache.getMembers().size() > 1)
+         if (invalidation)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
@@ -1224,7 +1267,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       public void apply()
       {
-         if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL && cache.getMembers().size() > 1)
+         if (invalidation)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
@@ -1299,7 +1342,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       public void apply()
       {
-         if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL && cache.getMembers().size() > 1)
+         if (invalidation)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
@@ -1362,7 +1405,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       public void apply()
       {
-         if (!localMode && cache.getConfiguration().getCacheMode() != CacheMode.LOCAL && cache.getMembers().size() > 1)
+         if (invalidation)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db

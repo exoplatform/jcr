@@ -79,6 +79,29 @@ public class CompressedChangesBuffer
    private final Map<String, List<ChangesContainer>> childPropertyMap = new HashMap<String, List<ChangesContainer>>();
 
    /**
+    * Indicates whether or not the invalidation is enabled
+    */
+   private final boolean invalidationEnabled;
+
+   public CompressedChangesBuffer()
+   {
+      this(false);
+   }
+
+   public CompressedChangesBuffer(boolean invalidationEnabled)
+   {
+      this.invalidationEnabled = invalidationEnabled;
+   }
+
+   /**
+    * Indicates whether or not the invalidation is enabled
+    */
+   public boolean isInvalidationEnabled()
+   {
+      return invalidationEnabled;
+   }
+
+   /**
     * Adds new modification container to buffer and performs optimization if needed. Optimization doesn't iterate
     * over lists and uses HashMaps. So each optimization duration doesn't depend on list size.  
     * 
@@ -99,6 +122,7 @@ public class CompressedChangesBuffer
       {
          changes.add(container);
       }
+      container.setInvalidation(invalidationEnabled);
       container.applyToBuffer(this);
    }
 
