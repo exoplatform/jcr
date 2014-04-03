@@ -106,7 +106,10 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       {
          synchronized (this)
          {
-            this.lm = parentCache.getComponentRegistry().getComponent(LockManager.class);
+            if (lm == null)
+            {
+               this.lm = parentCache.getComponentRegistry().getComponent(LockManager.class);
+            }
          }
       }
       return lm;

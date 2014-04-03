@@ -1178,7 +1178,10 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       {
          synchronized (this)
          {
-            this.tt = parentCache.getComponentRegistry().getComponent(TransactionTable.class);
+            if (tt == null)
+            {
+               this.tt = parentCache.getComponentRegistry().getComponent(TransactionTable.class);
+            }
          }
       }
       return tt;
