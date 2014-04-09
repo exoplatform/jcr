@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -2433,11 +2434,11 @@ public class SessionDataManager implements ItemDataConsumer
    protected final class ItemReferencePool
    {
 
-      private WeakHashMap<String, WeakReference<ItemImpl>> items;
+      private HashMap<String, WeakReference<ItemImpl>> items;
 
       ItemReferencePool()
       {
-         items = new WeakHashMap<String, WeakReference<ItemImpl>>();
+         items = new HashMap<String, WeakReference<ItemImpl>>();
       }
 
       ItemImpl remove(String identifier)
