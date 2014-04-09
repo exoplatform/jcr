@@ -2393,6 +2393,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                }
             }
          }
+         if (id.length() > Constants.UUID_FORMATTED_LENGTH && id.startsWith(this.dataContainer.getName()))
+         {
+            id = id.substring(this.dataContainer.getName().length());
+         }
          NodeData parent = getACL(id, search);
          if (parent != null && parent.getACL() != null)
          {
