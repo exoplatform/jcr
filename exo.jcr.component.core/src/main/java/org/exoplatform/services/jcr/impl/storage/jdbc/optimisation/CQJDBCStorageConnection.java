@@ -296,7 +296,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
 
          while (resultSet.next())
          {
-            String cpid = resultSet.getString(COLUMN_PARENTID);
+            String cpid = getIdentifier(resultSet.getString(COLUMN_PARENTID));
             ACLHolder holder = mHolders.get(cpid);
             if (holder == null)
             {
@@ -1343,7 +1343,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          if (parentPath != null)
          {
             // get by parent and name
-            qpath = QPath.makeChildPath(parentPath, qname, cindex, cid);
+            qpath = QPath.makeChildPath(parentPath, qname, cindex, getIdentifier(cid));
             parentCid = cpid;
          }
          else
@@ -1357,7 +1357,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             else
             {
-               qpath = QPath.makeChildPath(traverseQPath(cpid), qname, cindex, cid);
+               qpath = QPath.makeChildPath(traverseQPath(cpid), qname, cindex, getIdentifier(cid));
                parentCid = cpid;
             }
          }
@@ -1367,7 +1367,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          if (primaryType == null || primaryType.isEmpty())
          {
             throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
-               + qpath.getAsString() + ", id " + cid + ", container " + this.containerConfig.containerName, null);
+               + qpath.getAsString() + ", id " + getIdentifier(cid) + ", container " + this.containerConfig.containerName, null);
          }
 
          InternalQName ptName = InternalQName.parse(ValueDataUtil.getString(primaryType.first().getValueData()));
@@ -1554,7 +1554,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             String cid = result.getString(COLUMN_ID);
 
             QPathEntry qpe1 =
-               new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX), cid);
+               new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX), getIdentifier(cid));
             boolean isChild = caid.equals(cid);
             caid = result.getString(COLUMN_PARENTID);
 
@@ -1567,7 +1567,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             {
                QPathEntry qpe2 =
                   new QPathEntry(InternalQName.parse(result.getString(COLUMN_NAME)), result.getInt(COLUMN_INDEX),
-                     result.getString(COLUMN_ID));
+                     getIdentifier(result.getString(COLUMN_ID)));
                if (isChild)
                {
                   // The child is the first result then we have the parent
