@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-applications-parent</artifactId>
-    <version>1.16.0-GA</version>
+    <version>1.16.1-GA-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.applications.fckeditor</artifactId>
   <packaging>war</packaging>
