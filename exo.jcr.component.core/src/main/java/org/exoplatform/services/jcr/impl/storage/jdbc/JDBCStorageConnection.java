@@ -1652,7 +1652,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
 
             QPathEntry qpe =
-               new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX), caid);
+               new QPathEntry(InternalQName.parse(parent.getString(COLUMN_NAME)), parent.getInt(COLUMN_INDEX), getIdentifier(caid));
             qrpath.add(qpe);
             caid = parent.getString(COLUMN_PARENTID);
 
@@ -2134,7 +2134,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          if (parentPath != null)
          {
             // get by parent and name
-            qpath = QPath.makeChildPath(parentPath, qname, cindex, cid);
+            qpath = QPath.makeChildPath(parentPath, qname, cindex, getIdentifier(cid));
             parentCid = cpid;
          }
          else
@@ -2148,7 +2148,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
             else
             {
-               qpath = QPath.makeChildPath(traverseQPath(cpid), qname, cindex, cid);
+               qpath = QPath.makeChildPath(traverseQPath(cpid), qname, cindex, getIdentifier(cid));
                parentCid = cpid;
             }
          }
@@ -2161,7 +2161,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             if (!ptProp.next())
             {
                throw new PrimaryTypeNotFoundException("FATAL ERROR primary type record not found. Node "
-                  + qpath.getAsString() + ", id " + cid + ", container " + this.containerConfig.containerName, null);
+                  + qpath.getAsString() + ", id " + getIdentifier(cid) + ", container " + this.containerConfig.containerName, null);
             }
 
             byte[] data = ptProp.getBytes(COLUMN_VDATA);
@@ -2618,7 +2618,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
          // build property data
          PropertyData pdata =
-            new PersistedPropertyData(identifier, qpath, tempNode.cid, prop.version, prop.type, prop.multi, valueData);
+            new PersistedPropertyData(identifier, qpath, getIdentifier(tempNode.cid), prop.version, prop.type, prop.multi, valueData);
 
          childProps.put(propName, pdata);
       }
