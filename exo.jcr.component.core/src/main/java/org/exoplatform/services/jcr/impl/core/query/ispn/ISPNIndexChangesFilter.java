@@ -28,7 +28,6 @@ import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
-import org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
 import org.exoplatform.services.jcr.util.IdGenerator;

@@ -121,6 +121,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
  * @version $Id: ISPNCacheWorkspaceStorageCache.java 3514 2010-11-22 16:14:36Z nzamosenchuk $
  */
+@SuppressWarnings("unchecked")
 public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable, Startable
 {
    private static final Log LOG = ExoLogger//NOSONAR

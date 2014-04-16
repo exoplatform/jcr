@@ -220,7 +220,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * The RedoLog of this <code>MultiIndex</code>.
     */
-   private RedoLog redoLog = null;
+   private volatile RedoLog redoLog = null;
 
    /**
     * Set&lt;NodeId> of uuids that should not be indexed.
@@ -687,7 +687,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          doUpdateOffline(remove, add);
       }
-      else if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
+      else if (modeHandler.getMode() == IndexerIoMode.READ_WRITE && redoLog != null)
       {
          doUpdateRW(remove, add);
       }

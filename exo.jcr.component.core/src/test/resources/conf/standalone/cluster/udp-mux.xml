@@ -31,16 +31,16 @@
          timer.queue_max_size="500"
 
          thread_pool.enabled="true"
-         thread_pool.min_threads="2"
-         thread_pool.max_threads="8"
+         thread_pool.min_threads="6"
+         thread_pool.max_threads="24"
          thread_pool.keep_alive_time="5000"
          thread_pool.queue_enabled="true"
          thread_pool.queue_max_size="10000"
          thread_pool.rejection_policy="discard"
 
          oob_thread_pool.enabled="true"
-         oob_thread_pool.min_threads="1"
-         oob_thread_pool.max_threads="8"
+         oob_thread_pool.min_threads="3"
+         oob_thread_pool.max_threads="24"
          oob_thread_pool.keep_alive_time="5000"
          oob_thread_pool.queue_enabled="false"
          oob_thread_pool.queue_max_size="100"
@@ -76,7 +76,7 @@
     <MFC max_credits="2M"
          min_threshold="0.4"/>
     <FRAG2 frag_size="60K"  />
-    <RSVP resend_interval="2000" timeout="10000"/>
+    <RSVP resend_interval="2000" timeout="10000" ack_on_delivery="false"/>
     <pbcast.STATE_TRANSFER />
     <!-- pbcast.FLUSH  /-->
 </config>

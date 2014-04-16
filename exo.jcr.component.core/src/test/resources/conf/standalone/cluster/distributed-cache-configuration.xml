@@ -22,10 +22,10 @@
 <infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:5.2 http://www.infinispan.org/schemas/infinispan-config-5.2.xsd"
 	xmlns="urn:infinispan:config:5.2">
    <global>
-      <globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/>
+      <globalJmxStatistics jmxDomain="exo-distr" enabled="true" allowDuplicateDomains="true"/>
       <transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="JCR-cluster" distributedSyncTimeout="20000">
       	<properties>
-         <property name="configurationFile" value="tcp-mux.xml"/>
+         <property name="configurationFile" value="udp-mux.xml"/>
       	</properties>
       </transport>
       <shutdown hookBehavior="DEFAULT"/>

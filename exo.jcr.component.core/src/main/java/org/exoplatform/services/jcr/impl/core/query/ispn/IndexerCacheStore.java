@@ -205,11 +205,15 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
                   changesMap.put(key.getWsId(), listToPush);
                }
                // copying lists into the new wrapper
-               listToPush.getParentAddedNodes().addAll(staleListIncache.getParentAddedNodes());
-               listToPush.getParentRemovedNodes().addAll(staleListIncache.getParentRemovedNodes());
+               if (staleListIncache.getParentAddedNodes() != null)
+                  listToPush.getParentAddedNodes().addAll(staleListIncache.getParentAddedNodes());
+               if (staleListIncache.getParentRemovedNodes() != null)
+                  listToPush.getParentRemovedNodes().addAll(staleListIncache.getParentRemovedNodes());
 
-               listToPush.getAddedNodes().addAll(staleListIncache.getAddedNodes());
-               listToPush.getRemovedNodes().addAll(staleListIncache.getRemovedNodes());
+               if (staleListIncache.getAddedNodes() != null)
+                  listToPush.getAddedNodes().addAll(staleListIncache.getAddedNodes());
+               if (staleListIncache.getRemovedNodes() != null)
+                  listToPush.getRemovedNodes().addAll(staleListIncache.getRemovedNodes());
                processedItemKeys.add(key);
             }
          }

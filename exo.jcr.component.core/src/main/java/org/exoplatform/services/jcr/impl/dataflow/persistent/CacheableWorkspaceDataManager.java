@@ -997,7 +997,6 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * {@inheritDoc}
     */
-   @Override
    public int getLastOrderNumber(final NodeData nodeData) throws RepositoryException
    {
       return executeAction(new PrivilegedExceptionAction<Integer>()
@@ -1130,8 +1129,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                doRollback();
                throw new RepositoryException("Could not save the changes", e);
             }
-            // notify listeners after storage commit
             doCommit();
+            // notify listeners after storage commit
             notifySaveItems(logWrapper.getChangesLog(), false);
          }
       }
@@ -2662,11 +2661,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          {
             return;
          }
-         if (acl.hasOwner())
+         if (acl.hasOwner() && filterOwner != null)
          {
             filterOwner.add(node.getIdentifier());
          }
-         if (acl.hasPermissions())
+         if (acl.hasPermissions() && filterPermissions != null)
          {
             filterPermissions.add(node.getIdentifier());
          }

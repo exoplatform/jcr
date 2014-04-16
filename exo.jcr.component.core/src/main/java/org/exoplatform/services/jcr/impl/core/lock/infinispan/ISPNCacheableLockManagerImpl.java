@@ -31,8 +31,6 @@ import org.exoplatform.services.jcr.impl.core.lock.cacheable.LockData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
-import org.exoplatform.services.log.ExoLogger;
-import org.exoplatform.services.log.Log;
 import org.exoplatform.services.naming.InitialContextInitializer;
 import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.AdvancedCache;
@@ -76,11 +74,6 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    public static final String INFINISPAN_JDBC_TABLE_NAME = "infinispan-cl-cache.jdbc.table.name";
 
    public static final String INFINISPAN_JDBC_CL_AUTO = "auto";
-
-   /**
-    * Logger
-    */
-   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.InfinispanLockManagerImpl");//NOSONAR
 
    private AdvancedCache<Serializable, Object> cache;
 

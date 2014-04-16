@@ -214,7 +214,6 @@ public class ISPNIndexUpdateMonitor implements IndexUpdateMonitor, IndexerIoMode
     * @param event
     *          CacheEntryModifiedEvent
     */
-   @SuppressWarnings("unchecked")
    @CacheEntryModified
    public void cacheEntryModified(CacheEntryModifiedEvent<Serializable, Object> event)
    {

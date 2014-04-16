@@ -54,7 +54,7 @@ public final class SingletonTokenStream extends TokenStream implements Externali
     */
    private PayloadAttribute payloadAttribute;
 
-   private boolean consumed = false;
+   private volatile boolean consumed = false;
 
    /**
     * Default constructor for serialization
@@ -117,6 +117,14 @@ public final class SingletonTokenStream extends TokenStream implements Externali
    public void reset() throws IOException
    {
       consumed = false;
+      if (termAttribute == null)
+      {
+         termAttribute = addAttribute(CharTermAttribute.class);
+      }
+      if (payloadAttribute == null)
+      {
+         payloadAttribute = addAttribute(PayloadAttribute.class);
+      }
    }
 
    /**

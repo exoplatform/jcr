@@ -43,12 +43,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
-import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
 import javax.transaction.Status;
-import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 /**
@@ -151,13 +146,20 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          return result == 0 ? historicalIndex - o.getHistoricalIndex() : result;
       }
 
-      protected AdvancedCache<CacheKey, Object> setCacheLocalMode()
+      protected AdvancedCache<CacheKey, Object> setCacheLocalMode(Flag... flags)
       {
          if (localMode && allowLocalChanges)
          {
-            return cache.withFlags(Flag.CACHE_MODE_LOCAL);
+            if (flags == null || flags.length == 0)
+            {
+               return cache.withFlags(Flag.CACHE_MODE_LOCAL);
+            }
+            Flag[] newFlags = new Flag[flags.length + 1];
+            System.arraycopy(flags, 0, newFlags, 0, flags.length);
+            newFlags[flags.length] = Flag.CACHE_MODE_LOCAL;
+            return cache.withFlags(newFlags);
          }
-         return cache;
+         return flags == null || flags.length == 0 ? cache : cache.withFlags(flags);
       }
 
       public abstract void apply();
@@ -191,7 +193,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
-         setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, value);
+         setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
       }
 
       @Override
@@ -228,7 +230,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          if (oldValue instanceof FakeValueSet)
          {
             // The old value is a fake value so we will replace it with the new one
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, value);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
          }
       }
    }
@@ -254,6 +256,13 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         {
+            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+            // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
+            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).remove(key);
+            return;
+         }
          // force writeLock on next read
          Object existingObject = cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
          Set<Object> newSet = new HashSet<Object>();
@@ -265,7 +274,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             if (existingObject instanceof FakeValueSet)
             {
                // remove the FakeValueSet instance as it is not up to date anymore
-               setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+               setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).remove(key);
                return;
             }
             else if (existingObject instanceof Set)
@@ -274,19 +283,12 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             }
             newSet.add(value);
 
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, newSet);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, newSet);
          }
          else if (existingObject != null)
          {
             LOG.error("Unexpected object found by key " + key.toString() + ". Expected Set, but found:"
                + existingObject.getClass().getName());
-         }
-         else if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
-         {
-            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
-            // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
-            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
-            return;
          }
       }
 
@@ -315,6 +317,14 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         {
+            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+            // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
+            // to reload them from the db
+            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).remove(key);
+            return;
+         }
          // force writeLock on next read
          Object existingObject = cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
 
@@ -336,19 +346,12 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                }
             }
 
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, newMap);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, newMap);
          }
          else if (existingObject != null)
          {
             LOG.error("Unexpected object found by key " + key.toString() + ". Expected Map, but found:"
                + existingObject.getClass().getName());
-         }
-         else if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
-         {
-            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
-            // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
-            // to reload them from the db
-            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
          }
       }
 
@@ -377,6 +380,14 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         {
+            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+            // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
+            // to reload them from the db
+            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).remove(key);
+            return;
+         }
          // force writeLock on next read
          Object existingObject = cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
 
@@ -384,7 +395,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          if (existingObject instanceof FakeValueSet)
          {
             // remove the FakeValueSet instance as it is not up to date anymore
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).remove(key);
             return;
          }
          else if (existingObject instanceof Set)
@@ -392,7 +403,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             Set<Object> newSet = new HashSet<Object>((Set<Object>)existingObject);
             newSet.remove(value);
 
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, newSet);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, newSet);
          }
       }
 
@@ -421,6 +432,14 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
+         {
+            // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
+            // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
+            // to reload them from the db
+            cache.withFlags(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).remove(key);
+            return;
+         }
          // force writeLock on next read
          Object existingObject = cache.withFlags(Flag.FORCE_WRITE_LOCK).get(key);
 
@@ -442,7 +461,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                }
             }
 
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, newMap);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, newMap);
          }
       }
 
@@ -467,7 +486,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
-         setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+         setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).remove(key);
       }
 
       void applyToBuffer(CompressedISPNChangesBuffer buffer)
@@ -1086,11 +1105,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                isTxCreated = true;
             }
          }
-         catch (SystemException e)
-         {
-            LOG.warn("Could not create a new tx", e);
-         }
-         catch (NotSupportedException e)
+         catch (Exception e)//NOSONAR
          {
             LOG.warn("Could not create a new tx", e);
          }
@@ -1127,27 +1142,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                }
                tm.commit();
             }
-            catch (SystemException e)
-            {
-               LOG.warn("Could not commit the tx", e);
-            }
-            catch (SecurityException e)
-            {
-               LOG.warn("Could not commit the tx", e);
-            }
-            catch (IllegalStateException e)
-            {
-               LOG.warn("Could not commit the tx", e);
-            }
-            catch (RollbackException e)
-            {
-               LOG.warn("Could not commit the tx", e);
-            }
-            catch (HeuristicMixedException e)
-            {
-               LOG.warn("Could not commit the tx", e);
-            }
-            catch (HeuristicRollbackException e)
+            catch (Exception e)//NOSONAR
             {
                LOG.warn("Could not commit the tx", e);
             }

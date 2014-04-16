@@ -730,7 +730,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             children.add(new PersistedNodeData("id-node2" + parentNode.getIdentifier(), QPath.makeChildPath(parent.getQPath(), new InternalQName(null, "node2")), parent.getIdentifier(), 1, 0,
                Constants.NT_UNSTRUCTURED, new InternalQName[0], null));            
          }
-         if (canModify && itemAdded != null)
+         if (itemAdded != null)
          {
             children.add((NodeData)itemAdded);
          }
@@ -761,7 +761,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
                   PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data"
                      .getBytes("UTF-8"))), new SimplePersistedSize(0)));
             }
-            if (canModify && itemAdded != null)
+            if (itemAdded != null)
             {
                children.add((PropertyData)itemAdded);
             }
@@ -901,7 +901,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
                   .asList((ValueData)new ByteArrayPersistedValueData(0, parentNode.getIdentifier().getBytes("UTF-8"))),
                   new SimplePersistedSize(0)));
             }
-            if (canModify && itemAdded != null)
+            if (itemAdded != null)
             {
                children.add((PropertyData)itemAdded);
             }            

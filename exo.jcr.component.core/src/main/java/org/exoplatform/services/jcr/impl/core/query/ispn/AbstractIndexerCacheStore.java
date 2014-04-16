@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.core.query.ispn;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.Indexer;
-import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
@@ -40,9 +39,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
 /**
  * Abstract Indexer Cache Loader defines default implementation of data processing received via cache.
