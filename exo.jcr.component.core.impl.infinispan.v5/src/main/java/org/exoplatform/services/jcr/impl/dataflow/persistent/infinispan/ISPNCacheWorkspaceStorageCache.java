@@ -122,6 +122,7 @@ import javax.transaction.TransactionManager;
  * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
  * @version $Id: ISPNCacheWorkspaceStorageCache.java 3514 2010-11-22 16:14:36Z nzamosenchuk $
  */
+@SuppressWarnings("unchecked")
 public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Backupable, Startable
 {
    private static final Log LOG = ExoLogger//NOSONAR
@@ -1291,7 +1292,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             cache.addToList(new CacheNodesId(getOwnerId(), node.getParentIdentifier()), node.getIdentifier(),
                modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
 
-            cache.invalidate(new CacheNodesByPageId(getOwnerId(), node.getParentIdentifier()));
+            cache.remove(new CacheNodesByPageId(getOwnerId(), node.getParentIdentifier()));
          }
       }
 
@@ -1449,7 +1450,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          {
             cache.removeFromPatternList(new CachePatternNodesId(getOwnerId(), item.getParentIdentifier()), item);
             cache.removeFromList(new CacheNodesId(getOwnerId(), item.getParentIdentifier()), item.getIdentifier());
-            cache.invalidate(new CacheNodesByPageId(getOwnerId(), item.getParentIdentifier()));
+            cache.remove(new CacheNodesByPageId(getOwnerId(), item.getParentIdentifier()));
          }
 
          cache.remove(new CacheNodesId(getOwnerId(), item.getIdentifier()));

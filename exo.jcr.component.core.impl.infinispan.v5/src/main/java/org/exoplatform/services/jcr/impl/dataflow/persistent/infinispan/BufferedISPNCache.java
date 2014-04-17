@@ -33,8 +33,6 @@ import org.infinispan.config.Configuration;
 import org.infinispan.context.Flag;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.transaction.LocalTransaction;
-import org.infinispan.transaction.TransactionTable;
 import org.infinispan.util.concurrent.NotifyingFuture;
 
 import java.security.PrivilegedAction;
@@ -48,7 +46,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import javax.transaction.Status;
-import javax.transaction.Transaction;
 import javax.transaction.TransactionManager;
 
 /**
@@ -75,8 +72,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     */
    private final Boolean allowLocalChanges;
 
-   private volatile TransactionTable tt;
-
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.impl.infinispan.v5.BufferedISPNCache");//NOSONAR
 
    public static enum ChangesType {
@@ -100,16 +95,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
 
       private final Boolean allowLocalChanges;
 
-      protected boolean invalidation;
-
       public ChangesContainer(CacheKey key, ChangesType changesType, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean localMode, Boolean allowLocalChanges)
-      {
-         this(key, changesType, cache, historicalIndex, localMode, allowLocalChanges, false);
-      }
-
-      public ChangesContainer(CacheKey key, ChangesType changesType, AdvancedCache<CacheKey, Object> cache,
-         int historicalIndex, boolean localMode, Boolean allowLocalChanges, boolean invalidation)
       {
          this.key = key;
          this.changesType = changesType;
@@ -117,7 +104,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          this.historicalIndex = historicalIndex;
          this.localMode = localMode;
          this.allowLocalChanges = allowLocalChanges;
-         this.invalidation = invalidation && !localMode;
       }
 
       /**
@@ -162,13 +148,20 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          return result == 0 ? historicalIndex - o.getHistoricalIndex() : result;
       }
 
-      protected AdvancedCache<CacheKey, Object> setCacheLocalMode()
+      protected AdvancedCache<CacheKey, Object> setCacheLocalMode(Flag... flags)
       {
          if (localMode && allowLocalChanges)
          {
-            return cache.withFlags(Flag.CACHE_MODE_LOCAL);
+            if (flags == null || flags.length == 0)
+            {
+               return cache.withFlags(Flag.CACHE_MODE_LOCAL);
+            }
+            Flag[] newFlags = new Flag[flags.length + 1];
+            System.arraycopy(flags, 0, newFlags, 0, flags.length);
+            newFlags[flags.length] = Flag.CACHE_MODE_LOCAL;
+            return cache.withFlags(newFlags);
          }
-         return cache;
+         return flags == null || flags.length == 0 ? cache : cache.withFlags(flags);
       }
 
       public abstract void apply();
@@ -176,17 +169,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       public boolean isTxRequired()
       {
          return false;
-      }
-
-
-      public boolean isInvalidation()
-      {
-         return invalidation;
-      }
-
-      void setInvalidation(boolean invalidationEnabled)
-      {
-         invalidation &= invalidationEnabled;
       }
 
       void applyToBuffer(CompressedISPNChangesBuffer buffer)
@@ -216,7 +198,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
-         setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, value);
+         setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).put(key, value);
       }
 
       @Override
@@ -255,7 +237,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          if (oldValue instanceof FakeValueSet)
          {
             // The old value is a fake value so we will replace it with the new one
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, value);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).put(key, value);
          }
       }
    }
@@ -273,7 +255,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       public AddToListContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache, boolean forceModify,
          int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
-         super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges, true);
+         super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
          this.value = value;
          this.forceModify = forceModify;
       }
@@ -281,7 +263,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       @Override
       public void apply()
       {
-         if (invalidation)
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
@@ -299,7 +281,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             if (existingObject instanceof FakeValueSet)
             {
                // remove the FakeValueSet instance as it is not up to date anymore
-               setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+               setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).remove(key);
                return;
             }
             else if (existingObject instanceof Set)
@@ -308,7 +290,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             }
             newSet.add(value);
 
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, newSet);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).put(key, newSet);
          }
          else if (existingObject != null)
          {
@@ -335,14 +317,14 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       public AddToPatternListContainer(CacheKey key, ItemData value, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
-         super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges, true);
+         super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
          this.itemData = value;
       }
 
       @Override
       public void apply()
       {
-         if (invalidation)
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we remove all the patterns in order to enforce other cluster nodes 
@@ -371,7 +353,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                }
             }
 
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, newMap);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).put(key, newMap);
          }
          else if (existingObject != null)
          {
@@ -398,14 +380,14 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       public RemoveFromListContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
-         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges, true);
+         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges);
          this.value = value;
       }
 
       @Override
       public void apply()
       {
-         if (invalidation)
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
@@ -419,7 +401,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          if (existingObject instanceof FakeValueSet)
          {
             // remove the FakeValueSet instance as it is not up to date anymore
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).remove(key);
             return;
          }
          else if (existingObject instanceof Set)
@@ -427,7 +409,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             Set<Object> newSet = new HashSet<Object>((Set<Object>)existingObject);
             newSet.remove(value);
 
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, newSet);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).put(key, newSet);
          }
       }
 
@@ -449,14 +431,14 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       public RemoveFromPatternListContainer(CacheKey key, ItemData value, AdvancedCache<CacheKey, Object> cache,
          int historicalIndex, boolean local, Boolean allowLocalChanges)
       {
-         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges, true);
+         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges);
          this.itemData = value;
       }
 
       @Override
       public void apply()
       {
-         if (invalidation)
+         if (!localMode && cache.getRpcManager() != null && cache.getCacheManager().getMembers().size() > 1)
          {
             // to prevent consistency issue since we don't have the list in the local cache, we are in cluster env
             // and we are in a non local mode, we clear the list in order to enforce other cluster nodes to reload it from the db
@@ -484,7 +466,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
                }
             }
 
-            setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).put(key, newMap);
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).put(key, newMap);
          }
       }
 
@@ -506,16 +488,10 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
          super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges);
       }
 
-      public RemoveObjectContainer(CacheKey key, AdvancedCache<CacheKey, Object> cache, int historicalIndex,
-         boolean local, Boolean allowLocalChanges, boolean invalidation)
-      {
-         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges, invalidation);
-      }
-
       @Override
       public void apply()
       {
-         setCacheLocalMode().withFlags(Flag.SKIP_REMOTE_LOOKUP).remove(key);
+         setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).remove(key);
       }
    }
 
@@ -1037,16 +1013,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    }
 
    /**
-    * Invalidates an object
-    */
-   protected void invalidate(Object key)
-   {
-      CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
-      changesContainer.add(new RemoveObjectContainer((CacheKey)key, parentCache, changesContainer.getHistoryIndex(),
-         local.get(), allowLocalChanges, true));
-   }
-
-   /**
     * {@inheritDoc}
     */
    public int size()
@@ -1108,39 +1074,8 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     */
    public void beginTransaction()
    {
-      // We enabled the invalidation only if we have more than 1 cluster node and we are not in a global transaction
-      changesList.set(new CompressedISPNChangesBuffer(parentCache.getRpcManager() != null
-         && parentCache.getCacheManager().getMembers().size() > 1 && getCurrentLocalTransaction() == null));
+      changesList.set(new CompressedISPNChangesBuffer());
       local.set(false);
-   }
-
-   /**
-    * Gives the current LocalTransaction if it exists, <code>null</code> otherwise
-    * @return
-    */
-   private LocalTransaction getCurrentLocalTransaction()
-   {
-      try
-      {
-         TransactionManager tm = getTransactionManager();
-         if (tm == null)
-            return null;
-         Transaction tx = tm.getTransaction();
-         if (tx == null)
-            return null;
-         int status = tx.getStatus();
-         if (status != Status.STATUS_ACTIVE && status != Status.STATUS_PREPARING && status != Status.STATUS_MARKED_ROLLBACK)
-         {
-            LOG.warn("The status of the transaction was not valid: {}", status);
-            return null;
-         }
-         return getTransactionTable().getLocalTransaction(tx);
-      }
-      catch (Exception e)//NOSONAR
-      {
-         LOG.warn("Could not get the current local tx", e);
-      }
-      return null;
    }
 
    /**
@@ -1162,7 +1097,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       try
       {
          final List<ChangesContainer> containers = changesContainer.getSortedList();
-         commitChanges(tm, containers, changesContainer.isInvalidationEnabled());
+         commitChanges(tm, containers);
       }
       finally
       {
@@ -1171,95 +1106,12 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       }
    }
 
-   private TransactionTable getTransactionTable()
-   {
-      // We lazy get the LockManager to make sure that we get the right instance
-      if (tt == null)
-      {
-         synchronized (this)
-         {
-            if (tt == null)
-            {
-               this.tt = parentCache.getComponentRegistry().getComponent(TransactionTable.class);
-            }
-         }
-      }
-      return tt;
-   }
-
    /**
     * @param tm
     * @param containers
     */
-   private void commitChanges(TransactionManager tm, List<ChangesContainer> containers, boolean invalidationEnabled)
+   private void commitChanges(TransactionManager tm, List<ChangesContainer> containers)
    {
-      if (invalidationEnabled)
-      {
-         // The invalidation is enabled
-         Transaction tx = null;
-         LocalTransaction lt = null;
-         // First we invalidate the cache entries outside the current transaction
-         // to limit the risk of getting deadlocks
-         try
-         {
-            for (Iterator<ChangesContainer> it = containers.iterator(); it.hasNext();)
-            {
-               ChangesContainer cacheChange = it.next();
-               if (cacheChange.isInvalidation())
-               {
-                  // The current cache change is a cache entry to invalidate
-                  if (lt == null)
-                  {
-                     // We get the current local transaction
-                     lt = getCurrentLocalTransaction();
-                     if (lt == null)
-                     {
-                        // There is no current local transaction so no need to continue
-                        break;
-                     }
-                  }
-                  // We get the current owner
-                  Object owner = parentCache.getLockManager().getOwner(cacheChange.getKey());
-                  if (owner == null || !owner.equals(lt))
-                  {
-                     // The node is not locked or is locked by another transaction so
-                     if (tx == null)
-                     {
-                        try
-                        {
-                           tx = tm.suspend();
-                        }
-                        catch (Exception e)//NOSONAR
-                        {
-                           LOG.warn("Could not suspend the tx", e);
-                        }
-                     }
-                     if (tx != null)
-                     {
-                        // We apply the invalidation outside the transaction
-                        cacheChange.apply();
-                        // We remove it to avoid calling it twice
-                        it.remove();
-                     }
-                  }
-               }
-            }
-         }
-         finally
-         {
-            if (tx != null)
-            {
-               try
-               {
-                  tm.resume(tx);
-               }
-               catch (Exception e)//NOSONAR
-               {
-                  LOG.error("Could not resume the tx", e);
-               }
-            }
-         }
-      }
       for (ChangesContainer cacheChange : containers)
       {
          boolean isTxCreated = false;
