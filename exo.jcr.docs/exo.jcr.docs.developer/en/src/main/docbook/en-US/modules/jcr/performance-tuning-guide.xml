@@ -4,10 +4,10 @@
 <section id="JCR.PerformanceTuningGuide">
   <title>JCR Performance Tuning Guide</title>
 
-    <para>This section will show you possible ways of improving JCR</para>
+  <para>This section will show you possible ways of improving JCR</para>
 
-    <para>It is intended to GateIn Administrators and those who wants to use
-    JCR features.</para>
+  <para>It is intended to GateIn Administrators and those who wants to use JCR
+  features.</para>
 
   <section id="JCR.PerformanceTuningGuide.JCRPerformanceAndScalability">
     <title>JCR Performance and Scalability</title>
@@ -307,13 +307,79 @@
       <para>Some operations may take too much time. So if you get
       <exceptionname>ReplicationTimeoutException</exceptionname> try
       increasing replication timeout:</para>
-      
+
       <programlisting language="xml">   &lt;clustering mode="replication" clusterName="${jbosscache-cluster-name}"&gt;
       ...
       &lt;sync replTimeout="60000" /&gt;
    &lt;/clustering&gt;
    </programlisting>
-   <para>value is set in miliseconds.</para>
+
+      <para>value is set in miliseconds.</para>
+
+      <para>Another thing that you should check if you get
+      <exceptionname>TimeoutException</exceptionname> is the jgroups thread
+      pools (for normal messages and out-of-band messages). Indeed if one of
+      them is exhausted you can easily get this kind of exceptions. To know if
+      they are exhausted, you can get a thread dump using the jstack command
+      on your process id and check if you have some unused jgroups threads
+      knowing that the name of the threads by default starts with "Incoming-"
+      followed by the thread index in case of the thread pool for normal
+      messages and starts with "OOB-" followed by the thread index in case of
+      the thread pool for out-of-band messages. See below an example of an
+      unused thread for normal messages and for out-of-band messages:</para>
+
+      <programlisting>"Incoming-1,127.0.0.1:64580" prio=10 tid=7fc8f1282000 nid=0x11c697000 waiting on condition [11c696000]
+   java.lang.Thread.State: WAITING (parking)
+ at sun.misc.Unsafe.park(Native Method)
+ - parking to wait for  &lt;77ac70070&gt; (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+ at java.util.concurrent.locks.LockSupport.park(LockSupport.java:156)
+ at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1987)
+ at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:399)
+ at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:957)
+ at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:917)
+ at java.lang.Thread.run(Thread.java:680)
+
+"OOB-1,127.0.0.1:64580" prio=10 tid=7fc8f1113000 nid=0x11bd7b000 waiting on condition [11bd7a000]
+   java.lang.Thread.State: WAITING (parking)
+ at sun.misc.Unsafe.park(Native Method)
+ - parking to wait for  &lt;77ad133a0&gt; (a java.util.concurrent.SynchronousQueue$TransferStack)
+ at java.util.concurrent.locks.LockSupport.park(LockSupport.java:156)
+ at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:422)
+ at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:323)
+ at java.util.concurrent.SynchronousQueue.take(SynchronousQueue.java:857)
+ at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:957)
+ at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:917)
+ at java.lang.Thread.run(Thread.java:680)</programlisting>
+
+      <para>In case you realize that at least one of the thread pools is
+      exhausted, you will need to increase the size of the corresponding
+      thread pool in your jgroups configuration. You need also to make sure
+      that you allocated enough RAM to be able to support the total amount of
+      added threads. For each thread pool, you can define the min and max
+      amount of threads but also the keep alive time, the queue max size and
+      the rejection policy. The configuration of thread pools is at protocol
+      configuration level, in the next example, we use TCP so it is at TCP
+      configuration level:</para>
+
+      <programlisting language="xml">    &lt;UDP
+         singleton_name="JCR-cluster" 
+         ...
+
+         thread_pool.enabled="true" 
+         thread_pool.min_threads="2"
+         thread_pool.max_threads="8" 
+         thread_pool.keep_alive_time="5000" 
+         thread_pool.queue_enabled="true"
+         thread_pool.queue_max_size="1000"
+         thread_pool.rejection_policy="discard"
+
+         oob_thread_pool.enabled="true"
+         oob_thread_pool.min_threads="1"
+         oob_thread_pool.max_threads="8"
+         oob_thread_pool.keep_alive_time="5000"
+         oob_thread_pool.queue_enabled="false" 
+         oob_thread_pool.queue_max_size="100" 
+         oob_thread_pool.rejection_policy="Run" /&gt;</programlisting>
     </section>
 
     <section id="JCR.PerformanceTuningGuide.PerformanceTuningGuide.JVMParameters">
