@@ -291,6 +291,72 @@
    </programlisting>
 
       <para>value is set in miliseconds.</para>
+
+      <para>Another thing that you should check if you get
+      <exceptionname>TimeoutException</exceptionname> is the jgroups thread
+      pools (for normal messages and out-of-band messages). Indeed if one of
+      them is exhausted you can easily get this kind of exceptions. To know if
+      they are exhausted, you can get a thread dump using the jstack command
+      on your process id and check if you have some unused jgroups threads
+      knowing that the name of the threads by default starts with "Incoming-"
+      followed by the thread index in case of the thread pool for normal
+      messages and starts with "OOB-" followed by the thread index in case of
+      the thread pool for out-of-band messages. See below an example of an
+      unused thread for normal messages and for out-of-band messages:</para>
+
+      <programlisting>"OOB-1,shared=JCR-cluster" prio=5 tid=7fbfd00a5000 nid=0x117bb0000 waiting on condition [117baf000]
+   java.lang.Thread.State: WAITING (parking)
+ at sun.misc.Unsafe.park(Native Method)
+ - parking to wait for  &lt;77aae61e8&gt; (a java.util.concurrent.SynchronousQueue$TransferStack)
+ at java.util.concurrent.locks.LockSupport.park(LockSupport.java:156)
+ at java.util.concurrent.SynchronousQueue$TransferStack.awaitFulfill(SynchronousQueue.java:422)
+ at java.util.concurrent.SynchronousQueue$TransferStack.transfer(SynchronousQueue.java:323)
+ at java.util.concurrent.SynchronousQueue.take(SynchronousQueue.java:857)
+ at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:957)
+ at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:917)
+ at java.lang.Thread.run(Thread.java:680)
+
+
+"Incoming-1,shared=JCR-cluster" prio=5 tid=7fbfce5d3800 nid=0x119ecd000 waiting on condition [119ecc000]
+   java.lang.Thread.State: WAITING (parking)
+ at sun.misc.Unsafe.park(Native Method)
+ - parking to wait for  &lt;77abd6568&gt; (a java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject)
+ at java.util.concurrent.locks.LockSupport.park(LockSupport.java:156)
+ at java.util.concurrent.locks.AbstractQueuedSynchronizer$ConditionObject.await(AbstractQueuedSynchronizer.java:1987)
+ at java.util.concurrent.LinkedBlockingQueue.take(LinkedBlockingQueue.java:399)
+ at java.util.concurrent.ThreadPoolExecutor.getTask(ThreadPoolExecutor.java:957)
+ at java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:917)
+ at java.lang.Thread.run(Thread.java:680)</programlisting>
+
+      <para>In case you realize that at least one of the thread pools is
+      exhausted, you will need to increase the size of the corresponding
+      thread pool in your jgroups configuration. You need also to make sure
+      that you allocated enough RAM to be able to support the total amount of
+      added threads. For each thread pool, you can define the min and max
+      amount of threads but also the keep alive time, the queue max size and
+      the rejection policy. The configuration of thread pools is at protocol
+      configuration level, in the next example, we use TCP so it is at TCP
+      configuration level: </para>
+
+      <programlisting language="xml">    &lt;UDP
+         singleton_name="JCR-cluster" 
+         ...
+
+         thread_pool.enabled="true"
+         thread_pool.min_threads="6"
+         thread_pool.max_threads="24"
+         thread_pool.keep_alive_time="5000"
+         thread_pool.queue_enabled="true"
+         thread_pool.queue_max_size="10000"
+         thread_pool.rejection_policy="discard"
+
+         oob_thread_pool.enabled="true"
+         oob_thread_pool.min_threads="3"
+         oob_thread_pool.max_threads="24"
+         oob_thread_pool.keep_alive_time="5000"
+         oob_thread_pool.queue_enabled="false"
+         oob_thread_pool.queue_max_size="100"
+         oob_thread_pool.rejection_policy="Run"/&gt;</programlisting>
     </section>
   </section>
 </section>
