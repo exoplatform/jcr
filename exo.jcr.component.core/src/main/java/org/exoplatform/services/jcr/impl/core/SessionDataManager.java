@@ -52,7 +52,6 @@ import org.exoplatform.services.jcr.impl.dataflow.session.TransactionableDataMan
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,7 +60,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
+
+import org.jboss.util.collection.WeakValueHashMap;
 
 import javax.jcr.AccessDeniedException;
 import javax.jcr.InvalidItemStateException;
@@ -2456,27 +2456,27 @@ public class SessionDataManager implements ItemDataConsumer
    protected final class ItemReferencePool
    {
 
-      private WeakHashMap<String, WeakReference<ItemImpl>> items;
+      private WeakValueHashMap<String, ItemImpl> items;
 
       ItemReferencePool()
       {
-         items = new WeakHashMap<String, WeakReference<ItemImpl>>();
+         items = new WeakValueHashMap<String, ItemImpl>();
       }
 
       ItemImpl remove(String identifier)
       {
-         WeakReference<ItemImpl> weakItem = items.remove(identifier);
-         return weakItem != null ? weakItem.get() : null;
+         ItemImpl item = items.remove(identifier);
+         return item;
       }
 
       Collection<ItemImpl> getAll()
       {
          List<ItemImpl> list = new ArrayList<ItemImpl>();
-         for (WeakReference<ItemImpl> weakItem : items.values())
+         for (ItemImpl item : items.values())
          {
-            if (weakItem != null)
+            if (item != null)
             {
-               list.add(weakItem.get());
+               list.add(item);
             }
          }
 
@@ -2522,8 +2522,7 @@ public class SessionDataManager implements ItemDataConsumer
       {
          final String identifier = newData.getIdentifier();
 
-         WeakReference<ItemImpl> weakItem = items.get(identifier);
-         ItemImpl item = weakItem != null ? weakItem.get() : null;
+         ItemImpl item = items.get(identifier);
 
          if (item != null)
          {
@@ -2532,7 +2531,7 @@ public class SessionDataManager implements ItemDataConsumer
          else
          {
             item = itemFactory.createItem(newData, parent);
-            items.put(item.getInternalIdentifier(), new WeakReference<ItemImpl>(item));
+            items.put(item.getInternalIdentifier(), item);
          }
          return item;
       }
@@ -2552,8 +2551,7 @@ public class SessionDataManager implements ItemDataConsumer
 
       ItemImpl reload(String identifier, ItemData newItemData) throws RepositoryException
       {
-         WeakReference<ItemImpl> weakItem = items.get(identifier);
-         ItemImpl item = weakItem != null ? weakItem.get() : null;
+         ItemImpl item =  items.get(identifier);
 
          if (item != null)
          {
