@@ -487,7 +487,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    public void close() throws IllegalStateException, RepositoryException
    {
       checkIfOpened();
-      this.closedByCallStack = new Exception("The connection has been closed by the following call stack");
+      if (LOG.isDebugEnabled())
+         this.closedByCallStack = new Exception("The connection has been closed by the following call stack");
 
       try
       {
