@@ -961,6 +961,20 @@
          </dependencies>
       </profile>
       <profile>
+         <id>pgsql-9.3</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/pgsql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>org.postgresql</groupId>
+               <artifactId>postgresql</artifactId>
+               <version>9.3-1101-jdbc4</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
          <id>pgpls-9.2</id>
          <properties>
             <properties.url.prefix>classpath:/conf/standalone/pgpls</properties.url.prefix>
