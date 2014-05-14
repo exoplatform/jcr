@@ -378,6 +378,26 @@
          </dependencies>
       </profile>
       <profile>
+         <id>oracle-12C</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/oracle</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>ojdbc</artifactId>
+               <version>12.1.0.1</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>ojdbc</groupId>
+               <artifactId>orai18n</artifactId>
+               <version>12.1.0.1</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
          <id>mysql-5.0</id>
          <properties>
             <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
