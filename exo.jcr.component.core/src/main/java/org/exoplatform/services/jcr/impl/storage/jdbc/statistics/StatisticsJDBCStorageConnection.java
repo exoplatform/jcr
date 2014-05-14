@@ -44,10 +44,13 @@ import javax.jcr.RepositoryException;
  * Created by The eXo Platform SAS
  * Author : Nicolas Filotto 
  *          nicolas.filotto@exoplatform.com
- * 26 f�vr. 2010  
  */
 public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnection
 {
+   /**
+    * The category of the statistics of the JDBCStorageConnection
+    */
+   public static final String CATEGORY = "JDBCStorageConnection";
 
    /**
     * The description of the statistics corresponding to the method 
@@ -83,7 +86,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
     * The description of the statistics corresponding to the method 
     * <code>listChildPropertiesData(NodeData parent)</code>
     */
-   private static final String LIST_CHILD_PROPERTIES_DATA_DESCR = "listChildPropertiesData";
+   public static final String LIST_CHILD_PROPERTIES_DATA_DESCR = "listChildPropertiesData";
 
    /**
     * The description of the statistics corresponding to the method 
@@ -108,21 +111,21 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
     * The description of the statistics corresponding to the method 
     * <code>getItemData(String identifier)</code>
     */
-   private static final String GET_ITEM_DATA_BY_ID_DESCR = "getItemDataById";
+   public static final String GET_ITEM_DATA_BY_ID_DESCR = "getItemDataById";
 
    /**
     * The description of the statistics corresponding to the method 
     * <code>getItemData(NodeData parentData, QPathEntry name)</code>
     */
-   private static final String GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR = "getItemDataByNodeDataNQPathEntry";
+   public static final String GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR = "getItemDataByNodeDataNQPathEntry";
 
    /**
     * The description of the statistics corresponding to the method 
     * <code>getChildPropertiesData(NodeData parent)</code>
     */
-   private static final String GET_CHILD_PROPERTIES_DATA_DESCR = "getChildPropertiesData";
+   public static final String GET_CHILD_PROPERTIES_DATA_DESCR = "getChildPropertiesData";
 
-   private static final String GET_CHILD_PROPERTIES_DATA_PATTERN_DESCR = "getChildPropertiesDataPattern";
+   public static final String GET_CHILD_PROPERTIES_DATA_PATTERN_DESCR = "getChildPropertiesDataPattern";
 
    /**
     * The description of the statistics corresponding to the method 
@@ -272,7 +275,7 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    {
       if (JDBCWorkspaceDataContainer.STATISTICS_ENABLED)
       {
-         JCRStatisticsManager.registerStatistics("JDBCStorageConnection", GLOBAL_STATISTICS, ALL_STATISTICS);
+         JCRStatisticsManager.registerStatistics(CATEGORY, GLOBAL_STATISTICS, ALL_STATISTICS);
       }
    }
 

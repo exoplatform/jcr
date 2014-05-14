@@ -73,6 +73,9 @@ import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
 import org.exoplatform.services.jcr.impl.core.query.SearchIndexConfigurationHelper;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectoryManager;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
+import org.exoplatform.services.jcr.statistics.JCRStatisticsManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Element;
@@ -98,6 +101,8 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -196,6 +201,17 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * The default value for {@link #indexingThreadPoolSize}
     */
    private static final Integer DEFAULT_INDEXING_THREAD_POOL_SIZE = Runtime.getRuntime().availableProcessors();
+
+   /**
+    * The default value for {@link #indexingLoadBatchingThresholdProperty} and
+    * {@link #indexingLoadBatchingThresholdNode}, knowing that -1 will disable them
+    */
+   private static final int DEFAULT_INDEXING_LOAD_BATCHING_THRESHOLD = -1;
+
+   /**
+    * The default value for {@link #indexingLoadBatchingThresholdTTL}
+    */
+   private static final long DEFAULT_INDEXING_LOAD_BATCHING_THRESHOLD_TTL = 5 * 60 * 1000L;
 
    /** 
     * The default value for {@link #indexRecoveryMode}. 
@@ -550,6 +566,26 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
    protected Integer indexingThreadPoolSize = DEFAULT_INDEXING_THREAD_POOL_SIZE;
 
+   private boolean indexingLoadBatchingThresholdDynamic;
+
+   private long indexingLoadBatchingThresholdTTL;
+
+   private int indexingLoadBatchingThresholdProperty = DEFAULT_INDEXING_LOAD_BATCHING_THRESHOLD;
+
+   private int indexingLoadBatchingThresholdNode = DEFAULT_INDEXING_LOAD_BATCHING_THRESHOLD;
+
+   private boolean indexingLoadPropertyByName;
+
+   /**
+    * This timer is used to update the load batching thresholds when they are enabled and the dynamic mode is enabled too
+    */
+   private static volatile Timer TIMER;
+
+   /**
+    * Task that is periodically called by the timer to update the load batching thresholds according to the statistics
+    */
+   private TimerTask updateLoadBatchingThresholdTask;
+
    /**
     * Working constructor.
     * 
@@ -721,6 +757,140 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       }
 
       modeHandler.addIndexerIoModeListener(this);
+
+      if (indexingLoadBatchingThresholdDynamic
+         && (indexingLoadBatchingThresholdProperty > -1 || indexingLoadBatchingThresholdNode > -1))
+      {
+         // The load batching has been enabled and configured in dynamic mode
+         // We first check if the statistics have been enabled
+         if (JDBCWorkspaceDataContainer.STATISTICS_ENABLED)
+         {
+            // The statistics are enabled so we can initialize the variables
+            if (indexingLoadBatchingThresholdTTL <= 0)
+               indexingLoadBatchingThresholdTTL = DEFAULT_INDEXING_LOAD_BATCHING_THRESHOLD_TTL;
+            log.debug("The statistics have been enabled so the load batching "
+               + "thresholds will be modified dynamically");
+            if (TIMER == null)
+            {
+               synchronized (SearchIndex.class)
+               {
+                  if (TIMER == null)
+                  {
+                     TIMER = new Timer("SearchIndex Update Load Batching Thresholds Timer", true);
+                  }
+               }
+            }
+            scheduleUpdateLoadBatchingThresholdTask();
+         }
+         else
+         {
+            log.debug("The statistics have not been enabled so the load batching "
+               + "thresholds won't be modified dynamically");
+         }
+      }
+      indexingLoadPropertyByName = indexingLoadBatchingThresholdProperty > -1;
+   }
+
+   private void scheduleUpdateLoadBatchingThresholdTask()
+   {
+      // define the updateLoadBatchingThresholdTask
+      updateLoadBatchingThresholdTask = new TimerTask()
+      {
+         @Override
+         public void run()
+         {
+            checkLoadBatchingThresholds();
+         }
+      };
+      // schedule the task
+      TIMER.schedule(updateLoadBatchingThresholdTask, 0, indexingLoadBatchingThresholdTTL);
+   }
+
+   private void unscheduleUpdateLoadBatchingThresholdTask()
+   {
+      if (updateLoadBatchingThresholdTask != null)
+      {
+         // cancel task
+         updateLoadBatchingThresholdTask.cancel();
+         // clear canceled tasks
+         TIMER.purge();
+      }
+   }
+
+   private void checkLoadBatchingThresholds()
+   {
+      float getByIdAvg =
+         JCRStatisticsManager.getAvg(StatisticsJDBCStorageConnection.CATEGORY,
+            StatisticsJDBCStorageConnection.GET_ITEM_DATA_BY_ID_DESCR);
+      if (getByIdAvg <= 0f)
+      {
+         log.debug("Don't have any statistics about '{}' so we cannot go any further for now",
+            StatisticsJDBCStorageConnection.GET_ITEM_DATA_BY_ID_DESCR);
+         return;
+      }
+      float getByNameAvg =
+         JCRStatisticsManager.getAvg(StatisticsJDBCStorageConnection.CATEGORY,
+            StatisticsJDBCStorageConnection.GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR);
+      if (getByNameAvg <= 0f)
+      {
+         log.debug("Don't have any statistics about '{}' so we cannot go any further for now",
+            StatisticsJDBCStorageConnection.GET_ITEM_DATA_BY_NODE_DATA_NQ_PATH_ENTRY_DESCR);
+         return;
+      }
+      log.debug("getByIdAvg = {} and getByNameAvg = {}", getByIdAvg, getByNameAvg);
+      indexingLoadPropertyByName = getByIdAvg >= getByNameAvg;
+      log.debug("The new value of indexingLoadPropertyByName is {}", indexingLoadPropertyByName);
+      if (indexingLoadBatchingThresholdProperty > -1)
+      {
+         float getPropertiesByNameAvg =
+            JCRStatisticsManager.getAvg(StatisticsJDBCStorageConnection.CATEGORY,
+               StatisticsJDBCStorageConnection.GET_CHILD_PROPERTIES_DATA_PATTERN_DESCR);
+         if (getPropertiesByNameAvg <= 0f)
+         {
+            log.debug("Don't have any statistics about '{}' so we cannot go any further for this threshold now",
+               StatisticsJDBCStorageConnection.GET_CHILD_PROPERTIES_DATA_PATTERN_DESCR);
+         }
+         else
+         {
+            log.debug("getPropertiesByNameAvg = {}", getPropertiesByNameAvg);
+            // Total amount of properties we can get individually before taking more time
+            // than a unique query that will get all the properties by their name
+            indexingLoadBatchingThresholdProperty =
+               Math.round(getPropertiesByNameAvg / Math.min(getByIdAvg, getByNameAvg)) + 1;
+            log.debug("The new value of indexingLoadBatchingThresholdProperty is {}",
+               indexingLoadBatchingThresholdProperty);
+         }
+      }
+      if (indexingLoadBatchingThresholdNode > -1)
+      {
+         float getAllPropertiesAvg =
+            JCRStatisticsManager.getAvg(StatisticsJDBCStorageConnection.CATEGORY,
+               StatisticsJDBCStorageConnection.GET_CHILD_PROPERTIES_DATA_DESCR);
+         if (getAllPropertiesAvg <= 0f)
+         {
+            log.debug("Don't have any statistics about '{}' so we cannot go any further for this threshold now",
+               StatisticsJDBCStorageConnection.GET_CHILD_PROPERTIES_DATA_DESCR);
+            return;
+         }
+         float listAllPropertiesAvg =
+            JCRStatisticsManager.getAvg(StatisticsJDBCStorageConnection.CATEGORY,
+               StatisticsJDBCStorageConnection.LIST_CHILD_PROPERTIES_DATA_DESCR);
+         if (listAllPropertiesAvg <= 0f)
+         {
+            log.debug("Don't have any statistics about '{}' so we cannot go any further for this threshold now",
+               StatisticsJDBCStorageConnection.LIST_CHILD_PROPERTIES_DATA_DESCR);
+            return;
+         }
+         log.debug("getAllPropertiesAvg = {} and listAllPropertiesAvg = {}", getAllPropertiesAvg, listAllPropertiesAvg);
+         // Total amount of nodes we can load before taking more time
+         // than a unique query that will get all the properties of the node
+         // knowing that for one node we first by default get the list of all the properties
+         // and then we get at least 4 properties of this node
+         indexingLoadBatchingThresholdNode =
+            Math.round(getAllPropertiesAvg / (listAllPropertiesAvg + 4 * Math.min(getByIdAvg, getByNameAvg))) + 1;
+         log.debug("The new value of indexingLoadBatchingThresholdNode is {}",
+            indexingLoadBatchingThresholdNode);
+      }
    }
 
    /**
@@ -1131,6 +1301,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             return uuid;
          }
       }));
+      final AtomicInteger totalAddedDoc = new AtomicInteger();
       Collection<Document> docsToAdd = IteratorUtils.toList(new TransformIterator(add, new Transformer()
       {
          public Object transform(Object input)
@@ -1140,13 +1311,15 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             {
                return null;
             }
+            boolean loadAllProperties =
+               indexingLoadBatchingThresholdNode > -1 && totalAddedDoc.incrementAndGet() > indexingLoadBatchingThresholdNode;
             String uuid = state.getIdentifier();
             addedNodeIds.add(uuid);
             removedNodeIds.remove(uuid);
             Document doc = null;
             try
             {
-               doc = createDocument(state, getNamespaceMappings(), index.getIndexFormatVersion());
+               doc = createDocument(state, getNamespaceMappings(), index.getIndexFormatVersion(), loadAllProperties);
                retrieveAggregateRoot(state, aggregateRoots);
             }
             catch (RepositoryException e)
@@ -1172,9 +1345,13 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             public Object transform(Object input)
             {
                NodeData state = (NodeData)input;
+               boolean loadAllProperties =
+                  indexingLoadBatchingThresholdNode > -1
+                     && totalAddedDoc.incrementAndGet() > indexingLoadBatchingThresholdNode;
+
                try
                {
-                  return createDocument(state, getNamespaceMappings(), index.getIndexFormatVersion());
+                  return createDocument(state, getNamespaceMappings(), index.getIndexFormatVersion(), loadAllProperties);
                }
                catch (RepositoryException e)
                {
@@ -1293,6 +1470,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             modeHandler.removeIndexerIoModeListener((IndexerIoModeListener)indexUpdateMonitor);
          }
 
+         unscheduleUpdateLoadBatchingThresholdTask();
       }
    }
 
@@ -1597,15 +1775,19 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * @param indexFormatVersion
     *            the index format version that should be used to index the
     *            passed node state.
+    * @param loadAllProperties
+    *            Indicates whether all the properties should be loaded using the method
+    *            {@link ItemDataConsumer#getChildPropertiesData(org.exoplatform.services.jcr.datamodel.NodeData)}
     * @return a lucene <code>Document</code> that contains all properties of
     *         <code>node</code>.
     * @throws RepositoryException
     *             if an error occurs while indexing the <code>node</code>.
     */
-   protected Document createDocument(NodeData node, NamespaceMappings nsMappings, IndexFormatVersion indexFormatVersion)
+   protected Document createDocument(NodeData node, NamespaceMappings nsMappings,
+                                      IndexFormatVersion indexFormatVersion, boolean loadAllProperties)
       throws RepositoryException
    {
-      return createDocument(new NodeDataIndexing(node), nsMappings, indexFormatVersion);
+      return createDocument(new NodeDataIndexing(node), nsMappings, indexFormatVersion, loadAllProperties);
    }
 
    /**
@@ -1619,21 +1801,27 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * @param indexFormatVersion
     *            the index format version that should be used to index the
     *            passed node state.
+    * @param loadAllProperties
+    *            Indicates whether all the properties should be loaded using the method
+    *            {@link ItemDataConsumer#getChildPropertiesData(org.exoplatform.services.jcr.datamodel.NodeData)}
     * @return a lucene <code>Document</code> that contains all properties of
     *         <code>node</code>.
     * @throws RepositoryException
     *             if an error occurs while indexing the <code>node</code>.
     */
    protected Document createDocument(NodeDataIndexing node, NamespaceMappings nsMappings,
-      IndexFormatVersion indexFormatVersion) throws RepositoryException
+      IndexFormatVersion indexFormatVersion, boolean loadAllProperties) throws RepositoryException
    {
       NodeIndexer indexer =
          new NodeIndexer(node, getContext().getItemStateManager(), nsMappings, extractor);
       indexer.setSupportHighlighting(supportHighlighting);
       indexer.setIndexingConfiguration(indexingConfig);
       indexer.setIndexFormatVersion(indexFormatVersion);
+      indexer.setLoadBatchingThreshold(indexingLoadBatchingThresholdProperty);
+      indexer.setLoadPropertyByName(indexingLoadPropertyByName);
+      indexer.setLoadAllProperties(loadAllProperties);
       Document doc = indexer.createDoc();
-      mergeAggregatedNodeIndexes(node, doc);
+      mergeAggregatedNodeIndexes(node, doc, loadAllProperties);
       return doc;
    }
 
@@ -1896,8 +2084,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *            the node state on which <code>doc</code> was created.
     * @param doc
     *            the lucene document with index fields from <code>state</code>.
+    * @param loadAllProperties
+    *            Indicates whether all the properties should be loaded using the method
+    *            {@link ItemDataConsumer#getChildPropertiesData(org.exoplatform.services.jcr.datamodel.NodeData)}
     */
-   protected void mergeAggregatedNodeIndexes(NodeData state, Document doc)
+   protected void mergeAggregatedNodeIndexes(NodeData state, Document doc, boolean loadAllProperties)
    {
       if (indexingConfig != null)
       {
@@ -1920,7 +2111,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                   for (int j = 0; j < aggregates.length; j++)
                   {
                      Document aDoc =
-                        createDocument(aggregates[j], getNamespaceMappings(), index.getIndexFormatVersion());
+                        createDocument(aggregates[j], getNamespaceMappings(), index.getIndexFormatVersion(), loadAllProperties);
                      // transfer fields to doc if there are any
                      Fieldable[] fulltextFields = aDoc.getFieldables(FieldNames.FULLTEXT);
                      if (fulltextFields != null)
@@ -1946,7 +2137,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                         FieldNames.createNamedValue(getNamespaceMappings()
                            .translateName(propState.getQPath().getName()), "");
                      NodeData parent = (NodeData)ism.getItemData(propState.getParentIdentifier());
-                     Document aDoc = createDocument(parent, getNamespaceMappings(), getIndex().getIndexFormatVersion());
+                     Document aDoc =
+                        createDocument(parent, getNamespaceMappings(), getIndex().getIndexFormatVersion(),
+                           loadAllProperties);
                      try
                      {
                         // find the right fields to transfer
@@ -3387,6 +3580,70 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public void setIndexingThreadPoolSize(Integer indexingThreadPoolSize)
    {
       this.indexingThreadPoolSize = indexingThreadPoolSize;
+   }
+
+   /**
+    * @return the indexingLoadBatchingThresholdDynamic
+    */
+   public boolean isIndexingLoadBatchingThresholdDynamic()
+   {
+      return indexingLoadBatchingThresholdDynamic;
+   }
+
+   /**
+    * @param indexingLoadBatchingThresholdDynamic the indexingLoadBatchingThresholdDynamic to set
+    */
+   public void setIndexingLoadBatchingThresholdDynamic(boolean indexingLoadBatchingThresholdDynamic)
+   {
+      this.indexingLoadBatchingThresholdDynamic = indexingLoadBatchingThresholdDynamic;
+   }
+
+   /**
+    * @return the indexingLoadBatchingThresholdTTL
+    */
+   public long getIndexingLoadBatchingThresholdTTL()
+   {
+      return indexingLoadBatchingThresholdTTL;
+   }
+
+   /**
+    * @param indexingLoadBatchingThresholdTTL the indexingLoadBatchingThresholdTTL to set
+    */
+   public void setIndexingLoadBatchingThresholdTTL(long indexingLoadBatchingThresholdTTL)
+   {
+      this.indexingLoadBatchingThresholdTTL = indexingLoadBatchingThresholdTTL;
+   }
+
+   /**
+    * @return the indexingLoadBatchingThresholdProperty
+    */
+   public int getIndexingLoadBatchingThresholdProperty()
+   {
+      return indexingLoadBatchingThresholdProperty;
+   }
+
+   /**
+    * @param indexingLoadBatchingThresholdProperty the indexingLoadBatchingThresholdProperty to set
+    */
+   public void setIndexingLoadBatchingThresholdProperty(int indexingLoadBatchingThresholdProperty)
+   {
+      this.indexingLoadBatchingThresholdProperty = indexingLoadBatchingThresholdProperty;
+   }
+
+   /**
+    * @return the indexingLoadBatchingThresholdNode
+    */
+   public int getIndexingLoadBatchingThresholdNode()
+   {
+      return indexingLoadBatchingThresholdNode;
+   }
+
+   /**
+    * @param indexingLoadBatchingThresholdNode the indexingLoadBatchingThresholdNode to set
+    */
+   public void setIndexingLoadBatchingThresholdNode(int indexingLoadBatchingThresholdNode)
+   {
+      this.indexingLoadBatchingThresholdNode = indexingLoadBatchingThresholdNode;
    }
 
    /**

@@ -19,8 +19,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.index.CorruptIndexException;
 import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.IndexWriter;
+import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.store.Directory;
@@ -1588,7 +1588,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    Document createDocument(NodeDataIndexing node) throws RepositoryException
    {
-      return handler.createDocument(node, nsMappings, version);
+      return handler.createDocument(node, nsMappings, version, true);
    }
 
    /**

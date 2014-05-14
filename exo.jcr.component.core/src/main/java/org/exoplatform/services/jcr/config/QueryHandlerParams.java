@@ -117,4 +117,15 @@ public interface QueryHandlerParams
    
    public static final String PARAM_INDEXING_THREAD_POOL_SIZE = "indexing-thread-pool-size";
 
+   public static final String PARAM_INDEXING_LOAD_BATCHING_THRESHOLD_DYNAMIC =
+      "indexing-load-batching-threshold-dynamic";
+
+   public static final String PARAM_INDEXING_LOAD_BATCHING_THRESHOLD_TTL =
+      "indexing-load-batching-threshold-ttl";
+
+   public static final String PARAM_INDEXING_LOAD_BATCHING_THRESHOLD_PROPERTY =
+      "indexing-load-batching-threshold-property";
+
+   public static final String PARAM_INDEXING_LOAD_BATCHING_THRESHOLD_NODE = "indexing-load-batching-threshold-node";
+
 }

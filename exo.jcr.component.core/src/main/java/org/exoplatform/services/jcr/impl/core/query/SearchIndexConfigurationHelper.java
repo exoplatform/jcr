@@ -210,6 +210,22 @@ public class SearchIndexConfigurationHelper
       {
          searchIndex.setIndexingThreadPoolSize(Integer.parseInt(value));
       }
+      else if (QueryHandlerParams.PARAM_INDEXING_LOAD_BATCHING_THRESHOLD_DYNAMIC.equals(name))
+      {
+         searchIndex.setIndexingLoadBatchingThresholdDynamic(Boolean.valueOf(value));
+      }
+      else if (QueryHandlerParams.PARAM_INDEXING_LOAD_BATCHING_THRESHOLD_TTL.equals(name))
+      {
+         searchIndex.setIndexingLoadBatchingThresholdTTL(StringNumberParser.parseTime(value));
+      }
+      else if (QueryHandlerParams.PARAM_INDEXING_LOAD_BATCHING_THRESHOLD_PROPERTY.equals(name))
+      {
+         searchIndex.setIndexingLoadBatchingThresholdProperty(Integer.parseInt(value));
+      }
+      else if (QueryHandlerParams.PARAM_INDEXING_LOAD_BATCHING_THRESHOLD_NODE.equals(name))
+      {
+         searchIndex.setIndexingLoadBatchingThresholdNode(Integer.parseInt(value));
+      }
       else
       {
          searchIndex.addOptionalParameter(name, value);
