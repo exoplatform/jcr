@@ -68,6 +68,10 @@
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
                      <property name="index-dir" value="target/temp/index/db1/ws" />
+                     <property name="indexing-load-batching-threshold-node" value="5" />
+                     <property name="indexing-load-batching-threshold-property" value="10" />
+                     <property name="indexing-load-batching-threshold-dynamic" value="true" />
+                     <property name="indexing-load-batching-threshold-ttl" value="15s" />
                    </properties>
                </query-handler>
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
@@ -83,7 +87,7 @@
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
-               </lock-manager>            
+               </lock-manager>
             </workspace>
 
             <workspace name="ws1">
@@ -122,6 +126,8 @@
                      <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+                     <property name="indexing-load-batching-threshold-node" value="5" />
+                     <property name="indexing-load-batching-threshold-property" value="10" />
                   </properties>
                </query-handler>
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
@@ -137,7 +143,7 @@
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr1" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
-               </lock-manager>                            
+               </lock-manager>
             </workspace>
 
             <workspace name="ws2" lazy-read-threshold="1">
@@ -176,6 +182,8 @@
                      <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+                     <property name="indexing-load-batching-threshold-node" value="5" />
+                     <property name="indexing-load-batching-threshold-property" value="10" />
                   </properties>
                </query-handler>
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
@@ -191,7 +199,7 @@
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr2" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
-               </lock-manager>                              
+               </lock-manager>
             </workspace>
             
             <workspace name="ws3">
@@ -253,6 +261,8 @@
                      <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+                     <property name="indexing-load-batching-threshold-node" value="5" />
+                     <property name="indexing-load-batching-threshold-property" value="10" />
                   </properties>
                </query-handler>
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
@@ -268,7 +278,7 @@
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr3" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
-               </lock-manager>                               
+               </lock-manager>
             </workspace>
          </workspaces>
       </repository>
@@ -317,6 +327,8 @@
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
                      <property name="index-dir" value="target/temp/index/db2/ws" />
+                     <property name="indexing-load-batching-threshold-node" value="5" />
+                     <property name="indexing-load-batching-threshold-property" value="10" />
                   </properties>
                </query-handler>
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
@@ -332,7 +344,7 @@
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
-               </lock-manager>                              
+               </lock-manager>
             </workspace>
 
             <workspace name="ws1">
@@ -371,6 +383,8 @@
                <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
                   <properties>
                      <property name="index-dir" value="target/temp/index/db2/ws1" />
+                     <property name="indexing-load-batching-threshold-node" value="5" />
+                     <property name="indexing-load-batching-threshold-property" value="10" />
                   </properties>
                </query-handler>
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
@@ -386,7 +400,7 @@
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr1db2" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
-               </lock-manager>  
+               </lock-manager>
             </workspace>
          </workspaces>
       </repository>
@@ -443,6 +457,8 @@
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.WeightedHTMLExcerpt" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+                     <property name="indexing-load-batching-threshold-node" value="5" />
+                     <property name="indexing-load-batching-threshold-property" value="10" />
                   </properties>
                </query-handler>
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
@@ -458,7 +474,7 @@
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
-               </lock-manager>                
+               </lock-manager>
             </workspace>
 
             <workspace name="ws1">
@@ -503,6 +519,8 @@
                      <property name="indexing-configuration-path" value="../../indexing-configuration.xml" />
                      <property name="query-class" value="org.exoplatform.services.jcr.impl.core.query.QueryImpl" />
                      <property name="spellchecker-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.spell.LuceneSpellChecker$FiveSecondsRefreshInterval" />
+                     <property name="indexing-load-batching-threshold-node" value="5" />
+                     <property name="indexing-load-batching-threshold-property" value="10" />
                   </properties>
                </query-handler>
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
@@ -518,7 +536,7 @@
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr1tck" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
-               </lock-manager>  
+               </lock-manager>
             </workspace>
 
             <workspace name="ws2">
@@ -566,6 +584,8 @@
                      <property name="excerptprovider-class" value="org.exoplatform.services.jcr.impl.core.query.lucene.WeightedHTMLExcerpt"/>
                      <property name="extractorPoolSize" value="2"/>
                      <property name="extractorTimeout" value="10"/>
+                     <property name="indexing-load-batching-threshold-node" value="5" />
+                     <property name="indexing-load-batching-threshold-property" value="10" />
                   </properties>
                </query-handler>
                <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
@@ -581,7 +601,7 @@
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr2tck" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" />
                   </properties>
-               </lock-manager>                  
+               </lock-manager>
             </workspace>
          </workspaces>
       </repository>

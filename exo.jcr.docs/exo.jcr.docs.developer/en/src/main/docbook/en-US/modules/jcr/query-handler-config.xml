@@ -253,6 +253,63 @@
               <entry>The maximum volatile index size in bytes until it is
               written to disk. The default value is 1048576 (1MB).</entry>
             </row>
+
+            <row>
+              <entry>indexing-load-batching-threshold-property</entry>
+
+              <entry>The total amount of properties from which the application
+              will decide to get by name all the properties of a node to be
+              indexed using one single query instead of one query per
+              property. The query used is the equivalent of
+              <emphasis>getProperties(String namePattern)</emphasis>. The
+              default value is -1 which actually disables this feature. The
+              expected value is an integer.</entry>
+            </row>
+
+            <row>
+              <entry>indexing-load-batching-threshold-node</entry>
+
+              <entry>The total amount of nodes to index within the same
+              transaction from which the application will decide to get all
+              the properties of the remaining nodes to be indexed using one
+              single query instead of one query per property and a query that
+              will get the list of properties. The query used is the
+              equivalent of <emphasis>getProperties()</emphasis>. The default
+              value is -1 which actually disables this feature. The expected
+              value is an integer.</entry>
+            </row>
+
+            <row>
+              <entry>indexing-load-batching-threshold-dynamic</entry>
+
+              <entry>In case
+              <emphasis>indexing-load-batching-threshold-property</emphasis>
+              and/or
+              <emphasis>indexing-load-batching-threshold-node</emphasis> have
+              been enabled, you could expect to see the thresholds to be
+              updated automatically in order to better match with the current
+              performances of the database used. This is possible if you set
+              this parameter to <emphasis>true</emphasis> knowing that the
+              default value is <emphasis>false</emphasis> and if you enable
+              the JCR statistics. Based on the JCR statistics, the application
+              will be able to set the best possible values for your thresholds
+              to get the best possible performances.</entry>
+            </row>
+
+            <row>
+              <entry>indexing-load-batching-threshold-ttl</entry>
+
+              <entry>In case
+              <emphasis>indexing-load-batching-threshold-property</emphasis>
+              and/or
+              <emphasis>indexing-load-batching-threshold-node</emphasis>,
+              <emphasis>indexing-load-batching-threshold-dynamic</emphasis>
+              and the JCR statistics have been enabled, the application will
+              regularily update if needed the thresholds. This parameter
+              defines the periodicity of the task that will update the
+              thresholds. The default value is 5 minutes. The expected value
+              is a time expressed in milliseconds.</entry>
+            </row>
           </tbody>
         </tgroup>
       </table>

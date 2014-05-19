@@ -237,28 +237,28 @@ public class StringNumberParser
       }
       else if (text.endsWith("s"))
       {
-         return Long.valueOf(text) * 1000;
+         return Long.valueOf(text.substring(0, text.length() - 1)) * 1000L;
       }
       else if (text.endsWith("m"))
       {
-         return Long.valueOf(text.substring(0, text.length() - 1)) * 60000; // 1000 * 60
+         return Long.valueOf(text.substring(0, text.length() - 1)) * 60000L; // 1000 * 60
       }
       else if (text.endsWith("h"))
       {
-         return Long.valueOf(text.substring(0, text.length() - 1)) * 3600000; // 1000 * 60 * 60
+         return Long.valueOf(text.substring(0, text.length() - 1)) * 3600000L; // 1000 * 60 * 60
       }
       else if (text.endsWith("d"))
       {
-         return Long.valueOf(text.substring(0, text.length() - 1)) * 86400000; // 1000 * 60 * 60 * 24
+         return Long.valueOf(text.substring(0, text.length() - 1)) * 86400000L; // 1000 * 60 * 60 * 24
       }
       else if (text.endsWith("w"))
       {
-         return Long.valueOf(text.substring(0, text.length() - 1)) * 604800000; // 1000 * 60 * 60 * 24
+         return Long.valueOf(text.substring(0, text.length() - 1)) * 604800000L; // 1000 * 60 * 60 * 24
          // * 7
       }
       else
       { // seconds by default
-         return Long.valueOf(text) * 1000;
+         return Long.valueOf(text) * 1000L;
       }
    }
 

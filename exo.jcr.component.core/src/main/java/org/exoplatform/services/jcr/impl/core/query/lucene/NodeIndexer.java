@@ -34,6 +34,8 @@ import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
+import org.exoplatform.services.jcr.impl.core.itemfilters.ExactQPathEntryFilter;
+import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -117,6 +119,12 @@ public class NodeIndexer
     */
    protected List<Fieldable> doNotUseInExcerpt = new ArrayList<Fieldable>();
 
+   private int loadBatchingThreshold = -1;
+
+   private boolean loadAllProperties;
+
+   private boolean loadPropertyByName;
+
    /**
     * Creates a new node indexer.
     *
@@ -173,6 +181,36 @@ public class NodeIndexer
    public void setIndexingConfiguration(IndexingConfiguration config)
    {
       this.indexingConfig = config;
+   }
+
+   /**
+    * Sets the threshold from which we decide to load all the properties at the same time
+    * instead of loading them individually. This is needed for performance reasons because
+    * if you don't have a lot of properties it is faster to get them individually, starting
+    * from a given limit it is better to load all the properties to avoid doing too many queries
+    * 
+    * @param loadBatchingThreshold the value of the threshold.
+    */
+   public void setLoadBatchingThreshold(int loadBatchingThreshold)
+   {
+      this.loadBatchingThreshold = loadBatchingThreshold;
+   }
+
+   /**
+    * Indicates whether or not all the properties should be loaded using the method
+    * {@link ItemDataConsumer#getChildPropertiesData(org.exoplatform.services.jcr.datamodel.NodeData)}
+    */
+   public void setLoadAllProperties(boolean loadAllProperties)
+   {
+      this.loadAllProperties = loadAllProperties;
+   }
+
+   /**
+    * Indicates whether a property should be loaded by name or by id when we need to load a property one by one
+    */
+   public void setLoadPropertyByName(boolean loadPropertyByName)
+   {
+      this.loadPropertyByName = loadPropertyByName;
    }
 
    /**
@@ -235,7 +273,27 @@ public class NodeIndexer
       Collection<PropertyData> props = node.getChildPropertiesData();
       if (props == null)
       {
-         props = stateProvider.listChildPropertiesData(node);
+         if (loadAllProperties) 
+         {
+            props = stateProvider.getChildPropertiesData(node);
+         }
+         else
+         {
+            props = stateProvider.listChildPropertiesData(node);
+            if (loadBatchingThreshold > -1 && props.size() > loadBatchingThreshold)
+            {
+               // The limit of properties to load individually has been reached so we perform
+               // a batch loading
+               List<QPathEntryFilter> filters = new ArrayList<QPathEntryFilter>(props.size());
+               for (final PropertyData prop : props)
+               {
+                  filters.add(new ExactQPathEntryFilter(new QPathEntry(prop.getQPath().getName(), 0)));
+               }
+               // We use stateProvider.getChildPropertiesData(node, filters) instead of stateProvider.getChildPropertiesData(node)
+               // because we want to get the properties from the cache if they are available
+               props = stateProvider.getChildPropertiesData(node, filters);
+            }
+         }
       }
 
       for (final PropertyData prop : props)
@@ -489,11 +547,13 @@ public class NodeIndexer
          {
             // if the prop obtainer from cache it will contains a values, otherwise
             // read prop with values from DM
-            // WARN. DON'T USE access item BY PATH - it's may be a node in case of
-            // residual definitions in NT
+            // We access to the Item by path to avoid having to rebuild the path if needed in case
+            // the indexingLoadBatchingThreshold is enabled only otherwise we get it from the id like
+            // before
             PropertyData propData =
-               prop.getValues() != null && !prop.getValues().isEmpty() ? prop : (PropertyData)stateProvider
-                  .getItemData(prop.getIdentifier());
+               prop.getValues() != null && !prop.getValues().isEmpty() ? prop : (PropertyData)(loadPropertyByName
+                  ? stateProvider.getItemData(node, new QPathEntry(prop.getQPath().getName(), 0), ItemType.PROPERTY)
+                  : stateProvider.getItemData(prop.getIdentifier()));
 
             List<ValueData> data;
             if (propData == null || (data = propData.getValues()) == null || data.isEmpty())
