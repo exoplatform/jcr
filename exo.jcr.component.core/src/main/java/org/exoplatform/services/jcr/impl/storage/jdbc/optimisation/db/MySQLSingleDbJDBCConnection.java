@@ -99,6 +99,17 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
       {
          FIND_LAST_ORDER_NUMBER_BY_PARENTID = "SELECT " + JCR_ITEM_NEXT_VAL + "('LAST_N_ORDER_NUM') as nextVal";
       }
+
+      FIND_NODES_BY_PARENTID_CQ =
+         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I force index ("+JCR_IDX_ITEM_N_ORDER_NUM
+            + "),JCR_SITEM P force index ("+ JCR_IDX_ITEM_PARENT_NAME +") , JCR_SVALUE V force index ("
+            + JCR_IDX_VALUE_PROPERTY + ") where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and"
+            + " P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
    }
 
    /**
