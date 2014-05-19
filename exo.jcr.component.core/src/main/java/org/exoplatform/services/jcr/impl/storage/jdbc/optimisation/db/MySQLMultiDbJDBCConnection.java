@@ -100,13 +100,9 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
       }
 
       FIND_NODES_BY_PARENTID_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_ITEM + " I force index ("+JCR_IDX_ITEM_N_ORDER_NUM
-            + "), " + JCR_ITEM  + " P force index(" + JCR_IDX_ITEM_PARENT_NAME + "), "+ JCR_VALUE + " V force index ("+JCR_IDX_VALUE_PROPERTY
-            + ")  where I.I_CLASS=1 and I.PARENT_ID=? and P.I_CLASS=2 and P.PARENT_ID=I.ID and"
-            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes'"
-            + " or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
-            + " or P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
-            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+         FIND_NODES_BY_PARENTID_CQ.replace("from " + JCR_ITEM + " I, " + JCR_ITEM + " P, " + JCR_VALUE + " V", "from "
+            + JCR_ITEM + " I force index (" + JCR_IDX_ITEM_N_ORDER_NUM + "), " + JCR_ITEM + " P force index("
+            + JCR_IDX_ITEM_PARENT_NAME + "), " + JCR_VALUE + " V force index (" + JCR_IDX_VALUE_PROPERTY + ")");
    }
 
    /**
