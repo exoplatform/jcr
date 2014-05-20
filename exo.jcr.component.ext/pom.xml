@@ -468,7 +468,7 @@
          </dependencies>
       </profile>
       <profile>
-         <id>db2</id>
+         <id>db2-9.7</id>
          <properties>
             <properties.url.prefix>classpath:/conf/standalone/db2</properties.url.prefix>
          </properties>
@@ -483,6 +483,26 @@
                <groupId>com.ibm.db2</groupId>
                <artifactId>db2jcc_license_cu</artifactId>
                <version>9.7</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
+         <id>db2-10.1</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/db2</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>com.ibm.db2</groupId>
+               <artifactId>db2jcc4</artifactId>
+               <version>10.1</version>
+               <scope>test</scope>
+            </dependency>
+            <dependency>
+               <groupId>com.ibm.db2</groupId>
+               <artifactId>db2jcc_license_cu</artifactId>
+               <version>10.1</version>
                <scope>test</scope>
             </dependency>
          </dependencies>
