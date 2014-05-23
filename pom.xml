@@ -140,6 +140,13 @@
         <version>${org.exoplatform.ws.version}</version>
       </dependency>
       <dependency>
+         <groupId>org.exoplatform.jcr</groupId>
+         <artifactId>jcr-parent</artifactId>
+         <version>${project.version}</version>
+         <classifier>source-release</classifier>
+         <type>zip</type>
+      </dependency>
+      <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.component.ext</artifactId>
         <version>${project.version}</version>
