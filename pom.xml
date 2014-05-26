@@ -31,7 +31,7 @@
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.15.9-GA-SNAPSHOT</version>
+  <version>1.15.10-GA-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo JCR</name>
   <description>Exoplatform SAS 'eXo JCR'(JSR-170 implementation) project.</description>
@@ -45,11 +45,11 @@
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.15</exo.product.specification>
-    <org.exoplatform.kernel.version>2.4.9-GA-SNAPSHOT</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>2.5.9-GA-SNAPSHOT</org.exoplatform.core.version>
-    <org.exoplatform.ws.version>2.3.9-GA-SNAPSHOT</org.exoplatform.ws.version>
+    <org.exoplatform.kernel.version>2.4.9-GA</org.exoplatform.kernel.version>
+    <org.exoplatform.core.version>2.5.9-GA</org.exoplatform.core.version>
+    <org.exoplatform.ws.version>2.3.9-GA</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
-    <org.exoplatform.doc.doc-style.version>4.0.x-SNAPSHOT</org.exoplatform.doc.doc-style.version>
+    <org.exoplatform.doc.doc-style.version>4.0.6</org.exoplatform.doc.doc-style.version>
   </properties>
 
 
