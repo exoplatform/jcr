@@ -339,4 +339,152 @@ public class TestAddNode extends JcrAPIBaseTest
       session.save();
 
    }
+
+   public void testCheckMandatoryField() throws Exception
+   {
+      root.addNode("testCheckMandatoryField", "exo:JCR_2307");
+      try
+      {
+         session.save();
+         fail("A ConstraintViolationException is expected as the mandatory property 'exo:mandatoryfield' has not been set");
+      }
+      catch (ConstraintViolationException e)
+      {
+         // expected exception
+      }
+      session.refresh(false);
+
+      Node parent = root.addNode("testCheckMandatoryField", "exo:JCR_2307");
+      // Add a child node with a random name
+      parent.addNode("foo", "nt:unstructured");
+      try
+      {
+         session.save();
+         fail("A ConstraintViolationException is expected as the mandatory property 'exo:mandatoryfield' has not been set");
+      }
+      catch (ConstraintViolationException e)
+      {
+         // expected exception
+      }
+      session.refresh(false);
+
+      parent = root.addNode("testCheckMandatoryField", "exo:JCR_2307");
+      // Add a child node with the same name as mandatory field
+      parent.addNode("exo:mandatoryfield", "nt:unstructured");
+      try
+      {
+         session.save();
+         fail("A ConstraintViolationException is expected as the mandatory property 'exo:mandatoryfield' has not been set");
+      }
+      catch (ConstraintViolationException e)
+      {
+         // expected exception
+      }
+      session.refresh(false);
+
+      parent = root.addNode("testCheckMandatoryField", "exo:JCR_2307");
+      parent.setProperty("exo:mandatoryfield", "foo");
+      session.save();
+
+      parent = root.addNode("testCheckMandatoryField", "exo:JCR_2307");
+      parent.setProperty("exo:mandatoryfield", "foo");
+      // Add a child node with a random name
+      parent.addNode("foo", "nt:unstructured");
+      session.save();
+
+      parent = root.addNode("testCheckMandatoryField", "exo:JCR_2307");
+      parent.setProperty("exo:mandatoryfield", "foo");
+      // Add a child node with the same name as mandatory field
+      parent.addNode("exo:mandatoryfield", "nt:unstructured");
+      session.save();
+
+      //Make sure that it can still fail after some successes
+      parent = root.addNode("testCheckMandatoryField", "exo:JCR_2307");
+      // Add a child node with the same name as mandatory field
+      parent.addNode("exo:mandatoryfield", "nt:unstructured");
+      try
+      {
+         session.save();
+         fail("A ConstraintViolationException is expected as the mandatory property 'exo:mandatoryfield' has not been set");
+      }
+      catch (ConstraintViolationException e)
+      {
+         // expected exception
+      }
+      session.refresh(false);
+   }
+
+   public void testCheckMandatoryNode() throws Exception
+   {
+      root.addNode("testCheckMandatoryNode", "exo:JCR_2307_2");
+      try
+      {
+         session.save();
+         fail("A ConstraintViolationException is expected as the mandatory node 'exo:mandatorySubNode' has not been added");
+      }
+      catch (ConstraintViolationException e)
+      {
+         // expected exception
+      }
+      session.refresh(false);
+
+      Node parent = root.addNode("testCheckMandatoryNode", "exo:JCR_2307_2");
+      // Set a property with a random name
+      parent.setProperty("foo", "bar");
+      try
+      {
+         session.save();
+         fail("A ConstraintViolationException is expected as the mandatory node 'exo:mandatorySubNode' has not been added");
+      }
+      catch (ConstraintViolationException e)
+      {
+         // expected exception
+      }
+      session.refresh(false);
+
+      parent = root.addNode("testCheckMandatoryNode", "exo:JCR_2307_2");
+      // Add a property with the same name as mandatory node
+      parent.setProperty("exo:mandatorySubNode", "bar");
+      try
+      {
+         session.save();
+         fail("A ConstraintViolationException is expected as the mandatory node 'exo:mandatorySubNode' has not been added");
+      }
+      catch (ConstraintViolationException e)
+      {
+         // expected exception
+      }
+      session.refresh(false);
+
+      parent = root.addNode("testCheckMandatoryNode", "exo:JCR_2307_2");
+      parent.addNode("exo:mandatorySubNode");
+      session.save();
+
+      parent = root.addNode("testCheckMandatoryNode", "exo:JCR_2307_2");
+      parent.addNode("exo:mandatorySubNode");
+      // Add a property with a random name
+      parent.setProperty("foo", "bar");
+      session.save();
+
+      parent = root.addNode("testCheckMandatoryNode", "exo:JCR_2307_2");
+      parent.addNode("exo:mandatorySubNode", "nt:unstructured");
+      // Add a property with the same name as mandatory node
+      parent.setProperty("exo:mandatorySubNode", "foo");
+      session.save();
+
+      //Make sure that it can still fail after some successes
+      parent = root.addNode("testCheckMandatoryNode", "exo:JCR_2307_2");
+      // Add a property with the same name as mandatory node
+      parent.setProperty("exo:mandatorySubNode", "bar");
+      try
+      {
+         session.save();
+         fail("A ConstraintViolationException is expected as the mandatory node 'exo:mandatorySubNode' has not been added");
+      }
+      catch (ConstraintViolationException e)
+      {
+         // expected exception
+      }
+      session.refresh(false);
+   }
 }

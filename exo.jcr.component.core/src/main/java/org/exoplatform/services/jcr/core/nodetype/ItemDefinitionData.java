@@ -30,7 +30,7 @@ import org.exoplatform.services.jcr.impl.Constants;
  * @version $Id: ItemDefinitionData.java 26474 2009-01-09 16:15:25Z ksm $
  * @LevelAPI Unsupported
  */
-public class ItemDefinitionData
+public abstract class ItemDefinitionData
 {
 
    protected final InternalQName name;
@@ -177,4 +177,10 @@ public class ItemDefinitionData
       return name.getAsString();
    }
 
+   /**
+    * Indicates whether it is a node or a property definition
+    * @return <code>true</code> if it is a node definition, <code>false</code>
+    * if it is a property definition
+    */
+   public abstract boolean isNodeDefinition();
 }
