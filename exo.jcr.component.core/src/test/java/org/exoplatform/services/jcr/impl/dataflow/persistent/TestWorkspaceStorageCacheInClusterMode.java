@@ -181,7 +181,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          assertNotNull(cwdmNode1.getReferencesData(parentNode.getIdentifier(), false));
          assertEquals(2, cwdmNode1.getReferencesData(parentNode.getIdentifier(), false).size());
          assertNotNull(cwdmNode2.getReferencesData(parentNode.getIdentifier(), false));
-         assertEquals(2, cwdmNode2.getReferencesData(parentNode.getIdentifier(), false).size()); 
+         assertEquals(2, cwdmNode2.getReferencesData(parentNode.getIdentifier(), false).size());
          
          // Test getItemData by Id
          readAction = new Action(cwdmNode2)
@@ -215,7 +215,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          assertNotNull(cwdmNode1.getItemData(parentNode.getIdentifier()));
          assertEquals(2, cwdmNode1.getItemData(parentNode.getIdentifier()).getPersistedVersion());
          assertNotNull(cwdmNode2.getItemData(parentNode.getIdentifier()));
-         assertEquals(2, cwdmNode2.getItemData(parentNode.getIdentifier()).getPersistedVersion()); 
+         assertEquals(2, cwdmNode2.getItemData(parentNode.getIdentifier()).getPersistedVersion());
          
          // Test getItemData by Path
          final QPathEntry qpe = new QPathEntry(null, "my-property", 1);
@@ -510,7 +510,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             }
          }
       }
-   }   
+   }
    
    protected void finalize(T cache)
    {
@@ -582,7 +582,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
       startSignal.countDown();
       doneSignal.await();
       assertNull(ex.get());
-   }   
+   }
 
    private abstract class Action
    {
@@ -608,7 +608,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
       private boolean itemDeleted;
       
       public MyWorkspaceStorageConnection()
-      {         
+      {
       }
       
       public MyWorkspaceStorageConnection(boolean canModify)
@@ -705,9 +705,9 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          if (!canModify || !itemDeleted)
          {
             children.add(new PersistedNodeData("id-node2" + parentNode.getIdentifier(), QPath.makeChildPath(parent.getQPath(), new InternalQName(null, "node2")), parent.getIdentifier(), 1, 0,
-               Constants.NT_UNSTRUCTURED, new InternalQName[0], null));            
+               Constants.NT_UNSTRUCTURED, new InternalQName[0], null));
          }
-         if (canModify && itemAdded != null)
+         if (itemAdded != null)
          {
             children.add((NodeData)itemAdded);
          }
@@ -735,9 +735,9 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             {
                children.add(new PersistedPropertyData("id-property2" + parentNode.getIdentifier(), QPath.makeChildPath(
                   parentNode.getQPath(), new InternalQName(null, "property2")), parentNode.getIdentifier(), 0,
-                  PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8")))));               
+                  PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8")))));
             }
-            if (canModify && itemAdded != null)
+            if (itemAdded != null)
             {
                children.add((PropertyData)itemAdded);
             }
@@ -770,7 +770,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             {
                children.add(new PersistedPropertyData("id-property2" + parentNode.getIdentifier(), QPath.makeChildPath(
                   parentNode.getQPath(), new InternalQName(null, "my-property2")), parentNode.getIdentifier(), 0,
-                  PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8")))));               
+                  PropertyType.STRING, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, "some data".getBytes("UTF-8")))));
             }
             if (canModify && itemAdded != null)
             {
@@ -853,7 +853,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
 
       public List<PropertyData> getReferencesData(String nodeIdentifier) throws RepositoryException,
          IllegalStateException, UnsupportedOperationException
-      {        
+      {
          if (wait.get() != null && wait.get())
          {
             try
@@ -872,12 +872,12 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
             {
                children.add(new PersistedPropertyData("id-reference2" + parentNode.getIdentifier(), QPath.makeChildPath(
                   parentNode.getQPath(), new InternalQName(null, "reference2")), parentNode.getIdentifier(), 0,
-                  PropertyType.REFERENCE, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, parentNode.getIdentifier().getBytes("UTF-8")))));               
+                  PropertyType.REFERENCE, false, Arrays.asList((ValueData)new ByteArrayPersistedValueData(0, parentNode.getIdentifier().getBytes("UTF-8")))));
             }
-            if (canModify && itemAdded != null)
+            if (itemAdded != null)
             {
                children.add((PropertyData)itemAdded);
-            }            
+            }
          }
          catch (UnsupportedEncodingException e)
          {
@@ -942,7 +942,7 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          if (!canModify || !itemDeleted)
          {
             children.add(new PersistedNodeData("my-node" + parent.getIdentifier(), QPath.makeChildPath(parent.getQPath(), new QName("","my-node"), 1), parent.getIdentifier(), 1, 1,
-               Constants.NT_UNSTRUCTURED, new InternalQName[0], null));            
+               Constants.NT_UNSTRUCTURED, new InternalQName[0], null));
          }
          if (canModify && itemAdded != null)
          {
@@ -976,7 +976,6 @@ public abstract class TestWorkspaceStorageCacheInClusterMode<T extends Workspace
          throw new UnsupportedOperationException();
       }
 
-      @Override
       public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
          IllegalStateException
       {

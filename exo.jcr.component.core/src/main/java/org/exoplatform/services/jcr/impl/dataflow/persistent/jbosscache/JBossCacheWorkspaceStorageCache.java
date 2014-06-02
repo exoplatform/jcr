@@ -1635,8 +1635,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                ITEM_LIST, node);
             cache.addToList(makeChildListFqn(childNodesList, node.getParentIdentifier()), ITEM_LIST,
                node.getIdentifier(), modifyListsOfChild == ModifyChildOption.FORCE_MODIFY);
-
-            cache.removeNode(makeChildListFqn(childNodesByPageList, node.getParentIdentifier()));
+            cache.invalidateNode(makeChildListFqn(childNodesByPageList, node.getParentIdentifier()));
          }
       }
 
@@ -1795,7 +1794,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
                PATTERN_OBJ, ITEM_LIST, item);
 
             // remove from CHILD_NODES_BY_PAGE_LIST of parent
-            cache.removeNode(makeChildListFqn(childNodesByPageList, item.getParentIdentifier()));
+            cache.invalidateNode(makeChildListFqn(childNodesByPageList, item.getParentIdentifier()));
          }
 
          // remove from CHILD_NODES as parent

@@ -1528,6 +1528,20 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public int getLastOrderNumber(final NodeData nodeData) throws RepositoryException
+   {
+      return executeAction(new PrivilegedExceptionAction<Integer>()
+      {
+         public Integer run() throws RepositoryException
+         {
+            return CacheableWorkspaceDataManager.super.getLastOrderNumber(nodeData);
+         }
+      });
+   }
+
+   /**
     * Get referenced properties data.
     * 
     * @param identifier
