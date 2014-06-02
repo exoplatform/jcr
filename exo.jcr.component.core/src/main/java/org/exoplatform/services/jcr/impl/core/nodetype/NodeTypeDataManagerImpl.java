@@ -489,40 +489,60 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       return this.nodeTypeRepository.getSupertypes(nodeTypeName);
    }
 
-   public boolean isChildNodePrimaryTypeAllowed(final InternalQName childNodeTypeName,
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isChildNodePrimaryTypeAllowed(final InternalQName childNodeType, final InternalQName parentNodeType,
+      final InternalQName[] parentMixinNames) throws RepositoryException
+   {
+      return isChildNodePrimaryTypeAllowed(null, childNodeType, parentNodeType, parentMixinNames);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public boolean isChildNodePrimaryTypeAllowed(final InternalQName childName, final InternalQName childNodeType,
       final InternalQName parentNodeType, final InternalQName[] parentMixinNames) throws RepositoryException
    {
-      final Set<InternalQName> testSuperTypesNames = this.nodeTypeRepository.getSupertypes(childNodeTypeName);
+      final Set<InternalQName> testSuperTypesNames = this.nodeTypeRepository.getSupertypes(childNodeType);
       NodeDefinitionData[] allChildNodeDefinitions = getAllChildNodeDefinitions(parentNodeType);
+
       for (final NodeDefinitionData cnd : allChildNodeDefinitions)
       {
-         for (final InternalQName req : cnd.getRequiredPrimaryTypes())
+         for (final InternalQName reqNodeType : cnd.getRequiredPrimaryTypes())
          {
-            if (childNodeTypeName.equals(req))
+            InternalQName reqName = cnd.getName();
+
+            if (isChildAllowed(childName, childNodeType, cnd, reqName, reqNodeType))
             {
                return true;
             }
+
             for (final InternalQName superName : testSuperTypesNames)
             {
-               if (superName.equals(req))
+               if (isChildAllowed(childName, superName, cnd, reqName, reqNodeType))
                {
                   return true;
                }
             }
          }
       }
+
       allChildNodeDefinitions = getAllChildNodeDefinitions(parentMixinNames);
       for (final NodeDefinitionData cnd : allChildNodeDefinitions)
       {
-         for (final InternalQName req : cnd.getRequiredPrimaryTypes())
+         for (final InternalQName reqNodeType : cnd.getRequiredPrimaryTypes())
          {
-            if (childNodeTypeName.equals(req))
+            InternalQName reqName = cnd.getName();
+
+            if (isChildAllowed(childName, childNodeType, cnd, reqName, reqNodeType))
             {
                return true;
             }
+
             for (final InternalQName superName : testSuperTypesNames)
             {
-               if (superName.equals(req))
+               if (isChildAllowed(childName, superName, cnd, reqName, reqNodeType))
                {
                   return true;
                }
@@ -531,6 +551,17 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       }
 
       return false;
+   }
+
+   /**
+    * Checks if node with <code>childName</code>as name and <code>childNodeType</code> as node type
+    * allowed as child. 
+    */
+   private boolean isChildAllowed(final InternalQName childName, final InternalQName childNodeType,
+      final NodeDefinitionData cnd, InternalQName reqName, final InternalQName reqNodeType)
+   {
+      return childNodeType.equals(reqNodeType)
+         && (childName == null || cnd.isResidualSet() || reqName.equals(childName));
    }
 
    /**

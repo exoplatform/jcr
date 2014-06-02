@@ -161,14 +161,26 @@ public interface NodeTypeDataManager
     */
    Set<InternalQName> getSubtypes(final InternalQName nodeTypeName);
 
+
    /**
     * @param childNodeTypeName
     * @param parentNodeType
     * @param parentMixinNames
     * @return
     */
+   @Deprecated
    boolean isChildNodePrimaryTypeAllowed(InternalQName childNodeTypeName, InternalQName parentNodeType,
       InternalQName[] parentMixinNames) throws RepositoryException;
+
+   /**
+    * @param childNodeName
+    * @param childNodeTypeName
+    * @param parentNodeType
+    * @param parentMixinNames
+    * @return
+    */
+   boolean isChildNodePrimaryTypeAllowed(InternalQName childNodeName, InternalQName childNodeTypeName,
+      InternalQName parentNodeType, InternalQName[] parentMixinNames) throws RepositoryException;
 
    /**
     * @param testTypeName
