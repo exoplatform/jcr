@@ -189,6 +189,6 @@ public class RestRepositoryServiceTest extends AbstractBackupTestCase
    @Override
    protected ExtendedBackupManager getBackupManager()
    {
-      return null;
+      return getJCRBackupManager();
    }
 }
