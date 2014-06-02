@@ -669,7 +669,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    @Path("/{repoName}/{repoPath:.*}/")
    public Response get(@PathParam("repoName") String repoName, @PathParam("repoPath") String repoPath,
       @HeaderParam(ExtHttpHeaders.RANGE) String rangeHeader,
-      @HeaderParam(ExtHttpHeaders.IF_MODIFIED_SINCE) String ifModifiedSince, @QueryParam("version") String version,
+      @HeaderParam(ExtHttpHeaders.IF_MODIFIED_SINCE) String ifModifiedSince,
+      @HeaderParam(ExtHttpHeaders.IF_NONE_MATCH) String ifNoneMatch, @QueryParam("version") String version,
       @Context UriInfo uriInfo)
    {
       if (log.isDebugEnabled())
@@ -728,7 +729,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
                .toString();
          return new GetCommand(xsltParams).get(session, path(repoPath), version, uri, ranges, ifModifiedSince,
-            cacheControlMap);
+            ifNoneMatch, cacheControlMap);
 
       }
       catch (PathNotFoundException exc)

@@ -99,7 +99,7 @@ public class GetCommand
     * @return the instance of javax.ws.rs.core.Response
     */
    public Response get(Session session, String path, String version, String baseURI, List<Range> ranges,
-      String ifModifiedSince, HashMap<MediaType, String> cacheControls)
+      String ifModifiedSince, String ifNoneMatch, HashMap<MediaType, String> cacheControls)
    {
       if (version == null)
       {
@@ -122,7 +122,7 @@ public class GetCommand
 
          if (ResourceUtil.isFile(node))
          {
-
+            String resourceEntityTag;
             HierarchicalProperty lastModifiedProperty; 
             
             if (version != null)
@@ -141,9 +141,25 @@ public class GetCommand
                istream = ((FileResource)resource).getContentAsStream();
             }
 
+            resourceEntityTag = ResourceUtil.generateEntityTag(node, lastModifiedProperty.getValue());
+
             // check before any other reads
             
-            if (ifModifiedSince != null) 
+            if (ifNoneMatch != null)
+            {
+               if ("*".equals(ifNoneMatch))
+               {
+                  return Response.notModified().entity("Not Modified").build();
+               }
+               for (String eTag : ifNoneMatch.split(","))
+               {
+                  if (resourceEntityTag.equals(eTag))
+                  {
+                     return Response.notModified().entity("Not Modified").build();
+                  }
+               }
+            }
+            else if (ifModifiedSince != null)
             {
                DateFormat dateFormat = new SimpleDateFormat(WebDavConst.DateFormat.MODIFICATION, Locale.US);
                Date lastModifiedDate = dateFormat.parse(lastModifiedProperty.getValue());
@@ -171,10 +187,12 @@ public class GetCommand
             // no ranges request
             if (ranges.size() == 0)
             {
-               return Response.ok().header(HttpHeaders.CONTENT_LENGTH, Long.toString(contentLength)).header(
-                  ExtHttpHeaders.ACCEPT_RANGES, "bytes").header(ExtHttpHeaders.LAST_MODIFIED,
-                  lastModifiedProperty.getValue()).header(ExtHttpHeaders.CACHE_CONTROL,
-                  generateCacheControl(cacheControls, contentType)).entity(istream).type(contentType).build();
+               return Response.ok().header(HttpHeaders.CONTENT_LENGTH, Long.toString(contentLength))
+                  .header(ExtHttpHeaders.ACCEPT_RANGES, "bytes")
+                  .header(ExtHttpHeaders.LAST_MODIFIED, lastModifiedProperty.getValue())
+                  .header(ExtHttpHeaders.ETAG, resourceEntityTag)
+                  .header(ExtHttpHeaders.CACHE_CONTROL, generateCacheControl(cacheControls, contentType))
+                  .entity(istream).type(contentType).build();
             }
 
             // one range
@@ -195,6 +213,7 @@ public class GetCommand
                   .header(HttpHeaders.CONTENT_LENGTH, Long.toString(returnedContentLength))
                   .header(ExtHttpHeaders.ACCEPT_RANGES, "bytes")
                   .header(ExtHttpHeaders.LAST_MODIFIED, lastModifiedProperty.getValue())
+                  .header(ExtHttpHeaders.ETAG, resourceEntityTag)
                   .header(ExtHttpHeaders.CONTENTRANGE, "bytes " + start + "-" + end + "/" + contentLength)
                   .entity(rangedInputStream).type(contentType).build();
             }
@@ -213,7 +232,8 @@ public class GetCommand
                new MultipartByterangesEntity(resource, ranges, contentType, contentLength);
 
             return Response.status(HTTPStatus.PARTIAL).header(ExtHttpHeaders.ACCEPT_RANGES, "bytes")
-               .header(ExtHttpHeaders.LAST_MODIFIED, lastModifiedProperty.getValue()).entity(mByterangesEntity)
+               .header(ExtHttpHeaders.LAST_MODIFIED, lastModifiedProperty.getValue())
+               .header(ExtHttpHeaders.ETAG, resourceEntityTag).entity(mByterangesEntity)
                .type(ExtHttpHeaders.MULTIPART_BYTERANGES + WebDavConst.BOUNDARY).build();
          }
          else

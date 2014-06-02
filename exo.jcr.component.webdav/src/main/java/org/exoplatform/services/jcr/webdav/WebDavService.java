@@ -49,10 +49,12 @@ public interface WebDavService
     * @param range Range HTTP header
     * @param version version name
     * @param ifModifiedSince if-modified-since header
+    * @param ifNoneMatch if-none-match header
     * @param baseURI base URI info
     * @return the instance of javax.ws.rs.core.Response
     */
-   Response get(String repoName, String repoPath, String range, String ifModifiedSince, String version, UriInfo baseURI);
+   Response get(String repoName, String repoPath, String range, String ifModifiedSince, String ifNoneMatch,
+      String version, UriInfo baseURI);
 
    /**
     * WedDAV "HEAD" method. see <a

@@ -27,20 +27,13 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
 import org.exoplatform.services.jcr.webdav.BaseStandaloneTest;
 import org.exoplatform.services.jcr.webdav.WebDavConst;
-import org.exoplatform.services.jcr.webdav.WebDavConstants;
 import org.exoplatform.services.jcr.webdav.WebDavConstants.WebDAVMethods;
 import org.exoplatform.services.jcr.webdav.utils.TestUtils;
 import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.ext.provider.XSLTStreamingOutput;
 import org.exoplatform.services.rest.impl.ContainerResponse;
-import org.exoplatform.services.rest.impl.EnvironmentContext;
 import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
-import org.exoplatform.services.rest.impl.RequestHandlerImpl;
-import org.exoplatform.services.rest.tools.DummySecurityContext;
-import org.exoplatform.services.rest.tools.ResourceLauncher;
 import org.exoplatform.services.security.IdentityConstants;
-
-import com.sun.corba.se.impl.javax.rmi.CORBA.Util;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -51,18 +44,14 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.net.URLDecoder;
-import java.security.Principal;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
-import java.util.HashSet;
 import java.util.Locale;
-import java.util.Set;
 
-import javax.jcr.Credentials;
 import javax.jcr.Node;
 import javax.jcr.Session;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.SecurityContext;
 
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
@@ -325,5 +314,56 @@ public class TestGet extends BaseStandaloneTest
       assertTrue("Response should contain parent collection href", byteOut.toString().contains("folderA"));
 
    }
-   
+
+   public void testETag() throws Exception
+   {
+      Node fileNodeI = session.getRootNode().addNode("node1", "nt:file");
+      Node contentNode = fileNodeI.addNode("jcr:content", "nt:resource");
+      contentNode.setProperty("jcr:mimeType", "text/plain");
+      contentNode.setProperty("jcr:encoding", "");
+      contentNode.setProperty("jcr:data", "test1");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+
+      Node fileNodeII = session.getRootNode().addNode("node2", "nt:file");
+      contentNode = fileNodeII.addNode("jcr:content", "nt:resource");
+      contentNode.setProperty("jcr:mimeType", "text/plain");
+      contentNode.setProperty("jcr:encoding", "");
+      contentNode.setProperty("jcr:data", "test2");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+
+      ContainerResponse response = service(WebDAVMethods.GET, getPathWS() + "/node1", "", null, null);
+      assertEquals(HTTPStatus.OK, response.getStatus());
+
+      String eTag = (String)response.getHttpHeaders().getFirst(HttpHeaders.ETAG);
+      assertNotNull(eTag);
+
+      MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
+      headers.add(ExtHttpHeaders.IF_NONE_MATCH, eTag);
+
+      response = service(WebDAVMethods.GET, getPathWS() + "/node1", "", headers, null);
+
+      assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
+
+      String destAbsPath = fileNodeI.getPath();
+      fileNodeI.remove();
+      session.save();
+
+      session.move(fileNodeII.getPath(), destAbsPath);
+      session.save();
+
+      response = service(WebDAVMethods.GET, getPathWS() + "/node1", "", headers, null);
+
+      assertEquals(HTTPStatus.OK, response.getStatus());
+      eTag = (String)response.getHttpHeaders().getFirst(HttpHeaders.ETAG);
+      headers.clear();
+      headers.add(ExtHttpHeaders.IF_NONE_MATCH, eTag);
+
+      session.move(destAbsPath, destAbsPath + "_");
+      session.save();
+
+      response = service(WebDAVMethods.GET, getPathWS() + "/node1_", "", headers, null);
+      assertEquals(HTTPStatus.NOT_MODIFIED, response.getStatus());
+   }
 }
