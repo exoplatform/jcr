@@ -336,7 +336,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String srcNodePath = path(repoPath);
 
          String destWorkspace = workspaceName(destPath);
-         String destNodePath = path(destPath);
+         String destNodePath = path(destPath, false);
 
          List<String> lockTokens = lockTokens(lockTokenHeader, ifHeader);
 
@@ -354,7 +354,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          {
             Session session = session(repoName, srcWorkspace, null);
 
-            if (session.getRootNode().hasNode(TextUtil.relativizePath(repoPath)))
+            if (session.getRootNode().hasNode(TextUtil.relativizePath(path(destPath))))
             {
                return Response.status(HTTPStatus.PRECON_FAILED)
                   .entity("Item exists on destination path, while overwriting is forbidden").build();
@@ -381,6 +381,11 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
             int nodeNameStart = srcNodePath.lastIndexOf('/') + 1;
             String nodeName = srcNodePath.substring(nodeNameStart);
+            int indexStart = nodeName.indexOf('[');
+            if (indexStart != -1)
+            {
+               nodeName = nodeName.substring(0, indexStart);
+            }
 
             Session session = session(repoName, destWorkspace, lockTokens);
 
@@ -718,7 +723,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
                webDavServiceInitParams.getAllowedFolderNodeTypes());
 
          return new MkColCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName)).mkCol(
-            session, path(repoPath), folderNodeType, NodeTypeUtil.getMixinTypes(mixinTypesHeader), tokens);
+            session, path(repoPath, false), folderNodeType, NodeTypeUtil.getMixinTypes(mixinTypesHeader), tokens);
       }
       catch (NoSuchWorkspaceException exc)
       {
@@ -793,7 +798,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          destPath = normalizePath(repoIndex == -1 ? destPath : destPath.substring(repoIndex + repoName.length() + 1));
 
          String destWorkspace = workspaceName(destPath);
-         String destNodePath = path(destPath);
+         String destNodePath = path(destPath, false);
 
          String srcWorkspace = workspaceName(repoPath);
          String srcNodePath = path(repoPath);
@@ -815,7 +820,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
             Session session = session(repoName, srcWorkspace, null);
             String uri =
                uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(srcWorkspace).build().toString();
-            Response prpfind = new PropFindCommand().propfind(session, destNodePath, body, depth.getIntValue(), uri);
+            Response prpfind = new PropFindCommand().propfind(session, path(destPath), body, depth.getIntValue(), uri);
             if (prpfind.getStatus() != HTTPStatus.NOT_FOUND)
             {
                return Response.status(HTTPStatus.PRECON_FAILED)
@@ -1403,10 +1408,26 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     */
    protected String path(String repoPath)
    {
+      return path(repoPath, true);
+   }
+
+   /**
+    * Extracts path from repository path.
+    * 
+    * @param repoPath repository path
+    * @param withIndex indicates whether the index must be removed or not
+    * @return path
+    */
+   protected String path(String repoPath, boolean withIndex)
+   {
       String path = repoPath.substring(workspaceName(repoPath).length());
 
-      if (!"".equals(path))
+      if (path.length() > 0)
       {
+         if (!withIndex)
+         {
+            return TextUtil.removeIndexFromPath(path);
+         }
          return path;
       }
 

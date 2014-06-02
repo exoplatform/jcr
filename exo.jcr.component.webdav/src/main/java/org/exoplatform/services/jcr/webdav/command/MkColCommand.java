@@ -103,6 +103,8 @@ public class MkColCommand
          nullResourceLocks.checkLock(session, path, tokens);
 
          node = session.getRootNode().addNode(TextUtil.relativizePath(path), nodeType);
+         // We set the new path
+         path = node.getPath();
 
          if (mixinTypes != null)
          {

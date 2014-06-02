@@ -65,8 +65,10 @@ public class TestUnLock extends BaseStandaloneTest
    public void setUp() throws Exception
    {
       super.setUp();
+      session.getRootNode().addNode(TextUtil.relativizePath(path));
       InputStream inputStream = new ByteArrayInputStream(fileContent.getBytes());
       TestUtils.addContent(session, path, inputStream, defaultFileNodeType, "");
+      path = path + "[2]";
    }
 
    public void testUnLock() throws Exception
@@ -87,7 +89,7 @@ public class TestUnLock extends BaseStandaloneTest
       assertTrue(lockNode.isLocked());
       MultivaluedMap<String, String> headers = new MultivaluedMapImpl();
       headers.add(ExtHttpHeaders.LOCKTOKEN, token);
-      ContainerResponse containerResponse = service(WebDAVMethods.UNLOCK, pathWs + path, "", headers, null);
+      ContainerResponse containerResponse = serviceWithEscape(WebDAVMethods.UNLOCK, pathWs + path, "", headers, null);
       assertEquals(HTTPStatus.NO_CONTENT, containerResponse.getStatus());
 
    }
