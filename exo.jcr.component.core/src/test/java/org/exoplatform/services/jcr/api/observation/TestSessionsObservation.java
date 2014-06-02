@@ -124,8 +124,7 @@ public class TestSessionsObservation extends JcrAPIBaseTest
          }
          catch (Exception e)
          {
-            e.printStackTrace();
-            fail("There are no error should be, but found " + e.getMessage());
+            fail("No exception was expected but we got : " + e.getMessage());
          }
       }
       finally
@@ -188,8 +187,7 @@ public class TestSessionsObservation extends JcrAPIBaseTest
             }
             catch (Exception e)
             {
-               e.printStackTrace();
-               fail("There are no error should be, but found " + e.getMessage());
+               fail("No exception was expected but we got : " + e.getMessage());
             }
             finally
             {
@@ -252,8 +250,7 @@ public class TestSessionsObservation extends JcrAPIBaseTest
          }
          catch (Exception e)
          {
-            e.printStackTrace();
-            fail("There are no error should be, but found " + e.getMessage());
+            fail("No exception was expected but we got : " + e.getMessage());
          }
       }
       finally
@@ -284,4 +281,21 @@ public class TestSessionsObservation extends JcrAPIBaseTest
       sessionWs1.getWorkspace().move(testRootWs1.getPath() + "/newNode", testRootWs1.getPath() + "/newNode2");
       assertEquals(2, listener.getCounter());
    }
+   
+   public void testRemoveEventListener() throws Exception
+   {
+       SimpleListener addListener = new SimpleListener("testMultipleSessionClosed__add_nt:file", log, 0);
+       try{
+           sessionWs1.getWorkspace().getObservationManager().addEventListener(addListener, Event.NODE_ADDED,
+                   testRootWs1.getPath(), true, null, new String[]{"nt:file"}, false);
+           SessionImpl anotherWs1 = (SessionImpl)repository.login(credentials, "ws1");
+           anotherWs1.getWorkspace().getObservationManager().removeEventListener(addListener);
+           assertEquals(0, sessionWs1.getWorkspace().getObservationManager().getRegisteredEventListeners().getSize());
+       }
+       catch (Exception e)
+       {
+           fail("No exception was expected but we got : " + e.getMessage());
+       }
+   }
+
 }
