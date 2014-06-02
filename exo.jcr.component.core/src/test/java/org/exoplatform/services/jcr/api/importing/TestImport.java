@@ -2368,7 +2368,7 @@ public class TestImport extends AbstractImportTest
    {
       ExtendedNode testRoot = (ExtendedNode)root.addNode("testRoot");
       testRoot.addMixin("exo:privilegeable");
-      testRoot.setPermission("john", new String[]{PermissionType.READ, PermissionType.ADD_NODE,
+      testRoot.setPermission("john", new String[]{PermissionType.READ,PermissionType.REMOVE, PermissionType.ADD_NODE,
          PermissionType.SET_PROPERTY});
       testRoot.setPermission(root.getSession().getUserID(), PermissionType.ALL);
       testRoot.removePermission("any");
