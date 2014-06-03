@@ -235,6 +235,12 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).put(key, value);
          }
       }
+
+      @Override
+      public boolean isTxRequired()
+      {
+         return true;
+      }
    }
 
    /**

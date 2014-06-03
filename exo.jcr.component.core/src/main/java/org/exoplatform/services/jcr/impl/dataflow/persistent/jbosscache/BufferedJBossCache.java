@@ -259,6 +259,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                   {
                      LOG.trace("An error occurs the tx will be rollbacked");
                   }
+                  // Set the cache local mode to avoid unnecessary replication on roll back
+                  parentCache.getInvocationContext().getTransactionContext().getOption().setCacheModeLocal(cacheChange.localMode);
                   tm.rollback();
                }
                catch (Exception e1)//NOSONAR
@@ -276,6 +278,8 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                {
                   LOG.trace("The tx will be committed");
                }
+               // Set the cache local mode to avoid unnecessary replication on commit
+               parentCache.getInvocationContext().getTransactionContext().getOption().setCacheModeLocal(cacheChange.localMode);
                tm.commit();
             }
             catch (Exception e)//NOSONAR
@@ -1367,7 +1371,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       public boolean isTxRequired()
       {
-         return false;
+         return true;
       }
    }
 
@@ -1443,7 +1447,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       @Override
       public boolean isTxRequired()
       {
-         return false;
+         return true;
       }
    }
 
