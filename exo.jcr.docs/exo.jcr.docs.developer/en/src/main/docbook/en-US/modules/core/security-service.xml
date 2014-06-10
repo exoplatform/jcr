@@ -246,7 +246,21 @@ if (conversationState != null) {
   log.warn("Subject was not found in ConversationState attributes.");
 }</programlisting>
 
-      <para></para>
+    <note>
+          <para>You can configure the SetCurrentIdentityFilter to reinject the identity
+          when it will be removed from IdentityRegistry. You should add "restoreIdentity" parameter
+          to the filter configuration as follows : </para>
+          <programlisting language="xml">
+           &lt;filter&gt;
+             &lt;filter-name&gt;SetCurrentIdentityFilter&lt;/filter-name&gt;
+             &lt;filter-class&gt;org.exoplatform.services.security.web.SetCurrentIdentityFilter&lt;/filter-class&gt;
+             &lt;init-param&gt;
+               &lt;param-name&gt;restoreIdentity&lt;/param-name&gt;
+               &lt;param-value&gt;true&lt;/param-value&gt;
+             &lt;/init-param&gt;
+             &lt;/filter&gt;
+          </programlisting>
+     </note>
     </section>
 
     <section id="Core.SecurityService.Usage.PredefindedJAASLoginModules">
