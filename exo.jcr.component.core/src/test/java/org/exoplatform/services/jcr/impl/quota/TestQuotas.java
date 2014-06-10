@@ -47,6 +47,7 @@ import javax.jcr.Value;
 public class TestQuotas extends AbstractQuotaManagerTest
 {
 
+   private long timeout = 5000;
    /**
     * Check the index size of non system workspace.
     */
@@ -496,6 +497,8 @@ public class TestQuotas extends AbstractQuotaManagerTest
       WorkspaceQuotaManager ws1QuotaManager =
          (WorkspaceQuotaManager)repository.getWorkspaceContainer(ws1Entry.getName()).getComponent(
             WorkspaceQuotaManager.class);
+
+      Thread.sleep(timeout); // wait to apply persisted changes task
 
       long dataSize = quotaManager.getGlobalDataSize();
       long ws1DataSize = ws1QuotaManager.getWorkspaceDataSize();
