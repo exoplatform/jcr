@@ -86,12 +86,4 @@ public class PropertyDefinitionData extends ItemDefinitionData
          && Arrays.equals(this.valueConstraints, test.valueConstraints)
          && Arrays.equals(this.defaultValues, test.defaultValues);
    }
-
-   /**
-    * {@inheritDoc}
-    */
-   public boolean isNodeDefinition()
-   {
-      return false;
-   }
 }

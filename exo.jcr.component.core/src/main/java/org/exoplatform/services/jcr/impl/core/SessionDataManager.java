@@ -1817,8 +1817,7 @@ public class SessionDataManager implements ItemDataConsumer
             nData.getMixinTypeNames());
       for (ItemDefinitionData itemDefinitionData : mandatoryItemDefs)
       {
-         ItemType itemType = itemDefinitionData.isNodeDefinition() ? ItemType.NODE : ItemType.PROPERTY;
-         if (getItemData(nData, new QPathEntry(itemDefinitionData.getName(), 0), itemType) == null)
+         if (getItemData(nData, new QPathEntry(itemDefinitionData.getName(), 0), ItemType.UNKNOWN) == null)
          {
             throw new ConstraintViolationException("Mandatory item " + itemDefinitionData.getName()
                + " not found. Node [" + nData.getQPath().getAsString() + " primary type: "
