@@ -384,7 +384,7 @@
       </supertypes>
       <childNodeDefinitions>
          <childNodeDefinition name="exo:mandatorySubNode" defaultPrimaryType="nt:unstructured" autoCreated="false" mandatory="true"
-            onParentVersion="CPOY" protected="false" sameNameSiblings="false">
+            onParentVersion="COPY" protected="false" sameNameSiblings="false">
             <requiredPrimaryTypes>
                <requiredPrimaryType>nt:base</requiredPrimaryType>
             </requiredPrimaryTypes>
