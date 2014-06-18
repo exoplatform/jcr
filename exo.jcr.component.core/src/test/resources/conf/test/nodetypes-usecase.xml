@@ -253,118 +253,110 @@
       </propertyDefinitions>
    </nodeType>
 
-   <nodeType name="list" isMixin="false" hasOrderableChildNodes="true" primaryItemName="">
-      <supertypes>
-         <supertype>nt:base</supertype>
-      </supertypes>
-      <childNodeDefinitions>
-         <childNodeDefinition name="*" defaultPrimaryType="nt:unstructured" autoCreated="false" mandatory="false" onParentVersion="COPY"
-            protected="false" sameNameSiblings="false">
-            <requiredPrimaryTypes>
-               <requiredPrimaryType>nt:unstructured</requiredPrimaryType>
-            </requiredPrimaryTypes>
-         </childNodeDefinition>
-      </childNodeDefinitions>
-   </nodeType>
+  <nodeType name="list" isMixin="false" hasOrderableChildNodes="true" primaryItemName="">
+    <supertypes>
+      <supertype>nt:base</supertype>
+    </supertypes>
+    <childNodeDefinitions>
+      <childNodeDefinition name="*" defaultPrimaryType="nt:unstructured" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" sameNameSiblings="false">
+        <requiredPrimaryTypes>
+          <requiredPrimaryType>nt:unstructured</requiredPrimaryType>
+        </requiredPrimaryTypes>
+      </childNodeDefinition>
+    </childNodeDefinitions>
+  </nodeType>
 
-   <nodeType name="exo:page" isMixin="false" hasOrderableChildNodes="false">
-      <supertypes>
-         <supertype>nt:base</supertype>
-         <supertype>nt:folder</supertype>
-         <supertype>mix:referenceable</supertype>
-      </supertypes>
-      <childNodeDefinitions>
-         <childNodeDefinition name="page" defaultPrimaryType="" autoCreated="false" mandatory="false" onParentVersion="IGNORE" protected="false"
-            sameNameSiblings="false">
-            <requiredPrimaryTypes>
-               <requiredPrimaryType>exo:page</requiredPrimaryType>
-            </requiredPrimaryTypes>
-         </childNodeDefinition>
-      </childNodeDefinitions>
-   </nodeType>
-
-   <nodeType name="exo:myTypeJCR1703" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
-      <supertypes>
-         <supertype>nt:base</supertype>
-      </supertypes>
-      <childNodeDefinitions>
-         <childNodeDefinition name="exo:myChildNode" defaultPrimaryType="nt:unstructured" autoCreated="true" mandatory="false"
-            onParentVersion="IGNORE" protected="true" sameNameSiblings="false">
+  <nodeType name="exo:page" isMixin="false" hasOrderableChildNodes="false">
+    <supertypes>
+      <supertype>nt:base</supertype>
+      <supertype>nt:folder</supertype>
+      <supertype>mix:referenceable</supertype>
+    </supertypes>
+    <childNodeDefinitions>
+      <childNodeDefinition name="page" defaultPrimaryType="" autoCreated="false" mandatory="false" onParentVersion="IGNORE" protected="false" sameNameSiblings="false">
+        <requiredPrimaryTypes>
+          <requiredPrimaryType>exo:page</requiredPrimaryType>
+        </requiredPrimaryTypes>
+      </childNodeDefinition>
+    </childNodeDefinitions>
+  </nodeType>
+  
+  <nodeType name="exo:myTypeJCR1703" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>nt:base</supertype>
+    </supertypes>
+    <childNodeDefinitions>
+        <childNodeDefinition name="exo:myChildNode" defaultPrimaryType="nt:unstructured" autoCreated="true" mandatory="false" onParentVersion="IGNORE" protected="true" sameNameSiblings="false">
             <requiredPrimaryTypes>
                <requiredPrimaryType>nt:base</requiredPrimaryType>
             </requiredPrimaryTypes>
-         </childNodeDefinition>
-      </childNodeDefinitions>
-   </nodeType>
+        </childNodeDefinition>
+    </childNodeDefinitions>
+  </nodeType>
+  
+  <nodeType name="exo:EXOJCR1812" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>nt:base</supertype>
+    </supertypes>
+    <childNodeDefinitions>
+      <childNodeDefinition name="exo:myChildNode" defaultPrimaryType="nt:unstructured" autoCreated="true" mandatory="false" onParentVersion="IGNORE" protected="true" sameNameSiblings="false">
+        <requiredPrimaryTypes>
+          <requiredPrimaryType>nt:base</requiredPrimaryType>
+        </requiredPrimaryTypes>
+      </childNodeDefinition>
+    </childNodeDefinitions>
+  </nodeType>
 
-   <nodeType name="exo:EXOJCR1812" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
-      <supertypes>
-         <supertype>nt:base</supertype>
-      </supertypes>
-      <childNodeDefinitions>
-         <childNodeDefinition name="exo:myChildNode" defaultPrimaryType="nt:unstructured" autoCreated="true" mandatory="false"
-            onParentVersion="IGNORE" protected="true" sameNameSiblings="false">
-            <requiredPrimaryTypes>
-               <requiredPrimaryType>nt:base</requiredPrimaryType>
-            </requiredPrimaryTypes>
-         </childNodeDefinition>
-      </childNodeDefinitions>
-   </nodeType>
-
-   <nodeType name="exo:EXOJCR-1866-T1" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
-      <supertypes>
-         <supertype>nt:base</supertype>
-      </supertypes>
-      <childNodeDefinitions>
-         <childNodeDefinition name="*" defaultPrimaryType="exo:EXOJCR-1866-T2" autoCreated="false" mandatory="false" onParentVersion="IGNORE"
-            protected="false" sameNameSiblings="false">
-            <requiredPrimaryTypes>
-               <requiredPrimaryType>exo:EXOJCR-1866-T2</requiredPrimaryType>
-            </requiredPrimaryTypes>
-         </childNodeDefinition>
-      </childNodeDefinitions>
-   </nodeType>
+  <nodeType name="exo:EXOJCR-1866-T1" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+	  <supertype>nt:base</supertype>
+    </supertypes>
+    <childNodeDefinitions>
+	  <childNodeDefinition name="*" defaultPrimaryType="exo:EXOJCR-1866-T2" autoCreated="false" mandatory="false" onParentVersion="IGNORE" protected="false" sameNameSiblings="false">
+        <requiredPrimaryTypes>
+          <requiredPrimaryType>exo:EXOJCR-1866-T2</requiredPrimaryType>
+        </requiredPrimaryTypes>
+      </childNodeDefinition>
+    </childNodeDefinitions>
+  </nodeType>
 
    <nodeType name="exo:EXOJCR-1866-T2" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
-      <supertypes>
-         <supertype>nt:base</supertype>
-      </supertypes>
-      <childNodeDefinitions>
-         <childNodeDefinition name="*" defaultPrimaryType="exo:EXOJCR-1866-T3" autoCreated="false" mandatory="false" onParentVersion="IGNORE"
-            protected="false" sameNameSiblings="false">
-            <requiredPrimaryTypes>
-               <requiredPrimaryType>exo:EXOJCR-1866-T3</requiredPrimaryType>
-            </requiredPrimaryTypes>
-         </childNodeDefinition>
-      </childNodeDefinitions>
+	<supertypes>
+	  <supertype>nt:base</supertype>
+	</supertypes>
+	<childNodeDefinitions>
+	  <childNodeDefinition name="*" defaultPrimaryType="exo:EXOJCR-1866-T3" autoCreated="false" mandatory="false" onParentVersion="IGNORE" protected="false" sameNameSiblings="false">
+		<requiredPrimaryTypes>
+		  <requiredPrimaryType>exo:EXOJCR-1866-T3</requiredPrimaryType>
+		</requiredPrimaryTypes>
+	  </childNodeDefinition>
+	</childNodeDefinitions>
    </nodeType>
 
    <nodeType name="exo:EXOJCR-1866-T3" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
-      <supertypes>
-         <supertype>nt:base</supertype>
-      </supertypes>
-      <childNodeDefinitions>
-         <childNodeDefinition name="*" defaultPrimaryType="exo:EXOJCR-1866-T3" autoCreated="false" mandatory="false" onParentVersion="IGNORE"
-            protected="false" sameNameSiblings="false">
-            <requiredPrimaryTypes>
-               <requiredPrimaryType>exo:EXOJCR-1866-T3</requiredPrimaryType>
-            </requiredPrimaryTypes>
-         </childNodeDefinition>
-      </childNodeDefinitions>
+	<supertypes>
+	  <supertype>nt:base</supertype>
+	</supertypes>
+	<childNodeDefinitions>
+	  <childNodeDefinition name="*" defaultPrimaryType="exo:EXOJCR-1866-T3" autoCreated="false" mandatory="false" onParentVersion="IGNORE" protected="false" sameNameSiblings="false">
+	    <requiredPrimaryTypes>
+		  <requiredPrimaryType>exo:EXOJCR-1866-T3</requiredPrimaryType>
+		</requiredPrimaryTypes>
+	  </childNodeDefinition>
+    </childNodeDefinitions>
    </nodeType>
 
-   <nodeType name="exo:JCR_1910" isMixin="false" hasOrderableChildNodes="false">
-      <supertypes>
-         <supertype>nt:base</supertype>
-      </supertypes>
-      <propertyDefinitions>
-         <propertyDefinition name="ref" requiredType="Path" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false"
-            multiple="false">
-            <valueConstraints />
-         </propertyDefinition>
-      </propertyDefinitions>
-      <childNodeDefinitions />
-   </nodeType>
+    <nodeType name="exo:JCR_1910" isMixin="false" hasOrderableChildNodes="false">
+	<supertypes>
+	    <supertype>nt:base</supertype>
+        </supertypes>
+	<propertyDefinitions>
+	    <propertyDefinition name="ref" requiredType="Path" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+		<valueConstraints />
+    	</propertyDefinition>
+	</propertyDefinitions>
+        <childNodeDefinitions />
+    </nodeType>
 
    <nodeType name="exo:JCR_2307" isMixin="false" hasOrderableChildNodes="false" primaryItemName="">
       <supertypes>
@@ -384,7 +376,7 @@
       </supertypes>
       <childNodeDefinitions>
          <childNodeDefinition name="exo:mandatorySubNode" defaultPrimaryType="nt:unstructured" autoCreated="false" mandatory="true"
-            onParentVersion="CPOY" protected="false" sameNameSiblings="false">
+            onParentVersion="COPY" protected="false" sameNameSiblings="false">
             <requiredPrimaryTypes>
                <requiredPrimaryType>nt:base</requiredPrimaryType>
             </requiredPrimaryTypes>
