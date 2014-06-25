@@ -46,6 +46,7 @@ import java.io.Serializable;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -252,7 +253,12 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
                   }
                }
 
-               dialect = DialectDetecter.detect(jdbcConn.getMetaData());
+               DatabaseMetaData metaData = jdbcConn.getMetaData();
+               dialect = DialectDetecter.detect(metaData);
+               if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
+               {
+                  dialect = DialectDetecter.detectMysqlDialect(metaData);
+               }
             }
             finally
             {
@@ -287,6 +293,10 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          else if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
          {
             blobType = "LONGBLOB";
+            if (dialect.endsWith("-UTF8"))
+            {
+               charType = "VARCHAR(255)";
+            }
          }
          // ORACLE
          else if (dialect.startsWith(DBConstants.DB_DIALECT_ORACLE))

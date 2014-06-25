@@ -58,6 +58,7 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -358,7 +359,12 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
                   }
                }
 
-               dialect = DialectDetecter.detect(jdbcConn.getMetaData());
+               DatabaseMetaData metaData = jdbcConn.getMetaData();
+               dialect = DialectDetecter.detect(metaData);
+               if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
+               {
+                  dialect = DialectDetecter.detectMysqlDialect(metaData);
+               }
             }
             finally
             {
@@ -392,6 +398,10 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
          else if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
          {
             blobType = "LONGBLOB";
+            if (dialect.endsWith("-UTF8"))
+            {
+               charType = "VARCHAR(255)";
+            }
          }
          // ORACLE
          else if (dialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
@@ -642,7 +652,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    /**
     * Make lock absolute Fqn, i.e. /$LOCKS/nodeID.
     *
-    * @param itemId String
+    * @param nodeId String
     * @return Fqn
     */
    private Fqn<String> makeLockFqn(String nodeId)
