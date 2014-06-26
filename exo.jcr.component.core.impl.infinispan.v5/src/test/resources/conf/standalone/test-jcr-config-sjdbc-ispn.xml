@@ -79,6 +79,7 @@
                      <property name="infinispan-cl-cache.jdbc.id.column" value="id" />
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
+                     <property name="infinispan-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" />
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
@@ -133,6 +134,7 @@
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="infinispan-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>                            
@@ -186,6 +188,7 @@
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="infinispan-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>                              
@@ -262,6 +265,7 @@
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" />
+                     <property name="infinispan-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>                               
@@ -325,6 +329,7 @@
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
+                     <property name="infinispan-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>                              
@@ -378,6 +383,7 @@
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
+                     <property name="infinispan-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>  
@@ -449,6 +455,7 @@
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                     <property name="infinispan-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>                
@@ -508,6 +515,7 @@
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                     <property name="infinispan-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>  
@@ -570,6 +578,7 @@
                      <property name="infinispan-cl-cache.jdbc.data.column" value="data" />
                      <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
                      <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
+                     <property name="infinispan-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" />
                      <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
                   </properties>
                </lock-manager>                  

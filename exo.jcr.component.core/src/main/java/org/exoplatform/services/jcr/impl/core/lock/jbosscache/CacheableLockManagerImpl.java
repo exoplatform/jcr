@@ -85,6 +85,8 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
 
    public static final String JBOSSCACHE_JDBC_CL_DATASOURCE = "jbosscache-cl-cache.jdbc.datasource";
 
+   public static final String JBOSSCACHE_JDBC_CL_DIALECT = "jbosscache-cl-cache.jdbc.dialect";
+
    public static final String JBOSSCACHE_JDBC_CL_NODE_COLUMN_TYPE = "jbosscache-cl-cache.jdbc.node.type";
 
    public static final String JBOSSCACHE_JDBC_CL_FQN_COLUMN_TYPE = "jbosscache-cl-cache.jdbc.fqn.type";
@@ -318,7 +320,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       // (i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
       if (dataSourceName != null)
       {
-         String dialect;
+         String dialect = parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_DIALECT, null);
          // detect dialect of data-source
          try
          {
@@ -359,11 +361,14 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
                   }
                }
 
-               DatabaseMetaData metaData = jdbcConn.getMetaData();
-               dialect = DialectDetecter.detect(metaData);
-               if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
+               if(dialect != null)
                {
-                  dialect = DialectDetecter.detectMysqlDialect(metaData);
+                  dialect=dialect.toUpperCase();
+               }
+               else
+               {
+                  DatabaseMetaData metaData = jdbcConn.getMetaData();
+                  dialect = DialectDetecter.detect(metaData);
                }
             }
             finally

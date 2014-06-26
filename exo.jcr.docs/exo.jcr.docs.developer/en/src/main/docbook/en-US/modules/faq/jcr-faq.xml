@@ -402,6 +402,7 @@ session.logout();
       &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+      &lt;property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" /&gt;
       &lt;property name="jbosscache-shareable" value="true"/&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;
@@ -455,6 +456,10 @@ session.logout();
                 configured in Container datasource, where you want to store
                 locks. The best idea is to use the same as for
                 workspace.</para>
+              </listitem>
+              <listitem>
+                <para>"jbosscache-cl-cache.jdbc.dialect" - dialect of the database
+                   where you want to store locks.</para>
               </listitem>
             </itemizedlist>
           </listitem>

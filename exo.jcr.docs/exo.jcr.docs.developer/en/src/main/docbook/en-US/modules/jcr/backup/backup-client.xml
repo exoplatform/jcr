@@ -1615,6 +1615,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                 &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
                 &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
                 &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                &lt;property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" /&gt;
                 &lt;property name="jbosscache-shareable" value="true" /&gt;
              &lt;/properties&gt;
           &lt;/lock-manager&gt;
@@ -1801,6 +1802,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                      &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
                      &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
                      &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" /&gt;
                      &lt;property name="jbosscache-shareable" value="true" /&gt;
                   &lt;/properties&gt;
                &lt;/lock-manager&gt;
@@ -1853,6 +1855,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                      &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
                      &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
                      &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" /&gt;
                      &lt;property name="jbosscache-shareable" value="true" /&gt;
                   &lt;/properties&gt;
                &lt;/lock-manager&gt;
@@ -1905,6 +1908,7 @@ delete from JCR_SITEM where CONTAINER_NAME='backup'</programlisting></para>
                      &lt;property name="jbosscache-cl-cache.jdbc.node.column" value="node" /&gt;
                      &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
                      &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+                     &lt;property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" /&gt;
                      &lt;property name="jbosscache-shareable" value="true" /&gt;
                   &lt;/properties&gt;
                &lt;/lock-manager&gt;

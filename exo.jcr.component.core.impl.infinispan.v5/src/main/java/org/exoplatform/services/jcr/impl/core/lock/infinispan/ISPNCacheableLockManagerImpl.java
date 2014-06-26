@@ -72,6 +72,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     */
    public static final String INFINISPAN_JDBC_CL_DATASOURCE = "infinispan-cl-cache.jdbc.datasource";
 
+   public static final String INFINISPAN_JDBC_CL_DIALECT = "infinispan-cl-cache.jdbc.dialect";
+
    public static final String INFINISPAN_JDBC_CL_DATA_COLUMN = "infinispan-cl-cache.jdbc.data.type";
 
    public static final String INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN = "infinispan-cl-cache.jdbc.timestamp.type";
@@ -212,7 +214,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       //(i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
       if (dataSourceName != null)
       {
-         String dialect;
+         String dialect = parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DIALECT, null);
          // detect dialect of data-source
          try
          {
@@ -253,11 +255,14 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
                   }
                }
 
-               DatabaseMetaData metaData = jdbcConn.getMetaData();
-               dialect = DialectDetecter.detect(metaData);
-               if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
+               if (dialect != null)
                {
-                  dialect = DialectDetecter.detectMysqlDialect(metaData);
+                  dialect=dialect.toUpperCase();
+               }
+               else
+               {
+                  DatabaseMetaData metaData = jdbcConn.getMetaData();
+                  dialect = DialectDetecter.detect(metaData);
                }
             }
             finally

@@ -37,6 +37,7 @@
       <statistics.enabled>false</statistics.enabled>
       <batch.size>-1</batch.size>
       <dialect>auto</dialect>
+      <jcrlocks.dialect/>
       <use.distributed.cache>false</use.distributed.cache>
       <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
@@ -188,6 +189,10 @@
                   <property>
                      <name>dialect</name>
                      <value>${dialect}</value>
+                  </property>
+                  <property>
+                     <name>jcrlocks-dialect</name>
+                     <value>${jcrlocks.dialect}</value>
                   </property>
                   <property>
                      <name>use-distributed-cache</name>
@@ -395,6 +400,10 @@
                            <value>${dialect}</value>
                         </property>
                         <property>
+                           <name>jcrlocks-dialect</name>
+                           <value>${jcrlocks.dialect}</value>
+                        </property>
+                        <property>
                            <name>use-distributed-cache</name>
                            <value>${use.distributed.cache}</value>
                         </property>
@@ -484,6 +493,10 @@
                         <property>
                            <name>dialect</name>
                            <value>${dialect}</value>
+                        </property>
+                        <property>
+                          <name>jcrlocks-dialect</name>
+                          <value>${jcrlocks.dialect}</value>
                         </property>
                         <property>
                            <name>use-distributed-cache</name>
