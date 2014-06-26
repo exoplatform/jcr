@@ -87,7 +87,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
-                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}"/>
+                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${dialect}"/>
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -147,7 +147,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
-                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}"/>
+                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${dialect}"/>
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -207,7 +207,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
-                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}"/>
+                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${dialect}"/>
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -291,7 +291,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" />
-                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}"/>
+                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${dialect}"/>
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -361,7 +361,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
-                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}"/>
+                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${dialect}"/>
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -419,7 +419,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrdb2" />
-                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}"/>
+                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${dialect}"/>
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -497,7 +497,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
-                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}"/>
+                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${dialect}"/>
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -564,7 +564,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
-                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}"/>
+                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${dialect}"/>
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>
@@ -634,7 +634,7 @@
                      <property name="jbosscache-cl-cache.jdbc.node.column" value="node" />
                      <property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" />
                      <property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcrtck" />
-                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}"/>
+                     <property name="jbosscache-cl-cache.jdbc.dialect" value="${dialect}"/>
                      <property name="jbosscache-shareable" value="${jbosscache-shareable}" />
                   </properties>
                </lock-manager>

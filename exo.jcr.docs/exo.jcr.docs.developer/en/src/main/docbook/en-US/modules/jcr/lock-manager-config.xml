@@ -124,7 +124,7 @@
       &lt;property name="jbosscache-cl-cache.jdbc.node.type" value="AUTO"/&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.parent.column" value="parent" /&gt;
       &lt;property name="jbosscache-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
-      &lt;property name="jbosscache-cl-cache.jdbc.dialect" value="${jcrlocks-dialect}" /&gt;
+      &lt;property name="jbosscache-cl-cache.jdbc.dialect" value="${dialect}" /&gt;
       &lt;property name="jbosscache-shareable" value="true" /&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>

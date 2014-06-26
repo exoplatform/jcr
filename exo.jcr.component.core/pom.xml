@@ -38,7 +38,6 @@
       <statistics.enabled>false</statistics.enabled>
       <batch.size>-1</batch.size>
       <dialect>auto</dialect>
-      <jcrlocks.dialect/>
       <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
       <test.cache.all>**/persistent/cache/**</test.cache.all>
@@ -305,10 +304,6 @@
                   <property>
                      <name>dialect</name>
                      <value>${dialect}</value>
-                  </property>
-                  <property>
-                     <name>jcrlocks-dialect</name>
-                     <value>${jcrlocks.dialect}</value>
                   </property>
                   <property>
                       <name>JDBCWorkspaceDataContainer.statistics.enabled</name>
@@ -611,10 +606,6 @@
                            <value>${dialect}</value>
                         </property>
                         <property>
-                            <name>jcrlocks-dialect</name>
-                            <value>${jcrlocks.dialect}</value>
-                        </property>
-                        <property>
                            <name>known.issues</name>
                            <value>org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreName
                               org.apache.jackrabbit.test.api.version.RestoreTest#testRestoreOrder2
@@ -708,10 +699,6 @@
                         <property>
                            <name>dialect</name>
                            <value>${dialect}</value>
-                        </property>
-                        <property>
-                            <name>jcrlocks-dialect</name>
-                            <value>${jcrlocks.dialect}</value>
                         </property>
                         <property>
                            <name>known.issues</name>
