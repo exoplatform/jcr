@@ -320,7 +320,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       // (i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
       if (dataSourceName != null)
       {
-         String dialect = parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_DIALECT, null);
+         String dialect = parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_DIALECT, DBConstants.DB_DIALECT_AUTO);
          // detect dialect of data-source
          try
          {
@@ -361,11 +361,8 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
                   }
                }
 
-               if(dialect != null)
-               {
-                  dialect=dialect.toUpperCase();
-               }
-               else
+               dialect = dialect.toUpperCase();
+               if (dialect.equals(DBConstants.DB_DIALECT_AUTO))
                {
                   DatabaseMetaData metaData = jdbcConn.getMetaData();
                   dialect = DialectDetecter.detect(metaData);

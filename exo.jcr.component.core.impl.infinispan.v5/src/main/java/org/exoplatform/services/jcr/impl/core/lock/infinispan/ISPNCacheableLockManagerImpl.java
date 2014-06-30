@@ -208,13 +208,13 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     */
    private void configureJDBCCacheLoader(MappedParametrizedObjectEntry parameterEntry) throws RepositoryException
    {
-      String dataSourceName = parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DATASOURCE, null);
+      String dataSourceName = parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DATASOURCE, DBConstants.DB_DIALECT_AUTO);
       // if data source is defined, then inject correct data-types.
       // Also it cans be not defined and nothing should be injected 
       //(i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
       if (dataSourceName != null)
       {
-         String dialect = parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DIALECT, null);
+         String dialect = parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DIALECT, DBConstants.DB_DIALECT_AUTO);
          // detect dialect of data-source
          try
          {
@@ -255,11 +255,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
                   }
                }
 
-               if (dialect != null)
-               {
-                  dialect=dialect.toUpperCase();
-               }
-               else
+               dialect = dialect.toUpperCase();
+               if (dialect.equals(DBConstants.DB_DIALECT_AUTO))
                {
                   DatabaseMetaData metaData = jdbcConn.getMetaData();
                   dialect = DialectDetecter.detect(metaData);
