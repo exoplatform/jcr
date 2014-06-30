@@ -58,6 +58,7 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -83,6 +84,8 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
 {
 
    public static final String JBOSSCACHE_JDBC_CL_DATASOURCE = "jbosscache-cl-cache.jdbc.datasource";
+
+   public static final String JBOSSCACHE_JDBC_CL_DIALECT = "jbosscache-cl-cache.jdbc.dialect";
 
    public static final String JBOSSCACHE_JDBC_CL_NODE_COLUMN_TYPE = "jbosscache-cl-cache.jdbc.node.type";
 
@@ -317,7 +320,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
       // (i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
       if (dataSourceName != null)
       {
-         String dialect;
+         String dialect = parameterEntry.getParameterValue(JBOSSCACHE_JDBC_CL_DIALECT, DBConstants.DB_DIALECT_AUTO);
          // detect dialect of data-source
          try
          {
@@ -358,7 +361,12 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
                   }
                }
 
-               dialect = DialectDetecter.detect(jdbcConn.getMetaData());
+               dialect = dialect.toUpperCase();
+               if (dialect.equals(DBConstants.DB_DIALECT_AUTO))
+               {
+                  DatabaseMetaData metaData = jdbcConn.getMetaData();
+                  dialect = DialectDetecter.detect(metaData);
+               }
             }
             finally
             {
@@ -392,6 +400,10 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
          else if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
          {
             blobType = "LONGBLOB";
+            if (dialect.endsWith("-UTF8"))
+            {
+               charType = "VARCHAR(255)";
+            }
          }
          // ORACLE
          else if (dialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
@@ -642,7 +654,7 @@ public class CacheableLockManagerImpl extends AbstractCacheableLockManager
    /**
     * Make lock absolute Fqn, i.e. /$LOCKS/nodeID.
     *
-    * @param itemId String
+    * @param nodeId String
     * @return Fqn
     */
    private Fqn<String> makeLockFqn(String nodeId)

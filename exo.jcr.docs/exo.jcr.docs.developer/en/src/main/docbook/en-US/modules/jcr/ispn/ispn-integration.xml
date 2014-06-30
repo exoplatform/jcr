@@ -126,6 +126,7 @@
         &lt;property name="infinispan-cl-cache.jdbc.data.column" value="data" /&gt;
         &lt;property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" /&gt;
         &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.dialect" value="${dialect}" /&gt;
         &lt;property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" /&gt;
     &lt;/properties&gt;
 &lt;/lock-manager&gt;^
@@ -167,6 +168,11 @@
           <listitem>
             <para><abbrev>infinispan-cl-cache.jdbc.datasource</abbrev> - name
             of the datasource to use to store locks.</para>
+          </listitem>
+
+          <listitem>
+            <para><abbrev>infinispan-cl-cache.jdbc.dialect</abbrev> - dialect
+               of the database.</para>
           </listitem>
 
           <listitem>
