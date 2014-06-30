@@ -46,6 +46,7 @@ import java.io.Serializable;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -70,6 +71,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     *  The name to property cache configuration. 
     */
    public static final String INFINISPAN_JDBC_CL_DATASOURCE = "infinispan-cl-cache.jdbc.datasource";
+
+   public static final String INFINISPAN_JDBC_CL_DIALECT = "infinispan-cl-cache.jdbc.dialect";
 
    public static final String INFINISPAN_JDBC_CL_DATA_COLUMN = "infinispan-cl-cache.jdbc.data.type";
 
@@ -205,13 +208,13 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     */
    private void configureJDBCCacheLoader(MappedParametrizedObjectEntry parameterEntry) throws RepositoryException
    {
-      String dataSourceName = parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DATASOURCE, null);
+      String dataSourceName = parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DATASOURCE, DBConstants.DB_DIALECT_AUTO);
       // if data source is defined, then inject correct data-types.
       // Also it cans be not defined and nothing should be injected 
       //(i.e. no cache loader is used (possibly pattern is changed, to used another cache loader))
       if (dataSourceName != null)
       {
-         String dialect;
+         String dialect = parameterEntry.getParameterValue(INFINISPAN_JDBC_CL_DIALECT, DBConstants.DB_DIALECT_AUTO);
          // detect dialect of data-source
          try
          {
@@ -252,7 +255,12 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
                   }
                }
 
-               dialect = DialectDetecter.detect(jdbcConn.getMetaData());
+               dialect = dialect.toUpperCase();
+               if (dialect.equals(DBConstants.DB_DIALECT_AUTO))
+               {
+                  DatabaseMetaData metaData = jdbcConn.getMetaData();
+                  dialect = DialectDetecter.detect(metaData);
+               }
             }
             finally
             {
@@ -287,6 +295,10 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          else if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
          {
             blobType = "LONGBLOB";
+            if (dialect.endsWith("-UTF8"))
+            {
+               charType = "VARCHAR(255)";
+            }
          }
          // ORACLE
          else if (dialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
