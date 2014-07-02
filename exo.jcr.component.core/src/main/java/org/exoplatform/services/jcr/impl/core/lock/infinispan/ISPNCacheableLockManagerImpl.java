@@ -63,6 +63,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
     */
    public static final String INFINISPAN_JDBC_CL_DATASOURCE = "infinispan-cl-cache.jdbc.datasource";
 
+   public static final String INFINISPAN_JDBC_CL_DIALECT = "infinispan-cl-cache.jdbc.dialect";
+
    public static final String INFINISPAN_JDBC_CL_DATA_COLUMN = "infinispan-cl-cache.jdbc.data.type";
 
    public static final String INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN = "infinispan-cl-cache.jdbc.timestamp.type";
@@ -115,7 +117,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
 
          // configure cache loader parameters with correct DB data-types
          ISPNCacheFactory.configureCacheStore(config.getLockManager(), INFINISPAN_JDBC_CL_DATASOURCE,
-            INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_ID_COLUMN, INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN);
+            INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_ID_COLUMN, INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN
+            , INFINISPAN_JDBC_CL_DIALECT);
 
          cache =
             factory.createCache("L" + config.getUniqueName().replace("_", ""), config.getLockManager())

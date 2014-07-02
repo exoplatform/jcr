@@ -381,6 +381,7 @@ session.logout();
       &lt;property name="infinispan-cl-cache.jdbc.data.column" value="data" /&gt;
       &lt;property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" /&gt;
       &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr" /&gt;
+      &lt;property name="infinispan-cl-cache.jdbc.dialect" value="${dialect}" /&gt;
       &lt;property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory" /&gt;
    &lt;/properties&gt;
 &lt;/lock-manager&gt;</programlisting>
@@ -428,6 +429,11 @@ session.logout();
                 <para>"infinispan-cl-cache.jdbc.datasource" - The name of the
                 datasource to use to store the locks. The best idea is to use
                 the same as the oned used for the workspace.</para>
+              </listitem>
+              
+              <listitem>
+                <para>"infinispan-cl-cache.jdbc.dialect" - The dialect of the
+                database to use to store the locks.</para>
               </listitem>
             </itemizedlist>
           </listitem>

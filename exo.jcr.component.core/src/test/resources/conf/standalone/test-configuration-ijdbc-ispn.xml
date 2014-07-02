@@ -179,7 +179,7 @@
       <properties-param>
         <name>working-conf</name>
         <description>working-conf</description>
-        <property name="dialect" value="auto" />
+        <property name="dialect" value="${dialect}" />
         <property name="source-name" value="jdbcjcr"/>
         <property name="persister-class-name" value="org.exoplatform.services.jcr.impl.config.JDBCConfigurationPersister"/>
       </properties-param>
@@ -198,6 +198,7 @@
         <name>cache-configuration</name>
         <description>infinispan-configuration</description>
         <property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr"/>
+        <property name="infinispan-cl-cache.jdbc.dialect" value="${dialect}" />
         <property name="infinispan-configuration" value="conf/standalone/test-infinispan-quota.xml" />
       </properties-param>
     </init-params>

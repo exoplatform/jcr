@@ -27,6 +27,7 @@ import org.exoplatform.services.ispn.Utils;
 import org.exoplatform.services.jcr.config.MappedParametrizedObjectEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.TemplateConfigurationHelper;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
@@ -292,10 +293,12 @@ public class ISPNCacheFactory<K, V>
     * then nothing is overridden. Parameters are injected into the given parameterEntry.
     */
    public static void configureCacheStore(MappedParametrizedObjectEntry parameterEntry,
-      String dataSourceParamName, String dataColumnParamName, String idColumnParamName, String timeColumnParamName)
+                                          String dataSourceParamName, String dataColumnParamName, String idColumnParamName, String timeColumnParamName, String dialectParamName)
       throws RepositoryException
    {
       String dataSourceName = parameterEntry.getParameterValue(dataSourceParamName, null);
+
+      String dialect = parameterEntry.getParameterValue(dialectParamName, DBConstants.DB_DIALECT_AUTO).toUpperCase();
 
       // if data source is defined, then inject correct data-types.
       // Also it cans be not defined and nothing should be injected
@@ -316,7 +319,14 @@ public class ISPNCacheFactory<K, V>
       try
       {
          blobType = JDBCUtils.getAppropriateBlobType(dataSource);
-         charType = JDBCUtils.getAppropriateCharType(dataSource);
+         if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL) && dialect.endsWith("-UTF8"))
+         {
+            charType = "VARCHAR(255)";
+         }
+         else
+         {
+            charType = JDBCUtils.getAppropriateCharType(dataSource);
+         }
          timeStampType = JDBCUtils.getAppropriateTimestamp(dataSource);
       }
       catch (SQLException e)

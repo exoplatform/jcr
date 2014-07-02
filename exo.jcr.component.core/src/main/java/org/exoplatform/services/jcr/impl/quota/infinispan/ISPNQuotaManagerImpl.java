@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.quota.BaseQuotaManager;
 import org.exoplatform.services.jcr.impl.quota.QuotaManagerException;
 import org.exoplatform.services.jcr.impl.quota.QuotaPersister;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory;
 import org.exoplatform.services.naming.InitialContextInitializer;
@@ -49,6 +50,8 @@ public class ISPNQuotaManagerImpl extends BaseQuotaManager
    public static final String JGROUPS_CONFIGURATION = "jgroups-configuration";
 
    public static final String INFINISPAN_JDBC_CL_DATASOURCE = "infinispan-cl-cache.jdbc.datasource";
+
+   public static final String INFINISPAN_JDBC_CL_DIALECT = "infinispan-cl-cache.jdbc.dialect";
 
    public static final String INFINISPAN_JDBC_CL_CONNECTION_FACTORY = "infinispan-cl-cache.jdbc.connectionFactory";
 
@@ -147,7 +150,7 @@ public class ISPNQuotaManagerImpl extends BaseQuotaManager
 
       ISPNCacheFactory.configureCacheStore(qmEntry, INFINISPAN_JDBC_CL_DATASOURCE,
          INFINISPAN_JDBC_CL_DATA_COLUMN_TYPE, INFINISPAN_JDBC_CL_ID_COLUMN_TYPE,
-         INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN_TYPE);
+         INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN_TYPE, INFINISPAN_JDBC_CL_DIALECT);
 
       return qmEntry;
    }
@@ -168,6 +171,7 @@ public class ISPNQuotaManagerImpl extends BaseQuotaManager
 
       qmEntry.putParameterValue(INFINISPAN_CLUSTER_NAME, DEFAULT_INFINISPANE_CLUSTER_NAME);
       qmEntry.putParameterValue(JGROUPS_CONFIGURATION, DEFAULT_JGROUPS_CONFIGURATION);
+      qmEntry.putParameterValue(INFINISPAN_JDBC_CL_DIALECT, DBConstants.DB_DIALECT_AUTO);
    }
 
    private void putConfiguredValues(InitParams initParams, MappedParametrizedObjectEntry qmEntry)

@@ -37,6 +37,7 @@
       <value.storage.enabled>true</value.storage.enabled>
       <statistics.enabled>false</statistics.enabled>
       <batch.size>-1</batch.size>
+      <dialect>auto</dialect>
       <use.distributed.cache>false</use.distributed.cache>
       <properties.url.suffix>-sjdbc.properties</properties.url.suffix>
       <properties.url.prefix>classpath:/conf/standalone/default</properties.url.prefix>
@@ -268,6 +269,10 @@
                   <property>
                      <name>value-storage-enabled</name>
                      <value>${value.storage.enabled}</value>
+                  </property>
+                  <property>
+                     <name>dialect</name>
+                     <value>${dialect}</value>
                   </property>
                   <property>
                      <name>use-distributed-cache</name>
@@ -585,6 +590,10 @@
                            <value>${value.storage.enabled}</value>
                         </property>
                          <property>
+                           <name>dialect</name>
+                           <value>${dialect}</value>
+                         </property>
+                         <property>
                            <name>use-distributed-cache</name>
                            <value>${use.distributed.cache}</value>
                         </property>
@@ -674,6 +683,10 @@
                         <property>
                             <name>value-storage-enabled</name>
                             <value>${value.storage.enabled}</value>
+                        </property>
+                        <property>
+                            <name>dialect</name>
+                            <value>${dialect}</value>
                         </property>
                         <property>
                            <name>use-distributed-cache</name>

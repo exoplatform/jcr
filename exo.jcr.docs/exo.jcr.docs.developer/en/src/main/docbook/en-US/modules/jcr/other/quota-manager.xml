@@ -42,6 +42,7 @@
         &lt;name&gt;cache-configuration&lt;/name&gt;
         &lt;description&gt;infinispan-configuration&lt;/description&gt;
         &lt;property name="infinispan-cl-cache.jdbc.datasource" value="jdbcjcr"/&gt;
+        &lt;property name="infinispan-cl-cache.jdbc.dialect" value="${dialect}" /&gt;
         &lt;property name="infinispan-configuration" value="conf/standalone/test-infinispan-quota.xml" /&gt;
         &lt;property name="jgroups-configuration" value="jar:/conf/portal/cluster/udp-mux.xml" /&gt;
       &lt;/properties-param&gt;
@@ -129,6 +130,11 @@
           <listitem>
             <para><emphasis>infinispan-cl-cache.jdbc.timestamp.column
             </emphasis>— dafault value — timestamp</para>
+          </listitem>
+
+          <listitem>
+            <para><emphasis>infinispan-cl-cache.jdbc.dialect</emphasis> —
+             dafault value — auto</para>
           </listitem>
         </itemizedlist>
       </listitem>
