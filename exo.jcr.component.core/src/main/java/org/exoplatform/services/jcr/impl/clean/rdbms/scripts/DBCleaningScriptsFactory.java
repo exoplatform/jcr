@@ -68,7 +68,7 @@ public class DBCleaningScriptsFactory
       }
       else if (dialect.startsWith(DialectConstants.DB_DIALECT_H2))
       {
-         return new HSQLDBCleaningScipts(dialect, wsEntry);
+         return new H2CleaningScipts(dialect, wsEntry);
       }
       else if (dialect.startsWith(DialectConstants.DB_DIALECT_ORACLE))
       {
@@ -118,7 +118,7 @@ public class DBCleaningScriptsFactory
       }
       else if (dialect.startsWith(DialectConstants.DB_DIALECT_H2))
       {
-         return new HSQLDBCleaningScipts(dialect, rEntry);
+         return new H2CleaningScipts(dialect, rEntry);
       }
       else if (dialect.startsWith(DialectConstants.DB_DIALECT_ORACLE))
       {

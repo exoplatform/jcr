@@ -48,6 +48,8 @@ public abstract class DBCleaningScripts
 
    protected String refTableSuffix;
 
+   protected  boolean useSequence;
+
    protected final String dialect;
 
    protected final String workspaceName;
@@ -335,6 +337,10 @@ public abstract class DBCleaningScripts
       List<String> scripts = new ArrayList<String>();
       for (String query : JDBCUtils.splitWithSQLDelimiter(dbScripts))
       {
+         if (!useSequence && (query.contains(itemTableName + "_SEQ") || query.contains(itemTableName + "_NEXT_VAL")))
+         {
+            continue;
+         }
          scripts.add(JDBCUtils.cleanWhitespaces(query));
       }
 
@@ -362,6 +368,7 @@ public abstract class DBCleaningScripts
          itemTableSuffix = DBInitializerHelper.getItemTableSuffix(wsConfig);
          valueTableSuffix = DBInitializerHelper.getValueTableSuffix(wsConfig);
          refTableSuffix = DBInitializerHelper.getRefTableSuffix(wsConfig);
+         useSequence= DBInitializerHelper.useSequenceForOrderNumber(wsConfig) ;
       }
       catch (RepositoryConfigurationException e)
       {
