@@ -1622,27 +1622,27 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       }
       return new QPath(qentries);
    }
-   
+
    private void endChanges() throws InvalidItemStateException, RepositoryException
    {
       addChange(-1, -1);
    }
-   
+
    protected void addChange(int changeType) throws InvalidItemStateException, RepositoryException
    {
       addChange(changeStatus & 31, changeType);
    }
-   
+
    private void setOperationType(int operationType) throws InvalidItemStateException, RepositoryException
    {
       addChange(operationType, -1);
    }
-   
+
    private boolean updateBatchingEnabled()
    {
       return containerConfig.batchSize > 1;
    }
-   
+
    private void addChange(int operationType, int changeType) throws InvalidItemStateException, RepositoryException
    {
       if (!updateBatchingEnabled())
@@ -1675,6 +1675,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             {
                changeStatus = currentChangeStatus & 31;
                changeCount = 0;
+               // We make sure that the last change type has been took into account
+               currentChangeStatus |= changeType;
             }
             else
             {
@@ -1738,10 +1740,10 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                      ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
                      if (data == FAKE_NODE) //NOSONAR
                      {
-                        throw new RepositoryException("Current item cannot be found");                           
+                        throw new RepositoryException("Current item cannot be found");
                      }
-                     throw new JCRInvalidItemStateException("(delete) " + (data.isNode() ? "Node" : "Property")+ " not found "
-                        + data.getQPath().getAsString() + " " + data.getIdentifier()
+                     throw new JCRInvalidItemStateException("(delete) " + (data.isNode() ? "Node" : "Property")
+                        + " not found " + data.getQPath().getAsString() + " " + data.getIdentifier()
                         + ". Probably was deleted by another session ", data.getIdentifier(), ItemState.DELETED);
                   }
                }
@@ -1768,11 +1770,11 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                      ItemData data = getCurrentItem(currentChange, i, FAKE_PROPERTY);
                      if (data == FAKE_PROPERTY) //NOSONAR
                      {
-                        throw new RepositoryException("Current item cannot be found");                           
+                        throw new RepositoryException("Current item cannot be found");
                      }
-                     throw new JCRInvalidItemStateException("(update) Property not found " + data.getQPath().getAsString() + " "
-                              + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
-                              ItemState.UPDATED);
+                     throw new JCRInvalidItemStateException("(update) Property not found "
+                        + data.getQPath().getAsString() + " " + data.getIdentifier()
+                        + ". Probably was deleted by another session ", data.getIdentifier(), ItemState.UPDATED);
                   }
                }
             }
@@ -1787,14 +1789,14 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                      ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
                      if (data == FAKE_NODE) //NOSONAR
                      {
-                        throw new RepositoryException("Current item cannot be found");                           
+                        throw new RepositoryException("Current item cannot be found");
                      }
-                     throw new JCRInvalidItemStateException("(update) Node not found " + data.getQPath().getAsString() + " "
-                              + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
-                              ItemState.UPDATED);
+                     throw new JCRInvalidItemStateException("(update) Node not found " + data.getQPath().getAsString()
+                        + " " + data.getIdentifier() + ". Probably was deleted by another session ",
+                        data.getIdentifier(), ItemState.UPDATED);
                   }
                }
-            } 
+            }
             // Rename commands
             if ((currentChangeStatus & TYPE_RENAME_NODE) > 0)
             {
@@ -1807,11 +1809,11 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
                      ItemData data = getCurrentItem(currentChange, i, FAKE_NODE);
                      if (data == FAKE_NODE) //NOSONAR
                      {
-                        throw new RepositoryException("Current item cannot be found");                           
+                        throw new RepositoryException("Current item cannot be found");
                      }
-                     throw new JCRInvalidItemStateException("(rename) Node not found " + data.getQPath().getAsString() + " "
-                              + data.getIdentifier() + ". Probably was deleted by another session ", data.getIdentifier(),
-                              ItemState.RENAMED);
+                     throw new JCRInvalidItemStateException("(rename) Node not found " + data.getQPath().getAsString()
+                        + " " + data.getIdentifier() + ". Probably was deleted by another session ",
+                        data.getIdentifier(), ItemState.RENAMED);
                   }
                }
             }
@@ -1838,7 +1840,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
          }
          catch (SQLException e)
-         {            
+         {
             int index = -1;
             if (e instanceof BatchUpdateException)
             {
@@ -1860,69 +1862,56 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             }
             switch (currentChange)
             {
-               case TYPE_INSERT_NODE :
-               {
+               case TYPE_INSERT_NODE : {
                   exceptionHandler.handleAddException(e, getCurrentItem(currentChange, index, FAKE_NODE));
                   break;
                }
-               case TYPE_INSERT_PROPERTY :
-               {
+               case TYPE_INSERT_PROPERTY : {
                   exceptionHandler.handleAddException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
-                  break;                  
+                  break;
                }
-               case TYPE_INSERT_REFERENCE :
-               {
+               case TYPE_INSERT_REFERENCE : {
                   ItemData data = getCurrentItem(currentChange, index, FAKE_PROPERTY);
                   throw new RepositoryException("Can't read REFERENCE property (" + data.getQPath() + " "
                      + data.getIdentifier() + ") value: " + e.getMessage(), e);
                }
-               case TYPE_INSERT_VALUE :
-               {
+               case TYPE_INSERT_VALUE : {
                   exceptionHandler.handleAddException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
                   break;
                }
-               case TYPE_DELETE_VALUE :
-               {
+               case TYPE_DELETE_VALUE : {
                   exceptionHandler.handleDeleteException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
                   break;
                }
-               case TYPE_DELETE_VALUE_BY_ORDER_NUM :
-               {
+               case TYPE_DELETE_VALUE_BY_ORDER_NUM : {
                   exceptionHandler.handleUpdateException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
                   break;
                }
-               case TYPE_DELETE_REFERENCE :
-               {
+               case TYPE_DELETE_REFERENCE : {
                   exceptionHandler.handleDeleteException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
                   break;
                }
-               case TYPE_DELETE_REFERENCE_BY_ORDER_NUM :
-               {
+               case TYPE_DELETE_REFERENCE_BY_ORDER_NUM : {
                   exceptionHandler.handleDeleteException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
                   break;
                }
-               case TYPE_DELETE_ITEM :
-               {
+               case TYPE_DELETE_ITEM : {
                   exceptionHandler.handleDeleteException(e, getCurrentItem(currentChange, index, FAKE_NODE));
                   break;
                }
-               case TYPE_UPDATE_VALUE :
-               {
+               case TYPE_UPDATE_VALUE : {
                   exceptionHandler.handleUpdateException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
                   break;
                }
-               case TYPE_UPDATE_PROPERTY :
-               {
+               case TYPE_UPDATE_PROPERTY : {
                   exceptionHandler.handleUpdateException(e, getCurrentItem(currentChange, index, FAKE_PROPERTY));
                   break;
                }
-               case TYPE_UPDATE_NODE :
-               {
+               case TYPE_UPDATE_NODE : {
                   exceptionHandler.handleUpdateException(e, getCurrentItem(currentChange, index, FAKE_NODE));
                   break;
                }
-               case TYPE_RENAME_NODE :
-               {
+               case TYPE_RENAME_NODE : {
                   exceptionHandler.handleAddException(e, getCurrentItem(currentChange, index, FAKE_NODE));
                   break;
                }
@@ -1940,7 +1929,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          }
       }
    }
-   
+
    protected void addCurrentItem(int changeType)
    {
       if (updateBatchingEnabled())
