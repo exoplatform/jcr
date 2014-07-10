@@ -1613,6 +1613,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             {
                changeStatus = currentChangeStatus & 31;
                changeCount = 0;
+               // We make sure that the last change type has been took into account
+               currentChangeStatus |= changeType;
             }
             else
             {
