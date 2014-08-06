@@ -66,6 +66,8 @@ public class AddMetadataAction implements Action
     */
    private static Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.AddMetadataAction");
 
+   private static String MIMETYPE_SPREADSHEET = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
    /**
     * {@inheritDoc}
     */
@@ -124,10 +126,11 @@ public class AddMetadataAction implements Action
          throw new IllegalArgumentException("No DocumentReaderService configured for current container");
       }
 
-      Properties props = new Properties();
-      props = readerService.getDocumentReader(content.mimeType).getProperties(content.stream);
+      //PLF-6004 Ignore access to Excel file .xlsx
+      if(content.mimeType.equals(MIMETYPE_SPREADSHEET)) return new Properties();
 
-      return props;
+      return readerService.getDocumentReader(content.mimeType).getProperties(content.stream);
+
    }
 
    /**
