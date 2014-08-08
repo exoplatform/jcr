@@ -771,8 +771,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          // 1. Try from cache
          ItemData data = getCachedItemData(parentData, name, itemType);
 
+         boolean forceLoad = false;
+
+         if (data != null && !data.isNode() && !(data instanceof NullItemData))
+         {
+            forceLoad = forceLoad((PropertyData)data);
+         }
+
          // 2. Try from container
-         if (data == null)
+         if (data == null || forceLoad)
          {
             final DataRequest request = new DataRequest(parentData.getIdentifier(), name);
 
@@ -782,7 +789,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                // Try first to get the value from the cache since a
                // request could have been launched just before
                data = getCachedItemData(parentData, name, itemType);
-               if (data == null)
+
+               if (data != null && !data.isNode() && !(data instanceof NullItemData))
+               {
+                  forceLoad = forceLoad((PropertyData)data);
+               }
+
+               if (data == null || forceLoad)
                {
                   data = executeAction(new PrivilegedExceptionAction<ItemData>()
                   {
@@ -907,8 +920,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          // 1. Try from cache
          ItemData data = getCachedItemData(identifier);
 
+         boolean forceLoad = false;
+
+         if (data != null && !data.isNode() && !(data instanceof NullItemData))
+         {
+            forceLoad = forceLoad((PropertyData)data);
+         }
+
          // 2 Try from container
-         if (data == null)
+         if (data == null || forceLoad)
          {
             final DataRequest request = new DataRequest(identifier);
 
@@ -918,7 +938,12 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                // Try first to get the value from the cache since a
                // request could have been launched just before
                data = getCachedItemData(identifier);
-               if (data == null)
+
+               if (data != null && !data.isNode() && !(data instanceof NullItemData))
+               {
+                  forceLoad = forceLoad((PropertyData)data);
+               }
+               if (data == null || forceLoad)
                {
                   data = executeAction(new PrivilegedExceptionAction<ItemData>()
                   {
@@ -1013,9 +1038,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * Saves the list of changes from this storage using the given resource manager
-    * 
-    * @param changes
-    *          to commit
+    *
     * @param txResourceManager
     *          the resource manager to use
     * @throws InvalidItemStateException
@@ -2649,6 +2672,33 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          }
       }
    }
+
+   /**
+    * Check Property BLOB Values if someone has null file.
+    *
+    * @param prop PropertyData
+    * @throws RepositoryException
+    * @return <code>true</code> if the Property BLOB Values has null file, <code>false</code> otherwise.
+    */
+   private boolean forceLoad(PropertyData prop) throws RepositoryException
+   {
+      final List<ValueData> vals = prop.getValues();
+      for (int i = 0; i < vals.size(); i++)
+      {
+         ValueData vd = vals.get(i);
+         if (!vd.isByteArray())
+         {
+            // check if file is correct
+            FilePersistedValueData fpvd = (FilePersistedValueData)vd;
+            if (fpvd.getFile() == null)
+            {
+               return true;
+            }
+         }
+      }
+      return false;
+   }
+
 
    /**
     * {@inheritDoc}
