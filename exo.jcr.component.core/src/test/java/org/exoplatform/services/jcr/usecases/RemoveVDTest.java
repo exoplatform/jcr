@@ -22,12 +22,14 @@ import org.exoplatform.services.jcr.dataflow.serialization.ObjectReader;
 import org.exoplatform.services.jcr.dataflow.serialization.ObjectWriter;
 import org.exoplatform.services.jcr.dataflow.serialization.UnknownClassIdException;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
+import org.exoplatform.services.jcr.impl.dataflow.StreamValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.FilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectReaderImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectWriterImpl;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataReader;
 import org.exoplatform.services.jcr.impl.dataflow.serialization.PersistedValueDataWriter;
+import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -39,7 +41,7 @@ import javax.jcr.PropertyType;
 /**
  * Created by The eXo Platform SAS. <br/>
  * Date:
- * 
+ *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
  * @version $Id: RemoveVDTest.java 34801 2009-07-31 15:44:50Z dkatayev $
  */
@@ -118,5 +120,39 @@ public class RemoveVDTest extends BaseUsecasesTest
       assertTrue(vd2.getFile().exists());
 
       f.delete();
+   }
+
+   public void testRemoveSpoolFile() throws IOException, InterruptedException
+   {
+
+      // StreamPersistedValueData constructor variables
+      int orderNum = 0;
+      SpoolConfig spoolConfig = SpoolConfig.getDefaultSpoolConfig();
+      SpoolFile tempFile = SpoolFile.createTempFile("tempFile", ".tmp", spoolConfig.tempDirectory);
+      File file = createBLOBTempFile("file", 300);
+
+      StreamValueData spvd = new StreamPersistedValueData(
+            orderNum,
+            tempFile,
+            file,
+            spoolConfig);
+
+      // Update the persisted file reference so that the tempFile is dropped,
+      // and add tempFile to file cleaner
+      ((StreamPersistedValueData) spvd).setPersistedFile(file);
+
+      //Add tempFile to be delete with the fileCleaner thread
+      spoolConfig.fileCleaner.addFile(tempFile);
+
+      //Start the fileCleaner
+      spoolConfig.fileCleaner.halt();
+
+      // Check that the temporary file has been removed
+      assertFalse(tempFile.exists());
+
+      // Check that the persisted copy is created
+      assertTrue((spvd != null) && ((StreamPersistedValueData) spvd).getFile().exists());
+
+      file.deleteOnExit();
    }
 }
