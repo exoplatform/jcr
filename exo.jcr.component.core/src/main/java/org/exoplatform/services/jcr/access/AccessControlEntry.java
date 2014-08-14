@@ -18,10 +18,7 @@
  */
 package org.exoplatform.services.jcr.access;
 
-import org.exoplatform.services.security.IdentityConstants;
 import org.exoplatform.services.security.MembershipEntry;
-
-import java.util.StringTokenizer;
 
 /**
  * Created by The eXo Platform SAS<br>
@@ -129,30 +126,13 @@ public class AccessControlEntry
     */
    public static AccessControlEntry parse(String pstring)
    {
-      StringTokenizer parser = new StringTokenizer(pstring, AccessControlEntry.DELIMITER);
-      String identity = parser.nextToken();
-      String permission = parser.nextToken();
-
-      String[] persArray = new String[2];
-
-      if (identity != null)
-      {
-         persArray[0] = identity;
-      }
-      else
-      {
-         persArray[0] = IdentityConstants.ANY;
-      }
-      if (permission != null)
-      {
-         persArray[1] = permission;
-      }
-      else
-      {
-         persArray[1] = PermissionType.READ;
-      }
-
+      if (pstring == null)
+         throw new IllegalArgumentException("The string representation of an AccessControlEntry cannot be null");
+      int index = pstring.lastIndexOf(AccessControlEntry.DELIMITER);
+      if (index == -1)
+         throw new IllegalArgumentException("The string representation of an AccessControlEntry must contain the delimiter '" + AccessControlEntry.DELIMITER + "'");
+      String identity = pstring.substring(0, index);
+      String permission = pstring.substring(index + 1);
       return new AccessControlEntry(identity, permission);
    }
-
 }

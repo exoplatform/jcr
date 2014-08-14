@@ -29,10 +29,18 @@ public class TestPermissionValue extends TestCase
       AccessControlEntry accessEntry = AccessControlEntry.parse("root read");
       assertEquals("root", accessEntry.getIdentity());
       assertEquals("read", accessEntry.getPermission());
+      // Identity with space
+      String identity = "m ar  y";
+      accessEntry = AccessControlEntry.parse(identity + " read");
+      assertEquals(identity, accessEntry.getIdentity());
+      assertEquals("read", accessEntry.getPermission());
    }
 
    public void testAsString() throws Exception
    {
       assertEquals("root read", new PermissionValue("root", "read").getString());
+      // Identity with space
+      String identity = "m ar  y";
+      assertEquals(identity + " read", new PermissionValue(identity, "read").getString());
    }
 }
