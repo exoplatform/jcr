@@ -113,10 +113,14 @@ public class AccessControlList implements Externalizable
       while (listTokenizer.hasMoreTokens())
       {
          String entry = listTokenizer.nextToken();
-         StringTokenizer entryTokenizer = new StringTokenizer(entry, AccessControlEntry.DELIMITER);
-         if (entryTokenizer.countTokens() != 2)
-            throw new RepositoryException("AccessControlEntry " + entry + " is empty or have a bad format");
-         accessList.add(new AccessControlEntry(entryTokenizer.nextToken(), entryTokenizer.nextToken()));
+         try
+         {
+            accessList.add(AccessControlEntry.parse(entry));
+         }
+         catch (IllegalArgumentException e)
+         {
+            throw new RepositoryException("AccessControlEntry " + entry + " is empty or have a bad format", e);
+         }
       }
    }
    /**

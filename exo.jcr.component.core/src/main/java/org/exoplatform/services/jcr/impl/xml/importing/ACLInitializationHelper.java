@@ -23,7 +23,6 @@ import org.exoplatform.services.jcr.access.AccessControlList;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>
@@ -105,8 +104,7 @@ public class ACLInitializationHelper
 
       for (String perm : exoPermissions)
       {
-         StringTokenizer parser = new StringTokenizer(perm, AccessControlEntry.DELIMITER);
-         naPermissions.add(new AccessControlEntry(parser.nextToken(), parser.nextToken()));
+         naPermissions.add(AccessControlEntry.parse(perm));
       }
 
       return naPermissions;

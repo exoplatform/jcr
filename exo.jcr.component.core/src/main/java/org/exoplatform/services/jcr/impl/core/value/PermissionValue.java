@@ -73,11 +73,6 @@ public class PermissionValue extends BaseValue
    {
       super(TYPE, new TransientValueData(new AccessControlEntry(identity, permission)));
 
-      if (identity != null && identity.indexOf(" ") != -1)
-      {
-         throw new RuntimeException("Identity should not contain ' '");
-      }
-
       if (permission != null && !permission.equals(PermissionType.READ) && !permission.equals(PermissionType.ADD_NODE)
          && !permission.equals(PermissionType.REMOVE) && !permission.equals(PermissionType.SET_PROPERTY))
       {

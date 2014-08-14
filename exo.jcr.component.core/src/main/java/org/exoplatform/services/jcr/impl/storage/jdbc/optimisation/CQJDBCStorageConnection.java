@@ -72,7 +72,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.StringTokenizer;
 import java.util.TreeSet;
 
 import javax.jcr.InvalidItemStateException;
@@ -1215,17 +1214,16 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       {
          for (TempPropertyData value : permValues)
          {
-            StringTokenizer parser;
+            AccessControlEntry ace;
             try
             {
-               parser =
-                  new StringTokenizer(ValueDataUtil.getString(value.getValueData()), AccessControlEntry.DELIMITER);
+               ace = AccessControlEntry.parse(ValueDataUtil.getString(value.getValueData()));
             }
             catch (RepositoryException e)
             {
                throw new IOException(e.getMessage(), e);
             }
-            naPermissions.add(new AccessControlEntry(parser.nextToken(), parser.nextToken()));
+            naPermissions.add(ace);
          }
 
          return naPermissions;
