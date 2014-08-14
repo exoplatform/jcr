@@ -22,11 +22,17 @@ import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ExtendedNode;
+import org.exoplatform.services.jcr.core.ManageableRepository;
+import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
+import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.version.VersionHistoryImpl;
 import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
+import org.exoplatform.services.organization.OrganizationService;
+import org.exoplatform.services.organization.User;
 import org.exoplatform.services.security.IdentityConstants;
 
 import java.util.ArrayList;
@@ -1221,5 +1227,70 @@ public class TestPermissions extends BaseStandaloneTest
       assertEquals(2, enSub2.getACL().getPermissions("mary").size());
       assertEquals(2, enSub2.getACL().getPermissions("*:/platform/administrators").size());
       s.logout();
+   }
+
+   public void testPermissionWithIdentityWithSpace() throws Exception
+   {
+      String identity = "m ar  y";
+      OrganizationService os = (OrganizationService)container.getComponentInstanceOfType(OrganizationService.class);
+      User user = os.getUserHandler().createUserInstance(identity);
+      user.setPassword("exo");
+      os.getUserHandler().createUser(user, false);
+      Credentials credentials = new CredentialsImpl(identity, "exo".toCharArray());
+      ManageableRepository repository = repositoryService.getRepository("db2");
+      Session s = repository.login(credentials, "ws");
+
+      //Provide access to the special identity to the node
+      NodeImpl node = (NodeImpl)sessionWS.getRootNode().addNode("testPermissionWithIdentityWithSpace");
+      node.addMixin("exo:privilegeable");
+      node.setPermission(identity, PermissionType.ALL);
+      node.setPermission("admin", PermissionType.ALL);
+      node.removePermission(IdentityConstants.ANY);
+      sessionWS.save();
+
+      try
+      {
+         sessionMaryWS.getItem("/testPermissionWithIdentityWithSpace");
+         fail("Exception should be thrown.");
+      }
+      catch (AccessDeniedException e)
+      {
+      }
+
+      Node nodeTest = (Node)s.getItem("/testPermissionWithIdentityWithSpace");
+      Node subnodeTest = nodeTest.addNode("node");
+      nodeTest.setProperty("property", "foo");
+      nodeTest.save();
+      assertTrue(sessionWS.itemExists("/testPermissionWithIdentityWithSpace/node"));
+      assertTrue(sessionWS.itemExists("/testPermissionWithIdentityWithSpace/property"));
+      nodeTest.setProperty("property", (String)null);
+      subnodeTest.remove();
+      nodeTest.save();
+
+      assertFalse(sessionWS.itemExists("/testPermissionWithIdentityWithSpace/node"));
+      assertFalse(sessionWS.itemExists("/testPermissionWithIdentityWithSpace/property"));
+
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+
+      WorkspaceStorageCache wsCache = (WorkspaceStorageCache)wsc.getComponent(WorkspaceStorageCache.class);
+      if (wsCache instanceof Backupable)
+      {
+         // Clear cache
+         ((Backupable)wsCache).clean();
+         nodeTest = (Node)s.getItem("/testPermissionWithIdentityWithSpace");
+         subnodeTest = nodeTest.addNode("node");
+         nodeTest.setProperty("property", "foo");
+         nodeTest.save();
+         assertTrue(sessionWS.itemExists("/testPermissionWithIdentityWithSpace/node"));
+         assertTrue(sessionWS.itemExists("/testPermissionWithIdentityWithSpace/property"));
+         nodeTest.setProperty("property", (String)null);
+         subnodeTest.remove();
+         nodeTest.save();
+
+         assertFalse(sessionWS.itemExists("/testPermissionWithIdentityWithSpace/node"));
+         assertFalse(sessionWS.itemExists("/testPermissionWithIdentityWithSpace/property"));
+      }
+      s.logout();
+      os.getUserHandler().removeUser(identity, false);
    }
 }
