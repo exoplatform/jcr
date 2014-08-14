@@ -57,11 +57,12 @@ public abstract class CalendarValueData extends AbstractValueData
          // We implement our own method equal because the default one is too restrictive, indeed two time zones
          // with the same offset but with different IDs should not be considered as different
          Calendar that = ((CalendarValueData)another).value;
-         return that.getTimeInMillis() == value.getTimeInMillis() && that.isLenient() == value.isLenient()
+         return that.getTimeInMillis() == value.getTimeInMillis()
+            && that.isLenient() == value.isLenient()
             && that.getFirstDayOfWeek() == value.getFirstDayOfWeek()
             && that.getMinimalDaysInFirstWeek() == value.getMinimalDaysInFirstWeek()
-            && that.get(Calendar.ZONE_OFFSET) == value.get(Calendar.ZONE_OFFSET)
-            && that.get(Calendar.DST_OFFSET) == value.get(Calendar.DST_OFFSET);
+            && that.get(Calendar.ZONE_OFFSET) + that.get(Calendar.DST_OFFSET) == value.get(Calendar.ZONE_OFFSET)
+               + value.get(Calendar.DST_OFFSET);
       }
 
       return false;

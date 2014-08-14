@@ -77,11 +77,12 @@ public class TestDateValueFormat extends JcrImplBaseTest
    {
       // We implement our own method equal because the default one is too restrictive, indeed two time zones
       // with the same offset but with different IDs should not be considered as different
-      return c1.getTimeInMillis() == c2.getTimeInMillis() && c1.isLenient() == c2.isLenient()
+      return c1.getTimeInMillis() == c2.getTimeInMillis()
+         && c1.isLenient() == c2.isLenient()
          && c1.getFirstDayOfWeek() == c2.getFirstDayOfWeek()
          && c1.getMinimalDaysInFirstWeek() == c2.getMinimalDaysInFirstWeek()
-         && c1.get(Calendar.ZONE_OFFSET) == c2.get(Calendar.ZONE_OFFSET)
-         && c1.get(Calendar.DST_OFFSET) == c2.get(Calendar.DST_OFFSET);
+         && c1.get(Calendar.ZONE_OFFSET) + c1.get(Calendar.DST_OFFSET) == c2.get(Calendar.ZONE_OFFSET)
+            + c2.get(Calendar.DST_OFFSET);
    }
 
    /**
