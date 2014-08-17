@@ -902,6 +902,37 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    /**
     * {@inheritDoc}
     */
+   public boolean remove(String identifier, ItemData item)
+   {
+      boolean result = false;
+      ItemData data = get(identifier);
+      boolean inTransaction = cache.isTransactionActive();
+      try
+      {
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+         cache.setLocal(true);
+         if (data != null && data.equals(item))
+         {
+            result = cache.removeNode(makeItemFqn(identifier));
+         }
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            dedicatedTxCommit();
+         }
+      }
+      return result;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public void onSaveItems(final ItemStateChangesLog itemStates)
    {
       //  if something happen we will rollback changes 

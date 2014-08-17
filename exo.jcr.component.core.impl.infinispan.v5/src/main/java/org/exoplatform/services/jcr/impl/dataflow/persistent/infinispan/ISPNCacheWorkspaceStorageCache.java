@@ -716,6 +716,34 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       removeItem(item);
    }
 
+  /**
+   * {@inheritDoc}
+   */
+   public boolean remove(String identifier, ItemData item)
+   {
+      boolean result;
+      boolean inTransaction = cache.isTransactionActive();
+      try
+      {
+         if (!inTransaction)
+         {
+            cache.beginTransaction();
+         }
+         cache.setLocal(true);
+         result = cache.remove(new CacheId(getOwnerId(), identifier), item);
+         cache.commitTransaction();
+      }
+      finally
+      {
+         cache.setLocal(false);
+         if (!inTransaction)
+         {
+            dedicatedTxCommit();
+         }
+      }
+      return result;
+   }
+
    /**
     * {@inheritDoc}
     */

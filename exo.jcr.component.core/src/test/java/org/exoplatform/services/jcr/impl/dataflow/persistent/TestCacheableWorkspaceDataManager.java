@@ -370,6 +370,11 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
          this.itemData = null;
       }
 
+      public boolean remove(String identifier, ItemData item)
+      {
+         return false;
+      }
+
       public void rollbackTransaction()
       {
       }

@@ -85,11 +85,11 @@ import javax.transaction.TransactionManager;
 
 /**
  * Created by The eXo Platform SAS. 
- * 
+ *
  * <br/>
  * Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 13.04.2006
- * 
+ *
  * @version $Id$
  */
 @Managed
@@ -179,7 +179,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * ItemData request, used on get operations.
-    * 
+    *
     */
    protected class DataRequest
    {
@@ -245,7 +245,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       /**
        * DataRequest constructor.
-       * 
+       *
        * @param parentId
        *          parent id
        * @param type
@@ -264,7 +264,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       /**
        * DataRequest constructor.
-       * 
+       *
        * @param parentId
        *          parent id
        * @param name
@@ -284,7 +284,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       /**
        * DataRequest constructor.
-       * 
+       *
        * @param id
        *          Item id
        */
@@ -323,7 +323,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       /**
        * Await this thread for another one running same request.
-       * 
+       *
        */
       void await()
       {
@@ -384,8 +384,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * CacheableWorkspaceDataManager constructor.
-    * 
-    * @param wsConfig 
+    *
+    * @param wsConfig
     *          WorkspaceEntry used to fetch bloom filter parameters
     * @param dataContainer
     *          Workspace data container (persistent level)
@@ -395,7 +395,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          System Workspace data container (persistent level)
     * @param txResourceManager
     *          the resource manager used to manage the whole tx
-    * @param transactionService 
+    * @param transactionService
     *          TransactionService  
     * @param rpcService
     *          the service for executing commands on all nodes of cluster
@@ -435,8 +435,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * CacheableWorkspaceDataManager constructor.
-    * 
-    * @param wsConfig 
+    *
+    * @param wsConfig
     *          WorkspaceEntry used to fetch bloom filter parameters
     * @param dataContainer
     *          Workspace data container (persistent level)
@@ -457,8 +457,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * CacheableWorkspaceDataManager constructor.
-    * 
-    * @param wsConfig 
+    *
+    * @param wsConfig
     *          WorkspaceEntry used to fetch bloom filter parameters
     * @param dataContainer
     *          Workspace data container (persistent level)
@@ -503,8 +503,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * CacheableWorkspaceDataManager constructor.
-    * 
-    * @param wsConfig 
+    *
+    * @param wsConfig
     *          WorkspaceEntry used to fetch bloom filter parameters
     * @param dataContainer
     *          Workspace data container (persistent level)
@@ -524,8 +524,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * CacheableWorkspaceDataManager constructor.
-    * 
-    * @param wsConfig 
+    *
+    * @param wsConfig
     *          WorkspaceEntry used to fetch bloom filter parameters
     * @param dataContainer
     *          Workspace data container (persistent level)
@@ -560,7 +560,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * Get Items Cache.
-    * 
+    *
     * @return WorkspaceStorageCache
     */
    public WorkspaceStorageCache getCache()
@@ -776,6 +776,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          if (data != null && !data.isNode() && !(data instanceof NullItemData))
          {
             forceLoad = forceLoad((PropertyData)data);
+            if (forceLoad)
+            {
+               cache.remove(data.getIdentifier(),data);
+            }
          }
 
          // 2. Try from container
@@ -793,6 +797,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                if (data != null && !data.isNode() && !(data instanceof NullItemData))
                {
                   forceLoad = forceLoad((PropertyData)data);
+                  if (forceLoad)
+                  {
+                     cache.remove(data.getIdentifier(),data);
+                  }
                }
 
                if (data == null || forceLoad)
@@ -907,7 +915,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Do the same thing as getItemData(identifier), but ACL initialization can be specified.
     * If doInitACL is true (default value for getItemData(identifier)) ACL will be initialized.
-    * 
+    *
     * @param identifier
     * @param doInitACL
     * @return
@@ -925,6 +933,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          if (data != null && !data.isNode() && !(data instanceof NullItemData))
          {
             forceLoad = forceLoad((PropertyData)data);
+            if (forceLoad)
+            {
+               cache.remove(data.getIdentifier(),data);
+            }
          }
 
          // 2 Try from container
@@ -942,6 +954,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                if (data != null && !data.isNode() && !(data instanceof NullItemData))
                {
                   forceLoad = forceLoad((PropertyData)data);
+                  if (forceLoad)
+                  {
+                     cache.remove(data.getIdentifier(),data);
+                  }
                }
                if (data == null || forceLoad)
                {
@@ -1103,7 +1119,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          }
       }
    }
-   
+
    private void doSave(final ItemStateChangesLog changesLog, TransactionableResourceManager txResourceManager)
       throws RepositoryException
    {
@@ -1111,7 +1127,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          throw new RepositoryException("Data container is stopped");
       }
-      
+
       ChangesLogWrapper logWrapper = new ChangesLogWrapper(changesLog);
 
       if (isTxAware())
@@ -1268,7 +1284,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * Get cached ItemData.
-    * 
+    *
     * @param parentData
     *          parent
     * @param name
@@ -1287,7 +1303,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * Returns an item from cache by Identifier or null if the item don't cached.
-    * 
+    *
     * @param identifier
     *          Item id
     * @return ItemData
@@ -1301,7 +1317,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * Get child NodesData.
-    * 
+    *
     * @param nodeData
     *          parent
     * @param forcePersistentRead
@@ -1566,7 +1582,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * Get referenced properties data.
-    * 
+    *
     * @param identifier
     *          referenceable identifier
     * @return List<PropertyData>
@@ -1620,7 +1636,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * Get child PropertyData.
-    * 
+    *
     * @param nodeData
     *          parent
     * @param forcePersistentRead
@@ -1634,12 +1650,29 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    {
 
       List<PropertyData> childProperties = null;
+      boolean forceLoad;
+      boolean skip =  false;
       if (!forcePersistentRead && cache.isEnabled())
       {
          childProperties = cache.getChildProperties(nodeData);
          if (childProperties != null)
          {
-            return childProperties;
+            for (PropertyData prop : childProperties)
+            {
+               if (prop != null && !(prop instanceof NullPropertyData))
+               {
+                  forceLoad = forceLoad(prop);
+                  if (forceLoad)
+                  {
+                     cache.remove(prop.getIdentifier(), prop);
+                     skip = true;
+                  }
+               }
+            }
+            if (!skip)
+            {
+               return childProperties;
+            }
          }
       }
       final DataRequest request = new DataRequest(nodeData.getIdentifier(), DataRequest.GET_PROPERTIES);
@@ -1652,9 +1685,26 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             // Try first to get the value from the cache since a
             // request could have been launched just before
             childProperties = cache.getChildProperties(nodeData);
+            skip = false;
+            forceLoad = false;
             if (childProperties != null)
             {
-               return childProperties;
+               for (PropertyData prop : childProperties)
+               {
+                  if (prop != null  && !(prop instanceof NullPropertyData))
+                  {
+                     forceLoad = forceLoad(prop);
+                  }
+                  if (forceLoad)
+                  {
+                     skip = true;
+                     cache.remove(prop.getIdentifier(), prop);
+                  }
+               }
+               if (!skip)
+               {
+                  return childProperties;
+               }
             }
          }
          return executeAction(new PrivilegedExceptionAction<List<PropertyData>>()
@@ -1698,10 +1748,27 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
 
       // 1. check cache - outside data request
+      boolean forceLoad= false;
+      boolean skip= false;
       List<PropertyData> childPropsList = cache.getChildProperties(nodeData);
       if (childPropsList != null)
       {
-         return childPropsList;
+         for (PropertyData prop : childPropsList)
+         {
+            if (prop != null && !(prop instanceof NullPropertyData))
+            {
+               forceLoad = forceLoad(prop);
+            }
+            if (forceLoad)
+            {
+               skip = true;
+               cache.remove(prop.getIdentifier(), prop);
+            }
+         }
+         if (!skip)
+         {
+            return childPropsList;
+         }
       }
 
       final Map<String, PropertyData> childPropsMap = new HashMap<String, PropertyData>();
@@ -1716,7 +1783,15 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                if (!(data instanceof NullPropertyData))
                {
-                  childPropsMap.put(data.getIdentifier(), (PropertyData)data);
+                  forceLoad = forceLoad((PropertyData)data);
+                  if (!forceLoad)
+                  {
+                     childPropsMap.put(data.getIdentifier(), (PropertyData)data);
+                  }
+                  else
+                  {
+                     uncachedPatterns.add(patternFilters.get(i));
+                  }
                }
             }
             else
@@ -1734,7 +1809,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                //merge results
                for (int j = 0, length = cachedItemList.size(); j < length; j++)
                {
-                  childPropsMap.put(cachedItemList.get(j).getIdentifier(), cachedItemList.get(j));
+                  forceLoad = forceLoad(cachedItemList.get(j));
+                  if (!forceLoad)
+                  {
+                     childPropsMap.put(cachedItemList.get(j).getIdentifier(), cachedItemList.get(j));
+                  }
+                  else
+                  {
+                     uncachedPatterns.add(patternFilters.get(i));
+                     break;
+                  }
                }
             }
             else
@@ -1772,15 +1856,34 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             // Try first to get the value from the cache since a
             // request could have been launched just before
             childPropsList = cache.getChildProperties(nodeData);
+            skip = false;
+            forceLoad = false;
+
             if (childPropsList != null)
             {
-               return childPropsList;
+               for (PropertyData prop : childPropsList)
+               {
+                  if (prop != null && !(prop instanceof NullPropertyData))
+                  {
+                     forceLoad = forceLoad(prop);
+                  }
+                  if (forceLoad)
+                  {
+                     cache.remove(prop.getIdentifier(),prop);
+                     skip = true;
+                  }
+               }
+               if (!skip)
+               {
+                  return childPropsList;
+               }
             }
 
             Iterator<QPathEntryFilter> patternIterator = uncachedPatterns.iterator();
             while (patternIterator.hasNext())
             {
                QPathEntryFilter pattern = patternIterator.next();
+               forceLoad = false;
                if (pattern.isExactName())
                {
                   DataRequest exactNameRequest = new DataRequest(nodeData.getIdentifier(), pattern.getQPathEntry());
@@ -1792,27 +1895,50 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   {
                      if (!(data instanceof NullPropertyData))
                      {
-                        childPropsMap.put(data.getIdentifier(), (PropertyData)data);
+                        forceLoad = forceLoad((PropertyData)data);
+                        if (!forceLoad)
+                        {
+                           childPropsMap.put(data.getIdentifier(), (PropertyData)data);
+                           patternIterator.remove();
+                        }
+                        else
+                        {
+                           cache.remove(data.getIdentifier(), data);
+                        }
                      }
-                     patternIterator.remove();
                   }
                }
                else
                {
                   // get properties list by pattern
                   List<PropertyData> cachedItemList = cache.getChildProperties(nodeData, pattern);
+                  skip = false;
                   if (cachedItemList != null)
                   {
-                     //merge results
                      for (int j = 0, length = cachedItemList.size(); j < length; j++)
                      {
-                        childPropsMap.put(cachedItemList.get(j).getIdentifier(), cachedItemList.get(j));
+                        if (cachedItemList.get(j) != null && !cachedItemList.get(j).isNode() && !(cachedItemList.get(j) instanceof NullItemData))
+                        {
+                           forceLoad = forceLoad(cachedItemList.get(j));
+                        }
+                        if (forceLoad)
+                        {
+                           skip = true;
+                           cache.remove(cachedItemList.get(j).getIdentifier(),cachedItemList.get(j));
+                        }
                      }
-                     patternIterator.remove();
+                     //merge results
+                     if (!skip)
+                     {
+                        for (int j = 0, length = cachedItemList.size(); j < length; j++)
+                        {
+                           childPropsMap.put(cachedItemList.get(j).getIdentifier(), cachedItemList.get(j));
+                        }
+                        patternIterator.remove();
+                     }
                   }
                }
             }
-            patternIterator = null;
 
             // execute all patterns and put result in cache
             if (!uncachedPatterns.isEmpty())
@@ -1881,7 +2007,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * Get persisted ItemData.
-    * 
+    *
     * @param parentData
     *          parent
     * @param name
@@ -1919,7 +2045,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * Get persisted ItemData.
-    * 
+    *
     * @param parentData
     *          parent
     * @param name
@@ -1961,7 +2087,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * Call
     * {@link org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager#getItemData(java.lang.String)
     * WorkspaceDataManager.getItemDataByIdentifier(java.lang.String)} and cache result if non null returned.
-    * 
+    *
     * @see org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager#getItemData(java.lang.String)
     */
    protected ItemData getPersistedItemData(String identifier) throws RepositoryException
@@ -1992,7 +2118,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * Get child PropertyData list (without ValueData).
-    * 
+    *
     * @param nodeData
     *          parent
     * @param forcePersistentRead
@@ -2058,7 +2184,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Fix Property BLOB Values if someone has null file (swap actually) 
     * by reading the content from the storage (VS or JDBC no matter).
-    * 
+    *
     * @param prop PropertyData
     * @throws RepositoryException
     */
@@ -2242,7 +2368,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          });
       }
    }
-   
+
    /**
     * Unregister remote commands.
     */
@@ -2254,7 +2380,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          rpcService.unregisterCommand(resume);
          rpcService.unregisterCommand(requestForResponsibleForResuming);
       }
-      
+
    }
 
    private <T> T executeAction(PrivilegedExceptionAction<T> action) throws RepositoryException
@@ -2394,7 +2520,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Traverse items parents in persistent storage for ACL containing parent. Same work is made in
     * SessionDataManager.getItemData(NodeData, QPathEntry[]) but for session scooped items.
-    * 
+    *
     * @param node
     *          - item
     * @param search
@@ -2446,7 +2572,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    /**
     * Find Item by identifier to get the missing ACL information.
-    * 
+    *
     * @param identifier the id of the node that we are looking for to fill the ACL research
     * @param search the ACL search describing what we are looking for
     * @return NodeData, data by identifier
@@ -2637,7 +2763,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       isStopped.set(true);
       resumeLocally();
-      
+
       unregisterRemoteCommands();
    }
 
