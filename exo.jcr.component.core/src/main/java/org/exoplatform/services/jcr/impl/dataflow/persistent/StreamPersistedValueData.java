@@ -147,7 +147,14 @@ public class StreamPersistedValueData extends FilePersistedValueData
 
       this.file = file;
 
-      this.tempFile = null;
+      // JCR-2326 Release the current ValueData from tempFile users before
+      // setting its reference to null so it will be garbage collected.
+      if (this.tempFile != null)
+      {
+         this.tempFile.release(this);
+         this.tempFile = null;
+      }
+
       this.stream = null;
    }
 
