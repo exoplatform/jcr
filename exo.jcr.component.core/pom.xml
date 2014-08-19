@@ -308,7 +308,6 @@
                   <exclude>org/exoplatform/services/jcr/**/usecases/BaseUsecasesTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/usecases/common/RemoveSameNameSiblingUnfixedTest.java</exclude>
                   <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
-                  <exclude>org/exoplatform/services/jcr/impl/core/query/TestDateSearch.java</exclude>
                   <!-- Implementation Specific Excludes -->
                   <exclude>${test.cache.exclude}</exclude>
                   <exclude>${test.exclude}</exclude>
@@ -744,7 +743,6 @@
                         <exclude>org/exoplatform/services/jcr/**/usecases/BaseUsecasesTest.java</exclude>
                         <exclude>org/exoplatform/services/jcr/usecases/common/RemoveSameNameSiblingUnfixedTest.java</exclude>
                         <exclude>org/exoplatform/services/jcr/**/impl/**/SQLBenchmarkTest.java</exclude>
-                        <exclude>org/exoplatform/services/jcr/impl/core/query/TestDateSearch.java</exclude>
                         <!-- From TCK -->
                         <exclude>org/apache/jackrabbit/test/api/TestAll.java</exclude>
                         <exclude>org/apache/jackrabbit/test/api/**/Abstract*.java</exclude>
