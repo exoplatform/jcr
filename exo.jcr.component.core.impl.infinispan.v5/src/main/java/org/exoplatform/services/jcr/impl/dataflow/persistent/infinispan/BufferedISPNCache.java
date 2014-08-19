@@ -501,6 +501,32 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       }
    }
 
+   /**
+    * Remove container.
+    */
+   public static class RemoveIfExistKeyContainer extends ChangesContainer
+   {
+      private final Object value;
+
+      public RemoveIfExistKeyContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache,
+         int historicalIndex, boolean local, Boolean allowLocalChanges)
+      {
+         super(key, ChangesType.REMOVE, cache, historicalIndex, local, allowLocalChanges);
+         this.value = value;
+      }
+
+      @Override
+      public void apply()
+      {
+         setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP).remove(key, value);
+      }
+
+      void applyToBuffer(CompressedISPNChangesBuffer buffer)
+      {
+         buffer.put(key, null);
+      }
+   }
+
    public BufferedISPNCache(Cache<CacheKey, Object> parentCache, Boolean allowLocalChanges)
    {
       this.parentCache = parentCache.getAdvancedCache();
@@ -870,7 +896,10 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     */
    public boolean remove(Object key, Object value)
    {
-      return parentCache.remove(key, value);
+      CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new RemoveIfExistKeyContainer((CacheKey)key, value, parentCache, changesContainer.getHistoryIndex(),
+         local.get(), allowLocalChanges));
+      return false;
    }
 
    /**
