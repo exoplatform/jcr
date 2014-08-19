@@ -769,7 +769,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       if (cache.isEnabled())
       {
          // 1. Try from cache
-         ItemData data = getCachedItemData(parentData, name, itemType);
+         ItemData data = getCachedCleanItemData(parentData, name, itemType);
 
          // 2. Try from container
          if (data == null)
@@ -781,7 +781,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                request.start();
                // Try first to get the value from the cache since a
                // request could have been launched just before
-               data = getCachedItemData(parentData, name, itemType);
+               data = getCachedCleanItemData(parentData, name, itemType);
                if (data == null)
                {
                   data = executeAction(new PrivilegedExceptionAction<ItemData>()
@@ -905,7 +905,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       if (cache.isEnabled())
       {
          // 1. Try from cache
-         ItemData data = getCachedItemData(identifier);
+         ItemData data = getCachedCleanItemData(identifier);
 
          // 2 Try from container
          if (data == null)
@@ -917,7 +917,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                request.start();
                // Try first to get the value from the cache since a
                // request could have been launched just before
-               data = getCachedItemData(identifier);
+               data = getCachedCleanItemData(identifier);
                if (data == null)
                {
                   data = executeAction(new PrivilegedExceptionAction<ItemData>()
@@ -1263,6 +1263,51 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    }
 
    /**
+    * It is similar to {@link #getCachedItemData(NodeData, QPathEntry, ItemType)} except that if it is a property
+    * it will check if it is complete or not, if not it will remove the entry from
+    * the cache and returns null
+    */
+   protected ItemData getCachedCleanItemData(NodeData parentData, QPathEntry name, ItemType itemType)
+      throws RepositoryException
+   {
+      ItemData data = getCachedItemData(parentData, name, itemType);
+
+      if (data != null && !data.isNode() && !(data instanceof NullItemData) && forceLoad((PropertyData)data))
+      {
+         cache.remove(data.getIdentifier(), data);
+         data = null;
+      }
+      return data;
+   }
+
+   /**
+    * It is similar to {@link WorkspaceStorageCache#getChildProperties(NodeData, QPathEntryFilter)} except that if it 
+    * is a property it will check if it is complete or not, if not it will remove the entry from
+    * the cache and returns null
+    */
+   protected List<PropertyData> getCachedCleanChildPropertiesData(NodeData nodeData,
+      QPathEntryFilter pattern)
+   {
+      List<PropertyData> cachedItemList = cache.getChildProperties(nodeData, pattern);
+      if (cachedItemList != null)
+      {
+         boolean skip = false;
+         for (int j = 0, length = cachedItemList.size(); j < length; j++)
+         {
+            PropertyData prop = cachedItemList.get(j);
+            if (prop != null && !(prop instanceof NullPropertyData) && forceLoad(prop))
+            {
+               cache.remove(prop.getIdentifier(), prop);
+               skip = true;
+            }
+         }
+         if (skip)
+            cachedItemList = null;
+      }
+      return cachedItemList;
+   }
+
+   /**
     * Returns an item from cache by Identifier or null if the item don't cached.
     * 
     * @param identifier
@@ -1274,6 +1319,23 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    protected ItemData getCachedItemData(String identifier) throws RepositoryException
    {
       return cache.isEnabled() ? cache.get(identifier) : null;
+   }
+
+   /**
+    * It is similar to {@link #getCachedItemData(String)} except that if it is a property
+    * it will check if it is complete or not, if not it will remove the entry from
+    * the cache and returns null
+    */
+   protected ItemData getCachedCleanItemData(String identifier) throws RepositoryException
+   {
+      ItemData data = getCachedItemData(identifier);
+
+      if (data != null && !data.isNode() && !(data instanceof NullItemData) && forceLoad((PropertyData)data))
+      {
+         cache.remove(data.getIdentifier(), data);
+         data = null;
+      }
+      return data;
    }
 
    /**
@@ -1596,6 +1658,36 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    }
 
    /**
+    * Gets the list of child properties from the cache and checks if one of them
+    * is incomplete, if everything is ok, it returns the list otherwise it returns
+    * null.
+    */
+   protected List<PropertyData> getCachedCleanChildPropertiesData(NodeData nodeData)
+   {
+      if (cache.isEnabled())
+      {
+         List<PropertyData> childProperties = cache.getChildProperties(nodeData);
+         if (childProperties != null)
+         {
+            boolean skip =  false;
+            for (PropertyData prop : childProperties)
+            {
+               if (prop != null && !(prop instanceof NullPropertyData) && forceLoad(prop))
+               {
+                  cache.remove(prop.getIdentifier(), prop);
+                  skip = true;
+               }
+            }
+            if (!skip)
+            {
+               return childProperties;
+            }
+         }
+      }
+      return null;
+   }
+
+   /**
     * Get child PropertyData.
     * 
     * @param nodeData
@@ -1611,9 +1703,9 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    {
 
       List<PropertyData> childProperties = null;
-      if (!forcePersistentRead && cache.isEnabled())
+      if (!forcePersistentRead)
       {
-         childProperties = cache.getChildProperties(nodeData);
+         childProperties = getCachedCleanChildPropertiesData(nodeData);
          if (childProperties != null)
          {
             return childProperties;
@@ -1624,11 +1716,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       try
       {
          request.start();
-         if (!forcePersistentRead && cache.isEnabled())
+         if (!forcePersistentRead)
          {
             // Try first to get the value from the cache since a
             // request could have been launched just before
-            childProperties = cache.getChildProperties(nodeData);
+            childProperties = getCachedCleanChildPropertiesData(nodeData);
             if (childProperties != null)
             {
                return childProperties;
@@ -1675,7 +1767,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
 
       // 1. check cache - outside data request
-      List<PropertyData> childPropsList = cache.getChildProperties(nodeData);
+      List<PropertyData> childPropsList = getCachedCleanChildPropertiesData(nodeData);
       if (childPropsList != null)
       {
          return childPropsList;
@@ -1688,7 +1780,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       {
          if (patternFilters.get(i).isExactName())
          {
-            ItemData data = getCachedItemData(nodeData, patternFilters.get(i).getQPathEntry(), ItemType.PROPERTY);
+            ItemData data = getCachedCleanItemData(nodeData, patternFilters.get(i).getQPathEntry(), ItemType.PROPERTY);
             if (data != null)
             {
                if (!(data instanceof NullPropertyData))
@@ -1705,7 +1797,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          {
 
             // get property list by pattern
-            List<PropertyData> cachedItemList = cache.getChildProperties(nodeData, patternFilters.get(i));
+            List<PropertyData> cachedItemList = getCachedCleanChildPropertiesData(nodeData, patternFilters.get(i));
             if (cachedItemList != null)
             {
                //merge results
@@ -1748,7 +1840,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
             // Try first to get the value from the cache since a
             // request could have been launched just before
-            childPropsList = cache.getChildProperties(nodeData);
+            childPropsList = getCachedCleanChildPropertiesData(nodeData);
             if (childPropsList != null)
             {
                return childPropsList;
@@ -1764,7 +1856,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   exactNameRequest.start();
                   requests.add(exactNameRequest);
 
-                  ItemData data = getCachedItemData(nodeData, pattern.getQPathEntry(), ItemType.PROPERTY);
+                  ItemData data = getCachedCleanItemData(nodeData, pattern.getQPathEntry(), ItemType.PROPERTY);
                   if (data != null)
                   {
                      if (!(data instanceof NullPropertyData))
@@ -1777,7 +1869,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                else
                {
                   // get properties list by pattern
-                  List<PropertyData> cachedItemList = cache.getChildProperties(nodeData, pattern);
+                  List<PropertyData> cachedItemList = getCachedCleanChildPropertiesData(nodeData, pattern);
                   if (cachedItemList != null)
                   {
                      //merge results
@@ -2648,6 +2740,32 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             filterPermissions.add(node.getIdentifier());
          }
       }
+   }
+
+   /**
+    * Check Property BLOB Values if someone has null file.
+    *
+    * @param prop PropertyData
+    * @throws RepositoryException
+    * @return <code>true</code> if the Property BLOB Values has null file, <code>false</code> otherwise.
+    */
+   private boolean forceLoad(PropertyData prop)
+   {
+      final List<ValueData> vals = prop.getValues();
+      for (int i = 0; i < vals.size(); i++)
+      {
+         ValueData vd = vals.get(i);
+         if (!vd.isByteArray())
+         {
+            // check if file is correct
+            FilePersistedValueData fpvd = (FilePersistedValueData)vd;
+            if (fpvd.getFile() == null)
+            {
+               return true;
+            }
+         }
+      }
+      return false;
    }
 
    /**

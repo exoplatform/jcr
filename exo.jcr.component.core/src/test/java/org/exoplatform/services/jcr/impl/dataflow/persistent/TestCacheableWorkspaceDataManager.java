@@ -31,20 +31,28 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.datamodel.QPathEntry;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.jcr.impl.core.PropertyImpl;
+import org.exoplatform.services.jcr.impl.core.itemfilters.ExactQPathEntryFilter;
+import org.exoplatform.services.jcr.impl.core.itemfilters.PatternQPathEntryFilter;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 
+import java.io.FileInputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.InvalidItemStateException;
+import javax.jcr.Node;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
@@ -265,6 +273,406 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
       assertEquals(1, con.getChildNodesCountCalls.get());
    }
 
+   public void testBigFileWithCacheEnabledById() throws Exception
+   {
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      CacheableWorkspaceDataManager cwdm = (CacheableWorkspaceDataManager)wsc.getComponent(CacheableWorkspaceDataManager.class);
+      if (!cwdm.cache.isEnabled())
+         return;
+      Node testLocalBigFiles = root.addNode("testBigFileWithCacheEnabledById");
+      // 300 Kb
+      String path = createBLOBTempFile(300).getAbsolutePath();
+
+      Node localBigFile = testLocalBigFiles.addNode("bigFile", "nt:file");
+      Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
+      InputStream is = new FileInputStream(path);
+      PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", is);
+      contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+      String id = data.getInternalIdentifier();
+      PropertyData pData = (PropertyData)cwdm.getCachedItemData(id);
+      assertNotNull(pData);
+      List<ValueData> vals = pData.getValues();
+      assertTrue(vals != null);
+      assertFalse(vals.isEmpty());
+      assertTrue(vals.get(0) instanceof StreamPersistedValueData);
+      StreamPersistedValueData fpvd = (StreamPersistedValueData)vals.get(0);
+      assertNotNull(fpvd.getFile());
+      assertTrue(cwdm.getItemData(id) == pData);
+
+      // Simulate cases where the file is null such as during a replication of StreamPersistedValueData with a spool file as file
+      // on all other cluster nodes the spool file doesn't exist so file will be set to null
+      fpvd.setPersistedFile(null);
+
+      assertFalse(cwdm.getItemData(id) == pData);
+      assertTrue(cwdm.getItemData(id) == cwdm.getCachedItemData(id));
+   }
+
+   public void testBigFileWithCacheEnabledByPath() throws Exception
+   {
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      CacheableWorkspaceDataManager cwdm = (CacheableWorkspaceDataManager)wsc.getComponent(CacheableWorkspaceDataManager.class);
+      if (!cwdm.cache.isEnabled())
+         return;
+      Node testLocalBigFiles = root.addNode("testBigFileWithCacheEnabledByPath");
+      // 300 Kb
+      String path = createBLOBTempFile(300).getAbsolutePath();
+
+      Node localBigFile = testLocalBigFiles.addNode("bigFile", "nt:file");
+      Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
+      InputStream is = new FileInputStream(path);
+      PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", is);
+      contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+      QPathEntry qpeProp = new QPathEntry(Constants.NS_JCR_URI, "data", 0);
+      PropertyData pData = (PropertyData)cwdm.getCachedItemData(data.parentData(), qpeProp, ItemType.PROPERTY);
+      assertNotNull(pData);
+      List<ValueData> vals = pData.getValues();
+      assertTrue(vals != null);
+      assertFalse(vals.isEmpty());
+      assertTrue(vals.get(0) instanceof StreamPersistedValueData);
+      StreamPersistedValueData fpvd = (StreamPersistedValueData)vals.get(0);
+      assertNotNull(fpvd.getFile());
+      assertTrue(cwdm.getItemData(data.parentData(), qpeProp, ItemType.PROPERTY) == pData);
+
+      // Simulate cases where the file is null such as during a replication of StreamPersistedValueData with a spool file as file
+      // on all other cluster nodes the spool file doesn't exist so file will be set to null
+      fpvd.setPersistedFile(null);
+
+      assertFalse(cwdm.getItemData(data.parentData(), qpeProp, ItemType.PROPERTY) == pData);
+      assertTrue(cwdm.getItemData(data.parentData(), qpeProp, ItemType.PROPERTY) == cwdm.getCachedItemData(
+         data.parentData(), qpeProp, ItemType.PROPERTY));
+   }
+
+   public void testBigFileWithCacheEnabledByProps() throws Exception
+   {
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      CacheableWorkspaceDataManager cwdm = (CacheableWorkspaceDataManager)wsc.getComponent(CacheableWorkspaceDataManager.class);
+      if (!cwdm.cache.isEnabled())
+         return;
+      Node testLocalBigFiles = root.addNode("testBigFileWithCacheEnabledByProps");
+      // 300 Kb
+      String path = createBLOBTempFile(300).getAbsolutePath();
+
+      Node localBigFile = testLocalBigFiles.addNode("bigFile", "nt:file");
+      Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
+      InputStream is = new FileInputStream(path);
+      PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", is);
+      contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+      // Load cache first
+      cwdm.getChildPropertiesData(data.parentData());
+      List<PropertyData> props = cwdm.cache.getChildProperties(data.parentData());
+      PropertyData pData = null;
+      for (PropertyData pd : props)
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData = pd;
+            break;
+         }
+      }
+      assertNotNull(pData);
+      List<ValueData> vals = pData.getValues();
+      assertTrue(vals != null);
+      assertFalse(vals.isEmpty());
+      assertTrue(vals.get(0) instanceof StreamPersistedValueData);
+      StreamPersistedValueData fpvd = (StreamPersistedValueData)vals.get(0);
+      assertNotNull(fpvd.getFile());
+      PropertyData pData2 = null;
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData()))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      assertTrue(pData2 == pData);
+
+      // Simulate cases where the file is null such as during a replication of StreamPersistedValueData with a spool file as file
+      // on all other cluster nodes the spool file doesn't exist so file will be set to null
+      fpvd.setPersistedFile(null);
+
+      pData2 = null;
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData()))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      assertFalse(pData2 == pData);
+      pData2 = null;
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData()))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      PropertyData pData3 = null;
+      for (PropertyData pd : cwdm.cache.getChildProperties(data.parentData()))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData3 = pd;
+            break;
+         }
+      }
+      assertTrue(pData2 == pData3);
+   }
+
+   /**
+    * Using getChildPropertiesData with parentData
+    */
+   public void testBigFileWithCacheEnabledByPattern1() throws Exception
+   {
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      CacheableWorkspaceDataManager cwdm = (CacheableWorkspaceDataManager)wsc.getComponent(CacheableWorkspaceDataManager.class);
+      if (!cwdm.cache.isEnabled())
+         return;
+      Node testLocalBigFiles = root.addNode("testBigFileWithCacheEnabledByPattern1");
+      // 300 Kb
+      String path = createBLOBTempFile(300).getAbsolutePath();
+
+      Node localBigFile = testLocalBigFiles.addNode("bigFile", "nt:file");
+      Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
+      InputStream is = new FileInputStream(path);
+      PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", is);
+      contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+      // Load cache first
+      cwdm.getChildPropertiesData(data.parentData());
+      List<PropertyData> props = cwdm.cache.getChildProperties(data.parentData());
+      PropertyData pData = null;
+      for (PropertyData pd : props)
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData = pd;
+            break;
+         }
+      }
+      assertNotNull(pData);
+      List<ValueData> vals = pData.getValues();
+      assertTrue(vals != null);
+      assertFalse(vals.isEmpty());
+      assertTrue(vals.get(0) instanceof StreamPersistedValueData);
+      StreamPersistedValueData fpvd = (StreamPersistedValueData)vals.get(0);
+      assertNotNull(fpvd.getFile());
+      PropertyData pData2 = null;
+      List<QPathEntryFilter> itemDataFilters =
+         Collections.singletonList((QPathEntryFilter)new PatternQPathEntryFilter(new QPathEntry("*", "*", 0)));
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData(), itemDataFilters))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      assertTrue(pData2 == pData);
+
+      // Simulate cases where the file is null such as during a replication of StreamPersistedValueData with a spool file as file
+      // on all other cluster nodes the spool file doesn't exist so file will be set to null
+      fpvd.setPersistedFile(null);
+
+      pData2 = null;
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData(), itemDataFilters))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      assertFalse(pData2 == pData);
+      pData2 = null;
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData(), itemDataFilters))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      PropertyData pData3 = null;
+      for (PropertyData pd : cwdm.cache.getChildProperties(data.parentData()))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData3 = pd;
+            break;
+         }
+      }
+      assertTrue(pData2 == pData3);
+   }
+
+   /**
+    * Using getChildPropertiesData with parentData and pattern
+    */
+   public void testBigFileWithCacheEnabledByPattern2() throws Exception
+   {
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      CacheableWorkspaceDataManager cwdm = (CacheableWorkspaceDataManager)wsc.getComponent(CacheableWorkspaceDataManager.class);
+      if (!cwdm.cache.isEnabled())
+         return;
+      Node testLocalBigFiles = root.addNode("testBigFileWithCacheEnabledByPattern2");
+      // 300 Kb
+      String path = createBLOBTempFile(300).getAbsolutePath();
+
+      Node localBigFile = testLocalBigFiles.addNode("bigFile", "nt:file");
+      Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
+      InputStream is = new FileInputStream(path);
+      PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", is);
+      contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+      // Load cache first
+      QPathEntryFilter filter = new PatternQPathEntryFilter(new QPathEntry("*", "*", 0));
+      List<QPathEntryFilter> itemDataFilters = Collections.singletonList((QPathEntryFilter)filter);
+      cwdm.getChildPropertiesData(data.parentData(), itemDataFilters);
+      List<PropertyData> props = cwdm.cache.getChildProperties(data.parentData(), filter);
+      PropertyData pData = null;
+      for (PropertyData pd : props)
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData = pd;
+            break;
+         }
+      }
+      assertNotNull(pData);
+      List<ValueData> vals = pData.getValues();
+      assertTrue(vals != null);
+      assertFalse(vals.isEmpty());
+      assertTrue(vals.get(0) instanceof StreamPersistedValueData);
+      StreamPersistedValueData fpvd = (StreamPersistedValueData)vals.get(0);
+      assertNotNull(fpvd.getFile());
+      PropertyData pData2 = null;
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData(), itemDataFilters))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      assertTrue(pData2 == pData);
+
+      // Simulate cases where the file is null such as during a replication of StreamPersistedValueData with a spool file as file
+      // on all other cluster nodes the spool file doesn't exist so file will be set to null
+      fpvd.setPersistedFile(null);
+
+      pData2 = null;
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData(), itemDataFilters))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      assertFalse(pData2 == pData);
+      pData2 = null;
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData(), itemDataFilters))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      PropertyData pData3 = null;
+      for (PropertyData pd : cwdm.cache.getChildProperties(data.parentData(), filter))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData3 = pd;
+            break;
+         }
+      }
+      assertTrue(pData2 == pData3);
+   }
+
+   /**
+    * Using get with parentData, QPathEntry and index
+    */
+   public void testBigFileWithCacheEnabledByPattern3() throws Exception
+   {
+      WorkspaceContainerFacade wsc = repository.getWorkspaceContainer("ws");
+      CacheableWorkspaceDataManager cwdm = (CacheableWorkspaceDataManager)wsc.getComponent(CacheableWorkspaceDataManager.class);
+      if (!cwdm.cache.isEnabled())
+         return;
+      Node testLocalBigFiles = root.addNode("testBigFileWithCacheEnabledByPattern3");
+      // 300 Kb
+      String path = createBLOBTempFile(300).getAbsolutePath();
+
+      Node localBigFile = testLocalBigFiles.addNode("bigFile", "nt:file");
+      Node contentNode = localBigFile.addNode("jcr:content", "nt:resource");
+      InputStream is = new FileInputStream(path);
+      PropertyImpl data = (PropertyImpl)contentNode.setProperty("jcr:data", is);
+      contentNode.setProperty("jcr:mimeType", "application/octet-stream ");
+      contentNode.setProperty("jcr:lastModified", Calendar.getInstance());
+      session.save();
+      // Load cache first
+      QPathEntry qpeProp = new QPathEntry(Constants.NS_JCR_URI, "data", 0);
+      ExactQPathEntryFilter filter = new ExactQPathEntryFilter(qpeProp);
+      List<QPathEntryFilter> itemDataFilters = Collections.singletonList((QPathEntryFilter)filter);
+      cwdm.getChildPropertiesData(data.parentData(), itemDataFilters);
+      PropertyData pData = (PropertyData)cwdm.getCachedItemData(data.parentData(), qpeProp, ItemType.PROPERTY);
+
+      assertNotNull(pData);
+      List<ValueData> vals = pData.getValues();
+      assertTrue(vals != null);
+      assertFalse(vals.isEmpty());
+      assertTrue(vals.get(0) instanceof StreamPersistedValueData);
+      StreamPersistedValueData fpvd = (StreamPersistedValueData)vals.get(0);
+      assertNotNull(fpvd.getFile());
+      PropertyData pData2 = null;
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData(), itemDataFilters))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      assertTrue(pData2 == pData);
+
+      // Simulate cases where the file is null such as during a replication of StreamPersistedValueData with a spool file as file
+      // on all other cluster nodes the spool file doesn't exist so file will be set to null
+      fpvd.setPersistedFile(null);
+
+      pData2 = null;
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData(), itemDataFilters))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      assertFalse(pData2 == pData);
+      pData2 = null;
+      for (PropertyData pd : cwdm.getChildPropertiesData(data.parentData(), itemDataFilters))
+      {
+         if (pd.getIdentifier().equals(data.getInternalIdentifier()))
+         {
+            pData2 = pd;
+            break;
+         }
+      }
+      assertTrue(pData2 == cwdm.getCachedItemData(data.parentData(), qpeProp, ItemType.PROPERTY));
+   }
+
    private static interface MyTask
    {
       void execute() throws Exception;
@@ -368,6 +776,10 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
       public void remove(ItemData item)
       {
          this.itemData = null;
+      }
+
+      public void remove(String identifier, ItemData item)
+      {
       }
 
       public void rollbackTransaction()
@@ -624,7 +1036,6 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
          throw new UnsupportedOperationException();
       }
 
-      @Override
       public boolean hasItemData(NodeData parentData, QPathEntry name, ItemType itemType) throws RepositoryException,
          IllegalStateException
       {

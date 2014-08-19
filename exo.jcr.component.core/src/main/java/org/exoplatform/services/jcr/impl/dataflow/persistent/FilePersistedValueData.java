@@ -122,7 +122,7 @@ public class FilePersistedValueData extends StreamValueData implements Persisted
 
       // read canonical file path
       int size = in.readInt();
-      if (size >= 0)
+      if (size > 0)
       {
          byte[] buf = new byte[size];
          in.readFully(buf);
@@ -140,8 +140,9 @@ public class FilePersistedValueData extends StreamValueData implements Persisted
       }
       else
       {
-         // should not occurs
-         throw new IOException("readExternal: Persisted ValueData with null file found");
+         // should not occurs but since we have a way to recover, it should not be
+         // an issue
+         file = null;
       }
    }
 
@@ -161,7 +162,9 @@ public class FilePersistedValueData extends StreamValueData implements Persisted
       }
       else
       {
-         throw new IOException("writeExternal: Persisted ValueData with null file found");
+         // The file is not available which should not occur but instead of
+         // raising an exception we just allow it since we have a way to recover
+         out.writeInt(0);
       }
    }
 

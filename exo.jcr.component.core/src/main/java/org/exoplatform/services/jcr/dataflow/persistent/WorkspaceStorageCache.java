@@ -243,6 +243,15 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    void remove(ItemData item);
 
    /**
+    * Removes an item from the cache if and only if the current item for the provided
+    * identifier is equals to the provided item.
+    *
+    * @param item the item data
+    * @param identifier the Item Data identifier
+    */
+   void remove(String identifier, ItemData item);
+
+   /**
     * 
     * @return enabled status flag, if true then cache is enabled
     */

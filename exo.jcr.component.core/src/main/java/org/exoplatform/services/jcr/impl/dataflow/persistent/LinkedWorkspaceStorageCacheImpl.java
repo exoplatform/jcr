@@ -1334,6 +1334,29 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
          }
       }
    }
+   /**
+    * {@inheritDoc}
+    */
+   public void remove(String identifier, ItemData item)
+   {
+      writeLock.lock();
+      try
+      {
+         ItemData data= getItem(identifier);
+         if (data != null && data.equals(item))
+         {
+            cache.remove(new CacheId(identifier));
+         }
+      }
+      catch (Exception e)
+      {
+         LOG.error(name + ", Error remove item data from cache: " + item.getQPath().getAsString(), e);
+      }
+      finally
+      {
+         writeLock.unlock();
+      }
+   }
 
    /**
     * Get item from cache C by item id. Checks is it expired, calcs statistics.
