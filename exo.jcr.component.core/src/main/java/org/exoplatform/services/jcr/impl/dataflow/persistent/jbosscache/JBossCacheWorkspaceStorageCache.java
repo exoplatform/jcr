@@ -902,10 +902,8 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
    /**
     * {@inheritDoc}
     */
-   public boolean remove(String identifier, ItemData item)
+   public void remove(String identifier, ItemData item)
    {
-      boolean result = false;
-      ItemData data = get(identifier);
       boolean inTransaction = cache.isTransactionActive();
       try
       {
@@ -914,10 +912,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             cache.beginTransaction();
          }
          cache.setLocal(true);
-         if (data != null && data.equals(item))
-         {
-            result = cache.removeNode(makeItemFqn(identifier));
-         }
+         cache.remove(makeItemFqn(identifier), ITEM_DATA, item);
       }
       finally
       {
@@ -927,7 +922,6 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
             dedicatedTxCommit();
          }
       }
-      return result;
    }
 
    /**

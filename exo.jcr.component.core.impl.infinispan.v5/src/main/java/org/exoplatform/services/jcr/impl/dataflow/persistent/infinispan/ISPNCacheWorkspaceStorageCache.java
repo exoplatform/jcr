@@ -719,9 +719,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
   /**
    * {@inheritDoc}
    */
-   public boolean remove(String identifier, ItemData item)
+   public void remove(String identifier, ItemData item)
    {
-      boolean result;
       boolean inTransaction = cache.isTransactionActive();
       try
       {
@@ -730,8 +729,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             cache.beginTransaction();
          }
          cache.setLocal(true);
-         result = cache.remove(new CacheId(getOwnerId(), identifier), item);
-         cache.commitTransaction();
+         cache.remove(new CacheId(getOwnerId(), identifier), item);
       }
       finally
       {
@@ -741,7 +739,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
             dedicatedTxCommit();
          }
       }
-      return result;
    }
 
    /**

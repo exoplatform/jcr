@@ -1337,16 +1337,15 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    /**
     * {@inheritDoc}
     */
-   public boolean remove(String identifier, ItemData item)
+   public void remove(String identifier, ItemData item)
    {
-      ItemData data= getItem(identifier);
       writeLock.lock();
       try
       {
+         ItemData data= getItem(identifier);
          if (data != null && data.equals(item))
          {
             cache.remove(new CacheId(identifier));
-            return true;
          }
       }
       catch (Exception e)
@@ -1357,7 +1356,6 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
       {
          writeLock.unlock();
       }
-      return false;
    }
 
    /**

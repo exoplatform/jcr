@@ -694,7 +694,18 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          local.get(), useExpiration, expirationTimeOut));
       return null;
    }
-   
+
+   /**
+    * Removes an item from the cache if and only if the current value for the provided
+    * fqn and key is equals to the provided item.
+    */
+   protected void remove(Fqn fqn, Serializable key, Object value)
+   {
+      CompressedChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new RemoveIfExistKeyContainer(fqn, key, value, parentCache, changesContainer
+         .getHistoryIndex(), local.get(), useExpiration, expirationTimeOut));
+   }
+
    public Object putInBuffer(Fqn fqn, Serializable key, Object value)
    {
       CompressedChangesBuffer changesContainer = getChangesBufferSafe();
@@ -1470,6 +1481,37 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
       {
          setCacheLocalMode();
          cache.remove(fqn, key);
+      }
+   }
+
+   /**
+    * Remove container.
+    */
+   public static class RemoveIfExistKeyContainer extends ChangesContainer
+   {
+      private final Serializable key;
+
+      private final Object value;
+
+      public RemoveIfExistKeyContainer(Fqn fqn, Serializable key, Object value, Cache<Serializable, Object> cache,
+         int historicalIndex, boolean local, boolean useExpiration, long timeOut)
+      {
+         super(fqn, ChangesType.REMOVE_KEY, cache, historicalIndex, local, useExpiration, timeOut);
+         this.key = key;
+         this.value = value;
+      }
+
+      @Override
+      public void apply()
+      {
+         // force writeLock on next read
+         cache.getInvocationContext().getOptionOverrides().setForceWriteLock(true);
+         Object existingObject = cache.get(getFqn(), key);
+         if (existingObject != null && existingObject.equals(value))
+         {
+            setCacheLocalMode();
+            cache.remove(fqn, key);
+         }
       }
    }
 
