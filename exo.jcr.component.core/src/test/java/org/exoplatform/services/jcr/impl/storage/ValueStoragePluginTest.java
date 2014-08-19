@@ -24,8 +24,8 @@ import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
-import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig.DatabaseStructureType;
+import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.util.IdGenerator;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.log.ExoLogger;
@@ -219,7 +219,7 @@ public class ValueStoragePluginTest extends BaseStandaloneTest
    }
 
    @Override
-   protected File createBLOBTempFile(int sizeInb) throws IOException
+   public File createBLOBTempFile(int sizeInb) throws IOException
    {
       // create test file
       byte[] data = new byte[1024]; // 1Kb

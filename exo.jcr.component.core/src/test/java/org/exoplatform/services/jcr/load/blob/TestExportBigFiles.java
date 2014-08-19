@@ -301,7 +301,7 @@ public class TestExportBigFiles extends JcrAPIBaseTest
 
    }
 
-   protected File createBLOBTempFile(int sizeInb) throws IOException
+   public File createBLOBTempFile(int sizeInb) throws IOException
    {
       // create test file
       byte[] data = new byte[1024]; // 1Kb

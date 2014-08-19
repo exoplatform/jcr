@@ -404,7 +404,7 @@ public abstract class BaseStandaloneTest extends TestCase
       }
    }
 
-   protected File createBLOBTempFile(int sizeInKb) throws IOException
+   public File createBLOBTempFile(int sizeInKb) throws IOException
    {
       return createBLOBTempFile("exo_jcr_test_temp_file_", sizeInKb);
    }
