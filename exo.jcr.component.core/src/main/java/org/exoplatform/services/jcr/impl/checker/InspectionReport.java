@@ -46,8 +46,6 @@ public class InspectionReport
 
    private static final String DELIMITER = "\n";
 
-   private static final String WHITE_SPACE = " ";
-
    private Writer writer;
 
    private boolean reportHasInconsistency;
@@ -69,7 +67,7 @@ public class InspectionReport
          public Void run() throws IOException
          {
             reportPath = reportFile.getAbsolutePath();
-            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reportFile)));
+            writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(reportPath)));
 
             return null;
          }
