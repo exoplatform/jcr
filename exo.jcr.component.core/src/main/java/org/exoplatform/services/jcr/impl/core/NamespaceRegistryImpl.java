@@ -19,18 +19,23 @@
 package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.container.component.ComponentPlugin;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.AddNamespacesPlugin;
 import org.exoplatform.services.jcr.impl.core.query.RepositoryIndexSearcherHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rpc.RPCService;
+import org.exoplatform.services.rpc.RemoteCommand;
 import org.picocontainer.Startable;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.jcr.NamespaceException;
 import javax.jcr.RepositoryException;
@@ -103,33 +108,54 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
    private AddNamespacePluginHolder addNamespacePluginHolder;
 
    /**
+    * Component used to execute commands over the cluster.
+    */
+   private final RPCService rpcService;
+
+   /**
+    * The command that registers the namespace over the cluster
+    */
+   private RemoteCommand registerNamespace;
+
+   /**
+    * The command that unregisters the namespace over the cluster
+    */
+   private RemoteCommand unregisterNamespace;
+
+   /**
+    * Id used to avoid launching twice the same command on the same node
+    */
+   private String id;
+
+   /**
     * for tests.
     */
    public NamespaceRegistryImpl()
    {
-      this.namespaces = new HashMap<String, String>(DEF_NAMESPACES);
-      this.prefixes = new HashMap<String, String>(DEF_PREFIXES);
-
-      this.dataManager = null;
-      this.indexSearcherHolder = null;
-      this.persister = null;
-      this.addNamespacePluginHolder = null;
+      this(null, null, null, null);
    }
 
-   public NamespaceRegistryImpl(NamespaceDataPersister persister, DataManager dataManager,
+   public NamespaceRegistryImpl(RepositoryEntry config, NamespaceDataPersister persister, DataManager dataManager,
       RepositoryIndexSearcherHolder indexSearcherHolder)
    {
-      this.namespaces = new HashMap<String, String>(DEF_NAMESPACES);
-      this.prefixes = new HashMap<String, String>(DEF_PREFIXES);
-
-      this.dataManager = dataManager;
-      this.indexSearcherHolder = indexSearcherHolder;
-      this.persister = persister;
-      this.addNamespacePluginHolder = null;
+      this(config, persister, dataManager, indexSearcherHolder, (AddNamespacePluginHolder)null);
    }
 
-   public NamespaceRegistryImpl(NamespaceDataPersister persister, DataManager dataManager,
+   public NamespaceRegistryImpl(RepositoryEntry config, NamespaceDataPersister persister, DataManager dataManager,
+      RepositoryIndexSearcherHolder indexSearcherHolder, RPCService rpcService)
+   {
+      this(config, persister, dataManager, indexSearcherHolder, null, rpcService);
+   }
+
+   public NamespaceRegistryImpl(RepositoryEntry config, NamespaceDataPersister persister, DataManager dataManager,
       RepositoryIndexSearcherHolder indexSearcherHolder, AddNamespacePluginHolder addNamespacePluginHolder)
+   {
+      this(config, persister, dataManager, indexSearcherHolder, addNamespacePluginHolder, null);
+   }
+
+   public NamespaceRegistryImpl(final RepositoryEntry config, NamespaceDataPersister persister, DataManager dataManager,
+      RepositoryIndexSearcherHolder indexSearcherHolder, AddNamespacePluginHolder addNamespacePluginHolder,
+      RPCService rpcService)
    {
       this.namespaces = new HashMap<String, String>(DEF_NAMESPACES);
       this.prefixes = new HashMap<String, String>(DEF_PREFIXES);
@@ -138,6 +164,81 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
       this.indexSearcherHolder = indexSearcherHolder;
       this.persister = persister;
       this.addNamespacePluginHolder = addNamespacePluginHolder;
+      this.rpcService = rpcService;
+      if (rpcService != null)
+      {
+         initRemoteCommands(config);
+      }
+   }
+
+   /**
+    * Registers all the remote commands
+    */
+   private void initRemoteCommands(final RepositoryEntry config)
+   {
+      this.id = UUID.randomUUID().toString();
+      registerNamespace = rpcService.registerCommand(new RemoteCommand()
+      {
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl-registerNamespace-"
+               + config.getName();
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            if (!id.equals(args[0]))
+            {
+               try
+               {
+                  registerNamespace((String)args[1], (String)args[2], false);
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("Could not register the namespace on other cluster nodes", e);
+               }
+            }
+            return true;
+         }
+      });
+      unregisterNamespace = rpcService.registerCommand(new RemoteCommand()
+      {
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.NamespaceRegistryImpl-unregisterNamespace-"
+               + config.getName();
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            if (!id.equals(args[0]))
+            {
+               try
+               {
+                  unregisterNamespace((String)args[1], false);
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("Could not unregister the namespace on other cluster nodes", e);
+               }
+            }
+            return true;
+         }
+      });
+   }
+
+   /**
+    * Unregisters the remote commands.
+    */
+   private void unregisterRemoteCommands()
+   {
+      if (rpcService != null)
+      {
+         rpcService.unregisterCommand(registerNamespace);
+         rpcService.unregisterCommand(unregisterNamespace);
+      }
    }
 
    /**
@@ -231,11 +332,30 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
    /**
     * {@inheritDoc}
     */
-   public synchronized void registerNamespace(String prefix, String uri) throws NamespaceException, RepositoryException
+   public void registerNamespace(String prefix, String uri) throws NamespaceException, RepositoryException
    {
 
       validateNamespace(prefix, uri);
 
+      registerNamespace(prefix, uri, true);
+      if (started && rpcService != null)
+      {
+         try
+         {
+            rpcService.executeCommandOnAllNodes(registerNamespace, false, id, prefix, uri);
+         }
+         catch (Exception e)
+         {
+            LOG.warn("Could not register the namespace '" + uri + "' on other cluster nodes", e);
+         }
+      }
+   }
+
+   /**
+    * Registers the namespace and persists it if <code>persist</code> has been set to <code>true</code> and a persister has been configured
+    */
+   private synchronized void registerNamespace(String prefix, String uri, boolean persist) throws NamespaceException, RepositoryException
+   {
       if (namespaces.containsKey(prefix))
       {
          unregisterNamespace(prefix);
@@ -244,10 +364,9 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
       {
          unregisterNamespace(prefixes.get(uri));
       }
-      if (persister != null)
+      if (persister != null && persist)
       {
          persister.addNamespace(prefix, uri);
-         // persister.saveChanges();
       }
       final String newPrefix = new String(prefix);
       final String newUri = new String(uri);
@@ -292,6 +411,7 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
 
    public void stop()
    {
+      unregisterRemoteCommands();
    }
 
    /**
@@ -300,6 +420,26 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
    public void unregisterNamespace(String prefix) throws NamespaceException, RepositoryException
    {
 
+      unregisterNamespace(prefix, true);
+
+      if (started && rpcService != null)
+      {
+         try
+         {
+            rpcService.executeCommandOnAllNodes(unregisterNamespace, false, id, prefix);
+         }
+         catch (Exception e)
+         {
+            LOG.warn("Could not unregister the prefix '" + prefix + "' on other cluster nodes", e);
+         }
+      }
+   }
+
+   /**
+    * unregisters the namespace and persists it if <code>persist</code> has been set to <code>true</code> and a persister has been configured
+    */
+   private void unregisterNamespace(String prefix, boolean persist) throws NamespaceException, RepositoryException
+   {
       if (namespaces.get(prefix) == null)
       {
          throw new NamespaceException("Prefix " + prefix + " is not registered");
@@ -336,7 +476,7 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
       }
       prefixes.remove(uri);
       namespaces.remove(prefix);
-      if (persister != null)
+      if (persister != null && persist)
       {
          persister.removeNamespace(prefix);
       }
