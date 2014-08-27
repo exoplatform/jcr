@@ -19,7 +19,10 @@
 package org.exoplatform.services.jcr.impl.core.nodetype;
 
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.container.ExoContainerContext;
+import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
+import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.nodetype.ExtendedNodeTypeManager;
 import org.exoplatform.services.jcr.core.nodetype.ItemDefinitionData;
 import org.exoplatform.services.jcr.core.nodetype.NodeDefinitionData;
@@ -56,9 +59,12 @@ import org.exoplatform.services.jcr.impl.dataflow.TransientValueData;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rpc.RPCService;
+import org.exoplatform.services.rpc.RemoteCommand;
 import org.picocontainer.Startable;
 
 import java.io.InputStream;
+import java.io.Serializable;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,6 +75,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.WeakHashMap;
 
 import javax.jcr.NamespaceRegistry;
@@ -90,7 +97,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    private static final String NODETYPES_FILE = "nodetypes.xml";
 
-   private static final Log log = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataManagerImpl");
+   private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.NodeTypeDataManagerImpl");
 
    protected final String accessControlPolicy;
 
@@ -111,6 +118,38 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
    protected final NodeTypeDataValidator nodeTypeDataValidator;
 
    protected final FileCleanerHolder cleanerHolder;
+
+   protected final NodeTypeDataPersister persister;
+
+   /**
+    * Component used to execute commands over the cluster.
+    */
+   private RPCService rpcService;
+
+   /**
+    * We rely on the repository to decide whether the remote commands should be launched or not
+    */
+   private ManageableRepository repository;
+
+   /**
+    * The command that registers the node types over the cluster
+    */
+   private RemoteCommand registerNodeTypes;
+
+   /**
+    * The command that unregisters a node type over the cluster
+    */
+   private RemoteCommand unregisterNodeType;
+
+   /**
+    * Id used to avoid launching twice the same command on the same node
+    */
+   private String id;
+
+   /**
+    * The name of the repository
+    */
+   private String repositoryName;
 
    /**
     * Listeners (soft references)
@@ -154,6 +193,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       this.nodeTypeConverter = new NodeTypeConverter(this.locationFactory, this.accessControlPolicy);
       this.nodeTypeDataValidator =
          new NodeTypeDataValidator(this.locationFactory, this.nodeTypeRepository, cleanerHolder);
+      this.persister = persister;
    }
 
    /**
@@ -166,13 +206,142 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
     * @param dataManager ItemDataConsumer
     * @param indexSearcherHolder RepositoryIndexSearcherHolder
     */
-   public NodeTypeDataManagerImpl(final RepositoryEntry config, final LocationFactory locationFactory,
+   public NodeTypeDataManagerImpl(RepositoryEntry config, final LocationFactory locationFactory,
+      final NamespaceRegistry namespaceRegistry, final NodeTypeDataPersister persister,
+      final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder,
+      FileCleanerHolder cleanerHolder)
+   {
+      this(null, config, locationFactory, namespaceRegistry, persister, dataManager, indexSearcherHolder, cleanerHolder);
+   }
+
+
+   /**
+    * Constructor for in-container use.
+    * 
+    * @param rpcService The RPCService that we uses to communicate with other cluster nodes
+    * @param config RepositoryEntry
+    * @param locationFactory LocationFactory
+    * @param namespaceRegistry NamespaceRegistry
+    * @param persister NodeTypeDataPersister
+    * @param dataManager ItemDataConsumer
+    * @param indexSearcherHolder RepositoryIndexSearcherHolder
+    */
+   public NodeTypeDataManagerImpl(RPCService rpcService, final RepositoryEntry config, final LocationFactory locationFactory,
       final NamespaceRegistry namespaceRegistry, final NodeTypeDataPersister persister,
       final ItemDataConsumer dataManager, final RepositoryIndexSearcherHolder indexSearcherHolder,
       FileCleanerHolder cleanerHolder)
    {
       this(config.getAccessControl(), locationFactory, namespaceRegistry, persister, dataManager, indexSearcherHolder,
          new InmemoryNodeTypeRepository(persister), cleanerHolder);
+      this.rpcService = rpcService;
+      this.repositoryName = config.getName();
+      if (rpcService != null)
+      {
+         initRemoteCommands();
+      }
+   }
+
+   /**
+    * Registers all the remote commands
+    */
+   private void initRemoteCommands()
+   {
+      this.id = UUID.randomUUID().toString();
+      registerNodeTypes = rpcService.registerCommand(new RemoteCommand()
+      {
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl-registerNodeTypes-"
+               + repositoryName;
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            if (!id.equals(args[0]))
+            {
+               try
+               {
+                  String[] names = (String[])args[1];
+                  final List<NodeTypeData> allNodeTypes = new ArrayList<NodeTypeData>();
+                  for (int i = 0; i < names.length; i++)
+                  {
+                     NodeTypeData nodeType = persister.getNodeType(InternalQName.parse(names[i]));
+                     if (nodeType != null)
+                        allNodeTypes.add(nodeType);
+                  }
+                  // register nodetypes in runtime
+                  final Map<InternalQName, NodeTypeData> volatileNodeTypes = new HashMap<InternalQName, NodeTypeData>();
+                  //create map from list
+                  for (final NodeTypeData nodeTypeData : allNodeTypes)
+                  {
+                     volatileNodeTypes.put(nodeTypeData.getName(), nodeTypeData);
+                  }
+
+                  for (final NodeTypeData nodeTypeData : allNodeTypes)
+                  {
+                     nodeTypeRepository.addNodeType(nodeTypeData, volatileNodeTypes);
+                     for (NodeTypeManagerListener listener : listeners.values())
+                     {
+                        listener.nodeTypeRegistered(nodeTypeData.getName());
+                     }
+                  }
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("Could not register the node types", e);
+               }
+            }
+            return true;
+         }
+      });
+      unregisterNodeType = rpcService.registerCommand(new RemoteCommand()
+      {
+
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.nodetype.NodeTypeDataManagerImpl-unregisterNodeType-"
+               + repositoryName;
+         }
+
+         public Serializable execute(Serializable[] args) throws Throwable
+         {
+            if (!id.equals(args[0]))
+            {
+               try
+               {
+                  String name = (String)args[1];
+                  NodeTypeData nodeType = nodeTypeRepository.getNodeType(InternalQName.parse(name));
+                  if (nodeType != null)
+                  {
+                     nodeTypeRepository.removeNodeType(nodeType);
+
+                     for (NodeTypeManagerListener listener : listeners.values())
+                     {
+                        listener.nodeTypeUnregistered(nodeType.getName());
+                     }
+                  }
+               }
+               catch (Exception e)
+               {
+                  LOG.warn("Could not register the node type", e);
+               }
+            }
+            return true;
+         }
+      });
+   }
+
+   /**
+    * Unregisters the remote commands.
+    */
+   private void unregisterRemoteCommands()
+   {
+      if (rpcService != null)
+      {
+         rpcService.unregisterCommand(registerNodeTypes);
+         rpcService.unregisterCommand(unregisterNodeType);
+      }
    }
 
    /**
@@ -247,7 +416,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       }
       catch (RepositoryException e)
       {
-         log.error(e.getLocalizedMessage());
+         LOG.error(e.getLocalizedMessage());
       }
       return new ArrayList<NodeTypeData>();
 
@@ -659,20 +828,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       }
       final List<NodeTypeData> nodeTypes = serializer.getAllNodeTypes();
 
-      // validate
-      nodeTypeDataValidator.validateNodeType(nodeTypes);
-
-      nodeTypeRepository.registerNodeType(nodeTypes, this, accessControlPolicy, alreadyExistsBehaviour);
-
-      for (NodeTypeData nodeType : nodeTypes)
-      {
-         for (NodeTypeManagerListener listener : listeners.values())
-         {
-            listener.nodeTypeRegistered(nodeType.getName());
-         }
-      }
-
-      return nodeTypes;
+      return registerListOfNodeTypes(nodeTypes, alreadyExistsBehaviour);
    }
 
    /**
@@ -684,6 +840,15 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       // convert to Node data.
       final List<NodeTypeData> nodeTypes = nodeTypeConverter.convertFromValueToData(ntvalues);
 
+      return registerListOfNodeTypes(nodeTypes, alreadyExistsBehaviour);
+   }
+
+   /**
+    * Registers the provided node types
+    */
+   private List<NodeTypeData> registerListOfNodeTypes(final List<NodeTypeData> nodeTypes, final int alreadyExistsBehaviour)
+      throws RepositoryException
+   {
       // validate
       nodeTypeDataValidator.validateNodeType(nodeTypes);
 
@@ -696,7 +861,22 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
             listener.nodeTypeRegistered(nodeType.getName());
          }
       }
-
+      if (started && rpcService != null && repository != null && repository.getState() == ManageableRepository.ONLINE)
+      {
+         try
+         {
+            String[] names = new String[nodeTypes.size()];
+            for (int i = 0; i < names.length; i++)
+            {
+               names[i] = nodeTypes.get(i).getName().getAsString();
+            }
+            rpcService.executeCommandOnAllNodes(registerNodeTypes, false, id, names);
+         }
+         catch (Exception e)
+         {
+            LOG.warn("Could not register the node types on other cluster nodes", e);
+         }
+      }
       return nodeTypes;
    }
 
@@ -860,6 +1040,18 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
          {
             throw new RuntimeException(e.getLocalizedMessage(), e);
          }
+         if (rpcService != null)
+         {
+            try
+            {
+               RepositoryService rs = (RepositoryService)ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(RepositoryService.class);
+               repository = rs.getRepository(repositoryName);
+            }
+            catch (Exception e)
+            {
+               LOG.warn("Could not get the repository '" + repositoryName + "'", e);
+            }
+         }
          started = true;
       }
    }
@@ -870,6 +1062,7 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
     */
    public void stop()
    {
+      unregisterRemoteCommands();
    }
 
    /**
@@ -933,6 +1126,17 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
       for (NodeTypeManagerListener listener : listeners.values())
       {
          listener.nodeTypeUnregistered(nodeType.getName());
+      }
+      if (started && rpcService != null && repository != null && repository.getState() == ManageableRepository.ONLINE)
+      {
+         try
+         {
+            rpcService.executeCommandOnAllNodes(unregisterNodeType, false, id, nodeType.getName().getAsString());
+         }
+         catch (Exception e)
+         {
+            LOG.warn("Could not unregister the node type on other cluster nodes", e);
+         }
       }
    }
 
