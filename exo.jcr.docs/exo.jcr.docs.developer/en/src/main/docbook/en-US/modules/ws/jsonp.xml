@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+"http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd">
+<section id="WS.JSONP">
+  <title>JSONP as alternative to the Framework for cross-domain AJAX</title>
+
+  <para>eXo Webservice supports out of the box JSON-P which is another way to
+  workaround the same-origin policy imposed by the browsers. For more details,
+  you can visit <ulink
+  url="http://www.json-p.org/">http://www.json-p.org/</ulink> and <ulink
+  url="http://en.wikipedia.org/wiki/JSONP">http://en.wikipedia.org/wiki/JSONP</ulink>.</para>
+
+  <para>For the sake of simplicity, the current implementation imposes the
+  name of the query parameter allowing to define the name of the method to use
+  for the callback, the name of this special parameter is
+  <emphasis>jsonp</emphasis>, if not set an exception will be thrown. The
+  entity provider for jsonp allows to produce content of type
+  <emphasis>application/javascript</emphasis>,
+  <emphasis>text/javascript</emphasis>,
+  <emphasis>application/json-p</emphasis> or
+  <emphasis>text/json-p</emphasis>.</para>
+
+  <para>So for example, assuming that we have the following code in the client
+  side:</para>
+
+  <programlisting>&lt;script type="text/javascript"
+        src="http://localhost:8080/rest/Users/1234?jsonp=parseResponse"&gt;
+&lt;/script&gt;</programlisting>
+
+  <para>The resource could be something like:</para>
+
+  <programlisting>@GET
+@Produces("text/javascript")
+@Path("/Users/{userId}")      
+public User findUser(@PathParam("userId") String userId)
+{
+    return em.find(User.class, userId);
+}</programlisting>
+
+  <para>The result would be of type:</para>
+
+  <para><programlisting>parseResponse({"Name": "Foo", "Id": 1234, "Rank": 7});</programlisting></para>
+</section>

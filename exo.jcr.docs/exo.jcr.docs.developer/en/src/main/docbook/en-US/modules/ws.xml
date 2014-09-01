@@ -26,4 +26,7 @@
   <xi:include href="ws/framework-for-cross-domain-ajax.xml"
               xmlns:xi="http://www.w3.org/2001/XInclude" />
 
+  <xi:include href="ws/jsonp.xml"
+              xmlns:xi="http://www.w3.org/2001/XInclude" />
+
 </chapter>
