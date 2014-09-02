@@ -32,6 +32,7 @@ import org.infinispan.loaders.AbstractCacheStore;
 import org.infinispan.loaders.AbstractCacheStoreConfig;
 import org.infinispan.loaders.CacheLoaderConfig;
 import org.infinispan.loaders.CacheLoaderException;
+import org.infinispan.util.concurrent.FutureListener;
 
 import java.io.ObjectInput;
 import java.io.ObjectOutput;
@@ -39,6 +40,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.Future;
 
 /**
  * Abstract Indexer Cache Loader defines default implementation of data processing received via cache.
@@ -114,9 +116,19 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
          finally
          {
             // Purge the cache to prevent memory leak
-            cache.getAdvancedCache()
-               .withFlags(Flag.CACHE_MODE_LOCAL, Flag.IGNORE_RETURN_VALUES)
-               .removeAsync(key);
+            cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.IGNORE_RETURN_VALUES).removeAsync(key)
+               .attachListener(new FutureListener<Object>()
+               {
+                  public void futureDone(Future<Object> future)
+                  {
+                     if (cache.containsKey(key))
+                     {
+                        LOG.debug("The entry was not removed properly, it will try to remove it once again");
+                        cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.IGNORE_RETURN_VALUES)
+                           .remove(key);
+                     }
+                  }
+               });
          }
       }
    }
