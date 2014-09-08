@@ -58,3 +58,22 @@ CREATE UNIQUE INDEX JCR_IDX_SREF_PROPERTY ON JCR_SREF(PROPERTY_ID, ORDER_NUM)
 /
 CREATE SEQUENCE JCR_SITEM_SEQ  INCREMENT BY 1 MINVALUE -1 NOMAXVALUE NOCACHE NOCYCLE
 /
+CREATE OR REPLACE FUNCTION JCR_SITEM_NEXT_VAL (nameSeq IN VARCHAR, newVal IN INTEGER, increment IN INTEGER )
+RETURN INTEGER
+AS
+result INTEGER;
+query VARCHAR(100);
+BEGIN
+query := 'select '||nameSeq||'.nextval from dual';
+execute immediate query into result;
+
+IF (increment = 0)
+THEN
+  WHILE (result < newVal)
+  LOOP
+    execute immediate query into result;
+  END LOOP;
+END IF;
+RETURN result;
+end;
+/

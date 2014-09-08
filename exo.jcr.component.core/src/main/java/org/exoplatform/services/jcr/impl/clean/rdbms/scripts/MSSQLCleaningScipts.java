@@ -70,21 +70,4 @@ public class MSSQLCleaningScipts extends DBCleaningScripts
       rollbackingScripts.clear();
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   protected Collection<String> getTablesDroppingScripts()
-   {
-      List<String> scripts = new ArrayList<String>();
-
-      if (useSequence)
-      {
-         scripts.add("DROP TABLE " + itemTableName + "_SEQ");
-         scripts.add("DROP PROCEDURE " + itemTableName + "_NEXT_VAL");
-      }
-      scripts.addAll(super.getTablesDroppingScripts());
-
-      return scripts;
-   }
-
    }

@@ -398,7 +398,7 @@ public class DBInitializerHelper
       {
          if (wsConfig.getContainer().getParameterValue(JDBCWorkspaceDataContainer.USE_SEQUENCE_FOR_ORDER_NUMBER, JDBCWorkspaceDataContainer.USE_SEQUENCE_AUTO).equalsIgnoreCase(JDBCWorkspaceDataContainer.USE_SEQUENCE_AUTO))
          {
-            return JDBCWorkspaceDataContainer.useSequenceDefaultValue(dbDialect);
+            return JDBCWorkspaceDataContainer.useSequenceDefaultValue();
          }
          else
          {
@@ -407,7 +407,7 @@ public class DBInitializerHelper
       }
       catch (RepositoryConfigurationException e)
       {
-         return JDBCWorkspaceDataContainer.useSequenceDefaultValue(dbDialect);
+         return JDBCWorkspaceDataContainer.useSequenceDefaultValue();
       }
    }
 }

@@ -17,7 +17,6 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -64,7 +63,7 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID  order by J.ID";
       if (containerConfig.useSequenceForOrderNumber)
       {
-         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "VALUES NEXT VALUE FOR " + JCR_ITEM_SEQ;
+         FIND_LAST_ORDER_NUMBER = "SELECT " + JCR_ITEM_NEXT_VAL + " ('" + JCR_ITEM_SEQ + "', ?, ?) FROM SYSIBM.SYSDUMMY1";
          FIND_NODES_BY_PARENTID_LAZILY_CQ =
             "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_VALUE +" V, "+JCR_ITEM +" P "
                + " join (select J.* from "+JCR_ITEM +" J where J.I_CLASS=1 and J.PARENT_ID=?"

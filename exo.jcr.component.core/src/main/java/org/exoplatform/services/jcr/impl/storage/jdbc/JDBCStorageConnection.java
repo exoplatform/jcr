@@ -700,6 +700,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       {
          throw new RepositoryException(e);
       }
+      onPreCommit();
    }
 
    /**
@@ -758,6 +759,13 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             }
          }
       }
+   }
+
+   /**
+    * This gives the ability to execute some code after committing the transaction
+    */
+   protected void onPreCommit() throws IllegalStateException, RepositoryException
+   {
    }
 
    /**

@@ -22,7 +22,6 @@ import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -82,7 +81,7 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?" + " order by N_ORDER_NUM";
       if (containerConfig.useSequenceForOrderNumber)
       {
-         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "call next value for " + JCR_ITEM_SEQ;
+         FIND_LAST_ORDER_NUMBER = "call next value for " + JCR_ITEM_SEQ;
       }
 
       FIND_NODES_COUNT_BY_PARENTID =
@@ -365,5 +364,31 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
 
          return findPropertiesByParentIdAndComplexPatternCQ.executeQuery(query.toString());
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumber(int localMaxOrderNumber, boolean increment) throws SQLException
+   {
+      if (findLastOrderNumber == null)
+      {
+         findLastOrderNumber = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER);
+      }
+      if (!increment)
+      {
+         ResultSet count;
+         int result = -1;
+         while (result < localMaxOrderNumber - 1)
+         {
+            count = findLastOrderNumber.executeQuery();
+            if (count.next())
+            {
+               result = count.getInt(1);
+            }
+         }
+      }
+      return findLastOrderNumber.executeQuery();
    }
 }

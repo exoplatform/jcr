@@ -39,10 +39,19 @@ CREATE TABLE JCR_MITEM_SEQ (
   name VARCHAR(20) NOT NULL,
   nextVal INTEGER NOT NULL,
   CONSTRAINT JCR_PK_MITEM_SEQ PRIMARY KEY (name))ENGINE=MyISAM/
-CREATE FUNCTION JCR_MITEM_NEXT_VAL (nameSeq VARCHAR(20)) RETURNS INTEGER
+CREATE FUNCTION JCR_MITEM_NEXT_VAL (nameSeq VARCHAR(120),newVal INTEGER, increment INTEGER ) RETURNS INTEGER
 BEGIN
    DECLARE result INTEGER;
-   UPDATE JCR_MITEM_SEQ SET nextVal = LAST_INSERT_ID(nextVal + 1) WHERE name = nameSeq;
+   IF (increment = 1)
+   THEN
+     UPDATE JCR_MITEM_SEQ SET nextVal = LAST_INSERT_ID(nextVal + 1) WHERE name = nameSeq;
+   ELSE
+      SELECT nextVal INTO result from JCR_MITEM_SEQ where name=nameSeq;
+      IF (result < newVal)
+      THEN
+        UPDATE JCR_MITEM_SEQ SET nextVal = newVal WHERE name = nameSeq;
+      END IF;
+   END IF;
    SELECT nextVal INTO result from JCR_MITEM_SEQ where name=nameSeq;
    RETURN result;
 END/

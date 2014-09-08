@@ -40,10 +40,19 @@ CREATE TABLE JCR_SITEM_SEQ (
   name VARCHAR(20) NOT NULL,
   nextVal INTEGER NOT NULL,
   CONSTRAINT JCR_PK_SITEM_SEQ PRIMARY KEY (name))ENGINE=MyISAM/
-CREATE FUNCTION JCR_SITEM_NEXT_VAL (nameSeq VARCHAR(20)) RETURNS INTEGER
+CREATE FUNCTION JCR_SITEM_NEXT_VAL (nameSeq VARCHAR(20),newVal INTEGER, increment INTEGER) RETURNS INTEGER
 BEGIN
    DECLARE result INTEGER;
-   UPDATE JCR_SITEM_SEQ SET nextVal = LAST_INSERT_ID(nextVal + 1) WHERE name = nameSeq;
+   IF (increment = 1)
+   THEN
+     UPDATE JCR_SITEM_SEQ SET nextVal = LAST_INSERT_ID(nextVal + 1) WHERE name = nameSeq;
+   ELSE
+      SELECT nextVal INTO result from JCR_SITEM_SEQ where name=nameSeq;
+      IF (result < newVal)
+      THEN
+        UPDATE JCR_SITEM_SEQ SET nextVal = newVal WHERE name = nameSeq;
+      END IF;
+   END IF;
    SELECT nextVal INTO result from JCR_SITEM_SEQ where name=nameSeq;
    RETURN result;
 END/

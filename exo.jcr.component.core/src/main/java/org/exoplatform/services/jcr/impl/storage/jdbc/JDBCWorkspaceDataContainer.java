@@ -277,7 +277,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          if (wsConfig.getContainer().getParameterValue(USE_SEQUENCE_FOR_ORDER_NUMBER, USE_SEQUENCE_AUTO).equalsIgnoreCase(USE_SEQUENCE_AUTO))
          {
-            this.containerConfig.useSequenceForOrderNumber = useSequenceDefaultValue(this.containerConfig.dbDialect);
+            this.containerConfig.useSequenceForOrderNumber = useSequenceDefaultValue();
          }
          else
          {
@@ -287,7 +287,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       }
       catch (RepositoryConfigurationException e)
       {
-         this.containerConfig.useSequenceForOrderNumber = useSequenceDefaultValue(this.containerConfig.dbDialect);
+         this.containerConfig.useSequenceForOrderNumber = useSequenceDefaultValue();
       }
 
       // ------------- Spool config ------------------
@@ -1179,52 +1179,9 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * use-sequence value according to dialect
     */
-   public static boolean useSequenceDefaultValue(String  dbDialect)
+   public static boolean useSequenceDefaultValue()
    {
-      if (dbDialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
-      {
-         return true;
-      }
-      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_PGSQL))
-      {
-         return true;
-      }
-      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_MYSQL))
-      {
-         return false;
-      }
-      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
-      {
-         return false;
-      }
-      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_DERBY))
-      {
-         return false;
-      }
-      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_DB2))
-      {
-         return false;
-      }
-      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
-      {
-         return false;
-      }
-      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_INGRES))
-      {
-         return false;
-      }
-      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
-      {
-         return true;
-      }
-      else if (dbDialect.startsWith(DBConstants.DB_DIALECT_H2))
-      {
-         return true;
-      }
-      else
-      {
-         return false;
-      }
+      return false;
    }
 
    /**

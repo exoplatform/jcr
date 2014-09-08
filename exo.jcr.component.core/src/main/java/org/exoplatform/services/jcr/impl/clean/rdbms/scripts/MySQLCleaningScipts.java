@@ -147,11 +147,6 @@ public class MySQLCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE " + valueTableName + " RENAME TO " + valueTableName + "_OLD");
       scripts.add("ALTER TABLE " + itemTableName + " RENAME TO " + itemTableName + "_OLD");
       scripts.add("ALTER TABLE " + refTableName + " RENAME TO " + refTableName + "_OLD");
-      if (useSequence)
-      {
-         scripts.add("ALTER TABLE " + itemTableName + "_SEQ RENAME TO " + itemTableName + "_SEQ_OLD");
-         scripts.add("DROP FUNCTION " + itemTableName + "_NEXT_VAL");
-      }
 
       return scripts;
    }
@@ -166,57 +161,9 @@ public class MySQLCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE " + itemTableName + "_OLD RENAME TO " + itemTableName);
       scripts.add("ALTER TABLE " + valueTableName + "_OLD RENAME TO " + valueTableName);
       scripts.add("ALTER TABLE " + refTableName + "_OLD RENAME TO " + refTableName);
-      if (useSequence)
-      {
-         scripts.add("ALTER TABLE " + itemTableName + "_SEQ_OLD RENAME TO " + itemTableName + "_SEQ");
-         try
-         {
-            scripts.add(DBInitializerHelper.getObjectScript("CREATE FUNCTION " + itemTableName + "_NEXT_VAL", multiDb, dialect, wsEntry));
-         }
-         catch (RepositoryConfigurationException e)
-         {
-
-            throw new DBCleanException(e);
-         }
-         catch (IOException e)
-         {
-            throw new DBCleanException(e);
-         }
-      }
 
       return scripts;
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   protected Collection<String> getOldTablesDroppingScripts()
-   {
-      List<String> scripts = new ArrayList<String>();
-
-      if (useSequence)
-      {
-         scripts.add("DROP TABLE " + itemTableName + "_SEQ_OLD");
-      }
-      scripts.addAll(super.getOldTablesDroppingScripts());
-
-      return scripts;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected Collection<String> getTablesDroppingScripts()
-   {
-      List<String> scripts = new ArrayList<String>();
-
-      if (useSequence)
-      {
-         scripts.add("DROP TABLE " + itemTableName + "_SEQ");
-      }
-      scripts.addAll(super.getTablesDroppingScripts());
-
-      return scripts;
-   }
 
 }

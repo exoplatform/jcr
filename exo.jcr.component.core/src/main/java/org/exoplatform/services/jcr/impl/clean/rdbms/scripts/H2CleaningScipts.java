@@ -139,21 +139,4 @@ public class H2CleaningScipts extends DBCleaningScripts
       return scripts;
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   protected Collection<String> getTablesDroppingScripts()
-   {
-      Collection<String> scripts = new ArrayList<String>();
-
-      if (useSequence)
-      {
-         scripts.add("DROP SEQUENCE " + itemTableName + "_SEQ");
-      }
-
-      scripts.addAll(super.getTablesDroppingScripts());
-
-      return scripts;
-   }
-
 }

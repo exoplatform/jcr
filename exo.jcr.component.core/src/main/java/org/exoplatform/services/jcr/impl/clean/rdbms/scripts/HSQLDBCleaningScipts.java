@@ -77,12 +77,6 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE " + valueTableName + "_OLD DROP CONSTRAINT JCR_PK_" + valueTableSuffix);
       scripts.add("ALTER TABLE " + refTableName + "_OLD DROP CONSTRAINT JCR_PK_" + refTableSuffix);
 
-      //rename sequences
-      if (useSequence)
-      {
-         scripts.add("ALTER SEQUENCE  " + itemTableName + "_SEQ RENAME TO " + itemTableName + "_SEQ_OLD");
-      }
-
       // renaming indexes
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT RENAME TO JCR_IDX_" + itemTableSuffix
          + "_PARENT_OLD");
@@ -124,11 +118,6 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
       scripts.add("ALTER TABLE  " + refTableName + " ADD CONSTRAINT JCR_PK_" + refTableSuffix
          + " PRIMARY KEY(NODE_ID, PROPERTY_ID, ORDER_NUM)");
 
-      //rename sequences
-      if (useSequence)
-      {
-         scripts.add("ALTER SEQUENCE " + itemTableName + "_SEQ_OLD RENAME TO " + itemTableName + "_SEQ");
-      }
 
       // renaming indexes
       scripts.add("ALTER INDEX  JCR_IDX_" + itemTableSuffix + "_PARENT_OLD RENAME TO JCR_IDX_" + itemTableSuffix
@@ -145,40 +134,6 @@ public class HSQLDBCleaningScipts extends DBCleaningScripts
          + "_PROPERTY");
       scripts.add("ALTER INDEX  JCR_IDX_" + refTableSuffix + "_PROPERTY_OLD RENAME TO JCR_IDX_" + refTableSuffix
          + "_PROPERTY");
-
-      return scripts;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected Collection<String> getTablesDroppingScripts()
-   {
-      Collection<String> scripts = new ArrayList<String>();
-
-      if (useSequence)
-      {
-         scripts.add("DROP SEQUENCE " + itemTableName + "_SEQ");
-      }
-
-      scripts.addAll(super.getTablesDroppingScripts());
-
-      return scripts;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected Collection<String> getOldTablesDroppingScripts()
-   {
-      Collection<String> scripts = new ArrayList<String>();
-
-      if (useSequence)
-      {
-         scripts.add("DROP SEQUENCE " + itemTableName + "_SEQ_OLD");
-      }
-
-      scripts.addAll(super.getOldTablesDroppingScripts());
 
       return scripts;
    }

@@ -17,7 +17,6 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -57,7 +56,7 @@ public class PostgreSingleDbJDBCConnection extends SingleDbJDBCConnection
       super.prepareQueries();
       if (containerConfig.useSequenceForOrderNumber)
       {
-         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "SELECT NEXTVAL('" + JCR_ITEM_SEQ + "')";
+         FIND_LAST_ORDER_NUMBER = "SELECT " + JCR_ITEM_NEXT_VAL + "('" + JCR_ITEM_SEQ + "', ?, ?) as nextVal";
       }
    }
 
