@@ -85,5 +85,17 @@ public class DB2MYSSingleDbJDBCConnection extends SingleDbJDBCConnection
       findNodesAndProperties.setString(5, this.containerConfig.containerName);
 
       return findNodesAndProperties.executeQuery();
-   }   
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void startTxIfNeeded() throws SQLException
+   {
+      if (containerConfig.isManaged  && dbConnection.getAutoCommit())
+      {
+         dbConnection.setAutoCommit(false);
+      }
+   }
 }

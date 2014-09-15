@@ -84,4 +84,16 @@ public class DB2MultiDbJDBCConnection extends MultiDbJDBCConnection
 
       return findNodesAndProperties.executeQuery();
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void startTxIfNeeded() throws SQLException
+   {
+      if (containerConfig.isManaged  && dbConnection.getAutoCommit())
+      {
+         dbConnection.setAutoCommit(false);
+      }
+   }
 }
