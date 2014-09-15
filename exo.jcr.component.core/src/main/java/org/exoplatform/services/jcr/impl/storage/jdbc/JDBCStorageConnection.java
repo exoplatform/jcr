@@ -1207,6 +1207,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
+         startTxIfNeeded();
          ResultSet resultSet = findNodesAndProperties(lastNodeId, offset, limit);
          int processed = 0;
 
@@ -1401,6 +1402,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       checkIfOpened();
       try
       {
+         startTxIfNeeded();
          ResultSet refProps = findReferences(getInternalId(nodeIdentifier));
          try
          {
@@ -2722,6 +2724,14 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
             storage_desc == null ? ValueDataUtil.readValueData(id, type, orderNum, version, is,
                containerConfig.spoolConfig) : readValueData(getIdentifier(id), orderNum, type, storage_desc);
       }
+   }
+
+   /**
+    * change auto-commit mode if needed.
+    */
+   protected void startTxIfNeeded() throws SQLException
+   {
+
    }
 
    /**
