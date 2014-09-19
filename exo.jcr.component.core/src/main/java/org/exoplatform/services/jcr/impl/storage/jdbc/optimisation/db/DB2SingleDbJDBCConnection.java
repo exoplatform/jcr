@@ -129,4 +129,16 @@ public class DB2SingleDbJDBCConnection extends SingleDbJDBCConnection
 
       return findNodesByParentIdLazilyCQ.executeQuery();
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void startTxIfNeeded() throws SQLException
+   {
+      if (containerConfig.isManaged && dbConnection.getAutoCommit())
+      {
+         dbConnection.setAutoCommit(false);
+      }
+   }
 }
