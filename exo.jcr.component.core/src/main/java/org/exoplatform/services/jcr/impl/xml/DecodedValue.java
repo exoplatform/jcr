@@ -46,7 +46,7 @@ public class DecodedValue
    /**
     * String buffer.
     */
-   private StringBuffer stringBuffer;
+   private StringBuilder StringBuilder;
 
    /**
     * true if DecodedValue is completed
@@ -54,12 +54,17 @@ public class DecodedValue
    private boolean complete;
 
    /**
+    * Indicates whether the value has been explicitly declared as encoded in Base64
+    */
+   private boolean binary;
+
+   /**
     * Dafault constructor.
     */
    public DecodedValue()
    {
       super();
-      stringBuffer = new StringBuffer();
+      StringBuilder = new StringBuilder();
    }
 
    /**
@@ -72,7 +77,7 @@ public class DecodedValue
       if (decoder == null)
       {
          decoder = new BufferedDecoder();
-         stringBuffer = null;
+         StringBuilder = null;
       }
       return decoder;
    }
@@ -95,9 +100,9 @@ public class DecodedValue
    /**
     * @return String buffer.
     */
-   public StringBuffer getStringBuffer()
+   public StringBuilder getStringBuffer()
    {
-      return stringBuffer;
+      return StringBuilder;
    }
 
    /**
@@ -137,6 +142,22 @@ public class DecodedValue
    }
 
    /**
+    * Indicates whether the value has been explicitly declared as encoded in Base64
+    */
+   public boolean isBinary()
+   {
+      return binary;
+   }
+
+   /**
+    * Used to indicate if the value has been explicitly declared as encoded in Base64
+    */
+   public void setBinary(boolean binary)
+   {
+      this.binary = binary;
+   }
+
+   /**
     * @return string representation for value.
     */
    public String toString()
@@ -146,6 +167,6 @@ public class DecodedValue
          return decoder.toString();
       }
 
-      return stringBuffer.toString();
+      return StringBuilder.toString();
    }
 }
