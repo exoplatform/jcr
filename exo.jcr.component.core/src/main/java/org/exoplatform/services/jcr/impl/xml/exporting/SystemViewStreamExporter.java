@@ -229,25 +229,20 @@ public class SystemViewStreamExporter extends StreamExporter
       {
          if (!isSkipBinary())
          {
-            if (data.getLength() < BUFFER_SIZE)
+            InputStream is = data.getAsStream();
+            try
             {
-               String charValue = getValueAsStringForExport(data, type);
-               writer.writeCharacters(charValue.toCharArray(), 0, charValue.length());
-            }
-            else
-            {
-               InputStream is = data.getAsStream();
-               try
+               byte[] buffer = new byte[BUFFER_SIZE];
+               int len;
+               while ((len = is.read(buffer)) > 0)
                {
-                  byte[] buffer = new byte[BUFFER_SIZE];
-                  int len;
-                  while ((len = is.read(buffer)) > 0)
-                  {
-                     char[] charbuf1 = Base64.encode(buffer, 0, len, 0, "").toCharArray();
-                     writer.writeCharacters(charbuf1, 0, charbuf1.length);
-                  }
+                  char[] charbuf1 = Base64.encode(buffer, 0, len, 0, "").toCharArray();
+                  writer.writeCharacters(charbuf1, 0, charbuf1.length);
                }
-               finally
+            }
+            finally
+            {
+               if (is != null)
                {
                   is.close();
                }
@@ -257,8 +252,17 @@ public class SystemViewStreamExporter extends StreamExporter
       else
       {
          String charValue = getValueAsStringForExport(data, type);
-         writer.writeCharacters(charValue.toCharArray(), 0, charValue.length());
+         if (hasValidCharsOnly(charValue))
+         {
+            writer.writeCharacters(charValue.toCharArray(), 0, charValue.length());
+         }
+         else
+         {
+            byte[] content = charValue.getBytes(Constants.DEFAULT_ENCODING);
+            char[] charbuf = Base64.encode(content, 0, content.length, 0, "").toCharArray();
+            writer.writeAttribute(Constants.NS_XSI_URI, "type", "xsd:base64Binary");
+            writer.writeCharacters(charbuf, 0, charbuf.length);
+         }
       }
-
    }
 }

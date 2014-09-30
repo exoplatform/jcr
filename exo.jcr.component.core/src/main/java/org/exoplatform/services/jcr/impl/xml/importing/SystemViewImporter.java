@@ -116,7 +116,7 @@ public class SystemViewImporter extends BaseXmlImporter
             return;
          }
 
-         if (propertyInfo.getType() == PropertyType.BINARY)
+         if (propertyInfo.getType() == PropertyType.BINARY || curPropValue.isBinary())
          {
             try
             {
@@ -264,8 +264,10 @@ public class SystemViewImporter extends BaseXmlImporter
       else if (Constants.SV_VALUE_NAME.equals(elementName))
       {
          // sv:value element
-
-         propertyInfo.getValues().add(new DecodedValue());
+         DecodedValue value = new DecodedValue();
+         String svName = getAttribute(atts, Constants.XSI_TYPE_NAME);
+         value.setBinary(svName != null && svName.equals("xsd:base64Binary"));
+         propertyInfo.getValues().add(value);
 
       }
       else if (Constants.SV_VERSION_HISTORY_NAME.equals(elementName))
