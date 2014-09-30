@@ -22,6 +22,7 @@ import org.exoplatform.container.component.ComponentPlugin;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.impl.AddNamespacesPlugin;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.query.RepositoryIndexSearcherHolder;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -65,6 +66,7 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
       DEF_NAMESPACES.put("sv", "http://www.jcp.org/jcr/sv/1.0");
       DEF_NAMESPACES.put("exo", "http://www.exoplatform.com/jcr/exo/1.0");
       DEF_NAMESPACES.put("xs", "http://www.w3.org/2001/XMLSchema");
+      DEF_NAMESPACES.put(Constants.NS_XSI_PREFIX, Constants.NS_XSI_URI);
       DEF_NAMESPACES.put("fn", "http://www.w3.org/2005/xpath-functions");
       DEF_NAMESPACES.put("fn_old", "http://www.w3.org/2004/10/xpath-functions");
       DEF_NAMESPACES.put("rep", "internal");
@@ -77,6 +79,7 @@ public class NamespaceRegistryImpl implements ExtendedNamespaceRegistry, Startab
       DEF_PREFIXES.put("http://www.jcp.org/jcr/sv/1.0", "sv");
       DEF_PREFIXES.put("http://www.exoplatform.com/jcr/exo/1.0", "exo");
       DEF_PREFIXES.put("http://www.w3.org/2001/XMLSchema", "xs");
+      DEF_PREFIXES.put(Constants.NS_XSI_URI, Constants.NS_XSI_PREFIX);
       DEF_PREFIXES.put("http://www.w3.org/2005/xpath-functions", "fn");
       DEF_PREFIXES.put("http://www.w3.org/2004/10/xpath-functions", "fn_old");
       DEF_PREFIXES.put("internal", "rep");

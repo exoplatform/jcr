@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -44,6 +45,7 @@ import javax.jcr.RepositoryException;
  */
 public class SystemViewContentExporter extends HandlingContentExporter
 {
+   private static final int BUFFER_SIZE = 3 * 1024 * 3;
 
    /**
     * @param handler
@@ -115,9 +117,6 @@ public class SystemViewContentExporter extends HandlingContentExporter
          List<ValueData> values = property.getValues();
          for (ValueData valueData : values)
          {
-
-            contentHandler.startElement(getSvNamespaceUri(), "value", "sv:value", new AttributesImpl());
-
             writeValueData(valueData, property.getType());
             contentHandler.endElement(getSvNamespaceUri(), "value", "sv:value");
          }
@@ -181,17 +180,13 @@ public class SystemViewContentExporter extends HandlingContentExporter
    {
       if (PropertyType.BINARY == type)
       {
+         contentHandler.startElement(getSvNamespaceUri(), "value", "sv:value", new AttributesImpl());
          if (!isSkipBinary())
          {
-            if (data.getLength() < 3 * 1024 * 3)
+            InputStream is = data.getAsStream();
+            try
             {
-               String charValue = getValueAsStringForExport(data, type);
-               contentHandler.characters(charValue.toCharArray(), 0, charValue.length());
-            }
-            else
-            {
-               InputStream is = data.getAsStream();
-               byte[] buffer = new byte[3 * 1024 * 3];
+               byte[] buffer = new byte[BUFFER_SIZE];
                int len;
                while ((len = is.read(buffer)) > 0)
                {
@@ -199,12 +194,32 @@ public class SystemViewContentExporter extends HandlingContentExporter
                   contentHandler.characters(charbuf1, 0, charbuf1.length);
                }
             }
+            finally
+            {
+               if (is != null)
+               {
+                  is.close();
+               }
+            }
          }
       }
       else
       {
          String charValue = getValueAsStringForExport(data, type);
-         contentHandler.characters(charValue.toCharArray(), 0, charValue.length());
+         if (hasValidCharsOnly(charValue))
+         {
+            contentHandler.startElement(getSvNamespaceUri(), "value", "sv:value", new AttributesImpl());
+            contentHandler.characters(charValue.toCharArray(), 0, charValue.length());
+         }
+         else
+         {
+            byte[] content = charValue.getBytes(Constants.DEFAULT_ENCODING);
+            char[] charbuf = Base64.encode(content, 0, content.length, 0, "").toCharArray();
+            AttributesImpl attrs = new AttributesImpl();
+            attrs.addAttribute(Constants.NS_XSI_URI, "type", "xsi:type", "CDATA", "xsd:base64Binary");
+            contentHandler.startElement(getSvNamespaceUri(), "value", "sv:value", attrs);
+            contentHandler.characters(charbuf, 0, charbuf.length);
+         }
       }
    }
 }

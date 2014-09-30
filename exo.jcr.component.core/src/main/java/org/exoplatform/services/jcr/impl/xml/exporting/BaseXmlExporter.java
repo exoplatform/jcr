@@ -287,6 +287,34 @@ public abstract class BaseXmlExporter extends ItemDataTraversingVisitor
       return charValue;
    }
 
+   /**
+    * Indicates whether or not the provided String contains only
+    * characters that are valid according to the specification of
+    * XML 1.0 that are defined here http://www.w3.org/TR/xml/#charsets
+    * @param content the content to check
+    * @return <code>true</code> if all the characters of the provided
+    * String are valid regarding the XML specification, <code>false</code>
+    * otherwise
+    */
+   protected static boolean hasValidCharsOnly(String content)
+   {
+      if (content == null)
+         return true;
+      for (int i = 0, length = content.length(); i < length; i++)
+      {
+         char c = content.charAt(i);
+         if ((c == 0x9) || (c == 0xA) || (c == 0xD) || ((c >= 0x20) && (c <= 0xD7FF))
+            || ((c >= 0xE000) && (c <= 0xFFFD)) || ((c >= 0x10000) && (c <= 0x10FFFF)))
+         {
+            // The character is valid
+            continue;
+         }
+         // The character is not valid
+         return false;
+      }
+      return true;
+   }
+
    public NamespaceRegistry getNamespaceRegistry()
    {
       return namespaceRegistry;
