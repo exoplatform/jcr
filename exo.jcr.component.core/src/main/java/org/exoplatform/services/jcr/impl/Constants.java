@@ -46,6 +46,16 @@ public class Constants
    public static final String NS_DEFAULT_URI = "";
 
    /**
+    * Namespace prefix used for XMLSchema Instance.
+    */
+   public static final String NS_XSI_PREFIX = "xsi";
+
+   /**
+    * The namespace URI for XMLSchema Instance.
+    */
+   public static final String NS_XSI_URI = "http://www.w3.org/2001/XMLSchema-instance";
+
+   /**
     * Reserved namespace for exo node types.
     */
    public static final String NS_EXO_PREFIX = "exo";
@@ -646,6 +656,11 @@ public class Constants
     * sv:name internal name.
     */
    public static final InternalQName SV_NAME_NAME = new InternalQName(NS_SV_URI, SV_NAME);
+
+   /**
+    * xsi:type internal name
+    */
+   public static final InternalQName XSI_TYPE_NAME = new InternalQName(NS_XSI_URI, "type");
 
    /**
     * exo:id internal name.

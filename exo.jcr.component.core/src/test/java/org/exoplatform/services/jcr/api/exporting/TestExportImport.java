@@ -19,19 +19,27 @@
 package org.exoplatform.services.jcr.api.exporting;
 
 import org.exoplatform.services.jcr.dataflow.ItemState;
+import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
 import org.exoplatform.services.jcr.util.IdGenerator;
+import org.xml.sax.Attributes;
+import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Calendar;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
@@ -482,5 +490,218 @@ public class TestExportImport extends ExportBase
       catch (Exception e)
       {
       }
+   }
+
+   public void testExportImportInvalidCharSystem() throws Exception
+   {
+      Node testNode = root.addNode("testExportImportInvalidCharSystem");
+      String contentWithInvalidChar = "\001Af\001A\001A\001Ao\001A\001Ao\001A";
+      String contentWoInvalidChar = "foo";
+      testNode.setProperty("stringValue", contentWithInvalidChar);
+      testNode.setProperty("binaryValue",
+         new ByteArrayInputStream(contentWithInvalidChar.getBytes(Constants.DEFAULT_ENCODING)));
+      testNode.setProperty("stringValueWo", contentWoInvalidChar);
+      testNode.setProperty("binaryValueWo",
+         new ByteArrayInputStream(contentWoInvalidChar.getBytes(Constants.DEFAULT_ENCODING)));
+      session.save();
+      assertEquals(PropertyType.STRING, testNode.getProperty("stringValue").getType());
+      assertEquals(contentWithInvalidChar, testNode.getProperty("stringValue").getString());
+      assertEquals(PropertyType.BINARY, testNode.getProperty("binaryValue").getType());
+      assertEquals(contentWithInvalidChar, testNode.getProperty("binaryValue").getString());
+      assertEquals(PropertyType.STRING, testNode.getProperty("stringValueWo").getType());
+      assertEquals(contentWoInvalidChar, testNode.getProperty("stringValueWo").getString());
+      assertEquals(PropertyType.BINARY, testNode.getProperty("binaryValueWo").getType());
+      assertEquals(contentWoInvalidChar, testNode.getProperty("binaryValueWo").getString());
+
+      // With Binary
+      ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+      session.exportSystemView(testNode.getPath(), outStream, false, false);
+      outStream.close();
+
+      testNode.remove();
+      session.save();
+
+      session.importXML(root.getPath(), new ByteArrayInputStream(outStream.toByteArray()), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+
+      session.save();
+
+      Node newNode = root.getNode("testExportImportInvalidCharSystem");
+      assertEquals(PropertyType.STRING, newNode.getProperty("stringValue").getType());
+      assertEquals(contentWithInvalidChar, newNode.getProperty("stringValue").getString());
+      assertEquals(PropertyType.BINARY, newNode.getProperty("binaryValue").getType());
+      assertEquals(contentWithInvalidChar, newNode.getProperty("binaryValue").getString());
+      assertEquals(PropertyType.STRING, newNode.getProperty("stringValueWo").getType());
+      assertEquals(contentWoInvalidChar, newNode.getProperty("stringValueWo").getString());
+      assertEquals(PropertyType.BINARY, newNode.getProperty("binaryValueWo").getType());
+      assertEquals(contentWoInvalidChar, newNode.getProperty("binaryValueWo").getString());
+
+      outStream.reset();
+
+      // Without Binary
+      session.exportSystemView(newNode.getPath(), outStream, true, false);
+      outStream.close();
+
+      newNode.remove();
+      root.save();
+
+      session.importXML(root.getPath(), new ByteArrayInputStream(outStream.toByteArray()), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+
+      session.save();
+
+      newNode = root.getNode("testExportImportInvalidCharSystem");
+      assertEquals(PropertyType.STRING, newNode.getProperty("stringValue").getType());
+      assertEquals(contentWithInvalidChar, newNode.getProperty("stringValue").getString());
+      assertEquals(PropertyType.BINARY, newNode.getProperty("binaryValue").getType());
+      assertEquals("", newNode.getProperty("binaryValue").getString());
+      assertEquals(PropertyType.STRING, newNode.getProperty("stringValueWo").getType());
+      assertEquals(contentWoInvalidChar, newNode.getProperty("stringValueWo").getString());
+      assertEquals(PropertyType.BINARY, newNode.getProperty("binaryValueWo").getType());
+      assertEquals("", newNode.getProperty("binaryValueWo").getString());
+   }
+
+   public void testExportImportInvalidCharSystemWithCH() throws Exception
+   {
+      Node testNode = root.addNode("testExportImportInvalidCharSystemWithCH");
+      String contentWithInvalidChar = "\001Af\001A\001A\001Ao\001A\001Ao\001A";
+      String contentWoInvalidChar = "foo";
+      testNode.setProperty("stringValue", contentWithInvalidChar);
+      testNode.setProperty("binaryValue",
+         new ByteArrayInputStream(contentWithInvalidChar.getBytes(Constants.DEFAULT_ENCODING)));
+      testNode.setProperty("stringValueWo", contentWoInvalidChar);
+      testNode.setProperty("binaryValueWo",
+         new ByteArrayInputStream(contentWoInvalidChar.getBytes(Constants.DEFAULT_ENCODING)));
+      session.save();
+      assertEquals(PropertyType.STRING, testNode.getProperty("stringValue").getType());
+      assertEquals(contentWithInvalidChar, testNode.getProperty("stringValue").getString());
+      assertEquals(PropertyType.BINARY, testNode.getProperty("binaryValue").getType());
+      assertEquals(contentWithInvalidChar, testNode.getProperty("binaryValue").getString());
+      assertEquals(PropertyType.STRING, testNode.getProperty("stringValueWo").getType());
+      assertEquals(contentWoInvalidChar, testNode.getProperty("stringValueWo").getString());
+      assertEquals(PropertyType.BINARY, testNode.getProperty("binaryValueWo").getType());
+      assertEquals(contentWoInvalidChar, testNode.getProperty("binaryValueWo").getString());
+
+      // With Binary
+      final ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+      ContentHandler handler = new DefaultHandler()
+      {
+         private Map<String, String> prefixMapping = new LinkedHashMap<String, String>();
+         private boolean start;
+         public void startPrefixMapping (String prefix, String uri) throws SAXException
+         {
+            prefixMapping.put(prefix, uri);
+         }
+         
+         public void startElement (String uri, String localName,
+            String qName, Attributes atts) throws SAXException
+         {
+            try
+            {
+               outStream.write(("<" + qName).getBytes(Constants.DEFAULT_ENCODING));
+               if (start)
+               {
+                  start = false;
+                  for (String prefix : prefixMapping.keySet())
+                  {
+                     outStream.write((" xmlns:" + prefix + "=\"" + prefixMapping.get(prefix) + "\"").getBytes(Constants.DEFAULT_ENCODING));
+                  }
+               }
+               for (int i = 0; i < atts.getLength(); i++)
+               {
+                  outStream.write((" " + atts.getQName(i) + "=\"" + atts.getValue(i) + "\"").getBytes(Constants.DEFAULT_ENCODING));
+               }
+               outStream.write(">".getBytes(Constants.DEFAULT_ENCODING));
+            }
+            catch (Exception e)
+            {
+               throw new SAXException(e);
+            }
+         }
+         
+         public void startDocument() throws SAXException
+         {
+            try
+            {
+               outStream.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>".getBytes(Constants.DEFAULT_ENCODING));
+               start = true;
+            }
+            catch (Exception e)
+            {
+               throw new SAXException(e);
+            }
+         }
+         
+         public void endElement(String uri, String localName,
+            String qName) throws SAXException
+         {
+            try
+            {
+               outStream.write(("</" + qName + ">").getBytes(Constants.DEFAULT_ENCODING));
+            }
+            catch (Exception e)
+            {
+               throw new SAXException(e);
+            }
+         }
+         
+         public void endDocument() throws SAXException
+         {
+            prefixMapping.clear();
+            start = false;
+         }
+         
+         public void characters(char ch[], int start, int length) throws SAXException
+         {
+            try
+            {
+               outStream.write(new String (ch, start, length).getBytes(Constants.DEFAULT_ENCODING));
+            }
+            catch (Exception e)
+            {
+               throw new SAXException(e);
+            }
+         }
+      };
+      session.exportSystemView(testNode.getPath(), handler, false, false);
+      outStream.close();
+
+      testNode.remove();
+      session.save();
+
+      session.importXML(root.getPath(), new ByteArrayInputStream(outStream.toByteArray()), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+
+      session.save();
+
+      Node newNode = root.getNode("testExportImportInvalidCharSystemWithCH");
+      assertEquals(PropertyType.STRING, newNode.getProperty("stringValue").getType());
+      assertEquals(contentWithInvalidChar, newNode.getProperty("stringValue").getString());
+      assertEquals(PropertyType.BINARY, newNode.getProperty("binaryValue").getType());
+      assertEquals(contentWithInvalidChar, newNode.getProperty("binaryValue").getString());
+      assertEquals(PropertyType.STRING, newNode.getProperty("stringValueWo").getType());
+      assertEquals(contentWoInvalidChar, newNode.getProperty("stringValueWo").getString());
+      assertEquals(PropertyType.BINARY, newNode.getProperty("binaryValueWo").getType());
+      assertEquals(contentWoInvalidChar, newNode.getProperty("binaryValueWo").getString());
+
+      outStream.reset();
+
+      // Without Binary
+      session.exportSystemView(newNode.getPath(), handler, true, false);
+      outStream.close();
+
+      newNode.remove();
+      root.save();
+
+      session.importXML(root.getPath(), new ByteArrayInputStream(outStream.toByteArray()), ImportUUIDBehavior.IMPORT_UUID_COLLISION_THROW);
+
+      session.save();
+
+      newNode = root.getNode("testExportImportInvalidCharSystemWithCH");
+      assertEquals(PropertyType.STRING, newNode.getProperty("stringValue").getType());
+      assertEquals(contentWithInvalidChar, newNode.getProperty("stringValue").getString());
+      assertEquals(PropertyType.BINARY, newNode.getProperty("binaryValue").getType());
+      assertEquals("", newNode.getProperty("binaryValue").getString());
+      assertEquals(PropertyType.STRING, newNode.getProperty("stringValueWo").getType());
+      assertEquals(contentWoInvalidChar, newNode.getProperty("stringValueWo").getString());
+      assertEquals(PropertyType.BINARY, newNode.getProperty("binaryValueWo").getType());
+      assertEquals("", newNode.getProperty("binaryValueWo").getString());
    }
 }
