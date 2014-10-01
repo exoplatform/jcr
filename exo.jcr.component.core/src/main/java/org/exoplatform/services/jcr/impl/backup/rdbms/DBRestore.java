@@ -531,29 +531,46 @@ public class DBRestore implements DataRestore
          if (useSequence)
          {
             batchSize = 0;
-            stmt=jdbcConn.createStatement();
+            String update = "DROP SEQUENCE " + tableName + "_seq";
+            stmt = jdbcConn.createStatement();
             if ((dialect.startsWith(DBConstants.DB_DIALECT_MYSQL) || dialect.startsWith(DBConstants.DB_DIALECT_MSSQL)
                || dialect.startsWith(DBConstants.DB_DIALECT_SYBASE)) && tableName.equalsIgnoreCase(this.itemTableName))
             {
-               insertNode =
-                  jdbcConn.prepareStatement("INSERT INTO " + tableName + "_SEQ  (name, nextVal) VALUES ('LAST_N_ORDER_NUM', ?)");
+               boolean exist = checkEntry(jdbcConn, tableName + "_SEQ");
+               if (exist)
+               {
+                  insertNode =
+                     jdbcConn.prepareStatement("UPDATE " + tableName + "_SEQ  SET  nextVal=?  where name='LAST_N_ORDER_NUM'");
+               }
+               else
+               {
+                  insertNode =
+                     jdbcConn.prepareStatement("INSERT INTO " + tableName + "_SEQ  (name, nextVal) VALUES ('LAST_N_ORDER_NUM', ?)");
+               }
                insertNode.setInt(1, getStartValue(jdbcConn, tableName));
                insertNode.executeUpdate();
                batchSize++;
 
             }
             else if ((dialect.startsWith(DBConstants.DB_DIALECT_PGSQL) || dialect.startsWith(DBConstants.DB_DIALECT_DB2) || dialect.startsWith(DBConstants.DB_DIALECT_HSQLDB)
-               || dialect.startsWith(DBConstants.DB_DIALECT_H2)) && (tableName.equalsIgnoreCase(this.itemTableName)))
+            ) && (tableName.equalsIgnoreCase(this.itemTableName)))
 
             {
-               String update = "ALTER SEQUENCE " + tableName + "_seq" + " RESTART WITH  " + (getStartValue(jdbcConn, tableName) + 1);
+               stmt.execute(update);
+               update = "CREATE SEQUENCE " + tableName + "_seq  INCREMENT BY 1 MINVALUE -1 NO MAXVALUE  NO CYCLE START WITH " + (getStartValue(jdbcConn, tableName) + 1);
+               stmt.execute(update);
+               batchSize++;
+            }
+            else if (dialect.startsWith(DBConstants.DB_DIALECT_H2) && (tableName.equalsIgnoreCase(this.itemTableName)))
+            {
+               stmt.execute(update);
+               update = "CREATE SEQUENCE " + tableName + "_seq  INCREMENT BY 1 START WITH " + (getStartValue(jdbcConn, tableName) + 1);
                stmt.execute(update);
                batchSize++;
             }
             else if (dialect.startsWith(DBConstants.DB_DIALECT_ORACLE) && tableName.equalsIgnoreCase(this.itemTableName))
             {
-               String update = "DROP SEQUENCE " + tableName + "_seq";
-               jdbcConn.createStatement().execute(update);
+               stmt.execute(update);
                update = "CREATE SEQUENCE " + tableName + "_seq  INCREMENT BY 1 MINVALUE -1 NOMAXVALUE NOCACHE NOCYCLE START WITH " + (getStartValue(jdbcConn, tableName) + 1);
                stmt.execute(update);
                batchSize++;
@@ -724,6 +741,38 @@ public class DBRestore implements DataRestore
       {
          JDBCUtils.freeResources(trs, stmt, null);
       }
+   }
+
+   /**
+    * Check if LAST_N_ORDER_NUM row exists.
+    */
+   private boolean checkEntry(Connection con, String table)
+   {
+
+      Statement stmt = null;
+      ResultSet trs = null;
+      try
+      {
+         String query = "select count(*) from " + table +"  where name ='LAST_N_ORDER_NUM'";
+         stmt = con.createStatement();
+         trs = stmt.executeQuery(query);
+         if (trs.next() && trs.getInt(1) > 0)
+         {
+            return true;
+         }
+      }
+      catch (SQLException e)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("SQLException occurred while check the table " + table +"  entry ", e);
+         }
+      }
+      finally
+      {
+         JDBCUtils.freeResources(trs, stmt, null);
+      }
+      return false;
    }
 }
 

@@ -17,7 +17,6 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -100,7 +99,7 @@ public class OracleMultiDbJDBCConnection extends MultiDbJDBCConnection
                + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
                + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
                + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
-         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "SELECT " + JCR_ITEM_SEQ + ".nextval FROM dual";
+         FIND_LAST_ORDER_NUMBER = "SELECT " + JCR_ITEM_NEXT_VAL + " ('" + JCR_ITEM_SEQ + "', ?, ?) FROM dual";
       }
       else
       {

@@ -663,16 +663,33 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
       {
          findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
       }
-      else if (!containerConfig.useSequenceForOrderNumber)
+      else
       {
          findLastOrderNumberByParentId.clearParameters();
       }
-      if (!containerConfig.useSequenceForOrderNumber)
-      {
-         findLastOrderNumberByParentId.setString(1, parentIdentifier);
-      }
 
+      findLastOrderNumberByParentId.setString(1, parentIdentifier);
       return findLastOrderNumberByParentId.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumber(int localMaxOrderNumber, boolean increment) throws SQLException
+   {
+      if (findLastOrderNumber == null)
+      {
+         findLastOrderNumber = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER);
+      }
+      else
+      {
+         findLastOrderNumber.clearParameters();
+      }
+      int value = increment ? 1 : 0;
+      findLastOrderNumber.setInt(1, localMaxOrderNumber);
+      findLastOrderNumber.setInt(2, value);
+      return findLastOrderNumber.executeQuery();
    }
 
    /**

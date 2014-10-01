@@ -17,9 +17,7 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.db;
 
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
-import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -85,7 +83,7 @@ public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
 
       if (containerConfig.useSequenceForOrderNumber)
       {
-         FIND_LAST_ORDER_NUMBER_BY_PARENTID = "exec " + JCR_ITEM_NEXT_VAL + " 'LAST_N_ORDER_NUM'";
+         FIND_LAST_ORDER_NUMBER = "exec " + JCR_ITEM_NEXT_VAL + " 'LAST_N_ORDER_NUM' , ? , ?";
          FIND_NODES_BY_PARENTID_LAZILY_CQ =
             "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SVALUE V, JCR_SITEM P "
                + " join (select TOP ${TOP} J.* from JCR_SITEM J where J.CONTAINER_NAME=? AND J.I_CLASS=1 and J.PARENT_ID=?"
@@ -133,18 +131,21 @@ public class MSSQLSingleDbJDBCConnection extends SingleDbJDBCConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
+   protected ResultSet findLastOrderNumber(int localMaxOrderNumber,boolean increment) throws SQLException
    {
-      if (!containerConfig.useSequenceForOrderNumber)
+      if (findLastOrderNumber == null)
       {
-         return super.findLastOrderNumberByParentIdentifier(parentIdentifier);
+         findLastOrderNumber = dbConnection.prepareCall(FIND_LAST_ORDER_NUMBER);
       }
-      if (findLastOrderNumberByParentId == null)
+      else
       {
-         findLastOrderNumberByParentId = dbConnection.prepareCall(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
+         findLastOrderNumber.clearParameters();
       }
-      findLastOrderNumberByParentId.execute();
-      return (findLastOrderNumberByParentId).getResultSet();
+      int value = increment ? 1 : 0;
+      findLastOrderNumber.setInt(1,localMaxOrderNumber);
+      findLastOrderNumber.setInt(2, value);
+      findLastOrderNumber.execute();
+      return (findLastOrderNumber).getResultSet();
    }
 
    /**

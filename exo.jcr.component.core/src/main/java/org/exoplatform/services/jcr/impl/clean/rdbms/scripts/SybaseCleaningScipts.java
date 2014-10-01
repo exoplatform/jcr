@@ -167,11 +167,6 @@ public class SybaseCleaningScipts extends DBCleaningScripts
       scripts.add("sp_rename " + valueTableName + ", " + valueTableName + "_OLD");
       scripts.add("sp_rename " + itemTableName + ", " + itemTableName + "_OLD");
       scripts.add("sp_rename " + refTableName + ", " + refTableName + "_OLD");
-      if (useSequence)
-      {
-         scripts.add("sp_rename " + itemTableName + "_SEQ , " + itemTableName + "_SEQ_OLD");
-         scripts.add("DROP procedure " + itemTableName + "_NEXT_VAL");
-      }
       scripts.add("sp_rename JCR_FK_" + valueTableSuffix + "_PROPERTY, JCR_FK_" + valueTableSuffix + "_PROPERTY_OLD");
       scripts.add("sp_rename JCR_FK_" + itemTableSuffix + "_PARENT, JCR_FK_" + itemTableSuffix + "_PARENT_OLD");
 
@@ -188,57 +183,9 @@ public class SybaseCleaningScipts extends DBCleaningScripts
       scripts.add("sp_rename " + valueTableName + "_OLD, " + valueTableName);
       scripts.add("sp_rename " + itemTableName + "_OLD, " + itemTableName);
       scripts.add("sp_rename " + refTableName + "_OLD, " + refTableName);
-      if (useSequence)
-      {
-         scripts.add("sp_rename " + itemTableName + "_SEQ_OLD , " + itemTableName + "_SEQ");
-         try
-         {
-            scripts.add(DBInitializerHelper.getObjectScript("CREATE PROCEDURE " + itemTableName + "_NEXT_VAL", multiDb, dialect, wsEntry));
-         }
-         catch (RepositoryConfigurationException e)
-         {
-            throw new DBCleanException(e);
-         }
-         catch (IOException e)
-         {
-            throw new DBCleanException(e);
-         }
-      }
 
       scripts.add("sp_rename JCR_FK_" + valueTableSuffix + "_PROPERTY_OLD, JCR_FK_" + valueTableSuffix + "_PROPERTY");
       scripts.add("sp_rename JCR_FK_" + itemTableSuffix + "_PARENT_OLD, JCR_FK_" + itemTableSuffix + "_PARENT");
-
-      return scripts;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected Collection<String> getOldTablesDroppingScripts()
-   {
-      List<String> scripts = new ArrayList<String>();
-
-      if (useSequence)
-      {
-         scripts.add("DROP TABLE " + itemTableName + "_SEQ_OLD");
-      }
-      scripts.addAll(super.getOldTablesDroppingScripts());
-
-      return scripts;
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   protected Collection<String> getTablesDroppingScripts()
-   {
-      List<String> scripts = new ArrayList<String>();
-
-      if (useSequence)
-      {
-         scripts.add("DROP TABLE " + itemTableName + "_SEQ");
-      }
-      scripts.addAll(super.getTablesDroppingScripts());
 
       return scripts;
    }

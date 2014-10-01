@@ -42,16 +42,20 @@ CREATE TABLE JCR_SITEM_SEQ (
     CONSTRAINT JCR_PK_SITEM_SEQ PRIMARY KEY (name)
 )/
 CREATE PROCEDURE JCR_SITEM_NEXT_VAL
-    @name VARCHAR(20)
+    @name VARCHAR(20),
+    @newVal INTEGER,
+    @increment INTEGER
 AS
     BEGIN
         SET NOCOUNT ON
         DECLARE @value INTEGER
-        BEGIN TRANSACTION
-            UPDATE JCR_SITEM_SEQ
-            SET @value=nextVal=nextVal + 1
-            WHERE name = @name;
-        COMMIT TRANSACTION
+        IF (@increment=1)
+           UPDATE JCR_SITEM_SEQ  SET @value=nextVal=nextVal + 1 WHERE name = @name;
+        ELSE
+           BEGIN
+             IF(Select nextVal from JCR_SITEM_SEQ WHERE name =  @name) < @newVal
+                UPDATE JCR_SITEM_SEQ  SET @value=nextVal= @newVal WHERE name = @name;
+           END;
         SELECT @value AS nextval
         return
     END/

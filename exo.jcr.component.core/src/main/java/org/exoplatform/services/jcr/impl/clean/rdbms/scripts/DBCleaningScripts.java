@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanException;
+import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 
 import java.io.IOException;
@@ -337,7 +338,7 @@ public abstract class DBCleaningScripts
       List<String> scripts = new ArrayList<String>();
       for (String query : JDBCUtils.splitWithSQLDelimiter(dbScripts))
       {
-         if (!useSequence && (query.contains(itemTableName + "_SEQ") || query.contains(itemTableName + "_NEXT_VAL")))
+         if (query.contains(itemTableName + "_SEQ") || query.contains(itemTableName + "_NEXT_VAL"))
          {
             continue;
          }
