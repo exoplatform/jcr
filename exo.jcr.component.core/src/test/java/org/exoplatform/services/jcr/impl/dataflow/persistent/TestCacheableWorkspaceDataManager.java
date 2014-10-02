@@ -601,7 +601,7 @@ public class TestCacheableWorkspaceDataManager extends JcrImplBaseTest
          return null;
       }
 
-      public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childs)
+      public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int offset, int pageSize, List<NodeData> childs)
          throws RepositoryException
       {
          return false;

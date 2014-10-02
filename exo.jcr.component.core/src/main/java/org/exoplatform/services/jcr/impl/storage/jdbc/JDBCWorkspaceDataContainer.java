@@ -55,9 +55,14 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.db.HSQLDBConnectionFactory
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.MySQLConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.db.WorkspaceStorageConnectionFactory;
 import org.exoplatform.services.jcr.impl.storage.jdbc.indexing.JdbcNodeDataIndexingIterator;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.DB2DBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.HSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.MSSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.MysqlDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
+import org.exoplatform.services.jcr.impl.storage.jdbc.init.SybaseDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
@@ -124,6 +129,11 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * Data structure type
     */
    public final static String DB_STRUCTURE_TYPE = "db-structure-type";
+
+   /**
+    * Use sequence for order number
+    */
+   public final static String USE_SEQUENCE_FOR_ORDER_NUMBER = "use-sequence-for-order-number";
 
    /**
     * Suffix used in tables names when isolated-databse structure used 
@@ -286,6 +296,16 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       {
          // don't use new connection by default
          this.containerConfig.checkSNSNewConnection = false;
+      }
+
+      try
+      {
+         this.containerConfig.useSequenceForOrderNumber =
+            wsConfig.getContainer().getParameterBoolean(USE_SEQUENCE_FOR_ORDER_NUMBER);
+      }
+      catch (RepositoryConfigurationException e)
+      {
+         this.containerConfig.useSequenceForOrderNumber = false;
       }
 
       // ------------- Spool config ------------------
@@ -496,12 +516,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                + " in your use-case. This dialect is only dedicated to the community.");
          }
          this.connFactory = new MySQLConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new MysqlDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
       {
          this.connFactory = defaultConnectionFactory();
-         dbInitializer = defaultDBInitializer();
+         dbInitializer=new MSSQLDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DERBY))
       {
@@ -511,12 +531,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_DB2))
       {
          this.connFactory = defaultConnectionFactory();
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new DB2DBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
       {
          this.connFactory = defaultConnectionFactory();
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new SybaseDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_INGRES))
       {
@@ -527,7 +547,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
       else if (containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
       {
          this.connFactory = new HSQLDBConnectionFactory(getDataSource(), containerConfig);
-         dbInitializer = defaultDBInitializer();
+         dbInitializer = new HSQLDBInitializer(this.connFactory.getJdbcConnection(),containerConfig);
       }
       else
       {

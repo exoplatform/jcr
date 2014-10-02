@@ -207,16 +207,31 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       DELETE_REFERENCE_BY_ORDER_NUM = "delete from JCR_SREF where PROPERTY_ID=? and ORDER_NUM >= ?";
       UPDATE_VALUE = "update JCR_SVALUE set DATA=?, STORAGE_DESC=? where PROPERTY_ID=? and ORDER_NUM=?";
       UPDATE_REFERENCE = "update JCR_SREF set NODE_ID=? where PROPERTY_ID=? and ORDER_NUM=?";
-
-      FIND_NODES_BY_PARENTID_LAZILY_CQ =
-         "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
-            + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and I.N_ORDER_NUM >= ? and "
-            + " I.N_ORDER_NUM <= ? and P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
-            + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
-            + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
-            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
-            + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
-            + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      if (containerConfig.useSequenceForOrderNumber)
+      {
+         FIND_NODES_BY_PARENTID_LAZILY_CQ =
+            "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SVALUE V, JCR_SITEM P "
+               + " join (select J.* from JCR_SITEM J where J.CONTAINER_NAME=? AND J.I_CLASS=1 and J.PARENT_ID=?"
+               + " order by J.N_ORDER_NUM, J.ID  LIMIT ? OFFSET ?) I on P.PARENT_ID = I.ID"
+               + " where P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+               + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+               + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+               + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      }
+      else
+      {
+         FIND_NODES_BY_PARENTID_LAZILY_CQ =
+            "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V"
+               + " where I.I_CLASS=1 and I.CONTAINER_NAME=? and I.PARENT_ID=? and I.N_ORDER_NUM >= ? and "
+               + " I.N_ORDER_NUM <= ? and P.I_CLASS=2 and P.CONTAINER_NAME=? and P.PARENT_ID=I.ID and"
+               + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+               + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+               + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      }
 
       FIND_ACL_HOLDERS =
          "select I.PARENT_ID, I.P_TYPE" + " from JCR_SITEM I where I.I_CLASS=2 and I.CONTAINER_NAME=?"
@@ -462,6 +477,27 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
+   protected ResultSet findLastOrderNumber(int localMaxOrderNumber, boolean increment) throws SQLException
+   {
+      if (findLastOrderNumber == null)
+      {
+         findLastOrderNumber = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER);
+      }
+      else
+      {
+         findLastOrderNumber.clearParameters();
+      }
+      int value = increment ? 1 : 0;
+      findLastOrderNumber.setInt(1, localMaxOrderNumber);
+      findLastOrderNumber.setInt(2, value);
+
+      return findLastOrderNumber.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
    protected ResultSet findChildNodesCountByParentIdentifier(String parentCid) throws SQLException
    {
       if (findNodesCountByParentId == null)
@@ -630,7 +666,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int toOrderNum)
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset , int limit)
       throws SQLException
    {
       if (findNodesByParentIdLazilyCQ == null)
@@ -644,8 +680,16 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
 
       findNodesByParentIdLazilyCQ.setString(1, this.containerConfig.containerName);
       findNodesByParentIdLazilyCQ.setString(2, parentCid);
-      findNodesByParentIdLazilyCQ.setInt(3, fromOrderNum);
-      findNodesByParentIdLazilyCQ.setInt(4, toOrderNum);
+      if (containerConfig.useSequenceForOrderNumber)
+      {
+         findNodesByParentIdLazilyCQ.setInt(3, limit);
+         findNodesByParentIdLazilyCQ.setInt(4, offset);
+      }
+      else
+      {
+         findNodesByParentIdLazilyCQ.setInt(3, fromOrderNum);
+         findNodesByParentIdLazilyCQ.setInt(4, fromOrderNum+limit-1);
+      }
       findNodesByParentIdLazilyCQ.setString(5, this.containerConfig.containerName);
 
       return findNodesByParentIdLazilyCQ.executeQuery();
@@ -1054,12 +1098,12 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
       {
          removeValuesStatement =
             dbConnection.prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM"
-               + " WHERE CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+               + " WHERE I_CLASS = 2 AND CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
          removeValuesStatement.setString(1, this.containerConfig.containerName);
 
          removeItemsStatement =
-            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE CONTAINER_NAME = ? AND"
+            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE I_CLASS = 2 AND CONTAINER_NAME = ? AND"
                + " (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
                + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
          removeItemsStatement.setString(1, this.containerConfig.containerName);

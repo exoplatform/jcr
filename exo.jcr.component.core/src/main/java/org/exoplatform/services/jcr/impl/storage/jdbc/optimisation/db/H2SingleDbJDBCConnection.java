@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.jcr.InvalidItemStateException;
@@ -58,6 +59,45 @@ public class H2SingleDbJDBCConnection extends SingleDbJDBCConnection
    protected QPath traverseQPath(String cpid) throws SQLException, InvalidItemStateException, IllegalNameException
    {
       return traverseQPathSQ(cpid);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void prepareQueries() throws SQLException
+   {
+      super.prepareQueries();
+      if (containerConfig.useSequenceForOrderNumber)
+      {
+         FIND_LAST_ORDER_NUMBER = "call " + JCR_ITEM_SEQ + ".NEXTVAL";
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumber(int localMaxOrderNumber, boolean increment) throws SQLException
+   {
+      if (findLastOrderNumber == null)
+      {
+         findLastOrderNumber = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER);
+      }
+      if (!increment)
+      {
+         ResultSet count;
+         int result = -1;
+         while (result < localMaxOrderNumber - 1)
+         {
+            count = findLastOrderNumber.executeQuery();
+            if (count.next())
+            {
+               result = count.getInt(1);
+            }
+         }
+      }
+      return findLastOrderNumber.executeQuery();
    }
 
 }

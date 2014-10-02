@@ -463,6 +463,53 @@ public class TestGetNodesLazily extends JcrImplBaseTest
             "Iterator returned wrong number of nodes. Expected: " + expectedSize + ", but returned " + number,
             expectedSize, number);
       }
+      NodeIterator it = testNode.getNodes();
+      if (expectedSize == 0)
+      {
+         assertFalse(it.hasNext());
+         return;
+      }
+      int number = 0;
+      if (!backwardOrder)
+      {
+         int i = 0;
+         while (it.hasNext())
+         {
+            Node node = it.nextNode();
+
+            long actualNodeIndex = node.getProperty(INDEX_PROPERTY).getLong();
+            assertEquals("Iterator must return nodes ordered by \"order num\". Occurred at: child" + actualNodeIndex
+               + " expecting <" + i + ">", i, actualNodeIndex);
+            i++;
+            number++;
+         }
+      }
+      else
+      {
+         int i = expectedSize - 1;
+         while (it.hasNext())
+         {
+            NodeImpl node = (NodeImpl)it.nextNode();
+            long actualNodeIndex = node.getProperty(INDEX_PROPERTY).getLong();
+            assertEquals("Iterator must return nodes ordered by \"order num\". Occurred at: child" + actualNodeIndex
+               + " expecting <" + i + ">", i, actualNodeIndex);
+            i--;
+            number++;
+         }
+      }
+      int i = 0;
+      for (; it.hasNext(); i++)
+      {
+         Node node = it.nextNode();
+
+         long actualNodeIndex = node.getProperty(INDEX_PROPERTY).getLong();
+         assertEquals("Check the Property: Iterator must return nodes ordered by \"order num\". Occurred at: child" + actualNodeIndex
+            + " expecting <" + i + ">", i, actualNodeIndex);
+      }
+      // assert all returned
+      assertEquals(
+         "Iterator returned wrong number of nodes. Expected: " + expectedSize + ", but returned " + number,
+         expectedSize, number);
    }
 
    @Override

@@ -36,6 +36,7 @@ import org.exoplatform.services.jcr.impl.dataflow.serialization.ObjectZipReaderI
 import org.exoplatform.services.jcr.impl.storage.jdbc.DBConstants;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
+import org.exoplatform.services.jcr.impl.util.jdbc.DBInitializerHelper;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
@@ -45,11 +46,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -122,6 +119,10 @@ public class DBRestore implements DataRestore
     */
    protected final String dialect;
 
+   protected final boolean useSequence;
+
+   protected final String itemTableName;
+
    /**
     * Contains object names which executed queries.   
     */
@@ -151,6 +152,8 @@ public class DBRestore implements DataRestore
       this.dbCleaner = dbCleaner;
       this.dialect = DialectDetecter.detect(jdbcConn.getMetaData());
       this.dbCleanerInAutoCommit = dialect.startsWith(DialectConstants.DB_DIALECT_SYBASE);
+      this.itemTableName = DBInitializerHelper.getItemTableName(wsConfig);
+      this.useSequence= DBInitializerHelper.useSequenceForOrderNumber(wsConfig);
    }
 
    /**
@@ -275,6 +278,7 @@ public class DBRestore implements DataRestore
 
       PreparedStatement insertNode = null;
       ResultSet tableMetaData = null;
+      Statement stmt = null;
 
       // switch table name to lower case
       if (dialect.startsWith(DBConstants.DB_DIALECT_PGSQL))
@@ -524,6 +528,60 @@ public class DBRestore implements DataRestore
 
             commitBatch();
          }
+         if (useSequence)
+         {
+            batchSize = 0;
+            String update = "DROP SEQUENCE " + tableName + "_seq";
+            stmt = jdbcConn.createStatement();
+            if ((dialect.startsWith(DBConstants.DB_DIALECT_MYSQL) || dialect.startsWith(DBConstants.DB_DIALECT_MSSQL)
+               || dialect.startsWith(DBConstants.DB_DIALECT_SYBASE)) && tableName.equalsIgnoreCase(this.itemTableName))
+            {
+               boolean exist = checkEntry(jdbcConn, tableName + "_SEQ");
+               if (exist)
+               {
+                  insertNode =
+                     jdbcConn.prepareStatement("UPDATE " + tableName + "_SEQ  SET  nextVal=?  where name='LAST_N_ORDER_NUM'");
+               }
+               else
+               {
+                  insertNode =
+                     jdbcConn.prepareStatement("INSERT INTO " + tableName + "_SEQ  (name, nextVal) VALUES ('LAST_N_ORDER_NUM', ?)");
+               }
+               insertNode.setInt(1, getStartValue(jdbcConn, tableName));
+               insertNode.executeUpdate();
+               batchSize++;
+
+            }
+            else if ((dialect.startsWith(DBConstants.DB_DIALECT_PGSQL) || dialect.startsWith(DBConstants.DB_DIALECT_DB2) || dialect.startsWith(DBConstants.DB_DIALECT_HSQLDB)
+            ) && (tableName.equalsIgnoreCase(this.itemTableName)))
+
+            {
+               stmt.execute(update);
+               update = "CREATE SEQUENCE " + tableName + "_seq  INCREMENT BY 1 MINVALUE -1 NO MAXVALUE  NO CYCLE START WITH " + (getStartValue(jdbcConn, tableName) + 1);
+               stmt.execute(update);
+               batchSize++;
+            }
+            else if (dialect.startsWith(DBConstants.DB_DIALECT_H2) && (tableName.equalsIgnoreCase(this.itemTableName)))
+            {
+               stmt.execute(update);
+               update = "CREATE SEQUENCE " + tableName + "_seq  INCREMENT BY 1 START WITH " + (getStartValue(jdbcConn, tableName) + 1);
+               stmt.execute(update);
+               batchSize++;
+            }
+            else if (dialect.startsWith(DBConstants.DB_DIALECT_ORACLE) && tableName.equalsIgnoreCase(this.itemTableName))
+            {
+               stmt.execute(update);
+               update = "CREATE SEQUENCE " + tableName + "_seq  INCREMENT BY 1 MINVALUE -1 NOMAXVALUE NOCACHE NOCYCLE START WITH " + (getStartValue(jdbcConn, tableName) + 1);
+               stmt.execute(update);
+               batchSize++;
+
+            }
+            if (batchSize != 0)
+            {
+
+               commitBatch();
+            }
+         }
       }
       finally
       {
@@ -540,6 +598,11 @@ public class DBRestore implements DataRestore
          if (insertNode != null)
          {
             insertNode.close();
+         }
+
+         if (stmt != null)
+         {
+            stmt.close();
          }
 
          // delete all temporary files
@@ -641,6 +704,75 @@ public class DBRestore implements DataRestore
             spoolFileList.add(sf);
          }
       }
+   }
+
+   /**
+    * Init Start value for sequence.
+    */
+   private int getStartValue(Connection con, String table)
+   {
+
+      Statement stmt = null;
+      ResultSet trs = null;
+      try
+      {
+         String query = "select max(N_ORDER_NUM) from " + table;
+         stmt = con.createStatement();
+         trs = stmt.executeQuery(query);
+         if (trs.next() && trs.getInt(1) >= 0)
+         {
+            return trs.getInt(1);
+         }
+         else
+         {
+            return -1;
+         }
+
+      }
+      catch (SQLException e)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("SQLException occurred while calculate the sequence start value", e);
+         }
+         return -1;
+      }
+      finally
+      {
+         JDBCUtils.freeResources(trs, stmt, null);
+      }
+   }
+
+   /**
+    * Check if LAST_N_ORDER_NUM row exists.
+    */
+   private boolean checkEntry(Connection con, String table)
+   {
+
+      Statement stmt = null;
+      ResultSet trs = null;
+      try
+      {
+         String query = "select count(*) from " + table + "  where name ='LAST_N_ORDER_NUM'";
+         stmt = con.createStatement();
+         trs = stmt.executeQuery(query);
+         if (trs.next() && trs.getInt(1) > 0)
+         {
+            return true;
+         }
+      }
+      catch (SQLException e)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("SQLException occurred while check the table " + table + "  entry ", e);
+         }
+      }
+      finally
+      {
+         JDBCUtils.freeResources(trs, stmt, null);
+      }
+      return false;
    }
 }
 
