@@ -65,8 +65,17 @@ public class DocNumberRecoveryFilter extends AbstractRecoveryFilter
 
          public Serializable execute(Serializable[] args) throws Throwable
          {
-            log.info("Remote command invoked");
-            return Integer.valueOf(DocNumberRecoveryFilter.this.searchIndex.getIndex().numDocs());
+            if (log.isDebugEnabled())
+               log.debug("Trying to get the total amount of documents from the master");
+            MultiIndex index;
+            while ((index = DocNumberRecoveryFilter.this.searchIndex.getIndex()) == null ||
+                   index.isStopped())
+            {
+               if (log.isDebugEnabled())
+                  log.debug("The index is not yet ready, it will retry later");
+               Thread.sleep(1000);
+            }
+            return Integer.valueOf(index.numDocs());
          }
       });
 
@@ -83,7 +92,8 @@ public class DocNumberRecoveryFilter extends AbstractRecoveryFilter
          if (!rpcService.isCoordinator())
          {
             Integer docsNumber = (Integer)rpcService.executeCommandOnCoordinator(getDocsNumCommand, true);
-            log.info("Remote result received: " + docsNumber + " and local is: " + searchIndex.getIndex().numDocs());
+            if (log.isDebugEnabled())
+               log.debug("Remote result received: {} and local is: {}", docsNumber, searchIndex.getIndex().numDocs());
             return docsNumber.intValue() != searchIndex.getIndex().numDocs();
          }
          // if current node is coordinator

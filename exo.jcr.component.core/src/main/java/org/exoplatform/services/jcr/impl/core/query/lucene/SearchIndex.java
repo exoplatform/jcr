@@ -1239,7 +1239,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void close()
    {
-      closeAndKeepWaitingThreads();
+      closeAndKeepWaitingThreads(true);
       resumeWaitingThreads();
    }
 
@@ -1247,12 +1247,12 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Closes this <code>QueryHandler</code> and frees resources attached to
     * this handler.
     */
-   private void closeAndKeepWaitingThreads()
+   private void closeAndKeepWaitingThreads(boolean completeClose)
    {
       if (!closed.get())
       {
          // cleanup resources obtained by filters
-         if (recoveryFilters != null)
+         if (completeClose && recoveryFilters != null)
          {
             for (AbstractRecoveryFilter filter : recoveryFilters)
             {
@@ -3364,7 +3364,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          }
       }
 
-      closeAndKeepWaitingThreads();
+      closeAndKeepWaitingThreads(false);
    }
 
    /**
