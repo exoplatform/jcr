@@ -39,7 +39,7 @@ import javax.jcr.RepositoryException;
 public class DocNumberRecoveryFilter extends AbstractRecoveryFilter
 {
 
-   private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.index.DocNumberRecoveryFilter");
+   private static final Logger LOG = LoggerFactory.getLogger("exo.jcr.component.core.index.DocNumberRecoveryFilter");
 
    protected RemoteCommand getDocsNumCommand;
 
@@ -65,7 +65,14 @@ public class DocNumberRecoveryFilter extends AbstractRecoveryFilter
 
          public Serializable execute(Serializable[] args) throws Throwable
          {
-            log.info("Remote command invoked");
+            if (LOG.isDebugEnabled())
+               LOG.debug("Trying to get the total amount of documents from the master");
+            while (DocNumberRecoveryFilter.this.searchIndex.isSuspended())
+            {
+               if (LOG.isDebugEnabled())
+                  LOG.debug("The index has been suspended, it will wait until it is resumed");
+               DocNumberRecoveryFilter.this.searchIndex.waitForResuming();
+            }
             return Integer.valueOf(DocNumberRecoveryFilter.this.searchIndex.getIndex().numDocs());
          }
       });
@@ -83,7 +90,8 @@ public class DocNumberRecoveryFilter extends AbstractRecoveryFilter
          if (!rpcService.isCoordinator())
          {
             Integer docsNumber = (Integer)rpcService.executeCommandOnCoordinator(getDocsNumCommand, true);
-            log.info("Remote result received: " + docsNumber + " and local is: " + searchIndex.getIndex().numDocs());
+            if (LOG.isDebugEnabled())
+               LOG.debug("Remote result received: {} and local is: {}", docsNumber, searchIndex.getIndex().numDocs());
             return docsNumber.intValue() != searchIndex.getIndex().numDocs();
          }
          // if current node is coordinator
