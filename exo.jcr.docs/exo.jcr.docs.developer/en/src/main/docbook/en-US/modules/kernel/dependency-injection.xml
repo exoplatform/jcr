@@ -297,6 +297,15 @@ public void init()
  &lt;/component-plugins&gt;
 &lt;/component&gt;</programlisting>
 
+    <warning>
+      <title>Warning</title>
+      <para>For technical reasons, the context manager must be configured at
+      <emphasis>RootContainer</emphasis> (for portal mode) or
+      <emphasis>StandaloneContainer</emphasis> (for standalone mode) level,
+      otherwise if you configure it at <emphasis>PortalContainer</emphasis>
+      level it won't work properly.</para>
+    </warning>
+
     <para>How to define your own scope?</para>
 
     <orderedlist>
