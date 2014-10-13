@@ -299,12 +299,19 @@ public void init()
 
     <warning>
       <title>Warning</title>
+
       <para>For technical reasons, the context manager must be configured at
       <emphasis>RootContainer</emphasis> (for portal mode) or
       <emphasis>StandaloneContainer</emphasis> (for standalone mode) level,
       otherwise if you configure it at <emphasis>PortalContainer</emphasis>
       level it won't work properly.</para>
     </warning>
+
+    <para>You can find a simple example that shows you how to use the
+    different supported scopes in eXo JCR in the project
+    <emphasis>applications/exo.jcr.applications.examples</emphasis> available
+    in the source code of eXo JCR. Read the file
+    <emphasis>readme.txt</emphasis> for more details.</para>
 
     <para>How to define your own scope?</para>
 
