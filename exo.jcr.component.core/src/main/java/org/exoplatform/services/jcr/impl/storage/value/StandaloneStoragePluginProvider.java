@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.storage.value;
 
 import org.exoplatform.commons.utils.ClassLoading;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.config.RepositoryEntry;
 import org.exoplatform.services.jcr.config.SimpleParameterEntry;
 import org.exoplatform.services.jcr.config.ValueStorageEntry;
 import org.exoplatform.services.jcr.config.ValueStorageFilterEntry;
@@ -32,11 +33,13 @@ import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.jcr.storage.value.ValuePluginFilter;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePlugin;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
+import org.exoplatform.services.jcr.storage.value.ValueStorageURLConnection;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -64,16 +67,16 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
    private static Log log = ExoLogger.getLogger("exo.jcr.component.core.StandaloneStoragePluginProvider");
 
    /**
-    * Value storage enabling parameter. For interal usage only and testing purpose.
+    * Value storage enabling parameter. For internal usage only and testing purpose.
     */
    private static final String VALUE_STORAGE_ENABLED_PARAM = "enabled";
 
    /**
-    * ValueData resorces holder (Files etc). It's singleton feature.
+    * ValueData resources holder (Files etc). It's singleton feature.
     */
    private final ValueDataResourceHolder resorcesHolder;
 
-   public StandaloneStoragePluginProvider(WorkspaceEntry wsConfig, FileCleanerHolder holder)
+   public StandaloneStoragePluginProvider(RepositoryEntry repoConfig, WorkspaceEntry wsConfig, FileCleanerHolder holder)
       throws RepositoryConfigurationException, IOException
    {
 
@@ -166,8 +169,10 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
                   props.setProperty(paramEntry.getName(), paramEntry.getValue());
                }
 
-               plugin.init(props, resorcesHolder);
                plugin.setId(storageEntry.getId());
+               plugin.setRepository(repoConfig.getName());
+               plugin.setWorkspace(wsConfig.getName());
+               plugin.init(props, resorcesHolder);
                plugin.setFilters(filters);
 
                add(plugin);
@@ -222,6 +227,23 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
          if (plugin.isSame(storageId))
          {
             return plugin.openIOChannel();
+         }
+      }
+      throw new ValueStorageNotFoundException("No value storage found with id " + storageId);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public ValueStorageURLConnection createURLConnection(String storageId, URL url) throws ValueStorageNotFoundException, IOException
+   {
+      Iterator<ValueStoragePlugin> plugins = iterator();
+      while (plugins.hasNext())
+      {
+         ValueStoragePlugin plugin = plugins.next();
+         if (plugin.isSame(storageId))
+         {
+            return plugin.createURLConnection(url);
          }
       }
       throw new ValueStorageNotFoundException("No value storage found with id " + storageId);

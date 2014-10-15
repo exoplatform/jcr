@@ -92,8 +92,8 @@ public class JDBCWDCTest extends TestCase
       FileCleanerHolder cleanerHolder = new FileCleanerHolder();
 
       container =
-         new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(config,
-            cleanerHolder), null, cleanerHolder);
+         new JDBCWorkspaceDataContainer(config, repositoryEntry, null, new StandaloneStoragePluginProvider(
+            repositoryEntry, config, cleanerHolder), null, cleanerHolder);
 
       Properties logProps = new Properties();
       logProps.put("org.apache.commons.logging.simplelog.defaultlog", "debug");

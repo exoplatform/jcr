@@ -457,12 +457,12 @@
 
       <para>Container implementation obtains Values Storages option via
       ValueStoragePluginProvider component. Provider acts as a factory of
-      Value channels (ValueIOChannel) and has two methods for this
+      Value channels (ValueIOChannel) and proposes two methods for this
       purpose:</para>
 
       <itemizedlist>
         <listitem>
-          <para>Return ValueIOChannel matched this property and
+          <para>Return the ValueIOChannel that matches with this property and
           valueOrderNumer. Null will be returned if no channel matches.</para>
         </listitem>
       </itemizedlist>
@@ -472,15 +472,42 @@
 
       <itemizedlist>
         <listitem>
-          <para>Return ValueIOChannel associated with given storageId.</para>
+          <para>Returns the ValueIOChannel associated with given
+          storageId.</para>
         </listitem>
       </itemizedlist>
 
       <programlisting language="java">ValueIOChannel getChannel(String storageId) throws IOException, ValueStorageNotFoundException;
 </programlisting>
 
-      <para>There is also method for consistency check, but this method
-      doesn't used anywhere and storage implementations has it empty.</para>
+      <itemizedlist>
+        <listitem>
+          <para>Runs the consistency check operation on each registered
+          plug-in.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">void checkConsistency(WorkspaceStorageConnection dataConnection);
+</programlisting>
+
+      <para>Please note that the method checkConsistency is in practice rarely
+      implemented, most of the time it doesn't do anything.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Gives the ValueStorageURLConnection corresponding to the given
+          storageId and idResource if and only if the corresponding value
+          storage supports URL, otherwise an UnsupportedOperationException
+          will be thrown.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">ValueStorageURLConnection createURLConnection(String storageId, URL url) throws ValueStorageNotFoundException, IOException;;
+</programlisting>
+
+      <para>This method is actually used to be able to access to the content
+      of a resource that is managed by a value storage that is not based on a
+      file system.</para>
     </section>
 
     <section id="JCR.WorkspaceDataContainer.ValueStoragesAPI.ValueStoragePlugin">
@@ -503,7 +530,7 @@
 
       <itemizedlist>
         <listitem>
-          <para>Open ValueIOChannel.Used in
+          <para>Open a ValueIOChannel. Used in
           ValueStoragePluginProvider.getApplicableChannel(PropertyData, int)
           and getChannel(String)</para>
         </listitem>
@@ -518,7 +545,53 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting language="java">public abstract boolean isSame(String valueDataDescriptor);
+      <programlisting language="java">public boolean isSame(String storageId);
+</programlisting>
+
+      <itemizedlist>
+        <listitem>
+          <para>Runs the consistency check operation, by default it doesn't do
+          anything.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">public void checkConsistency(WorkspaceStorageConnection dataConnection);
+</programlisting>
+
+      <itemizedlist>
+        <listitem>
+          <para>In case the value storage supports the URL, this method will
+          provide the ValueStorageURLConnection managed by the value storage
+          corresponding to the given URL. If it doesn't support URL an
+          UnsupportedOperationException will be thrown.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">public ValueStorageURLConnection createURLConnection(URL u) throws IOException;
+</programlisting>
+
+      <itemizedlist>
+        <listitem>
+          <para>In case the value storage supports the URL, this method will
+          return an URL corresponding to the given resource within the context
+          of the current ValueStoragePlugin. If it doesn't support URL an
+          UnsupportedOperationException will be thrown.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">public URL createURL(String resourceId) throws MalformedURLException;
+</programlisting>
+
+      <itemizedlist>
+        <listitem>
+          <para>In case the value storage supports the URL, this method will
+          gives the ValueStorageURLStreamHandler corresponding to the current
+          ValueStoragePlugin. If it doesn't support URL an
+          UnsupportedOperationException will be thrown.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">protected ValueStorageURLStreamHandler getURLStreamHandler();
 </programlisting>
     </section>
 
@@ -534,7 +607,27 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting language="java">ValueData read(String propertyId, int orderNumber, int maxBufferSize) throws IOException;
+      <programlisting language="java">ValueDataWrapper read(String propertyId, int orderNumber, int type, SpoolConfig spoolConfig) throws IOException;
+</programlisting>
+
+      <itemizedlist>
+        <listitem>
+          <para>Returns value data size.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">long getValueSize(String propertyId, int orderNumber) throws IOException;
+</programlisting>
+
+      <itemizedlist>
+        <listitem>
+          <para>Returns value data size. Property may contains several values
+          differing only order number. This method returns value size of
+          them.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">long getValueSize(String propertyId) throws IOException;
 </programlisting>
 
       <itemizedlist>
@@ -543,7 +636,7 @@
         </listitem>
       </itemizedlist>
 
-      <programlisting language="java">void write(String propertyId, ValueData data) throws IOException;
+      <programlisting language="java">void write(String propertyId, ValueData data, ChangedSizeHandler sizeHandler) throws IOException;
 </programlisting>
 
       <itemizedlist>
@@ -556,11 +649,39 @@
 </programlisting>
     </section>
 
+    <section id="JCR.WorkspaceDataContainer.ValueStoragesAPI.CheckNRepair">
+      <title>Consistency Management</title>
+
+      <para>The interface ValueIOChannel proposes a set of methods allowing to
+      check the consistency and repair the data.</para>
+
+      <itemizedlist>
+        <listitem>
+          <para>Inspects whether corresponding resource exists in value
+          storage or not.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">void checkValueData(String propertyId, int orderNumber) throws ValueDataNotFoundException, IOException;</programlisting>
+
+      <itemizedlist>
+        <listitem>
+          <para>Repairs the value data generally by setting the resource to an
+          empty content.</para>
+        </listitem>
+      </itemizedlist>
+
+      <programlisting language="java">void repairValueData(String propertyId, int orderNumber) throws IOException;</programlisting>
+    </section>
+
     <section id="JCR.WorkspaceDataContainer.ValueStoragesAPI.TransactionSupportViaChannel">
       <title>Transaction support via channel</title>
 
-      <para>Modification operations should be applied only when commiting.
-      Rollback is required for data created cleanup.</para>
+      <para>The interface ValueIOChannel proposes a set of methods allowing to
+      support transaction at value storage level. Two modes are proposed, the
+      single phase commit and the two phase commit, the first one will only
+      call commit() and the second one will call first prepare() then
+      twoPhaseCommit().</para>
 
       <itemizedlist>
         <listitem>
@@ -593,6 +714,21 @@
       </itemizedlist>
 
       <programlisting language="java">void twoPhaseCommit() throws IOException;</programlisting>
+    </section>
+
+    <section id="JCR.WorkspaceDataContainer.ValueStoragesAPI.VSNonFSBased">
+      <title>Specificity of Value Storages non File System based </title>
+
+      <para>An implementation of a Value Storage that doesn't rely on a File
+      System needs to implement the method
+      <emphasis>ValueStoragePlugin.getURLStreamHandler()</emphasis> but also a
+      sub class of <emphasis>ValueStorageURLStreamHandler</emphasis> that
+      needs to override at least the method <emphasis>createURLConnection(URL
+      u, String repository, String workspace, String
+      valueStorageId)</emphasis> for performance reason. Finally, a sub class
+      of <emphasis>ValueStorageURLConnection</emphasis> will be needed to
+      allow to access to the content of the resource from the
+      <emphasis>URL</emphasis>.</para>
     </section>
   </section>
 </section>

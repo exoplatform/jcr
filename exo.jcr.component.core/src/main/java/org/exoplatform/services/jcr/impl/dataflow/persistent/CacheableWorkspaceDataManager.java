@@ -2143,6 +2143,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             FilePersistedValueData fpvd = (FilePersistedValueData)vd;
             if (fpvd.getFile() == null)
             {
+               if (fpvd instanceof StreamPersistedValueData && ((StreamPersistedValueData)fpvd).getUrl() != null)
+                  continue;
                // error, value not found
                throw new RepositoryException("Value cannot be found in storage for cached Property "
                   + prop.getQPath().getAsString() + ", orderNumb:" + vd.getOrderNumber() + ", pversion:"
@@ -2783,6 +2785,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             FilePersistedValueData fpvd = (FilePersistedValueData)vd;
             if (fpvd.getFile() == null)
             {
+               if (fpvd instanceof StreamPersistedValueData && ((StreamPersistedValueData)fpvd).getUrl() != null)
+                  continue;
                return true;
             }
          }

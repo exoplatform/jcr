@@ -23,6 +23,7 @@ import org.exoplatform.services.jcr.impl.storage.value.ValueStorageNotFoundExcep
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 
 import java.io.IOException;
+import java.net.URL;
 
 /**
  * Created by The eXo Platform SAS 04.09.2006
@@ -34,7 +35,7 @@ public interface ValueStoragePluginProvider
 {
 
    /**
-    * Return <code>ValueIOChannel</code> matched this <code>property</code> and
+    * Returns the <code>ValueIOChannel</code> that matches with this <code>property</code> and
     * <code>valueOrderNumer</code>. Null will be returned if no channel matches.
     * 
     * @param property
@@ -47,7 +48,7 @@ public interface ValueStoragePluginProvider
    ValueIOChannel getApplicableChannel(PropertyData property, int valueOrderNumer) throws IOException;
 
    /**
-    * Return <code>ValueIOChannel</code> associated with given <code>storageId</code>.
+    * Returns the <code>ValueIOChannel</code> associated with given <code>storageId</code>.
     * 
     * @param storageId
     *          String with storage Id (see configuration)
@@ -60,7 +61,24 @@ public interface ValueStoragePluginProvider
    ValueIOChannel getChannel(String storageId) throws IOException, ValueStorageNotFoundException;
 
    /**
-    * Run consistency check operation on each plugin registered.
+    * Gives the {@link ValueStorageURLConnection} corresponding to the given <code>storageId</code>
+    * and <code>idResource</code>.
+    * @param storageId
+    *          String with storage Id (see configuration)
+    * @param url
+    *          the {@link URL} of the resource to which we want to access
+    * @return the {@link ValueStorageURLConnection} corresponding to this storageId
+    * @throws ValueStorageNotFoundException
+    *           if no such storage found for storageId
+    * @throws IOException
+    *           if an error occurs while creating the connection
+    * @throws UnsupportedOperationException if {@link URL} are not supported by the corresponding value storage
+    */
+   ValueStorageURLConnection createURLConnection(String storageId, URL url) throws ValueStorageNotFoundException,
+      IOException;
+
+   /**
+    * Runs the consistency check operation on each registered plug-in.
     * 
     * @param dataConnection
     *          WorkspaceStorageConnection persistent connection

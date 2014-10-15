@@ -21,7 +21,6 @@ package org.exoplatform.services.jcr.impl.storage.value.fs;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
-import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePlugin;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -71,23 +70,6 @@ public abstract class FileValueStorage extends ValueStoragePlugin
    {
       this.resources = resources;
       prepareRootDir(props.getProperty(PATH));
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void checkConsistency(WorkspaceStorageConnection dataConnection)
-   {
-
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   public boolean isSame(String storageId)
-   {
-      return getId().equals(storageId);
    }
 
    /**

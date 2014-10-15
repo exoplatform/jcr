@@ -19,16 +19,25 @@
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
+import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.util.io.SpoolFile;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
+import org.exoplatform.services.jcr.storage.value.ValueStorageURLStreamHandler;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInput;
+import java.io.ObjectOutput;
+import java.io.OutputStream;
+import java.net.URL;
+import java.net.URLConnection;
+import java.security.PrivilegedExceptionAction;
 
 /**
  * Created by The eXo Platform SAS.
@@ -48,6 +57,11 @@ public class StreamPersistedValueData extends FilePersistedValueData
     * Reserved file to spool.
     */
    protected SpoolFile tempFile;
+
+   /**
+    * The URL to the resource
+    */
+   protected URL url;
 
    /**
     * StreamPersistedValueData constructor for stream data.
@@ -97,6 +111,15 @@ public class StreamPersistedValueData extends FilePersistedValueData
       {
          tempFile.acquire(this);
       }
+   }
+
+   /**
+    * StreamPersistedValueData constructor.
+    */
+   public StreamPersistedValueData(int orderNumber, URL url, SpoolConfig spoolConfig) throws IOException
+   {
+      super(orderNumber, null, spoolConfig);
+      this.url = url;
    }
 
    /**
@@ -159,13 +182,34 @@ public class StreamPersistedValueData extends FilePersistedValueData
    }
 
    /**
+    * Sets persistent URL. Will reset (null) temp file and stream. This method should be called only from 
+    * persistent layer (Value storage).
+    * 
+    * @param url the url to which the data has been persisted
+    */
+   public void setPersistedURL(URL url) throws FileNotFoundException
+   {
+      this.url = url;
+
+      // JCR-2326 Release the current ValueData from tempFile users before
+      // setting its reference to null so it will be garbage collected.
+      if (this.tempFile != null)
+      {
+         this.tempFile.release(this);
+         this.tempFile = null;
+      }
+
+      this.stream = null;
+   }
+
+   /**
     * Return status of persisted state.
     * 
     * @return boolean, true if the ValueData was persisted to a storage, false otherwise.
     */
    public boolean isPersisted()
    {
-      return file != null;
+      return file != null || url != null;
    }
 
    /**
@@ -187,6 +231,18 @@ public class StreamPersistedValueData extends FilePersistedValueData
          try
          {
             return ((FileInputStream)stream).getChannel().size();
+         }
+         catch (IOException e)
+         {
+            return -1;
+         }
+      }
+      else if (url != null)
+      {
+         try
+         {
+            URLConnection connection = url.openConnection();
+            return connection.getContentLength();
          }
          catch (IOException e)
          {
@@ -252,8 +308,159 @@ public class StreamPersistedValueData extends FilePersistedValueData
          {
             return true;
          }
+         else if (url != null && streamValue.url != null && url.getFile().equals(streamValue.url.getFile()))
+         {
+            return true;
+         }
       }
 
       return false;
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public InputStream getAsStream() throws IOException
+   {
+      if (url != null)
+      {
+         return url.openStream();
+      }
+      return super.getAsStream();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public byte[] getAsByteArray() throws IllegalStateException, IOException
+   {
+      if (url != null)
+      {
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         InputStream is = url.openStream();
+         try
+         {
+            byte[] bytes = new byte[1024];
+            int length;
+            while ((length = is.read(bytes)) != -1)
+            {
+               baos.write(bytes, 0, length);
+            }
+            return baos.toByteArray();
+         }
+         finally
+         {
+            is.close();
+         }
+      }
+      return super.getAsByteArray();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   public long read(OutputStream stream, long length, long position) throws IOException
+   {
+      if (url != null)
+      {
+         InputStream is = url.openStream();
+         try
+         {
+            is.skip(position);
+            byte[] bytes = new byte[(int)length];
+            int lg = is.read(bytes);
+            if (lg > 0)
+               stream.write(bytes, 0, lg);
+            return lg;
+         }
+         finally
+         {
+            is.close();
+            stream.close();
+         }
+      }
+      return super.read(stream, length, position);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
+   {
+      orderNumber = in.readInt();
+
+      // read canonical file path
+      int size = in.readInt();
+      if (size > 0)
+      {
+         byte[] buf = new byte[size];
+         in.readFully(buf);
+         final String path = new String(buf, "UTF-8");
+         File f = new File(path);
+         // validate if exists
+         if (PrivilegedFileHelper.exists(f))
+         {
+            file = f;
+         }
+         else if (path.startsWith(ValueStorageURLStreamHandler.PROTOCOL + ":/"))
+         {
+            url = SecurityHelper.doPrivilegedMalformedURLExceptionAction(new PrivilegedExceptionAction<URL>()
+            {
+               public URL run() throws Exception
+               {
+                  return new URL(null, path, ValueStorageURLStreamHandler.INSTANCE);
+               }
+            });
+         }
+         else
+         {
+            file = null;
+         }
+      }
+      else
+      {
+         // should not occurs but since we have a way to recover, it should not be
+         // an issue
+         file = null;
+      }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public void writeExternal(ObjectOutput out) throws IOException
+   {
+      if (url == null)
+      {
+         super.writeExternal(out);
+         return;
+      }
+      out.writeInt(orderNumber);
+
+      // write the path
+      byte[] buf = url.toString().getBytes("UTF-8");
+      out.writeInt(buf.length);
+      out.write(buf);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   public PersistedValueData createPersistedCopy(int orderNumber) throws IOException
+   {
+      if (url != null)
+         return new StreamPersistedValueData(orderNumber, url, spoolConfig);
+      return super.createPersistedCopy(orderNumber);
+   }
+
+   /**
+    * @return the url
+    */
+   public URL getUrl()
+   {
+      return url;
    }
 }
