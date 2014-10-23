@@ -43,13 +43,14 @@ public class ValueURLIOHelper
    /**
     * Extracts the content of the given {@link ValueData} and links the data to 
     * the {@link URL} in the Value Storage if needed
-    * @param plugin the plugin that will manage the storage of the provided {@link ValueData}
+    * @param plugin the plug-in that will manage the storage of the provided {@link ValueData}
     * @param value the value from which we want to extract the content
     * @param resourceId the internal id of the {@link ValueData}
+    * @param spoolContent Indicates whether or not the content should always be spooled
     * @return the content of the {@link ValueData}
     * @throws IOException if the content could not be extracted
     */
-   public static InputStream getContent(ValueStoragePlugin plugin, ValueData value, String resourceId)
+   public static InputStream getContent(ValueStoragePlugin plugin, ValueData value, String resourceId, boolean spoolContent)
       throws IOException
    {
       if (value.isByteArray())
@@ -75,8 +76,8 @@ public class ValueURLIOHelper
                stream = streamed.getStream();
             }
             // link this Value to URL in VS
-            streamed.setPersistedURL(plugin.createURL(resourceId));
-            return stream;
+            InputStream result = streamed.setPersistedURL(plugin.createURL(resourceId), spoolContent);
+            return result != null ? result : stream;
          }
       }
       return value.getAsStream();

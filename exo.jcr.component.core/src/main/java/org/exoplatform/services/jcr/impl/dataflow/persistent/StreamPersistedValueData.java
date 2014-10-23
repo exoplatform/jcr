@@ -38,6 +38,7 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.security.PrivilegedExceptionAction;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by The eXo Platform SAS.
@@ -47,6 +48,7 @@ import java.security.PrivilegedExceptionAction;
  */
 public class StreamPersistedValueData extends FilePersistedValueData
 {
+   private static final AtomicLong SEQUENCE = new AtomicLong();
 
    /**
     * Original stream.
@@ -62,6 +64,11 @@ public class StreamPersistedValueData extends FilePersistedValueData
     * The URL to the resource
     */
    protected URL url;
+
+   /**
+    * Indicates whether or not the content should always be spooled
+    */
+   protected boolean spoolContent;
 
    /**
     * StreamPersistedValueData constructor for stream data.
@@ -116,9 +123,9 @@ public class StreamPersistedValueData extends FilePersistedValueData
    /**
     * StreamPersistedValueData constructor.
     */
-   public StreamPersistedValueData(int orderNumber, URL url, SpoolConfig spoolConfig) throws IOException
+   public StreamPersistedValueData(int orderNumber, URL url, SpoolFile tempFile, SpoolConfig spoolConfig) throws IOException
    {
-      super(orderNumber, null, spoolConfig);
+      this(orderNumber, tempFile, null, spoolConfig);
       this.url = url;
    }
 
@@ -182,24 +189,33 @@ public class StreamPersistedValueData extends FilePersistedValueData
    }
 
    /**
-    * Sets persistent URL. Will reset (null) temp file and stream. This method should be called only from 
-    * persistent layer (Value storage).
+    * Sets persistent URL. Will reset (null) the stream and will spool the content of the stream if <code>spoolContent</code>
+    * has been set to <code>true</code>. 
+    * This method should be called only from persistent layer (Value storage).
     * 
     * @param url the url to which the data has been persisted
+    * @param spoolContent Indicates whether or not the content should always be spooled
     */
-   public void setPersistedURL(URL url) throws FileNotFoundException
+   public InputStream setPersistedURL(URL url, boolean spoolContent) throws IOException
    {
+      InputStream result = null;
       this.url = url;
+      this.spoolContent = spoolContent;
 
       // JCR-2326 Release the current ValueData from tempFile users before
       // setting its reference to null so it will be garbage collected.
-      if (this.tempFile != null)
+      if (!spoolContent && this.tempFile != null)
       {
          this.tempFile.release(this);
          this.tempFile = null;
       }
-
+      else if (spoolContent && tempFile == null && stream != null)
+      {
+         spoolContent(stream);
+         result = new FileInputStream(tempFile);
+      }
       this.stream = null;
+      return result;
    }
 
    /**
@@ -325,9 +341,59 @@ public class StreamPersistedValueData extends FilePersistedValueData
    {
       if (url != null)
       {
+         if (tempFile != null)
+         {
+            return PrivilegedFileHelper.fileInputStream(tempFile);
+         }
+         else if (spoolContent)
+         {
+            spoolContent();
+            return PrivilegedFileHelper.fileInputStream(tempFile);
+         }
          return url.openStream();
       }
       return super.getAsStream();
+   }
+
+   /**
+    * Spools the content extracted from the URL
+    */
+   private void spoolContent() throws IOException, FileNotFoundException
+   {
+      spoolContent(url.openStream());
+   }
+
+   /**
+    * Spools the content extracted from the URL
+    */
+   private void spoolContent(InputStream is) throws IOException, FileNotFoundException
+   {
+      SwapFile swapFile =
+         SwapFile.get(spoolConfig.tempDirectory, System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet(),
+            spoolConfig.fileCleaner);
+      try
+      {
+         OutputStream os = PrivilegedFileHelper.fileOutputStream(swapFile); 
+         try
+         {
+            byte[] bytes = new byte[1024];
+            int length;
+            while ((length = is.read(bytes)) != -1)
+            {
+               os.write(bytes, 0, length);
+            }
+         }
+         finally
+         {
+            os.close();
+         }
+      }
+      finally
+      {
+         swapFile.spoolDone();
+         is.close();
+      }
+      tempFile = swapFile;
    }
 
    /**
@@ -338,6 +404,15 @@ public class StreamPersistedValueData extends FilePersistedValueData
    {
       if (url != null)
       {
+         if (tempFile != null)
+         {
+            return fileToByteArray(tempFile);
+         }
+         else if (spoolContent)
+         {
+            spoolContent();
+            return fileToByteArray(tempFile);
+         }
          ByteArrayOutputStream baos = new ByteArrayOutputStream();
          InputStream is = url.openStream();
          try
@@ -366,6 +441,15 @@ public class StreamPersistedValueData extends FilePersistedValueData
    {
       if (url != null)
       {
+         if (tempFile != null)
+         {
+            return readFromFile(stream, tempFile, length, position);
+         }
+         else if (spoolContent)
+         {
+            spoolContent();
+            return readFromFile(stream, tempFile, length, position);
+         }
          InputStream is = url.openStream();
          try
          {
@@ -418,6 +502,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
          else
          {
             file = null;
+            url = null;
          }
       }
       else
@@ -425,6 +510,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
          // should not occurs but since we have a way to recover, it should not be
          // an issue
          file = null;
+         url = null;
       }
    }
 
@@ -452,7 +538,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
    public PersistedValueData createPersistedCopy(int orderNumber) throws IOException
    {
       if (url != null)
-         return new StreamPersistedValueData(orderNumber, url, spoolConfig);
+         return new StreamPersistedValueData(orderNumber, url, tempFile, spoolConfig);
       return super.createPersistedCopy(orderNumber);
    }
 
