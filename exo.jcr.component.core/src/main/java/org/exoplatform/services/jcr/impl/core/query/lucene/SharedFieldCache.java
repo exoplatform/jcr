@@ -55,6 +55,7 @@ public class SharedFieldCache
        * Values indexed by document id.
        */
       private final Comparable<?>[] values;
+
       /**
        * Values (Comparable) map indexed by document id.
        */
@@ -161,8 +162,7 @@ public class SharedFieldCache
     *         information.
     * @throws IOException if an error occurs while reading from the index.
     */
-   public ValueIndex getValueIndex(IndexReader reader, String field, String prefix)
-      throws IOException
+   public ValueIndex getValueIndex(IndexReader reader, String field, String prefix) throws IOException
    {
 
       if (reader instanceof ReadOnlyIndexReader)
@@ -194,7 +194,7 @@ public class SharedFieldCache
             }
             TermEnum termEnum = reader.terms(new Term(field, prefix));
 
-            char[] tmp = new char[16];
+            int prefixLength = prefix.length();
             try
             {
                if (termEnum.term() == null)
@@ -204,21 +204,13 @@ public class SharedFieldCache
                do
                {
                   Term term = termEnum.term();
-                  if (term.field() != field || !term.text().startsWith(prefix))
+                  String text;
+
+                  if (term.field() != field || !(text = term.text()).startsWith(prefix))
                   {
                      break;
                   }
-
-                  // make sure term is compacted
-                  String text = term.text();
-                  int len = text.length() - prefix.length();
-                  if (tmp.length < len)
-                  {
-                     // grow tmp
-                     tmp = new char[len];
-                  }
-                  text.getChars(prefix.length(), text.length(), tmp, 0);
-                  String value = new String(tmp, 0, len);
+                  String value = text.substring(prefixLength);
 
                   termDocs.seek(termEnum);
                   while (termDocs.next())
@@ -231,7 +223,7 @@ public class SharedFieldCache
                         if (termPos.isPayloadAvailable())
                         {
                            payload = termPos.getPayload(payload, 0);
-                           type = PropertyMetaData.fromByteArray(payload).getPropertyType();
+                           type = payload[0];
                         }
                      }
                      setValues++;
@@ -253,7 +245,7 @@ public class SharedFieldCache
       return ret;
    }
 
-   /**
+    /**
     * See if a <code>ValueIndex</code> object is in the cache.
     */
    ValueIndex lookup(IndexReader reader, String field, String prefix)
