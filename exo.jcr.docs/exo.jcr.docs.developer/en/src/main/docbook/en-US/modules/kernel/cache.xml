@@ -263,6 +263,31 @@ import org.exoplatform.services.cache.future.FutureExoCache;
    // Get your data from your future cache instance
    System.out.println(myFutureExoCache.get("my context", "foo"));</programlisting>
     </section>
+
+    <section id="Kernel.Cache.Advanced_concepts.SimpleReplicatedExoCache">
+      <title>SimpleReplicatedExoCache</title>
+
+      <para>In case of a cluster environment, if you need a replicated cache
+      and you know that its content is rarely modified, you can use
+      <emphasis>org.exoplatform.services.cache.concurrent.SimpleReplicatedExoCache</emphasis>
+      as a drop-in replacement for
+      <emphasis>org.exoplatform.services.cache.concurrent.ConcurrentFIFOExoCache</emphasis>
+      with the <emphasis>replicated</emphasis> field set to
+      <emphasis>true</emphasis>. This implementation will actually behave
+      exactly the same way as
+      <emphasis>org.exoplatform.services.cache.concurrent.ConcurrentFIFOExoCache</emphasis>
+      except in case of a cache change, indeed the modifications will be first
+      applied locally then it will be replicated over the cluster
+      asynchronously to limit the performance impact on the local cluster
+      node. </para>
+
+      <note>
+        <para>This implementation cannot be used for caches that are modified
+        regularly, this limitation is due to the fact that the mechanism used
+        for the replication has not been designed to support heavy load so it
+        must be used with a lot of caution.</para>
+      </note>
+    </section>
   </section>
 
   <section id="Kernel.Cache.Extension">
