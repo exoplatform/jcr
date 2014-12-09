@@ -54,27 +54,32 @@ public class SessionReference extends WeakReference<Session>
 
    private static ConcurrentHashMap<Object, SessionReference> objects;
 
-   private static boolean started = false;
+   private static volatile boolean started = false;
 
    private static long maxAgeMillis_;
 
-   public synchronized static void start(long maxAgeMillis)
+   public static void start(long maxAgeMillis)
    {
       if (!started)
       {
-         if (maxAgeMillis < 0)
+         synchronized (SessionReference.class)
          {
-            throw new IllegalStateException("Wrong max age value " + maxAgeMillis);
+            if (started)
+               return;
+            if (maxAgeMillis < 0)
+            {
+               throw new IllegalStateException("Wrong max age value " + maxAgeMillis);
+            }
+            objects = new ConcurrentHashMap<Object, SessionReference>();
+            executor = Executors.newSingleThreadScheduledExecutor();
+            executor.scheduleWithFixedDelay(detectorTask, INITIAL_DELAY, DELAY, TimeUnit.SECONDS);
+            maxAgeMillis_ = maxAgeMillis;
+            started = true;
          }
-         objects = new ConcurrentHashMap<Object, SessionReference>();
-         executor = Executors.newSingleThreadScheduledExecutor();
-         executor.scheduleWithFixedDelay(detectorTask, INITIAL_DELAY, DELAY, TimeUnit.SECONDS);
-         maxAgeMillis_ = maxAgeMillis;
-         started = true;
       }
    }
 
-   public synchronized static boolean isStarted()
+   public static boolean isStarted()
    {
       return started;
    }
