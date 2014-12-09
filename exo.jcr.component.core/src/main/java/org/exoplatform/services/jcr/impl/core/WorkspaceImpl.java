@@ -103,10 +103,10 @@ public class WorkspaceImpl implements ExtendedWorkspace
       this.name = name;
       this.observationManager = observationManager;
 
-      this.namespaceRegistry = (NamespaceRegistryImpl)container.getComponentInstanceOfType(NamespaceRegistry.class);
-      this.nodeTypeManager = (NodeTypeDataManager)container.getComponentInstanceOfType(NodeTypeDataManager.class);
+      this.namespaceRegistry = (NamespaceRegistryImpl)container.getComponentInstanceOfType(NamespaceRegistry.class, false);
+      this.nodeTypeManager = (NodeTypeDataManager)container.getComponentInstanceOfType(NodeTypeDataManager.class, false);
 
-      QueryManagerFactory qf = (QueryManagerFactory)container.getComponentInstanceOfType(QueryManagerFactory.class);
+      QueryManagerFactory qf = (QueryManagerFactory)container.getComponentInstanceOfType(QueryManagerFactory.class, false);
       if (qf == null)
       {
          this.queryManager = null;

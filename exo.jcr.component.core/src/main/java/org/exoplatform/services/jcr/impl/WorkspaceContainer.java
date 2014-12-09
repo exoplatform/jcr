@@ -89,12 +89,12 @@ public class WorkspaceContainer extends ExoContainer
 
    public SessionFactory getSessionFactory()
    {
-      return (SessionFactory)getComponentInstanceOfType(SessionFactory.class);
+      return (SessionFactory)getComponentInstanceOfType(SessionFactory.class, false);
    }
 
    public WorkspaceInitializer getWorkspaceInitializer()
    {
-      return (WorkspaceInitializer)getComponentInstanceOfType(WorkspaceInitializer.class);
+      return (WorkspaceInitializer)getComponentInstanceOfType(WorkspaceInitializer.class, false);
    }
 
    /**

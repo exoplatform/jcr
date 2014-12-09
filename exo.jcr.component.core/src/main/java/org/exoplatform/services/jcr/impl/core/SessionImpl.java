@@ -214,20 +214,20 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.id = System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet();
       this.userState = userState;
       this.txResourceManager =
-         (TransactionableResourceManager)container.getComponentInstanceOfType(TransactionableResourceManager.class);
+         (TransactionableResourceManager)container.getComponentInstanceOfType(TransactionableResourceManager.class, false);
 
-      this.repository = (RepositoryImpl)container.getComponentInstanceOfType(RepositoryImpl.class);
-      this.systemLocationFactory = (LocationFactory)container.getComponentInstanceOfType(LocationFactory.class);
+      this.repository = (RepositoryImpl)container.getComponentInstanceOfType(RepositoryImpl.class, false);
+      this.systemLocationFactory = (LocationFactory)container.getComponentInstanceOfType(LocationFactory.class, false);
 
-      this.accessManager = (AccessManager)container.getComponentInstanceOfType(AccessManager.class);
-      WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class);
+      this.accessManager = (AccessManager)container.getComponentInstanceOfType(AccessManager.class, false);
+      WorkspaceEntry wsConfig = (WorkspaceEntry)container.getComponentInstanceOfType(WorkspaceEntry.class, false);
 
       this.lazyReadThreshold =
          wsConfig.getLazyReadThreshold() > 0 ? wsConfig.getLazyReadThreshold() : DEFAULT_LAZY_READ_THRESHOLD;
 
       this.locationFactory = new LocationFactory(this);
 
-      this.cleanerHolder = (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class);
+      this.cleanerHolder = (FileCleanerHolder)container.getComponentInstanceOfType(FileCleanerHolder.class, false);
       this.valueFactory = new ValueFactoryImpl(locationFactory, wsConfig, cleanerHolder);
 
       this.namespaces = new LinkedHashMap<String, String>();
@@ -235,19 +235,19 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
 
       // Observation manager per session
       ObservationManagerRegistry observationManagerRegistry =
-         (ObservationManagerRegistry)container.getComponentInstanceOfType(ObservationManagerRegistry.class);
+         (ObservationManagerRegistry)container.getComponentInstanceOfType(ObservationManagerRegistry.class, false);
       ObservationManager observationManager = observationManagerRegistry.createObservationManager(this);
 
       LocalWorkspaceDataManagerStub workspaceDataManager =
-         (LocalWorkspaceDataManagerStub)container.getComponentInstanceOfType(LocalWorkspaceDataManagerStub.class);
+         (LocalWorkspaceDataManagerStub)container.getComponentInstanceOfType(LocalWorkspaceDataManagerStub.class, false);
 
       this.dataManager = new SessionDataManager(this, workspaceDataManager);
 
       this.lockManager =
-         ((WorkspaceLockManager)container.getComponentInstanceOfType(WorkspaceLockManager.class))
+         ((WorkspaceLockManager)container.getComponentInstanceOfType(WorkspaceLockManager.class, false))
             .getSessionLockManager(id, dataManager);
 
-      this.nodeTypeManager = (NodeTypeDataManager)container.getComponentInstanceOfType(NodeTypeDataManager.class);
+      this.nodeTypeManager = (NodeTypeDataManager)container.getComponentInstanceOfType(NodeTypeDataManager.class, false);
 
       this.workspace = new WorkspaceImpl(workspaceName, container, this, observationManager);
 
@@ -256,10 +256,10 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       this.registerLifecycleListener(lockManager);
 
       SessionActionCatalog catalog =
-         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
+         (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class, false);
       actionHandler = new SessionActionInterceptor(catalog, container, workspaceName);
 
-      sessionRegistry = (SessionRegistry)container.getComponentInstanceOfType(SessionRegistry.class);
+      sessionRegistry = (SessionRegistry)container.getComponentInstanceOfType(SessionRegistry.class, false);
 
       sessionRegistry.registerSession(this);
       this.lastAccessTime = System.currentTimeMillis();
