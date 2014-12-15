@@ -73,6 +73,21 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
       this.innoDBEngine =
          containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_MYSQL)
             || containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8);
+      boolean tokuDBEngine = !innoDBEngine && containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MYSQL_TOKUDB);
+      if (tokuDBEngine)
+      {
+         FIND_NODES_BY_PARENTID_CQ =
+            FIND_NODES_BY_PARENTID_CQ.replace("from " + JCR_ITEM + " I, " + JCR_ITEM + " P, " + JCR_VALUE + " V",
+               "from " + JCR_ITEM + " I force index (" + JCR_IDX_ITEM_N_ORDER_NUM + "), " + JCR_ITEM
+                  + " P force index (" + JCR_IDX_ITEM_PARENT_NAME + "),  " + JCR_VALUE + " V force index ("
+                  + JCR_IDX_VALUE_PROPERTY + ")");
+
+         FIND_NODES_BY_PARENTID_LAZILY_CQ =
+            FIND_NODES_BY_PARENTID_LAZILY_CQ.replace(
+               "from " + JCR_ITEM + " I, " + JCR_ITEM + " P, " + JCR_VALUE + " V", "from " + JCR_ITEM
+                  + " I force index (" + JCR_IDX_ITEM_N_ORDER_NUM + "), " + JCR_ITEM + " P force index ("
+                  + JCR_IDX_ITEM_PARENT_NAME + "),  " + JCR_VALUE + " V force index (" + JCR_IDX_VALUE_PROPERTY + ")");
+      }
    }
 
    /**

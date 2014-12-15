@@ -137,6 +137,14 @@ public class DBInitializerHelper
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-ndb-utf8.sql";
       }
+      else if (dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_TOKUDB))
+      {
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-tokudb.sql";
+      }
+      else if (dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_TOKUDB_UTF8))
+      {
+         sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-tokudb-utf8.sql";
+      }
       else if (dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_MYISAM))
       {
          sqlPath = "/conf/storage/jcr-" + suffix + "jdbc.mysql-myisam.sql";

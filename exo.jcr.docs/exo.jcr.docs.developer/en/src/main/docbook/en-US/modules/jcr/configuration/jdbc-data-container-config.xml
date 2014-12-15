@@ -37,6 +37,10 @@
       </listitem>
 
       <listitem>
+        <para>TokuDB 7.5.0 MYSQL Connector/J 5.1.18</para>
+      </listitem>
+
+      <listitem>
         <para>MySQL Cluster (NDB engine)</para>
       </listitem>
 
@@ -170,6 +174,18 @@
     </tr>
 
     <tr>
+      <td>MySQL DB with TokuDB engine</td>
+
+      <td>jcr-sjdbc.mysql-tokudb.sql</td>
+    </tr>
+
+    <tr>
+      <td>MySQL DB with TokuDB engine and utf-8</td>
+
+      <td>jcr-sjdbc.mysql-tokudb-utf8.sql</td>
+    </tr>
+
+    <tr>
       <td>PostgresSQL and Postgre Plus</td>
 
       <td>jcr-sjdbc.pqsql.sql</td>
@@ -249,6 +265,18 @@
       <td>MySQL DB with NDB engine and utf-8</td>
 
       <td>jcr-mjdbc.mysql-ndb-utf8.sql</td>
+    </tr>
+
+    <tr>
+      <td>MySQL DB with TokuDB engine</td>
+
+      <td>jcr-mjdbc.mysql-tokudb.sql</td>
+    </tr>
+
+    <tr>
+      <td>MySQL DB with TokuDB engine and utf-8</td>
+
+      <td>jcr-mjdbc.mysql-tokudb-utf8.sql</td>
     </tr>
 
     <tr>

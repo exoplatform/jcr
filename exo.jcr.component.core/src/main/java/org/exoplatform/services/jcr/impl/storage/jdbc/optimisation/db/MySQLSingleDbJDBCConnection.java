@@ -73,6 +73,18 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
       this.innoDBEngine =
          containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_MYSQL)
             || containerConfig.dbDialect.equals(DBConstants.DB_DIALECT_MYSQL_UTF8);
+      boolean tokuDBEngine = !innoDBEngine && containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MYSQL_TOKUDB);
+      if (tokuDBEngine)
+      {
+         FIND_NODES_BY_PARENTID_CQ =
+            FIND_NODES_BY_PARENTID_CQ.replace("from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V",
+               "from JCR_SITEM I force index (JCR_IDX_SITEM_N_ORDER_NUM), JCR_SITEM P force index (JCR_IDX_SITEM_PARENT_NAME), "
+                  + " JCR_SVALUE V force index (JCR_IDX_SVALUE_PROPERTY)");
+         FIND_NODES_BY_PARENTID_LAZILY_CQ =
+            FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V",
+               "from JCR_SITEM I force index (JCR_IDX_SITEM_N_ORDER_NUM), JCR_SITEM P force index (JCR_IDX_SITEM_PARENT_NAME), "
+                  + " JCR_SVALUE V force index (JCR_IDX_SVALUE_PROPERTY)");
+      }
    }
 
    /**
