@@ -83,12 +83,14 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
 
    private final TransactionManager tm;
 
+   private final int threshold;
+
    private volatile LockManager lm;
 
    protected static final Log LOG =
       ExoLogger.getLogger("org.exoplatform.services.jcr.impl.dataflow.persistent.jbosscache.BufferedJBossCache");
 
-   public BufferedJBossCache(Cache<Serializable, Object> parentCache, boolean useExpiration, long expirationTimeOut)
+   public BufferedJBossCache(Cache<Serializable, Object> parentCache, boolean useExpiration, long expirationTimeOut, int threshold)
    {
       super();
       this.parentCache = (CacheSPI<Serializable, Object>)parentCache;
@@ -97,6 +99,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
             .getTransactionManager() : this.parentCache.getTransactionManager();
       this.useExpiration = useExpiration;
       this.expirationTimeOut = expirationTimeOut;
+      this.threshold=threshold;
    }
 
    public LockManager getLockManager()
@@ -167,6 +170,7 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
          // to limit the risk of getting deadlocks
          try
          {
+            int operationLeft = threshold;
             for (Iterator<ChangesContainer> it = containers.iterator(); it.hasNext();)
             {
                ChangesContainer cacheChange = it.next();
@@ -193,18 +197,27 @@ public class BufferedJBossCache implements Cache<Serializable, Object>
                         try
                         {
                            tx = tm.suspend();
+                           if (tx == null)
+                           {
+                              // There is no transaction to suspend so no need to continue
+                              break;
+                           }
                         }
                         catch (Exception e)//NOSONAR
                         {
                            LOG.warn("Could not suspend the tx", e);
+                           // Could not suspend the current transaction so no need to continue
+                           break;
                         }
                      }
-                     if (tx != null)
+                     // We apply the invalidation outside the transaction
+                     cacheChange.apply();
+                     // We remove it to avoid calling it twice
+                     it.remove();
+                     if (--operationLeft <= 0)
                      {
-                        // We apply the invalidation outside the transaction
-                        cacheChange.apply();
-                        // We remove it to avoid calling it twice
-                        it.remove();
+                        // We reached the total amount of operations allowed in auto commit mode
+                        break;
                      }
                   }
                }
