@@ -109,6 +109,20 @@
     defined.</para>
   </section>
 
+  <section id="JCR.JBossCacheConfigurationTemplates.Maximum_Invalidations">
+    <title>Configure the maximum invalidations</title>
+
+    <para>In clustered environment, jbosscache-max-invalidations parameter is used by JBossCacheWorkspaceStorageCache to  indicate
+    the maximum total amount of invalidation operations that can be done outside the current transaction in auto commit mode to prevent potential deadlocks.
+    This parameter is dedicated to cluster mode only and is needed to ensure that even with big transactions
+    that do a lot of invalidations, we won't have too many JGroups calls which would dramatically affect the scalability and the performance of the whole platform.
+    The value of this parameter must be big enough to prevent deadlocks on operations that add and/or remove concurrently JCR nodes to/from
+    the same parent node but also it should not be too big to avoid affecting too much the scalability and the performance of the whole platform.
+    Default value is 10.</para>
+    <para>This parameter can be configured at cache configuration as below: </para>
+    <programlisting language="xml">&lt;property name="jbosscache-max-invalidations" value="20" /&gt;</programlisting>
+  </section>
+
   <section id="JCR.JBossCacheConfigurationTemplates.Shipped_Jboss_Cache_Config_template">
     <title>Shipped JBoss Cache configuration templates</title>
 

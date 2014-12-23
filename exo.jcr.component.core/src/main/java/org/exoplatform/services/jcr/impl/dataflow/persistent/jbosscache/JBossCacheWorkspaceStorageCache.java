@@ -135,12 +135,16 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
 
    public static final String JBOSSCACHE_EXPIRATION = "jbosscache-expiration-time";
 
+   public static final String JBOSSCACHE_MAX_INVALIDATIONS = "jbosscache-max-invalidations";
+
    /**
     * Indicate whether the JBoss Cache instance used can be shared with other caches
     */
    public static final String JBOSSCACHE_SHAREABLE = "jbosscache-shareable";
 
    public static final Boolean JBOSSCACHE_SHAREABLE_DEFAULT = Boolean.FALSE;
+
+   public static final int JBOSSCACHE_MAX_INVALIDATIONS_DEFAULT = 10;
 
    public static final long JBOSSCACHE_EXPIRATION_DEFAULT = 900000; // 15 minutes
 
@@ -594,6 +598,10 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       shareable =
          wsConfig.getCache().getParameterBoolean(JBOSSCACHE_SHAREABLE, JBOSSCACHE_SHAREABLE_DEFAULT).booleanValue();
 
+      int threshold =
+         wsConfig.getCache().getParameterInteger(JBOSSCACHE_MAX_INVALIDATIONS, JBOSSCACHE_MAX_INVALIDATIONS_DEFAULT);
+
+
       // create cache using custom factory
       ExoJBossCacheFactory<Serializable, Object> factory;
 
@@ -654,7 +662,7 @@ public class JBossCacheWorkspaceStorageCache implements WorkspaceStorageCache, S
       // if expiration is used, set appropriate factory with with timeout set via configuration (or default one 15minutes)
       this.cache =
          new BufferedJBossCache(parentCache, useExpiration, wsConfig.getCache().getParameterTime(JBOSSCACHE_EXPIRATION,
-            JBOSSCACHE_EXPIRATION_DEFAULT));
+            JBOSSCACHE_EXPIRATION_DEFAULT), threshold);
 
       this.itemsRoot = Fqn.fromRelativeElements(rootFqn, ITEMS);
       this.refRoot = Fqn.fromRelativeElements(rootFqn, REFERENCE);
