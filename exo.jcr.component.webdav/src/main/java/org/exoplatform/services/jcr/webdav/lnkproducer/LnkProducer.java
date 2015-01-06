@@ -55,6 +55,8 @@ public class LnkProducer implements ResourceContainer
     */
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.webdav.LnkProducer");
 
+   private static final String URL_SUFFIX=".url";
+
    /**
     * Default constructor.
     */
@@ -87,8 +89,17 @@ public class LnkProducer implements ResourceContainer
 
       try
       {
-         LinkGenerator linkGenerator = new LinkGenerator(host, uri, path);
-         byte[] content = linkGenerator.generateLinkContent();
+         byte[] content;
+         if (linkFilePath != null && linkFilePath.endsWith(URL_SUFFIX))
+         {
+            URLGenerator urlGenerator = new URLGenerator(uri, path);
+            content = urlGenerator.generateLinkContent();
+         }
+         else
+         {
+            LinkGenerator linkGenerator = new LinkGenerator(host, uri, path);
+            content = linkGenerator.generateLinkContent();
+         }
 
          return Response.ok(content, MediaType.APPLICATION_OCTET_STREAM).header(HttpHeaders.CONTENT_LENGTH,
             Integer.toString(content.length)).build();

@@ -21,7 +21,7 @@
   (href) like
   <uri>http://host:port/rest/jcr/repository/workspace/somenode/somefile.extention</uri>
   , the link servlet must be called for this resource by several hrefs, like
-  <uri>http://localhost:8080/rest/lnkproducer/openit.lnk?path=/repository/workspace/somenode/somefile.extention</uri>
+  <uri>http://localhost:8080/rest/lnkproducer/openit.lnk?path=jcr/repository/workspace/somenode/somefile.extention</uri>
   </para>
 
   <para>Please note, that when using the portal mode the REST servlet is
@@ -76,7 +76,13 @@
   <para>Also the Link Producer can be referenced to from an HTML page. If page
   contains code like</para>
 
-  <programlisting language="html">&lt;a href="http://localhost:8080/rest/lnkproducer/openit.lnk?path=/repository/workspace/somenode/somefile.extention"&gt;somefile.extention&lt;/a&gt;</programlisting>
+  <programlisting language="html">&lt;a href="http://localhost:8080/rest/lnkproducer/openit.lnk?path=jcr/repository/workspace/somenode/somefile.extention"&gt;somefile.extention&lt;/a&gt;</programlisting>
 
   <para>the file "somefile.extention" will open directly.</para>
+
+  <note>
+    <para>On Windows 7, you should use internet shortcut as file extension (.url), like :
+         <uri>http://localhost:8080/rest/lnkproducer/openit.url?path=jcr/repository/workspace/somenode/somefile.extention</uri>
+         The Link Producer Service generates the content of an .url file, which points to a JCR resource via WebDav.</para>
+  </note>
 </section>
