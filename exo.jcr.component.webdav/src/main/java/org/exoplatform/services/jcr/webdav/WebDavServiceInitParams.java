@@ -75,6 +75,11 @@ public class WebDavServiceInitParams
    private String defaultAutoVersionType = InitParamsDefaults.AUTO_VERSION;
 
    /**
+    * File size limit default value. 
+    */
+   private String defaultFileSizeLimit = InitParamsDefaults.FILE_SIZE_LIMIT; 
+
+   /**
     * XSLT parameters.
     */
    private Map<String, String> xsltParams = new HashMap<String, String>();
@@ -171,6 +176,7 @@ public class WebDavServiceInitParams
       defaultFileMimeType = pmp.processSingleParameter(defaultFileMimeType, InitParamsNames.DEF_FILE_MIME_TYPE);
       defaultUpdatePolicyType = pmp.processSingleParameter(defaultUpdatePolicyType, InitParamsNames.UPDATE_POLICY);
       defaultAutoVersionType = pmp.processSingleParameter(defaultAutoVersionType, InitParamsNames.AUTO_VERSION);
+      defaultFileSizeLimit = pmp.processSingleParameter(defaultFileSizeLimit, InitParamsNames.FILE_SIZE_LIMIT);
 
       pmp.processMultiParameter(untrustedUserAgents, InitParamsNames.UNTRUSTED_USER_AGENTS);
       pmp.processMultiParameter(allowedFileNodeTypes, InitParamsNames.ALLOWED_FILE_NODE_TYPES);
@@ -209,6 +215,11 @@ public class WebDavServiceInitParams
       return defaultAutoVersionType;
    }
 
+   public String getDefaultFileSizeLimit()
+   {
+      return defaultFileSizeLimit;	   
+   }
+   
    public Map<String, String> getXsltParams()
    {
       return xsltParams;
@@ -257,6 +268,11 @@ public class WebDavServiceInitParams
    public void setDefaultAutoVersionType(String defaultAutoVersionType)
    {
       this.defaultAutoVersionType = defaultAutoVersionType;
+   }
+   
+   public void setDefaultFileSizeLimit(String defaultFileSizeLimit)
+   {
+      this.defaultFileSizeLimit = defaultFileSizeLimit;
    }
 
    public void setXsltParams(Map<String, String> xsltParams)

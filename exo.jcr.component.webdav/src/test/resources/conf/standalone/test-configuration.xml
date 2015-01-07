@@ -209,6 +209,12 @@
             <name>file-icon-path</name>
             <value>/absolute/path/to/file</value>
          </value-param>
+         
+         <value-param>
+            <name>file-size-limit</name>
+            <value>2000</value>
+         </value-param>
+         
          <!-- 
             For testing untrusted-user-agents proper treatment.
             Content-type headers of listed here user agents should be

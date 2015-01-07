@@ -53,4 +53,8 @@ public interface InitParamsDefaults
     */
    String AUTO_VERSION = "checkout-checkin";
 
+   /**
+    * File size limitation parameter default value (in bytes)
+    */
+   String FILE_SIZE_LIMIT = "3000000";
 }
