@@ -135,7 +135,7 @@ public class PutCommand
             }
             else if ("create-version".equals(updatePolicyType))
             {
-               createVersion(node, inputStream, mixins);
+               createVersion(node, inputStream, autoVersion, mixins);
             }
             else
             {
@@ -178,13 +178,14 @@ public class PutCommand
 
    /**
     * Creates the new version of file.
-    * 
+    *
     * @param fileNode file node
     * @param inputStream input stream that contains the content of file
+    * @param autoVersion auto-version value
     * @param mixins list of mixins
     * @throws RepositoryException {@link RepositoryException}
     */
-   private void createVersion(Node fileNode, InputStream inputStream, List<String> mixins) throws RepositoryException
+   private void createVersion(Node fileNode, InputStream inputStream, String autoVersion, List<String> mixins) throws RepositoryException
    {
       if (!fileNode.isNodeType("mix:versionable"))
       {
@@ -193,9 +194,36 @@ public class PutCommand
             fileNode.addMixin("mix:versionable");
             fileNode.getSession().save();
          }
+         if (!("checkin-checkout".equals(autoVersion)))
+         {
+            fileNode.checkin();
+            fileNode.getSession().save();
+         }
+      }
+      if ("checkin-checkout".equals(autoVersion))
+      {
          fileNode.checkin();
+         fileNode.checkout();
+         fileNode.getSession().save();
+         updateContent(fileNode, inputStream, mixins);
          fileNode.getSession().save();
       }
+      else
+      {
+         createVersion(fileNode, inputStream, mixins);
+      }
+   }
+
+   /**
+    * Creates the new version of file.
+    * 
+    * @param fileNode file node
+    * @param inputStream input stream that contains the content of file
+    * @param mixins list of mixins
+    * @throws RepositoryException {@link RepositoryException}
+    */
+   private void createVersion(Node fileNode, InputStream inputStream, List<String> mixins) throws RepositoryException
+   {
 
       if (!fileNode.isCheckedOut())
       {
