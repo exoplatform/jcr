@@ -146,7 +146,7 @@
       <para><emphasis role="bold">dialect</emphasis>: Database dialect, one of
       "hsqldb", "h2", "mysql", "mysql-myisam", "mysql-utf8",
       "mysql-myisam-utf8", "pgsql", "pgsql-scs", "oracle", "oracle-oci",
-      "mssql", "sybase", "derby", "db2" ,"db2-mys", "db2v8". The default value
+      "mssql", "sybase", "derby", "db2" , "db2v8". The default value
       is "auto".</para>
     </listitem>
 
@@ -193,6 +193,12 @@
     <listitem>
       <para><emphasis role="bold">batch-size:</emphasis> the batch size.
       Default value is -1 (disabled)</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis role="bold">use-sequence-for-order-number:</emphasis>Indicates whether or not a sequence must
+      be used to manage the order number. The value expected for this parameter is a boolean,
+      by default it is disabled (set to false) for backward compatibility reasons</para>
     </listitem>
   </itemizedlist>
 
@@ -279,12 +285,6 @@
           <emphasis>0</emphasis></para>
         </listitem>
 
-        <listitem>
-          <para>DB2-MYS - this dialect is used if version of database not
-          lower than 9 and <emphasis>DB2_COMPATIBILITY_VECTOR</emphasis> is se
-          to <emphasis>MYS</emphasis>. This is default value for version
-          begining from 9.7.2.</para>
-        </listitem>
       </itemizedlist>
     </section>
 

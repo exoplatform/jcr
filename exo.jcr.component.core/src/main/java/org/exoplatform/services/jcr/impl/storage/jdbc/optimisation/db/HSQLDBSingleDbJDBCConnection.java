@@ -76,9 +76,10 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
             + " I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
       FIND_NODES_BY_PARENTID =
          "select * from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?" + " order by N_ORDER_NUM";
-
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
-         "select count(*), max(N_ORDER_NUM) from JCR_SITEM where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
+      if (containerConfig.useSequenceForOrderNumber)
+      {
+         FIND_LAST_ORDER_NUMBER = "call next value for " + JCR_ITEM_SEQ;
+      }
 
       FIND_NODES_COUNT_BY_PARENTID =
          "select count(ID) from JCR_SITEM" + " where PARENT_ID=? and I_CLASS=1 and CONTAINER_NAME=?";
@@ -173,27 +174,6 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
       findNodesByParentId.setString(2, this.containerConfig.containerName);
 
       return findNodesByParentId.executeQuery();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   @Override
-   protected ResultSet findLastOrderNumberByParentIdentifier(String parentIdentifier) throws SQLException
-   {
-      if (findLastOrderNumberByParentId == null)
-      {
-         findLastOrderNumberByParentId = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER_BY_PARENTID);
-      }
-      else
-      {
-         findLastOrderNumberByParentId.clearParameters();
-      }
-
-      findLastOrderNumberByParentId.setString(1, parentIdentifier);
-      findLastOrderNumberByParentId.setString(2, this.containerConfig.containerName);
-
-      return findLastOrderNumberByParentId.executeQuery();
    }
 
    /**
@@ -371,5 +351,31 @@ public class HSQLDBSingleDbJDBCConnection extends SingleDbJDBCConnection
 
          return findPropertiesByParentIdAndComplexPatternCQ.executeQuery(query.toString());
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumber(int localMaxOrderNumber, boolean increment) throws SQLException
+   {
+      if (findLastOrderNumber == null)
+      {
+         findLastOrderNumber = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER);
+      }
+      if (!increment)
+      {
+         ResultSet count;
+         int result = -1;
+         while (result < localMaxOrderNumber - 1)
+         {
+            count = findLastOrderNumber.executeQuery();
+            if (count.next())
+            {
+               result = count.getInt(1);
+            }
+         }
+      }
+      return findLastOrderNumber.executeQuery();
    }
 }

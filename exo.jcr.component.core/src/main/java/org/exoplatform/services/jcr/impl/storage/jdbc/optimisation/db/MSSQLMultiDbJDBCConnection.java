@@ -67,6 +67,22 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
             + JCR_ITEM + " I" + " WITH (INDEX (" + JCR_PK_ITEM
             + ")) where I.I_CLASS=1 AND I.ID > ? order by I.ID) J on P.PARENT_ID = J.ID"
             + " where P.I_CLASS=2 and V.PROPERTY_ID=P.ID order by J.ID";
+
+
+      if (containerConfig.useSequenceForOrderNumber)
+      {
+         FIND_LAST_ORDER_NUMBER = "exec " + JCR_ITEM_NEXT_VAL + " 'LAST_N_ORDER_NUM', ?, ?";
+         FIND_NODES_BY_PARENTID_LAZILY_CQ =
+            "select I.*, P.NAME AS PROP_NAME, V.ORDER_NUM, V.DATA from " + JCR_VALUE + " V, " + JCR_ITEM + " P "
+               + " join (select TOP ${TOP} J.* from " + JCR_ITEM + " J where J.I_CLASS=1 and J.PARENT_ID=?"
+               + " AND J.N_ORDER_NUM  >= ? order by J.N_ORDER_NUM, J.ID ) I on P.PARENT_ID = I.ID"
+               + " where P.I_CLASS=2 and P.PARENT_ID=I.ID and"
+               + " (P.NAME='[http://www.jcp.org/jcr/1.0]primaryType' or"
+               + " P.NAME='[http://www.jcp.org/jcr/1.0]mixinTypes' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner' or"
+               + " P.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')"
+               + " and V.PROPERTY_ID=P.ID order by I.N_ORDER_NUM, I.ID";
+      }
    }
 
    /**
@@ -87,6 +103,54 @@ public class MSSQLMultiDbJDBCConnection extends MultiDbJDBCConnection
       findNodesAndProperties.setString(1, getInternalId(lastNodeId));
 
       return findNodesAndProperties.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumber(int localMaxOrderNumber, boolean increment) throws SQLException
+   {
+      if (findLastOrderNumber == null)
+      {
+         findLastOrderNumber = dbConnection.prepareCall(FIND_LAST_ORDER_NUMBER);
+      }
+      else
+      {
+         findLastOrderNumber.clearParameters();
+      }
+      int value = increment ? 1 : 0;
+      findLastOrderNumber.setInt(1, localMaxOrderNumber);
+      findLastOrderNumber.setInt(2, value);
+      findLastOrderNumber.execute();
+      return (findLastOrderNumber).getResultSet();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findChildNodesByParentIdentifier(String parentCid, int fromOrderNum, int offset, int limit)
+      throws SQLException
+   {
+      if (!containerConfig.useSequenceForOrderNumber)
+      {
+         return super.findChildNodesByParentIdentifier(parentCid, fromOrderNum, offset, limit);
+      }
+      if (findNodesByParentIdLazilyCQ == null)
+      {
+         findNodesByParentIdLazilyCQ = dbConnection.prepareStatement(FIND_NODES_BY_PARENTID_LAZILY_CQ.replace("${TOP}",
+            new Integer(offset + limit).toString()));
+      }
+      else
+      {
+         findNodesByParentIdLazilyCQ.clearParameters();
+      }
+
+      findNodesByParentIdLazilyCQ.setString(1, parentCid);
+      findNodesByParentIdLazilyCQ.setInt(2, fromOrderNum);
+
+      return findNodesByParentIdLazilyCQ.executeQuery();
    }
 
    /**

@@ -74,3 +74,23 @@ ANALYZE INDEX JCR_PK_MREF COMPUTE STATISTICS
 /
 ANALYZE INDEX JCR_IDX_MREF_PROPERTY COMPUTE STATISTICS
 /
+CREATE SEQUENCE JCR_MITEM_SEQ  INCREMENT BY 1 MINVALUE -1 NOMAXVALUE NOCACHE NOCYCLE
+/
+CREATE OR REPLACE FUNCTION JCR_MITEM_NEXT_VAL (nameSeq IN VARCHAR, newVal IN INTEGER, increment IN INTEGER )
+RETURN INTEGER
+AS
+result INTEGER;
+query VARCHAR(200);
+BEGIN
+query := 'select '||nameSeq||'.nextval from dual';
+execute immediate query into result;
+IF (increment = 0)
+THEN
+  WHILE (result < newVal)
+  LOOP
+    execute immediate query into result;
+  END LOOP;
+END IF;
+RETURN result;
+end;
+/

@@ -69,9 +69,10 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
             + " where I.PARENT_ID=? and I.I_CLASS=2 and I.NAME=? and I.ID=V.PROPERTY_ID order by V.ORDER_NUM";
       FIND_NODES_BY_PARENTID =
          "select * from " + JCR_ITEM + " where PARENT_ID=? and I_CLASS=1" + " order by N_ORDER_NUM";
-
-      FIND_LAST_ORDER_NUMBER_BY_PARENTID =
-         "select count(*), max(N_ORDER_NUM) from " + JCR_ITEM + " where PARENT_ID=? and I_CLASS=1";
+      if (containerConfig.useSequenceForOrderNumber)
+      {
+         FIND_LAST_ORDER_NUMBER = "call next value for " + JCR_ITEM_SEQ;
+      }
 
       FIND_NODES_COUNT_BY_PARENTID = "select count(ID) from " + JCR_ITEM + " where PARENT_ID=? and I_CLASS=1";
       FIND_PROPERTIES_BY_PARENTID = "select * from " + JCR_ITEM + " where PARENT_ID=? and I_CLASS=2" + " order by ID";
@@ -183,5 +184,31 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
 
          return findPropertiesByParentIdAndComplexPatternCQ.executeQuery(query.toString());
       }
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findLastOrderNumber(int localMaxOrderNumber, boolean increment) throws SQLException
+   {
+      if (findLastOrderNumber == null)
+      {
+         findLastOrderNumber = dbConnection.prepareStatement(FIND_LAST_ORDER_NUMBER);
+      }
+      if (!increment)
+      {
+         ResultSet count;
+         int result = -1;
+         while (result < localMaxOrderNumber - 1)
+         {
+            count = findLastOrderNumber.executeQuery();
+            if (count.next())
+            {
+               result = count.getInt(1);
+            }
+         }
+      }
+      return findLastOrderNumber.executeQuery();
    }
 }

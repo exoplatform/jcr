@@ -158,6 +158,11 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     */
    protected String FIND_ACL_HOLDERS;
 
+   /**
+    * FIND_LAST_ORDER_NUMBER.
+    */
+   protected String FIND_LAST_ORDER_NUMBER;
+
    protected PreparedStatement findACLHolders;
 
    protected PreparedStatement findNodesByParentIdCQ;
@@ -171,6 +176,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected PreparedStatement findPropertyById;
 
    protected PreparedStatement findNodesByParentIdLazilyCQ;
+
+   protected PreparedStatement findLastOrderNumber;
 
    protected PreparedStatement deleteValueDataByOrderNum;
    
@@ -259,6 +266,21 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     */
    private Map<Integer, List<ItemData>> currentItems;
 
+   /**
+    * The max order number that we use to update the sequence in order
+    * to avoid a gap especially when we add sub nodes to a new parent node
+    */
+   private int localMaxOrderNumber;
+
+   /**
+    * The list of the id of all the nodes that have been added
+    */
+   private Set<String> addedNodeIds;
+
+   /**
+    * Indicates whether or not the sequence needs to be updated
+    */
+   private boolean updateSequence;
    
    /**
     * JDBCStorageConnection constructor.
@@ -518,14 +540,14 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int toOrderNum, List<NodeData> childNodes)
+   public boolean getChildNodesDataByPage(NodeData parent, int fromOrderNum, int offset, int pageSize, List<NodeData> childNodes)
       throws RepositoryException, IllegalStateException
    {
       checkIfOpened();
       ResultSet resultSet = null;
       try
       {
-         resultSet = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()), fromOrderNum, toOrderNum);
+         resultSet = findChildNodesByParentIdentifier(getInternalId(parent.getIdentifier()),fromOrderNum, offset, pageSize);
          TempNodeData data = null;
          while (resultSet.next())
          {
@@ -556,7 +578,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             childNodes.add(nodeData);
          }
 
-         return childNodes.size() != 0 ? true : getLastOrderNumber(parent) > toOrderNum;
+         return !childNodes.isEmpty() ? true : super.getLastOrderNumber(parent) > (fromOrderNum+pageSize-1);
       }
       catch (SQLException e)
       {
@@ -730,6 +752,24 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       try
       {
          setOperationType(TYPE_ADD);
+         if (containerConfig.useSequenceForOrderNumber)
+         {
+            localMaxOrderNumber = Math.max(data.getOrderNumber(), localMaxOrderNumber);
+            if (!updateSequence)
+            {
+               if (addedNodeIds == null)
+               {
+                  addedNodeIds = new HashSet<String>();
+               }
+               addedNodeIds.add(data.getIdentifier());
+               String pid = data.getParentIdentifier();
+               updateSequence = pid != null && addedNodeIds.contains(pid);
+               if (updateSequence)
+               {
+                  addedNodeIds = null;
+               }
+            }
+         }
          super.add(data);
       }
       finally
@@ -1464,6 +1504,103 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    }
 
    /**
+    * {@inheritDoc}
+    */
+   @Override
+   public int getLastOrderNumber(NodeData parent) throws RepositoryException
+   {
+      if (!containerConfig.useSequenceForOrderNumber)
+      {
+         return super.getLastOrderNumber(parent);
+      }
+      return getLastOrderNumber();
+   }
+
+   /**
+    * Gets the last order number from the sequence
+    * @throws RepositoryException if any error occurs while retrieving the
+    * value of the sequence
+    */
+   protected int getLastOrderNumber() throws RepositoryException
+   {
+      checkIfOpened();
+      try
+      {
+         ResultSet count = findLastOrderNumber(1, true);
+         try
+         {
+            if (count.next())
+            {
+               return count.getInt(1) - 1;
+            }
+            else
+            {
+               return -1;
+            }
+         }
+         finally
+         {
+            try
+            {
+               count.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * Updates the value of the sequence in order to avoid any gap
+    * @throws RepositoryException if the sequence could not be updated
+    */
+   protected void updateSequence() throws RepositoryException
+   {
+      checkIfOpened();
+      try
+      {
+         ResultSet count = updateNextOrderNumber(localMaxOrderNumber);
+         try
+         {
+            if (!count.next())
+            {
+               throw new RepositoryException("Could not update the sequence: "
+                  + "the returned value cannot be found");
+            }
+         }
+         finally
+         {
+            try
+            {
+               count.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
+            }
+         }
+      }
+      catch (SQLException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   /**
+    * This is a trivial way to update the sequence as it only calls {@link #findLastOrderNumber()}
+    */
+   protected ResultSet updateNextOrderNumber(int localMaxOrderNumber) throws SQLException
+   {
+      return findLastOrderNumber(localMaxOrderNumber, false);
+   }
+
+   /**
     * {@inheritDoc} 
     */
    @Override
@@ -1934,6 +2071,18 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       endChanges();
       super.prepare();
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected void onPreCommit() throws IllegalStateException, RepositoryException
+   {
+      if (containerConfig.useSequenceForOrderNumber && updateSequence && localMaxOrderNumber > 0)
+      {
+         updateSequence();
+      }
+   }
    
    /**
     * {@inheritDoc}
@@ -2008,6 +2157,10 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          if (findNodesByParentIdLazilyCQ != null)
          {
             findNodesByParentIdLazilyCQ.close();
+         }
+         if (findLastOrderNumber != null)
+         {
+            findLastOrderNumber.close();
          }
       }
       catch (SQLException e)
@@ -2135,6 +2288,8 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    protected abstract ResultSet findNodeMainPropertiesByParentIdentifierCQ(String parentIdentifier) throws SQLException;
 
    protected abstract ResultSet findPropertyById(String id) throws SQLException;
+
+   protected abstract ResultSet findLastOrderNumber(int localMaxOrderNumber, boolean increment) throws SQLException;
 
    protected abstract int deleteValueDataByOrderNum(String id, int orderNum) throws SQLException,
       InvalidItemStateException, RepositoryException;

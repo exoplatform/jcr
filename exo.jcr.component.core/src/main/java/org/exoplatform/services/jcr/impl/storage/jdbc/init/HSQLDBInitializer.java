@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009 eXo Platform SAS.
+ * Copyright (C) 2013 eXo Platform SAS.
  *
  * This is free software; you can redistribute it and/or modify it
  * under the terms of the GNU Lesser General Public License as
@@ -19,9 +19,8 @@
 package org.exoplatform.services.jcr.impl.storage.jdbc.init;
 
 import org.exoplatform.commons.utils.SecurityHelper;
-import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCDataContainerConfig;
-
+import org.exoplatform.services.database.utils.JDBCUtils;
 import java.io.IOException;
 import java.security.PrivilegedAction;
 import java.sql.Connection;
@@ -30,28 +29,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Created by The eXo Platform SAS
+ * JCR Storage HSQL initializer.
  *
- * 26.03.2007
+ * Created by The eXo Platform SAS* 11.09.2013
  *
- * PgSQL convert all db object names to lower case, so respect it.
- * Same as Ingres initializer.
- *
- * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
- * @version $Id: PgSQLDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $
+ * @author <a href="mailto:aboughzela@exoplatform.com">Aymen Boughzela</a>
  */
-public class PgSQLDBInitializer extends StorageDBInitializer
+
+public class HSQLDBInitializer extends StorageDBInitializer
 {
 
-   public PgSQLDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
+   public HSQLDBInitializer(Connection connection, JDBCDataContainerConfig containerConfig) throws IOException
    {
       super(connection, containerConfig);
-   }
-
-   @Override
-   protected boolean isTableExists(Connection conn, String tableName) throws SQLException
-   {
-      return super.isTableExists(conn, tableName.toUpperCase().toLowerCase());
    }
 
    /**
@@ -76,7 +66,7 @@ public class PgSQLDBInitializer extends StorageDBInitializer
       try
       {
          String query;
-         query = "SELECT count(*) FROM information_schema.sequences where sequence_name='"+sequenceName.toLowerCase()+"'";
+         query = "SELECT count(*) FROM information_schema.system_sequences where  SEQUENCE_NAME='" + sequenceName + "'";
 
          stmt = con.createStatement();
          trs = stmt.executeQuery(query);
@@ -96,5 +86,4 @@ public class PgSQLDBInitializer extends StorageDBInitializer
          JDBCUtils.freeResources(trs, stmt, null);
       }
    }
-
 }
