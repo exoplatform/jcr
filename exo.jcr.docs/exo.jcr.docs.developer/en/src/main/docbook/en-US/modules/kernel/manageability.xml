@@ -11,10 +11,7 @@
     exposing a management view in the Java Platform but we take in
     consideration other kind of views such as REST web services. Therefore,
     the framework is not tied to JMX, yet it provides a JMX part to define
-    more precisely details related to the JMX management view. The legacy
-    framework is still in use but is deprecated in favor of the new framework
-    as it is less tested and less efficient. It will be removed by
-    sanitization in the future.</para>
+    more precisely details related to the JMX management view.</para>
 
   <section id="Kernel.Manageability.ManagedFrameworkAPI">
     <title>Managed framework API</title>
