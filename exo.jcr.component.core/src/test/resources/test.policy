@@ -15,5 +15,6 @@ grant codeBase "@TEST_CLASSES@-"{
    permission java.lang.RuntimePermission "setContextClassLoader";
    permission java.lang.RuntimePermission "manageComponent";
    permission java.lang.RuntimePermission "manageContainer";
+   permission java.util.PropertyPermission "org.postgresql.forcebinary", "read";
 };
 

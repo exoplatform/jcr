@@ -15,6 +15,7 @@ grant codeBase "@TEST_CLASSES@-"{
    permission java.lang.RuntimePermission "backupRestoreOperations";
    permission java.lang.RuntimePermission "modifyConversationState";
    permission java.lang.RuntimePermission "setContextClassLoader";
+   permission java.util.PropertyPermission "org.postgresql.forcebinary", "read";
 };
 
 grant codeBase "@MAIN_CLASSES@../../../exo.jcr.component.core/-"{
