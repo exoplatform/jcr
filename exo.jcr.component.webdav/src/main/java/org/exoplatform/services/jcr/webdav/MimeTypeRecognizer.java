@@ -82,9 +82,7 @@ public class MimeTypeRecognizer
     */
    public String getMimeType()
    {
-      // Use file extension in case of "application/octet-stream" (default value since gvfs 1.15.1)
-      if (mediaType == null || untrustedAgent 
-          || MediaType.APPLICATION_OCTET_STREAM.equals(mediaType.getType() + "/" + mediaType.getSubtype()))
+      if (mediaType == null || untrustedAgent)
       {
          return mimeTypeResolver.getMimeType(fileName);
       }
