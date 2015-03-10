@@ -341,8 +341,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          List<String> lockTokens = lockTokens(lockTokenHeader, ifHeader);
 
          Depth depth = new Depth(depthHeader);
+         
+         boolean overwrite = true;
+         if (overwriteHeader != null && overwriteHeader.equalsIgnoreCase("F"))
+         {
+            overwrite = false;
+         }
 
-         boolean overwrite = overwriteHeader != null && overwriteHeader.equalsIgnoreCase("T");
          repoName = getRepositoryName(repoName);
 
          if (overwrite)
@@ -807,7 +812,12 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
          Depth depth = new Depth(depthHeader);
 
-         boolean overwrite = overwriteHeader != null && overwriteHeader.equalsIgnoreCase("T");
+         boolean overwrite = true;
+         if (overwriteHeader != null && overwriteHeader.equalsIgnoreCase("F"))
+         {
+            overwrite = false;
+         }
+
          repoName = getRepositoryName(repoName);
 
          if (overwrite)
