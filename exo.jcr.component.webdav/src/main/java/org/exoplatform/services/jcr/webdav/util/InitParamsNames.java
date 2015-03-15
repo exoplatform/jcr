@@ -80,5 +80,10 @@ public interface InitParamsNames
     * Initialization parameter {@link String} representation: allowed folder node types list.
     */
    String ALLOWED_FOLDER_NODE_TYPES = "allowed-folder-node-types";
+   
+   /**
+    * Initialization parameter {@link String} representation: size limitation in bytes of file uploaded via WebDAV.
+    */
+   String FILE_SIZE_LIMIT = "file-size-limit";
 
 }

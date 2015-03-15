@@ -142,6 +142,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
 
    private final MimeTypeResolver mimeTypeResolver;
 
+   private long fileSizeLimit; 
+   
    static
    {
       StringBuffer sb = new StringBuffer();
@@ -176,6 +178,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    {
       this(repositoryService, sessionProviderService);
       this.webDavServiceInitParams = new WebDavServiceInitParams(params);
+      this.fileSizeLimit = getFileSizeLimit();
    }
 
    /**
@@ -190,6 +193,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    {
       this(repositoryService, sessionProviderService);
       this.webDavServiceInitParams = new WebDavServiceInitParams(params);
+      this.fileSizeLimit = getFileSizeLimit();
    }
 
    /**
@@ -207,6 +211,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       this.mimeTypeResolver = new MimeTypeResolver();
       this.mimeTypeResolver.setDefaultMimeType(InitParamsDefaults.FILE_MIME_TYPE);
       this.webDavServiceInitParams = new WebDavServiceInitParams();
+      this.fileSizeLimit = getFileSizeLimit();
    }
 
    /**
@@ -1468,4 +1473,23 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       }
    }
 
+   /**
+    * Get File Size limit in byte
+    */
+   protected long getFileSizeLimit()
+   {
+      try 
+      {  
+         return Long.parseLong(webDavServiceInitParams.getDefaultFileSizeLimit());
+      }
+      catch (Exception e)
+      {
+         if (log.isDebugEnabled())
+         { 	 
+            log.debug("Failed to parse " + webDavServiceInitParams.getDefaultFileSizeLimit() + 
+                     ". Use the default value of " + InitParamsDefaults.FILE_SIZE_LIMIT, e);
+         }
+         return Long.parseLong(InitParamsDefaults.FILE_SIZE_LIMIT);
+      }	   
+   }
 }

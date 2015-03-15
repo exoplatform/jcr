@@ -44,6 +44,7 @@ public class TestWebDavServiceInitParams extends TestCase
       assertEquals(InitParamsDefaults.FILE_MIME_TYPE, params.getDefaultFileMimeType());
       assertEquals(InitParamsDefaults.UPDATE_POLICY, params.getDefaultUpdatePolicyType());
       assertEquals(InitParamsDefaults.AUTO_VERSION, params.getDefaultAutoVersionType());
+      assertEquals(InitParamsDefaults.FILE_SIZE_LIMIT, params.getDefaultFileSizeLimit());
       assertTrue(params.getXsltParams().isEmpty());
       assertTrue(params.getUntrustedUserAgents().isEmpty());
       assertTrue(params.getCacheControlMap().isEmpty());
@@ -85,6 +86,12 @@ public class TestWebDavServiceInitParams extends TestCase
       vp.setName(InitParamsNames.CACHE_CONTROL);
       vp.setValue("text/xml,text/html:max-age=1800;text/*:max-age=777;image/png,image/jpg:max-age=3600;*/*:no-cache;image/*:max-age=555");
       ip.addParameter(vp);
+      // FILE_SIZE_LIMIT
+      vp = new ValueParam();
+      vp.setName(InitParamsNames.FILE_SIZE_LIMIT);
+      vp.setValue(InitParamsNames.FILE_SIZE_LIMIT);
+      ip.addParameter(vp);
+      
       ValuesParam vsp = new ValuesParam();
       vsp.setName(InitParamsNames.UNTRUSTED_USER_AGENTS);
       vsp.getValues().add(InitParamsNames.UNTRUSTED_USER_AGENTS);
@@ -99,7 +106,7 @@ public class TestWebDavServiceInitParams extends TestCase
       vsp.getValues().add(InitParamsNames.ALLOWED_FILE_NODE_TYPES);
       ip.addParameter(vsp);
       
-      assertEquals(11, ip.size());
+      assertEquals(12, ip.size());
       
       // This is required to be able to parse the MimeType
       RuntimeDelegate.setInstance(new RuntimeDelegateImpl());
@@ -111,6 +118,7 @@ public class TestWebDavServiceInitParams extends TestCase
       assertEquals(InitParamsNames.DEF_FILE_MIME_TYPE, params.getDefaultFileMimeType());
       assertEquals(InitParamsNames.UPDATE_POLICY, params.getDefaultUpdatePolicyType());
       assertEquals(InitParamsNames.AUTO_VERSION, params.getDefaultAutoVersionType());
+      assertEquals(InitParamsNames.FILE_SIZE_LIMIT, params.getDefaultFileSizeLimit());
       assertEquals(2, params.getXsltParams().size());
       assertEquals(InitParamsNames.FILE_ICON_PATH, params.getXsltParams().get(InitParamsNames.FILE_ICON_PATH));
       assertEquals(InitParamsNames.FOLDER_ICON_PATH, params.getXsltParams().get(InitParamsNames.FOLDER_ICON_PATH));      
