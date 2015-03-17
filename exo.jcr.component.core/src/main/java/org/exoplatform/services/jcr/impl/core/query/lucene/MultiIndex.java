@@ -783,7 +783,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                                          readers = getReadOnlyIndexReaders(false, false);
                                          indexReader = new MultiReader(readers);
                                      }
-                                     catch (Throwable e)
+                                     catch (Throwable e)//NOSONAR
                                      {
                                          // this is safe index reader retrieval. The last index already closed, possibly merged or
                                          // any other exception that occurs here
@@ -806,7 +806,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                                          readers = getReadOnlyIndexReaders(false, false);
                                          indexReader = new MultiReader(readers);
                                      }
-                                     catch (Throwable e)
+                                     catch (Throwable e)//NOSONAR
                                      {
                                          // this is safe index reader retrieval. The last index already closed, possibly merged or
                                          // any other exception that occurs here
