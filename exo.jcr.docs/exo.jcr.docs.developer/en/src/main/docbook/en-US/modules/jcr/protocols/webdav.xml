@@ -108,6 +108,7 @@
         This parameter determines how service responds to a method that attempts to modify file content.
         In case of "checkout-checkin" value, when a modification request is applied to a checked-in version-controlled resource, the request is automatically preceded by a checkout and followed by a checkin operation.
         In case of "checkout" value, when a modification request is applied to a checked-in version-controlled resource, the request is automatically preceded by a checkout operation.
+        In case of "checkin-checkout" value, when a modification request is applied, the request is automatically preceded by a checkin then a checkout operation.
     --&gt;         
     &lt;value-param&gt;
       &lt;name&gt;auto-version&lt;/name&gt;
