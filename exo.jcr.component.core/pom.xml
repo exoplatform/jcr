@@ -330,6 +330,14 @@
                   </goals>
                </execution>
             </executions>
+            <dependencies>
+               <!--Workaround https://issues.apache.org/jira/browse/BCEL-173-->
+               <dependency>
+                  <groupId>org.apache.bcel</groupId>
+                  <artifactId>bcel</artifactId>
+                  <version>6.0-SNAPSHOT</version>
+               </dependency>
+            </dependencies>
          </plugin>
           <plugin>
              <groupId>org.apache.maven.plugins</groupId>
@@ -524,7 +532,7 @@
          <plugin>
             <groupId>org.antlr</groupId>
             <artifactId>antlr3-maven-plugin</artifactId>
-            <version>3.3</version>
+            <version>3.5.2</version>
             <executions>
                <execution>
                   <goals>
@@ -1164,7 +1172,7 @@
                <plugin>
                   <groupId>org.antlr</groupId>
                   <artifactId>maven-gunit-plugin</artifactId>
-                  <version>3.2</version>
+                  <version>3.5.2</version>
                   <executions>
                      <execution>
                         <id>maven-gunit-plugin</id>

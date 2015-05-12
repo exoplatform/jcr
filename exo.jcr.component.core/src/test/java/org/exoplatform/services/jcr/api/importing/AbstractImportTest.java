@@ -254,7 +254,7 @@ public abstract class AbstractImportTest extends JcrAPIBaseTest
                            throw new RepositoryException(e);
                         }
 
-                        tasks.add(new XmlTestTask<XmlTestResult>(be, bi, ai, posibleSaveTypes[i],
+                        tasks.add(new XmlTestTask(be, bi, ai, posibleSaveTypes[i],
                            posibleImportUUIDBehaviors[j], posibleExportedByStream[j2], posibleImportedByStream[k],
                            posibleSystemViewExport[k2]));
 
@@ -507,7 +507,7 @@ public abstract class AbstractImportTest extends JcrAPIBaseTest
 
    }
 
-   private class XmlTestTask<XmlTestResult> implements Callable<XmlTestResult>
+   private class XmlTestTask implements Callable<XmlTestResult>
    {
 
       private final BeforeExportAction firstAction;
