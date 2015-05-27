@@ -246,6 +246,7 @@
                            <property name="vcas-type"
                               value="org.exoplatform.services.jcr.impl.storage.value.cas.JDBCValueContentAddressStorageImpl" />
                            <property name="jdbc-source-name" value="jdbcjcr" />
+                           <property name="jdbc-dialect" value="${dialect}" />
                            <property name="enabled" value="${value-storage-enabled}" />
                         </properties>
                         <filters>
