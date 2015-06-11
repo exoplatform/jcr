@@ -131,7 +131,7 @@ public abstract class AbstractExcerpt implements HighlightingExcerptProvider
          TermFreqVector tfv = reader.getTermFreqVector(docNumber, FieldNames.FULLTEXT);
          if (tfv instanceof TermPositionVector)
          {
-            return createExcerpt((TermPositionVector)tfv, text.toString(), maxFragments, maxFragmentSize);
+            return createExcerpt(createTermPositionVector(text.toString()), text.toString(), maxFragments, maxFragmentSize);
          }
          else
          {
