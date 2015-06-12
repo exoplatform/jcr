@@ -43,6 +43,7 @@ import javax.jcr.Credentials;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.Repository;
+import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.version.Version;
 
@@ -105,10 +106,23 @@ public class TestPermissions extends BaseStandaloneTest
       node.setPermission("mary", new String[]{PermissionType.READ});
       node.setPermission("admin", PermissionType.ALL);
       node.removePermission(IdentityConstants.ANY);
-      node.addNode("test");
       sessionWS1.save();
+      initTestNode();
 
       sessionWS1.getRootNode().addNode("MARY-ReadWrite");
+      sessionWS1.save();
+   }
+
+   private void initTestNode() throws RepositoryException
+   {
+      NodeImpl node = (NodeImpl)sessionWS1.getRootNode().getNode("MARY-ReadOnly");
+
+      if(node.hasNode("test"))
+      {
+         node.getNode("test").remove();
+         sessionWS1.save();
+      }
+      node.addNode("test");
       sessionWS1.save();
    }
 
@@ -204,6 +218,7 @@ public class TestPermissions extends BaseStandaloneTest
     */
    public void testAddMixinWS1Failed() throws Exception
    {
+      initTestNode();
       NodeImpl node = (NodeImpl)sessionMaryWS1.getRootNode().getNode("MARY-ReadOnly").getNode("test");
 
       try
@@ -223,6 +238,7 @@ public class TestPermissions extends BaseStandaloneTest
     */
    public void testRemoveMixinWS1Failed() throws Exception
    {
+      initTestNode();
       NodeImpl node = (NodeImpl)sessionWS1.getRootNode().getNode("MARY-ReadOnly").getNode("test");
       node.addMixin("mix:versionable");
       sessionWS1.save();
@@ -246,6 +262,7 @@ public class TestPermissions extends BaseStandaloneTest
     */
    public void testCheckinWS1Failed() throws Exception
    {
+      initTestNode();
       Node node = sessionWS1.getRootNode().getNode("MARY-ReadOnly").getNode("test");
       node.addMixin("mix:versionable");
       sessionWS1.save();
@@ -267,6 +284,7 @@ public class TestPermissions extends BaseStandaloneTest
     */
    public void testCheckoutWS1Failed() throws Exception
    {
+      initTestNode();
       Node node = sessionWS1.getRootNode().getNode("MARY-ReadOnly").getNode("test");
       node.addMixin("mix:versionable");
       sessionWS1.save();
@@ -290,6 +308,7 @@ public class TestPermissions extends BaseStandaloneTest
     */
    public void testRestoreWS1Failed() throws Exception
    {
+      initTestNode();
       Node node = sessionWS1.getRootNode().getNode("MARY-ReadOnly").getNode("test");
       node.addMixin("mix:versionable");
       sessionWS1.save();
