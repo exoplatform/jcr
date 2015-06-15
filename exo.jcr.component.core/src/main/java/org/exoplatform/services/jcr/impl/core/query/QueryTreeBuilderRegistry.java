@@ -52,22 +52,18 @@ public class QueryTreeBuilderRegistry
    static
    {
       Set<String> languages = new HashSet<String>();
-      try
-      {
-         BUILDERS.add(new org.exoplatform.services.jcr.impl.core.query.sql.QueryBuilder());
-         BUILDERS.add(new org.exoplatform.services.jcr.impl.core.query.xpath.QueryBuilder());
+      BUILDERS.add(new org.exoplatform.services.jcr.impl.core.query.sql.QueryBuilder());
+      BUILDERS.add(new org.exoplatform.services.jcr.impl.core.query.xpath.QueryBuilder());
 
-         for (QueryTreeBuilder builder : BUILDERS)
-         {
-            languages.addAll(Arrays.asList(builder.getSupportedLanguages()));
-         }
-         if (BUILDERS.size() < 1)
-            log.warn("No builders found");
-      }
-      catch (Error e)
+      for (QueryTreeBuilder builder : BUILDERS)
       {
-         log.warn("Unable to load providers for QueryTreeBuilder: " + e);
+         languages.addAll(Arrays.asList(builder.getSupportedLanguages()));
       }
+      if (BUILDERS.size() < 1)
+      {
+         log.warn("No builders found");
+      }
+
       LANGUAGES = Collections.unmodifiableSet(languages);
    }
 
