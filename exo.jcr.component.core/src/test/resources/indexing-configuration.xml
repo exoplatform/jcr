@@ -46,6 +46,10 @@
         <property>included</property>
     </index-rule>
 
+    <aggregate primaryType="exo:JCR_2394_1">
+        <include>exo:content</include>
+    </aggregate>
+
     <aggregate primaryType="nt:file">
         <include>jcr:content</include>
         <include>jcr:content/*</include>
@@ -59,4 +63,9 @@
 	<exclude path="${exclude-path:/testRoot/exo:trash/node1}"/>
 	<exclude nodeType="exo:hiddenable"/>
 	<exclude nodeType="exo:hiddenable2" path="/testRoot/node1/node1"/>
+
+   <index-rule nodeType="exo:JCR_2394_1">
+     <property useInExcerpt="false">exo:title</property>
+     <property useInExcerpt="false">exo:name</property>
+   </index-rule>
 </configuration>
