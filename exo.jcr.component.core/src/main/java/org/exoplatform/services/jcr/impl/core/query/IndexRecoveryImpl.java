@@ -178,21 +178,34 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
             long offset = (Long)args[1];
 
             RandomAccessFile file = new RandomAccessFile(new File(indexDirectory, filePath), "r");
-            file.seek(offset);
-
-            byte[] buffer = new byte[BUFFER_SIZE];
-            int len = file.read(buffer);
-
-            if (len == -1)
+            try
             {
-               return null;
+               file.seek(offset);
+
+               byte[] buffer = new byte[BUFFER_SIZE];
+               int len = file.read(buffer);
+               if (len == -1)
+               {
+                  return null;
+               }
+               else
+               {
+                  byte[] data = new byte[len];
+                  System.arraycopy(buffer, 0, data, 0, len);
+
+                  return data;
+               }
             }
-            else
+            finally
             {
-               byte[] data = new byte[len];
-               System.arraycopy(buffer, 0, data, 0, len);
-
-               return data;
+               try
+               {
+                  file.close();
+               }
+               catch (IOException e)
+               {
+                  log.error("Error while closing " + file, e);
+               }
             }
          }
       });
