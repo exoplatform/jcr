@@ -59,6 +59,7 @@ import org.exoplatform.services.jcr.impl.storage.jdbc.init.IngresSQLDBInitialize
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.OracleDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.init.PgSQLDBInitializer;
 import org.exoplatform.services.jcr.impl.storage.jdbc.statistics.StatisticsJDBCStorageConnection;
+import org.exoplatform.services.jcr.impl.storage.value.StandaloneStoragePluginProvider;
 import org.exoplatform.services.jcr.impl.storage.value.fs.FileValueStorage;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
@@ -192,8 +193,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * 
     * @param wsConfig
     *          Workspace configuration
-    * @param valueStrorageProvider
-    *          External Value Storages provider
     * @param dsProvider
     *          The data source provider
     * @throws RepositoryConfigurationException
@@ -370,8 +369,6 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
    /**
     * Prepare default DB initializer.
     * 
-    * @param sqlPath
-    *          - path to SQL script (database creation script)
     * @return DBInitializer instance
     * @throws NamingException
     *           on JNDI error
@@ -886,17 +883,21 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                {
                   for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
                   {
-                     File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+                     Boolean enable = valueStorage.getParameterBoolean(StandaloneStoragePluginProvider.VALUE_STORAGE_ENABLED_PARAM, true);
+                     if (enable)
+                     {
+                        File srcDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
 
-                     if (!srcDir.exists())
-                     {
-                        throw new IOException("Can't backup value storage. Directory " + srcDir.getName()
-                           + " doesn't exists");
-                     }
-                     else
-                     {
-                        File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
-                        DirectoryHelper.compressDirectory(srcDir, zipFile);
+                        if (!srcDir.exists())
+                        {
+                           throw new IOException("Can't backup value storage. Directory " + srcDir.getName()
+                              + " doesn't exists");
+                        }
+                        else
+                        {
+                           File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
+                           DirectoryHelper.compressDirectory(srcDir, zipFile);
+                        }
                      }
                   }
                   return null;
@@ -964,7 +965,10 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
             List<File> dataDirsList = initDataDirs();
             List<File> backupDirsList = initBackupDirs(storageDir);
 
-            restorers.add(new DirectoryRestore(dataDirsList, backupDirsList));
+            if (!(dataDirsList.isEmpty() && backupDirsList.isEmpty()))
+            {
+               restorers.add(new DirectoryRestore(dataDirsList, backupDirsList));
+            }
          }
 
          return new ComplexDataRestore(restorers);
@@ -993,23 +997,27 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
       for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
       {
-         File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
-         if (PrivilegedFileHelper.exists(zipFile))
+         Boolean enable = valueStorage.getParameterBoolean(StandaloneStoragePluginProvider.VALUE_STORAGE_ENABLED_PARAM, true);
+         if (enable)
          {
-            backupDirsList.add(zipFile);
-         }
-         else
-         {
-            // try to check if we have deal with old backup format
-            zipFile = new File(storageDir, "values/" + valueStorage.getId());
+            File zipFile = new File(storageDir, "values-" + valueStorage.getId() + ".zip");
             if (PrivilegedFileHelper.exists(zipFile))
             {
                backupDirsList.add(zipFile);
             }
             else
             {
-               throw new RepositoryConfigurationException("There is no backup data for value storage with id "
-                  + valueStorage.getId());
+               // try to check if we have deal with old backup format
+               zipFile = new File(storageDir, "values/" + valueStorage.getId());
+               if (PrivilegedFileHelper.exists(zipFile))
+               {
+                  backupDirsList.add(zipFile);
+               }
+               else
+               {
+                  throw new RepositoryConfigurationException("There is no backup data for value storage with id "
+                     + valueStorage.getId());
+               }
             }
          }
       }
@@ -1023,8 +1031,12 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
 
       for (ValueStorageEntry valueStorage : wsConfig.getContainer().getValueStorages())
       {
-         File dataDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
-         dataDirsList.add(dataDir);
+         Boolean enable = valueStorage.getParameterBoolean(StandaloneStoragePluginProvider.VALUE_STORAGE_ENABLED_PARAM, true);
+         if (enable)
+         {
+            File dataDir = new File(valueStorage.getParameterValue(FileValueStorage.PATH));
+            dataDirsList.add(dataDir);
+         }
       }
 
       return dataDirsList;
