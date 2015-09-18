@@ -69,7 +69,7 @@ public class StandaloneStoragePluginProvider extends ArrayList<ValueStoragePlugi
    /**
     * Value storage enabling parameter. For internal usage only and testing purpose.
     */
-   private static final String VALUE_STORAGE_ENABLED_PARAM = "enabled";
+   public static final String VALUE_STORAGE_ENABLED_PARAM = "enabled";
 
    /**
     * ValueData resources holder (Files etc). It's singleton feature.
