@@ -56,11 +56,8 @@ public class ReferencePersistedValueData extends ReferenceValueData implements P
       orderNumber = in.readInt();
 
       byte[] data = new byte[in.readInt()];
-      if (data.length > 0)
-      {
-         in.readFully(data);
-         value = new Identifier(data);
-      }
+      in.readFully(data);
+      value = new Identifier(data);
    }
 
    /**
@@ -72,10 +69,6 @@ public class ReferencePersistedValueData extends ReferenceValueData implements P
 
       byte[] data = value.getString().getBytes(Constants.DEFAULT_ENCODING);
       out.writeInt(data.length);
-
-      if (data.length > 0)
-      {
-         out.write(data);
-      }
+      out.write(data);
    }
 }
