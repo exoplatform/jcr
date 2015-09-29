@@ -872,6 +872,20 @@
          </dependencies>
       </profile>
       <profile>
+         <id>mysql-5.6</id>
+         <properties>
+            <properties.url.prefix>classpath:/conf/standalone/mysql</properties.url.prefix>
+         </properties>
+         <dependencies>
+            <dependency>
+               <groupId>mysql</groupId>
+               <artifactId>mysql-connector-java</artifactId>
+               <version>5.1.30</version>
+               <scope>test</scope>
+            </dependency>
+         </dependencies>
+      </profile>
+      <profile>
          <id>mssql</id>
          <properties>
             <properties.url.prefix>classpath:/conf/standalone/mssql</properties.url.prefix>

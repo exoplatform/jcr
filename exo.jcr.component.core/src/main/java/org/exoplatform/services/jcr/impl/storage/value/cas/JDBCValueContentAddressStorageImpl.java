@@ -172,6 +172,7 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
             DatabaseMetaData dbMetaData = conn.getMetaData();
 
             String dialect = props.getProperty(JDBC_DIALECT_PARAM);
+            dialect = dialect.toUpperCase();
             if (dialect == null || dialect.startsWith(DBConstants.DB_DIALECT_AUTO))
             {
                dialect = DialectDetecter.detect(dbMetaData);
@@ -233,7 +234,14 @@ public class JDBCValueContentAddressStorageImpl implements ValueContentAddressSt
                   + "CONSTRAINT " + sqlConstraintPK + " PRIMARY KEY(PROPERTY_ID, ORDER_NUM))");
 
                // create index on hash (CAS_ID)
-               st.executeUpdate("CREATE INDEX " + sqlVCASIDX + " ON " + tableName + "(CAS_ID, PROPERTY_ID, ORDER_NUM)");
+               if (dialect.startsWith(DBConstants.DB_DIALECT_MYSQL_UTF8))
+               {
+                  st.executeUpdate("CREATE INDEX " + sqlVCASIDX + " ON " + tableName + "(CAS_ID (255), PROPERTY_ID, ORDER_NUM)");
+               }
+               else
+               {
+                  st.executeUpdate("CREATE INDEX " + sqlVCASIDX + " ON " + tableName + "(CAS_ID, PROPERTY_ID, ORDER_NUM)");
+               }
 
                if (LOG.isDebugEnabled())
                {
