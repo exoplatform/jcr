@@ -891,7 +891,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
                         if (!srcDir.exists())
                         {
                            throw new IOException("Can't backup value storage. Directory " + srcDir.getName()
-                              + " doesn't exists");
+                              + " doesn't exist");
                         }
                         else
                         {
