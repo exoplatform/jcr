@@ -51,7 +51,7 @@ public class AddOwneableAction implements Action
          }
          catch (AccessControlException exp)
          {
-            LOG.debug("Can not add mixin type exo:owneable, missing full access : add_node,set_property,remove " + node.getPath());
+            LOG.debug("Can not add mixin type exo:owneable, missing access : add_node,set_property,remove " + node.getPath());
          }
       }
       return false;
