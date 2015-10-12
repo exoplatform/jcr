@@ -21,6 +21,9 @@ package org.exoplatform.services.jcr.ext.owner;
 import org.apache.commons.chain.Context;
 import org.exoplatform.services.command.action.Action;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+import java.security.AccessControlException;
 
 /**
  * Created by The eXo Platform SAS .
@@ -32,12 +35,24 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 public class AddOwneableAction implements Action
 {
 
+   /**
+    * Logger.
+    */
+   protected static final Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.ext.owner.AddOwneableAction");
+
    public boolean execute(Context ctx) throws Exception
    {
       NodeImpl node = (NodeImpl)ctx.get("currentItem");
       if (node != null && node.canAddMixin("exo:owneable"))
       {
-         node.addMixin("exo:owneable");
+         try
+         {
+            node.addMixin("exo:owneable");
+         }
+         catch (AccessControlException exp)
+         {
+            LOG.debug("Can not add mixin type exo:owneable, missing access : add_node,set_property,remove " + node.getPath());
+         }
       }
       return false;
    }
