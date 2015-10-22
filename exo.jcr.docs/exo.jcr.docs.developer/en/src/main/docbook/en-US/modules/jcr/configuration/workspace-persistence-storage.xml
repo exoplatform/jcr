@@ -335,10 +335,47 @@
       </itemizedlist>
 
       <note>
-        <para>Since MySQL NDB engine does not support foreign keys, which may
+        <para>MySQL NDB engine (version 7.2) does not support foreign keys, which may
         lead to improper item removal and as consequence to
         InvalidItemStateException. In this case you will need to use
-        consistency checker tool.</para>
+        consistency checker tool.
+        Foreign keys are supported in MySQL Cluster NDB 7.3 and later.</para>
+      </note>
+
+      <note>
+        <para>
+        To migrate the jcr tables from innoDB to NDB engine.
+        You need to make 3 steps  (Example of database structure : single):
+        </para>
+
+        <itemizedlist>
+          <listitem>
+            <para> Drop the constraints foreign keys :
+            <programlisting>
+              ALTER TABLE JCR_SVALUE DROP FOREIGN KEY JCR_FK_SVALUE_PROPERTY;
+              ALTER TABLE JCR_SITEM DROP FOREIGN KEY JCR_FK_SITEM_PARENT;
+            </programlisting></para>
+          </listitem>
+          <listitem>
+            <para> Alter the jcr tables use the NDB engine :
+            <programlisting>
+              ALTER TABLE JCR_SREF ENGINE=NDB;
+              ALTER TABLE JCR_SVALUE ENGINE=NDB;
+              ALTER TABLE JCR_SITEM ENGINE=NDB;
+            </programlisting></para>
+          </listitem>
+          <listitem>
+            <para> Recreate the constraints foreign keys ( since 7.3 Mysql cluster version) :
+            <programlisting>
+              ALTER TABLE JCR_SVALUE ADD CONSTRAINT `JCR_FK_SVALUE_PROPERTY` FOREIGN KEY (`PROPERTY_ID`) REFERENCES `JCR_SITEM` (`ID`);
+              ALTER TABLE JCR_SITEM ADD CONSTRAINT `JCR_FK_SITEM_PARENT` FOREIGN KEY (`PARENT_ID`) REFERENCES `JCR_SITEM` (`ID`);
+            </programlisting></para>
+          </listitem>
+
+        </itemizedlist>
+        <para>
+          You should use the same steps to migrate from innoDB to NDB engine for isolated and multi database structure.
+        </para>
       </note>
     </section>
   </section>

@@ -37,7 +37,15 @@
       </listitem>
 
       <listitem>
-        <para>MySQL Cluster (NDB engine)</para>
+        <para>MySQL Cluster 7.2 (NDB engine)</para>
+      </listitem>
+
+      <listitem>
+        <para>MySQL Cluster 7.3 (NDB engine)</para>
+      </listitem>
+
+      <listitem>
+        <para>MySQL Cluster 7.4 (NDB engine)</para>
       </listitem>
 
       <listitem>
