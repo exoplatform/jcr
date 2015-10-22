@@ -27,6 +27,7 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
+import org.exoplatform.services.jcr.ext.utils.VersionHistoryUtils;
 import org.exoplatform.services.jcr.webdav.command.AclCommand;
 import org.exoplatform.services.jcr.webdav.command.CopyCommand;
 import org.exoplatform.services.jcr.webdav.command.DeleteCommand;
@@ -133,7 +134,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    /**
     * Encapsulates WebDAV service initial parameters.
     */
-   private WebDavServiceInitParams webDavServiceInitParams;
+   protected WebDavServiceInitParams webDavServiceInitParams;
 
    /**
     * The list of allowed methods.
@@ -872,7 +873,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    }
 
    /**
-    * @param repoName repository name
+    * @param path
     * @return the instance of javax.ws.rs.core.Response
     * @LevelAPI Platform
     */
@@ -1081,10 +1082,21 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          NodeType nodeType = ntm.getNodeType(contentNodeType);
          NodeTypeUtil.checkContentResourceType(nodeType);
 
-         return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName),
-            mimeTypeRecognizer).put(session, path(repoPath), inputStream, fileNodeType, contentNodeType,
-            NodeTypeUtil.getMixinTypes(mixinTypes), webDavServiceInitParams.getDefaultUpdatePolicyType(),
-            webDavServiceInitParams.getDefaultAutoVersionType(), tokens);
+         if (webDavServiceInitParams.isEnableAutoVersion())
+         {
+            return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName),
+               mimeTypeRecognizer).put(session, path(repoPath), inputStream, fileNodeType, contentNodeType,
+               NodeTypeUtil.getMixinTypes(mixinTypes), tokens, webDavServiceInitParams.getAllowedAutoVersionPath());
+         }
+         else
+         {
+
+            return new PutCommand(nullResourceLocks, uriInfo.getBaseUriBuilder().path(getClass()).path(repoName),
+               mimeTypeRecognizer).put(session, path(repoPath), inputStream, fileNodeType, contentNodeType,
+               NodeTypeUtil.getMixinTypes(mixinTypes), webDavServiceInitParams.getDefaultUpdatePolicyType(),
+               webDavServiceInitParams.getDefaultAutoVersionType(), tokens);
+
+         }
 
       }
       catch (NoSuchWorkspaceException exc)

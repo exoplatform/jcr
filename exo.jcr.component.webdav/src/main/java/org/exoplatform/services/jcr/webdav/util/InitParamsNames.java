@@ -81,4 +81,14 @@ public interface InitParamsNames
     */
    String ALLOWED_FOLDER_NODE_TYPES = "allowed-folder-node-types";
 
+   /**
+    * Initialization parameter {@link String} representation: allowed folder auto version.
+    */
+   String ALLOWED_JCR_PATH_AUTO_VERSION = "allowed.folder.auto-version";
+
+   /**
+    * Initialization parameter {@link String} representation: enable auto creation version.
+    */
+   String ENABLE_AUTO_VERSION = "enableAutoVersion";
+
 }

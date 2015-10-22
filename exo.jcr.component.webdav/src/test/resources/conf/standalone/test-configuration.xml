@@ -208,6 +208,16 @@
             <name>file-icon-path</name>
             <value>/absolute/path/to/file</value>
          </value-param>
+
+          <value-param>
+            <name>allowed.folder.auto-version</name>
+            <value>workspace1:path1;workspace1:path2;workspace2:path3</value>
+         </value-param>
+
+         <value-param>
+            <name>enableAutoVersion</name>
+            <value>false</value>
+         </value-param>
          <!-- 
             For testing untrusted-user-agents proper treatment.
             Content-type headers of listed here user agents should be

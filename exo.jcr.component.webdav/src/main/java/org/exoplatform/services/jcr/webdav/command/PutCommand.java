@@ -18,7 +18,9 @@
  */
 package org.exoplatform.services.jcr.webdav.command;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.common.http.HTTPStatus;
+import org.exoplatform.services.jcr.ext.utils.VersionHistoryUtils;
 import org.exoplatform.services.jcr.webdav.MimeTypeRecognizer;
 import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
@@ -33,6 +35,7 @@ import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.lock.LockException;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
@@ -61,6 +64,13 @@ public class PutCommand
     * To access mime-type and encoding
     */
    private final MimeTypeRecognizer mimeTypeRecognizer;
+
+   private final String CHECKOUT_CHECKIN = "checkout-checkin";
+
+   private final String CHECKIN_CHECKOUT = "checkin-checkout";
+
+   private final String CHECKOUT = "checkout";
+
 
    /**
     * Constructor.
@@ -120,7 +130,7 @@ public class PutCommand
             if ("add".equals(updatePolicyType))
             {
                node = session.getRootNode().getNode(TextUtil.relativizePath(path));
-               if (!node.isNodeType("mix:versionable"))
+               if (!node.isNodeType(VersionHistoryUtils.MIX_VERSIONABLE))
                {
                   node = session.getRootNode().addNode(TextUtil.relativizePath(path, false), fileNodeType);
                   // We set the new path
@@ -139,7 +149,7 @@ public class PutCommand
             }
             else
             {
-               if (!node.isNodeType("mix:versionable"))
+               if (!node.isNodeType(VersionHistoryUtils.MIX_VERSIONABLE))
                {
                   updateContent(node, inputStream, mixins);
                }
@@ -177,6 +187,96 @@ public class PutCommand
    }
 
    /**
+    * Webdav Put method implementation.
+    *
+    * @param session current session
+    * @param path resource path
+    * @param inputStream stream that contains resource content
+    * @param fileNodeType the node type of file node
+    * @param contentNodeType the node type of content
+    * @param mixins the list of mixins
+    * @param tokens tokens
+    * @param allowedAutoVersionPath
+    * @return the instance of javax.ws.rs.core.Response
+    */
+   public Response put(Session session, String path, InputStream inputStream, String fileNodeType,
+                       String contentNodeType, List<String> mixins, List<String> tokens, MultivaluedMap<String, String> allowedAutoVersionPath)
+   {
+      try
+      {
+
+         Node node = null;
+         boolean isVersioned;
+         try
+         {
+            node = (Node)session.getItem(path);
+         }
+         catch (PathNotFoundException pexc)
+         {
+            nullResourceLocks.checkLock(session, path, tokens);
+         }
+
+         if (node == null)
+         {
+            node = session.getRootNode().addNode(TextUtil.relativizePath(path, false), fileNodeType);
+            // We set the new path
+            path = node.getPath();
+            node.addNode("jcr:content", contentNodeType);
+            updateContent(node, inputStream, mixins);
+            isVersioned = isVersionSupported(node.getPath(), session.getWorkspace().getName(), allowedAutoVersionPath);
+            if (isVersioned && node.canAddMixin(VersionHistoryUtils.MIX_VERSIONABLE))
+            {
+               node.addMixin(VersionHistoryUtils.MIX_VERSIONABLE);
+            }
+            node.getSession().save();
+         }
+         else
+         {
+            isVersioned = isVersionSupported(node.getPath(), session.getWorkspace().getName(), allowedAutoVersionPath);
+            if (isVersioned)
+            {
+
+               VersionHistoryUtils.createVersion(node);
+               updateContent(node, inputStream, mixins);
+
+            }
+            else
+            {
+               updateContent(node, inputStream, mixins);
+            }
+         }
+
+         session.save();
+      }
+      catch (LockException exc)
+      {
+         return Response.status(HTTPStatus.LOCKED).entity(exc.getMessage()).build();
+
+      }
+      catch (AccessDeniedException exc)
+      {
+         return Response.status(HTTPStatus.FORBIDDEN).entity(exc.getMessage()).build();
+
+      }
+      catch (RepositoryException exc)
+      {
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
+      }
+      catch (Exception exc)
+      {
+         return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
+      }
+      if (uriBuilder != null)
+      {
+         return Response.created(uriBuilder.path(session.getWorkspace().getName()).path(path).build()).build();
+      }
+
+      // to save compatibility if uriBuilder is not provided
+      return Response.status(HTTPStatus.CREATED).build();
+
+   }
+
+   /**
     * Creates the new version of file.
     *
     * @param fileNode file node
@@ -187,20 +287,20 @@ public class PutCommand
     */
    private void createVersion(Node fileNode, InputStream inputStream, String autoVersion, List<String> mixins) throws RepositoryException
    {
-      if (!fileNode.isNodeType("mix:versionable"))
+      if (!fileNode.isNodeType(VersionHistoryUtils.MIX_VERSIONABLE))
       {
-         if (fileNode.canAddMixin("mix:versionable"))
+         if (fileNode.canAddMixin(VersionHistoryUtils.MIX_VERSIONABLE))
          {
-            fileNode.addMixin("mix:versionable");
+            fileNode.addMixin(VersionHistoryUtils.MIX_VERSIONABLE);
             fileNode.getSession().save();
          }
-         if (!("checkin-checkout".equals(autoVersion)))
+         if (!(CHECKIN_CHECKOUT.equals(autoVersion)))
          {
             fileNode.checkin();
             fileNode.getSession().save();
          }
       }
-      if ("checkin-checkout".equals(autoVersion))
+      if (CHECKIN_CHECKOUT.equals(autoVersion))
       {
          fileNode.checkin();
          fileNode.checkout();
@@ -270,8 +370,6 @@ public class PutCommand
             content.addMixin(mixinName);
          }
       }
-      node.getSession().save();
-
    }
 
    /**
@@ -292,17 +390,35 @@ public class PutCommand
          fileNode.checkout();
          fileNode.getSession().save();
       }
-      if ("checkout".equals(autoVersion))
+      if (CHECKOUT.equals(autoVersion))
       {
          updateContent(fileNode, inputStream, mixins);
       }
-      else if ("checkout-checkin".equals(autoVersion))
+      else if (CHECKOUT_CHECKIN.equals(autoVersion))
       {
          updateContent(fileNode, inputStream, mixins);
          fileNode.getSession().save();
          fileNode.checkin();
       }
       fileNode.getSession().save();
+   }
+
+   private boolean isVersionSupported(String nodePath, String workspaceName, MultivaluedMap<String, String> allowedAutoVersionPath)
+   {
+      if (StringUtils.isEmpty(nodePath) || allowedAutoVersionPath.isEmpty())
+      {
+         return false;
+      }
+
+      List<String> paths = allowedAutoVersionPath.get(workspaceName);
+      for (String p : paths)
+      {
+         if (!StringUtils.isEmpty(p) && nodePath.startsWith(p))
+         {
+            return true;
+         }
+      }
+      return false;
    }
 
 }

@@ -117,6 +117,27 @@
     &lt;/value-param&gt;
 
     &lt;!--
+        This parameter determines the list of  (workspace, absolute path ) where the auto versioning is enabled.
+        When a new version of a non-versioned document is uploaded through WebDAV, the new version replaces the existing one.
+        When a new version of a versioned document is uploaded through WebDAV, the new version is automatically created.
+    --&gt;
+
+    &lt;value-param&gt;
+            &lt;name&gt;allowed.folder.auto-version&lt;/name&gt;
+       &lt;value&gt;workspace1:path1;workspace1:path2;workspace2:path3&lt;/value&gt;
+    &lt;/value-param&gt;
+
+    &lt;!--
+        This parameter allow to enable auto versioning strategy (updatePolicyType : create-version , autoVersion : checkin-checkout).
+    --&gt;
+
+    &lt;value-param&gt;
+       &lt;name&gt;enableAutoVersion&lt;/name&gt;
+       &lt;value&gt;false&lt;/value&gt;
+    &lt;/value-param&gt;
+
+
+       &lt;!--
         This parameter is responsible for managing Cache-Control header value which will be returned to the client.
         You can use patterns like "text/*", "image/*" or wildcard to define the type of content.
     --&gt;  
@@ -180,6 +201,20 @@
             If the MimeTypeResolver throws exceptions of type "eu.medsea.mimeutil.detector.InvalidMagicMimeEntryException: Invalid Magic Mime Entry"
             on RHEL or CentOS, you should use the mime cache file instead of the magic mime file.
             To provide the full path to the mime cache file, you will need to use the system property exo.mime.cache.
+        </para>
+     </note>
+      <note>
+        <para>
+        If the  configuration parameter enableAutoVersion has been set to true :
+        </para>
+        <para>
+          - A system property called jcr.documents.versions.max allows to define the max number of versions that a document can have.
+          When a new version is added for a document, if the max number is reached, only the X last versions are kept,
+          the other ones are permanently deleted. A non-positive value means no limit. Defaults to 0 (so no limit).</para>
+        <para>
+          -  A system property called jcr.documents.versions.expiration allows to define the expiration time (in days) of a document version.
+          When the expiration time is reached, the version is permanently deleted. The last version of a document is never deleted.
+          A non-positive value means no limit. Defaults to 0 (so no limit).
         </para>
      </note>
   </section>

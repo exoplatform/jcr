@@ -25,6 +25,7 @@ import org.exoplatform.services.jcr.webdav.util.InitParamsDefaults;
 import org.exoplatform.services.jcr.webdav.util.InitParamsNames;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
+import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +36,7 @@ import java.util.Set;
 import java.util.regex.PatternSyntaxException;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 
 /**
  * Provides means to parse WebDAV service initial parameters and gain access to their values.
@@ -100,6 +102,17 @@ public class WebDavServiceInitParams
    private Map<MediaType, String> cacheControlMap = new HashMap<MediaType, String>();
 
    /**
+    * enable auto versionning strategy (updatePolicyType : create-version , autoVersion : checkin-checkout).
+    */
+
+   private boolean enableAutoVersion =  false ;
+
+   /**
+    * Map of jcr (path , workspace) of allowed auto versioning.
+    */
+   private MultivaluedMap<String,String> allowedAutoVersionPath = new MultivaluedMapImpl();
+
+   /**
     * Default constructor, all initial parameters take default values.
     * The list of default parameters values may be obtained from {@link InitParamsDefaults}.
     */
@@ -151,7 +164,7 @@ public class WebDavServiceInitParams
     * Create an instance of WebDAV service initial parameters from parameters map.
     * Please note, that this constructor receives Map<String, String> instead of InitParams
     * and we cannot pass multi-valued parameters in the form of 
-    * {@link String} -> {@link Collection}  
+    * {@link String} -> {@link java.util.Map}
     * To overcome this shortage we pass a set of parameter values as a single {@link String}
     * with each value separated by comma (",") i.e. "agent1, agent2, agent3"
     * @param params initial parameters
@@ -171,10 +184,12 @@ public class WebDavServiceInitParams
       defaultFileMimeType = pmp.processSingleParameter(defaultFileMimeType, InitParamsNames.DEF_FILE_MIME_TYPE);
       defaultUpdatePolicyType = pmp.processSingleParameter(defaultUpdatePolicyType, InitParamsNames.UPDATE_POLICY);
       defaultAutoVersionType = pmp.processSingleParameter(defaultAutoVersionType, InitParamsNames.AUTO_VERSION);
+      enableAutoVersion = pmp.processSingleParameter(enableAutoVersion, InitParamsNames.ENABLE_AUTO_VERSION);
 
       pmp.processMultiParameter(untrustedUserAgents, InitParamsNames.UNTRUSTED_USER_AGENTS);
       pmp.processMultiParameter(allowedFileNodeTypes, InitParamsNames.ALLOWED_FILE_NODE_TYPES);
       pmp.processMultiParameter(allowedFolderNodeTypes, InitParamsNames.ALLOWED_FOLDER_NODE_TYPES);
+      pmp.processValueParameterToMap(allowedAutoVersionPath, InitParamsNames.ALLOWED_JCR_PATH_AUTO_VERSION);
 
       pmp.processSingleParameterToMap(xsltParams, InitParamsNames.FILE_ICON_PATH);
       pmp.processSingleParameterToMap(xsltParams, InitParamsNames.FOLDER_ICON_PATH);
@@ -284,6 +299,27 @@ public class WebDavServiceInitParams
       this.cacheControlMap = cacheControlMap;
    }
 
+   public void setAllowedAutoVersionPath(MultivaluedMap<String, String> allowedAutoVersionPath)
+   {
+
+      this.allowedAutoVersionPath = merge( this.allowedAutoVersionPath,allowedAutoVersionPath);
+   }
+
+   public MultivaluedMap<String, String> getAllowedAutoVersionPath()
+   {
+      return allowedAutoVersionPath;
+   }
+
+   public void setEnableAutoVersion(boolean enableAutoVersion)
+   {
+      this.enableAutoVersion = enableAutoVersion;
+   }
+
+   public boolean isEnableAutoVersion()
+   {
+      return enableAutoVersion;
+   }
+
    private class ParametersMapProcessor
    {
       Map<String, String> parameters;
@@ -300,6 +336,22 @@ public class WebDavServiceInitParams
          {
             parameterMap.put(parameterName, paramValue);
             log.info(parameterName + " = " + paramValue);
+         }
+      }
+
+      private void processValueParameterToMap(MultivaluedMap<String, String> parameterMap, String parameterName)
+      {
+         String paramValue = parameters.get(parameterName);
+         if (paramValue != null)
+         {
+            String[] elements = paramValue.split(";");
+            for (String element : elements)
+            {
+               String workspaceName = element.split(":")[0];
+               String pathName = element.split(":")[1];
+               parameterMap.add(workspaceName, pathName);
+
+            }
          }
       }
 
@@ -352,6 +404,17 @@ public class WebDavServiceInitParams
          return parameter;
       }
 
+      private boolean processSingleParameter(boolean parameter, String parameterName)
+      {
+         String paramValue = parameters.get(parameterName);
+         if (paramValue != null)
+         {
+            parameter = Boolean.getBoolean(paramValue);
+            log.info(parameterName + " = " + parameter);
+         }
+         return parameter;
+      }
+
       private void processMultiParameter(Set<String> valuesSet, String parameterName)
       {
          String parameterMultivalue = parameters.get(parameterName);
@@ -364,6 +427,33 @@ public class WebDavServiceInitParams
                log.info(parameterName + " = " + value.trim());
             }
          }
+      }
+   }
+
+   private MultivaluedMap<String, String> merge(MultivaluedMap<String, String> map1, MultivaluedMap<String, String> map2)
+   {
+      if (map1.isEmpty())
+      {
+         return map2;
+      }
+      else if (map2.isEmpty())
+      {
+         return map1;
+      }
+      else
+      {
+         for (String key : map2.keySet())
+         {
+            if (key != null)
+            {
+               List<String> list = map2.get(key);
+               for (String value : list)
+               {
+                  map1.add(key, value);
+               }
+            }
+         }
+         return map1;
       }
    }
 }
