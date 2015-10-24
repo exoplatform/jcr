@@ -24,7 +24,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.config</artifactId>
-      <version>1.15.14-GA</version>
+      <version>1.15.x-SNAPSHOT</version>
       <relativePath>../exo.jcr.applications.config/pom.xml</relativePath>
    </parent>
 
