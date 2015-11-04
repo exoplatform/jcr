@@ -33,6 +33,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import javax.ws.rs.core.MediaType;
@@ -85,6 +86,11 @@ public class WebDavServiceInitParams
     * Set of untrusted user agents. Special rules are applied for listed agents.
     */
    private Set<String> untrustedUserAgents = new HashSet<String>();
+
+   /**
+    * Set of pattern untrusted user agents.
+    * */
+   private Set<Pattern>  untrustedUserAgentsPattern = new HashSet<Pattern>();
 
    /**
     * Set of allowed file node types.
@@ -187,6 +193,10 @@ public class WebDavServiceInitParams
       enableAutoVersion = pmp.processSingleParameter(enableAutoVersion, InitParamsNames.ENABLE_AUTO_VERSION);
 
       pmp.processMultiParameter(untrustedUserAgents, InitParamsNames.UNTRUSTED_USER_AGENTS);
+      for (String pattern : untrustedUserAgents)
+      {
+         untrustedUserAgentsPattern.add(Pattern.compile(pattern, Pattern.CASE_INSENSITIVE));
+      }
       pmp.processMultiParameter(allowedFileNodeTypes, InitParamsNames.ALLOWED_FILE_NODE_TYPES);
       pmp.processMultiParameter(allowedFolderNodeTypes, InitParamsNames.ALLOWED_FOLDER_NODE_TYPES);
       pmp.processValueParameterToMap(allowedAutoVersionPath, InitParamsNames.ALLOWED_JCR_PATH_AUTO_VERSION);
@@ -232,6 +242,27 @@ public class WebDavServiceInitParams
    public Set<String> getUntrustedUserAgents()
    {
       return untrustedUserAgents;
+   }
+
+   public Set<Pattern> getUntrustedUserAgentsPattern()
+   {
+      return untrustedUserAgentsPattern;
+   }
+
+   public boolean isUntrustedUserAgent(String userAgent)
+   {
+      if (userAgent == null)
+      {
+         return false;
+      }
+      for (Pattern p : untrustedUserAgentsPattern)
+      {
+         if (p.matcher(userAgent).find())
+         {
+            return true;
+         }
+      }
+      return false;
    }
 
    public Set<String> getAllowedFileNodeTypes()

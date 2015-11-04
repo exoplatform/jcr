@@ -203,6 +203,12 @@
             To provide the full path to the mime cache file, you will need to use the system property exo.mime.cache.
         </para>
      </note>
+     <note>
+        <para>
+            You can use pattern like "^(Microsoft Office Excel 2013).*(Windows NT 6.1)$"
+            to define the untrusted user agent.
+        </para>
+     </note>
       <note>
         <para>
         If the  configuration parameter enableAutoVersion has been set to true :

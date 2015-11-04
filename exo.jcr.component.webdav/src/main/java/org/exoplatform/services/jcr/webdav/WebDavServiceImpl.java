@@ -1065,7 +1065,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       repoPath = normalizePath(repoPath);
       MimeTypeRecognizer mimeTypeRecognizer =
          new MimeTypeRecognizer(TextUtil.nameOnly(repoPath), mimeTypeResolver, mediaType, webDavServiceInitParams
-            .getUntrustedUserAgents().contains(userAgent));
+            .isUntrustedUserAgent(userAgent));
 
       try
       {

@@ -46,6 +46,7 @@ public class TestWebDavServiceInitParams extends TestCase
       assertEquals(InitParamsDefaults.AUTO_VERSION, params.getDefaultAutoVersionType());
       assertTrue(params.getXsltParams().isEmpty());
       assertTrue(params.getUntrustedUserAgents().isEmpty());
+      assertTrue(params.getUntrustedUserAgentsPattern().isEmpty());
       assertTrue(params.getCacheControlMap().isEmpty());
       assertEquals(1, params.getAllowedFolderNodeTypes().size());
       assertTrue(params.getAllowedFolderNodeTypes().contains(InitParamsDefaults.FOLDER_NODE_TYPE));
@@ -89,6 +90,7 @@ public class TestWebDavServiceInitParams extends TestCase
       vsp.setName(InitParamsNames.UNTRUSTED_USER_AGENTS);
       vsp.getValues().add(InitParamsNames.UNTRUSTED_USER_AGENTS);
       vsp.getValues().add(InitParamsNames.UNTRUSTED_USER_AGENTS + "2");
+      vsp.getValues().add("^(Microsoft Office Excel 2013).*(Windows NT 6.1)$");
       ip.addParameter(vsp);
       vsp = new ValuesParam();
       vsp.setName(InitParamsNames.ALLOWED_FOLDER_NODE_TYPES);
@@ -114,9 +116,16 @@ public class TestWebDavServiceInitParams extends TestCase
       assertEquals(2, params.getXsltParams().size());
       assertEquals(InitParamsNames.FILE_ICON_PATH, params.getXsltParams().get(InitParamsNames.FILE_ICON_PATH));
       assertEquals(InitParamsNames.FOLDER_ICON_PATH, params.getXsltParams().get(InitParamsNames.FOLDER_ICON_PATH));      
-      assertEquals(2, params.getUntrustedUserAgents().size());
+      assertEquals(3, params.getUntrustedUserAgents().size());
+      assertEquals(3, params.getUntrustedUserAgentsPattern().size());
       assertTrue(params.getUntrustedUserAgents().contains(InitParamsNames.UNTRUSTED_USER_AGENTS));
+      assertTrue(params.isUntrustedUserAgent(InitParamsNames.UNTRUSTED_USER_AGENTS));
       assertTrue(params.getUntrustedUserAgents().contains(InitParamsNames.UNTRUSTED_USER_AGENTS + "2"));
+      assertTrue(params.isUntrustedUserAgent(InitParamsNames.UNTRUSTED_USER_AGENTS + "2"));
+      assertTrue(params.isUntrustedUserAgent("Microsoft Office Excel 2013 (15.0.4701) Windows NT 6.1"));
+      assertTrue(params.isUntrustedUserAgent("Microsoft Office Excel 2013 (15.0.4631) Windows NT 6.1"));
+      assertFalse(params.isUntrustedUserAgent("Microsoft Office Excel 2013"));
+      assertFalse(params.isUntrustedUserAgent("Microsoft Office PowerPoint 2013"));
       assertEquals(7, params.getCacheControlMap().size());
       assertEquals(1, params.getAllowedFolderNodeTypes().size());
       assertTrue(params.getAllowedFolderNodeTypes().contains(InitParamsNames.ALLOWED_FOLDER_NODE_TYPES));
