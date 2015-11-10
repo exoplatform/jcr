@@ -167,6 +167,10 @@ public class SwapFile extends SpoolFile
             }
          }
          while (!swapped.spoolLatch.compareAndSet(null, new CountDownLatch(1)));
+         if(SpoolConfig.maxSwapSize > 0  && !swapped.isSpooled())
+         {
+            (SpoolConfig.accumulateSwapSize).addAndGet(-PrivilegedFileHelper.length(swapped) / 1024 );
+         }
          return swapped;
       }
       else if (swappedRef != null)
@@ -181,6 +185,14 @@ public class SwapFile extends SpoolFile
       {
          // the swap file has been put already so we need to loop
          return get(parent, child,cleaner);
+      }
+      if (SpoolConfig.maxSwapSize > 0 && SpoolConfig.accumulateSwapSize.get() > SpoolConfig.maxSwapSize)
+      {
+         if (LOG.isDebugEnabled())
+         {
+            LOG.debug("The swap directory is Full , please try to increase the maxSwapSize");
+         }
+         forceCleanSwap();
       }
       return newsf;
    }
@@ -203,6 +215,10 @@ public class SwapFile extends SpoolFile
       final CountDownLatch sl = this.spoolLatch.get();
       this.spoolLatch.set(null);
       sl.countDown();
+      if (SpoolConfig.maxSwapSize != 0)
+      {
+         SpoolConfig.accumulateSwapSize.addAndGet(PrivilegedFileHelper.length(this) / 1024 ) ;
+      }
    }
 
    /**
@@ -220,7 +236,7 @@ public class SwapFile extends SpoolFile
     * {@inheritDoc}
     */
    @Override
-   protected void finalize() throws Throwable
+   public void finalize() throws Throwable
    {
       try
       {
@@ -272,9 +288,40 @@ public class SwapFile extends SpoolFile
                   return true;
                }
             };
+            if (SpoolConfig.maxSwapSize != 0)
+            {
+               (SpoolConfig.accumulateSwapSize).addAndGet(-PrivilegedFileHelper.length(this) /  1024 );
+            }
             return SecurityHelper.doPrivilegedAction(action);
          }
       }
       return false;
+   }
+
+   /**
+    * Try to remove unused swap file
+    */
+   private static void forceCleanSwap()
+   {
+      for (WeakReference<SwapFile> swappedRef : CURRENT_SWAP_FILES.values())
+      {
+         if (swappedRef != null && swappedRef.get().isSpooled() && swappedRef.get().users.isEmpty())
+         {
+            String absolutePath = null;
+            try
+            {
+               absolutePath = swappedRef.get().getAbsolutePath();
+               swappedRef.get().finalize();
+            }
+            catch (Throwable throwable)//NOSONAR
+            {
+               if (LOG.isDebugEnabled())
+               {
+                  LOG.debug("Could not remove swap file on clean operation : "
+                     + absolutePath);
+               }
+            }
+         }
+      }
    }
 }

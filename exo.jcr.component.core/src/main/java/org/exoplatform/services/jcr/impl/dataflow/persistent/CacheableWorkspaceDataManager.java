@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
@@ -2787,6 +2788,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                if (fpvd instanceof StreamPersistedValueData && ((StreamPersistedValueData)fpvd).getUrl() != null)
                   continue;
+               return true;
+            }
+            else if (!PrivilegedFileHelper.exists(fpvd.getFile()))// check if file exist
+            {
                return true;
             }
          }

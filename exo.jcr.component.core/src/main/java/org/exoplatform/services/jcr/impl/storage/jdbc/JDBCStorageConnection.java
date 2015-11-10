@@ -2905,6 +2905,15 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          readData(item);
       }
 
+      public TempPropertyData(ResultSet item, boolean readValue) throws SQLException, IOException, ValueStorageNotFoundException
+      {
+         orderNum = item.getInt(COLUMN_VORDERNUM);
+         if (readValue)
+         {
+            readData(item);
+         }
+      }
+
       protected void readData(ResultSet item) throws SQLException, ValueStorageNotFoundException, IOException
       {
          byte[] internalData = item.getBytes(COLUMN_VDATA);
@@ -2948,7 +2957,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
       public ExtendedTempPropertyData(ResultSet item) throws SQLException, ValueStorageNotFoundException, IOException
       {
-         super(item);
+         super(item, false);
 
          id = item.getString("P_ID");
          name = item.getString("P_NAME");
@@ -2956,6 +2965,8 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
          type = item.getInt(COLUMN_PTYPE);
          multi = item.getBoolean("P_MULTIVALUED");
          storage_desc = item.getString(COLUMN_VSTORAGE_DESC);
+
+         readData(item);
       }
 
       protected void readData(ResultSet item) throws SQLException, ValueStorageNotFoundException, IOException

@@ -128,6 +128,14 @@
     url="http://en.wikipedia.org/wiki/Bloom_filter&quot; &gt;http://en.wikipedia.org/wiki/Bloom_filter">here</ulink>.</para>
   </note>
 
+  <note>
+    <para>
+      The max size of swap directory (Giga bytes) can be configured thanks to the System property exo.jcr.core.spoolConfig.swap-size.
+      The default value of this parameter is 0 (no threshold for swap size).
+      If threshold (max swap size) is exceeded, We will try to remove unused swap files.
+    </para>
+  </note>
+
   <para>eXo JCR has an RDB (JDBC) based, production ready <emphasis
   role="bold">Workspace Data Container</emphasis>.</para>
 
