@@ -60,6 +60,10 @@
         <include-property>child/property</include-property>
     </aggregate>
 
+    <aggregate primaryType="exo:JCR_2417">
+        <include>exo:content</include>
+    </aggregate>
+
 	<exclude path="${exclude-path:/testRoot/exo:trash/node1}"/>
 	<exclude nodeType="exo:hiddenable"/>
 	<exclude nodeType="exo:hiddenable2" path="/testRoot/node1/node1"/>

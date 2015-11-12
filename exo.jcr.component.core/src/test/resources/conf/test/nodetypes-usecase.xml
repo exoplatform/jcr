@@ -413,5 +413,23 @@
          </propertyDefinition>
       </propertyDefinitions>
    </nodeType>
+   <nodeType name="exo:JCR_2417" isMixin="false" hasOrderableChildNodes="false" primaryItemName="exo:content">
+      <supertypes>
+         <supertype>nt:base</supertype>
+      </supertypes>
+      <propertyDefinitions>
+         <propertyDefinition name="exo:title" requiredType="String" autoCreated="false" mandatory="false" onParentVersion="COPY" protected="false" multiple="false">
+            <valueConstraints/>
+         </propertyDefinition>
+      </propertyDefinitions>
+      <childNodeDefinitions>
+         <childNodeDefinition name="exo:content" defaultPrimaryType="" autoCreated="false" mandatory="true" onParentVersion="COPY"
+                              protected="false" sameNameSiblings="false">
+            <requiredPrimaryTypes>
+               <requiredPrimaryType>nt:base</requiredPrimaryType>
+            </requiredPrimaryTypes>
+         </childNodeDefinition>
+      </childNodeDefinitions>
+   </nodeType>
 
 </nodeTypes>
