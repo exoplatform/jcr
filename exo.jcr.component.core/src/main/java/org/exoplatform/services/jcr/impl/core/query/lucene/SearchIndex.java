@@ -2114,7 +2114,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                      // select fields that are not used in excerpt (must go at the end)
                      for (int k = 0; k < fulltext.length; k++)
                      {
-                        if (!fulltext[i].isStored())
+                        if (!fulltext[k].isStored())
                         {
                            fulltextTemp.add(fulltext[k]);
                            doc.removeField(fulltext[k].name());
