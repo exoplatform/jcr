@@ -238,6 +238,27 @@ public class TestExcerpt extends BaseUsecasesTest
       testSession.save();
    }
 
+   public void testAggregateRules() throws Exception
+   {
+      Node node6 = testRoot.addNode("testNode", "exo:JCR_2417");
+      node6.setProperty("exo:title", "test search");
+      Node resourceNode = node6.addNode("exo:content", "exo:JCR_2394_2");
+      resourceNode.setProperty("exo:summary", "text");
+      resourceNode.setProperty("exo:data", "bla bla bla exoplatform bla bla");
+      testSession.save();
+
+      QueryManager queryManager = testSession.getWorkspace().getQueryManager();
+      Query query =
+         queryManager.createQuery("select * from exo:JCR_2417 where "
+            + "contains(., 'exoplatform')", Query.SQL);
+      QueryResult result = query.execute();
+      RowIterator rows = result.getRows();
+      assertEquals(1, rows.getSize());
+
+      node6.remove();
+      testSession.save();
+   }
+
    private String getExcerpt(String term) throws RepositoryException
    {
       QueryManager queryManager = testSession.getWorkspace().getQueryManager();
