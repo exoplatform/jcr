@@ -58,6 +58,7 @@ public class TestExcerpt extends BaseUsecasesTest
          + "term is prefixed with ~ also synonyms of the search term are considered. Example:";
 
    private String string2_excerpt =
+   //      "<div><span>It is a test for <strong>excerpt</strong> query.Searching with synonyms is integrated in the jcr:contains() function and uses the same syntax like synonym searches ...</span></div>";
       "<div><span>It is a test for <strong>excerpt</strong> query.Searching with synonyms is integrated in the jcr:contains() function and uses the same syntax like synonym searches ...</span></div>";
 
    private String s3 = "JCR supports such features as Lucene Fuzzy Searches";
@@ -196,65 +197,4 @@ public class TestExcerpt extends BaseUsecasesTest
         node4.remove();
         testSession.save();
     }
-
-   public void testExcerptWithRules() throws Exception
-   {
-      Node node5 = testRoot.addNode("mynode", "exo:JCR_2394_1");
-      node5.addMixin("exo:sortable");
-      node5.setProperty("exo:name", "myword");
-      node5.setProperty("exo:title", "mydoc");
-      Node resourceNode = node5.addNode("exo:content", "exo:JCR_2394_2");
-      resourceNode.setProperty("exo:summary", "text");
-      resourceNode.setProperty("exo:data", s3);
-      testSession.save();
-
-      String excerpt = getExcerpt("Fuzzy");
-      assertNotNull(excerpt);
-      assertTrue(excerpt.contains("<strong>Fuzzy</strong>"));
-      node5.remove();
-      testSession.save();
-   }
-
-   public void testExcerptWithRules2() throws Exception
-   {
-      Node node5 = testRoot.addNode("mynode", "exo:JCR_2394_1");
-      node5.addMixin("exo:sortable");
-      node5.setProperty("exo:name", "myword");
-      node5.setProperty("exo:title", "mydoc");
-      Node resourceNode = node5.addNode("exo:content", "exo:JCR_2394_2");
-      resourceNode.setProperty("exo:summary", "text");
-      resourceNode.setProperty("exo:data", "bla bla bla bla bla bla");
-      testSession.save();
-
-      String excerpt = getExcerpt("myword");
-      assertNotNull(excerpt);
-      assertFalse(excerpt.contains("<strong>"));
-
-      excerpt = getExcerpt("text");
-      assertNotNull(excerpt);
-      assertTrue(excerpt.contains("<strong>text</strong>"));
-      node5.remove();
-      testSession.save();
-   }
-
-   private String getExcerpt(String term) throws RepositoryException
-   {
-      QueryManager queryManager = testSession.getWorkspace().getQueryManager();
-      Query query =
-         queryManager.createQuery("select  rep:excerpt() from exo:JCR_2394_1 where "
-            + "contains(., '"+term+"')", Query.SQL);
-      QueryResult result = query.execute();
-      RowIterator rows = result.getRows();
-
-      Value v = rows.nextRow().getValue("rep:excerpt(.)");
-      if (v != null)
-      {
-         return v.getString();
-      }
-      else
-      {
-         return null;
-      }
-   }
-
 }

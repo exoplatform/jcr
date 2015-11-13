@@ -383,35 +383,4 @@
          </childNodeDefinition>
       </childNodeDefinitions>
    </nodeType>
-
-   <nodeType name="exo:JCR_2394_1" isMixin="false" hasOrderableChildNodes="false" primaryItemName="exo:content">
-      <supertypes>
-         <supertype>nt:base</supertype>
-      </supertypes>
-      <childNodeDefinitions>
-         <childNodeDefinition name="exo:content" defaultPrimaryType="" autoCreated="false" mandatory="true" onParentVersion="COPY"
-                              protected="false" sameNameSiblings="false">
-            <requiredPrimaryTypes>
-               <requiredPrimaryType>nt:base</requiredPrimaryType>
-            </requiredPrimaryTypes>
-         </childNodeDefinition>
-      </childNodeDefinitions>
-   </nodeType>
-
-   <nodeType name="exo:JCR_2394_2" isMixin="false" hasOrderableChildNodes="false" primaryItemName="exo:data">
-      <supertypes>
-         <supertype>nt:base</supertype>
-      </supertypes>
-      <propertyDefinitions>
-         <propertyDefinition name="exo:summary" requiredType="String" autoCreated="false" mandatory="true" onParentVersion="COPY" protected="false"
-                             multiple="false">
-            <valueConstraints />
-         </propertyDefinition>
-         <propertyDefinition name="exo:data" requiredType="String" autoCreated="false" mandatory="true" onParentVersion="COPY" protected="false"
-                             multiple="false">
-            <valueConstraints />
-         </propertyDefinition>
-      </propertyDefinitions>
-   </nodeType>
-
 </nodeTypes>

@@ -1907,7 +1907,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          }
          try
          {
-            List fulltextTemp = new ArrayList();
             ItemDataConsumer ism = getContext().getItemStateManager();
             for (int i = 0; i < aggregateRules.length; i++)
             {
@@ -1916,20 +1915,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                NodeData[] aggregates = aggregateRules[i].getAggregatedNodeStates(state);
                if (aggregates != null)
                {
-                  Fieldable[] fulltext = doc.getFieldables(FieldNames.FULLTEXT);
-                  if (fulltext != null)
-                  {
-                     // select fields that are not used in excerpt (must go at the end)
-                     for (int k = 0; k < fulltext.length; k++)
-                     {
-                        if (!fulltext[i].isStored())
-                        {
-                           fulltextTemp.add(fulltext[k]);
-                           doc.removeField(fulltext[k].name());
-                        }
-                     }
-                  }
-
                   ruleMatched = true;
                   for (int j = 0; j < aggregates.length; j++)
                   {
@@ -1941,14 +1926,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                      {
                         for (int k = 0; k < fulltextFields.length; k++)
                         {
-                           if (fulltextFields[k].isStored())
-                           {
                            doc.add(fulltextFields[k]);
-                        }
-                           else
-                           {
-                              fulltextTemp.add(fulltextFields[k]);
-                           }
                         }
                         doc.add(new Field(FieldNames.AGGREGATED_NODE_UUID, aggregates[j].getIdentifier(),
                            Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
@@ -2008,12 +1986,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                   }
                }
 
-               // now add fields that are not used in excerpt (must go at the end)
-               for (Iterator it = fulltextTemp.iterator(); it.hasNext();)
-               {
-                  doc.add((Fieldable)it.next());
-               }
-
                // only use first aggregate definition that matches
                if (ruleMatched)
                {
@@ -2040,6 +2012,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * @return the relative path.
     * @throws RepositoryException
     *             if an error occurs while resolving paths.
+    * @throws ItemStateException
+    *             if an error occurs while reading item states.
     */
    protected QPath getRelativePath(NodeData nodeState, PropertyData propState) throws RepositoryException
    {
@@ -2088,7 +2062,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * Retrieves the root of the indexing aggregate for
     * <code>removedUUIDs</code> and puts it into <code>map</code>.
     * 
-    * @param removedNodeIds
+    * @param removedUUIDs
     *            the UUIDs of removed nodes.
     * @param map
     *            aggregate roots are collected in this map. Key=UUID,
@@ -3129,7 +3103,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * Set a new value for reindexingPageSize.
     * 
-    * @param rdbmsReindexing
+    * @param reindexingPageSize
     *            the new value
     */
    public void setRDBMSReindexing(boolean rdbmsReindexing)
@@ -3151,7 +3125,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     *  Set a new value for asyncReindexing. 
     * 
-    * @param asyncReindexing
+    * @param indexRecoveryMode 
     *          the new value for asyncReindexing
     */
    public void setAsyncReindexing(boolean asyncReindexing)
