@@ -124,6 +124,11 @@
       not in ITEM table or the opposite:</abbrev> All lock inconsistencies
       will be removed from both tables.</para>
     </listitem>
+
+    <listitem>
+      <para><abbrev>Reference properties with empty value data :</abbrev>
+      The property will be removed if it is not mandatory of its node.</para>
+    </listitem>
   </itemizedlist>
 
   <note>
@@ -297,7 +302,7 @@ delete from JCR_SITEM where PARENT_ID = '${ID}' or ID='${ID}' </programlisting>
 
             <note>
               <para><code>P_MULTIVALUED=0</code> should be replaced by
-              <code>P_MULTIVALUED='f'</code> for PostgreSQL.</para>
+              <code>P_MULTIVALUED='f'</code> for PostgreSQL and <code>P_MULTIVALUED=FALSE</code> for HSQL</para>
             </note>
           </listitem>
 
@@ -550,7 +555,6 @@ delete from JCR_SITEM where ID='${ID}'</programlisting>
             <listitem>
               <para>To detect this issue, you need to execute the following
               query:</para>
-
               <programlisting>select * from JCR_SITEM P, JCR_SVALUE V where P.ID = V.PROPERTY_ID and P.P_TYPE=9 and NOT EXISTS (select * from JCR_SREF R where P.ID=R.PROPERTY_ID)</programlisting>
             </listitem>
 
@@ -567,6 +571,77 @@ delete from JCR_SITEM where ID='${ID}'</programlisting>
 delete from JCR_SITEM where ID = '${ID}'</programlisting>
             </listitem>
           </itemizedlist></para>
+      </listitem>
+
+       <listitem>
+        <para><emphasis role="bold">Reference properties with empty value data.</emphasis></para>
+
+        <itemizedlist>
+          <listitem>
+            <para>To detect this issue, you need to execute the following
+            query:</para>
+
+            <itemizedlist>
+               <listitem>
+                      <para>reference not MULTIVALUED: <programlisting>select * from JCR_SITEM P, JCR_SVALUE V where P.ID=V.PROPERTY_ID and P.P_MULTIVALUED=0 and
+               P.CONTAINER_NAME='${CONTAINER_NAME}' and P.P_TYPE=9 and length(V.DATA)=0</programlisting></para>
+               </listitem>
+
+               <listitem>
+                      <para>reference MULTIVALUED: <programlisting>select * from JCR_SITEM P, JCR_SVALUE V where P.ID=V.PROPERTY_ID and P.P_MULTIVALUED=1 and
+               P.CONTAINER_NAME='${CONTAINER_NAME}' and P.P_TYPE=9 and length(V.DATA)=0</programlisting></para>
+               </listitem>
+             </itemizedlist>
+            
+            <note>
+              <para><code>P_MULTIVALUED=0</code> should be replaced by
+              <code>P_MULTIVALUED='f'</code> for PostgreSQL and <code>P_MULTIVALUED=FALSE</code> for HSQLDB</para>
+              <para><code>P_MULTIVALUED=1</code> should be replaced by
+              <code>P_MULTIVALUED='t'</code> for PostgreSQL and <code>P_MULTIVALUED=TRUE</code> for HSQLDB</para>
+            </note>
+            <note>
+              <para><code>length(V.DATA)</code> should be replaced by
+              <code>bit_length(V.DATA)</code> for HSQLDB, <code> len(V.DATA)</code> for sql server,
+              <code>datalength(V.DATA)</code> for sybase and
+              <code>V.DATA is null </code> for oracle</para>
+            </note>
+          </listitem>
+
+          <listitem>
+            <para>Fix description: Remove empty reference properties.</para>
+          </listitem>
+
+          <listitem>
+            <para>To fix this issue,  execute the following queries and replace ${ID} with corresponding values of newly obtained results.</para>
+            <itemizedlist>
+               <listitem>
+                      <para>reference not MULTIVALUED: </para> <programlisting>
+		                  delete from JCR_SREF where PROPERTY_ID = '${ID}'
+		                  delete from JCR_SVALUE where PROPERTY_ID = '${ID}'
+                        delete from JCR_SITEM where ID='${ID}'
+	         </programlisting>
+               </listitem>
+
+               <listitem>
+                      <para>reference MULTIVALUED:</para>
+                 <para>1st step :</para>
+                 <programlisting>
+                          delete from JCR_SREF where PROPERTY_ID = '${ID}' and NODE_ID = '${CONTAINER_NAME}'
+		                    delete from JCR_SVALUE where PROPERTY_ID = '${ID}' and length(DATA) =0
+                 </programlisting>
+                 <para>2nd step, execute the following query:</para>
+                 <programlisting>
+                          select * from JCR_SVALUE where PROPERTY_ID = '${ID}' and length(V.DATA)!=0
+                 </programlisting>
+                 <para>If the result is empty then :</para>
+                 <programlisting>
+                          delete from JCR_SITEM where ID='${ID}'
+                 </programlisting>
+               </listitem>
+            </itemizedlist>
+
+          </listitem>
+        </itemizedlist>
       </listitem>
 
       <listitem>

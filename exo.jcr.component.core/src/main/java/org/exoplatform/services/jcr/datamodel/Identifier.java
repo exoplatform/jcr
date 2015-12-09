@@ -19,6 +19,8 @@
 package org.exoplatform.services.jcr.datamodel;
 
 import org.exoplatform.services.jcr.impl.Constants;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.UnsupportedEncodingException;
 
@@ -34,10 +36,21 @@ public class Identifier
 
    private final String string;
 
+   /**
+    * Logger.
+    */
+   private final static Log LOG = ExoLogger.getLogger("org.exoplatform.services.jcr.datamodel.Identifier");
+
    public Identifier(String stringValue)
    {
       this.string = stringValue;
-      checkValue();
+      checkValue(false);
+   }
+
+   public Identifier(String stringValue, boolean onlyCheck)
+   {
+      this.string = stringValue;
+      checkValue(onlyCheck);
    }
 
    public Identifier(byte[] value)
@@ -50,13 +63,22 @@ public class Identifier
       {
          throw new IllegalArgumentException("Cannot read the value", e);
       }
-      checkValue();
+      checkValue(true);
    }
 
-   private void checkValue() throws IllegalArgumentException
+   private void checkValue(boolean onlyCheck) throws IllegalArgumentException
    {
       if (string == null || string.isEmpty())
-         throw new IllegalArgumentException("An identifier cannot be empty");
+      {
+         if (onlyCheck)
+         {
+            LOG.warn("An identifier cannot be empty, please check and repair the jcr data");
+         }
+         else
+         {
+            throw new IllegalArgumentException("An identifier cannot be empty");
+         }
+      }
    }
 
    /**

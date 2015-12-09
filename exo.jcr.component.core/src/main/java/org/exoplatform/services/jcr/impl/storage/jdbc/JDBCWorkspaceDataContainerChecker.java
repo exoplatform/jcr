@@ -34,6 +34,7 @@ import org.exoplatform.services.jcr.impl.checker.InspectionQuery;
 import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.checker.NodeRemover;
 import org.exoplatform.services.jcr.impl.checker.PropertyRemover;
+import org.exoplatform.services.jcr.impl.checker.ReferencePropertyRemover;
 import org.exoplatform.services.jcr.impl.checker.RootAsParentAssigner;
 import org.exoplatform.services.jcr.impl.checker.ValueRecordsRemover;
 import org.exoplatform.services.jcr.impl.core.lock.LockTableHandler;
@@ -607,6 +608,37 @@ public class JDBCWorkspaceDataContainerChecker
             + " V where P.ID=V.PROPERTY_ID and P.P_TYPE=9 and NOT EXISTS " + "(select * from " + refTable
             + " R where P.ID=R.PROPERTY_ID)", new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID,
          DBConstants.COLUMN_NAME}, "Reference properties without reference records", new PropertyRemover(
+         jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.containerConfig, nodeTypeManager)));
+
+      statement = singleDatabase ? "select DISTINCT  V.PROPERTY_ID, P.* from " + itemTable + " P, " + valueTable
+         + " V where P.ID=V.PROPERTY_ID and P.CONTAINER_NAME='" + jdbcDataContainer.containerConfig.containerName
+         + "' and P.P_TYPE=9 and ?"
+         : "select DISTINCT  V.PROPERTY_ID, P.* from " + itemTable + " P, " + valueTable
+         + " V where P.ID=V.PROPERTY_ID and P.P_TYPE=9 and ?";
+
+      if (jdbcDataContainer.containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_HSQLDB))
+      {
+         statement = statement.replace("?", "bit_length(V.DATA)=0");
+      }
+      else if (jdbcDataContainer.containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_MSSQL))
+      {
+         statement = statement.replace("?", "len(V.DATA)=0");
+      }
+      else if (jdbcDataContainer.containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_SYBASE))
+      {
+         statement = statement.replace("?", "datalength(V.DATA)=0");
+      }
+      else if (jdbcDataContainer.containerConfig.dbDialect.startsWith(DBConstants.DB_DIALECT_ORACLE))
+      {
+         statement = statement.replace("?", "V.DATA is null");
+      }
+      else
+      {
+         statement = statement.replace("?", "length(V.DATA)=0");
+      }
+
+      itemsInspectionQuery.add(new InspectionQuery(statement, new String[]{DBConstants.COLUMN_ID, DBConstants.COLUMN_PARENTID,
+         DBConstants.COLUMN_NAME}, "Reference properties with empty value", new ReferencePropertyRemover(
          jdbcDataContainer.getConnectionFactory(), jdbcDataContainer.containerConfig, nodeTypeManager)));
    }
 }

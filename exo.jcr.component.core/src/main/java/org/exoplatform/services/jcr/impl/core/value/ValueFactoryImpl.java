@@ -394,7 +394,7 @@ public class ValueFactoryImpl implements ValueFactory
             case PropertyType.NAME :
                return new NameValue(data, locationFactory);
             case PropertyType.REFERENCE :
-               return new ReferenceValue(data);
+               return new ReferenceValue(data, true);
             case PropertyType.UNDEFINED :
                return null;
             case ExtendedPropertyType.PERMISSION :

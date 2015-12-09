@@ -58,6 +58,15 @@ public class ReferenceValue extends BaseValue
    }
 
    /**
+    * ReferenceValue constructor.
+    */
+   public ReferenceValue(ValueData data, boolean onlyCheck) throws IOException, RepositoryException
+   {
+      super(TYPE, data);
+      this.identifier = new Identifier(getString(), onlyCheck);
+   }
+
+   /**
     * Returns {@link Identifier}.
     */
    public Identifier getIdentifier()
