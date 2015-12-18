@@ -32,6 +32,7 @@ import org.infinispan.manager.EmbeddedCacheManager;
 import org.infinispan.marshall.StreamingMarshaller;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted;
+import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.Event;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
@@ -188,9 +189,9 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
          {
             if (entry.getValue() instanceof ChangesFilterListsWrapper && entry.getKey() instanceof ChangesKey)
             {
-               if (LOG.isDebugEnabled())
+               if (debugEnabled)
                {
-                  LOG.info("Received list wrapper, start indexing...");
+                  LOG.debug("Received list wrapper, start indexing...");
                }
                // get stale List that was not processed
                ChangesFilterListsWrapper staleListIncache = (ChangesFilterListsWrapper)entry.getValue();
@@ -255,15 +256,21 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
        * became the coordinator. This method will report any issues that could potentially arise from this push.
        */
       @ViewChanged
+      @Merged
       public void viewChange(ViewChangedEvent event)
       {
+         LOG.info("The intercepted EventType is : " + event.getType());
+         LOG.info("The old list of members : " + event.getOldMembers());
+         LOG.info("The new list of members: : " + event.getNewMembers());
+
          boolean tmp = isCoordinator(event.getNewMembers(), event.getLocalAddress());
 
-         if (coordinator != tmp)
+         if (coordinator != tmp || (tmp && event.isMergeView()))
          {
             activeStatusChanged(tmp);
          }
       }
+
    }
 
    /**
