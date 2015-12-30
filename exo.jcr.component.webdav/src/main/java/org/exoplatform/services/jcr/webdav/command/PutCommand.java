@@ -24,6 +24,8 @@ import org.exoplatform.services.jcr.ext.utils.VersionHistoryUtils;
 import org.exoplatform.services.jcr.webdav.MimeTypeRecognizer;
 import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
 import org.exoplatform.services.jcr.webdav.util.TextUtil;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.InputStream;
 import java.util.Calendar;
@@ -48,6 +50,11 @@ import javax.ws.rs.core.UriBuilder;
 
 public class PutCommand
 {
+
+   /**
+    * Logger.
+    */
+   private static Log log = ExoLogger.getLogger("exo.jcr.component.webdav.command.PutCommand");
 
    /**
     * resource locks.
@@ -165,16 +172,28 @@ public class PutCommand
       }
       catch (LockException exc)
       {
+         if(log.isDebugEnabled())
+         {
+            log.debug(exc.getMessage(), exc);
+         }
          return Response.status(HTTPStatus.LOCKED).entity(exc.getMessage()).build();
 
       }
       catch (AccessDeniedException exc)
       {
+         if(log.isDebugEnabled())
+         {
+            log.debug(exc.getMessage(), exc);
+         }
          return Response.status(HTTPStatus.FORBIDDEN).entity(exc.getMessage()).build();
 
       }
       catch (RepositoryException exc)
       {
+         if(log.isDebugEnabled())
+         {
+            log.debug(exc.getMessage(), exc);
+         }
          return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
       }
       if (uriBuilder != null)
@@ -250,20 +269,36 @@ public class PutCommand
       }
       catch (LockException exc)
       {
+         if(log.isDebugEnabled())
+         {
+            log.debug(exc.getMessage(), exc);
+         }
          return Response.status(HTTPStatus.LOCKED).entity(exc.getMessage()).build();
 
       }
       catch (AccessDeniedException exc)
       {
+         if(log.isDebugEnabled())
+         {
+            log.debug(exc.getMessage(), exc);
+         }
          return Response.status(HTTPStatus.FORBIDDEN).entity(exc.getMessage()).build();
 
       }
       catch (RepositoryException exc)
       {
+         if(log.isDebugEnabled())
+         {
+            log.debug(exc.getMessage(), exc);
+         }
          return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
       }
       catch (Exception exc)
       {
+         if(log.isDebugEnabled())
+         {
+            log.debug(exc.getMessage(), exc);
+         }
          return Response.status(HTTPStatus.CONFLICT).entity(exc.getMessage()).build();
       }
       if (uriBuilder != null)
@@ -411,6 +446,12 @@ public class PutCommand
       }
 
       List<String> paths = allowedAutoVersionPath.get(workspaceName);
+
+      if(paths == null)
+      {
+         return false;
+      }
+      
       for (String p : paths)
       {
          if (!StringUtils.isEmpty(p) && nodePath.startsWith(p))
