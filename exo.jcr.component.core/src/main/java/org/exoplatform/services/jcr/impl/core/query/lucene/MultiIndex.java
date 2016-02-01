@@ -1588,7 +1588,16 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     */
    Document createDocument(NodeDataIndexing node) throws RepositoryException
    {
-      return handler.createDocument(node, nsMappings, version, true);
+      Document aDoc = null;
+      if (volatileIndex != null)
+      {
+         aDoc = volatileIndex.getAggregateIndexes(node.getIdentifier());
+      }
+      if (aDoc == null)
+      {
+         aDoc = handler.createDocument(node, nsMappings, version, true, volatileIndex);
+      }
+      return aDoc;
    }
 
    /**
