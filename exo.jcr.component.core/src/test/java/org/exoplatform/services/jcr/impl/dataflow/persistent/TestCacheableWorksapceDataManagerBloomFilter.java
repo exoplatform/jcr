@@ -279,7 +279,7 @@ public class TestCacheableWorksapceDataManagerBloomFilter extends JcrImplBaseTes
        * @see org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager#getACLHolders()
        */
       @Override
-      public List<ACLHolder> getACLHolders() throws RepositoryException
+      public List<ACLHolder> getACLHolders(int limit , int offset) throws RepositoryException
       {
          return container.holders;
       }

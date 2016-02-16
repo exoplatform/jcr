@@ -1439,7 +1439,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * {@inheritDoc}
     */
-   public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+   public List<ACLHolder> getACLHolders(int limit , int offset) throws RepositoryException, IllegalStateException,
       UnsupportedOperationException
    {
       throw new UnsupportedOperationException(

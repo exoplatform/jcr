@@ -437,7 +437,7 @@ public interface WorkspaceStorageConnection
     * @throws UnsupportedOperationException
     *           if operation is not supported
     */
-   List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException, UnsupportedOperationException;
+   List<ACLHolder> getACLHolders(int limit , int offset) throws RepositoryException, IllegalStateException, UnsupportedOperationException;
 
    /**
     * Reads count of nodes in workspace.

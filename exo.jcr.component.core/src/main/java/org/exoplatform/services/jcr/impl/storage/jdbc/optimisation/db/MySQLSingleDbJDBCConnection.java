@@ -103,6 +103,11 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
          FIND_NODES_BY_PARENTID_CQ.replace("from JCR_SITEM I, JCR_SITEM P, JCR_SVALUE V", "from JCR_SITEM I force index ("
             + JCR_IDX_ITEM_N_ORDER_NUM + "), JCR_SITEM P force index (" + JCR_IDX_ITEM_PARENT_NAME
             + "), JCR_SVALUE V force index (" + JCR_IDX_VALUE_PROPERTY + ")");
+
+      FIND_ACL_HOLDERS =
+         "select I.PARENT_ID, I.P_TYPE" + " from JCR_SITEM I where I.I_CLASS=2 and I.CONTAINER_NAME=?"
+            + " and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
+            + " or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')  LIMIT ? OFFSET ?";
    }
 
    /**
@@ -211,4 +216,27 @@ public class MySQLSingleDbJDBCConnection extends SingleDbJDBCConnection
    {
       return !innoDBEngine && parentIdentifier != null && !addedNodes.contains(parentIdentifier);
    }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findACLHolders(int limit , int offset) throws SQLException
+   {
+      if (findACLHolders == null)
+      {
+         findACLHolders = dbConnection.prepareStatement(FIND_ACL_HOLDERS);
+      }
+      else
+      {
+         findACLHolders.clearParameters();
+      }
+
+      findACLHolders.setString(1, this.containerConfig.containerName);
+      findACLHolders.setInt(2, limit);
+      findACLHolders.setInt(3, offset);
+
+      return findACLHolders.executeQuery();
+   }
+
 }

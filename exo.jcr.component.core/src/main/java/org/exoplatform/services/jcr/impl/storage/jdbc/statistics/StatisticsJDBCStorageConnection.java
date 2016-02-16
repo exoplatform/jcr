@@ -710,14 +710,14 @@ public class StatisticsJDBCStorageConnection implements WorkspaceStorageConnecti
    /**
     * {@inheritDoc}
     */
-   public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+   public List<ACLHolder> getACLHolders(int limit , int offset) throws RepositoryException, IllegalStateException,
       UnsupportedOperationException
    {
       Statistics s = ALL_STATISTICS.get(GET_ACL_HOLDERS);
       try
       {
          s.begin();
-         return wcs.getACLHolders();
+         return wcs.getACLHolders(limit, offset);
       }
       finally
       {

@@ -306,15 +306,15 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+   public List<ACLHolder> getACLHolders(int limit , int offset) throws RepositoryException, IllegalStateException,
       UnsupportedOperationException
    {
       checkIfOpened();
       ResultSet resultSet = null;
       try
       {
-         // query will return all the ACL holder
-         resultSet = findACLHolders();
+         // query will return the ACL holder with limit and offset
+         resultSet = findACLHolders(limit , offset);
          Map<String, ACLHolder> mHolders = new HashMap<String, ACLHolder>();
 
          while (resultSet.next())
@@ -2278,7 +2278,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
       return PATTERN_ESCAPE_STRING;
    }
    
-   protected abstract ResultSet findACLHolders() throws SQLException;
+   protected abstract ResultSet findACLHolders(int limit , int offset) throws SQLException;
 
    protected abstract ResultSet findItemQPathByIdentifierCQ(String identifier) throws SQLException;
 

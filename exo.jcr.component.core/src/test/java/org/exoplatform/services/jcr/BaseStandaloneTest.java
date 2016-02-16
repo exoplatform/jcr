@@ -752,7 +752,7 @@ public abstract class BaseStandaloneTest extends TestCase
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");
       }
 
-      public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+      public List<ACLHolder> getACLHolders(int limit , int offset) throws RepositoryException, IllegalStateException,
          UnsupportedOperationException
       {
          throw new UnsupportedOperationException("TestWorkspaceStorageConnection: operation is unsupported.");

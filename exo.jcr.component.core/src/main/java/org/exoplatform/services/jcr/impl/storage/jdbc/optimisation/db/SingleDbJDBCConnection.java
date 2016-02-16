@@ -1066,7 +1066,7 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
     * {@inheritDoc}
     */
    @Override
-   protected ResultSet findACLHolders() throws SQLException
+   protected ResultSet findACLHolders(int limit , int offset) throws SQLException
    {
       if (findACLHolders == null)
       {

@@ -102,6 +102,11 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
          FIND_NODES_BY_PARENTID_CQ.replace("from " + JCR_ITEM + " I, " + JCR_ITEM + " P, " + JCR_VALUE + " V", "from "
             + JCR_ITEM + " I force index (" + JCR_IDX_ITEM_N_ORDER_NUM + "), " + JCR_ITEM + " P force index("
             + JCR_IDX_ITEM_PARENT_NAME + "), " + JCR_VALUE + " V force index (" + JCR_IDX_VALUE_PROPERTY + ")");
+
+      FIND_ACL_HOLDERS =
+         "select I.PARENT_ID, I.P_TYPE " + " from " + JCR_ITEM
+            + " I where I.I_CLASS=2 and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
+            + " or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')  LIMIT ? OFFSET ?";
    }
 
    /**
@@ -182,6 +187,22 @@ public class MySQLMultiDbJDBCConnection extends MultiDbJDBCConnection
          }
       }
       return super.addPropertyRecord(data);
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findACLHolders(int limit , int offset) throws SQLException
+   {
+      if (findACLHolders == null)
+      {
+         findACLHolders = dbConnection.prepareStatement(FIND_ACL_HOLDERS);
+      }
+      findACLHolders.setInt(1, limit);
+      findACLHolders.setInt(2, offset);
+
+      return findACLHolders.executeQuery();
    }
 
    @Override

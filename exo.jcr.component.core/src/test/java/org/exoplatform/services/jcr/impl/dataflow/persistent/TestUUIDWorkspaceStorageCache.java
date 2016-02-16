@@ -177,7 +177,7 @@ public class TestUUIDWorkspaceStorageCache extends JcrAPIBaseTest
 
    public void testUUIDGetACLHolders() throws RepositoryException
    {
-      List<ACLHolder> holders = cwdm.getACLHolders();
+      List<ACLHolder> holders = cwdm.getACLHolders(0, 1000);
       for (int i = 0, length = holders.size(); i < length; i++)
       {
          assertFalse(holders.get(i).getId().startsWith(wdc.getName()));

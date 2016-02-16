@@ -101,6 +101,11 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
             + " V  where I.PARENT_ID=? and I.I_CLASS=2 and I.ID=V.PROPERTY_ID";
 
       FIND_VALUE_STORAGE_DESC_AND_SIZE = "select bit_length(DATA)/8, STORAGE_DESC from " + JCR_VALUE + " where PROPERTY_ID=?";
+
+      FIND_ACL_HOLDERS =
+         "select I.PARENT_ID, I.P_TYPE " + " from " + JCR_ITEM
+            + " I where I.I_CLASS=2 and (I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]owner'"
+            + " or I.NAME='[http://www.exoplatform.com/jcr/exo/1.0]permissions')  LIMIT ? OFFSET ?";
    }
 
    /**
@@ -223,5 +228,21 @@ public class HSQLDBMultiDbJDBCConnection extends MultiDbJDBCConnection
          }
       }
       return findLastOrderNumber.executeQuery();
+   }
+
+   /**
+    * {@inheritDoc}
+    */
+   @Override
+   protected ResultSet findACLHolders(int limit , int offset) throws SQLException
+   {
+      if (findACLHolders == null)
+      {
+         findACLHolders = dbConnection.prepareStatement(FIND_ACL_HOLDERS);
+      }
+      findACLHolders.setInt(1, limit);
+      findACLHolders.setInt(2, offset);
+
+      return findACLHolders.executeQuery();
    }
 }

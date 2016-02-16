@@ -102,6 +102,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private final static int ACL_BF_ELEMENTS_NUMBER_DEFAULT = 1000000;
 
+   private final static int ACL_BF_PAGE_SIZE_DEFAULT = 1000;
+
+   private final static boolean ACL_BF_ENABLED_DEFAULT = true;
+
    /**
     * Items cache.
     */
@@ -121,12 +125,18 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private final AtomicBoolean filtersSupported = new AtomicBoolean(true);
 
+   private AtomicBoolean loadFails = new AtomicBoolean();
+
    /**
     * Bloom filter parameters.
     */
    private final double bfProbability;
 
    private final int bfElementNumber;
+
+   private final int bfPageSize;
+
+   private final boolean bfEnabled ;
 
    private volatile BloomFilter<String> filterPermissions;
 
@@ -424,6 +434,19 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             + " is invalid, can not be less then 1.");
       }
 
+      bfPageSize =
+         wsConfig.getContainer().getParameterInteger(WorkspaceDataContainer.ACL_BF_PAGE_SIZE,
+            ACL_BF_PAGE_SIZE_DEFAULT);
+      if (bfPageSize <= 0)
+      {
+         throw new IllegalArgumentException("Parameter " + WorkspaceDataContainer.ACL_BF_PAGE_SIZE
+            + " is invalid, can not be less then 0.");
+      }
+
+      bfEnabled=
+         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.ACL_BF_ENABLED,
+            ACL_BF_ENABLED_DEFAULT);
+
       this.cache = cache;
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
@@ -492,6 +515,19 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          throw new IllegalArgumentException("Parameter " + WorkspaceDataContainer.ACL_BF_ELEMENTS_NUMBER
             + " is invalid, can not be less then 1.");
       }
+
+      bfPageSize =
+         wsConfig.getContainer().getParameterInteger(WorkspaceDataContainer.ACL_BF_PAGE_SIZE,
+            ACL_BF_PAGE_SIZE_DEFAULT);
+      if (bfPageSize <= 0)
+      {
+         throw new IllegalArgumentException("Parameter " + WorkspaceDataContainer.ACL_BF_PAGE_SIZE
+            + " is invalid, can not be less then 0.");
+      }
+
+      bfEnabled=
+         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.ACL_BF_ENABLED,
+            ACL_BF_ENABLED_DEFAULT);
 
       this.cache = cache;
 
@@ -2532,12 +2568,12 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * Gets the list of all the ACL holders
     * @throws RepositoryException if an error occurs
     */
-   public List<ACLHolder> getACLHolders() throws RepositoryException
+   public List<ACLHolder> getACLHolders(int limit, int offset) throws RepositoryException
    {
       WorkspaceStorageConnection conn = dataContainer.openConnection();
       try
       {
-         return conn.getACLHolders();
+         return conn.getACLHolders(limit, offset);
       }
       finally
       {
@@ -2553,7 +2589,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @ManagedDescription("Reloads the bloom filters used to efficiently manage the ACLs")
    public boolean reloadFilters()
    {
-      return loadFilters(false, false);
+      return bfEnabled ? loadFilters(false, false) : false;
    }
 
    /**
@@ -2598,7 +2634,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       try
       {
-         this.cache.addListener(this);
+         if(bfEnabled)
+         {
+            this.cache.addListener(this);
+         }
       }
       catch (UnsupportedOperationException e)
       {
@@ -2611,7 +2650,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          return;
       }
 
-      loadFilters(true, true);
+      if(bfEnabled)
+      {
+         loadFilters(true, true);
+      }
    }
 
    /**
@@ -2654,17 +2696,46 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private boolean doLoadFilters(boolean cleanOnFail)
    {
-      boolean fails = true;
-      List<ACLHolder> holders = null;
+      int page = 0;
+      int offset;
+      boolean hasNext;
       try
       {
          if (LOG.isDebugEnabled())
          {
             LOG.debug("Getting all the ACL Holders from the persistence layer");
          }
+         do
+         {
+            offset = page * bfPageSize;
+            hasNext = readNextPage(bfPageSize, offset);
+            page ++;
+         }
+         while (hasNext && !loadFails.get());
+      }
+      finally
+      {
+         if (loadFails.get())
+         {
+            if (cleanOnFail)
+            {
+               clear();
+               cache.removeListener(this);
+            }
+            return false;
+         }
+      }
+      filtersEnabled.set(true);
+      return true;
+   }
 
-         holders = getACLHolders();
-         fails = false;
+   private boolean readNextPage(int limit, int offset)
+   {
+      List<ACLHolder> holders = null;
+      try
+      {
+         holders = getACLHolders(limit, offset);
+         loadFails.getAndSet(false);
       }
       catch (UnsupportedOperationException e)
       {
@@ -2680,16 +2751,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       }
       finally
       {
-         if (fails)
-         {
-            if (cleanOnFail)
-            {
-               clear();
-               cache.removeListener(this);
-            }
-            return false;
-         }
-         else if (holders != null && !holders.isEmpty())
+         if (!loadFails.get() && holders != null && !holders.isEmpty())
          {
             if (LOG.isDebugEnabled())
             {
@@ -2712,10 +2774,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
                   filterPermissions.add(holder.getId());
                }
             }
+            return true;
          }
       }
-      filtersEnabled.set(true);
-      return true;
+      return false;
    }
 
    /**

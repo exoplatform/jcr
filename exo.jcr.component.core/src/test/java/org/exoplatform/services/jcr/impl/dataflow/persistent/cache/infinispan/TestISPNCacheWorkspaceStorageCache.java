@@ -387,7 +387,7 @@ public class TestISPNCacheWorkspaceStorageCache extends WorkspaceStorageCacheBas
       /**
        * @see org.exoplatform.services.jcr.storage.WorkspaceStorageConnection#getACLHolders()
        */
-      public List<ACLHolder> getACLHolders() throws RepositoryException, IllegalStateException,
+      public List<ACLHolder> getACLHolders(int limit , int offset) throws RepositoryException, IllegalStateException,
          UnsupportedOperationException
       {
          return null;
