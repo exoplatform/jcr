@@ -34,7 +34,7 @@ import java.io.OutputStream;
 import java.util.Calendar;
 
 /**
- * Created by The eXo Platform SAS.<br/>
+ * Created by The eXo Platform SAS.<br>
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com">Peter Nedonosko</a>
  * @version $Id$

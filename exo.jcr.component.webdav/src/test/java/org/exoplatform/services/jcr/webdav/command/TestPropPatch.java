@@ -31,7 +31,7 @@ import javax.jcr.Node;
 import javax.jcr.Property;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  * Date: 10 Dec 2008
  * 
  * @author <a href="dkatayev@gmail.com">Dmytro Katayev</a>

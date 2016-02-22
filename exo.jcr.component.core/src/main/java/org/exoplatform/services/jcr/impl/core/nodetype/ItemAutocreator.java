@@ -216,9 +216,7 @@ public class ItemAutocreator
 
    /**
     * @param parent
-    * @param dataManager
-    * @param changes
-    * @return 
+    * @return
     * @throws RepositoryException
     */
    public PlainChangesLog makeMixVesionableChanges(final NodeData parent) throws RepositoryException

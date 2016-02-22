@@ -89,7 +89,7 @@ public class EntityCollection implements NodeIterator, PropertyIterator, NodeTyp
    }
 
    /**
-    * @see RangeIterator#skip(int)
+    * @see RangeIterator#skip(long)
     */
    public void skip(long skipNum)
    {
@@ -113,7 +113,7 @@ public class EntityCollection implements NodeIterator, PropertyIterator, NodeTyp
    /**
     * Returns the current position within the iterator. The number returned is the 0-based index of
     * the next element in the iterator, i.e. the one that will be returned on the subsequent
-    * <code>next</code> call. <p/> Note that this method does not check if there is a next element,
+    * <code>next</code> call. <br> Note that this method does not check if there is a next element,
     * i.e. an empty iterator will always return 0.
     * 
     * @return a long

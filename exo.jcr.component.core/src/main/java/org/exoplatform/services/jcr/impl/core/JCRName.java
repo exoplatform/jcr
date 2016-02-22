@@ -114,8 +114,6 @@ public class JCRName
    /**
     * Return this name as string.
     * 
-    * @param showIndex
-    *          if index should be included to the string.
     * @return name as string.
     */
    public String getAsString()

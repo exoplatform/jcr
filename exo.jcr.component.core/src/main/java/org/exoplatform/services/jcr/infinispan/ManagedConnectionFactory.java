@@ -40,8 +40,10 @@ import javax.sql.DataSource;
  * the JNDI tree at a certain location (configurable) and delegate connection management to the DataSource. In order to
  * enable it one should set the following two properties in any Jdbc cache store:
  * <pre>
+ *   {@code
  *    <property name="connectionFactoryClass" value="org.exoplatform.services.jcr.infinispan.ManagedConnectionFactory"/>
  *    <property name="datasourceJndiLocation" value="java:/ManagedConnectionFactoryTest/DS"/>
+ *   }
  * </pre>
  * 
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>

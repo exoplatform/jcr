@@ -143,7 +143,6 @@ public class RepositoryContainer extends ExoContainer
     *           container initialization error
     * @throws RepositoryConfigurationException
     *           configuration error
-    * @throws PrivilegedActionException 
     */
    public RepositoryContainer(final ExoContainer parent, RepositoryEntry config, List<ComponentPlugin> addNamespacePlugins)
       throws RepositoryException, RepositoryConfigurationException

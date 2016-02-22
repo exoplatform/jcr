@@ -118,7 +118,7 @@ import javax.jcr.query.Query;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 
+ * <br>Date:
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: SearchManager.java 1008 2009-12-11 15:14:51Z nzamosenchuk $
@@ -310,14 +310,9 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     *            the node type registry.
     * @param itemMgr
     *            the shared item state manager.
-    * @param rootNodeId
-    *            the id of the root node.
-    * @param parentMgr
+    * @param parentSearchManager
     *            the parent search manager or <code>null</code> if there is no
     *            parent search manager.
-    * @param excludedNodeId
-    *            id of the node that should be excluded from indexing. Any
-    *            descendant of that node will also be excluded from indexing.
     * @param rpcService
     *             the service for executing commands on all nodes of cluster           
     * @throws RepositoryException
@@ -382,7 +377,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * 
     * @param session
     *            the session of the user executing the query.
-    * @param itemMgr
+    * @param sessionDataManager
     *            the item manager of the user executing the query. Needed to
     *            return <code>Node</code> instances in the result set.
     * @param node
@@ -407,7 +402,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * 
     * @param session
     *            the session of the user executing the query.
-    * @param itemMgr
+    * @param sessionDataManager
     *            the item manager of the user executing the query. Needed to
     *            return <code>Node</code> instances in the result set.
     * @param statement
@@ -564,7 +559,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * Return set of uuid of nodes. Contains in names prefixes maped to the
     * given uri
     * 
-    * @param prefix
+    * @param uri
     * @return
     * @throws RepositoryException
     */
@@ -917,9 +912,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * Initialize changes filter.
     * @throws RepositoryException
     * @throws RepositoryConfigurationException
-    * @throws ClassNotFoundException 
-    * @throws NoSuchMethodException 
-    * @throws SecurityException 
+    * @throws SecurityException
     */
    @SuppressWarnings("unchecked")
    protected IndexerChangesFilter initializeChangesFilter() throws RepositoryException,
@@ -984,7 +977,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * @throws RepositoryException
     *             if the query handler cannot be initialized.
     * @throws RepositoryConfigurationException
-    * @throws ClassNotFoundException
     */
    protected void initializeQueryHandler() throws RepositoryException, RepositoryConfigurationException
    {
@@ -1129,7 +1121,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
 
    /**
     * @param valueFactory
-    * @param dm
     * @param uuid
     * @param prefix
     * @throws RepositoryException
@@ -1374,7 +1365,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * Public method, designed to be called via JMX, to perform "HOT" reindexing of the workspace
     * 
-    * @throws IOException
     * @throws IllegalStateException
     */
    @Managed

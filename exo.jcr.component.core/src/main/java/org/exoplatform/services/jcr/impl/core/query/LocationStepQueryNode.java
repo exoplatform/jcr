@@ -24,14 +24,14 @@ import javax.jcr.RepositoryException;
 
 /**
  * Defines a location step for querying the path of a node.
- * <p/>
- * <code>
+ * <br>
+ * {@code
  * /foo  -> descendants = false, nameTest = foo<br>
  * //foo -> descendants = true, nameTest = foo<br>
  * //*   -> descendants = true, nameTest = null<br>
  * /*    -> descendants = false, nameTest = null<br>
  * /     -> descendants = false, nameTest = ""
- * </code>
+ * }
  */
 public class LocationStepQueryNode extends NAryQueryNode {
 
@@ -172,7 +172,7 @@ public class LocationStepQueryNode extends NAryQueryNode {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public boolean equals(Object obj) {
         if (obj instanceof LocationStepQueryNode) {

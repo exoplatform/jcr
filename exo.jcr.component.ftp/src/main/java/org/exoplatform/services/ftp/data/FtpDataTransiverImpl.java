@@ -34,7 +34,7 @@ import java.net.SocketAddress;
 import java.security.PrivilegedExceptionAction;
 
 /**
- * Created by The eXo Platform SAS Author : Vitaly Guly <gavrik-vetal@ukr.net/mail.ru>
+ * Created by The eXo Platform SAS Author : Vitaly Guly gavrik-vetal@ukr.net/mail.ru
  * 
  * @version $Id: $
  */

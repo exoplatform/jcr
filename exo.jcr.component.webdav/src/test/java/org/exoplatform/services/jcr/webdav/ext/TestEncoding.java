@@ -31,7 +31,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  * Date: 17 Feb 2009
  * 
  * @author <a href="mailto:dmitry.kataev@exoplatform.com.ua">Dmytro Katayev</a>

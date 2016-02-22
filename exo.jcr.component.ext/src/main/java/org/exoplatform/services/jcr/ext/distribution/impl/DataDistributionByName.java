@@ -36,8 +36,8 @@ import javax.jcr.RepositoryException;
  * It will generate a hierarchy of sub-nodes with <code>n</code> levels of depth for example
  *  with <code>n = 4</code>:
  * <ul>
- *    <li>Usename: john.smith (size >= 4) it will generate a path of type "j___/jo___/joh___/john.smith"</li>
- *    <li>Usename: bob (size < 4) it will generate a path of type "b___/bo___/bob"</li>
+ *    <li>{@literal Usename: john.smith (size >= 4) it will generate a path of type "j___/jo___/joh___/john.smith"}</li>
+ *    <li>{@literal Usename: bob (size < 4) it will generate a path of type "b___/bo___/bob"}</li>
  * </ul>
  * 
  * @author <a href="mailto:nicolas.filotto@exoplatform.com">Nicolas Filotto</a>

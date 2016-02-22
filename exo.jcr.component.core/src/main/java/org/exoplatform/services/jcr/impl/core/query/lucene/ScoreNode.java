@@ -24,7 +24,7 @@ import java.io.IOException;
 
 /**
  * <code>ScoreNode</code> implements a simple container which holds a mapping
- * of {@link NodeId} to a score value.
+ * of NodeId to a score value.
  */
 public final class ScoreNode {
 

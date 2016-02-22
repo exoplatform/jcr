@@ -65,7 +65,9 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
 
    /**
     * @param nodeTypeDataManager
-    * @param persister
+    * @param dataConsumer
+    * @param itemAutocreator
+    * @param affectedNodes
     */
    public NodeDefinitionComparator(NodeTypeDataManager nodeTypeDataManager, ItemDataConsumer dataConsumer,
       ItemAutocreator itemAutocreator, List<NodeData> affectedNodes)
@@ -106,7 +108,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
    }
 
    /**
-    * @param nodes
+    * @param nodesData
     * @param nodeDefinitionData
     * @throws RepositoryException
     * @throws ConstraintViolationException
@@ -132,8 +134,8 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
 
    /**
     * @param registeredNodeType
-    * @param nodes
-    * @param ancestorDefinitionData
+    * @param nodesData
+    * @param ancestorRequiredPrimaryTypes
     * @param recipientDefinitionData
     * @throws RepositoryException
     */
@@ -223,10 +225,9 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
 
    /**
     * @param registeredNodeType
-    * @param nodes
+    * @param nodesData
+    * @param recipientName
     * @param allRecipientDefinition
-    * @param ancestorDefinitionData
-    * @param recipientDefinitionData
     * @throws RepositoryException
     */
    private void checkSameNameSibling(InternalQName registeredNodeType, List<NodeData> nodesData,
@@ -306,7 +307,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
    /**
     * @param toAddList
     * @param changesLog
-    * @param nodes
+    * @param nodesData
     * @param registeredNodeType
     * @throws RepositoryException
     */
@@ -332,7 +333,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
    /**
     * @param nodeTypeName
     * @param newDefinitionData
-    * @param nodes
+    * @param nodesData
     * @param recipientDefinition
     * @throws RepositoryException
     */
@@ -371,7 +372,7 @@ public class NodeDefinitionComparator extends AbstractDefinitionComparator<NodeD
    /**
     * @param registeredNodeType
     * @param changedDefinitionData
-    * @param nodes
+    * @param nodesData
     * @param allRecipientDefinition
     * @throws RepositoryException
     */

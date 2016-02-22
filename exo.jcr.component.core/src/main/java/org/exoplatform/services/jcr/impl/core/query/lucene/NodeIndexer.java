@@ -802,7 +802,7 @@ public class NodeIndexer
     *
     * @param doc           The document to which to add the field
     * @param fieldName     The name of the field to add
-    * @param internalValue The value for the field to add to the document.
+    * @param pathString    The value for the field to add to the document.
     */
    protected void addPathValue(Document doc, String fieldName, Object pathString)
    {
@@ -1066,7 +1066,6 @@ public class NodeIndexer
     *
     * @param doc      the document.
     * @param parentId the id of the parent node.
-    * @throws ItemStateException  if the parent node cannot be read.
     * @throws RepositoryException if the parent node does not have a child node
     *                             entry for the current node.
     */

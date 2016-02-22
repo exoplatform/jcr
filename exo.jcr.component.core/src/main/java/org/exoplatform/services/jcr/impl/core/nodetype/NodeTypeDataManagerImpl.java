@@ -84,7 +84,7 @@ import javax.jcr.nodetype.ConstraintViolationException;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  * Date: 26.11.2008
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter
@@ -360,7 +360,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    /**
     * {@inheritDoc}
-    * @throws RepositoryException 
     */
    public NodeDefinitionData[] getAllChildNodeDefinitions(final InternalQName... nodeTypeNames)
    {
@@ -406,7 +405,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    /**
     * {@inheritDoc}
-    * @throws RepositoryException 
     */
    public List<NodeTypeData> getAllNodeTypes()
    {
@@ -424,7 +422,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    /**
     * {@inheritDoc}
-    * @throws RepositoryException 
     */
    public PropertyDefinitionData[] getAllPropertyDefinitions(final InternalQName... nodeTypeNames)
 
@@ -538,7 +535,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    /**
     * {@inheritDoc}
-    * @throws RepositoryException 
     */
    public Set<InternalQName> getDeclaredSubtypes(final InternalQName nodeTypeName)
    {
@@ -591,7 +587,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    /**
     * {@inheritDoc}
-    * @throws RepositoryException 
     */
    public NodeTypeData getNodeType(final InternalQName typeName)
    {
@@ -734,7 +729,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    /**
     * {@inheritDoc}
-    * @throws RepositoryException 
     */
    public boolean isNodeType(final InternalQName testTypeName, final InternalQName... typesNames)
    {
@@ -743,7 +737,6 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
 
    /**
     * {@inheritDoc}
-    * @throws RepositoryException 
     */
    public boolean isNodeType(final InternalQName testTypeName, final InternalQName primaryType,
       final InternalQName[] mixinTypes)
@@ -1076,12 +1069,12 @@ public class NodeTypeDataManagerImpl implements NodeTypeDataManager, Startable
     * <li>the node type must not be currently used by any workspace.</li>
     * </ol>
     * 
-    * @param ntName name of the node type to be unregistered
+    * @param nodeTypeName name of the node type to be unregistered
     * @throws NoSuchNodeTypeException if <code>ntName</code> does not denote a
     *           registered node type.
     * @throws RepositoryException
     * @throws RepositoryException if another error occurs.
-    * @see #unregisterNodeTypes(Collection)
+    * @see #unregisterNodeType(InternalQName)
     */
    public void unregisterNodeType(final InternalQName nodeTypeName) throws RepositoryException
    {

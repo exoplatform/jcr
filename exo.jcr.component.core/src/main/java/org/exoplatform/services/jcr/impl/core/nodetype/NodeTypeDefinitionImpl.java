@@ -57,14 +57,12 @@ public class NodeTypeDefinitionImpl
    protected final ItemDataConsumer dataManager;
 
    /**
-    * @param name
-    * @param declaredChildNodeDefinitions
-    * @param declaredPropertyDefinitions
-    * @param declaredSupertypeNames
-    * @param isAbstract
-    * @param isMixin
-    * @param orderableChildNodes
-    * @param primaryItemName
+    * @param nodeTypeData
+    * @param nodeTypeDataManager
+    * @param nodeTypeManager
+    * @param locationFactory
+    * @param valueFactory
+    * @param dataManager
     */
    public NodeTypeDefinitionImpl(NodeTypeData nodeTypeData, NodeTypeDataManager nodeTypeDataManager,
       ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory,

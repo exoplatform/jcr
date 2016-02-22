@@ -31,7 +31,7 @@ import javax.jcr.RepositoryException;
 import javax.xml.namespace.QName;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * WebDAV applicable abstraction of REST Resource definition (by Fielding: "Any
  * information that can be named can be a resource... In other words: any
  * concept that might be the target of an author's hypertext reference must fit

@@ -202,14 +202,12 @@ public class FCKeditor
 
    /**
     * Initialize the object setting all value to the default ones.
-    * <p>
     * <ul>
     * <li>width: 100%</li>
     * <li>height: 200</li>
     * <li>toolbar name: Default</li>
     * <li>basePath: context root + "/FCKeditor/"</li>
     * </ul>
-    * </p>
     * 
     * @param req
     *          request object
@@ -224,14 +222,12 @@ public class FCKeditor
 
    /**
     * Initialize the object setting the unique name and then all value to the default ones.
-    * <p>
     * <ul>
     * <li>width: 100%</li>
     * <li>height: 200</li>
     * <li>toolbar name: Default</li>
     * <li>basePath: context root + "/FCKeditor/"</li>
     * </ul>
-    * </p>
     * 
     * @param req
     *          request object

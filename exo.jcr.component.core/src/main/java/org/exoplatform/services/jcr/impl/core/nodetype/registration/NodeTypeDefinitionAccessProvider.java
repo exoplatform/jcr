@@ -172,10 +172,10 @@ public class NodeTypeDefinitionAccessProvider extends AbstractItemDefinitionAcce
    }
 
    /**
-    * @param nodeData
-    * @param nodeTypeData
-    * @return
-    * @throws RepositoryException 
+    * @param changesLog
+    * @param nodeTypeStorageRoot
+    * @param nodeType
+    * @throws RepositoryException
     * @throws NodeTypeReadException 
     */
    public void write(PlainChangesLog changesLog, NodeData nodeTypeStorageRoot, NodeTypeData nodeType)

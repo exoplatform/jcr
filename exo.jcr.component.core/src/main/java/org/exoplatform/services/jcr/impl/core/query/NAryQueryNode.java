@@ -149,7 +149,7 @@ public abstract class NAryQueryNode extends QueryNode {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public boolean equals(Object obj) {
         if (obj instanceof NAryQueryNode) {

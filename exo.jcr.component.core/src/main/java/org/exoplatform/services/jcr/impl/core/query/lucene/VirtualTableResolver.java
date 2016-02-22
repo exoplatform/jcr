@@ -31,7 +31,7 @@ import javax.jcr.query.InvalidQueryException;
 public interface VirtualTableResolver<Q>
 {
    /**
-    * Construct <Q>query for given table.
+    * Construct query for given table.
     * 
     * @param tableName - name of the virtual table.
     * @param includeInheritedTables - include inherited tables to the result.

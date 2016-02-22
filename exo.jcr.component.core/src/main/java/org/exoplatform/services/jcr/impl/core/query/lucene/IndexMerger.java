@@ -211,7 +211,7 @@ class IndexMerger extends Thread implements IndexListener
    }
 
    /**
-    * @inheritDoc
+    * {@inheritDoc}
     */
    public void documentDeleted(Term id)
    {
@@ -490,7 +490,7 @@ class IndexMerger extends Thread implements IndexListener
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       public String toString()
       {

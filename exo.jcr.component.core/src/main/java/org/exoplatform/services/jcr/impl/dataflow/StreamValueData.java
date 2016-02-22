@@ -346,7 +346,7 @@ public abstract class StreamValueData extends AbstractValueData
    }
 
    /**
-    * Convert File to byte array. <br/>
+    * Convert File to byte array. <br>
     * WARNING: Potential lack of memory due to call getAsByteArray() on stream data.
     * 
     * @return byte[] bytes array

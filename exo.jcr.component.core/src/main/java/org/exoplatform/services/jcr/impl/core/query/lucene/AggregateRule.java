@@ -37,7 +37,6 @@ public interface AggregateRule {
      * @return the root node state of the indexing aggregate or
      *         <code>null</code> if <code>nodeState</code> does not belong to an
      *         indexing aggregate.
-     * @throws ItemStateException  if an error occurs.
      * @throws RepositoryException if an error occurs.
      */
    NodeData getAggregateRoot(NodeData nodeState)
@@ -51,7 +50,7 @@ public interface AggregateRule {
      * @return the node states that are part of the indexing aggregate of
      *         <code>nodeState</code>. Returns <code>null</code> if this
      *         aggregate does not apply to <code>nodeState</code>.
-     * @throws ItemStateException if an error occurs.
+     * @throws RepositoryException if an error occurs.
      */
    NodeData[] getAggregatedNodeStates(NodeData nodeState)
             throws RepositoryException;
@@ -64,7 +63,7 @@ public interface AggregateRule {
      * @return the property states that are part of the indexing aggregate of
      *         <code>nodeState</code>. Returns <code>null</code> if this
      *         aggregate does not apply to <code>nodeState</code>.
-     * @throws ItemStateException if an error occurs.
+     * @throws RepositoryException if an error occurs.
      */
     public PropertyData[] getAggregatedPropertyStates(NodeData nodeState)
             throws RepositoryException;

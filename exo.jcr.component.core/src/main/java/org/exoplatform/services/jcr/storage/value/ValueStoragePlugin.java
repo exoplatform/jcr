@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.storage.value;
 
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.storage.value.ValueDataResourceHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
 
@@ -61,8 +62,8 @@ public abstract class ValueStoragePlugin
       throws RepositoryConfigurationException, IOException;
 
    /**
-    * Open a ValueIOChannel. Used in {@link ValueStoragePluginProvider.getApplicableChannel(PropertyData, int)} 
-    * and {@link ValueStoragePluginProvider.getChannel(String)}.
+    * Open a ValueIOChannel. Used in {@link ValueStoragePluginProvider#getApplicableChannel(PropertyData, int)}
+    * and {@link ValueStoragePluginProvider#getChannel(String)}.
     * 
     * @return ValueIOChannel channel
     * @throws IOException

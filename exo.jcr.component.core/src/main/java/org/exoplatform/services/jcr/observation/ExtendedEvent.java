@@ -74,8 +74,8 @@ public interface ExtendedEvent extends Event
 
    /**
     * Generated on persist when a node is moved. <ul> <li>{@link #getPath}
-    * returns the absolute path of the destination of the move.</li> <li>{@link
-    * #getIdentifier} returns the identifier of the moved node. <li> {@link
+    * returns the absolute path of the destination of the move.</li> <li>
+    * #getIdentifier returns the identifier of the moved node. <li> {@link
     * #getInfo} If the method that caused this event was a {@link
     * javax.jcr.Session#move Session.move} or {@link javax.jcr.Workspace#move
     * Workspace.move} then the returned {@link java.util.Map Map} has keys

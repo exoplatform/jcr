@@ -38,7 +38,7 @@ public class JdbcBinaryCacheStore extends org.infinispan.loaders.jdbc.binary.Jdb
 {
 
    /**
-    * @see org.infinispan.loaders.jdbc.stringbased.JdbcBinaryCacheStore#getConfigurationClass()
+    * @see org.infinispan.loaders.jdbc.binary.JdbcBinaryCacheStore#getConfigurationClass()
     */
    @Override
    public Class<? extends CacheLoaderConfig> getConfigurationClass()

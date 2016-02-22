@@ -131,8 +131,7 @@ public class NamespaceDataPersister implements ComponentPersister
    /**
     * Add new namespace.
     * 
-    * @param prefix NS prefix
-    * @param uri NS URI
+    * @param namespaceMap
     * @throws RepositoryException Repository error
     */
    public void addNamespaces(Map<String, String> namespaceMap) throws RepositoryException
@@ -303,7 +302,7 @@ public class NamespaceDataPersister implements ComponentPersister
    }
 
    /**
-    * Copy <code>PropertyData prop<code> to new TransientItemData
+    * Copy <code>PropertyData prop</code> to new TransientItemData
     * 
     * @param prop
     * @return

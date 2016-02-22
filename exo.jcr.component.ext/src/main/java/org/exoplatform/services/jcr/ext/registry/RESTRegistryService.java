@@ -103,12 +103,12 @@ public class RESTRegistryService implements ResourceContainer
     * "entryStream" : the output stream corresponding registry node which wraps a node of type "exo:registry" (the whole registry tree)
     * {code}
     * Example :
-    * {code:xml}
+    * {@code
     * <registry xlinks:href="http://localhost:8080/portal/rest/registry/">
     *    <GroovyScript2RestLoader xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/GroovyScript2RestLoader"/>
     *    <Audit xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/Audit"/>
     * </registry>
-    *  {code}
+    * }
     *
     * @LevelAPI Experimental
     */
@@ -168,11 +168,11 @@ public class RESTRegistryService implements ResourceContainer
     * "entryStream" :  the output stream corresponding registry entry which wraps a node of type "exo:registryEntry
     *  {code}
     *  Example :
-    * {code:xml}
+    * {@code
     *  <Audit jcr:primaryType="exo:registryEntry">
     *     <adminIdentity jcr:primaryType="nt:unstructured" value="*:/Platform/Administrators"/>
     *  </Audit>
-    * {code}
+    * }
     * @LevelAPI Experimental
     */
    @GET
@@ -209,12 +209,12 @@ public class RESTRegistryService implements ResourceContainer
     * "entryStream" : the input stream corresponding to the content of the registry entry
     * {code}
     * Example :
-    * {code:xml}
+    * {@code
     * <registry xlinks:href="http://localhost:8080/portal/rest/registry/">
     *    <GroovyScript2RestLoader xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/GroovyScript2RestLoader"/>
     *    <Audit xlinks:href="http://localhost:8080/portal/rest/registry/exo:services/Audit"/>
     * </registry>
-    *  {code}
+    * }
     *
     * @LevelAPI Experimental
     */
@@ -271,11 +271,11 @@ public class RESTRegistryService implements ResourceContainer
     * "entryStream" : the input stream corresponding to the content of the registry entry
     * {code}
     * Example :
-    * {code:xml}
+    * {@code
     *  <Audit jcr:primaryType="exo:registryEntry">
     *     <adminIdentity jcr:primaryType="nt:unstructured" value="*:/Platform/Administrators"/>
     *  </Audit>
-    * {code}
+    * }
     * @LevelAPI Experimental
     */
    @PUT

@@ -26,9 +26,9 @@ import java.util.regex.Pattern;
 
 /**
  * Implements the encode and decode routines as specified for XML name to SQL identifier conversion
- * in ISO 9075-14:2003.<br/> If a character <code>c</code> is not valid at a certain position in an
- * XML 1.0 NCName it is encoded in the form: '_x' + hexValueOf(c) + '_' <p/> Note that only the
- * local part of a {@link org.apache.jackrabbit.name.QName} is encoded / decoded. A URI namespace
+ * in ISO 9075-14:2003.<br> If a character <code>c</code> is not valid at a certain position in an
+ * XML 1.0 NCName it is encoded in the form: '_x' + hexValueOf(c) + '_' <br> Note that only the
+ * local part of a {@link javax.xml.namespace.QName} is encoded / decoded. A URI namespace
  * will always be valid and does not need encoding.
  */
 public class ISO9075
@@ -185,7 +185,7 @@ public class ISO9075
    /**
     * Encodes the character <code>c</code> as a String in the following form:
     * <code>"_x" + hex value of c + "_"</code>. Where the hex value has four digits if the character
-    * with possibly leading zeros. <p/> Example: ' ' (the space character) is encoded to: _x0020_
+    * with possibly leading zeros. <br> Example: ' ' (the space character) is encoded to: _x0020_
     * 
     * @param c
     *          the character to encode

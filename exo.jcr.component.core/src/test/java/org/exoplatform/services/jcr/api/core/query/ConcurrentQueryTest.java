@@ -78,7 +78,7 @@ public class ConcurrentQueryTest extends AbstractJCRTest
 
    /**
     * Writes 1000 nodes in transactions of 5 nodes to the workspace while other threads query the
-    * workspace. Query results must always return a consistent view of the workspace, that is:<br/>
+    * workspace. Query results must always return a consistent view of the workspace, that is:<br>
     * <code>result.numNodes % 5 == 0</code>
     */
    public void testConcurrentQueryWithWrite() throws Exception
@@ -147,7 +147,7 @@ public class ConcurrentQueryTest extends AbstractJCRTest
 
    /**
     * Deletes 1000 nodes in transactions of 5 nodes while other threads query the workspace. Query
-    * results must always return a consistent view of the workspace, that is:<br/>
+    * results must always return a consistent view of the workspace, that is:<br>
     * <code>result.numNodes % 5 == 0</code>
     */
    public void testConcurrentQueryWithDeletes() throws Exception

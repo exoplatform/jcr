@@ -1382,8 +1382,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * 
     * @param parent
-    * @param lastOrderNum
-    * @param limit
+    * @param fromOrderNum
+    * @param offset
+    * @param pageSize
+    * @param childNodes
     * @return
     * @throws RepositoryException
     * @throws IllegalStateException
@@ -1763,7 +1765,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * Gets an item data from database.
     * 
-    * @param parentPath
+    * @param parent
     *          - parent QPath
     * @param parentId
     *          - parent container internal id (depends on Multi/Single DB)
@@ -2651,7 +2653,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
    /**
     * Read ValueData from External Storage.
     * 
-    * @param pdata
+    * @param identifier
     *          PropertyData
     * @param orderNumber
     *          Value order number

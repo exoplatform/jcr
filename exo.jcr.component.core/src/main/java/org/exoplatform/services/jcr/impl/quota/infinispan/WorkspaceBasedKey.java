@@ -48,7 +48,7 @@ public abstract class WorkspaceBasedKey extends QuotaKey
    /**
     * WorkspaceBaseKey constructor.
     *
-    * @param wsUniqueName
+    * @param workspaceUniqueName
     *          unique name of workspace in global JCR instance, might
     *          contains repository name as well as workspace name
     */

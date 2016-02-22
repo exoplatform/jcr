@@ -22,8 +22,8 @@ import java.io.CharArrayWriter;
 import java.util.BitSet;
 
 /**
- * Created by The eXo Platform SARL Author : <a
- * href="gavrikvetal@gmail.com">Vitaly Guly</a>.
+ * Created by The eXo Platform SAS.
+ * @author Vitaly Guly - gavrikvetal@gmail.com
  * 
  * @version $Id: PutCommand.java 12004 2007-01-17 12:03:57Z geaz $
  */

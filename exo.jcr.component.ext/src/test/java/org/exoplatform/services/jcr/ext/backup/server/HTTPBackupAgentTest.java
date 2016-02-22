@@ -46,7 +46,7 @@ import javax.jcr.Session;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>
+ * <br>
  * Date: 21.04.2009
  * 
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>

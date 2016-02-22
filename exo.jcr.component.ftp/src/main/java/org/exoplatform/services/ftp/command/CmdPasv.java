@@ -24,7 +24,7 @@ import org.exoplatform.services.ftp.data.FtpDataTransiver;
 import java.io.IOException;
 
 /**
- * Created by The eXo Platform SAS Author : Vitaly Guly <gavrik-vetal@ukr.net/mail.ru>
+ * Created by The eXo Platform SAS Author : Vitaly Guly gavrik-vetal@ukr.net/mail.ru
  * 
  * @version $Id: $
  */

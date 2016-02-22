@@ -33,7 +33,7 @@ public interface ItemDataKeeper
    /**
     * Saves the list of changes from this storage
     * 
-    * @param items
+    * @param changes
     *          for commit
     * @throws InvalidItemStateException
     * @throws UnsupportedOperationException

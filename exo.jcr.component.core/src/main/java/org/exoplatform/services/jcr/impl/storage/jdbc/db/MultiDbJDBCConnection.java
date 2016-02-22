@@ -40,7 +40,7 @@ import javax.jcr.RepositoryException;
 /**
  * Single database connection implementation.
  * 
- * Created by The eXo Platform SAS. </br>
+ * Created by The eXo Platform SAS. <br>
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
  *         Azarenkov</a>

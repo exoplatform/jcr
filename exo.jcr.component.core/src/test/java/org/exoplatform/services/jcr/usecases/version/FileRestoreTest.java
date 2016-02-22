@@ -31,7 +31,7 @@ import javax.jcr.version.Version;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>
+ * <br>
  * Date: 02.06.2009
  * 
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>

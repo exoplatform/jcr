@@ -32,7 +32,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  * Per-repository component holding all Child Nodes and Properties Definitions
  * as flat Map For ex definition for jcr:primaryType will be repeated as many
  * times as many primary nodetypes is registered (as each primary nodetype
@@ -86,8 +86,8 @@ public class ItemDefinitionDataHolder
    }
 
    /**
-    * @param pr name of parent node types
     * @param childName name of child node
+    * @param nodeTypes name of parent node types
     * @return default ChildNodeDefinition or null if not found
     */
    public NodeDefinitionData getDefaultChildNodeDefinition(InternalQName childName, InternalQName... nodeTypes)
@@ -133,9 +133,8 @@ public class ItemDefinitionDataHolder
    }
 
    /**
-    * @param parentNodeType name of parent node type
     * @param propertyName name of child property
-    * @param multiValued
+    * @param nodeTypes name of parent node type
     * @return Child PropertyDefinition or null if not found
     */
    public PropertyDefinitionDatas getPropertyDefinitions(final InternalQName propertyName,

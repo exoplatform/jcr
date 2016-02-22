@@ -29,7 +29,7 @@ import java.util.Map;
 
 /**
  * @author <a href="mailto:skarpenko@exoplatform.com">Sergiy Karpenko</a>
- * @version $Id: exo-jboss-codetemplates.xml 34360 24 трав. 2011 skarpenko $
+ * @version $Id: exo-jboss-codetemplates.xml 34360 skarpenko $
  *
  */
 public class TestPatternQPathEntryFilter extends JcrAPIBaseTest

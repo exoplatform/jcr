@@ -45,7 +45,7 @@ public class ReadOnlyChangedSizeHandler extends SimpleChangedSizeHandler
    }
 
    /**
-    * {@inheritDoc
+    * {@inheritDoc}
     */
    public void accumulatePrevSize(long deltaSize)
    {

@@ -30,7 +30,7 @@ import javax.jcr.RepositoryException;
 import javax.xml.namespace.QName;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * Versioned file resource (nt:file+mix:versionable/nt:resource )
  * 
  * @author Gennady Azarenkov

@@ -170,10 +170,6 @@ public class ExportImportFactory
    }
 
    /**
-    * @param saveType
-    * @param node
-    * @param uuidBehavior
-    * @param context
     * @return
     */
    public ContentHandler getImportHandler(NodeData parent, int uuidBehavior, ItemDataKeeper dataKeeper,
@@ -187,10 +183,6 @@ public class ExportImportFactory
    }
 
    /**
-    * @param saveType
-    * @param node
-    * @param uuidBehavior
-    * @param context
     * @return
     */
    public StreamImporter getStreamImporter(NodeData parent, int uuidBehavior, ItemDataKeeper dataKeeper,

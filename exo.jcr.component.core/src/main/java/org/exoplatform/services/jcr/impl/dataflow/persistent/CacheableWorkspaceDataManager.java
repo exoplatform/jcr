@@ -86,7 +86,7 @@ import javax.transaction.TransactionManager;
 /**
  * Created by The eXo Platform SAS. 
  * 
- * <br/>
+ * <br>
  * Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
  * 13.04.2006
  * 
@@ -1359,7 +1359,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          parent
     * @param forcePersistentRead
     *          true if persistent read is required (without cache)
-    * @return List<NodeData>
+    * @return List of NodeData
     * @throws RepositoryException
     *           Repository error
     */
@@ -1608,7 +1608,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     * 
     * @param identifier
     *          referenceable identifier
-    * @return List<PropertyData>
+    * @return List of PropertyData
     * @throws RepositoryException
     *           Repository error
     */
@@ -1694,7 +1694,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          parent
     * @param forcePersistentRead
     *          true if persistent read is required (without cache)
-    * @return List<PropertyData>
+    * @return List of PropertyData
     * @throws RepositoryException
     *           Repository error
     */
@@ -2066,7 +2066,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     *          parent
     * @param forcePersistentRead
     *          true if persistent read is required (without cache)
-    * @return List<PropertyData>
+    * @return List of PropertyData
     * @throws RepositoryException
     *           Repository error
     */

@@ -31,7 +31,7 @@ import javax.ws.rs.core.HttpHeaders;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 2009
+ * <br>Date: 2009
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
@@ -78,7 +78,6 @@ public class JCRWebdavConnection extends HTTPConnection
     * Adds node with given mixin types.
     * 
     * @param name
-    * @param nodeType
     * @param mixinTypes
     * @param data
     * @return

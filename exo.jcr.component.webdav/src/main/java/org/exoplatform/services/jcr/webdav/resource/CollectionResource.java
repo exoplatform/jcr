@@ -51,7 +51,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * Other than nt:file/jcr:content(nt:resource)
  * 
  * @author Gennady Azarenkov

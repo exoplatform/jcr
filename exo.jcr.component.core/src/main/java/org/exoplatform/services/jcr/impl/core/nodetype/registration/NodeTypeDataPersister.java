@@ -38,7 +38,6 @@ public interface NodeTypeDataPersister extends ComponentPersister
     * Add new node type
     * 
     * @param nodeType
-    * @return
     * @throws RepositoryException
     */
    public void addNodeType(NodeTypeData nodeType) throws RepositoryException;
@@ -55,7 +54,6 @@ public interface NodeTypeDataPersister extends ComponentPersister
    /**
     * Write node types to stream
     * 
-    * @param os output stream
     * @param nodeTypes
     * @throws RepositoryException
     */
@@ -65,7 +63,6 @@ public interface NodeTypeDataPersister extends ComponentPersister
     * Remove node type
     * 
     * @param nodeType
-    * @return
     * @throws RepositoryException
     */
    public void removeNodeType(NodeTypeData nodeType) throws RepositoryException;
@@ -73,7 +70,6 @@ public interface NodeTypeDataPersister extends ComponentPersister
    /**
     * Read node types.
     * 
-    * @param is input stream
     * @return
     * @throws RepositoryException
     */
@@ -82,7 +78,7 @@ public interface NodeTypeDataPersister extends ComponentPersister
    /**
     * Read node types.
     * 
-    * @param is input stream
+    * @param nodeTypeName
     * @return
     * @throws RepositoryException
     */
@@ -91,8 +87,8 @@ public interface NodeTypeDataPersister extends ComponentPersister
    /**
    * Write node types to stream
    * 
-   * @param os output stream
    * @param nodeTypes
+   * @param observer
    * @throws RepositoryException
    */
    public void update(List<NodeTypeData> nodeTypes, UpdateNodeTypeObserver observer) throws RepositoryException;

@@ -32,7 +32,7 @@ import javax.jcr.Session;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>
+ * <br>
  * Date: 15.04.2009
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>

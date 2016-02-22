@@ -111,7 +111,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    int getChildNodesCount(NodeData parent);
 
    /**
-    * Get node child properties.<br/>
+    * Get node child properties.<br>
     * 
     * @param parent the parent node data
     * @return child properties for parent if found; empty list if no items found; null if no items
@@ -120,7 +120,7 @@ public interface WorkspaceStorageCache extends MandatoryItemsPersistenceListener
    List<PropertyData> getChildProperties(NodeData parent);
 
    /**
-    * Get node child properties by pattern.<br/>
+    * Get node child properties by pattern.<br>
     * 
     * @param parent the parent node data
     * @param pattern the filter to use

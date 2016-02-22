@@ -21,7 +21,7 @@ import java.util.Calendar;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 2010
+ * <br>Date: 2010
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$

@@ -27,7 +27,7 @@ import javax.sql.DataSource;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 
+ * <br>Date:
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: PostgreConnectionFactory.java 111 4.05.2011 serg $

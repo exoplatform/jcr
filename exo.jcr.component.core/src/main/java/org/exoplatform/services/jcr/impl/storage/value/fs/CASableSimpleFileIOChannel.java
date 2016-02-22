@@ -71,12 +71,12 @@ public class CASableSimpleFileIOChannel extends SimpleFileIOChannel
    }
 
    /**
-    * Delete given property value.<br/>
+    * Delete given property value.<br>
     * Special logic implemented for Values CAS. As the storage may have one file (same hash) for
-    * multiple properties/values.<br/>
-    * The implementation assumes that delete operations based on {@link getFiles()} method result.
+    * multiple properties/values.<br>
+    * The implementation assumes that delete operations based on {@link #getFiles(String)} method result.
     * 
-    * @see getFiles()
+    * @see #getFiles(String)
     * @param propertyId
     *          - property id to be deleted
     */
@@ -108,11 +108,11 @@ public class CASableSimpleFileIOChannel extends SimpleFileIOChannel
    }
 
    /**
-    * Returns storage files list by propertyId.<br/>
+    * Returns storage files list by propertyId.<br>
     * NOTE: Files list used for <strong>delete</strong> operation. The list will not contains files
     * shared with other properties!
     * 
-    * @see ValueContentAddressStorage.getIdentifiers()
+    * @see ValueContentAddressStorage#getIdentifiers(String, boolean)
     * @param propertyId
     * @return actual files on file system related to given propertyId
     */

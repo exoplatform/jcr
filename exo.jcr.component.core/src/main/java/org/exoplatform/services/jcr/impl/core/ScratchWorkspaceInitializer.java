@@ -53,10 +53,10 @@ import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS. <br/> Default workspace intializer. <br/>
+ * Created by The eXo Platform SAS. <br> Default workspace intializer. <br>
  * Can be configured with root-nodetype and root-permissions parameters. If
- * root-nodetype and root-permissions are empty then <br/> root-nodetype =
- * nt:unstructured <br/> root-permissions = ACL default <br/> values will be
+ * root-nodetype and root-permissions are empty then <br> root-nodetype =
+ * nt:unstructured <br> root-permissions = ACL default <br> values will be
  * applied.
  * 
  * @author Gennady Azarenkov

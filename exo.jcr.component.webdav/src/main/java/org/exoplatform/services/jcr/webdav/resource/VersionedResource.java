@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.webdav.util.DeltaVConstants;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * Versioned resource (mix:versionable node)
  * 
  * @author Gennady Azarenkov

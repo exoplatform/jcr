@@ -118,7 +118,7 @@ public interface QuotaPersister
    void setWorkspaceQuota(String repositoryName, String workspaceName, long quotaLimit);
 
    /**
-    * @see QuotaManager#removeWorkspaceQuota(String, String, long)
+    * @see QuotaManager#removeWorkspaceQuota(String, String)
     */
    void removeWorkspaceQuota(String repositoryName, String workspaceName);
 

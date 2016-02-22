@@ -27,7 +27,7 @@ import org.exoplatform.services.log.Log;
  * 
  * Date: 18.06.2008
  * 
- * <br/> For use with JiBX binding in eXo configuration.
+ * <br> For use with JiBX binding in eXo configuration.
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: ConfigurationFormat.java 34801 2009-07-31 15:44:50Z dkatayev $

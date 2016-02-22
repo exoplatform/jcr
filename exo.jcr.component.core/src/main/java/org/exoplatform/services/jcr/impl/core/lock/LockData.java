@@ -225,7 +225,7 @@ public class LockData
    }
 
    /**
-    * @param the
+    * @param live
     *          live to set
     */
    public void setLive(boolean live)

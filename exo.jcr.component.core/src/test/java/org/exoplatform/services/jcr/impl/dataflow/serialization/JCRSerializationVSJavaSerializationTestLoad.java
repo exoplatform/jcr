@@ -38,7 +38,7 @@ import java.util.Random;
 import javax.jcr.PropertyType;
 
 /**
- * Created by The eXo Platform SAS. <br/>Date:
+ * Created by The eXo Platform SAS. <br>Date:
  * 
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
  * @version $Id: JCRSerializationVSJavaSerializationTest.java 111 2008-11-11

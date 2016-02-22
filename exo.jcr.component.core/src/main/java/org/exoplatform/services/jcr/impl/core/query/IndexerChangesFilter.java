@@ -64,7 +64,7 @@ public abstract class IndexerChangesFilter implements ItemsPersistenceListener
 
    /**
     * @param searchManager
-    * @param isSystem 
+    * @param parentSearchManager
     * @param handler
     * @param indexingTree
     */

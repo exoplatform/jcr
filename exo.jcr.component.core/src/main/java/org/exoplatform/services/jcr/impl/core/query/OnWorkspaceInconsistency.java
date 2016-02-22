@@ -121,9 +121,6 @@ public abstract class OnWorkspaceInconsistency
     * @param node      the parent node state.
     * @param child     the child node entry, for which no node state could be
     *                  found.
-    * @throws ItemStateException  if an error occurs while handling the missing
-    *                             child node state. This may also be the passed
-    *                             <code>exception</code> instance.
     * @throws RepositoryException if another error occurs not related to item
     *                             state reading.
     */

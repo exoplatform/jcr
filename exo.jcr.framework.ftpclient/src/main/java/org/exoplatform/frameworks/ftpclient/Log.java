@@ -19,7 +19,7 @@
 package org.exoplatform.frameworks.ftpclient;
 
 /**
- * Created by The eXo Platform SAS Author : Vitaly Guly <gavrik-vetal@ukr.net/mail.ru>
+ * Created by The eXo Platform SAS Author : Vitaly Guly gavrik-vetal@ukr.net/mail.ru
  * 
  * @version $Id: $
  */

@@ -112,7 +112,7 @@ public class FieldNames {
 
     /**
      * Name of the field that marks nodes that require reindexing because the
-     * text extraction process timed out. See also {@link IndexingQueue}.
+     * text extraction process timed out. See also IndexingQueue.
      */
     public static final String REINDEXING_REQUIRED = "_:REINDEXING_REQUIRED".intern();
 

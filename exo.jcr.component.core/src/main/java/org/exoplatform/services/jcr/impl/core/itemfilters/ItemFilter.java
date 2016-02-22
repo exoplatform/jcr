@@ -28,7 +28,7 @@ public interface ItemFilter
     * Returns <code>true</code> if the specified element is to be included in the set of child
     * elements returbned by
     * 
-    * @param element
+    * @param item
     *          The item to be tested for inclusion in the returned set.
     * @return a <code>boolean</code>.
     */

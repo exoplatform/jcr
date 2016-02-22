@@ -23,7 +23,7 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  * Date: 13.02.2009
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
@@ -42,8 +42,6 @@ public class ZipObjectWriter extends ObjectWriterImpl
     *
     * @param out
     *          the ZipOutputStream.
-    * @throws IOException
-    *          if any errors occurred
     */
    public ZipObjectWriter(ZipOutputStream out)
    {

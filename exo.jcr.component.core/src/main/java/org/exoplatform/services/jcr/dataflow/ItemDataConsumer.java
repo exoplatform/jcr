@@ -30,9 +30,9 @@ import java.util.List;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.<br/>
+ * Created by The eXo Platform SAS.<br>
  * 
- *          Basic (Level 1) data flow inmemory operations<br/>
+ *          Basic (Level 1) data flow inmemory operations<br>
  * 
  *          Common Rule for Read : If there is some storage in this manager try to get the data
  *          from here first, if not found call super.someMethod

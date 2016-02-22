@@ -23,7 +23,7 @@ import javax.jcr.RepositoryException;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 
+ * <br>Date:
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: PropertyNamePatternFilter.java 111 12.05.2011 serg $

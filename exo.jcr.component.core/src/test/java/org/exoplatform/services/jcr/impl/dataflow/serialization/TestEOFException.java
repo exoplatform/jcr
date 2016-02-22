@@ -29,7 +29,7 @@ import java.io.IOException;
 import java.util.Random;
 
 /**
- * Created by The eXo Platform SAS. <br/>Date:
+ * Created by The eXo Platform SAS. <br>Date:
  * 
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
  * @version $Id: TestEOFException.java 111 2008-11-11 11:11:11Z serg $

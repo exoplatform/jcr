@@ -21,7 +21,7 @@ package org.exoplatform.services.jcr.ext.app;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 
 /**
- * Created by The eXo Platform SAS .<br/>
+ * Created by The eXo Platform SAS .<br>
  * SessionProviderService implementation where SessionProviders are stored in Thread Local. In this
  * implementation the KEY make no sense, null value can be passed as a key.
  * 

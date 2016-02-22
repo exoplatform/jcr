@@ -282,7 +282,7 @@ public abstract class CASableFileIOChannelTestBase extends JcrImplBaseTest
    }
 
    /**
-    * Tries read not existing value in channel.<br/>
+    * Tries read not existing value in channel.<br>
     * 
     * Check if excpetion RecordNotFoundException will be thrown and storage content will not be
     * changed.

@@ -85,7 +85,7 @@ import javax.transaction.TransactionManager;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 
+ * <br>Date:
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: AbstractCacheableLockManagerImpl.java 2806 2010-07-21 08:00:15Z tolusha $
@@ -575,7 +575,7 @@ public abstract class AbstractCacheableLockManager implements CacheableLockManag
    }
 
    /**
-    * Copy <code>PropertyData prop<code> to new TransientItemData
+    * Copy <code>PropertyData prop</code> to new TransientItemData
     * 
     * @param prop
     * @return

@@ -28,7 +28,7 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>
+ * <br>
  * Date: 03.04.2009
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>

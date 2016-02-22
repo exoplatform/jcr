@@ -45,7 +45,7 @@ import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.QueryResult;
 
 /**
- * Implements the {@link org.apache.jackrabbit.core.query.ExecutableQuery}
+ * Implements the {@link org.exoplatform.services.jcr.impl.core.query.ExecutableQuery}
  * interface.
  */
 public class QueryImpl extends AbstractQueryImpl

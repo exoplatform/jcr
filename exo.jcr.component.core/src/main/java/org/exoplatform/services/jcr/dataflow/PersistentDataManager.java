@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.ItemsPersistenceListener
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 30.12.2008
+ * <br>Date: 30.12.2008
  *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a> 
  * @version $Id: PersistentDataManager.java 34801 2009-07-31 15:44:50Z dkatayev $

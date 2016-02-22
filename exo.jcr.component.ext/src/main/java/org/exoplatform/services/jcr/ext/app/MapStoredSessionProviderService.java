@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import java.util.HashMap;
 
 /**
- * Created by The eXo Platform SAS .<br/>
+ * Created by The eXo Platform SAS .<br>
  * SessionProviderService implementation where SessionProviders are stored as key-value pairs. where
  * key is any object, for instance user's credentials
  * 

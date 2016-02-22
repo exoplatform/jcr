@@ -97,8 +97,8 @@ public class JBossStandaloneJTAManagerLookup implements TransactionManagerLookup
 
    /**
     * Loads the specified class using this class's classloader, or, if it is <code>null</code> (i.e. this class was
-    * loaded by the bootstrap classloader), the system classloader. <p/> If loadtime instrumentation via
-    * GenerateInstrumentedClassLoader is used, this class may be loaded by the bootstrap classloader. <p/>
+    * loaded by the bootstrap classloader), the system classloader. <br> If loadtime instrumentation via
+    * GenerateInstrumentedClassLoader is used, this class may be loaded by the bootstrap classloader. <br>
     *
     * @param classname name of the class to load
     * @return the class

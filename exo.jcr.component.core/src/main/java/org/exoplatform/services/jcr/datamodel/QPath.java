@@ -95,8 +95,6 @@ public class QPath implements Comparable<QPath>
 
    /**
     * @return parent path
-    * @throws PathNotFoundException
-    *           if path could not have parent - i.e. root path
     */
    public QPath makeParentPath()
    {
@@ -400,7 +398,7 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * Make child path using JCR internal QName and index 1. <br/>
+    * Make child path using JCR internal QName and index 1. <br>
     * 
     * @param parent
     *          - parent QPath
@@ -414,7 +412,7 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * Make child path using QName and Item index. <br/>
+    * Make child path using QName and Item index. <br>
     * 
     * @param parent
     *          - parent QPath
@@ -441,7 +439,7 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * Make child path using QName and Item index. <br/>
+    * Make child path using QName and Item index. <br>
     * 
     * @param parent
     *          - parent QPath
@@ -469,7 +467,7 @@ public class QPath implements Comparable<QPath>
       return path;
    }
    /**
-    * Make child path using array of QPath entries (relative path). <br/>
+    * Make child path using array of QPath entries (relative path). <br>
     * 
     * @param parent
     *          - parent QPath
@@ -494,12 +492,12 @@ public class QPath implements Comparable<QPath>
    }
 
    /**
-    * Make child path using QPath entry. <br/>
+    * Make child path using QPath entry. <br>
     * 
     * Will replace <code>makeChildPath(final QPath parent, final InternalQName name)</code> for cases
     * when path entry already exists.
     * 
-    * <br/> NOTE: it's important for same-name-siblings Items too.
+    * <br> NOTE: it's important for same-name-siblings Items too.
     * 
     * @param parent
     *          - parent QPath

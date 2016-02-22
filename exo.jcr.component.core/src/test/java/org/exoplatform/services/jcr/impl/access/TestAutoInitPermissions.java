@@ -29,7 +29,7 @@ import javax.jcr.Node;
 import javax.jcr.Session;
 
 /**
- * Created by The eXo Platform SAS. <br/>Date: 16.10.2008
+ * Created by The eXo Platform SAS. <br>Date: 16.10.2008
  * 
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex
  *         Reshetnyak</a>

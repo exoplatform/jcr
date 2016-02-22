@@ -35,7 +35,7 @@ import org.exoplatform.services.jcr.webdav.util.DeltaVConstants;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * 
  * @author Gennady Azarenkov
  * @version $Id: $

@@ -45,7 +45,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
- * Created by The eXo Platform SAS.<br/>
+ * Created by The eXo Platform SAS.<br>
  * Prerequisite: enable access control i.e.
  * <access-control>optional</access-control>
  * 

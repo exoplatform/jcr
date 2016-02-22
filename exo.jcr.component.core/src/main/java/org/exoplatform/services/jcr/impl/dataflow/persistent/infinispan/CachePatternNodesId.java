@@ -21,7 +21,7 @@ import org.exoplatform.services.jcr.infinispan.CacheKey;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 
+ * <br>Date:
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: CachePatternNodesId.java 111 10.05.2011 serg $

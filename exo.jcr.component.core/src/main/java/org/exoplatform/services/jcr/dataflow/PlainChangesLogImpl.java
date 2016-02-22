@@ -121,12 +121,12 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
    protected List<ItemState> allPathsChanged;
 
    /** 
-    * Index in <code>childNodesInfo<code> value array to store child nodes count. 
+    * Index in <code>childNodesInfo</code> value array to store child nodes count.
    */
    protected final int CHILD_NODES_COUNT = 0;
 
    /** 
-    * Index in <code>childNodesInfo<code> value array to store last child order number. 
+    * Index in <code>childNodesInfo</code> value array to store last child order number.
     */
    protected final int CHILD_NODES_LAST_ORDER_NUMBER = 1;
 
@@ -476,7 +476,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
    /**
     * Removes the item at the rootPath and all descendants from the log
     * 
-    * @param root
+    * @param rootPath
     *          path
     */
    public void remove(QPath rootPath)
@@ -670,7 +670,7 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     * NOTE: Uses index HashMap.
     * 
     * @param itemIdentifier
-    * @param sate
+    * @param state
     * @return
     */
    public ItemState getItemState(String itemIdentifier, int state)
@@ -824,9 +824,6 @@ public class PlainChangesLogImpl implements Externalizable, PlainChangesLog
     *          - filter only the given list states (ORed), or all if it's null
     * @param isPersisted
     *          - filter only persisted/not persisted, or all if it's null
-    * @param orAncestor
-    *          - may return the item ancestor if true and the ancestor was changed last, or only item
-    *          with given path if it's null
     * @return - filtered {@link ItemState}
     * @throws IllegalPathException
     */

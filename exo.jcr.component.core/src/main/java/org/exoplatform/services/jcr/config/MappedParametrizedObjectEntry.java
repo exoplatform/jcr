@@ -158,7 +158,7 @@ public abstract class MappedParametrizedObjectEntry
     * Set parameter as integer
     * 
     * @param name
-    * @param defaultValue
+    * @param value
     */
    public void putIntegerParameter(String name, Integer value)
    {
@@ -286,7 +286,7 @@ public abstract class MappedParametrizedObjectEntry
    }
 
    /**
-    * Parse named parameter using {@link StringNumberParser.parseTime} and return time in
+    * Parse named parameter using {@link StringNumberParser#parseTime(String)} and return time in
     * milliseconds (Long value).
     * 
     * @param name
@@ -317,7 +317,7 @@ public abstract class MappedParametrizedObjectEntry
    }
 
    /**
-    * Parse named parameter using {@link StringNumberParser.parseTime} and return time in
+    * Parse named parameter using {@link StringNumberParser#parseTime(String)} and return time in
     * milliseconds (Long value).
     * 
     * @param name

@@ -91,7 +91,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
- * Created by The eXo Platform SAS .<br/>
+ * Created by The eXo Platform SAS .<br>
  * 
  * @author Gennady Azarenkov
  * @version $Id: $

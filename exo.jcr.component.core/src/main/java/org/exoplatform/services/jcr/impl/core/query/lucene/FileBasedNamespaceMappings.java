@@ -38,7 +38,7 @@ import javax.jcr.RepositoryException;
  * NamespaceResolver that holds a namespace
  * mapping that is used internally in the search index. Storing paths with the
  * full uri of a namespace would require too much space in the search index.
- * <p/>
+ * <br>
  * Whenever a yet unknown namespace uri to prefix mapping is requested, a new
  * prefix is created on the fly and associated with the namespace. Known
  * namespace mappings are stored in a properties file.

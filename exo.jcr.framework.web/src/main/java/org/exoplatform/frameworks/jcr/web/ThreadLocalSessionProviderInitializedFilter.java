@@ -39,7 +39,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
 /**
- * Created by The eXo Platform SAS . <br/> Checks out if there are SessionProvider instance in
+ * Created by The eXo Platform SAS . <br> Checks out if there are SessionProvider instance in
  * current thread using ThreadLocalSessionProviderService, if no, initializes it getting current
  * credentials from AuthenticationService and initializing ThreadLocalSessionProviderService with
  * newly created SessionProvider

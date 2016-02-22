@@ -24,7 +24,7 @@ import java.io.InputStream;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>
+ * <br>
  * Date: 13.02.2009
  * 
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
@@ -124,12 +124,12 @@ public interface ObjectWriter
     * <p>
     * 
     * <pre>
-    * &lt;code&gt;
-    * (byte)(0xff &amp; (v &gt;&gt; 24))
-    * (byte)(0xff &amp; (v &gt;&gt; 16))
-    * (byte)(0xff &amp; (v &gt;&gt;    8))
+    * {@code
+    * (byte)(0xff &amp; (v >> 24))
+    * (byte)(0xff &amp; (v >> 16))
+    * (byte)(0xff &amp; (v >>    8))
     * (byte)(0xff &amp; v)
-    * &lt;/code&gt;
+    * }
     * </pre>
     * <p>
     * The bytes written by this method may be read by the <code>readInt</code> method of interface
@@ -148,16 +148,16 @@ public interface ObjectWriter
     * <p>
     * 
     * <pre>
-    * &lt;code&gt;
-    * (byte)(0xff &amp; (v &gt;&gt; 56))
-    * (byte)(0xff &amp; (v &gt;&gt; 48))
-    * (byte)(0xff &amp; (v &gt;&gt; 40))
-    * (byte)(0xff &amp; (v &gt;&gt; 32))
-    * (byte)(0xff &amp; (v &gt;&gt; 24))
-    * (byte)(0xff &amp; (v &gt;&gt; 16))
-    * (byte)(0xff &amp; (v &gt;&gt;  8))
+    * {@code
+    * (byte)(0xff &amp; (v >> 56))
+    * (byte)(0xff &amp; (v >> 48))
+    * (byte)(0xff &amp; (v >> 40))
+    * (byte)(0xff &amp; (v >> 32))
+    * (byte)(0xff &amp; (v >> 24))
+    * (byte)(0xff &amp; (v >> 16))
+    * (byte)(0xff &amp; (v >>  8))
     * (byte)(0xff &amp; v)
-    * &lt;/code&gt;
+    * }
     * </pre>
     * <p>
     * The bytes written by this method may be read by the <code>readLong</code> method of interface

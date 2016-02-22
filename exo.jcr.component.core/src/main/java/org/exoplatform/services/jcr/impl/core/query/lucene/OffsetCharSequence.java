@@ -71,14 +71,14 @@ final class OffsetCharSequence implements CharSequence, Comparable<OffsetCharSeq
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public int length() {
         return base.length() - offset;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public char charAt(int index) {
         if (transform == TRANSFORM_NONE) {
@@ -93,7 +93,7 @@ final class OffsetCharSequence implements CharSequence, Comparable<OffsetCharSeq
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public CharSequence subSequence(int start, int end) {
         CharSequence seq = base.subSequence(start + offset, end + offset);
@@ -104,7 +104,7 @@ final class OffsetCharSequence implements CharSequence, Comparable<OffsetCharSeq
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public String toString() {
         if (transform == TRANSFORM_NONE) {

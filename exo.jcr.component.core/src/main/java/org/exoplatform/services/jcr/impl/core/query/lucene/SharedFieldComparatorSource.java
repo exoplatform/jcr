@@ -85,7 +85,6 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
     *
     * @param fieldname the shared field.
     * @param ism       the item state manager of this workspace.
-    * @param hmgr      the hierarchy manager of this workspace.
     * @param nsMappings the index internal namespace mappings.
     */
    public SharedFieldComparatorSource(String fieldname, ItemDataConsumer ism, NamespaceMappings nsMappings)
@@ -101,7 +100,7 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
     * and a <code>reader</code>.
     *
     * @param propertyName the relative path to the property to sort on as returned
-    *          by {@link org.apache.jackrabbit.spi.Path#getString()}.
+    *          by org.apache.jackrabbit.spi.Path#getString().
     * @return a <code>FieldComparator</code>
     * @throws java.io.IOException if an error occurs
     */
@@ -315,7 +314,7 @@ public class SharedFieldComparatorSource extends FieldComparatorSource
       /**
        * Create a new instance of the <code>FieldComparator</code>.
        *
-       * @param propertyName  relative path of the property
+       * @param relPath  relative path of the property
        * @param numHits       the number of values
        */
       public RelPathFieldComparator(QPath relPath, int numHits)

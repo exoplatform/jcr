@@ -72,7 +72,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
- * Created by The eXo Platform SAS.<br/>
+ * Created by The eXo Platform SAS.<br>
  * Implementation of javax.jcr.Repository
  *
  * @author <a href="mailto:geaz@users.sourceforge.net">Gennady Azarenkov </a>
@@ -259,14 +259,13 @@ public class RepositoryImpl implements ManageableRepository
     * <code>configWorkspace(WorkspaceEntry wsConfig)</code> - registration a new
     * configuration in RepositoryContainer and create WorkspaceContainer.
     * Second, the main step, is
-    * <code>initWorkspace(String workspaceName, String rootNodeType)</code> -
+    * <code>initWorkspace()</code> -
     * initializing workspace by name and root nodetype. Third, final step,
     * starting all components of workspace. Before creation workspace <b>must be
     * configured</b>
     *
-    * @see org.exoplatform.services.jcr.core.RepositoryImpl#configWorkspace(org.exoplatform.services.jcr.config.WorkspaceEntry
-    *      )
-    * @see org.exoplatform.services.jcr.core.RepositoryImpl#initWorkspace(java.lang.String,java.lang.String)
+    * @see RepositoryImpl#configWorkspace(org.exoplatform.services.jcr.config.WorkspaceEntry)
+    * @see WorkspaceInitializer#initWorkspace()
     * @param workspaceName - Creates a new Workspace with the specified name
     * @throws RepositoryException
     */

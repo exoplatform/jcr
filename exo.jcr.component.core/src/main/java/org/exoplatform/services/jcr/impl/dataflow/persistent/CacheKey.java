@@ -23,11 +23,11 @@ import org.exoplatform.services.jcr.datamodel.QPath;
 import java.io.Serializable;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  * 
- * Base class for WorkspaceCache keys.<br/>
+ * Base class for WorkspaceCache keys.<br>
  * 
- * Date: 10.06.2008<br/>
+ * Date: 10.06.2008<br>
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: CacheKey.java 34801 2009-07-31 15:44:50Z dkatayev $

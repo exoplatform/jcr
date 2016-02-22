@@ -333,7 +333,7 @@ public class Text
    /**
     * The list of characters that are not encoded by the <code>escape()</code> and
     * <code>unescape()</code> METHODS. They contains the characters as defined 'unreserved' in
-    * section 2.3 of the RFC 2396 'URI generic syntax': <p/>
+    * section 2.3 of the RFC 2396 'URI generic syntax': <br>
     * 
     * <pre>
     * unreserved  = alphanum | mark
@@ -538,8 +538,9 @@ public class Text
    /**
     * Escapes all illegal JCR name characters of a string. The encoding is loosely modeled after URI
     * encoding, but only encodes the characters it absolutely needs to in order to make the resulting
-    * string a valid JCR name. Use {@link #unescapeIllegalJcrChars(String)} for decoding. <p/> QName
+    * string a valid JCR name. Use {@link #unescapeIllegalJcrChars(String)} for decoding. <br> QName
     * EBNF:<br>
+    * {@code
     * <xmp> simplename ::= onecharsimplename | twocharsimplename | threeormorecharname
     * onecharsimplename ::= (* Any Unicode character except: '.', '/', ':', '[', ']', '*', ''', '"',
     * '|' or any whitespace character *) twocharsimplename ::= '.' onecharsimplename |
@@ -547,6 +548,7 @@ public class Text
     * string nonspace string ::= char | string char char ::= nonspace | ' ' nonspace ::= (* Any
     * Unicode character except: '/', ':', '[', ']', '*', ''', '"', '|' or any whitespace character *)
     * </xmp>
+    * }
     * 
     * @param name
     *          the name to escape
@@ -575,7 +577,7 @@ public class Text
    }
 
    /**
-    * Unescapes previously escaped jcr chars. <p/> Please note, that this does not exactly the same
+    * Unescapes previously escaped jcr chars. <br> Please note, that this does not exactly the same
     * as the url related {@link #unescape(String)}, since it handles the byte-encoding differently.
     * 
     * @param name
@@ -653,7 +655,7 @@ public class Text
    /**
     * Returns the namespace prefix of the given <code>qname</code>. If the prefix is missing, an
     * empty string is returned. Please note, that this method does not validate the name or prefix.
-    * </p> the qname has the format: qname := [prefix ':'] local;
+    * <br> the qname has the format: qname := [prefix ':'] local;
     * 
     * @param qname
     *          a qualified name
@@ -670,7 +672,7 @@ public class Text
 
    /**
     * Returns the local name of the given <code>qname</code>. Please note, that this method does not
-    * validate the name. </p> the qname has the format: qname := [prefix ':'] local;
+    * validate the name. <br> the qname has the format: qname := [prefix ':'] local;
     * 
     * @param qname
     *          a qualified name

@@ -36,7 +36,7 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.login.LoginContext;
 
 /**
- * Created by The eXo Platform SAS .<br/>
+ * Created by The eXo Platform SAS .<br>
  * 
  * Implements JAAS based authentication using LoginContext configured
  * 

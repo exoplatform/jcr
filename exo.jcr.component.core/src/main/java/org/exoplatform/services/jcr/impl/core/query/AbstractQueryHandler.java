@@ -128,8 +128,8 @@ public abstract class AbstractQueryHandler implements QueryHandler
    }
 
    /**
-    * This default implementation calls the individual {@link #deleteNode(org.apache.jackrabbit.core.NodeId)}
-    * and {@link #addNode(org.apache.jackrabbit.core.state.NodeState)} methods
+    * This default implementation calls the individual {@link #deleteNode(String)}
+    * and {@link #addNode(NodeData)} methods
     * for each entry in the iterators. First the nodes to remove are processed
     * then the nodes to add.
     *

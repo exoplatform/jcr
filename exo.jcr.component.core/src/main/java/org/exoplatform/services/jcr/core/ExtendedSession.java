@@ -141,7 +141,7 @@ public interface ExtendedSession extends Session
     * version histories must be included into resulting xml. 
     * 
     * @throws PathNotFoundException if no node exists at <code>absPath</code>.
-    * @throws org.xml.sax.SAXException if an error occurs while feeding events to the
+    * @throws IOException if an error occurs while feeding events to the
     * <code>org.xml.sax.ContentHandler</code>.
     * @throws RepositoryException if another error occurs.
     */
@@ -193,7 +193,7 @@ public interface ExtendedSession extends Session
     * <p>
     * In order to persist the change, a <code>save</code>
     * must be called on either the session or a common ancestor to both the source and destination locations.
-    * <p/>
+    * <br>
     * A <code>ConstraintViolationException</code> is thrown either immediately or on <code>save</code>
     * if performing this operation would violate a node type or implementation-specific constraint.
     * Implementations may differ on when this validation is performed.
@@ -205,7 +205,7 @@ public interface ExtendedSession extends Session
     * Note that this behavior differs from that of
     * {@link Workspace#move}, which operates directly in the persistent
     * workspace and does not require a <code>save</code>.
-    * <p/>
+    * <br>
     * The <code>destAbsPath</code> provided must not
     * have an index on its final element. If it does then a <code>RepositoryException</code>
     * is thrown. Strictly speaking, the <code>destAbsPath</code> parameter is actually an <i>absolute path</i>
@@ -214,25 +214,25 @@ public interface ExtendedSession extends Session
     * ordering (if such ordering is supported). If ordering is supported by the node type of
     * the parent node of the new location, then the newly moved node is appended to the end of the
     * child node list.
-    * <p/>
+    * <br>
     * This method cannot be used to move just an individual property by itself.
     * It moves an entire node and its subtree (including, of course, any properties
     * contained therein).
-    * <p/>
+    * <br>
     * If no node exists at <code>srcAbsPath</code> or no node exists one level above <code>destAbsPath</code>
     * (in other words, there is no node that will serve as the parent of the moved item) then a
     * <code>PathNotFoundException</code> is thrown either immediately or on <code>save</code>.
     * Implementations may differ on when this validation is performed.
-    * <p/>
+    * <br>
     * An <code>ItemExistsException</code> is thrown either immediately or on <code>save</code>
     * if a property already exists at <code>destAbsPath</code> or a node already exists there and same-name siblings
     * are not allowed. Implementations may differ on when this validation is performed.
-    * <p/>
+    * <br>
     * A <code>VersionException</code> is thrown either immediately or on <code>save</code>
-    * if the parent node of <code>destAbsPath</code> or the parent node of <code>srcAbsPath] is versionable and
+    * if the parent node of <code>destAbsPath</code> or the parent node of <code>srcAbsPath</code> is versionable and
     * checked-in, or is non-versionable and its nearest versionable ancestor is checked-in.
     * Implementations may differ on when this validation is performed.
-    * <p/>
+    * <br>
     * A <code>LockException</code> is thrown either immediately or on <code>save</code>
     * if a lock prevents the <code>move</code>. Implementations may differ on when this validation is performed.
     * @param srcAbsPath the root of the subtree to be moved.

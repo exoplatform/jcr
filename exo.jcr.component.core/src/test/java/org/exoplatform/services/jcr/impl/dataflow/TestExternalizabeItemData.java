@@ -31,7 +31,7 @@ import java.io.ObjectOutputStream;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 21.01.2009
+ * <br>Date: 21.01.2009
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$

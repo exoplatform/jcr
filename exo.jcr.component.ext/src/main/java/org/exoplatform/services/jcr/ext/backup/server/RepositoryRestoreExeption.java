@@ -19,7 +19,7 @@ package org.exoplatform.services.jcr.ext.backup.server;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 2010
+ * <br>Date: 2010
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
@@ -32,8 +32,6 @@ public class RepositoryRestoreExeption
     * 
     * @param message
     *          String, the exception message
-    * @param e
-    *          the cause exception
     */
    public RepositoryRestoreExeption(String message)
    {

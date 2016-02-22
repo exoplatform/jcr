@@ -40,8 +40,10 @@ import java.util.TreeSet;
  * into a thread-safe main-memory hash map that can be used for fast
  * high-frequency lookups of synonyms for any given (lowercase) word string.
  * <p>
+ * {@literal
  * There holds: If B is a synonym for A (A -> B) then A is also a synonym for B (B -> A).
  * There does not necessarily hold: A -> B, B -> C then A -> C.
+ * }
  * <p>
  * Loading typically takes some 1.5 secs, so should be done only once per
  * (server) program execution, using a singleton pattern. Once loaded, a
@@ -64,7 +66,7 @@ import java.util.TreeSet;
  *     System.out.println(words[i] + ":" + java.util.Arrays.asList(synonyms).toString());
  * }
  * </pre>
- * <b/>
+ * <br>
  * Example output:
  * <pre class="prettyprint">
  * hard:[arduous, backbreaking, difficult, fermented, firmly, grueling, gruelling, heavily, heavy, intemperately, knockout, laborious, punishing, severe, severely, strong, toilsome, tough]
@@ -74,7 +76,6 @@ import java.util.TreeSet;
  * xxxx:[]
  * </pre>
  *
- * <p>
  * <b>See also:</b><br>
  * <a target="_blank"
  *      href="http://www.cogsci.princeton.edu/~wn/man/prologdb.5WN.html">prologdb

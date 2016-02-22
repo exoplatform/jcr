@@ -68,13 +68,13 @@ public class ValueDataUtil
     *          property identifier
     * @param type
     *          property type, {@link PropertyType}
-    * @param orderNum
+    * @param orderNumber
     *          value data order number
     * @param version
     *          property persisted version    
     * @param content
     *          value data represented in stream     
-    * @param SpoolConfig
+    * @param spoolConfig
     *          contains threshold for spooling
     * @return PersistedValueData
     * @throws IOException
@@ -163,9 +163,9 @@ public class ValueDataUtil
     *          property type, {@link PropertyType}
     * @param file
     *          File
-    * @param orderNum
+    * @param orderNumber
     *          value data order number
-    * @param SpoolConfig
+    * @param spoolConfig
     *          contains threshold for spooling
     * @return PersistedValueData
     * @throws IOException

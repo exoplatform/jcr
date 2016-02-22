@@ -280,7 +280,7 @@ public class RelationQueryNode extends NAryQueryNode implements QueryConstants {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public boolean equals(Object obj) {
         if (obj instanceof RelationQueryNode) {

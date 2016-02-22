@@ -274,7 +274,7 @@ public class WorkspaceQuotaManager implements Startable, Backupable, Suspendable
    }
 
    /**
-    * @see QuotaManager#removeWorkspaceQuota(String, String, long)
+    * @see QuotaManager#removeWorkspaceQuota(String, String)
     */
    @Managed
    @ManagedDescription("Removes workspace quota limit")

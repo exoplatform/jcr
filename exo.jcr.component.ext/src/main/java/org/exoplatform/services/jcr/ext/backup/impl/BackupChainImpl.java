@@ -47,7 +47,7 @@ import java.util.TimerTask;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * 
  * @author Gennady Azarenkov
  * @version $Id: $

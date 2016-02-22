@@ -36,7 +36,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 /**
- * Created by The eXo Platform SAS.<br/> item state to save
+ * Created by The eXo Platform SAS.<br> item state to save
  * 
  * @author Gennady Azarenkov
  * @version $Id: ItemState.java 11907 2008-03-13 15:36:21Z ksm $
@@ -429,7 +429,7 @@ public class ItemState implements Externalizable
    }
 
    /**
-    * @see {@link ChangedSizeHandler#getChangedSize()}
+    * @see ChangedSizeHandler#getChangedSize()
     */
    public long getChangedSize()
    {

@@ -30,7 +30,7 @@ import java.util.Locale;
 import javax.xml.namespace.QName;
 
 /**
- * Created by The eXo Platform SAS .<br/>
+ * Created by The eXo Platform SAS .<br>
  * DOM - like (but lighter) webdav property representation
  * 
  * @author Gennady Azarenkov

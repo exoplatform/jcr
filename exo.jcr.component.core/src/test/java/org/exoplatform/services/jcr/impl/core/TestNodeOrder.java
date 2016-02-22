@@ -47,7 +47,7 @@ import javax.jcr.Session;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 13.11.2009
+ * <br>Date: 13.11.2009
  *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a> 
  * @version $Id$

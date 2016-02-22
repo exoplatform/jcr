@@ -30,7 +30,7 @@ import java.security.NoSuchAlgorithmException;
  * Created by The eXo Platform SAS.
  * 
  * CAS IO support covers some work will be produced in target FileIOChannels to make them
- * CASeable.<br/> - add value - delete value -
+ * CASeable.<br> - add value - delete value -
  * 
  * Date: 15.07.2008
  * 
@@ -55,7 +55,7 @@ public class CASableIOSupport
    }
 
    /**
-    * Open digester output.<br/> Digester output will write into given file and calc hash for a
+    * Open digester output.<br> Digester output will write into given file and calc hash for a
     * content.
     * 
     * @param file

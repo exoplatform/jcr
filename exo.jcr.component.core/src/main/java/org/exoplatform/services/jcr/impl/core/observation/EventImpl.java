@@ -74,7 +74,7 @@ public class EventImpl implements Event, ExtendedEvent
    }
 
    /**
-    * @see javax.jcr.observation.Event#getUserId
+    * @see javax.jcr.observation.Event#getUserID
     */
    public String getUserID()
    {

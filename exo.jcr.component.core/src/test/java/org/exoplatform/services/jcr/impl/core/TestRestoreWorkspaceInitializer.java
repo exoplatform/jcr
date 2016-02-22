@@ -34,9 +34,9 @@ import javax.jcr.Value;
 import javax.jcr.ValueFormatException;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  * 
- * Date: 08.05.2008 <br/>
+ * Date: 08.05.2008 <br>
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestRestoreWorkspaceInitializer.java 13986 2008-05-08 10:48:43Z pnedonosko $

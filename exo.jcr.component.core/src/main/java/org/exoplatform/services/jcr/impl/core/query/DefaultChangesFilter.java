@@ -76,7 +76,7 @@ public class DefaultChangesFilter extends IndexerChangesFilter
    /**
     * @param removedNodes 
     * @param addedNodes 
-    * @see org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter#doUpdateIndex()
+    * @see org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter#doUpdateIndex(Set, Set, Set, Set)
     */
    @Override
    protected void doUpdateIndex(Set<String> removedNodes, Set<String> addedNodes, Set<String> parentRemovedNodes,

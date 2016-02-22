@@ -289,7 +289,7 @@ public class JDBCWorkspaceDataContainerChecker
     * All ValueDatas that have storage description (that means, value data stored in value storage) will be inspected:
     * <ul>
     * <li> does value exists in value storage;</li>
-    * <ul>
+    * </ul>
     */
    public void checkValueStorage(boolean autoRepair)
    {

@@ -239,7 +239,7 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
    }
 
    /**
-    * Makes storage file path by propertyId and order number.<br/>
+    * Makes storage file path by propertyId and order number.<br>
     * 
     * @param propertyId
     *          String
@@ -250,7 +250,7 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
    protected abstract String makeFilePath(String propertyId, int orderNumber);
 
    /**
-    * Creates storage file by propertyId and order number.<br/>
+    * Creates storage file by propertyId and order number.<br>
     * 
     * File used for read/write operations.
     * 
@@ -263,7 +263,7 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
    protected abstract File getFile(String propertyId, int orderNumber) throws IOException;
 
    /**
-    * Creates storage files list by propertyId.<br/>
+    * Creates storage files list by propertyId.<br>
     * 
     * NOTE: Files list used for <strong>delete</strong> operation.
     * 

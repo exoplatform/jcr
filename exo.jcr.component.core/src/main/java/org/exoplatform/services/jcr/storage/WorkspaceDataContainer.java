@@ -95,7 +95,7 @@ public interface WorkspaceDataContainer extends DataContainer
    WorkspaceStorageConnection openConnection() throws RepositoryException;
 
    /**
-    * Open connection and marked it as READ-ONLY if <code>readOnly</code> is true. <br/>
+    * Open connection and marked it as READ-ONLY if <code>readOnly</code> is true. <br>
     * EXPERIMENTAL! Use it with care.
     * 
     * @param readOnly

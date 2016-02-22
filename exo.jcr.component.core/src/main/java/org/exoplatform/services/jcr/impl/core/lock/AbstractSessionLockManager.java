@@ -55,7 +55,7 @@ public abstract class AbstractSessionLockManager implements SessionLockManager
     * Checks the node, is it accessible according to possible locks. If node is locked and current 
     * session is not lockHolder <code> false</code> will be returned.
     *  
-    * @param data - node that must be checked
+    * @param node - node that must be checked
     * @return true - if lock not exist or current session is LockOwner; false - in other case;
     * @throws LockException - if lock engine exception happens
     */

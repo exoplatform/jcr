@@ -46,9 +46,9 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  *
- * Date: 27.05.2008 <br/>
+ * Date: 27.05.2008 <br>
  *
  * Inits JCRBrowser instance in HTTP session.
  *

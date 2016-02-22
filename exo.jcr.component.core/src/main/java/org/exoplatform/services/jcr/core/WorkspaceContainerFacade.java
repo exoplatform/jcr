@@ -36,7 +36,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS .<br/> An entry point to the implementation, used for extending
+ * Created by The eXo Platform SAS .<br> An entry point to the implementation, used for extending
  * functionality
  * 
  * @author Gennady Azarenkov
@@ -88,7 +88,7 @@ public final class WorkspaceContainerFacade
     * 
     * @param componentType
     *          component type
-    * @return List<Object>
+    * @return List of Object
     */
    public <T> List<T> getComponentInstancesOfType(Class<T> componentType)
    {
@@ -123,9 +123,6 @@ public final class WorkspaceContainerFacade
 
    /**
     * Returns current workspace state.
-    * 
-    * @param state
-    * @throws RepositoryException
     */
    public int getState()
    {

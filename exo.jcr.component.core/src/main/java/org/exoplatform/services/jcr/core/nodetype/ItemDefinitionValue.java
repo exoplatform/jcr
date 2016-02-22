@@ -21,7 +21,7 @@ package org.exoplatform.services.jcr.core.nodetype;
 import javax.jcr.nodetype.ItemDefinition;
 
 /**
- * Created by The eXo Platform SAS.<br/> ItemDefinition value object.
+ * Created by The eXo Platform SAS.<br> ItemDefinition value object.
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady
  *         Azarenkov</a>

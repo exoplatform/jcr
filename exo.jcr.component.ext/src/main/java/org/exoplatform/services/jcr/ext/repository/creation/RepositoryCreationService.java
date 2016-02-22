@@ -22,7 +22,7 @@ import org.exoplatform.services.jcr.config.RepositoryEntry;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 
+ * <br>Date:
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: RepositoryCreationService.java 111 2008-11-11 11:11:11Z serg $
@@ -37,7 +37,7 @@ public interface RepositoryCreationService
     * @param creationProps - storage creation properties 
     * @throws RepositoryConfigurationException
     *          if some exception occurred during repository creation or repository name is absent in reserved list
-    * @throws RepositoryCreationServiceException
+    * @throws RepositoryCreationException
     *          if some exception occurred during repository creation or repository name is absent in reserved list
     */
    void createRepository(String backupId, RepositoryEntry rEntry, StorageCreationProperties creationProps)
@@ -50,7 +50,7 @@ public interface RepositoryCreationService
     * @param backupId - backup id
     * @throws RepositoryConfigurationException
     *          if some exception occurred during repository creation or repository name is absent in reserved list
-    * @throws RepositoryCreationServiceException
+    * @throws RepositoryCreationException
     *          if some exception occurred during repository creation or repository name is absent in reserved list
     */
    void createRepository(String backupId, RepositoryEntry rEntry) throws RepositoryConfigurationException,
@@ -62,7 +62,7 @@ public interface RepositoryCreationService
     * 
     * @param repositoryName - repositoryName
     * @return repository token. Anyone obtaining a token can later create a repository of reserved name.
-    * @throws RepositoryCreationServiceException if can't reserve name
+    * @throws RepositoryCreationException if can't reserve name
     */
    String reserveRepositoryName(String repositoryName) throws RepositoryCreationException;
 
@@ -76,7 +76,7 @@ public interface RepositoryCreationService
     * @param creationProps - storage creation properties
     * @throws RepositoryConfigurationException
     *          if some exception occurred during repository creation or repository name is absent in reserved list
-    * @throws RepositoryCreationServiceException
+    * @throws RepositoryCreationException
     *          if some exception occurred during repository creation or repository name is absent in reserved list
     */
    void createRepository(String backupId, RepositoryEntry rEntry, String rToken, StorageCreationProperties creationProps)
@@ -91,7 +91,7 @@ public interface RepositoryCreationService
     * @param rToken - token
     * @throws RepositoryConfigurationException
     *          if some exception occurred during repository creation or repository name is absent in reserved list
-    * @throws RepositoryCreationServiceException
+    * @throws RepositoryCreationException
     *          if some exception occurred during repository creation or repository name is absent in reserved list
     */
    void createRepository(String backupId, RepositoryEntry rEntry, String rToken)
@@ -102,7 +102,7 @@ public interface RepositoryCreationService
     * 
     * @param repositoryName - the repository name to delete
     * @param forceRemove - force close all opened sessions 
-    * @throws RepositoryCreationServiceException
+    * @throws RepositoryCreationException
     *          if some exception occurred during repository removing occurred
     */
    void removeRepository(String repositoryName, boolean forceRemove) throws RepositoryCreationException;

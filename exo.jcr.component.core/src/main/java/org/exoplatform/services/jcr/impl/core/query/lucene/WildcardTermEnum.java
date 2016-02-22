@@ -127,7 +127,7 @@ class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected boolean termCompare(Term term) {
         if (transform == TRANSFORM_NONE) {
@@ -144,14 +144,14 @@ class WildcardTermEnum extends FilteredTermEnum implements TransformConstants
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public float difference() {
         return 1.0f;
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     protected boolean endEnum() {
         return endEnum;

@@ -177,7 +177,7 @@ public class RepositoryQuotaManager implements Startable, WorkspaceManagingListe
    }
 
    /**
-    * @see QuotaManager#removeWorkspaceQuota(String, String, long)
+    * @see QuotaManager#removeWorkspaceQuota(String, String)
     */
    public void removeWorkspaceQuota(String workspaceName) throws QuotaManagerException
    {

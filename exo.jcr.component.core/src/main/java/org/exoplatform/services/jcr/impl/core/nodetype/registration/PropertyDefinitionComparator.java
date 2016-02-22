@@ -73,7 +73,9 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
 
    /**
     * @param nodeTypeDataManager
-    * @param persister
+    * @param dataConsumer
+    * @param itemAutocreator
+    * @param affectedNodes
     * @param locationFactory
     */
    public PropertyDefinitionComparator(NodeTypeDataManager nodeTypeDataManager, ItemDataConsumer dataConsumer,
@@ -176,7 +178,7 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
 
    /**
     * @param registeredNodeType
-    * @param nodes
+    * @param nodesData
     * @param recipientDefinitionData
     * @throws RepositoryException
     */
@@ -348,7 +350,7 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
    /**
     * @param toAddList
     * @param changesLog
-    * @param nodes
+    * @param nodesData
     * @param registeredNodeType
     * @throws RepositoryException
     */
@@ -441,8 +443,8 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
    /**
     * @param registeredNodeType
     * @param newDefinitionData
-    * @param removedDefinitionData
-    * @param toAddList
+    * @param allRecipientDefinition
+    * @param nodesData
     * @throws RepositoryException
     */
    private void validateAdded(NodeTypeData registeredNodeType, List<PropertyDefinitionData> newDefinitionData,
@@ -468,7 +470,7 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
    /**
     * @param registeredNodeType
     * @param changedDefinitionData
-    * @param nodes
+    * @param nodesData
     * @param allRecipientDefinition
     * @throws RepositoryException
     */
@@ -516,7 +518,8 @@ public class PropertyDefinitionComparator extends AbstractDefinitionComparator<P
    /**
     * @param registeredNodeType
     * @param recipientDefinition
-    * @param toRemoveList
+    * @param recipientDefinition
+    * @param nodesData
     * @throws RepositoryException
     */
    private void validateRemoved(NodeTypeData registeredNodeType, List<PropertyDefinitionData> removedDefinitionData,

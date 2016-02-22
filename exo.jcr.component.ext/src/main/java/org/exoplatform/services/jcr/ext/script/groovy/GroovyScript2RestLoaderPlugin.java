@@ -88,7 +88,6 @@ public class GroovyScript2RestLoaderPlugin extends BaseComponentPlugin
     *
     * @return String
     *           repository name
-    * @throws RepositoryException
     */
    public String getRepository()
    {

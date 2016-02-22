@@ -53,7 +53,7 @@ public class XMLChar
    /**
     * Returns the high surrogate of a supplemental character
     * 
-    * @param c
+    * @param ch
     *          The supplemental character to "split".
     */
    public static char highSurrogate(int ch)
@@ -64,7 +64,7 @@ public class XMLChar
    /**
     * Returns the low surrogate of a supplemental character
     * 
-    * @param c
+    * @param ch
     *          The supplemental character to "split".
     */
    public static char lowSurrogate(int ch)
@@ -75,7 +75,7 @@ public class XMLChar
    /**
     * Returns whether the given character is a high surrogate
     * 
-    * @param c
+    * @param ch
     *          The character to check.
     */
    public static boolean isHighSurrogate(int ch)
@@ -397,7 +397,7 @@ public class XMLChar
     * Returns true if the specified character is a valid NCName character as defined by production
     * [5] in Namespaces in XML recommendation. <b>NCNameChar ::= NameChar - ':'</b>
     * 
-    * @param c
+    * @param ch
     *          The character to check.
     */
    public static boolean isNCName(int ch)
@@ -436,7 +436,7 @@ public class XMLChar
     * [13] in the XML 1.0 specification. <b>PubidChar ::= #x20 | #xD | #xA | [a-zA-Z0-9] |
     * [-'()+,./:=?;!*#@$_%]</b>
     * 
-    * @param c
+    * @param ch
     *          The character to check.
     */
    public static boolean isPubid(int ch)

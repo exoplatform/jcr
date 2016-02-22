@@ -84,8 +84,6 @@ public interface NodeRepresentation
    /**
     * adds single property.
     * 
-    * @param name
-    *          .
     * @param property
     *          .
     */
@@ -94,8 +92,6 @@ public interface NodeRepresentation
    /**
     * adds multivalued property.
     * 
-    * @param name
-    *          .
     * @param properties
     *          .
     */

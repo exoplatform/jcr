@@ -39,7 +39,7 @@ public class MatchAllDocsQuery
    private IndexingConfiguration indexConfig;
 
    /**
-    * @param index
+    * @param indexConfig
     */
    public MatchAllDocsQuery(IndexingConfiguration indexConfig)
    {

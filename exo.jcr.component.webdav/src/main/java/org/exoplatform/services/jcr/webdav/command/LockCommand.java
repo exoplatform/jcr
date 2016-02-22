@@ -48,7 +48,7 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamWriter;
 
 /**
- * Created by The eXo Platform SAS<br/>
+ * Created by The eXo Platform SAS<br>
  * .
  * 
  * @author Gennady Azarenkov

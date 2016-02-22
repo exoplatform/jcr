@@ -42,7 +42,7 @@ import javax.jcr.RepositoryException;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 24.02.2009
+ * <br>Date: 24.02.2009
  * 
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id: WorkspaceRestore.java 111 2008-11-11 11:11:11Z rainf0x $
@@ -129,7 +129,7 @@ public class JobWorkspaceRestore extends Thread
     *          the BackupManager
     * @param repositoryName
     *          the destination repository
-    * @param log
+    * @param logFile
     *          the backup chain log
     * @param wEntry 
     *          the workspace entry

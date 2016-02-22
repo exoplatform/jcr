@@ -61,7 +61,7 @@ public interface ValueContentAddressStorage
     * Deletes the address for given Property Value.
     * 
     * @param propertyId String Property ID
-    * @param orderNum int
+    * @param orderNumb int
     * @throws RecordNotFoundException if Record not found
     */
    void deleteValue(String propertyId, int orderNumb) throws RecordNotFoundException, VCASException;
@@ -89,7 +89,7 @@ public interface ValueContentAddressStorage
    String getIdentifier(String propertyId, int orderNum) throws RecordNotFoundException, VCASException;
 
    /**
-    * Return identifiers (addresses) list for the given property.<br/>
+    * Return identifiers (addresses) list for the given property.<br>
     * 
     * @param propertyId
     *          - property id
@@ -101,7 +101,7 @@ public interface ValueContentAddressStorage
    List<String> getIdentifiers(String propertyId, boolean ownOnly) throws RecordNotFoundException, VCASException;
 
    /**
-    * Tell if given property shares content with other properties.<br/>
+    * Tell if given property shares content with other properties.<br>
     * 
     * NOTE: not used now.
     * 

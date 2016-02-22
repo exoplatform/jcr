@@ -1611,7 +1611,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
    }
 
    /**
-    * This is a trivial way to update the sequence as it only calls {@link #findLastOrderNumber()}
+    * This is a trivial way to update the sequence as it only calls {@link #findLastOrderNumber(int, boolean)}
     */
    protected ResultSet updateNextOrderNumber(int localMaxOrderNumber) throws SQLException
    {

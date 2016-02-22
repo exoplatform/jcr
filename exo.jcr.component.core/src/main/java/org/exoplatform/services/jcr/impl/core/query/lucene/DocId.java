@@ -165,7 +165,7 @@ abstract class DocId {
         }
 
         /**
-         * @inheritDoc
+         * {@inheritDoc}
          */
         int[] getDocumentNumbers(MultiIndexReader reader, int[] docNumbers) {
             if (docNumbers.length == 1) {
@@ -177,14 +177,14 @@ abstract class DocId {
         }
 
         /**
-         * @inheritDoc
+         * {@inheritDoc}
          */
         DocId applyOffset(int offset) {
             return new PlainDocId(docNumber + offset);
         }
 
         /**
-         * @inheritDoc
+         * {@inheritDoc}
          */
         boolean isValid(BitSet deleted) {
             return !deleted.get(docNumber);
@@ -225,7 +225,7 @@ abstract class DocId {
         }
 
         /**
-         * @inheritDoc
+         * {@inheritDoc}
          */
         int[] getDocumentNumbers(MultiIndexReader reader, int[] docNumbers)
                 throws IOException {
@@ -255,7 +255,7 @@ abstract class DocId {
          * This implementation will return <code>this</code>. Document number is
          * not known until resolved in {@link #getDocumentNumbers(MultiIndexReader,int[])}.
          *
-         * @inheritDoc
+         * {@inheritDoc}
          */
         DocId applyOffset(int offset) {
             return this;
@@ -303,7 +303,7 @@ abstract class DocId {
         }
 
         /**
-         * @inheritDoc
+         * {@inheritDoc}
          */
         int[] getDocumentNumbers(MultiIndexReader reader, int[] docNumbers)
                 throws IOException {
@@ -319,7 +319,7 @@ abstract class DocId {
          * This implementation will return <code>this</code>. Document number is
          * not known until resolved in {@link #getDocumentNumbers(MultiIndexReader,int[])}.
          *
-         * @inheritDoc
+         * {@inheritDoc}
          */
         DocId applyOffset(int offset) {
             return this;

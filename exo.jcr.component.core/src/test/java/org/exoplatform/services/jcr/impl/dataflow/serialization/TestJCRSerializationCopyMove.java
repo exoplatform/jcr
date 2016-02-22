@@ -30,7 +30,7 @@ import javax.jcr.Node;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 16.02.2009
+ * <br>Date: 16.02.2009
  * 
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
  * @version $Id: JCRSerializatinCopyMoveTest.java 111 2008-11-11 11:11:11Z rainf0x $

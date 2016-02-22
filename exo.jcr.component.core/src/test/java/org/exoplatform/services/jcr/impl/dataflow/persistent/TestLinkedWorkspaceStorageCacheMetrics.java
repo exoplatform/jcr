@@ -83,7 +83,7 @@ public class TestLinkedWorkspaceStorageCacheMetrics extends JcrImplBaseTest
    /**
     * Test if expired scheduler works.
     * 
-    * Test instance runs after 5 second. (*) <br/>
+    * Test instance runs after 5 second. (*) <br>
     * 
     * @throws Exception
     */

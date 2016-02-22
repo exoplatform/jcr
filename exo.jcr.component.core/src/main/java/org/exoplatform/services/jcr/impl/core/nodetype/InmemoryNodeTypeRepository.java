@@ -60,8 +60,7 @@ public class InmemoryNodeTypeRepository extends AbstractNodeTypeRepository
    }
 
    /**
-    * @param defsHolder
-    * @param hierarchy
+    * @param nodeTypeDataPersister
     */
    public InmemoryNodeTypeRepository(NodeTypeDataPersister nodeTypeDataPersister)
    {

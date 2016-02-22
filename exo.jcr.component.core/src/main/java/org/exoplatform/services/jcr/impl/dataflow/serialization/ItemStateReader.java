@@ -32,7 +32,7 @@ import java.io.IOException;
 import java.io.StreamCorruptedException;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  * Date:
  * 
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>

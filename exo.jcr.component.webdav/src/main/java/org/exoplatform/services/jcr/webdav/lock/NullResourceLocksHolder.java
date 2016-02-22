@@ -27,7 +27,7 @@ import javax.jcr.Session;
 import javax.jcr.lock.LockException;
 
 /**
- * Created by The eXo Platform SAS .<br/>
+ * Created by The eXo Platform SAS .<br>
  * 
  * @author Gennady Azarenkov
  * @version $Id: $

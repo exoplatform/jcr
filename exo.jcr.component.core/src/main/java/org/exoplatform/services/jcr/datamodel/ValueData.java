@@ -56,7 +56,7 @@ public interface ValueData
    byte[] getAsByteArray() throws IllegalStateException, IOException;
 
    /**
-    * Renders this value data as stream of bytes. <br/>NOTE: client is responsible for closing this stream,
+    * Renders this value data as stream of bytes. <br>NOTE: client is responsible for closing this stream,
     * else IllegalStateException occurs in close().
     * 
     * @return InputStream, this value data as stream of bytes
@@ -90,13 +90,13 @@ public interface ValueData
 
    /**
     * Indicates whether some other ValueData is "equals to" this ValueData. Return "true" if <code>valueData</code>  
-    * can be treated as equal to this ValueData. Otherwise "false" returned.<p/>
+    * can be treated as equal to this ValueData. Otherwise "false" returned.<br>
     * 
     * This method assumes that ValueData.equals(Object) implemented also and uses this method to perform the check.  
     * 
     * @see java.lang.Object#equals(Object)
     * 
-    * @param valueData, another ValueData 
+    * @param another another ValueData
     * @return boolean, "true" if this ValueData equals to another ValueData
     */
    boolean equals(ValueData another);

@@ -27,7 +27,7 @@ import javax.jcr.PathNotFoundException;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 2009
+ * <br>Date: 2009
  *
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a> 
  * @version $Id$

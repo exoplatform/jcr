@@ -22,7 +22,7 @@ import javax.jcr.RepositoryException;
 
 /**
  * A MatchResult instance represents the result of matching a {@link Pattern} against
- * a {@link Path}.
+ * a {@link QPath}.
  */
 public class MatchResult
 {
@@ -126,7 +126,7 @@ public class MatchResult
    }
 
    /**
-    * Returns true if the {@link Pattern} matched the whole {@link Path}.
+    * Returns true if the {@link Pattern} matched the whole {@link QPath}.
     * @return
     */
    public boolean isFullMatch()

@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * This is the global jackrabbit lucene analyzer. By default, all
  * properties are indexed with the <code>StandardAnalyzer(new String[]{})</code>,
- * unless in the <SearchIndex> configuration a global analyzer is defined.
+ * unless in the SearchIndex configuration a global analyzer is defined.
  *
  * In the indexing configuration, properties can be configured to be
  * indexed with a specific analyzer. If configured, this analyzer is used to

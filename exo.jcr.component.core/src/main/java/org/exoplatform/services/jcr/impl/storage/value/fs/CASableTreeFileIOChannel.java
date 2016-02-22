@@ -76,12 +76,12 @@ public class CASableTreeFileIOChannel extends TreeFileIOChannel
    }
 
    /**
-    * Delete given property value.<br/>
+    * Delete given property value.<br>
     * Special logic implemented for Values CAS. As the storage may have one file (same hash) for
-    * multiple properties/values.<br/>
-    * The implementation assumes that delete operations based on {@link getFiles()} method result.
+    * multiple properties/values.<br>
+    * The implementation assumes that delete operations based on {@link #getFiles(String)} method result.
     * 
-    * @see getFiles()
+    * @see #getFiles(String)
     * @param propertyId
     *          - property id to be deleted
     */

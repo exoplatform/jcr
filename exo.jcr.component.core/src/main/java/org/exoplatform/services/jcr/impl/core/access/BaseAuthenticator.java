@@ -28,7 +28,7 @@ import org.exoplatform.services.security.IdentityRegistry;
 import javax.jcr.LoginException;
 
 /**
- * Created by The eXo Platform SAS.<br/> Abstract implementation of AuthenticationPolicy interface
+ * Created by The eXo Platform SAS.<br> Abstract implementation of AuthenticationPolicy interface
  * 
  * @author eXo Platform
  * @version $Id: BaseAuthenticator.java 14100 2008-05-12 10:53:47Z gazarenkov $

@@ -46,7 +46,7 @@ import javax.xml.stream.events.StartElement;
 
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  * Date: 15 Dec 2008
  * 
  * @author <a href="dkatayev@gmail.com">Dmytro Katayev</a>

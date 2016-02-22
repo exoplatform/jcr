@@ -63,7 +63,6 @@ public interface RepositoryService
     * 
     * @return ManagableRepository
     * @throws RepositoryException
-    * @throws RepositoryConfigurationException
     */
    ManageableRepository getCurrentRepository() throws RepositoryException;
 

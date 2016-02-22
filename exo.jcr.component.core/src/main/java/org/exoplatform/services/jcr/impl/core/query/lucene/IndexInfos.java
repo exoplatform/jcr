@@ -113,7 +113,6 @@ public class IndexInfos
    /**
     * Reads the index infos. Before reading it checks if file exists
     *
-    * @param dir the directory from where to read the index infos.
     * @throws IOException if an error occurs.
     */
    public void read() throws IOException
@@ -158,7 +157,6 @@ public class IndexInfos
    /**
     * Writes the index infos to disk if they are dirty.
     *
-    * @param dir the directory where to write the index infos.
     * @throws IOException if an error occurs.
     */
    public void write() throws IOException
@@ -263,7 +261,6 @@ public class IndexInfos
 
    /**
     * Returns the index name at position <code>i</code>.
-    * @param i the position.
     * @return the index name.
     */
    public Set<String> getNames()

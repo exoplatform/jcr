@@ -115,7 +115,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 /**
- * Implements a {@link org.apache.jackrabbit.core.query.QueryHandler} using
+ * Implements a {@link QueryHandler} using
  * Lucene.
  */
 public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeListener, Suspendable
@@ -245,7 +245,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
    /**
     * The location of the search index.
-    * <p/>
+    * <br>
     * Note: This is a <b>mandatory</b> parameter!
     */
    private String path;
@@ -316,7 +316,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * Flag indicating whether document order is enabled as the default
     * ordering.
-    * <p/>
+    * <br>
     * Default value is: <code>false</code>.
     */
    private boolean documentOrder = true;
@@ -325,7 +325,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * If set <code>true</code> the index is checked for consistency on startup.
     * If <code>false</code> a consistency check is only performed when there
     * are entries in the redo log on startup.
-    * <p/>
+    * <br>
     * Default value is: <code>false</code>.
     */
    private boolean forceConsistencyCheck = false;
@@ -335,7 +335,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * on the {@link #forceConsistencyCheck} parameter. If set to
     * <code>false</code>, no consistency check is performed, even if the redo
     * log had been applied on startup.
-    * <p/>
+    * <br>
     * Default value is: <code>false</code>.
     */
    private boolean consistencyCheckEnabled = false;
@@ -343,21 +343,21 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * If set <code>true</code> errors detected by the consistency check are
     * repaired. If <code>false</code> the errors are only reported in the log.
-    * <p/>
+    * <br>
     * Default value is: <code>true</code>.
     */
    private boolean autoRepair = true;
 
    /**
     * The uuid resolver cache size.
-    * <p/>
+    * <br>
     * Default value is: <code>1000</code>.
     */
    private int cacheSize = 1000;
 
    /**
     * The number of documents that are pre fetched when a query is executed.
-    * <p/>
+    * <br>
     * Default value is: {@link Integer#MAX_VALUE}.
     */
    private int resultFetchSize = Integer.MAX_VALUE;
@@ -365,7 +365,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    /**
     * If set to <code>true</code> the fulltext field is stored and and a term
     * vector is created with offset information.
-    * <p/>
+    * <br>
     * Default value is: <code>false</code>.
     */
    private boolean supportHighlighting = false;
@@ -2402,7 +2402,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       public int[] getParents(int n, int[] docNumbers) throws IOException
       {
@@ -2555,7 +2555,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * 
     * @param path
     *            the location of the search index.
-    * @throws IOException
     */
    public void setPath(String path)
    {
@@ -3412,9 +3411,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#executeQuery(org.apache.lucene.search.Query,
-    *      boolean, org.exoplatform.services.jcr.datamodel.InternalQName[],
-    *      boolean[])
+    *
     */
    public QueryHits executeQuery(Query query) throws IOException
    {
@@ -3471,7 +3468,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    }
 
    /**
-    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean, boolean)
+    * @see org.exoplatform.services.jcr.impl.core.query.QueryHandler#setOnline(boolean, boolean, boolean)
     */
    public void setOnline(boolean isOnline, boolean allowQuery, boolean dropStaleIndexes) throws IOException
    {

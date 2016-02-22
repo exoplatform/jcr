@@ -183,7 +183,6 @@ public final class RegistryEntry
 
    /**
     * @return the entry as InputStream
-    * @throws IOException
     * @throws TransformerException
     */
    public InputStream getAsInputStream() throws TransformerException

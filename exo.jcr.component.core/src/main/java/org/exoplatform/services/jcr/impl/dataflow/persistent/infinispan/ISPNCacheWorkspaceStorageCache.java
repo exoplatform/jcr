@@ -101,24 +101,25 @@ import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
 /**
- * Created by The eXo Platform SAS.<p/>
+ * Created by The eXo Platform SAS.<br>
  * 
- * Cache based on Infinispan.<p/>
+ * Cache based on Infinispan.<br>
  *
  * <ul>
  * <li>cache transparent: or item cached or not, we should not generate "not found" Exceptions </li>
- * 
+ * </ul>
+ *
  * This cache implementation stores items by UUID and parent UUID with QPathEntry.
  * Except this cache stores list of children UUID.
  * 
- * <p/>
+ * <br>
  * Current state notes (subject of change):
  * <ul>
  * <li>cache implements WorkspaceStorageCache, without any stuff about references and locks</li>
  * <li>transaction style implemented via batches, do with JTA (i.e. via exo's TransactionService + JBoss TM)</li>
  * </ul>
  * 
- * @author <a href="anatoliy.bazko@exoplatform.org">Anatoliy Bazko</a>
+ * @author anatoliy.bazko@exoplatform.org Anatoliy Bazko
  * @version $Id: ISPNCacheWorkspaceStorageCache.java 3514 2010-11-22 16:14:36Z nzamosenchuk $
  */
 @SuppressWarnings("unchecked")
@@ -1404,7 +1405,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    /**
     * Internal put Property.
     *
-    * @param node, PropertyData, new data to put in the cache
+    * @param prop, PropertyData, new data to put in the cache
+    * @param modifyListsOfChild
     * @return PropertyData, previous data or null
     */
    protected PropertyData putProperty(PropertyData prop, ModifyChildOption modifyListsOfChild)
@@ -1534,7 +1536,6 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     *
     * @param node new node data
     * @param prevPath old path
-    * @param newRootPath new root path
     * @param idsToSkip set of ids to skip, this is needed to avoid modifying the path twice in case of an OrderBefore
     * @return the ids to skip for the next operation
     */

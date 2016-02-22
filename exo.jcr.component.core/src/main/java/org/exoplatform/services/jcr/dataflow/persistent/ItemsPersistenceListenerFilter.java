@@ -21,7 +21,7 @@ package org.exoplatform.services.jcr.dataflow.persistent;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 13.01.2009
+ * <br>Date: 13.01.2009
  *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a> 
  * @version $Id: ItemsPersistenceListenerFilter.java 34445 2009-07-24 07:51:18Z dkatayev $

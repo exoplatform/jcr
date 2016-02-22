@@ -37,7 +37,7 @@ public class DefaultIndexUpdateMonitor implements IndexUpdateMonitor
    private final List<IndexUpdateMonitorListener> listeners;
 
    /**
-    * @param semaphore
+    *
     */
    public DefaultIndexUpdateMonitor()
    {

@@ -37,7 +37,7 @@ import javax.jcr.RepositoryException;
  * It does not do any highlighting and simply returns up to
  * <code>maxFragmentSize</code> characters of string properties for a given
  * node.
- * @see #getExcerpt(org.apache.jackrabbit.core.NodeId, int, int)
+ * @see #getExcerpt(String, int, int)
  */
 public class SimpleExcerptProvider implements ExcerptProvider
 {

@@ -41,7 +41,7 @@ public class RepositoryConfigurationException extends Exception
    /**
     * Constructs an Exception with a detailed message.
     * 
-    * @param Message
+    * @param message
     *          The message associated with the exception.
     */
    public RepositoryConfigurationException(String message)

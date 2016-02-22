@@ -35,7 +35,7 @@ import javax.sql.DataSource;
 
 /**
  * Provides means for nodes' IDs extraction in case we use {@link ISPNCacheableLockManagerImpl}
- * as {@link LockManager} based on ISPN Cache instance.
+ * as {@link org.infinispan.util.concurrent.locks.LockManager} based on ISPN Cache instance.
  * 
  * @author <a href="mailto:dkuleshov@exoplatform.com">Dmitry Kuleshov</a>
  * @version $Id: ISPNLockTableHandler.java 34360 27.02.2012 12:41:39 dkuleshov $

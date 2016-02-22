@@ -57,7 +57,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
- * Created by The eXo Platform SAS.<br/>
+ * Created by The eXo Platform SAS.<br>
  * 
  * This cache implementation store item data and childs lists of item data. And it implements
  * OBJECTS cache - i.e. returns same java object that was cached before. Same item data or list of
@@ -173,7 +173,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
 
    /**
     * Tell if we haveto remove whole node subtree (true), or just remove cached childs lists (false).
-    * <br/> If true - it's more expensive operation.
+    * <br> If true - it's more expensive operation.
     */
    private final boolean deepDelete;
 
@@ -632,7 +632,6 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
     * @param cleanStatistics
     * @param blockingUsers
     * @param showStatistic
-    * @param liveTime
     * @throws RepositoryConfigurationException
     */
    public LinkedWorkspaceStorageCacheImpl(String name, boolean enabled, int maxSize, long liveTimeSec,
@@ -1422,8 +1421,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    /**
     * Get item from cache C by item parent and name. Checks is it expired, calcs statistics.
     * 
-    * @param key
-    *          a InternalQPath path of item cached
+    * @param parentUuid
+    * @param qname
+    * @param itemType
     */
    protected ItemData getItem(final String parentUuid, final QPathEntry qname, ItemType itemType)
    {
@@ -1803,9 +1803,9 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    }
 
    /**
-    * Remove sibling's subtrees from cache C, CN, CP.<br/> For update (order-before) usecase.<br/>
+    * Remove sibling's subtrees from cache C, CN, CP.<br> For update (order-before) usecase.<br>
     * The work does remove of all descendants of the item parent. I.e. the node and its siblings (for
-    * SNS case).<br/>
+    * SNS case).<br>
     */
    protected void removeSiblings(final NodeData node)
    {
@@ -2061,7 +2061,6 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
     * @param childIdentifier
     *          - property id
     * @return removed property or null if property not cached or parent properties are not cached
-    * @throws Exception
     */
    protected PropertyData removeChildProperty(final String parentIdentifier, final String childIdentifier)
    {
@@ -2096,7 +2095,6 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
     * @param childIdentifier
     *          - node id
     * @return removed node or null if node not cached or parent child nodes are not cached
-    * @throws Exception
     */
    protected NodeData removeChildNode(final String parentIdentifier, final String childIdentifier)
    {
@@ -2120,7 +2118,7 @@ public class LinkedWorkspaceStorageCacheImpl implements WorkspaceStorageCache, S
    }
 
    /**
-    * Return last gathered statistic.<br/>
+    * Return last gathered statistic.<br>
     * 
     * @return CacheStatistic
     */

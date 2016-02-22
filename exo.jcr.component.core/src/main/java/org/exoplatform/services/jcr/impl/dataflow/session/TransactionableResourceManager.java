@@ -55,10 +55,10 @@ import javax.transaction.xa.Xid;
 
 /**
  * Created by The eXo Platform SAS.
- * <p/>
+ * <br>
  * Used to perform an atomic prepare/commit/rollback between all the JCR sessions tied
  * to the current transaction
- * <p/>
+ * <br>
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TransactionableResourceManager.java 34801 2009-07-31 15:44:50Z dkatayev $

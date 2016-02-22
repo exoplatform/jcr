@@ -26,7 +26,7 @@ import org.exoplatform.services.log.Log;
 import javax.xml.namespace.QName;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * 
  * @author Gennady Azarenkov
  * @version $Id: $

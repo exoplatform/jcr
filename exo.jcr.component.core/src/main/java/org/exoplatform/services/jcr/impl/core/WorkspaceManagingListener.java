@@ -28,7 +28,7 @@ public interface WorkspaceManagingListener
     * Called after workspace is removed from repository. It means container is stopped
     * and workspace entry is absent in repository configuration.
     *
-    * @param workspaceRemove
+    * @param workspaceName
     *          the removed workspace name
     */
    void onWorkspaceRemove(String workspaceName);

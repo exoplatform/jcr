@@ -728,7 +728,7 @@ public class GroovyScript2RestLoader implements Startable
     * 'script/groovy'.
     * 
     * @param stream the stream that contains groovy source code
-    * @param uriInfo see {{code language=java}}{@include javax.ws.rs.core.UriInfo}{{/code}}
+    * @param uriInfo see javax.ws.rs.core.UriInfo
     * @param repository repository name
     * @param workspace workspace name
     * @param path path to resource to be created
@@ -786,8 +786,8 @@ public class GroovyScript2RestLoader implements Startable
     * form. NOT use this script for uploading few files in body of
     * 'multipart/form-data' or other type of multipart.
     * 
-    * @param items iterator {{code language=java}}{@include org.apache.commons.fileupload.FileItem}{{/code}}
-    * @param uriInfo see {{code language=java}}{@include javax.ws.rs.core.UriInfo}{{/code}}
+    * @param items iterator org.apache.commons.fileupload.FileItem
+    * @param uriInfo javax.ws.rs.core.UriInfo
     * @param repository repository name
     * @param workspace workspace name
     * @param path path to resource to be created
@@ -974,7 +974,7 @@ public class GroovyScript2RestLoader implements Startable
     * 'script/groovy'.
     * 
     * @param stream the stream that contains groovy source code
-    * @param uriInfo see {{code language=java}}{@include javax.ws.rs.core.UriInfo}{{/code}}
+    * @param uriInfo see javax.ws.rs.core.UriInfo
     * @param repository repository name
     * @param workspace workspace name
     * @param path path to resource to be created
@@ -1033,8 +1033,8 @@ public class GroovyScript2RestLoader implements Startable
     * form. NOT use this script for uploading few files in body of
     * 'multipart/form-data' or other type of multipart.
     * 
-    * @param items iterator {{code language=java}}{@include org.apache.commons.fileupload.FileItem}{{/code}}
-    * @param uriInfo see {{code language=java}}{@include javax.ws.rs.core.UriInfo}{{/code}}
+    * @param items iterator org.apache.commons.fileupload.FileItem
+    * @param uriInfo see javax.ws.rs.core.UriInfo
     * @param repository repository name
     * @param workspace workspace name
     * @param path path to resource to be created

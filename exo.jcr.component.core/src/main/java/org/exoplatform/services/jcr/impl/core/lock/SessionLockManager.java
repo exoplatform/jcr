@@ -102,7 +102,7 @@ public interface SessionLockManager extends SessionLifecycleListener
 
    /**
     * Returns <code>true</code> if the specified session holds a lock on the given node; otherwise
-    * returns <code>false</code>. <p/> Note that <code>isLockHolder(session, node)==true</code>
+    * returns <code>false</code>. <br> Note that <code>isLockHolder(session, node)==true</code>
     * implies <code>holdsLock(node)==true</code>.
     *
     * @param nodeImpl

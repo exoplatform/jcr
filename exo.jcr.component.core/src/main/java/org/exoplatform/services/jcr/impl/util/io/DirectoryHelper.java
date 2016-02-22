@@ -303,9 +303,9 @@ public class DirectoryHelper
    /**
     * Uncompress data to the destination directory. 
     * 
-    * @param srcZipPath
+    * @param srcPath
     *          path to the compressed file, could be the file or the directory
-    * @param dstDirPath
+    * @param dstPath
     *          destination path
     * @throws IOException
     *          if any exception occurred

@@ -333,7 +333,7 @@ public abstract class BaseXmlImporter implements ContentImporter
    /**
     * Set new ancestorToSave.
     * 
-    * @param ancestorToSave
+    * @param newAncestorToSave
     */
    public void setAncestorToSave(QPath newAncestorToSave)
    {

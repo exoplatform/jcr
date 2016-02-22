@@ -245,7 +245,7 @@ public class UnifiedNodeReference
    /**
     * @return the handler for protocol <code>jcr</code>.
     * 
-    * @see java.net.URLStreamHandler.
+    * @see java.net.URLStreamHandler
     */
    public static URLStreamHandler getURLStreamHandler()
    {

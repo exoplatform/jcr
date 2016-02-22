@@ -32,7 +32,7 @@ public class QueryBuilder implements QueryTreeBuilder
 {
 
    /**
-    * @inheritDoc
+    * {@inheritDoc}
     */
    public QueryRootNode createQueryTree(String statement, LocationFactory resolver, QueryNodeFactory factory)
       throws InvalidQueryException
@@ -41,7 +41,7 @@ public class QueryBuilder implements QueryTreeBuilder
    }
 
    /**
-    * @inheritDoc
+    * {@inheritDoc}
     */
    public boolean canHandle(String language)
    {
@@ -50,7 +50,7 @@ public class QueryBuilder implements QueryTreeBuilder
 
    /**
     * This builder supports {@link Query#XPATH}.
-    * @inheritDoc
+    * {@inheritDoc}
     */
    public String[] getSupportedLanguages()
    {
@@ -58,7 +58,7 @@ public class QueryBuilder implements QueryTreeBuilder
    }
 
    /**
-    * @inheritDoc
+    * {@inheritDoc}
     */
    public String toString(QueryRootNode root, LocationFactory resolver) throws InvalidQueryException
    {

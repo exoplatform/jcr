@@ -1548,7 +1548,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
 
    /**
     * Indicates whether this node is of the specified node type. Returns true if this node is of the
-    * specified node type or a subtype of the specified node type. Returns false otherwise. <br/>
+    * specified node type or a subtype of the specified node type. Returns false otherwise. <br>
     * Nodetype name asked in for mof internal QName. 
     * 
     * @param qName

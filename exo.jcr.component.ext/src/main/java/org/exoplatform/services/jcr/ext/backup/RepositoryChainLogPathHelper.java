@@ -22,7 +22,7 @@ import java.net.URL;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 2011
+ * <br>Date: 2011
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
@@ -35,14 +35,14 @@ public class RepositoryChainLogPathHelper
    }
 
    /**
-    * Will be returned relative path <name>/<name>.xml for all OS.
+    * Will be returned relative path {name}/{name}.xml for all OS.
     * 
     * @param path
     *          String, path to 
     * @param backupDirCanonicalPath
     *          String, path to backup dir
     * @return String
-    *           Will be returned relative path <name>/<name>.xml for all OS
+    *           Will be returned relative path {name}/{name}.xml for all OS
     * @throws MalformedURLException
     *           
     */

@@ -128,7 +128,7 @@ class NotQuery extends Query
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public Query getQuery()
@@ -137,7 +137,7 @@ class NotQuery extends Query
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public float getValue()
@@ -146,7 +146,7 @@ class NotQuery extends Query
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public float sumOfSquaredWeights() throws IOException
@@ -155,7 +155,7 @@ class NotQuery extends Query
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public void normalize(float norm)
@@ -163,7 +163,7 @@ class NotQuery extends Query
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public Scorer scorer(IndexReader reader, boolean scoreDocsInOrder, boolean topScorer) throws IOException

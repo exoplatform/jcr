@@ -64,7 +64,7 @@ public class OrderQueryNode extends QueryNode
     * @param property  the name of the property.
     * @param ascending if <code>true</code> values of this properties are
     *                  ordered ascending; descending if <code>false</code>.
-    * @deprecated use {@link #addOrderSpec(Path , boolean)} instead.
+    * @deprecated use {@link #addOrderSpec(QPath, boolean)} instead.
     */
    public void addOrderSpec(InternalQName property, boolean ascending)
    {
@@ -128,7 +128,7 @@ public class OrderQueryNode extends QueryNode
    }
 
    /**
-    * @inheritDoc
+    * {@inheritDoc}
     */
    public boolean equals(Object obj)
    {
@@ -165,7 +165,7 @@ public class OrderQueryNode extends QueryNode
        * @param property  the name of the property.
        * @param ascending if <code>true</code> the property is ordered
        *                  ascending, otherwise descending.
-       * @deprecated use {@link OrderSpec#OrderSpec(Path, boolean)} instead.
+       * @deprecated use {@link OrderSpec#OrderSpec(QPath, boolean)} instead.
        */
       public OrderSpec(InternalQName property, boolean ascending)
       {

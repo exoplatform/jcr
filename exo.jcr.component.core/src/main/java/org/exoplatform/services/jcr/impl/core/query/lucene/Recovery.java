@@ -66,9 +66,9 @@ class Recovery
    /**
     * Runs a recovery on <code>index</code> if <code>redoLog</code> contains
     * log entries.
-    * <p/>
+    * <br>
     * If recovery succeeds the <code>index</code> is flushed and the redo log
-    * is cleared. That is, the <code>index</code> is stable.<br/>
+    * is cleared. That is, the <code>index</code> is stable.<br>
     * If recovery fails an IOException is thrown, and the redo log will not
     * be modified. The recovery process can then be executed again, after
     * fixing the cause of the IOException (e.g. disk full).

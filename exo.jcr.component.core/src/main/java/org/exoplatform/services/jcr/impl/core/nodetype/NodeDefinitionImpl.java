@@ -49,7 +49,7 @@ public class NodeDefinitionImpl extends ItemDefinitionImpl implements ExtendedNo
    private final NodeDefinitionData nodeDefinitionData;
 
    /**
-    * @param itemDefinitionData
+    * @param nodeDefinitionData
     * @param nodeTypeDataManager
     * @param nodeTypeManager
     * @param locationFactory

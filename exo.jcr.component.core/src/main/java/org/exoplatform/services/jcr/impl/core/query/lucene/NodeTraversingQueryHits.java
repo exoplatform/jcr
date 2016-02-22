@@ -135,7 +135,7 @@ public class NodeTraversingQueryHits extends AbstractQueryHits
         }
 
         /**
-         * @inheritDoc
+         * {@inheritDoc}
          */
         public boolean hasNext() {
             init();
@@ -143,7 +143,7 @@ public class NodeTraversingQueryHits extends AbstractQueryHits
         }
 
         /**
-         * @inheritDoc
+         * {@inheritDoc}
          */
         public Node next() {
             init();

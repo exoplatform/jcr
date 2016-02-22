@@ -137,7 +137,7 @@ public interface WorkspaceStorageConnection
       IllegalStateException;
 
    /**
-    * Reads count of <code>parent<code/> child nodes.
+    * Reads count of <code>parent</code> child nodes.
     *
     * @param parent NodeData
     * @return long, childs count
@@ -146,7 +146,7 @@ public interface WorkspaceStorageConnection
    int getChildNodesCount(NodeData parent) throws RepositoryException;
 
    /**
-    * Reads order number of last <code>parent<code/> child nodes.
+    * Reads order number of last <code>parent</code> child nodes.
     *
     * @param parent NodeData
     * @return long, order number of last parent's child node.
@@ -189,7 +189,7 @@ public interface WorkspaceStorageConnection
     * Reads <code>List</code> of <code>PropertyData</code> with empty <code>ValueData</code> from the
     * storage using item's parent location.
     * 
-    * <br/>
+    * <br>
     * This method specially dedicated for non-content modification operations (e.g. Items delete).
     * 
     * @param parent
@@ -206,7 +206,7 @@ public interface WorkspaceStorageConnection
     * Reads <code>List</code> of <code>PropertyData</code> from the storage using item's parent
     * location.
     * 
-    * <br/>
+    * <br>
     * It's REFERENCE type Properties referencing Node with given <code>nodeIdentifier</code>.
     * 
     * See more {@link javax.jcr.Node#getReferences()}
@@ -285,7 +285,7 @@ public interface WorkspaceStorageConnection
     * @param data
     *          - the new data
     * @throws InvalidItemStateException
-    *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
+    *           (1)if the data is already updated, i.e. persisted version value of persisted data {@code >=}
     *           of new data's persisted version value (2) if the persisted data is not NodeData (i.e.
     *           it is PropertyData). It means that some other process deleted original data and
     *           replace it with other type of data.
@@ -307,7 +307,7 @@ public interface WorkspaceStorageConnection
     * @param sizeHandler
     *          accumulates changed size
     * @throws InvalidItemStateException
-    *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
+    *           (1)if the data is already updated, i.e. persisted version value of persisted data {@code >=}
     *           of new data's persisted version value (2) if the persisted data is not PropertyData
     *           (i.e. it is NodeData). It means that some other process deleted original data and
     *           replace it with other type of data.
@@ -327,7 +327,7 @@ public interface WorkspaceStorageConnection
     * @param data
     *          - NodeData to be renamed
     * @throws InvalidItemStateException
-    *           (1)if the data is already updated, i.e. persisted version value of persisted data >=
+    *           (1)if the data is already updated, i.e. persisted version value of persisted data {@code >=}
     *           of new data's persisted version value (2) if the persisted data is not PropertyData
     *           (i.e. it is NodeData). It means that some other process deleted original data and
     *           replace it with other type of data.

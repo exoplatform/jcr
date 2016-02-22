@@ -22,7 +22,7 @@ import javax.jcr.NamespaceException;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.<br/>
+ * Created by The eXo Platform SAS.<br>
  * 
  * Interface for namespaces holder objects: Session and NamespaceRegistry.
  * 

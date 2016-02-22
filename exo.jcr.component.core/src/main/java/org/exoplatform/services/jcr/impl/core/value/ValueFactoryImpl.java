@@ -50,7 +50,7 @@ import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
 
 /**
- * Created by The eXo Platform SAS.<br/>
+ * Created by The eXo Platform SAS.<br>
  * ValueFactory implementation
  * 
  * @author Gennady Azarenkov

@@ -127,7 +127,7 @@ public class ImportNodeData extends TransientNodeData implements ImportItemData
    }
 
    /**
-    * @return the currentNodeTypes
+    *
     */
    public void addNodeType(NodeTypeData nt)
    {

@@ -31,7 +31,7 @@ import javax.jcr.Property;
 import javax.jcr.Session;
 
 /**
- * Created by The eXo Platform SAS.<br/> Prerequisite: enable access control i.e.
+ * Created by The eXo Platform SAS.<br> Prerequisite: enable access control i.e.
  * <access-control>optional</access-control>
  * 
  * @author Gennady Azarenkov

@@ -31,13 +31,13 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  *
- * Date: 27.05.2008 <br/>
+ * Date: 27.05.2008 <br>
  *
- * JavaBean for JCRBrowser sample application.<br/>
+ * JavaBean for JCRBrowser sample application.<br>
  *
- * Since JCR 1.11 Browser supports Ext Repository synchronization.<br/>
+ * Since JCR 1.11 Browser supports Ext Repository synchronization.<br>
  *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: JCRBrowser.java 111 2008-11-11 11:11:11Z peterit $

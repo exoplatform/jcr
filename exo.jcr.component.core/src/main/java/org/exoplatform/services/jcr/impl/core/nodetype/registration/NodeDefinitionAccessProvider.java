@@ -49,7 +49,7 @@ public class NodeDefinitionAccessProvider extends AbstractItemDefinitionAccessPr
 
    /**
     * @param childDefinition
-    * @param name
+    * @param declaringNodeType
     * @return
     * @throws RepositoryException 
     * @throws NodeTypeReadException 

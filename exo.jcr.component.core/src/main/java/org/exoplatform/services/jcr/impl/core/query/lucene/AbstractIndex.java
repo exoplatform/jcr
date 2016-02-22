@@ -39,15 +39,15 @@ import java.util.BitSet;
 
 /**
  * Implements common functionality for a lucene index.
- * <p/>
+ * <br>
  * Note on synchronization: This class is not entirely thread-safe. Certain
  * concurrent access is however allowed. Read-only access on this index using
  * {@link #getReadOnlyIndexReader()} is thread-safe. That is, multiple threads
  * my call that method concurrently and use the returned IndexReader at the same
- * time.<br/>
+ * time.<br>
  * Modifying threads must be synchronized externally in a way that only one
  * thread is using the returned IndexReader and IndexWriter instances returned
- * by {@link #getIndexReader()} and {@link #getIndexWriter()} at a time.<br/>
+ * by {@link #getIndexReader()} and {@link #getIndexWriter()} at a time.<br>
  * Concurrent access by <b>one</b> modifying thread and multiple read-only
  * threads is safe!
  */

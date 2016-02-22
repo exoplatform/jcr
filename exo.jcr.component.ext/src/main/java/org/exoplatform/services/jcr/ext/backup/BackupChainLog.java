@@ -63,7 +63,7 @@ import javax.xml.stream.XMLStreamWriter;
 import javax.xml.stream.events.StartElement;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * 
  * @author Gennady Azarenkov
  * @version $Id: $
@@ -123,8 +123,8 @@ public class BackupChainLog
     *          Sting, FQN for incremental backup
     * @param backupId
     *          String, the identifier of backup
-    * @param wEntry
-    *           original workspace config
+    * @param repositoryServiceConfiguration
+    * @param rootDir
     * @throws BackupOperationException
     *           will be generate the exception BackupOperationException 
     */

@@ -47,7 +47,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.Session;
 
 /**
- * Created by The eXo Platform SAS. <br/> Prerequisites: <value-storages> <value-storage
+ * Created by The eXo Platform SAS. <br> Prerequisites: <value-storages> <value-storage
  * class="org.exoplatform.services.jcr.impl.storage.value.fs.SimpleFileValueStorage"> <properties>
  * <property name="path" value="target/temp/values"/> </properties> <filters> <filter
  * property-type="Binary"/> </filters> </value-storage> </value-storages>

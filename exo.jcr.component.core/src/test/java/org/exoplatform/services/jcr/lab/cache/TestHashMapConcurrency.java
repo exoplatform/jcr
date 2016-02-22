@@ -26,7 +26,7 @@ import java.util.Map;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 30.09.2008
+ * <br>Date: 30.09.2008
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestHashMapConcurrency.java 34801 2009-07-31 15:44:50Z dkatayev $

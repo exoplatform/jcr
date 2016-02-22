@@ -28,8 +28,8 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 
 /**
- * Created by The eXo Platform SARL Author : <a
- * href="gavrikvetal@gmail.com">Vitaly Guly</a>.
+ * Created by The eXo Platform SAS.
+ * @author Vitaly Guly - gavrikvetal@gmail.com
  * 
  * @version $Id: $
  */

@@ -49,7 +49,6 @@ public interface NodeHierarchyCreator
 
    /**
     * Initialize the current repository thanks to all the registered plugins
-    * @param repository the repository to initialize
     * @throws Exception if an exception occurs
     */
    void init() throws Exception;

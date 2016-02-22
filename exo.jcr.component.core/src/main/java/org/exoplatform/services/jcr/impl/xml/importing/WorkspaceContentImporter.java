@@ -61,15 +61,10 @@ public class WorkspaceContentImporter extends SystemViewImporter
 
    /**
     * Class used to import content of workspace, using "System View XML Mapping",
-    * e.g. for restore data during backup. <br/> Assumes that root node of the
-    * workspace was already created, initialized and given as parent. <br/> If
+    * e.g. for restore data during backup. <br> Assumes that root node of the
+    * workspace was already created, initialized and given as parent. <br> If
     * <b>system</b> workspace initialized from a scratch it will already contains
     * root (/) and /jcr:system nodes, namespaces and nodetypes were registered.
-    * 
-    * @param parent , should not be null
-    * @param uuidBehavior
-    * @param saveType
-    * @param context
     */
    public WorkspaceContentImporter(NodeData parent, QPath ancestorToSave, int uuidBehavior,
       ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager, LocationFactory locationFactory,

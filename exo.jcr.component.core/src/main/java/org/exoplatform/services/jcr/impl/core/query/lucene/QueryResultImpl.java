@@ -98,7 +98,7 @@ public abstract class QueryResultImpl implements QueryResult
    /**
     * The result nodes including their score. This list is populated on a lazy
     * basis while a client iterates through the results.
-    * <p/>
+    * <br>
     * The exact type is: <code>List&lt;ScoreNode[]></code>
     */
    private final List<ScoreNode[]> resultNodes = new ArrayList<ScoreNode[]>();
@@ -555,7 +555,7 @@ public abstract class QueryResultImpl implements QueryResult
 
       /**
        * {@inheritDoc}
-       * <p/>
+       * <br>
        * This value may shrink when the query result encounters non-existing
        * nodes or the session does not have access to a node.
        */

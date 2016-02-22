@@ -1195,10 +1195,10 @@ public class XPathQueryBuilder implements XPathVisitor, XPathTreeConstants {
      * is enclosed and strips enclosing quotes.
      *
      * </p>
-     * Examples:</br>
-     * <code>"foo""bar"</code> -&gt; <code>foo"bar</code></br>
-     * <code>'foo''bar'</code> -&gt; <code>foo'bar</code></br>
-     * but:</br>
+     * Examples:<br>
+     * <code>"foo""bar"</code> -&gt; <code>foo"bar</code><br>
+     * <code>'foo''bar'</code> -&gt; <code>foo'bar</code><br>
+     * but:<br>
      * <code>'foo""bar'</code> -&gt; <code>foo""bar</code>
      *
      * @param literal the string literal to unescape

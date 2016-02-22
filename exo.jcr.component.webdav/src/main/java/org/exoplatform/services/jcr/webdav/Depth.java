@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.webdav;
 
 /**
- * Created by The eXo Platform SAS .<br/>
+ * Created by The eXo Platform SAS .<br>
  * 
  * @author Gennady Azarenkov
  * @version $Id: $

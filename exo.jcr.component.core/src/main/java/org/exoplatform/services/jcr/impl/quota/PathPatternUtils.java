@@ -23,9 +23,9 @@ import org.exoplatform.services.jcr.impl.core.JCRPath;
 import java.util.regex.Pattern;
 
 /**
- * Node absolute path pattern. Supports such elements:</br>
- * <code>*</code>: any node name</br>
- * <code>%</code>: any character</br>
+ * Node absolute path pattern. Supports such elements:<br>
+ * <code>*</code>: any node name<br>
+ * <code>%</code>: any character<br>
  * <code>/</code>: as only delimiter between entities
  *
  * @author <a href="abazko@exoplatform.com">Anatoliy Bazko</a>

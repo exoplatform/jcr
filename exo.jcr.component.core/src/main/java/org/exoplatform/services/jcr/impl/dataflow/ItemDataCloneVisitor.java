@@ -69,7 +69,7 @@ public class ItemDataCloneVisitor extends DefaultItemDataCopyVisitor
     *          Destination node name
     * @param nodeTypeManager
     *          - The NodeTypeManager
-    * @param dataManager
+    * @param srcDataManager
     *          - Source data manager
     * @param dstDataManager
     *          - Destination data manager

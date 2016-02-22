@@ -23,7 +23,7 @@ import org.exoplatform.services.jcr.cluster.JCRWebdavConnection;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 
+ * <br>Date:
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id$

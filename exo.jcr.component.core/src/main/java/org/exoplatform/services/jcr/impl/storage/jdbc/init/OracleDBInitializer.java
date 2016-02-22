@@ -32,8 +32,8 @@ import java.sql.Statement;
  *
  * 22.03.2007
  *
- * For statistic compute on a user schema (PL/SQL): exec
- * DBMS_STATS.GATHER_SCHEMA_STATS(ownname=>'exoadmin')
+ * For statistic compute on a user schema (PL/SQL):
+ *    {@code exec DBMS_STATS.GATHER_SCHEMA_STATS(ownname=>'exoadmin')}
  *
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: OracleDBInitializer.java 34801 2009-07-31 15:44:50Z dkatayev $

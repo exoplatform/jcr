@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by The eXo Platform SAS.<br/> Responsible for managing session changes log. Relying on
+ * Created by The eXo Platform SAS.<br> Responsible for managing session changes log. Relying on
  * fact that ItemData inside ItemState SHOULD be TransientItemData
  * 
  * @author Gennady Azarenkov
@@ -41,7 +41,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
    /**
     * Create empty ChangesLog.
     * 
-    * @param sessionId
+    * @param session
     */
    public SessionChangesLog(ExtendedSession session)
    {
@@ -52,7 +52,7 @@ public final class SessionChangesLog extends PlainChangesLogImpl
     * Create ChangesLog and populate with given items changes.
     * 
     * @param items
-    * @param sessionId
+    * @param session
     */
    public SessionChangesLog(List<ItemState> items, ExtendedSession session)
    {

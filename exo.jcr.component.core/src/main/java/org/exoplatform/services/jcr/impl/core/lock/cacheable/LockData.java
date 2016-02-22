@@ -84,7 +84,7 @@ public class LockData implements Externalizable
 
    /**
     * @param nodeIdentifier
-    * @param lockToken
+    * @param lockTokenHash
     * @param deep
     * @param sessionScoped
     * @param owner
@@ -99,7 +99,7 @@ public class LockData implements Externalizable
 
    /**
     * @param nodeIdentifier
-    * @param lockToken
+    * @param lockTokenHash
     * @param deep
     * @param sessionScoped
     * @param owner

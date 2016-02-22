@@ -19,7 +19,7 @@
 package org.exoplatform.services.jcr.dataflow;
 
 /**
- * Created by The eXo Platform SAS.<br/> Changes log containined other changes logs inside
+ * Created by The eXo Platform SAS.<br> Changes log containined other changes logs inside
  * 
  * @author Gennady Azarenkov
  * @version $Id: CompositeChangesLog.java 11907 2008-03-13 15:36:21Z ksm $

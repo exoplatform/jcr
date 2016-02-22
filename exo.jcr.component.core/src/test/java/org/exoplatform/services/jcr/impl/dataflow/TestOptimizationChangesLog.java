@@ -31,7 +31,7 @@ import org.exoplatform.services.jcr.impl.dataflow.serialization.TesterItemsPersi
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 2012
+ * <br>Date: 2012
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id: TestOptimizationChangesLog.java 111 2011-11-11 11:11:11Z rainf0x $

@@ -30,7 +30,7 @@ public interface DataRestore
    /**
     * Clean old data from the storage. 
     * 
-    * @throws RestoreException
+    * @throws BackupException
     *          if any exception is occurred
     */
    void clean() throws BackupException;
@@ -38,7 +38,7 @@ public interface DataRestore
    /**
     * Restore new data into storage.
     * 
-    * @throws RestoreException
+    * @throws BackupException
     *          if any exception is occurred
     */
    void restore() throws BackupException;
@@ -46,7 +46,7 @@ public interface DataRestore
    /**
     * Commit changes. 
     * 
-    * @throws RestoreException
+    * @throws BackupException
     *          if any exception is occurred
     */
    void commit() throws BackupException;
@@ -54,7 +54,7 @@ public interface DataRestore
    /**
     * Rollback changes. 
     * 
-    * @throws RestoreException
+    * @throws BackupException
     *          if any exception is occurred
     */
    void rollback() throws BackupException;
@@ -62,7 +62,7 @@ public interface DataRestore
    /**
     * Close DataRestor. 
     * 
-    * @throws RestoreException
+    * @throws BackupException
     *          if any exception is occurred
     */
    void close() throws BackupException;

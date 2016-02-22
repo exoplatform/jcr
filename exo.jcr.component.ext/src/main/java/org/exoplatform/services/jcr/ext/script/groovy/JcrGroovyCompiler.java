@@ -91,7 +91,7 @@ public class JcrGroovyCompiler implements Startable
     * in file</li>
     * <li>Groovy source file must have extension '.groovy'</li>
     * </ul>
-    * <br/>
+    * <br>
     * Example: If source stream that we want compile contains the following
     * code:
     * 

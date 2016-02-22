@@ -27,11 +27,11 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>
+ * <br>
  * 
  * This is singleton object for resources holding.
  * 
- * <br/>
+ * <br>
  * Date: 01.04.2009
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>

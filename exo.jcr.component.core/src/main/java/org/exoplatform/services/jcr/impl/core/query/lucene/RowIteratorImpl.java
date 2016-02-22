@@ -206,7 +206,7 @@ class RowIteratorImpl implements RowIterator
     * Returns the current position within this iterator. The number returned is
     * the 0-based index of the next <code>Row</code> in the iterator, i.e. the
     * one that will be returned on the subsequent <code>next</code> call.
-    * <p/>
+    * <br>
     * Note that this method does not check if there is a next element, i.e. an
     * empty iterator will always return 0.
     * 
@@ -368,7 +368,7 @@ class RowIteratorImpl implements RowIterator
 
       /**
        * Returns the value of the indicated property in this <code>Row</code>.
-       * <p/>
+       * <br>
        * If <code>propertyName</code> is not among the column names of the
        * query result table, an <code>ItemNotFoundException</code> is thrown.
        * 
@@ -465,7 +465,7 @@ class RowIteratorImpl implements RowIterator
 
       /**
        * Returns the <code>Node</code> corresponding to this <code>Row</code>.
-       * <p/>
+       * <br>
        * A <code>RepositoryException</code> is thrown if this <code>Row</code>
        * contains values from more than one node. This will be the case when
        * more than one selector is included among the columns specified for
@@ -556,13 +556,13 @@ class RowIteratorImpl implements RowIterator
       /**
        * Returns the full text search score for this row associated with the
        * default selector. This corresponds to the score of a particular node.
-       * <p/>
+       * <br>
        * If no <code>FullTextSearchScore</code> AQM object is associated with
        * the default selector this method will still return a value. However,
        * in that case the returned value may not be meaningful or may simply
        * reflect the minimum possible relevance level (for example, in some
        * systems this might be a score of 0).
-       * <p/>
+       * <br>
        * Note, in JCR-SQL2 a <code>FullTextSearchScore</code> AQM object is
        * represented by a <code>SCORE()</code> function. In JCR-JQOM it is
        * represented by a Java object of type
@@ -585,13 +585,13 @@ class RowIteratorImpl implements RowIterator
        * Returns the full text search score for this row associated with the
        * specified selector. This corresponds to the score of a particular
        * node.
-       * <p/>
+       * <br>
        * If no <code>FullTextSearchScore</code> AQM object is associated with
        * the selector <code>selectorName</code> this method will still return
        * a value. However, in that case the returned value may not be
        * meaningful or may simply reflect the minimum possible relevance level
        * (for example, in some systems this might be a score of 0).
-       * <p/>
+       * <br>
        * Note, in JCR-SQL2 a <code>FullTextSearchScore</code> AQM object is
        * represented by a <code>SCORE()</code> function. In JCR-JQOM it is
        * represented by a Java object of type

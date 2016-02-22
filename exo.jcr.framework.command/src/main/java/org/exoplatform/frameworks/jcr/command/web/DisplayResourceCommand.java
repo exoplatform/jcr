@@ -36,7 +36,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Created by The eXo Platform SAS .<br/> the command to output nt:resource to Servlet Response gets
+ * Created by The eXo Platform SAS .<br> the command to output nt:resource to Servlet Response gets
  * DefaultKeys.PATH attrribute from the Context and acts as follow: - if there is nt:resource Node
  * on DefaultKeys.PATH displays it - otherwise recursively tries to get nt:resource from incoming
  * node's primary items and display it - throws PathNotFoundException if no such a node found

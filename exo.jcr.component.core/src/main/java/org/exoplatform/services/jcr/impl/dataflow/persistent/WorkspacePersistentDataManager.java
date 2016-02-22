@@ -1208,7 +1208,6 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
     * @param item
     * @param con
     * @param addedNodes
-    * @param delegated
     * @throws RepositoryException
     * @throws InvalidItemStateException
     */
@@ -1388,8 +1387,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    }
 
    /**
-    * Returns workspace data size. See for details
-    * {@link WorkspaceQuotaManagerImpl#getWorkspaceDataSize()}.
+    * Returns workspace data size. See for details WorkspaceQuotaManagerImpl#getWorkspaceDataSize().
     *
     * @throws RepositoryException
     *          if any exception is occurred
@@ -1408,8 +1406,7 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
    }
 
    /**
-    * Returns node data size. See for details
-    * {@link WorkspaceQuotaManagerImpl#getNodeDataSize(String)}.
+    * Returns node data size. See for details WorkspaceQuotaManagerImpl#getNodeDataSize(String).
     *
     * @param nodeIdentifier
     *          node identifier which size need to calculate

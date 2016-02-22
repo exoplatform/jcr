@@ -77,7 +77,7 @@ public interface ContentImporter
    public void registerNamespace(String prefix, String uri);
 
    /**
-    * @throws RepositoryException
+    *
     */
    // public void save() throws RepositoryException;
    public PlainChangesLog getChanges();
@@ -91,7 +91,7 @@ public interface ContentImporter
     * corresponding endElement event.
     * </p>
     * 
-    * @param uri
+    * @param namespaceURI
     *          the Namespace URI, or the empty string if the element has no Namespace URI or if
     *          Namespace processing is not being performed
     * @param localName
@@ -103,8 +103,7 @@ public interface ContentImporter
     * @param atts
     *          the attributes attached to the element. If there are no attributes, it shall be an
     *          empty object. The value of this object after startElement returns is undefined
-    * @throws org.xml.sax.SAXException
-    *           any SAX exception, possibly wrapping another exception
+    * @throws RepositoryException
     * @see #endElement
     * @see org.xml.sax.Attributes
     * @see org.xml.sax.helpers.AttributesImpl

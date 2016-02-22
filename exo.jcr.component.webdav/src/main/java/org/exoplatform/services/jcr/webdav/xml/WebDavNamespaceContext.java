@@ -34,8 +34,8 @@ import javax.xml.namespace.NamespaceContext;
 import javax.xml.namespace.QName;
 
 /**
- * Created by The eXo Platform SARL Author : <a
- * href="gavrikvetal@gmail.com">Vitaly Guly</a>.
+ * Created by The eXo Platform SAS.
+ * @author Vitaly Guly - gavrikvetal@gmail.com
  * 
  * @version $Id: $
  */
@@ -105,7 +105,7 @@ public class WebDavNamespaceContext implements NamespaceContext
 
    /**
     * Returns namespace URI.
-    * @see javax.xml.namespace.NamespaceContext#getNamespaceURI(java.lang.String).
+    * @see javax.xml.namespace.NamespaceContext#getNamespaceURI(String)
     * @param prefix namespace prefix
     * @return namespace URI
     */
@@ -129,7 +129,7 @@ public class WebDavNamespaceContext implements NamespaceContext
 
    /**
     * Returns namespace prefix.
-    * @see javax.xml.namespace.NamespaceContext#getPrefix(java.lang.String).
+    * @see javax.xml.namespace.NamespaceContext#getPrefix(String)
     * @param namespaceURI namespace URI 
     * @return namespace prefix
     */
@@ -154,7 +154,7 @@ public class WebDavNamespaceContext implements NamespaceContext
 
    /**
     * Returns the list of registered for this URI namespace prefixes.
-    * @see javax.xml.namespace.NamespaceContext#getPrefixes(java.lang.String).
+    * @see javax.xml.namespace.NamespaceContext#getPrefixes(String)
     * @param namespaceURI namespace URI
     * @return list of registered for prefixes
     */

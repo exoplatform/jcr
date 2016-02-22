@@ -67,7 +67,7 @@ class PersistentIndex extends AbstractIndex
    }
 
    /**
-    * @inheritDoc
+    * {@inheritDoc}
     */
    @Override
    int removeDocument(Term idTerm) throws IOException
@@ -83,7 +83,7 @@ class PersistentIndex extends AbstractIndex
    /**
     * Merges the provided indexes into this index. After this completes, the
     * index is optimized.
-    * <p/>
+    * <br>
     * The provided IndexReaders are not closed.
     *
     * @param readers the readers of indexes to add.

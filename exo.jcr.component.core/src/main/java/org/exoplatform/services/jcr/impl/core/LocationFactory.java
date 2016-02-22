@@ -84,8 +84,6 @@ public class LocationFactory
     * 
     * @param parentLoc parent path
     * @param relPath related path
-    * @param setIndexIfNotDefined if necessary to set index = 1 if not defined
-    *          (usable for node's path only)
     * @return
     * @throws RepositoryException
     */

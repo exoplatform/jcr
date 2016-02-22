@@ -31,7 +31,7 @@ import org.exoplatform.services.jcr.impl.core.query.QueryTreeBuilder;
 public class QueryBuilder implements QueryTreeBuilder {
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public QueryRootNode createQueryTree(String statement,
                                          LocationFactory resolver,
@@ -41,7 +41,7 @@ public class QueryBuilder implements QueryTreeBuilder {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public boolean canHandle(String language) {
         return Query.SQL.equals(language);
@@ -49,14 +49,14 @@ public class QueryBuilder implements QueryTreeBuilder {
 
     /**
      * This builder supports {@link Query#SQL}.
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public String[] getSupportedLanguages() {
         return new String[]{Query.SQL};
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public String toString(QueryRootNode root, LocationFactory resolver)
             throws InvalidQueryException {

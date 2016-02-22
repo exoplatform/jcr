@@ -49,7 +49,6 @@ public class SystemViewContentExporter extends HandlingContentExporter
 
    /**
     * @param handler
-    * @param session
     * @param dataManager
     * @param noRecurse
     * @throws NamespaceException

@@ -41,7 +41,7 @@ import javax.jcr.PropertyType;
 import javax.jcr.Value;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  * Test to reproduce bug when values from value storages are not removed in some
  * cases.
  * 

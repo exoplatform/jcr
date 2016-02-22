@@ -29,7 +29,7 @@ import javax.jcr.RepositoryException;
  * That is, whenever a match is not unique only the longest match is considered.
  * Matching consumes as many elements from the beginning of an input path as possible and
  * returns what's left as an instance of {@link MatchResult}.
- * Use the {@link Matcher} class for matching a whole path or finding matches inside a path.
+ * Use the {@link java.util.regex.Matcher} class for matching a whole path or finding matches inside a path.
  */
 public abstract class Pattern
 {

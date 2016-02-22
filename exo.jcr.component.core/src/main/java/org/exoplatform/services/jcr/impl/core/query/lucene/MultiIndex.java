@@ -90,19 +90,18 @@ import javax.jcr.RepositoryException;
  * operations on the new persistent index will however only require an
  * <code>IndexReader</code> which serves for queries but also for delete
  * operations on the index.
- * <p/>
+ * <br>
  * The persistent indexes are merged from time to time. The merge behaviour is
  * configurable using the methods: {@link SearchIndex#setMaxMergeDocs(int)},
  * {@link SearchIndex#setMergeFactor(int)} and
  * {@link SearchIndex#setMinMergeDocs(int)}. For detailed description of the
  * configuration parameters see also the lucene <code>IndexWriter</code> class.
- * <p/>
+ * <br>
  * This class is thread-safe.
- * <p/>
+ * <br>
  * Note on implementation: Multiple modifying threads are synchronized on a
  * <code>MultiIndex</code> instance itself. Sychronization between a modifying
- * thread and reader threads is done using {@link #updateMonitor} and
- * {@link #updateInProgress}.
+ * thread and reader threads is done using {@link #updateMonitor}.
  */
 public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorListener
 {
@@ -1093,7 +1092,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * <code>indexNames</code>. An <code>IndexListener</code> is registered and
     * notified when documents are deleted from one of the indexes in
     * <code>indexNames</code>.
-    * <p/>
+    * <br>
     * Note: the number of <code>IndexReaders</code> returned by this method is
     * not necessarily the same as the number of index names passed. An index
     * might have been deleted and is not reachable anymore.
@@ -1631,7 +1630,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * Removes the <code>index</code> from the list of active sub indexes. The
     * Index is not actually deleted right away, but postponed to the
     * transaction commit.
-    * <p/>
+    * <br>
     * This method does not close the index, but rather expects that the index
     * has already been closed.
     * 
@@ -1711,7 +1710,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * reader is already <code>null</code> this method does nothing. When this
     * method returns {@link #multiReader} is guaranteed to be <code>null</code>
     * even if an exception is thrown.
-    * <p/>
+    * <br>
     * Please note that this method does not take care of any synchronization. A
     * caller must ensure that it is the only thread operating on this multi
     * index, or that it holds the {@link #updateMonitor}.
@@ -2584,7 +2583,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * Adds a sub index to <code>index</code>.
        * 
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public void execute(MultiIndex index) throws IOException
@@ -2603,7 +2602,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public String toString()
@@ -2735,7 +2734,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * Adds a node to the index.
        * 
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public void execute(MultiIndex index) throws IOException
@@ -2777,7 +2776,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public String toString()
@@ -2826,7 +2825,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * Touches the last flush time (sets it to the current time).
        * 
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public void execute(MultiIndex index) throws IOException
@@ -2835,7 +2834,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public String toString()
@@ -2891,7 +2890,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * Creates a new index.
        * 
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public void execute(MultiIndex index) throws IOException
@@ -2901,7 +2900,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public void undo(MultiIndex index) throws IOException
@@ -2915,7 +2914,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public String toString()
@@ -2986,7 +2985,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * Removes a sub index from <code>index</code>.
        * 
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public void execute(MultiIndex index) throws IOException
@@ -3005,7 +3004,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public String toString()
@@ -3075,7 +3074,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * Deletes a node from the index.
        * 
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public void execute(MultiIndex index) throws IOException
@@ -3112,7 +3111,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public String toString()
@@ -3161,7 +3160,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * Sets the current transaction id on <code>index</code>.
        * 
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public void execute(MultiIndex index) throws IOException
@@ -3170,7 +3169,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public String toString()
@@ -3219,7 +3218,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * Commits the volatile index to disk.
        * 
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public void execute(MultiIndex index) throws IOException
@@ -3231,7 +3230,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public String toString()
@@ -3283,7 +3282,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * Commits the volatile index to disk.
        * 
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public void execute(MultiIndex index) throws IOException
@@ -3294,7 +3293,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       @Override
       public String toString()

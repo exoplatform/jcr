@@ -35,7 +35,7 @@ import java.util.List;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.</br>
+ * Created by The eXo Platform SAS.<br>
  * 
  * Persisted PropertyData
  * 

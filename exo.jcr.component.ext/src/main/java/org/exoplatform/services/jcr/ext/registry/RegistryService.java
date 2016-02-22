@@ -69,9 +69,15 @@ import javax.xml.transform.TransformerException;
  * whole system, i.e. for all repositories used by system. All operations performed in context of
  * "current" repository, i.e. RepositoryService.getCurrentRepository() Each repository has own
  * Registry storage which is placed in workspace configured in "locations" entry like:
- * <properties-param> <name>locations</name> <description>registry locations</description> <property
- * name="repository1" value="workspace1"/> <property name="repository2" value="workspace2"/> The
- * implementation hides storage details from end user
+ * {@code
+ * <properties-param>
+ *   <name>locations</name>
+ *   <description>registry locations</description>
+ *   <property name="repository1" value="workspace1"/>
+ *   <property name="repository2" value="workspace2"/>
+ * </properties-param>
+ * }
+ * The implementation hides storage details from end user
  * 
  * 
  * @author Gennady Azarenkov

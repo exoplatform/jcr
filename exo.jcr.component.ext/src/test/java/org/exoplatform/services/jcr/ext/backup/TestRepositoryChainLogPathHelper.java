@@ -21,7 +21,7 @@ import junit.framework.TestCase;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 2011
+ * <br>Date: 2011
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$

@@ -70,7 +70,6 @@ public interface NodeTypeRepository extends ComponentPersister
     * 
     * @param nodeTypeName the name of the node type for which we want the declared super types
     * @return the corresponding declared super type names
-    * @throws RepositoryException if any error occurs
     */
    Set<InternalQName> getDeclaredSubtypes(InternalQName nodeTypeName);
 
@@ -91,7 +90,6 @@ public interface NodeTypeRepository extends ComponentPersister
     * 
     * @param typeName the node type name to retrieve
     * @return the {@link NodeTypeData} object representing the given node type name
-    * @throws RepositoryException if any error occurs
     */
    NodeTypeData getNodeType(InternalQName typeName);
 

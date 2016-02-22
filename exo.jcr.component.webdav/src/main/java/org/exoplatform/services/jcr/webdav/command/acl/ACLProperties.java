@@ -41,7 +41,7 @@ import javax.xml.namespace.QName;
  * Utility class to simplify operations with ACL properties of JCR nodes
  * for PROPFIND method.
  * 
- * @author <a href="mailto:gavrikvetal@gmail.com">Vitaliy Gulyy</a>
+ * @author Vitaliy Gulyy - gavrikvetal@gmail.com
  * @version $
  */
 

@@ -53,7 +53,7 @@ import javax.jcr.ValueFormatException;
  * And will get property as string after that. We will have a date with the current timezone,
  * actualy the date will be same but in different tz.
  * 
- * "2023-07-05T19:28:00.000-0300" --> "2023-07-06T01:28:00.000+0300" - it's same date, but... print
+ * "2023-07-05T19:28:00.000-0300" {@literal -->} "2023-07-06T01:28:00.000+0300" - it's same date, but... print
  * is different.
  * 
  * The pb can be solved in SimpleDateFormat be setting the formatter timezone before the format

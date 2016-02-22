@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 10.01.2009
+ * <br>Date: 10.01.2009
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TesterItemsPersistenceListener.java 26880 2009-01-15 08:25:32Z serg $

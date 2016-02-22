@@ -26,7 +26,7 @@ import org.exoplatform.services.jcr.ext.backup.server.bean.response.BackupJobCon
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>
+ * <br>
  * Date: 26.03.2009
  * 
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>

@@ -72,7 +72,6 @@ public interface NodeTypeDataManager
     * Return all NodeTypes.
     * 
     * @return List of NodeTypeData
-    * @throws RepositoryException in case of error
     */
    List<NodeTypeData> getAllNodeTypes();
 

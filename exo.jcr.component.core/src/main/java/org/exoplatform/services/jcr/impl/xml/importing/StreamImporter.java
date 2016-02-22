@@ -65,10 +65,7 @@ public class StreamImporter implements RawDataImporter
    private final ItemDataKeeper dataKeeper;
 
    /**
-    * @param saveType
-    * @param parent
-    * @param uuidBehavior
-    * @param respectPropertyDefinitionsConstraints
+    *
     */
    public StreamImporter(NodeData parent, int uuidBehavior, ItemDataKeeper dataKeeper, ItemDataConsumer dataConsumer,
       NodeTypeDataManager ntManager, LocationFactory locationFactory, ValueFactoryImpl valueFactory,

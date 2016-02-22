@@ -34,7 +34,7 @@ import javax.jcr.LoginException;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SAS.<br/> the factory for jcr Session
+ * Created by The eXo Platform SAS.<br> the factory for jcr Session
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: SessionFactory.java 14100 2008-05-12 10:53:47Z gazarenkov $

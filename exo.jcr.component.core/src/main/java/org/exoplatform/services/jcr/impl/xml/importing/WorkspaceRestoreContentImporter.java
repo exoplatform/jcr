@@ -49,7 +49,7 @@ public class WorkspaceRestoreContentImporter extends WorkspaceContentImporter
 
    /**
     * Class used to import content of workspace, using "System View XML Mapping",
-    * e.g. for restore data during backup. <br/> Assumes that there is not root,
+    * e.g. for restore data during backup. <br> Assumes that there is not root,
     * i.e. workspace not initialized.
     * 
     * @param dataConsumer
@@ -58,7 +58,6 @@ public class WorkspaceRestoreContentImporter extends WorkspaceContentImporter
     * @param valueFactory
     * @param namespaceRegistry
     * @param accessManager
-    * @param userId
     * @param context
     */
    public WorkspaceRestoreContentImporter(ItemDataConsumer dataConsumer, NodeTypeDataManager ntManager,

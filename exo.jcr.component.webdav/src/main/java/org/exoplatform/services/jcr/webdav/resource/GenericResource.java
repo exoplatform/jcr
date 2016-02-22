@@ -32,7 +32,7 @@ import javax.jcr.RepositoryException;
 import javax.xml.namespace.QName;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * Abstract WebDav Resource implementation It is recommended to extend this
  * class instead of implement Resource itself
  * 

@@ -58,12 +58,12 @@ public class ItemDefinitionImpl implements ExtendedItemDefinition
    private final ItemDefinitionData itemDefinitionData;
 
    /**
-    * @param name
-    * @param declaringNodeType
-    * @param onParentVersion
-    * @param autoCreated
-    * @param mandatory
-    * @param protectedItem
+    * @param itemDefinitionData
+    * @param nodeTypeDataManager
+    * @param nodeTypeManager
+    * @param locationFactory
+    * @param valueFactory
+    * @param dataManager
     */
    public ItemDefinitionImpl(ItemDefinitionData itemDefinitionData, NodeTypeDataManager nodeTypeDataManager,
             ExtendedNodeTypeManager nodeTypeManager, LocationFactory locationFactory, ValueFactory valueFactory,

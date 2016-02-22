@@ -42,7 +42,7 @@ import javax.jcr.RepositoryException;
 import javax.xml.namespace.QName;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * Resource containing JCR's nt:file/jcr:content underneath. Identified by
  * nt:file's URI jcr:content's jcr:data property contains file's payload
  * 
@@ -121,8 +121,8 @@ public class FileResource extends GenericResource
       * @param identifier resource identifier
       * @param node node
       * @param namespaceContext namespace context
-      * @throws IllegalResourceTypeException {@link IllegalResourceTypeException
-      * @throws RepositoryException {@link RepositoryException}
+      * @throws IllegalResourceTypeException
+      * @throws RepositoryException
       */
    protected FileResource(final int type, final URI identifier, Node node, final WebDavNamespaceContext namespaceContext)
       throws IllegalResourceTypeException, RepositoryException

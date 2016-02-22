@@ -29,7 +29,7 @@ import java.util.Calendar;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>
+ * <br>
  * Date: 13.04.2009
  * 
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a>
@@ -173,8 +173,6 @@ public class DetailedInfo extends ShortInfo
     *          int, the state of restore
     * @param repositroryName
     *          String, the repository name
-    * @param workspaceName
-    *          String, the workspace name           
     */
    public DetailedInfo(int type, RepositoryBackupChainLog chainLog, Calendar startedTime, Calendar finishedTime,
       int state, String repositroryName)

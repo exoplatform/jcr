@@ -35,7 +35,7 @@ public class CacheId extends CacheKey
 
    /**
     * Item identifier. This id (String) may be placed in childs caches CN, CP (WeakHashMap) as a key.
-    * <br/>So, this instance will prevent GC remove them from CN, CP.
+    * <br>So, this instance will prevent GC remove them from CN, CP.
     */
    private final String id;
 

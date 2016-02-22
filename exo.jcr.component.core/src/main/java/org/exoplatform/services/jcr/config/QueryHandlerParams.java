@@ -55,7 +55,7 @@ public interface QueryHandlerParams
    public static final String PARAM_ERRORLOG_SIZE = "errorlog-size";
 
    /**
-    * The location of the search index. <p/> Note: This is a <b>mandatory</b> parameter!
+    * The location of the search index. <br> Note: This is a <b>mandatory</b> parameter!
     */
    public static final String PARAM_INDEX_DIR = "index-dir";
 

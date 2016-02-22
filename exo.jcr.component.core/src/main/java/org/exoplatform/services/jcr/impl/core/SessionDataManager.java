@@ -147,7 +147,7 @@ public class SessionDataManager implements ItemDataConsumer
     *          - absolute path
     * @return existed item data or null if not found
     * @throws RepositoryException
-    * @see org.exoplatform.services.jcr.dataflow.ItemDataConsumer#getItemData(org.exoplatform.services.jcr.datamodel.QPath)
+    * @see org.exoplatform.services.jcr.dataflow.ItemDataConsumer#getItemData(String)
     */
    public ItemData getItemData(QPath path) throws RepositoryException
    {
@@ -169,7 +169,7 @@ public class SessionDataManager implements ItemDataConsumer
     * it return itself
     * 
     * @param parent
-    * @param relPath
+    * @param relPathEntries
     *          - array of QPathEntry which represents the relation path to the searched item
     * @param itemType
     *          - item type         
@@ -1254,7 +1254,7 @@ public class SessionDataManager implements ItemDataConsumer
     * incoming state of incoming and descendants to the changes log and removes corresponding items
     * from pool (if any)
     * 
-    * @param itemState
+    * @param itemData
     *          - incoming state
     * @throws RepositoryException
     */
@@ -1446,8 +1446,8 @@ public class SessionDataManager implements ItemDataConsumer
     * Reindex same-name siblings of the node Reindex is actual for remove, move only. If node is
     * added then its index always is a last in list of childs.
     * 
-    * @param node
-    *          , a node caused reindexing, i.e. deleted or moved node.
+    * @param cause
+    *          a node caused reindexing, i.e. deleted or moved node.
     */
    protected List<ItemState> reindexSameNameSiblings(NodeData cause, ItemDataConsumer dataManager)
       throws RepositoryException
@@ -1528,12 +1528,6 @@ public class SessionDataManager implements ItemDataConsumer
     * 
     * @param itemState
     *          - the state
-    * @param pool
-    *          - if true Manager force pooling this State so next calling will returna the same
-    *          object Common rule: use pool = true if the Item supposed to be returned by JCR API
-    *          (Node.addNode(), Node.setProperty() for ex) (NOTE: independently of pooling the
-    *          Manager always return actual Item state)
-    * @return
     * @throws RepositoryException
     */
    public void updateItemState(ItemState itemState) throws RepositoryException
@@ -1619,7 +1613,7 @@ public class SessionDataManager implements ItemDataConsumer
    /**
     * Returns all REFERENCE properties that refer to this node.
     * 
-    * @see org.exoplatform.services.jcr.dataflow.ItemDataConsumer#getReferencesData(java.lang.String)
+    * @see org.exoplatform.services.jcr.dataflow.ItemDataConsumer#getReferencesData(String, boolean)
     */
    public List<PropertyData> getReferencesData(String identifier, boolean skipVersionStorage)
       throws RepositoryException
@@ -2080,7 +2074,8 @@ public class SessionDataManager implements ItemDataConsumer
     * from outgoing list WARN. THIS METHOD HAS SIBLING - mergeList, see below.
     * 
     * @param rootData
-    * @param listOnly 
+    * @param childProperties
+    * @param dataManager
     * @return
     */
    protected List<? extends ItemData> mergeProps(ItemData rootData, List<PropertyData> childProperties,
@@ -2244,7 +2239,6 @@ public class SessionDataManager implements ItemDataConsumer
     * 
     * @param parent
     * @param dataManager
-    * @param deep
     * @param action
     * @param ret
     * @throws RepositoryException
@@ -2342,7 +2336,6 @@ public class SessionDataManager implements ItemDataConsumer
     * Calculate all transient descendants for the given parent node
     * 
     * @param parent
-    * @param deep
     * @param action
     * @param ret
     * @throws RepositoryException

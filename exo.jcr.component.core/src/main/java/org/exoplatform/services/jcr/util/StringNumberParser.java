@@ -30,14 +30,14 @@ public class StringNumberParser
 {
 
    /**
-    * Parse given text as long. <br/>
+    * Parse given text as long. <br>
     * 
-    * <br/>E.g. '2k' will be returned as 2048 number.
+    * <br>E.g. '2k' will be returned as 2048 number.
     * 
-    * <br/>Next formats are supported (case insensitive): <br/>kilobytes - k,kb <br/>megabytes - m,mb
-    * <br/>gigabytes - g,gb <br/>terabytes - t,tb
+    * <br>Next formats are supported (case insensitive): <br>kilobytes - k,kb <br>megabytes - m,mb
+    * <br>gigabytes - g,gb <br>terabytes - t,tb
     * 
-    * @param numberText
+    * @param longText
     * @return
     * @throws NumberFormatException
     */
@@ -47,12 +47,12 @@ public class StringNumberParser
    }
 
    /**
-    * Serialize given long as text. <br/>
+    * Serialize given long as text. <br>
     * 
-    * <br/>E.g. 2048 long will be returned as "2kb".
+    * <br>E.g. 2048 long will be returned as "2kb".
     * 
-    * <br/>Next formats are supported (case insensitive): <br/>kilobytes - k,kb <br/>megabytes - m,mb
-    * <br/>gigabytes - g,gb <br/>terabytes - t,tb
+    * <br>Next formats are supported (case insensitive): <br>kilobytes - k,kb <br>megabytes - m,mb
+    * <br>gigabytes - g,gb <br>terabytes - t,tb
     * 
     * @param longValue
     *        - long
@@ -66,14 +66,14 @@ public class StringNumberParser
    }
 
    /**
-    * Parse given text as int. <br/>
+    * Parse given text as int. <br>
     * 
-    * <br/>E.g. '2k' will be returned as 2048 number.
+    * <br>E.g. '2k' will be returned as 2048 number.
     * 
-    * <br/>Next formats are supported (case insensitive): <br/>kilobytes - k,kb <br/>megabytes - m,mb
-    * <br/>gigabytes - g,gb <br/>terabytes - t,tb
+    * <br>Next formats are supported (case insensitive): <br>kilobytes - k,kb <br>megabytes - m,mb
+    * <br>gigabytes - g,gb <br>terabytes - t,tb
     * 
-    * @param numberText
+    * @param integerText
     * @return
     * @throws NumberFormatException
     */
@@ -83,12 +83,12 @@ public class StringNumberParser
    }
 
    /**
-    * Serialize given int as text. <br/>
+    * Serialize given int as text. <br>
     * 
-    * <br/>E.g. 2048 nubber will be returned as "2kb".
+    * <br>E.g. 2048 nubber will be returned as "2kb".
     * 
-    * <br/>Next formats are supported (case insensitive): <br/>kilobytes - k,kb <br/>megabytes - m,mb
-    * <br/>gigabytes - g,gb <br/>terabytes - t,tb
+    * <br>Next formats are supported (case insensitive): <br>kilobytes - k,kb <br>megabytes - m,mb
+    * <br>gigabytes - g,gb <br>terabytes - t,tb
     * 
     * @param integerValue
     *        - int
@@ -102,14 +102,14 @@ public class StringNumberParser
    }
 
    /**
-    * Parse given text as double. <br/>
+    * Parse given text as double. <br>
     * 
-    * <br/>E.g. '2k' will be returned as 2048 number.
+    * <br>E.g. '2k' will be returned as 2048 number.
     * 
-    * <br/>Next formats are supported (case insensitive): <br/>kilobytes - k,kb <br/>megabytes - m,mb
-    * <br/>gigabytes - g,gb <br/>terabytes - t,tb
+    * <br>Next formats are supported (case insensitive): <br>kilobytes - k,kb <br>megabytes - m,mb
+    * <br>gigabytes - g,gb <br>terabytes - t,tb
     * 
-    * <br/>NOTE: floating point supported, e.g. 1.5m = 1.5 * 1024 * 1024
+    * <br>NOTE: floating point supported, e.g. 1.5m = 1.5 * 1024 * 1024
     * 
     * @param doubleText
     * @return
@@ -121,14 +121,14 @@ public class StringNumberParser
    }
 
    /**
-    * Parse given text as number representation. <br/>
+    * Parse given text as number representation. <br>
     * 
-    * <br/>E.g. '2k' will be returned as 2048 number.
+    * <br>E.g. '2k' will be returned as 2048 number.
     * 
-    * <br/>Next formats are supported (case insensitive): <br/>kilobytes - k,kb <br/>megabytes - m,mb
-    * <br/>gigabytes - g,gb <br/>terabytes - t,tb
+    * <br>Next formats are supported (case insensitive): <br>kilobytes - k,kb <br>megabytes - m,mb
+    * <br>gigabytes - g,gb <br>terabytes - t,tb
     * 
-    * <br/>NOTE: floating point supported, e.g. 1.5m = 1.5 * 1024 * 1024, <br/>WARN: floating point
+    * <br>NOTE: floating point supported, e.g. 1.5m = 1.5 * 1024 * 1024, <br>WARN: floating point
     * delimiter depends on OS settings
     * 
     * @param numberText
@@ -181,12 +181,12 @@ public class StringNumberParser
    }
 
    /**
-    * Serialize given number to text as number representation. <br/>
+    * Serialize given number to text as number representation. <br>
     * 
-    * <br/>E.g. 2048 number will be returned as 2kb.
+    * <br>E.g. 2048 number will be returned as 2kb.
     * 
-    * <br/>Next formats are supported: <br/>kilobytes - k,kb <br/>megabytes - m,mb
-    * <br/>gigabytes - g,gb <br/>terabytes - t,tb
+    * <br>Next formats are supported: <br>kilobytes - k,kb <br>megabytes - m,mb
+    * <br>gigabytes - g,gb <br>terabytes - t,tb
     * 
     * @param number
     *         - long
@@ -220,11 +220,11 @@ public class StringNumberParser
    }
 
    /**
-    * Parse given text as formated time and return a time in milliseconds. <br/> <br/>Formats
-    * supported: <br/>milliseconds - ms <br/>seconds - without sufix <br/>minutes - m <br/>hours - h
-    * <br/>days - d <br/>weeks - w
+    * Parse given text as formated time and return a time in milliseconds. <br> <br>Formats
+    * supported: <br>milliseconds - ms <br>seconds - without sufix <br>minutes - m <br>hours - h
+    * <br>days - d <br>weeks - w
     * 
-    * @param timeText
+    * @param text
     *          - String
     * @return time in milliseconds
     * @throws NumberFormatException

@@ -22,16 +22,18 @@ import org.apache.lucene.index.TermPositionVector;
 
 /**
  * <code>DefaultXMLExcerpt</code> creates an XML excerpt of a matching node.
- * <br/>
+ * <br>
  * E.g. if you search for 'jackrabbit' and 'query' you may get the following
  * result for a node:
  * <pre>
- * &lt;excerpt>
- *     &lt;fragment>&lt;highlight>Jackrabbit&lt;/highlight> implements both the mandatory XPath and optional SQL 
- *     &lt;highlight>query&lt;/highlight> syntax.&lt;/fragment>
- *     &lt;fragment>Before parsing the XPath &lt;highlight>query&lt;/highlight> in &lt;highlight>Jackrabbit&lt;/highlight>, 
- *     the statement is surrounded&lt;/fragment>
- * &lt;/excerpt>
+ * {@code
+ * <excerpt>
+ *     <fragment><highlight>Jackrabbit</highlight> implements both the mandatory XPath and optional SQL
+ *     <highlight>query</highlight> syntax.</fragment>
+ *     <fragment>Before parsing the XPath <highlight>query</highlight> in <highlight>Jackrabbit</highlight>,
+ *     the statement is surrounded</fragment>
+ * </excerpt>
+ * }
  * </pre>
  */
 public class DefaultXMLExcerpt extends AbstractExcerpt {

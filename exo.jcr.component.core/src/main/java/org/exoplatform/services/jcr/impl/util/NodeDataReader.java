@@ -127,7 +127,6 @@ public class NodeDataReader extends ItemDataReader
     * 
     * @param name
     * @param type
-    * @param multiValued
     * @return
     */
    public PropertyDataReader forProperty(InternalQName name, int type)

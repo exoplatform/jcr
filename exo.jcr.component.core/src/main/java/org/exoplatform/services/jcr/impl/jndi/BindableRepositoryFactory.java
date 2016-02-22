@@ -35,7 +35,7 @@ import javax.naming.Reference;
 import javax.naming.spi.ObjectFactory;
 
 /**
- * Created by The eXo Platform SAS.<br/>
+ * Created by The eXo Platform SAS.<br>
  * 
  * ObjectFactory to produce BindableRepositoryImpl objects
  * 

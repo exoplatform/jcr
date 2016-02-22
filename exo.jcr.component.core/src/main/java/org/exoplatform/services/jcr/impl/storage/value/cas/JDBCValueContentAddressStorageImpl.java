@@ -43,12 +43,12 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 /**
- * Created by The eXo Platform SAS .<br/>
+ * Created by The eXo Platform SAS .<br>
  * 
- * Stored CAS table in JDBC database.<br/>
+ * Stored CAS table in JDBC database.<br>
  * 
  * NOTE! To make SQL commands compatible with possible ALL RDBMS we use objects names in
- * <strong>!lowercase!</strong>.<br/>
+ * <strong>!lowercase!</strong>.<br>
  * 
  * Date: 18.07.2008
  * 

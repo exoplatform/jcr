@@ -129,7 +129,7 @@ public class QueryRootNode extends QueryNode {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public boolean equals(Object obj) {
         if (obj instanceof QueryRootNode) {

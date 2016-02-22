@@ -128,7 +128,7 @@ public class QueryImpl extends AbstractQueryImpl
    private boolean caseInsensitiveOrder;
 
    /**
-    * @inheritDoc
+    * {@inheritDoc}
     */
    public void init(SessionImpl session, SessionDataManager itemMgr, QueryHandler handler, String statement,
       String language) throws InvalidQueryException
@@ -143,7 +143,7 @@ public class QueryImpl extends AbstractQueryImpl
    }
 
    /**
-    * @inheritDoc
+    * {@inheritDoc}
     */
    public void init(SessionImpl session, SessionDataManager itemMgr, QueryHandler handler, Node node)
       throws InvalidQueryException, RepositoryException

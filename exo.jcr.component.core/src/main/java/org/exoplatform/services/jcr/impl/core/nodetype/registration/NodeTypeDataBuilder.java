@@ -350,7 +350,7 @@ public class NodeTypeDataBuilder
     * Removes given NodeDefinitionDataBuilder from internal list of NodeType's
     * children.
     * 
-    * @param NodeDefinitionDataBuilder
+    * @param childBuilder
     * @return result flag
     */
    public boolean removeNodeDefinitionDataBuilder(NodeDefinitionDataBuilder childBuilder)
@@ -362,7 +362,7 @@ public class NodeTypeDataBuilder
     * Removes given PropertyDefinitionDataBuilder from internal list of
     * NodeType's properties.
     * 
-    * @param PropertyDefinitionDataBuilder
+    * @param propertyBuilder
     * @return result flag
     */
    public boolean removePropertyDefinitionDataBuilder(PropertyDefinitionDataBuilder propertyBuilder)

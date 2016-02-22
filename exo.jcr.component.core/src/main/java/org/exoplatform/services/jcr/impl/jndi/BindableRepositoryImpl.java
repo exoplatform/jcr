@@ -44,7 +44,7 @@ import javax.naming.Referenceable;
 import javax.naming.StringRefAddr;
 
 /**
- * Created by The eXo Platform SAS.<br/> Bindable implementation of Repository -
+ * Created by The eXo Platform SAS.<br> Bindable implementation of Repository -
  * ready to bind to Naming Context
  * 
  * @see BindableRepositoryFactory

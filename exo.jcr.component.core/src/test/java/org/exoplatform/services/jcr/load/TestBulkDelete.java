@@ -27,7 +27,7 @@ import javax.jcr.Node;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 16.11.2008
+ * <br>Date: 16.11.2008
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
  * @version $Id: TestBulkDelete.java 34801 2009-07-31 15:44:50Z dkatayev $

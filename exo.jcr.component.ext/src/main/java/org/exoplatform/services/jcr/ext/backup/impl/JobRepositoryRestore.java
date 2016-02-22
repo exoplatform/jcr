@@ -50,7 +50,7 @@ import javax.jcr.RepositoryException;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 2010
+ * <br>Date: 2010
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id$
@@ -170,8 +170,9 @@ public class JobRepositoryRestore extends Thread
     * @throws ClassNotFoundException 
     * @throws BackupOperationException 
     * 
-    * @throws Throwable
-    *           will be generated the Throwable
+    * @throws RepositoryRestoreExeption
+    * @throws BackupOperationException
+    * @throws ClassNotFoundException
     */
    protected void restoreRepository() throws RepositoryRestoreExeption, BackupOperationException,
       ClassNotFoundException

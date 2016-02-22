@@ -88,7 +88,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
 
    /**
     * StreamPersistedValueData constructor for stream data with know destination file.
-    * <p/>
+    * <br>
     * Destination file reserved for use in internal impl.
    */
    public StreamPersistedValueData(int orderNumber, InputStream stream, File destFile, SpoolConfig spoolConfig)
@@ -101,7 +101,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
 
    /**
     * StreamPersistedValueData  constructor for data spooled to temp file with know destination file.
-    * <p/>
+    * <br>
     * Destination file reserved for use in internal impl.
     *
     * @param orderNumber int
@@ -138,8 +138,8 @@ public class StreamPersistedValueData extends FilePersistedValueData
    }
 
    /**
-    * Return original data stream or null. <br/>
-    * For persistent transformation from non-spooled TransientValueData to persistent layer.<br/>
+    * Return original data stream or null. <br>
+    * For persistent transformation from non-spooled TransientValueData to persistent layer.<br>
     * WARN: after the stream will be consumed it will not contains data anymore.  
     * 
     * @return InputStream data stream or null
@@ -151,7 +151,7 @@ public class StreamPersistedValueData extends FilePersistedValueData
    }
 
    /**
-    * Return temp file or null. For transport from spooled TransientValueData to persistent layer. <br/>
+    * Return temp file or null. For transport from spooled TransientValueData to persistent layer. <br>
     * WARN: after the save the temp file will be removed. So, temp file actual only during the save from transient state.
     * 
     * @return File temporary file or null

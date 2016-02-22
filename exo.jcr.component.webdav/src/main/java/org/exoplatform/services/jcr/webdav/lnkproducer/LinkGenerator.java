@@ -23,8 +23,8 @@ import java.io.IOException;
 import java.io.OutputStream;
 
 /**
- * Created by The eXo Platform SAS Author : <a
- * href="gavrikvetal@gmail.com">Vitaly Guly</a>.
+ * Created by The eXo Platform SAS.
+ * @author Vitaly Guly - gavrikvetal@gmail.com
  * 
  * @version $Id: $
  */

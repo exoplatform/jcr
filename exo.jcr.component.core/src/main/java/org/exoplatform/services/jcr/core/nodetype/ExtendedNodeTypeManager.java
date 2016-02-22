@@ -102,17 +102,17 @@ public interface ExtendedNodeTypeManager extends NodeTypeManager
     * Registers or updates the specified <code>Collection</code> of
     * <code>NodeTypeValue</code> objects. This method is used to register or
     * update a set of node types with mutual dependencies. Returns an iterator
-    * over the resulting <code>NodeType</code> objects. <p/> The effect of the
+    * over the resulting <code>NodeType</code> objects. <br> The effect of the
     * method is "all or nothing"; if an error occurs, no node types are
-    * registered or updated. <p/> Throws an
+    * registered or updated. <br> Throws an
     * <code>InvalidNodeTypeDefinitionException</code> if a
     * <code>NodeTypeDefinition</code> within the <code>Collection</code> is
     * invalid or if the <code>Collection</code> contains an object of a type
-    * other than <code>NodeTypeDefinition</code> . <p/> Throws a
+    * other than <code>NodeTypeDefinition</code> . <br> Throws a
     * <code>NodeTypeExistsException</code> if <code>allowUpdate</code> is
     * <code>false</code> and a <code>NodeTypeDefinition</code> within the
     * <code>Collection</code> specifies a node type name that is already
-    * registered. <p/> Throws an
+    * registered. <br> Throws an
     * <code>UnsupportedRepositoryOperationException</code> if this implementation
     * does not support node type registration.
     * 
@@ -140,7 +140,7 @@ public interface ExtendedNodeTypeManager extends NodeTypeManager
       RepositoryException;
 
    /**
-    * Unregisters the specified set of node types.<p/> Used to unregister a set
+    * Unregisters the specified set of node types.<br> Used to unregister a set
     * of node types with mutual dependencies.
     * 
     * @param names a <code>String</code> array

@@ -959,7 +959,7 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
     * Extends the <code>PathQueryNode</code> with merging capability. A
     * <code>PathQueryNode</code> <code>n1</code> can be merged with another
     * node <code>n2</code> in the following case:
-    * <p/>
+    * <br>
     * <code>n1</code> contains a location step at position <code>X</code> with
     * a name test that matches any node and has the descending flag set. Where
     * <code>X</code> &lt; number of location steps.
@@ -969,15 +969,15 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
     * The merged node then contains a location step at position <code>X</code>
     * with the name test of the location step at position <code>X+1</code> and
     * the descending flag set.
-    * <p/>
-    * The following path patterns:<br/>
-    * <code>/foo/%/bar</code> OR <code>/foo/bar</code><br/>
-    * are merged into:<br/>
+    * <br>
+    * The following path patterns:<br>
+    * <code>/foo/%/bar</code> OR <code>/foo/bar</code><br>
+    * are merged into:<br>
     * <code>/foo//bar</code>.
-    * <p/>
-    * The path patterns:<br/>
-    * <code>/foo/%</code> AND NOT <code>/foo/%/%</code><br/>
-    * are merged into:<br/>
+    * <br>
+    * The path patterns:<br>
+    * <code>/foo/%</code> AND NOT <code>/foo/%/%</code><br>
+    * are merged into:<br>
     * <code>/foo/*</code>
     */
    private static class MergingPathQueryNode extends PathQueryNode
@@ -1031,11 +1031,11 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
       /**
        * Merges two nodes into a node which selects any child nodes of a
        * given node.
-       * <p/>
-       * Example:<br/>
-       * The path patterns:<br/>
-       * <code>/foo/%</code> AND NOT <code>/foo/%/%</code><br/>
-       * are merged into:<br/>
+       * <br>
+       * Example:<br>
+       * The path patterns:<br>
+       * <code>/foo/%</code> AND NOT <code>/foo/%/%</code><br>
+       * are merged into:<br>
        * <code>/foo/*</code>
        *
        * @param nodes the nodes to merge with.
@@ -1113,11 +1113,11 @@ public class JCRSQLQueryBuilder implements JCRSQLParserVisitor
       /**
        * Merges two nodes into one node selecting a node on the
        * descendant-or-self axis.
-       * <p/>
-       * Example:<br/>
-       * The following path patterns:<br/>
-       * <code>/foo/%/bar</code> OR <code>/foo/bar</code><br/>
-       * are merged into:<br/>
+       * <br>
+       * Example:<br>
+       * The following path patterns:<br>
+       * <code>/foo/%/bar</code> OR <code>/foo/bar</code><br>
+       * are merged into:<br>
        * <code>/foo//bar</code>.
        *
        * @param nodes the node to merge.

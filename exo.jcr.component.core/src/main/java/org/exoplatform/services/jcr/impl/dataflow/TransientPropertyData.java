@@ -186,7 +186,7 @@ public class TransientPropertyData extends TransientItemData implements Property
     * @param name InternalQName
     * @param type int
     * @param multiValued boolean
-    * @param values List<ValueData>
+    * @param values List of ValueData
     * @return TransientPropertyData
     */
    public static TransientPropertyData createPropertyData(NodeData parent, InternalQName name, int type,

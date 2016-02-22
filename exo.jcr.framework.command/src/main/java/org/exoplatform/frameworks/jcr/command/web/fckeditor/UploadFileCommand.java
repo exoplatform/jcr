@@ -36,8 +36,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
- * Created by The eXo Platform SAS .<br/>
- * connector?Command=FileUpload&Type=ResourceType&CurrentFolder=FolderPath
+ * Created by The eXo Platform SAS .<br>
+ *
+ * {@code connector?Command=FileUpload&Type=ResourceType&CurrentFolder=FolderPath}
  * 
  * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov</a>
  * @version $Id: UploadFileCommand.java 34445 2009-07-24 07:51:18Z dkatayev $

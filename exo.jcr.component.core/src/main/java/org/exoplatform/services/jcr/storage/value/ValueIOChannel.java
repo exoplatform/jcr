@@ -45,7 +45,7 @@ public interface ValueIOChannel
     *          value data order number
     * @param type
     *          property type                  
-    * @param SpoolConfig
+    * @param spoolConfig
     *          spool configuration
     * @return ValueData
     * @throws IOException

@@ -54,7 +54,6 @@ public class GroovyScript2RestUpdateListener implements EventListener
     * @param repository repository
     * @param workspace workspace name
     * @param groovyScript2RestLoader See {@link GroovyScript2RestLoader}
-    * @param session JCR session
     */
    public GroovyScript2RestUpdateListener(ManageableRepository repository, String workspace,
       GroovyScript2RestLoader groovyScript2RestLoader)

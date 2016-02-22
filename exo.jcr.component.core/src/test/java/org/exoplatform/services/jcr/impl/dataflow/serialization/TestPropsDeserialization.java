@@ -35,7 +35,7 @@ import javax.jcr.Node;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 
+ * <br>Date:
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: TetsPropsDeserialization.java 111 2008-11-11 11:11:11Z serg $

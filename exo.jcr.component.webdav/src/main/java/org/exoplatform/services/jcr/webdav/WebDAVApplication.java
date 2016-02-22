@@ -31,7 +31,7 @@ import javax.ws.rs.core.Application;
 
 /**
  * Common configuration mechanism for WebDAV application. From JAX-RS
- * specification, section 2.1 <br />
+ * specification, section 2.1 <br>
  * 
  * <pre>
  * The resources and providers that make up a JAX-RS application are configured

@@ -27,10 +27,10 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 /**
- * Created by The eXo Platform SAS. <br/>
- * Base class for WorkspaceCache keys.<br/>
+ * Created by The eXo Platform SAS. <br>
+ * Base class for WorkspaceCache keys.<br>
  * 
- * Date: 10.06.2008<br/>
+ * Date: 10.06.2008<br>
  * 
  * @author <a href="mailto:anatoliy.bazko@exoplatform.com.ua">Anatoliy Bazko</a>
  * @version $Id: CacheKey.java 2845 2010-07-30 13:29:37Z tolusha $

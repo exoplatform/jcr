@@ -43,7 +43,7 @@ public class IndexingTree
 
    /**
     * @param indexingRoot
-    * @param excludedPaths
+    * @param excludedPath
     */
    public IndexingTree(NodeData indexingRoot, QPath excludedPath)
    {
@@ -63,7 +63,7 @@ public class IndexingTree
 
    /**
     * Checks if the given event should be excluded based on the
-    * {@link #excludePath} setting.
+    * {@link #excludedPath} setting.
     * 
     * @param event
     *            observation event
@@ -77,9 +77,9 @@ public class IndexingTree
 
    /**
     * Checks if the given event should be excluded based on the
-    * {@link #excludePath} setting.
+    * {@link #excludedPath} setting.
     * 
-    * @param event
+    * @param eventData
     *            observation event
     * @return <code>true</code> if the event should be excluded,
     *         <code>false</code> otherwise

@@ -29,7 +29,7 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 
 /**
- * Created by The eXo Platform SAS. </br>
+ * Created by The eXo Platform SAS. <br>
  * 
  * Immutable ItemData from persistent storage
  * 

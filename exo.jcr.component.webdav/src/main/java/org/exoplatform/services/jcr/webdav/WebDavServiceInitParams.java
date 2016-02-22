@@ -42,7 +42,7 @@ import javax.ws.rs.core.MultivaluedMap;
 /**
  * Provides means to parse WebDAV service initial parameters and gain access to their values.
  * 
- * @author  <a href="mailto:dmi3.kuleshov@gmail.com">Dmitry Kuleshov</a>
+ * @author  Dmitry Kuleshov - dmi3.kuleshov@gmail.com
  * @version $Id$
  */
 public class WebDavServiceInitParams
@@ -168,9 +168,9 @@ public class WebDavServiceInitParams
 
    /**
     * Create an instance of WebDAV service initial parameters from parameters map.
-    * Please note, that this constructor receives Map<String, String> instead of InitParams
+    * Please note, that this constructor receives {@code Map<String, String>} instead of InitParams
     * and we cannot pass multi-valued parameters in the form of 
-    * {@link String} -> {@link java.util.Map}
+    * {@link String} {@literal ->} {@link java.util.Map}
     * To overcome this shortage we pass a set of parameter values as a single {@link String}
     * with each value separated by comma (",") i.e. "agent1, agent2, agent3"
     * @param params initial parameters

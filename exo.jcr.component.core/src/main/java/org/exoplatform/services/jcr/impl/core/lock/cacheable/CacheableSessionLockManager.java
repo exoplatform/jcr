@@ -41,7 +41,7 @@ import javax.jcr.lock.LockException;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 
+ * <br>Date:
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: CacheableSessionLockManager.java 2137 2010-03-25 15:31:56Z sergiykarpenko $

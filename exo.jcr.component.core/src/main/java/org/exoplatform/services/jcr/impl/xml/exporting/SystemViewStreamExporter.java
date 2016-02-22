@@ -54,9 +54,7 @@ public class SystemViewStreamExporter extends StreamExporter
 
    /**
     * @param writer
-    * @param session
     * @param dataManager
-    * @param maxLevel
     * @throws RepositoryException
     * @throws NamespaceException
     */

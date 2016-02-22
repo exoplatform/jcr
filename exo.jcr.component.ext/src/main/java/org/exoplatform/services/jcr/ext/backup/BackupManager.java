@@ -33,7 +33,7 @@ import java.util.Set;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by The eXo Platform SARL .<br/>
+ * Created by The eXo Platform SARL .<br>
  * 
  * @author Gennady Azarenkov
  * @version $Id: $
@@ -270,7 +270,7 @@ public interface BackupManager
     * @param repositoryEntry
     *          RepositoryEntry, the repository entry
     * @param workspaceNamesCorrespondMap
-    *          Map<String, String>, the map with correspondence workspace name in RepositoryEntry and RepositoryBackupChainLog.
+    *          the map with correspondence workspace name in RepositoryEntry and RepositoryBackupChainLog.
     * @param asynchronous
     *          boolean, in 'true' then asynchronous restore.   
     * @throws BackupOperationException
@@ -335,7 +335,7 @@ public interface BackupManager
    /**
     * Finding current backup by repository.
     *
-    * @param reposytore
+    * @param repository
     *          String, the repository name
     * @return RepositoryBackupChain
     *           return the current backup to repository 
@@ -345,7 +345,7 @@ public interface BackupManager
    /**
     * Finding current backup by id.
     *
-    * @param reposytore
+    * @param id
     *          String, the repository name
     * @return RepositoryBackupChain
     *           return the current backup to repository 

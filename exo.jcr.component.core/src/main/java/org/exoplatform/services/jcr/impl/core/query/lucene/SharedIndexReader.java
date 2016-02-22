@@ -63,7 +63,7 @@ class SharedIndexReader extends RefCountingIndexReader {
     }
 
     /**
-     * Simply passes the call to the wrapped reader as is.<br/>
+     * Simply passes the call to the wrapped reader as is.<br>
      * If <code>term</code> is for a {@link FieldNames#UUID} field and this
      * <code>SharedIndexReader</code> does not have such a document,
      * {@link EmptyTermDocs#INSTANCE} is returned.

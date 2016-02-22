@@ -39,7 +39,7 @@ public class RepositoryIndexSearcherHolder implements Startable
    private final List<SearchManager> indexSearchers;
 
    /**
-    * @param indexSearchers
+    *
     */
    public RepositoryIndexSearcherHolder()
    {
@@ -48,7 +48,7 @@ public class RepositoryIndexSearcherHolder implements Startable
    }
 
    /**
-    * @return the indexSearchers
+    *
     */
    public void addIndexSearcher(final SearchManager indexSearcher)
    {
@@ -99,7 +99,7 @@ public class RepositoryIndexSearcherHolder implements Startable
    }
 
    /**
-    * @return the indexSearchers
+    *
     */
    public void removeIndexSearcher(final SearchManager indexSearcher)
    {

@@ -52,7 +52,7 @@ import javax.ws.rs.core.Response;
 import javax.xml.namespace.QName;
 
 /**
- * Created by The eXo Platform SAS <br/>
+ * Created by The eXo Platform SAS <br>
  * Author : <a href="gavrikvetal@gmail.com">Vitaly Guly</a>.
  * 
  * @version $Id: $

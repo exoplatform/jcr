@@ -51,7 +51,7 @@ public interface Backupable
     * 
     * @param context
     *          the context
-    * @throws RestoreException
+    * @throws BackupException
     *          if any exception occurred
     */
    DataRestore getDataRestorer(DataRestoreContext context) throws BackupException;

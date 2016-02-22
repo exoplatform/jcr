@@ -32,7 +32,7 @@ import java.net.URL;
 import javax.ws.rs.core.Response;
 
 /**
- * Created by The eXo Platform SAS. <br/>Date:
+ * Created by The eXo Platform SAS. <br>Date:
  * 
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a>
  * @version $Id: ClientTransportImpl.java 111 2008-11-11 11:11:11Z serg $
@@ -89,9 +89,8 @@ public class ClientTransportImpl implements ClientTransport
     * Constructor.
 
     * @param formAuthentication form authentication parameters.
-    * @param login Login string.
-    * @param password Password string.
     * @param host host string.
+    * @param protocol host string.
     */
    public ClientTransportImpl(FormAuthentication formAuthentication, String host, String protocol)
    {

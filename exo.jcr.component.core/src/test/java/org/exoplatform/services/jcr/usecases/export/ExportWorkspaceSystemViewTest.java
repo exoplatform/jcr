@@ -41,7 +41,7 @@ import java.util.List;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 06.05.2009
+ * <br>Date: 06.05.2009
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id: ExportWorkspaceSystemViewTest.java 111 2008-11-11 11:11:11Z rainf0x $

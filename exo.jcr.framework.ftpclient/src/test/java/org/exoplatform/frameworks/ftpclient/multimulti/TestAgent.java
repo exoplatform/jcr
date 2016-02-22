@@ -37,7 +37,7 @@ import org.exoplatform.frameworks.ftpclient.commands.CmdSyst;
 import org.exoplatform.frameworks.ftpclient.commands.CmdUser;
 
 /**
- * Created by The eXo Platform SAS Author : Vitaly Guly <gavrik-vetal@ukr.net/mail.ru>
+ * Created by The eXo Platform SAS Author : Vitaly Guly gavrik-vetal@ukr.net/mail.ru
  * 
  * @version $Id: $
  */

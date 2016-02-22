@@ -30,7 +30,7 @@ import java.io.IOException;
  * 
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 2010
+ * <br>Date: 2010
  *
  * @author <a href="mailto:alex.reshetnyak@exoplatform.com.ua">Alex Reshetnyak</a> 
  * @version $Id: IndexCleanerService.java 3210 2010-09-28 12:01:50Z areshetnyak $

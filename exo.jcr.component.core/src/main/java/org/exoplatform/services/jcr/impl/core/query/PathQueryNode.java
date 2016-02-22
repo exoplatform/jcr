@@ -55,7 +55,7 @@ public class PathQueryNode extends NAryQueryNode {
     }
 
     /**
-     * Returns a list of valid node types under /jcr:system. List&lt;Name>.
+     * Returns a list of valid node types under /jcr:system.
      *
      * @return a list of valid node types under /jcr:system.
      */
@@ -125,7 +125,7 @@ public class PathQueryNode extends NAryQueryNode {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     public boolean equals(Object obj) {
         if (obj instanceof PathQueryNode) {

@@ -38,7 +38,7 @@ class MatchAllQuery extends Query {
 
    /**
     * Creates a new <code>MatchAllQuery</code> .
-    * <p/>
+    * <br>
     *
     * @param field the field name.
     * @throws IllegalArgumentException if <code>field</code> is null.

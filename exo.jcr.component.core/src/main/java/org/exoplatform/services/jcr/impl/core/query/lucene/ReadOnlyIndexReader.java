@@ -87,7 +87,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
     * Updates the deleted documents in this index reader. When this method
     * returns this index reader will have the same documents marked as deleted
     * as the passed <code>reader</code>.
-    * <p/>
+    * <br>
     * This method is not thread-safe! Make sure no other thread is concurrently
     * using this reader at the same time.
     *
@@ -193,7 +193,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
 
    /**
     * Wraps the underlying <code>TermDocs</code> and filters out documents
-    * marked as deleted.<br/>
+    * marked as deleted.<br>
     * If <code>term</code> is for a {@link FieldNames#UUID} field and this
     * <code>ReadOnlyIndexReader</code> does not have such a document,
     * {@link EmptyTermDocs#INSTANCE} is returned.
@@ -256,7 +256,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       public boolean next() throws IOException
       {
@@ -269,7 +269,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       public int read(int[] docs, int[] freqs) throws IOException
       {
@@ -283,7 +283,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       public boolean skipTo(int i) throws IOException
       {
@@ -315,7 +315,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       public int nextPosition() throws IOException
       {
@@ -323,7 +323,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       public int getPayloadLength()
       {
@@ -331,7 +331,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       public byte[] getPayload(byte[] data, int offset) throws IOException
       {
@@ -339,7 +339,7 @@ class ReadOnlyIndexReader extends RefCountingIndexReader
       }
 
       /**
-       * @inheritDoc
+       * {@inheritDoc}
        */
       public boolean isPayloadAvailable()
       {

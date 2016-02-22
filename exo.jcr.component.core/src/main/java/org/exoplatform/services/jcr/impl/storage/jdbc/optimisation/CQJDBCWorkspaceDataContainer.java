@@ -72,7 +72,7 @@ public class CQJDBCWorkspaceDataContainer extends JDBCWorkspaceDataContainer imp
     * 
     * @param wsConfig
     *          Workspace configuration
-    * @param valueStrorageProvider
+    * @param valueStorageProvider
     *          External Value Storages provider
     * @param dsProvider
     *          The data source provider

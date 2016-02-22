@@ -67,7 +67,7 @@ final class ForeignSegmentDocId extends DocId {
     }
 
     /**
-     * @inheritDoc
+     * {@inheritDoc}
      */
     int[] getDocumentNumbers(MultiIndexReader reader, int[] docNumbers) throws IOException {
         int doc = reader.getDocumentNumber(this);

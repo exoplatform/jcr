@@ -33,10 +33,12 @@ public abstract class AbstractQueryHits implements QueryHits {
     /**
      * Provides a default implementation:
      * <pre>
+     * {@code
      * while (n-- > 0) {
      *     if (nextScoreNode() == null) {
      *         return;
      *     }
+     * }
      * }
      * </pre>
      * Sub classes may overwrite this method and implement are more efficient

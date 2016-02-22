@@ -122,7 +122,9 @@ public abstract class BaseXmlExporter extends ItemDataTraversingVisitor
 
    /**
     * @param node - exported node.
-    * @throws Exception - exception.
+    * @throws RepositoryException
+    * @throws SAXException
+    * @throws XMLStreamException
     */
    public abstract void export(NodeData node) throws RepositoryException, SAXException, XMLStreamException;
 

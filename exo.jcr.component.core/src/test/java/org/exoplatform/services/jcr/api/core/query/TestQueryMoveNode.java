@@ -27,7 +27,7 @@ import javax.jcr.query.QueryResult;
 /**
  * Created by The eXo Platform SAS.
  * 
- * <br/>Date: 
+ * <br>Date:
  *
  * @author <a href="karpenko.sergiy@gmail.com">Karpenko Sergiy</a> 
  * @version $Id: TestQueryMoveNode.java 111 2011-28-01 11:11:11Z serg $

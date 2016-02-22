@@ -24,7 +24,7 @@ import java.util.Arrays;
 
 /**
  * Created by The eXo Platform SAS. Define base abstraction for NodeType data
- * used in core. <br/>
+ * used in core. <br>
  * Date: 25.11.2008
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter

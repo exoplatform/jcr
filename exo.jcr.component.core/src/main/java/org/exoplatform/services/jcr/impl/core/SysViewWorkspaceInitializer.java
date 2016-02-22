@@ -73,9 +73,9 @@ import javax.xml.stream.XMLStreamReader;
 import javax.xml.stream.events.StartElement;
 
 /**
- * Created by The eXo Platform SAS. <br/>
+ * Created by The eXo Platform SAS. <br>
  * 
- * Restores workspace from ready backupset. <br/>
+ * Restores workspace from ready backupset. <br>
  * Should be configured with restore-path parameter. The path to a backup result file.
  * 
  * @author <a href="mailto:peter.nedonosko@exoplatform.com.ua">Peter Nedonosko</a>
