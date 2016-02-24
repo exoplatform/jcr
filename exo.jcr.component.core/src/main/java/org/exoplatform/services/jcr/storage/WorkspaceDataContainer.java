@@ -73,6 +73,8 @@ public interface WorkspaceDataContainer extends DataContainer
 
    public final static String ACL_BF_ELEMENTS_NUMBER = "acl-bloomfilter-elements-number";
 
+   public final static String ACL_BF_ENABLED = "acl-bloomfilter-enabled";
+
    /**
     * [G.A] do we need it here or in WorkspaceDataManager better??
     * 
