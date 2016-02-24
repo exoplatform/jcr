@@ -102,6 +102,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
    private final static int ACL_BF_ELEMENTS_NUMBER_DEFAULT = 1000000;
 
+   private final static boolean ACL_BF_ENABLED_DEFAULT = true;
+
    /**
     * Items cache.
     */
@@ -127,6 +129,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    private final double bfProbability;
 
    private final int bfElementNumber;
+
+   private final boolean bfEnabled ;
 
    private volatile BloomFilter<String> filterPermissions;
 
@@ -424,6 +428,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             + " is invalid, can not be less then 1.");
       }
 
+      bfEnabled=
+         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.ACL_BF_ENABLED,
+            ACL_BF_ENABLED_DEFAULT);
+
       this.cache = cache;
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
@@ -492,6 +500,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          throw new IllegalArgumentException("Parameter " + WorkspaceDataContainer.ACL_BF_ELEMENTS_NUMBER
             + " is invalid, can not be less then 1.");
       }
+
+      bfEnabled=
+         wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.ACL_BF_ENABLED,
+            ACL_BF_ENABLED_DEFAULT);
 
       this.cache = cache;
 
@@ -2553,7 +2565,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    @ManagedDescription("Reloads the bloom filters used to efficiently manage the ACLs")
    public boolean reloadFilters()
    {
-      return loadFilters(false, false);
+      return bfEnabled ? loadFilters(false, false) : false;
    }
 
    /**
@@ -2598,7 +2610,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
 
       try
       {
-         this.cache.addListener(this);
+         if(bfEnabled)
+         {
+            this.cache.addListener(this);
+         }
       }
       catch (UnsupportedOperationException e)
       {
@@ -2611,7 +2626,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          return;
       }
 
-      loadFilters(true, true);
+      if(bfEnabled)
+      {
+         loadFilters(true, true);
+      }
    }
 
    /**

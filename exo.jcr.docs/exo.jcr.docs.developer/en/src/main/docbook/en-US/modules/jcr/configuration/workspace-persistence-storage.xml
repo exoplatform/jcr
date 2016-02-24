@@ -24,6 +24,7 @@
     &lt;property name="lazy-node-iterator-page-size" value="50"/&gt;
     &lt;property name="acl-bloomfilter-false-positive-probability" value="0.1d"/&gt;
     &lt;property name="acl-bloomfilter-elements-number" value="1000000"/&gt;
+    &lt;property name="acl-bloomfilter-enabled" value="true"/&gt;
     &lt;property name="check-sns-new-connection" value="false"/&gt;
     &lt;property name="batch-size" value="1000"/&gt;
   &lt;/properties&gt;</programlisting>
@@ -63,6 +64,11 @@
       <para><emphasis role="bold">acl-bloomfilter-elements-number</emphasis>:
       ACL Bloom-filter settings. Expected number of ACL-elements in the
       Bloom-filter. Default value 1000000.</para>
+    </listitem>
+
+    <listitem>
+      <para><emphasis role="bold">acl-bloomfilter-enabled</emphasis>:
+      Add the ability to disable the bloomfilter. Default value true (enabled).</para>
     </listitem>
 
     <listitem>
