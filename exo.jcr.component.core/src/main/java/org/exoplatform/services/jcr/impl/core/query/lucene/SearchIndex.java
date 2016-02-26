@@ -1757,8 +1757,8 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          }
          else
          {
-            path = npResolver.createJCRPath(orderProps[i]).getAsString(false);
-            sortFields.add(new SortField(path, scs, !orderSpecs[i]));
+            String jcrPath = npResolver.createJCRPath(orderProps[i]).getAsString(false);
+            sortFields.add(new SortField(jcrPath, scs, !orderSpecs[i]));
          }
       }
       return sortFields.toArray(new SortField[sortFields.size()]);
