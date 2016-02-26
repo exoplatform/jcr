@@ -1787,7 +1787,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                                       IndexFormatVersion indexFormatVersion, boolean loadAllProperties)
       throws RepositoryException
    {
-      return createDocument(new NodeDataIndexing(node), nsMappings, indexFormatVersion, loadAllProperties);
+      return createDocument(new NodeDataIndexing(node), nsMappings, indexFormatVersion, loadAllProperties, null);
    }
 
    /**
@@ -1810,7 +1810,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *             if an error occurs while indexing the <code>node</code>.
     */
    protected Document createDocument(NodeDataIndexing node, NamespaceMappings nsMappings,
-      IndexFormatVersion indexFormatVersion, boolean loadAllProperties) throws RepositoryException
+      IndexFormatVersion indexFormatVersion, boolean loadAllProperties, VolatileIndex volatileIndex) throws RepositoryException
    {
       NodeIndexer indexer =
          new NodeIndexer(node, getContext().getItemStateManager(), nsMappings, extractor);
@@ -1821,7 +1821,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       indexer.setLoadPropertyByName(indexingLoadPropertyByName);
       indexer.setLoadAllProperties(loadAllProperties);
       Document doc = indexer.createDoc();
-      mergeAggregatedNodeIndexes(node, doc, loadAllProperties);
+      mergeAggregatedNodeIndexes(node, doc, loadAllProperties, volatileIndex);
       return doc;
    }
 
@@ -2088,7 +2088,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     *            Indicates whether all the properties should be loaded using the method
     *            {@link ItemDataConsumer#getChildPropertiesData(org.exoplatform.services.jcr.datamodel.NodeData)}
     */
-   protected void mergeAggregatedNodeIndexes(NodeData state, Document doc, boolean loadAllProperties)
+   protected void mergeAggregatedNodeIndexes(NodeData state, Document doc, boolean loadAllProperties, VolatileIndex volatileIndex)
    {
       if (indexingConfig != null)
       {
@@ -2127,6 +2127,10 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                   {
                      Document aDoc =
                         createDocument(aggregates[j], getNamespaceMappings(), index.getIndexFormatVersion(), loadAllProperties);
+                     if (volatileIndex != null)
+                     {
+                        volatileIndex.addAggregateIndexes(aDoc);
+                     }
                      // transfer fields to doc if there are any
                      Fieldable[] fulltextFields = aDoc.getFieldables(FieldNames.FULLTEXT);
                      if (fulltextFields != null)

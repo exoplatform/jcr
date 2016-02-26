@@ -44,6 +44,12 @@ class VolatileIndex extends AbstractIndex
    private final Map<String, Document> pending = new LinkedMap();
 
    /**
+    * Map of pending documents related to AggregatedNodeIndexes
+    */
+   @SuppressWarnings("unchecked")
+   private final Map<String, Document> aggregateIndexes = new LinkedMap();
+
+   /**
     * Number of documents that are buffered before they are added to the index.
     */
    private int bufferSize = DEFAULT_BUFFER_SIZE;
@@ -90,6 +96,29 @@ class VolatileIndex extends AbstractIndex
       }
       invalidateSharedReader();
    }
+
+   /***
+    * @param uuid : the uuid term of the document.
+    * @return document of the specific uuid
+    */
+   Document getAggregateIndexes(String uuid)
+   {
+      return aggregateIndexes.get(uuid);
+   }
+
+   /***
+    * @param doc : the document to add to the temp  map aggregateIndexes.
+    * @return
+    */
+   void addAggregateIndexes(Document doc)
+   {
+      Document old=aggregateIndexes.put(doc.get(FieldNames.UUID), doc);
+      if (old != null)
+      {
+         Util.disposeDocument(old);
+      }
+   }
+
 
    /**
     * Overwrites the default implementation to remove the document from the
@@ -190,5 +219,6 @@ class VolatileIndex extends AbstractIndex
       }
       super.addDocuments((Document[])pending.values().toArray(new Document[pending.size()]));
       pending.clear();
+      aggregateIndexes.clear();
    }
 }
