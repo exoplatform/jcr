@@ -134,6 +134,13 @@
     url="http://en.wikipedia.org/wiki/Bloom_filter&quot; &gt;http://en.wikipedia.org/wiki/Bloom_filter">here</ulink>.</para>
   </note>
 
+  <note>
+   <para>
+     It's possible to force the clean swap files after re-indexing data thanks to the System property exo.jcr.spoolConfig.force.clean.swap.
+     The default value of this parameter is false (force clean disabled).
+   </para>
+  </note>
+
   <para>eXo JCR has an RDB (JDBC) based, production ready <emphasis
   role="bold">Workspace Data Container</emphasis>.</para>
 

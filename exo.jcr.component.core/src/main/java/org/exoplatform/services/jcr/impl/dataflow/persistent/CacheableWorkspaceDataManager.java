@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.management.annotations.Managed;
@@ -59,7 +60,6 @@ import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
 import org.exoplatform.services.transaction.TransactionService;
 import org.picocontainer.Startable;
-
 import java.io.Serializable;
 import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
@@ -77,7 +77,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
 import javax.jcr.InvalidItemStateException;
 import javax.jcr.RepositoryException;
 import javax.transaction.Status;
@@ -2805,6 +2804,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
             {
                if (fpvd instanceof StreamPersistedValueData && ((StreamPersistedValueData)fpvd).getUrl() != null)
                   continue;
+               return true;
+            }
+            else if (!PrivilegedFileHelper.exists(fpvd.getFile()))// check if file exist
+            {
                return true;
             }
          }

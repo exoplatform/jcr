@@ -22,8 +22,9 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
-
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Simple class wrapper. Contains all needed variables for spooling input stream.
@@ -37,7 +38,25 @@ public class SpoolConfig
 
    public File tempDirectory = new File(PropertyManager.getProperty("java.io.tmpdir"));
 
+   private static final String  FORCE_CLEAN_SWAP = "exo.jcr.spoolConfig.force.clean.swap";
+
    public int maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;
+
+
+   private static Map<String, SpoolConfig> spoolConfigList = new HashMap<String, SpoolConfig>();
+
+   public static final boolean forceClean;
+
+   static
+   {
+      String enable = PropertyManager.getProperty(FORCE_CLEAN_SWAP);
+      boolean value = false;
+      if (enable!= null && !enable.isEmpty())
+      {
+         value = Boolean.valueOf(enable);
+      }
+      forceClean = value;
+   }
 
    /**
     * SpoolConfig constructor.
@@ -50,6 +69,17 @@ public class SpoolConfig
    public static SpoolConfig getDefaultSpoolConfig()
    {
       return new SpoolConfig(FileCleanerHolder.getDefaultFileCleaner());
+   }
+
+   public static File getSwapPath(String workspaceName)
+   {
+      SpoolConfig  sp = spoolConfigList.get(workspaceName);
+      return ((sp != null) ? sp.tempDirectory : null);
+   }
+
+   public static void addSpoolConfig(String workspaceName, SpoolConfig spoolConfig)
+   {
+      spoolConfigList.put(workspaceName, spoolConfig);
    }
 
 }
