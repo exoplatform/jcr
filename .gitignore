@@ -80,6 +80,8 @@
 
 # Maven 
 target/
+pom.xml.versionsBackup
+**/pom.xml.versionsBackup
 
 # IntelliJ project files 
 *.iml
