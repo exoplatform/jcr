@@ -68,10 +68,15 @@ public class TreeFileIOChannel extends FileIOChannel
    {
       final File dir = new File(rootDir.getAbsolutePath() + buildPath(propertyId));
       String[] fileNames = dir.list();
-      File[] files = new File[fileNames.length];
-      for (int i = 0; i < fileNames.length; i++)
+      File[] files = new File[0];
+      if (fileNames != null)
       {
-         files[i] = new TreeFile(dir.getAbsolutePath() + File.separator + fileNames[i], cleaner, rootDir);
+         files = new File[fileNames.length];
+
+         for (int i = 0; i < fileNames.length; i++)
+         {
+            files[i] = new TreeFile(dir.getAbsolutePath() + File.separator + fileNames[i], cleaner, rootDir);
+         }
       }
       return files;
    }
