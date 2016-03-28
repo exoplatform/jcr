@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
+import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
@@ -27,17 +28,16 @@ import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
 import org.exoplatform.services.jcr.storage.value.ValueStoragePluginProvider;
-
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
 /**
@@ -179,6 +179,52 @@ public class TestRemoveFromValueStorage extends BaseStandaloneTest
       {
          log.warn("Value storages are not configured, test skipped.");
       }
+   }
+
+   public void testRemoveInconsistentNode() throws Exception
+   {
+      Property BinaryProp = null;
+      WorkspaceContainerFacade containerFacade = repository.getWorkspaceContainer(myRoot.getSession().getWorkspace().getName());
+      WorkspaceEntry wsConfig = (WorkspaceEntry)containerFacade.getComponent(WorkspaceEntry.class);
+      String vsPath = wsConfig.getContainer().getValueStorages().get(0)
+            .getParameterValue(FileValueStorage.PATH);
+
+      Node myNode = myRoot.addNode("myNode");
+      values = new Value[1];
+
+
+         byte[] largeValue = new byte[largeValueSize];
+         Random generator = new Random();
+         generator.nextBytes(largeValue);
+         values[0] =
+            myNode.getSession().getValueFactory().createValue(new ByteArrayInputStream(largeValue));
+
+      BinaryProp = myNode.setProperty("binaryProperty", values);
+      myRoot.save();
+      PropertyImpl propertyImpl = (PropertyImpl)BinaryProp;
+
+      ValueStoragePluginProvider storageProvider =
+         (ValueStoragePluginProvider)containerFacade.getComponent(ValueStoragePluginProvider.class);
+      ValueIOChannel channel = storageProvider.getApplicableChannel((PropertyData)propertyImpl.getData(), 0);
+      String filePath=((FileIOChannel)channel).makeFilePath(propertyImpl.getInternalIdentifier(), 0);
+
+      File folder =new File(vsPath+"/"+filePath).getParentFile();
+      File[] list =folder.listFiles();
+      for(File f : list)
+      {
+         PrivilegedFileHelper.delete(f);
+      }
+      PrivilegedFileHelper.delete(folder);
+      try
+      {
+         myNode.remove();
+         myRoot.save();
+      }
+      catch (RepositoryException exp)
+      {
+         fail(exp.getMessage());
+      }
+
    }
 
    @Override
