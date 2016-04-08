@@ -25,7 +25,6 @@ import org.exoplatform.services.jcr.load.blob.thread.DeleteThread;
 import org.exoplatform.services.jcr.load.blob.thread.NtFileCreatorThread;
 import org.exoplatform.services.jcr.load.blob.thread.ReadThread;
 import org.exoplatform.services.jcr.util.IdGenerator;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -36,9 +35,12 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import javax.jcr.Node;
 import javax.jcr.Session;
+import javax.jcr.query.Query;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -51,6 +53,13 @@ import javax.jcr.Session;
  */
 public class TestConcurrentItems extends JcrAPIBaseTest
 {
+
+   private static final int CHILDS_COUNT = 2;
+   private static final int THREAD_COUNT = CHILDS_COUNT;
+   private static final int ITERATION_COUNT = 10;
+
+   private ExecutorService executorService = Executors.newFixedThreadPool(THREAD_COUNT);
+   private AtomicInteger counter = new AtomicInteger(0);
 
    private Node testBinaryValue = null;
 
@@ -467,5 +476,87 @@ public class TestConcurrentItems extends JcrAPIBaseTest
                log.error("Stream read error: " + e.getMessage(), e);
             }
       }
+   }
+
+   public void testConcurrentAddNode() throws Exception
+   {
+      for (int i = 1; i <= ITERATION_COUNT; i++)
+      {
+
+         try
+         {
+            // Create parent node
+            final String parentFolderPath = createParentFolder();
+
+            // execute query to get the list of sub node (= 0)
+            assertEquals(getResultSize(parentFolderPath), 0);
+
+            for (int j = 0; j < CHILDS_COUNT; j++)
+            {
+               final int index = j;
+               executorService.execute(new Runnable()
+               {
+                  public void run()
+                  {
+                     try
+                     {
+                        saveChild(parentFolderPath, "child" + index);
+                     }
+                     catch (Exception e)
+                     {
+                        e.printStackTrace();
+                        fail("Error while adding child node: " + e.getMessage());
+                     }
+                     finally
+                     {
+                        counter.incrementAndGet();
+                     }
+                  }
+               });
+            }
+
+            do
+            {
+               Thread.sleep(100);
+            }
+            while (counter.get() < CHILDS_COUNT);
+
+            assertEquals(getResultSize(parentFolderPath), CHILDS_COUNT);
+
+         }
+         catch (Exception e)
+         {
+            e.printStackTrace();
+            fail(e.getMessage());
+         }
+      }
+   }
+
+   private long getResultSize(String parentFolderPath) throws Exception
+   {
+      Session session = repository.getSystemSession(workspace.getName());
+      String queryStatement = "SELECT * FROM nt:base WHERE jcr:path LIKE '" + parentFolderPath + "/%'";
+      Query query = session.getWorkspace().getQueryManager().createQuery(queryStatement, Query.SQL);
+      return query.execute().getNodes().getSize();
+   }
+
+   private String createParentFolder() throws Exception
+   {
+      String parentFolderPath = "parentNode";
+      Session session = repository.getSystemSession(workspace.getName());
+
+      Node rootParentNode = session.getRootNode();
+      Node node = rootParentNode.addNode(parentFolderPath);
+      session.save();
+      return node.getPath();
+   }
+
+   private void saveChild(String parentPath, String fileName) throws Exception
+   {
+      Session session = repository.getSystemSession(workspace.getName());
+      Node parent = (Node)session.getItem(parentPath);
+      parent.addNode(fileName);
+      session.save();
+      session.refresh(false);
    }
 }
