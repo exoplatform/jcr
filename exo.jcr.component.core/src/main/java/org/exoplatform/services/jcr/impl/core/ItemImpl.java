@@ -914,6 +914,17 @@ public abstract class ItemImpl implements Item
       return false;
    }
 
+   /**
+    * {@inheritDoc}
+    * 
+    * @see java.lang.Object#hashCode()
+    */
+   @Override
+   public int hashCode() 
+   {
+      return 37 + getInternalIdentifier() == null ? 0 : getInternalIdentifier().hashCode();
+   }
+    
    private ValueData valueData(Value value, int type) throws RepositoryException, ValueFormatException
    {
       if (value == null)
