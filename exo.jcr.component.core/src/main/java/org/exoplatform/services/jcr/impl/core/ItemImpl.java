@@ -922,7 +922,11 @@ public abstract class ItemImpl implements Item
    @Override
    public int hashCode() 
    {
-      return 37 + getInternalIdentifier() == null ? 0 : getInternalIdentifier().hashCode();
+      final int prime = 31;
+      int result = 1;
+      result = prime * result + ((getInternalIdentifier() == null) ? 0 : getInternalIdentifier().hashCode());
+      result = prime * result + qpath.hashCode();
+      return result;
    }
     
    private ValueData valueData(Value value, int type) throws RepositoryException, ValueFormatException
