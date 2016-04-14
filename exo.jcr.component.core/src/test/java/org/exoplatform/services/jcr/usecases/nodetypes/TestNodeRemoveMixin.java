@@ -61,4 +61,26 @@ public class TestNodeRemoveMixin extends BaseUsecasesTest
 
       assertFalse(testNode.hasProperty("exo:restorePath"));
    }
+
+   public void testRemoveMixin() throws Exception
+   {
+      Node rootNode = session.getRootNode();
+
+      Node testNode = rootNode.addNode("testMixinNode1", "exo:JCR-2442");
+      testNode.addMixin("exo:archiveable");
+      // Set a value to Node's Property
+      String restorePath = "test/restore/path";
+      testNode.setProperty("exo:restorePath", restorePath);
+      session.save();
+
+      try
+      {
+         testNode.removeMixin("exo:archiveable");
+         session.save();
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+   }
 }

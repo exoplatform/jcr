@@ -1918,7 +1918,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
          PropertyDefinitionDatas propertyDefinitions =
             ntmanager.getPropertyDefinitions(pd.getName(), nodeData().getPrimaryTypeName(), newMixin
                .toArray(new InternalQName[]{}));
-         if (propertyDefinitions == null || propertyDefinitions.getDefinition(pd.isMultiple()).isResidualSet())
+         if (propertyDefinitions == null || propertyDefinitions.getDefinition(pd.isMultiple()) == null || propertyDefinitions.getDefinition(pd.isMultiple()).isResidualSet())
          {
             ItemData p = dataManager.getItemData(nodeData(), new QPathEntry(pd.getName(), 1), ItemType.PROPERTY, false);
             if (p != null && !p.isNode())
