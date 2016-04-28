@@ -40,12 +40,16 @@ public class SpoolConfig
 
    private static final String  FORCE_CLEAN_SWAP = "exo.jcr.spoolConfig.force.clean.swap";
 
+   private static final String  FORCE_CLEAN_SWAP_LIVE_TIME = "exo.jcr.spoolConfig.swap.live.time";
+
    public int maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;
 
 
    private static Map<String, SpoolConfig> spoolConfigList = new HashMap<String, SpoolConfig>();
 
    public static final boolean forceClean;
+
+   public static int liveTime = -1 ;
 
    static
    {
@@ -56,6 +60,19 @@ public class SpoolConfig
          value = Boolean.valueOf(enable);
       }
       forceClean = value;
+
+      if (forceClean)
+      {
+         try
+         {
+            liveTime = Integer.parseInt(System.getProperty(FORCE_CLEAN_SWAP_LIVE_TIME));
+
+         }
+         catch (NumberFormatException nex)
+         {
+            liveTime = -1;
+         }
+      }
    }
 
    /**

@@ -136,8 +136,10 @@
 
   <note>
    <para>
-     It's possible to force the clean swap files after re-indexing data thanks to the System property exo.jcr.spoolConfig.force.clean.swap.
+     It's possible to force the clean swap files thanks to the System property exo.jcr.spoolConfig.force.clean.swap.
      The default value of this parameter is false (force clean disabled).
+     If force clean is enabled, It's possible to define the live time (in seconds) of swap files thanks to the System property exo.jcr.spoolConfig.swap.live.time.
+     The default value of this parameter is -1 (disabled).
    </para>
   </note>
 
