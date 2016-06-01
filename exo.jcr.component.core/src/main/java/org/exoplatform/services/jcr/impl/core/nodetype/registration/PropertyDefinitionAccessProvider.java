@@ -25,8 +25,13 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.version.OnParentVersionAction;
@@ -51,20 +56,50 @@ public class PropertyDefinitionAccessProvider extends AbstractItemDefinitionAcce
       if (Constants.NT_PROPERTYDEFINITION.equals(nodeData.getPrimaryTypeName()))
       {
          // null if residual;
-         InternalQName name = readName(nodeData, Constants.JCR_NAME);
-         boolean protectedItem = readMandatoryBoolean(nodeData, Constants.JCR_PROTECTED);
-         boolean autoCreated = readMandatoryBoolean(nodeData, Constants.JCR_AUTOCREATED);
-         boolean mandatory = readMandatoryBoolean(nodeData, Constants.JCR_MANDATORY);
+         InternalQName name = readName(nodeData, null, Constants.JCR_NAME);
+         boolean protectedItem = readMandatoryBoolean(nodeData, null, Constants.JCR_PROTECTED);
+         boolean autoCreated = readMandatoryBoolean(nodeData, null, Constants.JCR_AUTOCREATED);
+         boolean mandatory = readMandatoryBoolean(nodeData, null, Constants.JCR_MANDATORY);
          int onParentVersion =
             OnParentVersionAction.valueFromName(readMandatoryString(nodeData, Constants.JCR_ONPARENTVERSION));
 
          int requiredType =
             ExtendedPropertyType.valueFromName(readMandatoryString(nodeData, Constants.JCR_REQUIREDTYPE));
 
-         boolean multiple = readMandatoryBoolean(nodeData, Constants.JCR_MULTIPLE);
+         boolean multiple = readMandatoryBoolean(nodeData, null, Constants.JCR_MULTIPLE);
 
-         String[] valueConstraints = readStrings(nodeData, Constants.JCR_VALUECONSTRAINTS);
-         String[] defaultValues = readStrings(nodeData, Constants.JCR_DEFAULTVALUES);
+         String[] valueConstraints = readStrings(nodeData, null, Constants.JCR_VALUECONSTRAINTS);
+         String[] defaultValues = readStrings(nodeData, null, Constants.JCR_DEFAULTVALUES);
+
+         return new PropertyDefinitionData(name, declaringNodeType, autoCreated, mandatory, onParentVersion,
+            protectedItem, requiredType, valueConstraints, defaultValues, multiple);
+      }
+      return null;
+   }
+
+   public PropertyDefinitionData read(NodeData nodeData, List<PropertyData> props, InternalQName declaringNodeType) throws NodeTypeReadException,
+      RepositoryException
+   {
+      Map<InternalQName, PropertyData> mapProps = new HashMap<InternalQName, PropertyData>();
+
+      for (final PropertyData propertyData : props)
+      {
+         mapProps.put(propertyData.getQPath().getName(), propertyData);
+      }
+
+      if (Constants.NT_PROPERTYDEFINITION.equals(nodeData.getPrimaryTypeName()))
+      {
+         InternalQName name = readName(nodeData, mapProps.get(Constants.JCR_NAME), Constants.JCR_NAME);
+         boolean protectedItem = readMandatoryBoolean(nodeData, mapProps.get(Constants.JCR_PROTECTED), Constants.JCR_PROTECTED);
+         boolean autoCreated = readMandatoryBoolean(nodeData, mapProps.get(Constants.JCR_AUTOCREATED), Constants.JCR_AUTOCREATED);
+         boolean mandatory = readMandatoryBoolean(nodeData, mapProps.get(Constants.JCR_MANDATORY), Constants.JCR_MANDATORY);
+         int onParentVersion =
+            OnParentVersionAction.valueFromName(readMandatoryString(nodeData, mapProps.get(Constants.JCR_ONPARENTVERSION), Constants.JCR_ONPARENTVERSION));
+         int requiredType =
+            ExtendedPropertyType.valueFromName(readMandatoryString(nodeData, mapProps.get(Constants.JCR_REQUIREDTYPE), Constants.JCR_REQUIREDTYPE));
+         boolean multiple = readMandatoryBoolean(nodeData, mapProps.get(Constants.JCR_MULTIPLE), Constants.JCR_MULTIPLE);
+         String[] valueConstraints = readStrings(nodeData, mapProps.get(Constants.JCR_VALUECONSTRAINTS), Constants.JCR_VALUECONSTRAINTS);
+         String[] defaultValues = readStrings(nodeData, mapProps.get(Constants.JCR_DEFAULTVALUES), Constants.JCR_DEFAULTVALUES);
 
          return new PropertyDefinitionData(name, declaringNodeType, autoCreated, mandatory, onParentVersion,
             protectedItem, requiredType, valueConstraints, defaultValues, multiple);

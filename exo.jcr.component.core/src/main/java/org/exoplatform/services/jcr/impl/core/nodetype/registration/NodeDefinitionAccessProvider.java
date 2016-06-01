@@ -24,8 +24,13 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.version.OnParentVersionAction;
@@ -60,22 +65,55 @@ public class NodeDefinitionAccessProvider extends AbstractItemDefinitionAccessPr
 
    {
       // null if residual
-      InternalQName name = readName(childDefinition, Constants.JCR_NAME);
+      InternalQName name = readName(childDefinition, null, Constants.JCR_NAME);
 
-      boolean autoCreated = readMandatoryBoolean(childDefinition, Constants.JCR_AUTOCREATED);
+      boolean autoCreated = readMandatoryBoolean(childDefinition, null, Constants.JCR_AUTOCREATED);
 
-      boolean mandatory = readMandatoryBoolean(childDefinition, Constants.JCR_MANDATORY);
+      boolean mandatory = readMandatoryBoolean(childDefinition, null, Constants.JCR_MANDATORY);
 
       int onParentVersion =
          OnParentVersionAction.valueFromName(readMandatoryString(childDefinition, Constants.JCR_ONPARENTVERSION));
 
-      boolean protectedItem = readMandatoryBoolean(childDefinition, Constants.JCR_PROTECTED);
+      boolean protectedItem = readMandatoryBoolean(childDefinition, null, Constants.JCR_PROTECTED);
 
-      InternalQName[] requiredPrimaryTypes = readNames(childDefinition, Constants.JCR_REQUIREDPRIMARYTYPES);
+      InternalQName[] requiredPrimaryTypes = readNames(childDefinition, null, Constants.JCR_REQUIREDPRIMARYTYPES);
 
-      InternalQName defaultPrimaryType = readName(childDefinition, Constants.JCR_DEFAULTPRIMNARYTYPE);
+      InternalQName defaultPrimaryType = readName(childDefinition, null, Constants.JCR_DEFAULTPRIMNARYTYPE);
 
-      boolean allowsSameNameSiblings = readMandatoryBoolean(childDefinition, Constants.JCR_SAMENAMESIBLINGS);
+      boolean allowsSameNameSiblings = readMandatoryBoolean(childDefinition, null, Constants.JCR_SAMENAMESIBLINGS);
+
+      return new NodeDefinitionData(name, declaringNodeType, autoCreated, mandatory, onParentVersion, protectedItem,
+         requiredPrimaryTypes, defaultPrimaryType, allowsSameNameSiblings);
+   }
+
+   /**
+    * @param childDefinition
+    * @param declaringNodeType
+    * @param props
+    * @return
+    * @throws RepositoryException
+    * @throws NodeTypeReadException
+    * @throws RepositoryException
+    */
+   public NodeDefinitionData read(NodeData childDefinition, List<PropertyData> props, InternalQName declaringNodeType)
+      throws NodeTypeReadException, RepositoryException
+   {
+      Map<InternalQName, PropertyData> mapProps = new HashMap<InternalQName, PropertyData>();
+
+      for (final PropertyData propertyData : props)
+      {
+         mapProps.put(propertyData.getQPath().getName(), propertyData);
+      }
+
+      InternalQName name = readName(childDefinition, mapProps.get(Constants.JCR_NAME), Constants.JCR_NAME);
+      boolean autoCreated = readMandatoryBoolean(childDefinition, mapProps.get(Constants.JCR_AUTOCREATED), Constants.JCR_AUTOCREATED);
+      boolean mandatory = readMandatoryBoolean(childDefinition, mapProps.get(Constants.JCR_MANDATORY), Constants.JCR_MANDATORY);
+      int onParentVersion =
+         OnParentVersionAction.valueFromName(readMandatoryString(childDefinition, mapProps.get(Constants.JCR_ONPARENTVERSION), Constants.JCR_ONPARENTVERSION));
+      boolean protectedItem = readMandatoryBoolean(childDefinition, mapProps.get(Constants.JCR_PROTECTED), Constants.JCR_PROTECTED);
+      InternalQName[] requiredPrimaryTypes = readNames(childDefinition, mapProps.get(Constants.JCR_REQUIREDPRIMARYTYPES), Constants.JCR_REQUIREDPRIMARYTYPES);
+      InternalQName defaultPrimaryType = readName(childDefinition, mapProps.get(Constants.JCR_DEFAULTPRIMNARYTYPE), Constants.JCR_DEFAULTPRIMNARYTYPE);
+      boolean allowsSameNameSiblings = readMandatoryBoolean(childDefinition, mapProps.get(Constants.JCR_SAMENAMESIBLINGS), Constants.JCR_SAMENAMESIBLINGS);
 
       return new NodeDefinitionData(name, declaringNodeType, autoCreated, mandatory, onParentVersion, protectedItem,
          requiredPrimaryTypes, defaultPrimaryType, allowsSameNameSiblings);

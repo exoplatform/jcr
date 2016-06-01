@@ -27,11 +27,14 @@ import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.NodeData;
+import org.exoplatform.services.jcr.datamodel.PropertyData;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.dataflow.TransientNodeData;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.jcr.RepositoryException;
 
@@ -74,16 +77,18 @@ public class NodeTypeDefinitionAccessProvider extends AbstractItemDefinitionAcce
    public NodeTypeData readNow(NodeData nodeData) throws RepositoryException
 
    {
+      List<PropertyData> props = dataManager.getChildPropertiesData(nodeData);
+      Map<InternalQName, PropertyData> mapProps =new HashMap<InternalQName, PropertyData>();
 
-      InternalQName name = readMandatoryName(nodeData, Constants.JCR_NODETYPENAME);
-
-      InternalQName primaryItemName = readName(nodeData, Constants.JCR_PRIMARYITEMNAME);
-
-      boolean mixin = readMandatoryBoolean(nodeData, Constants.JCR_ISMIXIN);
-
-      boolean hasOrderableChildNodes = readMandatoryBoolean(nodeData, Constants.JCR_HASORDERABLECHILDNODES);
-
-      InternalQName[] declaredSupertypeNames = readNames(nodeData, Constants.JCR_SUPERTYPES);
+      for (final PropertyData propertyData : props)
+      {
+         mapProps.put(propertyData.getQPath().getName(), propertyData);
+      }
+      InternalQName name = readMandatoryName(nodeData, mapProps.get(Constants.JCR_NODETYPENAME), Constants.JCR_NODETYPENAME);
+      InternalQName primaryItemName = readName(nodeData, mapProps.get(Constants.JCR_PRIMARYITEMNAME), Constants.JCR_PRIMARYITEMNAME);
+      boolean mixin = readMandatoryBoolean(nodeData, mapProps.get(Constants.JCR_ISMIXIN), Constants.JCR_ISMIXIN);
+      boolean hasOrderableChildNodes = readMandatoryBoolean(nodeData, mapProps.get(Constants.JCR_HASORDERABLECHILDNODES), Constants.JCR_HASORDERABLECHILDNODES);
+      InternalQName[] declaredSupertypeNames = readNames(nodeData, mapProps.get(Constants.JCR_SUPERTYPES), Constants.JCR_SUPERTYPES);
 
       List<PropertyDefinitionData> propertyDefinitionDataList = new ArrayList<PropertyDefinitionData>();
       List<NodeDefinitionData> nodeDefinitionDataList = new ArrayList<NodeDefinitionData>();
@@ -91,13 +96,14 @@ public class NodeTypeDefinitionAccessProvider extends AbstractItemDefinitionAcce
       List<NodeData> childDefinitions = dataManager.getChildNodesData(nodeData);
       for (NodeData childDefinition : childDefinitions)
       {
+         List<PropertyData> childrenProps = dataManager.getChildPropertiesData(childDefinition);
          if (Constants.NT_PROPERTYDEFINITION.equals(childDefinition.getPrimaryTypeName()))
          {
-            propertyDefinitionDataList.add(propertyDefinitionAccessProvider.read(childDefinition, name));
+            propertyDefinitionDataList.add(propertyDefinitionAccessProvider.read(childDefinition,childrenProps, name));
          }
          else if (Constants.NT_CHILDNODEDEFINITION.equals(childDefinition.getPrimaryTypeName()))
          {
-            nodeDefinitionDataList.add(nodeDefinitionAccessProvider.read(childDefinition, name));
+            nodeDefinitionDataList.add(nodeDefinitionAccessProvider.read(childDefinition,childrenProps, name));
          }
       }
 
@@ -122,7 +128,7 @@ public class NodeTypeDefinitionAccessProvider extends AbstractItemDefinitionAcce
       List<NodeData> childDefinitions = dataManager.getChildNodesData(nodeData);
 
       if (childDefinitions.size() > 0)
-         name = readMandatoryName(nodeData, Constants.JCR_NODETYPENAME);
+         name = readMandatoryName(nodeData, null, Constants.JCR_NODETYPENAME);
       else
          return new NodeDefinitionData[0];
 
@@ -155,7 +161,7 @@ public class NodeTypeDefinitionAccessProvider extends AbstractItemDefinitionAcce
       List<NodeData> childDefinitions = dataManager.getChildNodesData(nodeData);
       InternalQName name = null;
       if (childDefinitions.size() > 0)
-         name = readMandatoryName(nodeData, Constants.JCR_NODETYPENAME);
+         name = readMandatoryName(nodeData, null, Constants.JCR_NODETYPENAME);
       else
          return new PropertyDefinitionData[0];
       propertyDefinitionDataList = new ArrayList<PropertyDefinitionData>();

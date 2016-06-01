@@ -67,10 +67,13 @@ public abstract class AbstractItemDefinitionAccessProvider
     * @return
     * @throws RepositoryException
     */
-   protected List<ValueData> loadPropertyValues(NodeData parentNode, InternalQName propertyName)
+   protected List<ValueData> loadPropertyValues(NodeData parentNode, ItemData property , InternalQName propertyName)
       throws RepositoryException
    {
-      ItemData property = dataManager.getItemData(parentNode, new QPathEntry(propertyName, 1), ItemType.PROPERTY);
+      if(property == null)
+      {
+          property = dataManager.getItemData(parentNode, new QPathEntry(propertyName, 1), ItemType.PROPERTY);
+      }
       if (property != null)
       {
          if (property.isNode())
@@ -81,10 +84,10 @@ public abstract class AbstractItemDefinitionAccessProvider
       return null;
    }
 
-   public Boolean readBoolean(NodeData parentNode, InternalQName propertyName) throws RepositoryException,
+   public Boolean readBoolean(NodeData parentNode, PropertyData propertyData, InternalQName propertyName) throws RepositoryException,
       NodeTypeReadException
    {
-      List<ValueData> values = loadPropertyValues(parentNode, propertyName);
+      List<ValueData> values = loadPropertyValues(parentNode, propertyData, propertyName);
       if (values != null)
       {
          if (values.size() == 1)
@@ -102,10 +105,11 @@ public abstract class AbstractItemDefinitionAccessProvider
       return new Boolean(false);
    }
 
+
    public Long readLong(NodeData parentNode, InternalQName propertyName) throws RepositoryException,
       NodeTypeReadException
    {
-      List<ValueData> values = loadPropertyValues(parentNode, propertyName);
+      List<ValueData> values = loadPropertyValues(parentNode, null, propertyName);
       if (values != null)
       {
          if (values.size() == 1)
@@ -127,10 +131,10 @@ public abstract class AbstractItemDefinitionAccessProvider
       return null;
    }
 
-   public Boolean readMandatoryBoolean(NodeData parentNode, InternalQName propertyName) throws RepositoryException,
+   public Boolean readMandatoryBoolean(NodeData parentNode,PropertyData propertyData, InternalQName propertyName) throws RepositoryException,
       NodeTypeReadException
    {
-      Boolean name = readBoolean(parentNode, propertyName);
+      Boolean name = readBoolean(parentNode, propertyData, propertyName);
       if (name == null)
          throw new RepositoryException("Mandatory item " + propertyName + "not found for "
             + parentNode.getQPath().getAsString());
@@ -147,10 +151,10 @@ public abstract class AbstractItemDefinitionAccessProvider
       return name;
    }
 
-   public InternalQName readMandatoryName(NodeData parentNode, InternalQName propertyName) throws RepositoryException,
+   public InternalQName readMandatoryName(NodeData parentNode, PropertyData propertyData, InternalQName propertyName) throws RepositoryException,
       NodeTypeReadException
    {
-      InternalQName name = readName(parentNode, propertyName);
+      InternalQName name = readName(parentNode, propertyData, propertyName);
       if (name == null)
          throw new RepositoryException("Mandatory item " + propertyName + "not found for "
             + parentNode.getQPath().getAsString());
@@ -160,7 +164,7 @@ public abstract class AbstractItemDefinitionAccessProvider
    public InternalQName[] readMandatoryNames(NodeData parentNode, InternalQName propertyName)
       throws RepositoryException, NodeTypeReadException
    {
-      InternalQName[] names = readNames(parentNode, propertyName);
+      InternalQName[] names = readNames(parentNode, null, propertyName);
       if (names == null)
          throw new RepositoryException("Mandatory item " + propertyName + "not found for "
             + parentNode.getQPath().getAsString());
@@ -170,27 +174,27 @@ public abstract class AbstractItemDefinitionAccessProvider
    public String readMandatoryString(NodeData parentNode, InternalQName propertyName) throws RepositoryException,
       NodeTypeReadException
    {
-      String name = readString(parentNode, propertyName);
+      String name = readString(parentNode, null, propertyName);
       if (name == null)
          throw new RepositoryException("Mandatory item " + propertyName + "not found for "
             + parentNode.getQPath().getAsString());
       return name;
    }
 
-   public String[] readMandatoryStrings(NodeData parentNode, InternalQName propertyName) throws RepositoryException,
+   public String readMandatoryString(NodeData parentNode,PropertyData propertyData, InternalQName propertyName) throws RepositoryException,
       NodeTypeReadException
    {
-      String[] name = readStrings(parentNode, propertyName);
+      String name = readString(parentNode, propertyData, propertyName);
       if (name == null)
          throw new RepositoryException("Mandatory item " + propertyName + "not found for "
             + parentNode.getQPath().getAsString());
       return name;
    }
 
-   public InternalQName readName(NodeData parentNode, InternalQName propertyName) throws RepositoryException,
+   public InternalQName readName(NodeData parentNode, PropertyData propertyData, InternalQName propertyName) throws RepositoryException,
       NodeTypeReadException
    {
-      List<ValueData> values = loadPropertyValues(parentNode, propertyName);
+      List<ValueData> values = loadPropertyValues(parentNode, propertyData, propertyName);
       if (values != null)
       {
          if (values.size() == 1)
@@ -211,7 +215,7 @@ public abstract class AbstractItemDefinitionAccessProvider
    public InternalQName[] readNames(NodeData parentNode, InternalQName propertyName) throws RepositoryException,
       NodeTypeReadException
    {
-      List<ValueData> values = loadPropertyValues(parentNode, propertyName);
+      List<ValueData> values = loadPropertyValues(parentNode, null, propertyName);
       if (values != null)
       {
          InternalQName[] result = new InternalQName[values.size()];
@@ -232,10 +236,34 @@ public abstract class AbstractItemDefinitionAccessProvider
       return new InternalQName[0];
    }
 
-   public String readString(NodeData parentNode, InternalQName propertyName) throws RepositoryException,
+   public InternalQName[] readNames(NodeData parentNode, PropertyData propertyData, InternalQName propertyName) throws RepositoryException,
       NodeTypeReadException
    {
-      List<ValueData> values = loadPropertyValues(parentNode, propertyName);
+      List<ValueData> values = loadPropertyValues(parentNode, propertyData, propertyName);
+      if (values != null)
+      {
+         InternalQName[] result = new InternalQName[values.size()];
+         int i = 0;
+         for (ValueData valueData : values)
+         {
+            try
+            {
+               result[i++] = InternalQName.parse(ValueDataUtil.getString(valueData));
+            }
+            catch (IllegalNameException e)
+            {
+               throw new NodeTypeReadException(e.getLocalizedMessage(), e.getCause());
+            }
+         }
+         return result;
+      }
+      return new InternalQName[0];
+   }
+
+   public String readString(NodeData parentNode,PropertyData propertyData, InternalQName propertyName) throws RepositoryException,
+      NodeTypeReadException
+   {
+      List<ValueData> values = loadPropertyValues(parentNode, propertyData, propertyName);
       if (values != null)
       {
          if (values.size() == 1)
@@ -245,11 +273,11 @@ public abstract class AbstractItemDefinitionAccessProvider
       }
       return null;
    }
-
-   public String[] readStrings(NodeData parentNode, InternalQName propertyName) throws RepositoryException,
+   
+   public String[] readStrings(NodeData parentNode,PropertyData propertyData, InternalQName propertyName) throws RepositoryException,
       NodeTypeReadException
    {
-      List<ValueData> values = loadPropertyValues(parentNode, propertyName);
+      List<ValueData> values = loadPropertyValues(parentNode, propertyData, propertyName);
       if (values != null)
       {
          if (values.size() > 0)
@@ -266,6 +294,7 @@ public abstract class AbstractItemDefinitionAccessProvider
       }
       return new String[0];
    }
+
 
    protected void writeBoolean(PlainChangesLog changesLog, NodeData parentNode, InternalQName propertyName,
       boolean value)
