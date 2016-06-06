@@ -16,6 +16,9 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.lucene;
 
+import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.collections.map.LRUMap;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
@@ -26,6 +29,8 @@ import org.apache.lucene.index.IndexReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.index.TermEnum;
+import org.apache.lucene.store.IndexInput;
+import org.apache.lucene.store.IndexOutput;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,14 +67,20 @@ class CachingIndexReader extends FilterIndexReader
    private final BitSet shareableNodes;
 
    /**
-    * Cache of nodes parent relation. If an entry in the array is not null,
+    * Cache of nodes parent relation. If an entry in the array is >= 0,
     * that means the node with the document number = array-index has the node
-    * with <code>DocId</code> as parent.
+    * node with the value at that position as parent.
     */
-   private final DocId[] parents;
+    private final int[] inSegmentParents;
 
    /**
-    * Initializes the {@link #parents} cache.
+    * Cache of nodes parent relation that point to a foreign index segment.
+    */
+   private final Map<Integer, DocId> foreignParentDocIds = new ConcurrentHashMap<Integer, DocId>();
+
+   /**
+    * Initializes the {@link #inSegmentParents} and {@link #foreignParentDocIds}
+    * caches.
     */
    private CacheInitializer cacheInitializer;
 
@@ -100,7 +111,7 @@ class CachingIndexReader extends FilterIndexReader
     * @param delegatee the base <code>IndexReader</code>.
     * @param cache     a document number cache, or <code>null</code> if not
     *                  available to this reader.
-    * @param initCache if the {@link #parents} cache should be initialized
+    * @param initCache if the {@link #inSegmentParents} cache should be initialized
     *                  when this index reader is constructed.
     * @throws IOException if an error occurs while reading from the index.
     */
@@ -109,20 +120,9 @@ class CachingIndexReader extends FilterIndexReader
    {
       super(delegatee);
       this.cache = cache;
-      this.parents = new DocId[delegatee.maxDoc()];
-      this.shareableNodes = new BitSet();
-      TermDocs tDocs = delegatee.termDocs(new Term(FieldNames.SHAREABLE_NODE, ""));
-      try
-      {
-         while (tDocs.next())
-         {
-            shareableNodes.set(tDocs.doc());
-         }
-      }
-      finally
-      {
-         tDocs.close();
-      }
+      this.inSegmentParents = new int[delegatee.maxDoc()];
+      Arrays.fill(this.inSegmentParents, -1);
+      this.shareableNodes = initShareableNodes(delegatee);
       this.cacheInitializer = new CacheInitializer(delegatee);
       if (initCache)
       {
@@ -132,6 +132,20 @@ class CachingIndexReader extends FilterIndexReader
       this.docNumber2uuid =
          (Map<Integer, String>)Collections.synchronizedMap(new LRUMap(Math.max(10, delegatee.maxDoc() / 100)));
       this.termDocsCache = new TermDocsCache(delegatee, FieldNames.PROPERTIES);
+   }
+
+   private BitSet initShareableNodes(IndexReader delegatee) throws IOException {
+      BitSet shareableNodes = new BitSet();
+      TermDocs tDocs = delegatee.termDocs(new Term(FieldNames.SHAREABLE_NODE,
+         ""));
+      try {
+         while (tDocs.next()) {
+            shareableNodes.set(tDocs.doc());
+         }
+      } finally {
+         tDocs.close();
+      }
+      return shareableNodes;
    }
 
    /**
@@ -148,7 +162,12 @@ class CachingIndexReader extends FilterIndexReader
    {
       DocId parent;
       boolean existing = false;
-      parent = parents[n];
+      int parentDocNum = inSegmentParents[n];
+      if (parentDocNum != -1) {
+         parent = DocId.create(parentDocNum);
+      } else {
+         parent = foreignParentDocIds.get(n);
+      }
 
       if (parent != null)
       {
@@ -167,6 +186,7 @@ class CachingIndexReader extends FilterIndexReader
 
       if (parent == null)
       {
+         int plainDocId = -1;
          Document doc = document(n, FieldSelectors.UUID_AND_PARENT);
          String[] parentUUIDs = doc.getValues(FieldNames.PARENT);
          if (parentUUIDs.length == 0 || parentUUIDs[0].length() == 0)
@@ -192,7 +212,8 @@ class CachingIndexReader extends FilterIndexReader
                      {
                         if (!deleted.get(docs.doc()))
                         {
-                           parent = DocId.create(docs.doc());
+                           plainDocId = docs.doc();
+                           parent = DocId.create(plainDocId);
                            break;
                         }
                      }
@@ -212,7 +233,20 @@ class CachingIndexReader extends FilterIndexReader
          }
 
          // finally put to cache
-         parents[n] = parent;
+         if (plainDocId != -1) {
+            // PlainDocId
+            inSegmentParents[n] = plainDocId;
+         } else {
+            // UUIDDocId
+            foreignParentDocIds.put(n, parent);
+            if (existing) {
+               // there was an existing parent reference in
+               // inSegmentParents, which was invalid and is replaced
+               // inSegmentParents, which was invalid and is replaced
+               // mark as unknown
+               inSegmentParents[n] = -1;
+            }
+         }
       }
       return parent;
    }
@@ -358,9 +392,9 @@ class CachingIndexReader extends FilterIndexReader
    }
 
    /**
-    * Initializes the {@link CachingIndexReader#parents} cache.
+    * Initializes the {@link CachingIndexReader#inSegmentParents} cache.
     */
-   private class CacheInitializer implements Runnable
+   private final class CacheInitializer implements Runnable
    {
 
       /**
@@ -377,6 +411,11 @@ class CachingIndexReader extends FilterIndexReader
        * Set to <code>true</code> when this index reader is about to be closed.
        */
       private volatile boolean stopRequested = false;
+
+      /**
+       * The {@link #inSegmentParents} is persisted using this filename.
+       */
+      private static final String FILE_CACHE_NAME_ARRAY = "cache.inSegmentParents";
 
       /**
        * Creates a new initializer with the given <code>reader</code>.
@@ -404,7 +443,14 @@ class CachingIndexReader extends FilterIndexReader
                // immediately return when stop is requested
                return;
             }
-            initializeParents(reader);
+            boolean initCacheFromFile = loadCacheFromFile();
+            if (!initCacheFromFile) {
+               // file-based cache is not available, load from the
+               // repository
+               log.debug("persisted cache is not available, will load directly from the repository.");
+               initializeParents(reader);
+            }
+
          }
          catch (IOException e)
          {
@@ -442,7 +488,7 @@ class CachingIndexReader extends FilterIndexReader
       }
 
       /**
-       * Initializes the {@link CachingIndexReader#parents} <code>DocId</code>
+       * Initializes the {@link CachingIndexReader#inSegmentParents} <code>DocId</code>
        * array.
        *
        * @param reader the underlying index reader.
@@ -512,36 +558,39 @@ class CachingIndexReader extends FilterIndexReader
             NodeInfo parent = docs.get(info.parent);
             if (parent != null)
             {
-               parents[info.docId] = DocId.create(parent.docId);
+               inSegmentParents[info.docId] = parent.docId;
             }
             else if (info.parent != null)
             {
                foreignParents++;
-               parents[info.docId] = DocId.create(info.parent);
+               foreignParentDocIds.put(info.docId, DocId.create(info.parent));
             }
             else if (shareableNodes.get(info.docId))
             {
                Document doc = reader.document(info.docId, FieldSelectors.UUID_AND_PARENT);
-               parents[info.docId] = DocId.create(doc.getValues(FieldNames.PARENT));
+               foreignParentDocIds.put(info.docId, DocId.create(doc.getValues(FieldNames.PARENT)));
             }
             else
             {
                // no parent -> root node
-               parents[info.docId] = DocId.NULL;
+               foreignParentDocIds.put(info.docId, DocId.NULL);
             }
          }
+         // Initialize, persist cache to file
+         saveCacheToFile();
          if (log.isDebugEnabled())
          {
             NumberFormat nf = NumberFormat.getPercentInstance();
             nf.setMaximumFractionDigits(1);
             time = System.currentTimeMillis() - time;
-            if (parents.length > 0)
+            if(inSegmentParents.length > 0)
             {
-               foreignParents /= parents.length;
+               foreignParents /= inSegmentParents.length;
             }
-            log.debug("initialized {} DocIds in {} ms, {} foreign parents", new Object[]{new Integer(parents.length),
+            log.debug("initialized {} DocIds in {} ms, {} foreign parents", new Object[]{new Integer(inSegmentParents.length),
                new Long(time), nf.format(foreignParents)});
          }
+
       }
 
       /**
@@ -594,6 +643,66 @@ class CachingIndexReader extends FilterIndexReader
          {
             tDocs.close();
          }
+      }
+
+      /**
+       * Persists the cache info {@link #inSegmentParents} to a file:
+       * {@link #FILE_CACHE_NAME_ARRAY}, for faster init times on startup.
+       **/
+      public void saveCacheToFile() throws IOException {
+         try (
+            IndexOutput io = reader.directory().createOutput(FILE_CACHE_NAME_ARRAY)
+            ){
+            for (int parent : inSegmentParents) {
+               io.writeInt(parent);
+            }
+         } catch (Exception e) {
+            log.error(
+               "Error saving " + FILE_CACHE_NAME_ARRAY + ": "
+                  + e.getMessage(), e);
+         }
+      }
+
+      /**
+       * Loads the cache info {@link #inSegmentParents} from the file
+       * {@link #FILE_CACHE_NAME_ARRAY}.
+       *
+       * @return true if the cache has been initialized of false if the cache
+       *         file does not exist yet, or an error happened
+       */
+      private boolean loadCacheFromFile() throws IOException {
+         try(
+            IndexInput ii = reader.directory().openInput(FILE_CACHE_NAME_ARRAY);
+            ) {
+            long time = System.currentTimeMillis();
+
+            for (int i = 0; i < inSegmentParents.length; i++) {
+               inSegmentParents[i] = ii.readInt();
+            }
+            if(log.isDebugEnabled())
+            {
+               log.debug(
+                  "persisted cache initialized {} DocIds in {} ms",
+                  new Object[] { inSegmentParents.length,
+                     System.currentTimeMillis() - time });
+            }
+            return true;
+         } catch (FileNotFoundException ignore) {
+            if(log.isDebugEnabled()) {
+               // expected in the case where the file-based cache has not been
+               // initialized yet
+               log.debug("Saved state (file-based) of CachingIndexReader has not been initialized yet", ignore);
+            }
+         } catch (IOException ignore) {
+            log.warn(
+               "Saved state of CachingIndexReader is corrupt, will try to remove offending file "
+                  + FILE_CACHE_NAME_ARRAY, ignore);
+            // In the case where is a read error, the cache file is removed
+            // so it can be recreated after
+            // the cache loads the data from the repository directly
+            reader.directory().deleteFile(FILE_CACHE_NAME_ARRAY);
+         }
+         return false;
       }
    }
 

@@ -18,6 +18,8 @@ package org.exoplatform.services.jcr.impl.core.query.lucene;
 
 import java.io.IOException;
 import java.util.BitSet;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -27,6 +29,17 @@ import java.util.BitSet;
 abstract class DocId {
 
     static final int[] EMPTY = new int[0];
+    private static final Logger log = LoggerFactory.getLogger("exo.jcr.component.core.DocId");
+
+    /**
+     * All DocIds with a value smaller than {@link Short#MAX_VALUE}.
+     */
+    private static final PlainDocId[] LOW_DOC_IDS = new PlainDocId[Short.MAX_VALUE];
+    static {
+        for (int i = 0; i < LOW_DOC_IDS.length; i++) {
+            LOW_DOC_IDS[i] = new PlainDocId(i);
+        }
+    }
 
     /**
      * Indicates a null DocId. Will be returned if the root node is asked for
@@ -109,7 +122,14 @@ abstract class DocId {
      * @return a <code>DocId</code> based on a document number.
      */
     static DocId create(int docNumber) {
-        return new PlainDocId(docNumber);
+        if (docNumber < Short.MAX_VALUE) {
+            // use cached values for docNumbers up to 32k
+            return LOW_DOC_IDS[docNumber];
+        }
+        else
+        {
+            return new PlainDocId(docNumber);
+        }
     }
 
 //    /**
