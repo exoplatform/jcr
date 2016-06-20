@@ -109,12 +109,6 @@
     </dependency>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
-      <artifactId>exo.jcr.applications.fckeditor</artifactId>
-      <scope>runtime</scope>
-      <type>war</type>
-    </dependency>
-    <dependency>
-      <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.component.webdav</artifactId>
       <scope>runtime</scope>
     </dependency>
@@ -163,13 +157,6 @@
               <artifactId>exo.jcr.applications.browser</artifactId>
               <bundleFileName>browser.war</bundleFileName>
               <contextRoot>browser</contextRoot>
-            </webModule>
-            <webModule>
-              <groupId>org.exoplatform.jcr</groupId>
-              <artifactId>exo.jcr.applications.fckeditor</artifactId>
-              <bundleFileName>fckeditor.war</bundleFileName>
-              <contextRoot>fckeditor</contextRoot>
-              <excluded>false</excluded>
             </webModule>
           </modules>
         </configuration>

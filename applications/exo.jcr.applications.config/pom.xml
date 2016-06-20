@@ -35,12 +35,6 @@
   <dependencies>
     <dependency>
       <groupId>org.exoplatform.jcr</groupId>
-      <artifactId>exo.jcr.applications.fckeditor</artifactId>
-      <scope>runtime</scope>
-      <type>war</type>
-    </dependency>
-    <dependency>
-      <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.browser</artifactId>
       <scope>runtime</scope>
       <type>war</type>

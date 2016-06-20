@@ -189,12 +189,6 @@
       </dependency>
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
-        <artifactId>exo.jcr.applications.fckeditor</artifactId>
-        <version>${project.version}</version>
-        <type>war</type>
-      </dependency>
-      <dependency>
-        <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.applications.browser</artifactId>
         <version>${project.version}</version>
         <type>war</type>

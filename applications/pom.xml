@@ -41,7 +41,6 @@
       <module>exo.jcr.applications.backupconsole.dist</module>
       <module>exo.jcr.applications.browser</module>
       <module>exo.jcr.applications.config</module>
-      <module>exo.jcr.applications.fckeditor</module>
       <module>exo.jcr.applications.rest</module>
       <module>exo.jcr.applications.examples</module>
       <module>exo.jcr.ear</module>
