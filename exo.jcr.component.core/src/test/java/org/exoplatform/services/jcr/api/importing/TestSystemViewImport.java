@@ -218,6 +218,9 @@ public class TestSystemViewImport extends AbstractImportTest
          + "<sv:property sv:name=\"jcr:lastModified2\" sv:type=\"Date\"><sv:value>2004-08-18T15:17:00.856+01:00</sv:value></sv:property>"
          + "</sv:node>" + "</sv:node>";
 
+   public static final String SYSTEM_VIEW_XXE =
+           "<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?><!DOCTYPE testx [<!ENTITY twentieth SYSTEM \"file:///etc/passwd\" >]><testx> &twentieth; </testx>";
+
    @Override
    public void setUp() throws Exception
    {
@@ -497,6 +500,24 @@ public class TestSystemViewImport extends AbstractImportTest
       property = testRoot.getProperty("exo:test/childNode4/jcr:test");
       assertEquals(2, property.getValues().length);
       assertEquals("val1", property.getValues()[0].getString());
+   }
+
+   public void testImportXXESysView() throws RepositoryException, InvalidSerializedDataException,
+           ConstraintViolationException, IOException, ItemExistsException
+   {
+      root.addNode("testXXE");
+      session.importXML("/testXXE", new ByteArrayInputStream(SYSTEM_VIEW_XXE.getBytes()), 0);
+      session.save();
+      Node testRoot = session.getRootNode().getNode("testXXE");
+      NodeIterator iterator = testRoot.getNodes();
+      assertEquals(1, iterator.getSize());
+      Node parentNode = iterator.nextNode();
+      iterator = parentNode.getNodes();
+      assertEquals(1, iterator.getSize());
+      Node childNode = iterator.nextNode();
+      Property property = childNode.getProperty("jcr:xmlcharacters");
+      assertEquals("  ", property.getString());
+
    }
 
    public void testImportSysViewFormatted() throws RepositoryException, InvalidSerializedDataException,
