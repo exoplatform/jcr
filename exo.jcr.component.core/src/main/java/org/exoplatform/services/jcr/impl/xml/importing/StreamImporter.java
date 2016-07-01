@@ -97,14 +97,13 @@ public class StreamImporter implements RawDataImporter
     */
    public void importStream(InputStream stream) throws RepositoryException
    {
-
-      XMLInputFactory factory = XMLInputFactory.newInstance();
-      if (log.isDebugEnabled())
-         log.debug("FACTORY: " + factory);
-
       try
       {
-
+         XMLInputFactory factory = XMLInputFactory.newInstance();
+         //needed to avoid XXE Attacks
+         factory.setProperty("javax.xml.stream.isSupportingExternalEntities",false);
+         if (log.isDebugEnabled())
+            log.debug("FACTORY: " + factory);
          XMLEventReader reader = factory.createXMLEventReader(stream);
 
          if (log.isDebugEnabled())
