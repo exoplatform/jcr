@@ -29,7 +29,7 @@
   </parent>
   <artifactId>exo.jcr.ear</artifactId>
   <packaging>ear</packaging>
-  <name>eXo JCR :: EAR</name>
+  <name>eXo PLF:: JCR :: EAR</name>
   <description>Artifact for packaging eXo JCR into EAR.</description>
 
   <properties>

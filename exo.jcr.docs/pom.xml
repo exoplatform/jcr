@@ -30,7 +30,7 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>exo.jcr.docs</artifactId>
 
-   <name>eXo JCR :: Documentation :: Reactor</name>
+   <name>eXo PLF:: JCR :: Documentation :: Reactor</name>
    <description>Documentation Reactor of Exoplatform SAS 'eXo JCR' project.</description>
    <packaging>pom</packaging>
 

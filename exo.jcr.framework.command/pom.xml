@@ -28,7 +28,7 @@
       <version>1.17.x-SNAPSHOT</version>
    </parent>
    <artifactId>exo.jcr.framework.command</artifactId>
-   <name>eXo JCR :: Framework :: Command</name>
+   <name>eXo PLF:: JCR :: Framework :: Command</name>
    <description>Implementation of Command Framework of Exoplatform SAS 'eXo JCR' project.</description>
    <properties>
       <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>

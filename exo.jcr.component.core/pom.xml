@@ -28,7 +28,7 @@
       <version>1.17.x-SNAPSHOT</version>
    </parent>
    <artifactId>exo.jcr.component.core</artifactId>
-   <name>eXo JCR :: Component :: Core Service</name>
+   <name>eXo PLF:: JCR :: Component :: Core Service</name>
    <description>Implementation of Core Service of Exoplatform SAS 'eXo Core' project.</description>
    <properties>
       <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-ispn.xml</jcr.test.configuration.file>

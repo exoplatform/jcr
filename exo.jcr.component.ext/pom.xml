@@ -28,7 +28,7 @@
     <version>1.17.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.component.ext</artifactId>
-  <name>eXo JCR :: Component :: Extension Service</name>
+  <name>eXo PLF:: JCR :: Component :: Extension Service</name>
   <description>Implementation of Extension Service of Exoplatform SAS 'eXo JCR' project.</description>
   <properties>
       <jcr.test.configuration.file>/conf/standalone/test-configuration.xml</jcr.test.configuration.file>

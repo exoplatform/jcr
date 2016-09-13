@@ -29,7 +29,7 @@
   </parent>
   <artifactId>exo.jcr.connectors.jca</artifactId>
   <packaging>rar</packaging>
-  <name>eXo JCR :: Connector :: JCA</name>
+  <name>eXo PLF:: JCR :: Connector :: JCA</name>
   <description>Implementation of JCA resource adapter of Exoplatform SAS 'eXo JCR' project.</description>
   <properties>
     <manifest.entries />

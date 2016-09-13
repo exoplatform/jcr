@@ -28,7 +28,7 @@
     <version>1.17.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.component.webdav</artifactId>
-  <name>eXo JCR :: Component :: Webdav Service</name>
+  <name>eXo PLF:: JCR :: Component :: Webdav Service</name>
   <description>Implementation of Webdav Service of Exoplatform SAS 'eXo JCR' project.</description>
   <properties>
     <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>

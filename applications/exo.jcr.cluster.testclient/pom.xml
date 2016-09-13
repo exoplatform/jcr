@@ -28,7 +28,7 @@
     <version>1.17.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.cluster.testclient</artifactId>
-  <name>eXo JCR :: Cluster :: Test Client</name>
+  <name>eXo PLF:: JCR :: Cluster :: Test Client</name>
   <description>eXo JCR Cluster test client</description>
   <dependencies>
     <dependency>

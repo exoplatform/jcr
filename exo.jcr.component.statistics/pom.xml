@@ -28,7 +28,7 @@
     <version>1.17.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.component.statistics</artifactId>
-  <name>eXo JCR :: Component :: Statistics Provider</name>
+  <name>eXo PLF:: JCR :: Component :: Statistics Provider</name>
   <description>Implementation of Statistics Provider of Exoplatform SAS 'eXo JCR' project.</description>
   <dependencies>
     <dependency>

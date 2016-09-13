@@ -31,7 +31,7 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>exo.jcr.applications.jboss</artifactId>
    <packaging>pom</packaging>
-   <name>eXo JCR :: Applications :: JBoss AS</name>
+   <name>eXo PLF:: JCR :: Applications :: JBoss AS</name>
    <description>eXo JCR JBoss Applications Server</description>
    
    <properties>

@@ -28,7 +28,7 @@
    <modelVersion>4.0.0</modelVersion>
    <artifactId>reference-docs-${translation}</artifactId>
 
-   <name>eXo JCR :: Developer Documentation :: Reference (${translation})</name>
+   <name>eXo PLF:: JCR :: Developer Documentation :: Reference (${translation})</name>
    <packaging>jdocbook</packaging>
 
    <properties>

@@ -29,7 +29,7 @@
   </parent>
   <artifactId>exo.jcr.applications.browser</artifactId>
   <packaging>war</packaging>
-  <name>eXo JCR :: Applications :: Browser Demo</name>
+  <name>eXo PLF:: JCR :: Applications :: Browser Demo</name>
   <description>Implementation of JCR Browser Demo for Exoplatform SAS 'eXo JCR'.</description>
   <properties>
     <enforcer.skip>true</enforcer.skip>

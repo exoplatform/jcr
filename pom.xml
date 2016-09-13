@@ -33,7 +33,7 @@
   <artifactId>jcr-parent</artifactId>
   <version>1.17.x-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>eXo JCR</name>
+  <name>eXo PLF:: JCR</name>
   <description>Exoplatform SAS 'eXo JCR'(JSR-170 implementation) project.</description>
 
   <scm>
@@ -89,7 +89,7 @@
         <groupId>org.exoplatform.kernel</groupId>
         <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
         <version>${org.exoplatform.kernel.version}</version>
-      </dependency>                 
+      </dependency>
       <dependency>
         <groupId>org.exoplatform.core</groupId>
         <artifactId>exo.core.component.database</artifactId>
@@ -259,7 +259,7 @@
         <groupId>org.ogce</groupId>
         <artifactId>xpp3</artifactId>
         <version>1.1.6</version>
-      </dependency>         
+      </dependency>
       <dependency>
         <groupId>concurrent</groupId>
         <artifactId>concurrent</artifactId>
@@ -300,7 +300,7 @@
         <groupId>org.aspectj</groupId>
         <artifactId>aspectjrt</artifactId>
         <version>1.7.3</version>
-      </dependency>      
+      </dependency>
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-core</artifactId>
@@ -325,7 +325,7 @@
       <dependency>
         <groupId>org.antlr</groupId>
         <artifactId>antlr-runtime</artifactId>
-        <version>3.5</version> 
+        <version>3.5</version>
       </dependency>
       <dependency>
         <groupId>org.antlr</groupId>

@@ -28,7 +28,7 @@
     <version>1.17.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.applications.backupconsole</artifactId>
-  <name>eXo JCR :: Applications :: Backup Console</name>
+  <name>eXo PLF:: JCR :: Applications :: Backup Console</name>
   <description>Implementation of Backup Console for Exoplatform SAS 'eXo JCR'.</description>
   <properties>
     <childDelegation>true</childDelegation>

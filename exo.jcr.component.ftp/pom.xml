@@ -28,7 +28,7 @@
     <version>1.17.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.component.ftp</artifactId>
-  <name>eXo JCR :: Component :: FTP Service</name>
+  <name>eXo PLF:: JCR :: Component :: FTP Service</name>
   <description>Implementation of FTP Service of Exoplatform SAS 'eXo JCR' project.</description>
   <properties>
     <exo.test.includes>*</exo.test.includes>

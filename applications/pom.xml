@@ -31,7 +31,7 @@
    <artifactId>jcr-applications-parent</artifactId>
    <version>1.17.x-SNAPSHOT</version>
 
-   <name>eXo JCR :: Applications :: Reactor</name>
+   <name>eXo PLF:: JCR :: Applications :: Reactor</name>
    <packaging>pom</packaging>
    <description>Exoplatform SAS 'eXo JCR Applications Reactor' project.</description>
 

@@ -28,7 +28,7 @@
     <version>1.17.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.framework.web</artifactId>
-  <name>eXo JCR :: Framework :: Web</name>
+  <name>eXo PLF:: JCR :: Framework :: Web</name>
   <description>Implementation of JCR REST adapter of Exoplatform SAS 'eXo JCR' project.</description>
   <dependencies>
     <dependency>

@@ -28,7 +28,7 @@
     <version>1.17.x-SNAPSHOT</version>
   </parent>
   <artifactId>exo.jcr.framework.ftpclient</artifactId>
-  <name>eXo JCR :: Framework :: FTP Client</name>
+  <name>eXo PLF:: JCR :: Framework :: FTP Client</name>
   <description>Implementation of FTP Client of Exoplatform SAS 'eXo JCR' project.</description>
   <properties>
     <exo.test.includes>*</exo.test.includes>
