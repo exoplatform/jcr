@@ -375,7 +375,8 @@ public class TestQuotas extends AbstractQuotaManagerTest
    {
       assertWorkspaceSize(wsQuotaManager);
 
-      wsQuotaManager.setWorkspaceQuota(1000);
+      // set quota to current data size, so we should not be allowed to add any data
+      wsQuotaManager.setWorkspaceQuota(wsQuotaManager.getWorkspaceDataSize());
 
       root.addNode("testQuotaNode");
       try
@@ -387,12 +388,14 @@ public class TestQuotas extends AbstractQuotaManagerTest
       {
       }
 
-      wsQuotaManager.setWorkspaceQuota(1000000);
+      // set quota to more than the current data size, so we can add some data
+      wsQuotaManager.setWorkspaceQuota(wsQuotaManager.getWorkspaceDataSize() + 10000);
 
       root.addNode("testQuotaNode");
       root.save();
 
-      wsQuotaManager.setWorkspaceQuota(1000);
+      // set quota to current data size
+      wsQuotaManager.setWorkspaceQuota(wsQuotaManager.getWorkspaceDataSize());
 
       assertWorkspaceSize(wsQuotaManager);
 
@@ -414,7 +417,8 @@ public class TestQuotas extends AbstractQuotaManagerTest
 
       assertTrue(dbQuotaManager.getRepositoryDataSize() > 0);
 
-      dbQuotaManager.setRepositoryQuota(1000);
+      // set quota to current data size, so we should not be allowed to add any data
+      dbQuotaManager.setRepositoryQuota(dbQuotaManager.getRepositoryDataSize());
 
       root.addNode("testQuotaNode");
       try
@@ -426,12 +430,14 @@ public class TestQuotas extends AbstractQuotaManagerTest
       {
       }
 
-      dbQuotaManager.setRepositoryQuota(1000000);
+      // set quota to more than the current data size, so we can add some data
+      dbQuotaManager.setRepositoryQuota(dbQuotaManager.getRepositoryDataSize() + 10000);
 
       root.addNode("testQuotaNode");
       root.save();
 
-      dbQuotaManager.setRepositoryQuota(1000);
+      // set quota to current data size
+      dbQuotaManager.setRepositoryQuota(dbQuotaManager.getRepositoryDataSize());
 
       assertWorkspaceSize(wsQuotaManager);
 
@@ -452,7 +458,8 @@ public class TestQuotas extends AbstractQuotaManagerTest
 
       assertTrue(quotaManager.getGlobalDataSize() > 0);
 
-      quotaManager.setGlobalQuota(1000);
+      // set quota to current data size, so we should not be allowed to add any data
+      quotaManager.setGlobalQuota(quotaManager.getGlobalDataSize());
 
       root.addNode("testQuotaNode");
       try
@@ -464,12 +471,14 @@ public class TestQuotas extends AbstractQuotaManagerTest
       {
       }
 
-      quotaManager.setGlobalQuota(1000000);
+      // set quota to more than the current data size, so we can add some data
+      quotaManager.setGlobalQuota(quotaManager.getGlobalDataSize() + 10000);
 
       root.addNode("testQuotaNode");
       root.save();
 
-      quotaManager.setGlobalQuota(1000);
+      // set quota to current data size
+      quotaManager.setGlobalQuota(quotaManager.getGlobalDataSize());
 
       assertWorkspaceSize(wsQuotaManager);
 
