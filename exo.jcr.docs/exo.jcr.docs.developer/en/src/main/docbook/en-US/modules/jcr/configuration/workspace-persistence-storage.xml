@@ -136,10 +136,13 @@
 
   <note>
    <para>
+     Swap file is used as temporary location where the binary value will be spooled if no value storage is configured and the  max-buffer-size is exceeded.
      It's possible to force the clean swap files thanks to the System property exo.jcr.spoolConfig.force.clean.swap.
      The default value of this parameter is false (force clean disabled).
      If force clean is enabled, It's possible to define the live time (in seconds) of swap files thanks to the System property exo.jcr.spoolConfig.swap.live.time.
      The default value of this parameter is -1 (disabled).
+     If force clean swap is disabled, swap files is removed until cached binary property data is evicted or reload data container.
+     A high value of swap live time means a better caching of binary property data matching than a low value but the used size of swap files is bigger.
    </para>
   </note>
 

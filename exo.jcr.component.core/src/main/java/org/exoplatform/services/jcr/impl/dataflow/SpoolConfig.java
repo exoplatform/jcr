@@ -22,6 +22,9 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
+
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,6 +37,8 @@ import java.util.Map;
  */
 public class SpoolConfig
 {
+   private final static Log LOG = ExoLogger.getLogger(SpoolConfig.class);
+
    public FileCleaner fileCleaner;
 
    public File tempDirectory = new File(PropertyManager.getProperty("java.io.tmpdir"));
@@ -70,6 +75,7 @@ public class SpoolConfig
          }
          catch (NumberFormatException nex)
          {
+            LOG.warn("Parameter {} is not a valid number, default value will be used is -1", FORCE_CLEAN_SWAP_LIVE_TIME);
             liveTime = -1;
          }
       }
