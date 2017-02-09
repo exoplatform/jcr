@@ -25,13 +25,13 @@
   <parent>
     <groupId>org.exoplatform</groupId>
     <artifactId>foundation-parent</artifactId>
-    <version>15-RC02</version>
+    <version>16.x-SNAPSHOT</version>
     <relativePath />
   </parent>
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>1.18.x-SNAPSHOT</version>
+  <version>5.0.x-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo PLF:: JCR</name>
   <description>Exoplatform SAS 'eXo JCR'(JSR-170 implementation) project.</description>
@@ -46,9 +46,9 @@
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.16</exo.product.specification>
-    <org.exoplatform.kernel.version>2.7.x-SNAPSHOT</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>2.8.x-SNAPSHOT</org.exoplatform.core.version>
-    <org.exoplatform.ws.version>2.6.x-SNAPSHOT</org.exoplatform.ws.version>
+    <org.exoplatform.kernel.version>5.0.x-SNAPSHOT</org.exoplatform.kernel.version>
+    <org.exoplatform.core.version>5.0.x-SNAPSHOT</org.exoplatform.core.version>
+    <org.exoplatform.ws.version>5.0.x-SNAPSHOT</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
     <org.exoplatform.doc.doc-style.version>4.0.0</org.exoplatform.doc.doc-style.version>
   </properties>
