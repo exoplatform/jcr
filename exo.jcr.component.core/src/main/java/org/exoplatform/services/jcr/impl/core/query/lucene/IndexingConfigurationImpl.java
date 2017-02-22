@@ -671,9 +671,22 @@ public class IndexingConfigurationImpl implements IndexingConfiguration
          int idx = pattern.indexOf(':');
          if (idx != -1)
          {
-            // use a dummy local name to get namespace uri
-            uri = resolver.parseJCRName(pattern.substring(0, idx) + ":a").getNamespace();
+            String prefix = pattern.substring(0, idx);
+            if (prefix.equals(".*"))
+            {
+               // match all namespaces
+               uri = prefix;
+            }
+            else
+            {
+               // use a dummy local name to get namespace uri
+               uri = resolver.parseJCRName(pattern.substring(0, idx) + ":a").getNamespace();
+            }
             localPattern = pattern.substring(idx + 1);
+         }
+         else if (pattern.equals(".*"))
+         {
+            uri = ".*";
          }
          this.pattern = Pattern.name(uri, localPattern);
          this.config = config;

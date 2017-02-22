@@ -145,4 +145,52 @@ public class IndexingRuleTest extends AbstractIndexingTest
       // this should find node, because property "name" is included to index 
       executeSQLQuery(sqlNotSkippedProperty, new Node[]{node});
    }
+
+   public void testUseInExcerptWithAggregate() throws RepositoryException
+   {
+      Node node = testRootNode.addNode(nodeName1, NT_UNSTRUCTURED);
+      node.setProperty("rule", "excerpt");
+      node.setProperty("title", "exoJCR Exoplatform");
+      node.setProperty("text", "Exoplatform is a JCR implementation");
+      Node aggregated = node.addNode("aggregated-node", NT_UNSTRUCTURED);
+      aggregated.setProperty("rule", "excerpt");
+      aggregated.setProperty("title", "exoJCR Exoplatform");
+      aggregated.setProperty("text", "Exoplatform is a JCR implementation");
+      testRootNode.save();
+
+      String stmt = "/jcr:root" + testRootNode.getPath() +
+              "/*[jcr:contains(., 'Exoplatform')]/rep:excerpt(.)";
+      RowIterator rows = executeQuery(stmt).getRows();
+      assertTrue("No results returned", rows.hasNext());
+      Value excerpt;
+      while (rows.hasNext()) {
+         excerpt = rows.nextRow().getValue("rep:excerpt(.)");
+         assertNotNull("No excerpt created", excerpt);
+         assertTrue("Title must not be present in excerpt",
+                 excerpt.getString().indexOf("exoJCR") == -1);
+         int idx = 0;
+         int numHighlights = 0;
+         for (; ; ) {
+            idx = excerpt.getString().indexOf("<strong>", idx);
+            if (idx == -1) {
+               break;
+            }
+            numHighlights++;
+            int endIdx = excerpt.getString().indexOf("</strong>", idx);
+            assertEquals("wrong highlight", "Exoplatform",
+                    excerpt.getString().substring(idx + "<strong>".length(), endIdx));
+            idx = endIdx;
+         }
+         assertTrue("Missing highlight", numHighlights > 0);
+      }
+
+      stmt = "/jcr:root" + testRootNode.getPath() +
+              "/*[jcr:contains(., 'exoJCR')]/rep:excerpt(.)";
+      rows = executeQuery(stmt).getRows();
+      assertTrue("No results returned", rows.hasNext());
+      excerpt = rows.nextRow().getValue("rep:excerpt(.)");
+      assertNotNull("No excerpt created", excerpt);
+      assertTrue("Title must not be present in excerpt",
+              excerpt.getString().indexOf("exoJCR") == -1);
+   }
 }

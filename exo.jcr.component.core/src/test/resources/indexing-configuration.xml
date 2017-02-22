@@ -57,6 +57,7 @@
     </aggregate>
 
     <aggregate primaryType="nt:unstructured">
+        <include>aggregated-node</include>
         <include-property>child/property</include-property>
     </aggregate>
 
@@ -72,4 +73,13 @@
      <property useInExcerpt="false">exo:title</property>
      <property useInExcerpt="false">exo:name</property>
    </index-rule>
+
+    <index-rule nodeType="exo:JCR_2416">
+        <property useInExcerpt="false">exo:title</property>
+        <property isRegexp="true">.*</property>
+    </index-rule>
+
+    <aggregate primaryType="exo:JCR_2416">
+        <include>exo:content</include>
+    </aggregate>
 </configuration>

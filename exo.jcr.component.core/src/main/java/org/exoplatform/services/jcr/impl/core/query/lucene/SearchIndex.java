@@ -90,19 +90,7 @@ import java.io.StringReader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedAction;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -2108,20 +2096,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                NodeData[] aggregates = aggregateRules[i].getAggregatedNodeStates(state);
                if (aggregates != null)
                {
-                  Fieldable[] fulltext = doc.getFieldables(FieldNames.FULLTEXT);
-                  if (fulltext != null)
-                  {
-                     // select fields that are not used in excerpt (must go at the end)
-                     for (int k = 0; k < fulltext.length; k++)
-                     {
-                        if (!fulltext[k].isStored())
-                        {
-                           fulltextTemp.add(fulltext[k]);
-                           doc.removeField(fulltext[k].name());
-                        }
-                     }
-                  }
-
                   ruleMatched = true;
                   for (int j = 0; j < aggregates.length; j++)
                   {
@@ -2137,18 +2111,24 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                      {
                         for (int k = 0; k < fulltextFields.length; k++)
                         {
-                           if (fulltextFields[k].isStored())
+                           for (Fieldable fulltextField : fulltextFields)
                            {
-                              doc.add(fulltextFields[k]);
-                           }
-                           else
-                           {
-                              fulltextTemp.add(fulltextFields[k]);
+                              doc.add(fulltextField);
                            }
                         }
                         doc.add(new Field(FieldNames.AGGREGATED_NODE_UUID, aggregates[j].getIdentifier(),
                            Field.Store.NO, Field.Index.NOT_ANALYZED_NO_NORMS));
                      }
+                  }
+                  // make sure that fulltext fields are aligned properly
+                  // first all stored fields, then remaining
+                  Fieldable[] fulltextFields = doc
+                          .getFieldables(FieldNames.FULLTEXT);
+                  doc.removeFields(FieldNames.FULLTEXT);
+                  Arrays.sort(fulltextFields, FIELDS_COMPARATOR_STORED);
+                  for (Fieldable f : fulltextFields)
+                  {
+                     doc.add(f);
                   }
                }
                // property includes
@@ -2205,12 +2185,6 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                         Util.disposeDocument(aDoc);
                      }
                   }
-               }
-
-               // now add fields that are not used in excerpt (must go at the end)
-               for (Iterator it = fulltextTemp.iterator(); it.hasNext();)
-               {
-                  doc.add((Fieldable)it.next());
                }
 
                // only use first aggregate definition that matches
@@ -3313,6 +3287,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          throw new IOException("query handler closed and cannot be used anymore.");
       }
    }
+
+   private static final Comparator<Fieldable> FIELDS_COMPARATOR_STORED = new Comparator<Fieldable>()
+   {
+      public int compare(Fieldable o1, Fieldable o2)
+      {
+         return Boolean.valueOf(o2.isStored()).compareTo(o1.isStored());
+      }
+   };
 
    /**
     * Log unindexed changes into error.log
