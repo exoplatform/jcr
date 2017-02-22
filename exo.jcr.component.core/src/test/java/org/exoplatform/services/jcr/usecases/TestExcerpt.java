@@ -259,6 +259,64 @@ public class TestExcerpt extends BaseUsecasesTest
       testSession.save();
    }
 
+   public void testIndexingFieldsWithoutRules() throws Exception
+   {
+      Node node7 = testRoot.addNode("notAllExcerptNode", "exo:JCR_2416");
+      node7.setProperty("exo:title", "test search indexed");
+      node7.setProperty("exo:fieldJCR_2416", "escapedIndex");
+      Node resourceNode = node7.addNode("exo:content", "exo:JCR_2394_2");
+      resourceNode.addMixin("exo:archiveable");
+      resourceNode.setProperty("exo:summary", "text");
+      resourceNode.setProperty("exo:data", "bla bla bla exoplatform bla bla");
+      resourceNode.setProperty("exo:restorePath","/Path/restorepath");
+      testSession.save();
+
+
+      QueryManager queryManager = testSession.getWorkspace().getQueryManager();
+      Query query =
+              queryManager.createQuery("select * from exo:JCR_2416 where "
+                      + "exo:fieldJCR_2416='escapedIndex'", Query.SQL);
+      QueryResult result = query.execute();
+      RowIterator rows = result.getRows();
+      assertEquals(1, rows.getSize());
+
+      query =
+              queryManager.createQuery("select * from exo:JCR_2416 where "
+                      + "contains(., 'escapedIndex')", Query.SQL);
+      result = query.execute();
+      rows = result.getRows();
+      assertEquals(1, rows.getSize());
+
+      //test useInExcerpt False
+
+      query =
+              queryManager.createQuery("select excerpt(.) from exo:JCR_2416 where "
+                      + "contains(., 'escapedIndex')", Query.SQL);
+      result = query.execute();
+      rows = result.getRows();
+      Value v = rows.nextRow().getValue("rep:excerpt(.)");
+      String excerpt = v.getString();
+      assertFalse(excerpt.contains("test"));
+
+      //check content in aggregate
+      query =
+              queryManager.createQuery("select * from exo:JCR_2416 where "
+                      + "contains(., 'exoplatform')", Query.SQL);
+      result = query.execute();
+      rows = result.getRows();
+      assertEquals(1, rows.getSize());
+      //check content in associated mixin
+      query =
+              queryManager.createQuery("select * from exo:JCR_2416 where "
+                      + "contains(., 'restorepath')", Query.SQL);
+      result = query.execute();
+      rows = result.getRows();
+      assertEquals(1, rows.getSize());
+      node7.remove();
+      testSession.save();
+
+   }
+
    private String getExcerpt(String term) throws RepositoryException
    {
       QueryManager queryManager = testSession.getWorkspace().getQueryManager();
