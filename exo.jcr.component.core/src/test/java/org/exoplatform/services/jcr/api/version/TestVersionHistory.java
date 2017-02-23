@@ -24,6 +24,7 @@ import javax.jcr.Session;
 import javax.jcr.version.Version;
 import javax.jcr.version.VersionException;
 import javax.jcr.version.VersionHistory;
+import javax.jcr.version.VersionIterator;
 
 /**
  * Created by The eXo Platform SAS 07.05.2006
@@ -240,6 +241,137 @@ public class TestVersionHistory extends BaseVersionTest
       checkItemsExisted(new String[]{n1.getPath(), snsN1_2.getPath(), snsN1_3.getPath(), n2.getPath(),
          snsN2_2_Other.getPath(), n3.getPath()}, new String[]{n4.getPath(), n5.getPath(), n6.getPath()});
       checkVersionHistory(testVersionable, 8);
+   }
+
+   public void testRemoveBaseVersion() throws Exception
+   {
+      Node testRemove = testRoot.addNode("testRemove", "nt:unstructured");
+      testRemove.setProperty("exo:test","V0");
+      testRemove.addMixin("mix:versionable");
+      root.save();
+
+      VersionHistory vHistory = testRemove.getVersionHistory();
+      VersionIterator versionIterator = vHistory.getAllVersions();
+      Version rootVersion =  vHistory.getRootVersion();
+      assertEquals(1, versionIterator.getSize());
+      assertEquals(rootVersion.getName(), versionIterator.nextVersion().getName());
+
+      Version ver1 = testRemove.checkin();
+      vHistory.addVersionLabel(ver1.getName(), "v1", false);
+      testRemove.checkout();
+      versionIterator= vHistory.getAllVersions();
+      assertEquals(2, versionIterator.getSize());
+
+      Version ver2 = testRemove.checkin();
+      vHistory.addVersionLabel(ver2.getName(), "v2", false);
+      testRemove.checkout();
+      versionIterator= vHistory.getAllVersions();
+      assertEquals(3, versionIterator.getSize());
+
+      Version baseVersion = testRemove.getBaseVersion();
+      assertEquals(baseVersion.getName(),vHistory.getVersionByLabel("v2").getName());
+
+      try
+      {
+         vHistory.removeVersion(vHistory.getVersionByLabel("v2").getName());
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+      baseVersion = testRemove.getBaseVersion();
+      assertEquals(baseVersion.getName(),vHistory.getVersionByLabel("v1").getName());
+      versionIterator= vHistory.getAllVersions();
+      assertEquals(2, versionIterator.getSize());
+
+      try
+      {
+         vHistory.removeVersion(vHistory.getVersionByLabel("v1").getName());
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+      baseVersion = testRemove.getBaseVersion();
+      assertEquals(baseVersion.getName(), rootVersion.getName());
+      versionIterator= vHistory.getAllVersions();
+      assertEquals(1, versionIterator.getSize());
+   }
+
+   public void testRemoveBaseVersion1() throws Exception
+   {
+      Node testRemove = testRoot.addNode("testRemove", "nt:unstructured");
+      testRemove.setProperty("exo:test1","V0");
+      testRemove.addMixin("mix:versionable");
+      testRemove.addMixin("mix:lockable");
+      root.save();
+
+      VersionHistory vHistory = testRemove.getVersionHistory();
+      VersionIterator versionIterator = vHistory.getAllVersions();
+      assertEquals(1, versionIterator.getSize());
+
+      Version ver1 = testRemove.checkin();
+      vHistory.addVersionLabel(ver1.getName(), "v1", false);
+      testRemove.checkout();
+      versionIterator= vHistory.getAllVersions();
+      assertEquals(2, versionIterator.getSize());
+
+      Version ver2 = testRemove.checkin();
+      vHistory.addVersionLabel(ver2.getName(), "v2", false);
+      testRemove.checkout();
+      versionIterator= vHistory.getAllVersions();
+      assertEquals(3, versionIterator.getSize());
+
+      Version ver3 = testRemove.checkin();
+      vHistory.addVersionLabel(ver3.getName(), "v3", false);
+      testRemove.checkout();
+
+      try
+      {
+         vHistory.removeVersion(vHistory.getVersionByLabel("v3").getName());
+         //Expected
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+
+      Version baseVersion = testRemove.getBaseVersion();
+      assertEquals(baseVersion.getName(), vHistory.getVersionByLabel("v2").getName());
+
+      testRemove.restore(vHistory.getVersionByLabel("v1").getName(),true);
+
+      baseVersion = testRemove.getBaseVersion();
+      assertEquals(baseVersion.getName(), vHistory.getVersionByLabel("v1").getName());
+
+      vHistory.removeVersion(vHistory.getVersionByLabel("v1").getName());
+      baseVersion = testRemove.getBaseVersion();
+      assertEquals(baseVersion.getName(), vHistory.getRootVersion().getName());
+
+      testRemove.restore(vHistory.getVersionByLabel("v2").getName(),true);
+      baseVersion = testRemove.getBaseVersion();
+      assertEquals(baseVersion.getName(), vHistory.getVersionByLabel("v2").getName());
+      try
+      {
+         vHistory.removeVersion(vHistory.getVersionByLabel("v2").getName());
+         //Expected
+      }
+      catch (Exception e)
+      {
+         fail();
+      }
+      baseVersion = testRemove.getBaseVersion();
+      assertEquals(baseVersion.getName(), vHistory.getRootVersion().getName());
+
+      try
+      {
+         vHistory.removeVersion(vHistory.getRootVersion().getName());
+         fail();
+      }
+      catch (Exception e)
+      {
+         //Expected
+      }
    }
 
    private VersionHistory prepareHistory() throws Exception

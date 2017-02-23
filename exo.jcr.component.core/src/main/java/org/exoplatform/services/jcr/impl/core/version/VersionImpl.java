@@ -21,14 +21,7 @@ package org.exoplatform.services.jcr.impl.core.version;
 import org.exoplatform.services.jcr.dataflow.DataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
-import org.exoplatform.services.jcr.datamodel.Identifier;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.ItemType;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.datamodel.*;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.dataflow.TransientPropertyData;
@@ -289,7 +282,17 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
                successorsProp.getQPath().getIndex()), successorsProp.getIdentifier(), successorsProp
                .getPersistedVersion(), PropertyType.REFERENCE, nodeData().getIdentifier(), true, newSuccessors);
 
-         changesLog.add(ItemState.createUpdatedState(newSuccessorsProp));
+         if(! newSuccessors.isEmpty()) {
+            changesLog.add(ItemState.createUpdatedState(newSuccessorsProp));
+         }
+         else
+         {
+            //No successor , remove reference property
+            ItemData successorProp =
+                    dataManager.getItemData(nodeData(), new QPathEntry(Constants.JCR_SUCCESSORS, 0), ItemType.PROPERTY);
+
+            changesLog.add(ItemState.createDeletedState(successorProp));
+         }
       }
       else
       {
@@ -324,7 +327,10 @@ public class VersionImpl extends VersionStorageDescendantNode implements Version
             throw new RepositoryException("A jcr:successors property read error " + e, e);
          }
 
-         newSuccessors.add(new TransientValueData(new Identifier(addedSuccessorIdentifier)));
+         if(addedSuccessorIdentifier != null)
+         {
+            newSuccessors.add(new TransientValueData(new Identifier(addedSuccessorIdentifier)));
+         }
 
          TransientPropertyData newSuccessorsProp =
             new TransientPropertyData(QPath.makeChildPath(nodeData().getQPath(), Constants.JCR_SUCCESSORS,
