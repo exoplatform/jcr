@@ -25,13 +25,7 @@ import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLog;
 import org.exoplatform.services.jcr.dataflow.PlainChangesLogImpl;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.ItemType;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.datamodel.*;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.JCRName;
 import org.exoplatform.services.jcr.impl.core.JCRPath;
@@ -328,17 +322,104 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
       // get version (pool it to be able to invalidate the version on final)
       VersionImpl version = (VersionImpl)version(versionName, true);
 
+      PropertyData predecessorsData;
+
+      //changes Log
+      PlainChangesLog changes;
+
       // check references.
       // Note: References from /jcr:system/jcr:versionStorage never included to
       // getReferences!
       List<PropertyData> refs = dataManager.getReferencesData(version.getInternalIdentifier(), true);
-      if (refs.size() > 0)
+      if (refs.size() == 2 && ((refs.get(0).getQPath().getName().equals(Constants.JCR_BASEVERSION) && refs.get(1).getQPath().getName().equals(Constants.JCR_PREDECESSORS))
+              || (refs.get(0).getQPath().getName().equals(Constants.JCR_PREDECESSORS) && refs.get(1).getQPath().getName().equals(Constants.JCR_BASEVERSION))))
+      {
+         // jcr:versionableUuid
+         PropertyData versionableUuidProp = (PropertyData) dataManager.getItemData((NodeData) version.getParent().getData(), new QPathEntry(Constants.JCR_VERSIONABLEUUID, 1),
+                 ItemType.PROPERTY);
+
+         NodeData versionableNode = (NodeData) dataManager.getItemData(ValueDataUtil.getString(versionableUuidProp.getValues().get(0)));
+
+         // jcr:baseVersion
+         PropertyData baseVersion = (PropertyData) dataManager.getItemData(versionableNode, new QPathEntry(Constants.JCR_BASEVERSION,
+                 0), ItemType.PROPERTY);
+
+         //The current version is the base version
+         if (version.getIdentifier().equals(ValueDataUtil.getString(baseVersion.getValues().get(0)))
+                 && !Constants.JCR_ROOTVERSION.equals(version.getInternalName()))
+         {
+            // Versionable node predecessor
+            PropertyData predecessorsVersion = (PropertyData) dataManager.getItemData(versionableNode, new QPathEntry(Constants.JCR_PREDECESSORS,
+                    0), ItemType.PROPERTY);
+
+            changes = new PlainChangesLogImpl(session);
+
+            // current version jcr:predecessors
+            predecessorsData =
+                    (PropertyData) dataManager.getItemData((NodeData) version.getData(), new QPathEntry(Constants.JCR_PREDECESSORS,
+                            0), ItemType.PROPERTY);
+            ValueData pvalue = predecessorsData.getValues().get(0);
+
+            //update Versionable base version reference
+            PropertyData newBaseProp = new TransientPropertyData(baseVersion.getQPath(), baseVersion.getIdentifier(), baseVersion.getPersistedVersion(),
+                    baseVersion.getType(), baseVersion.getParentIdentifier(), baseVersion.isMultiValued(), pvalue);
+            changes.add(ItemState.createUpdatedState(newBaseProp));
+
+            //update Versionable predecessors version reference
+            PropertyData newPredecessorsVersion = new TransientPropertyData(predecessorsVersion.getQPath(), predecessorsVersion.getIdentifier(), predecessorsVersion.getPersistedVersion(),
+                    predecessorsVersion.getType(), predecessorsVersion.getParentIdentifier(), predecessorsVersion.isMultiValued(), pvalue);
+            changes.add(ItemState.createUpdatedState(newPredecessorsVersion));
+         }
+         else
+         {
+            throw new ReferentialIntegrityException("There are Reference property pointed to this Version "
+                    + refs.get(0).getQPath().getAsString());
+         }
+      }
+      else if(refs.size() == 1 && refs.get(0).getQPath().getName().equals(Constants.JCR_BASEVERSION))
+      {
+         // jcr:versionableUuid
+         PropertyData versionableUuidProp = (PropertyData) dataManager.getItemData((NodeData) version.getParent().getData(), new QPathEntry(Constants.JCR_VERSIONABLEUUID, 1),
+                 ItemType.PROPERTY);
+
+         NodeData versionableNode = (NodeData) dataManager.getItemData(ValueDataUtil.getString(versionableUuidProp.getValues().get(0)));
+
+         // jcr:baseVersion
+         PropertyData baseVersion = (PropertyData) dataManager.getItemData(versionableNode, new QPathEntry(Constants.JCR_BASEVERSION,
+                 0), ItemType.PROPERTY);
+
+         //The current version is the base version
+         if (version.getIdentifier().equals(ValueDataUtil.getString(baseVersion.getValues().get(0)))
+                 && !Constants.JCR_ROOTVERSION.equals(version.getInternalName()))
+         {
+            changes = new PlainChangesLogImpl(session);
+
+            // current version jcr:predecessors
+            predecessorsData =
+                    (PropertyData) dataManager.getItemData((NodeData) version.getData(), new QPathEntry(Constants.JCR_PREDECESSORS,
+                            0), ItemType.PROPERTY);
+            ValueData pvalue = predecessorsData.getValues().get(0);
+
+            //update Versionable base version reference
+            PropertyData newBaseProp = new TransientPropertyData(baseVersion.getQPath(), baseVersion.getIdentifier(), baseVersion.getPersistedVersion(),
+                    baseVersion.getType(), baseVersion.getParentIdentifier(), baseVersion.isMultiValued(), pvalue);
+            changes.add(ItemState.createUpdatedState(newBaseProp));
+         }
+         else
+         {
+            throw new ReferentialIntegrityException("There are Reference property pointed to this Version "
+                    + refs.get(0).getQPath().getAsString());
+         }
+      }
+      else if (refs.size() > 0)
       {
          throw new ReferentialIntegrityException("There are Reference property pointed to this Version "
-            + refs.get(0).getQPath().getAsString());
+                 + refs.get(0).getQPath().getAsString());
       }
-
-      PlainChangesLog changes = new PlainChangesLogImpl(session);
+      else
+      {
+         changes = new PlainChangesLogImpl(session);
+      }
 
       // remove labels first
       for (PropertyData vlabel : getData().getVersionLabels())
@@ -358,7 +439,7 @@ public class VersionHistoryImpl extends VersionStorageDescendantNode implements 
             new QPathEntry(Constants.JCR_SUCCESSORS, 0), ItemType.PROPERTY);
 
       // jcr:predecessors
-      PropertyData predecessorsData =
+      predecessorsData =
          (PropertyData)dataManager.getItemData((NodeData)version.getData(), new QPathEntry(Constants.JCR_PREDECESSORS,
             0), ItemType.PROPERTY);
 
