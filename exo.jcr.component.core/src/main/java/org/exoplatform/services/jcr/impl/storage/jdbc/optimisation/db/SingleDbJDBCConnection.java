@@ -1085,36 +1085,45 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   protected void deleteLockProperties() throws SQLException, InvalidItemStateException, RepositoryException
+   protected void deleteLockProperties() throws SQLException, RepositoryException
    {
       addChange(TYPE_DELETE_LOCK);
-      PreparedStatement removeValuesStatement = null;
-      PreparedStatement removeItemsStatement = null;
+      PreparedStatement findItemsStatement = null;
+      PreparedStatement removeValueStatement = null;
+      PreparedStatement removeItemStatement = null;
+      ResultSet resultSet = null;
 
       try
       {
-         removeValuesStatement =
-            dbConnection.prepareStatement("DELETE FROM JCR_SVALUE WHERE PROPERTY_ID IN (SELECT ID FROM JCR_SITEM"
-               + " WHERE I_CLASS = 2 AND CONTAINER_NAME = ? AND (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
-               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'))");
-         removeValuesStatement.setString(1, this.containerConfig.containerName);
+         findItemsStatement = dbConnection.prepareStatement("SELECT ID FROM " + JCR_ITEM + " WHERE I_CLASS = 2 AND CONTAINER_NAME = ? AND "
+                 + " ( NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+                 + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner' )");
 
-         removeItemsStatement =
-            dbConnection.prepareStatement("DELETE FROM JCR_SITEM WHERE I_CLASS = 2 AND CONTAINER_NAME = ? AND"
-               + " (NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
-               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
-         removeItemsStatement.setString(1, this.containerConfig.containerName);
+         removeValueStatement = dbConnection.prepareStatement("DELETE FROM " + JCR_VALUE + " WHERE PROPERTY_ID = ?");
+         removeItemStatement = dbConnection.prepareStatement("DELETE FROM " + JCR_ITEM + " WHERE ID = ? ");
 
-         removeValuesStatement.executeUpdate();
-         removeItemsStatement.executeUpdate();
+         findItemsStatement.setString(1, this.containerConfig.containerName);
+         resultSet = findItemsStatement.executeQuery();
+         while (resultSet.next())
+         {
+            String id  = resultSet.getString(COLUMN_ID);
+
+            removeValueStatement.clearParameters();
+            removeValueStatement.setString(1, id);
+            removeValueStatement.executeUpdate();
+
+            removeItemStatement.clearParameters();
+            removeItemStatement.setString(1, id);
+            removeItemStatement.executeUpdate();
+         }
       }
       finally
       {
-         if (removeValuesStatement != null)
+         if (removeValueStatement != null)
          {
             try
             {
-               removeValuesStatement.close();
+               removeValueStatement.close();
             }
             catch (SQLException e)
             {
@@ -1122,11 +1131,11 @@ public class SingleDbJDBCConnection extends CQJDBCStorageConnection
             }
          }
 
-         if (removeItemsStatement != null)
+         if (removeItemStatement != null)
          {
             try
             {
-               removeItemsStatement.close();
+               removeItemStatement.close();
             }
             catch (SQLException e)
             {

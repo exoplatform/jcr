@@ -24,13 +24,12 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>5.0.x-SNAPSHOT</version>
+    <version>5.0.x-infinispan-8-SNAPSHOT</version>
   </parent>
 
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.exoplatform</groupId>
   <artifactId>exo-jcr-services</artifactId>
-  <version>5.0.x-SNAPSHOT</version>
   <packaging>jar</packaging>
   <name>eXo PLF:: JCR :: Ext :: Services</name>
   <description>Exoplatform SAS 'eXo JCR Ext Services' project.</description>

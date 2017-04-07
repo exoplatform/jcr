@@ -35,10 +35,11 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.infinispan.loaders.CacheLoaderManager;
+import org.infinispan.persistence.manager.PersistenceManager;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.jcr.RepositoryException;
 
@@ -100,9 +101,12 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
       this.cache = factory.createCache("Indexer_" + searchManager.getWsId(), config);
       PrivilegedISPNCacheHelper.start(this.cache);
 
-      CacheLoaderManager cacheLoaderManager =
-         cache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class);
-      IndexerCacheStore cacheStore = (IndexerCacheStore)cacheLoaderManager.getCacheLoader();
+      PersistenceManager persistenceManager = cache.getAdvancedCache().getComponentRegistry().getComponent(PersistenceManager.class);
+      Set<IndexerCacheStore> stores = persistenceManager.getStores(IndexerCacheStore.class);
+      IndexerCacheStore cacheStore = null;
+      if(!stores.isEmpty()){
+         cacheStore = stores.iterator().next();
+      }
 
       cacheStore.register(searchManager, parentSearchManager, handler, parentHandler);
       IndexerIoModeHandler modeHandler = cacheStore.getModeHandler();

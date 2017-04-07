@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
-    Copyright (C) 2010 eXo Platform SAS.
+    Copyright (C) 2017 eXo Platform SAS.
 
     This is free software; you can redistribute it and/or modify it
     under the terms of the GNU Lesser General Public License as
@@ -19,37 +19,47 @@
     02110-1301 USA, or see the FSF site: http://www.fsf.org.
 
 -->
-<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:infinispan:config:5.2 http://www.infinispan.org/schemas/infinispan-config-5.2.xsd"
-	xmlns="urn:infinispan:config:5.2">
-   <global>
-      <globalJmxStatistics jmxDomain="exo" enabled="true" allowDuplicateDomains="true"/>
-      <transport transportClass="org.infinispan.remoting.transport.jgroups.JGroupsTransport" clusterName="JCR-cluster" distributedSyncTimeout="20000">
-      	<properties>
-         <property name="configurationFile" value="${configurationFile}"/>
-      	</properties>
-      </transport>
-      <shutdown hookBehavior="DEFAULT"/>
-   </global>
-   <namedCache name="JCRCache">
-      <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="120000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true" />
-      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" eagerLockSingleNode="true" transactionMode="TRANSACTIONAL"/>
-      <jmxStatistics enabled="true"/>
-      <clustering mode="distribution">
-      	 <l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/>
-         <hash numOwners="${numOwners}" numSegments="${numSegments}">
-         	<groups enabled="true"/>
-         </hash>
-         <sync replTimeout="180000"/>
-      </clustering>
-   </namedCache>
-   <namedCache name="eXoCache">
-      <locking isolationLevel="READ_COMMITTED" lockAcquisitionTimeout="120000" writeSkewCheck="false" concurrencyLevel="500" useLockStriping="true" />
-      <transaction transactionManagerLookupClass="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" syncRollbackPhase="true" syncCommitPhase="true" eagerLockSingleNode="true" transactionMode="TRANSACTIONAL"/>
-      <jmxStatistics enabled="true"/>
-      <clustering mode="distribution">
-         <l1 enabled="true" invalidationThreshold="${invalidationThreshold}"/>
-         <hash numOwners="${numOwners}" numSegments="${numSegments}"/>
-         <sync replTimeout="180000"/>
-      </clustering>
-   </namedCache>
+<infinispan xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xmlns="urn:infinispan:config:8.2"
+            xsi:schemaLocation="urn:infinispan:config:8.2 http://www.infinispan.org/schemas/infinispan-config-8.2.xsd">
+   <jgroups transport="org.infinispan.remoting.transport.jgroups.JGroupsTransport">
+      <stack-file name="udp" path="${configurationFile}"/>
+   </jgroups>
+   <threads>
+      <thread-factory name="infinispan-factory" group-name="infinispan" thread-name-pattern="%G %i" priority="5"/>
+
+      <!-- listener-executor -->
+      <blocking-bounded-queue-thread-pool name="infinispan-listener" thread-factory="infinispan-factory"
+                                          core-threads="1" max-threads="1" queue-length="0" keepalive-time="0"/>
+      <!-- transport.executor -->
+      <blocking-bounded-queue-thread-pool name="infinispan-transport" thread-factory="infinispan-factory"
+                                          core-threads="5" max-threads="10" queue-length="100" keepalive-time="10000"/>
+
+      <!-- state-transfer-executor -->
+      <blocking-bounded-queue-thread-pool name="infinispan-state-transfer" thread-factory="infinispan-factory"
+                                          core-threads="1" max-threads="60" queue-length="0" keepalive-time="0"/>
+
+      <!-- transport.total-order-executor, transport.remote-command-executor, persistence-executor -->
+      <cached-thread-pool name="infinispan-cached" thread-factory="infinispan-factory" />
+      <!-- expiration-executor -->
+      <scheduled-thread-pool name="infinispan-expiration" thread-factory="infinispan-factory" />
+      <!-- replication-queue-executor -->
+      <scheduled-thread-pool name="infinispan-repl-queue" thread-factory="infinispan-factory" />
+   </threads>
+
+   <cache-container  default-cache="default" expiration-executor="infinispan-expiration"  listener-executor="infinispan-listener"
+                     replication-queue-executor="infinispan-repl-queue" state-transfer-executor="infinispan-state-transfer"
+                     statistics="true" shutdown-hook="REGISTER">
+      <transport cluster="JCR-cluster" executor="infinispan-transport" total-order-executor="infinispan-cached"
+                 remote-command-executor="infinispan-cached" lock-timeout="120000" stack="udp" />
+      <jmx duplicate-domains="true" domain="exo" mbean-server-lookup="org.infinispan.jmx.PlatformMBeanServerLookup"/>
+
+      <distributed-cache-configuration name="default" mode="SYNC" owners="${numOwners}" l1-lifespan="1200000"
+                                       segments="${numSegments}" remote-timeout="180000">
+         <locking isolation="READ_COMMITTED" acquire-timeout="120000" write-skew="false" concurrency-level="500" striping="true" />
+         <transaction transaction-manager-lookup="org.infinispan.transaction.lookup.GenericTransactionManagerLookup" mode="NON_XA"/>
+      </distributed-cache-configuration>
+      <distributed-cache name="JCRCache" configuration="default"/>
+      <distributed-cache name="eXoCache" configuration="default"/>
+   </cache-container>
 </infinispan>

@@ -28,13 +28,17 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.AdvancedCache;
 import org.infinispan.Cache;
-import org.infinispan.config.Configuration;
+import org.infinispan.CacheCollection;
+import org.infinispan.CacheSet;
+import org.infinispan.commons.util.concurrent.NotifyingFuture;
 import org.infinispan.context.Flag;
+import org.infinispan.filter.KeyFilter;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.util.concurrent.NotifyingFuture;
+import org.infinispan.notifications.cachelistener.filter.CacheEventConverter;
+import org.infinispan.notifications.cachelistener.filter.CacheEventFilter;
 
-import java.util.Collection;
+import java.lang.annotation.Annotation;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -72,7 +76,139 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
 
    private static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.BufferedISPNCache");//NOSONAR
 
-   public static enum ChangesType {
+   @Override
+   public void addListener(Object listener, KeyFilter<? super CacheKey> filter)
+   {
+      parentCache.addListener(listener, filter);
+   }
+
+   @Override
+   public <C> void addListener(Object listener, CacheEventFilter<? super CacheKey, ? super Object> filter, CacheEventConverter<? super CacheKey, ? super Object, C> converter)
+   {
+      parentCache.addListener(listener, filter, converter);
+   }
+
+   @Override
+   public <C> void addFilteredListener(Object listener, CacheEventFilter<? super CacheKey, ? super Object> filter, CacheEventConverter<? super CacheKey, ? super Object, C> converter, Set<Class<? extends Annotation>> filterAnnotations)
+   {
+      parentCache.addFilteredListener(listener, filter, converter, filterAnnotations);
+   }
+
+   @Override
+   public NotifyingFuture<Object> putAsync(CacheKey key, Object value)
+   {
+      return parentCache.putAsync(key, value);
+   }
+
+   @Override
+   public NotifyingFuture<Object> putAsync(CacheKey key, Object value, long lifespan, TimeUnit unit)
+   {
+      return parentCache.putAsync(key, value, lifespan, unit);
+   }
+
+   @Override
+   public NotifyingFuture<Object> putAsync(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit)
+   {
+      return parentCache.putAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+   }
+
+   @Override
+   public NotifyingFuture<Void> putAllAsync(Map<? extends CacheKey, ?> data)
+   {
+      return parentCache.putAllAsync(data);
+   }
+
+   @Override
+   public NotifyingFuture<Void> putAllAsync(Map<? extends CacheKey, ?> data, long lifespan, TimeUnit unit)
+   {
+      return parentCache.putAllAsync(data, lifespan, unit);
+   }
+
+   @Override
+   public NotifyingFuture<Void> putAllAsync(Map<? extends CacheKey, ?> data, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit)
+   {
+      return parentCache.putAllAsync(data, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+   }
+
+   @Override
+   public NotifyingFuture<Void> clearAsync()
+   {
+      return parentCache.clearAsync();
+   }
+
+   @Override
+   public NotifyingFuture<Object> putIfAbsentAsync(CacheKey key, Object value)
+   {
+      return parentCache.putIfAbsentAsync(key, value);
+   }
+
+   @Override
+   public NotifyingFuture<Object> putIfAbsentAsync(CacheKey key, Object value, long lifespan, TimeUnit unit)
+   {
+      return parentCache.putIfAbsentAsync(key, value, lifespan, unit);
+   }
+
+   @Override
+   public NotifyingFuture<Object> putIfAbsentAsync(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit)
+   {
+      return parentCache.putIfAbsentAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+   }
+
+   @Override
+   public NotifyingFuture<Object> removeAsync(Object key)
+   {
+      return parentCache.removeAsync(key);
+   }
+
+   @Override
+   public NotifyingFuture<Boolean> removeAsync(Object key, Object value)
+   {
+      return parentCache.removeAsync(key, value);
+   }
+
+   @Override
+   public NotifyingFuture<Object> replaceAsync(CacheKey key, Object value)
+   {
+      return parentCache.replaceAsync(key, value);
+   }
+
+   @Override
+   public NotifyingFuture<Object> replaceAsync(CacheKey key, Object value, long lifespan, TimeUnit unit)
+   {
+      return parentCache.replaceAsync(key, value, lifespan, unit);
+   }
+
+   @Override
+   public NotifyingFuture<Object> replaceAsync(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit)
+   {
+      return parentCache.replaceAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+   }
+
+   @Override
+   public NotifyingFuture<Boolean> replaceAsync(CacheKey key, Object oldValue, Object newValue)
+   {
+      return parentCache.replaceAsync(key, oldValue, newValue);
+   }
+
+   @Override
+   public NotifyingFuture<Boolean> replaceAsync(CacheKey key, Object oldValue, Object newValue, long lifespan, TimeUnit unit)
+   {
+      return parentCache.replaceAsync(key, oldValue, newValue, lifespan, unit);
+   }
+
+   @Override
+   public NotifyingFuture<Boolean> replaceAsync(CacheKey key, Object oldValue, Object newValue, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit)
+   {
+      return parentCache.replaceAsync(key, oldValue, newValue, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
+   }
+
+   @Override
+   public NotifyingFuture<Object> getAsync(CacheKey key) {
+      return null;
+   }
+
+   public static enum ChangesType
+   {
       REMOVE, PUT;
    }
 
@@ -533,21 +669,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       this.allowLocalChanges = allowLocalChanges;
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Void> clearAsync()
-   {
-      return parentCache.clearAsync();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public void compact()
-   {
-      parentCache.compact();
-   }
 
    /**
     * {@inheritDoc}
@@ -555,14 +676,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public void endBatch(boolean successful)
    {
       parentCache.endBatch(successful);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public Set<java.util.Map.Entry<CacheKey, Object>> entrySet()
-   {
-      return parentCache.entrySet();
    }
 
    /**
@@ -592,14 +705,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    /**
     * {@inheritDoc}
     */
-   public Configuration getConfiguration()
-   {
-      return parentCache.getConfiguration();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    public String getName()
    {
       return parentCache.getName();
@@ -619,14 +724,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public String getVersion()
    {
       return parentCache.getVersion();
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public Set<CacheKey> keySet()
-   {
-      return parentCache.keySet();
    }
 
    /**
@@ -663,55 +760,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       parentCache.putAll(map, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Void> putAllAsync(Map<? extends CacheKey, ? extends Object> data)
-   {
-      return parentCache.putAllAsync(data);
-   }
 
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Void> putAllAsync(Map<? extends CacheKey, ? extends Object> data, long lifespan, TimeUnit unit)
-   {
-      return parentCache.putAllAsync(data, lifespan, unit);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Void> putAllAsync(Map<? extends CacheKey, ? extends Object> data, long lifespan,
-      TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit)
-   {
-      return parentCache.putAllAsync(data, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Object> putAsync(CacheKey key, Object value)
-   {
-      return parentCache.putAsync(key, value);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Object> putAsync(CacheKey key, Object value, long lifespan, TimeUnit unit)
-   {
-      return parentCache.putAsync(key, value, lifespan, unit);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Object> putAsync(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit,
-      long maxIdle, TimeUnit maxIdleUnit)
-   {
-      return parentCache.putAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
-   }
 
    /**
     * {@inheritDoc}
@@ -719,6 +768,16 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public void putForExternalRead(CacheKey key, Object value)
    {
       parentCache.putForExternalRead(key, value);
+   }
+
+   @Override
+   public void putForExternalRead(CacheKey key, Object value, long lifespan, TimeUnit unit) {
+
+   }
+
+   @Override
+   public void putForExternalRead(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit) {
+
    }
 
    /**
@@ -736,47 +795,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       TimeUnit maxIdleTimeUnit)
    {
       return parentCache.putIfAbsent(key, value, lifespan, lifespanUnit, maxIdleTime, maxIdleTimeUnit);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Object> putIfAbsentAsync(CacheKey key, Object value)
-   {
-      return parentCache.putIfAbsentAsync(key, value);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Object> putIfAbsentAsync(CacheKey key, Object value, long lifespan, TimeUnit unit)
-   {
-      return parentCache.putIfAbsentAsync(key, value, lifespan, unit);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Object> putIfAbsentAsync(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit,
-      long maxIdle, TimeUnit maxIdleUnit)
-   {
-      return parentCache.putIfAbsentAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Object> removeAsync(Object key)
-   {
-      return parentCache.removeAsync(key);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Boolean> removeAsync(Object key, Object value)
-   {
-      return parentCache.removeAsync(key, value);
    }
 
    /**
@@ -816,69 +834,11 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    /**
     * {@inheritDoc}
     */
-   public NotifyingFuture<Object> replaceAsync(CacheKey key, Object value)
-   {
-      return parentCache.replaceAsync(key, value);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Boolean> replaceAsync(CacheKey key, Object oldValue, Object newValue)
-   {
-      return parentCache.replaceAsync(key, oldValue, newValue);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Object> replaceAsync(CacheKey key, Object value, long lifespan, TimeUnit unit)
-   {
-      return parentCache.replaceAsync(key, value, lifespan, unit);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Boolean> replaceAsync(CacheKey key, Object oldValue, Object newValue, long lifespan,
-      TimeUnit unit)
-   {
-      return parentCache.replaceAsync(key, oldValue, newValue, lifespan, unit);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Object> replaceAsync(CacheKey key, Object value, long lifespan, TimeUnit lifespanUnit,
-      long maxIdle, TimeUnit maxIdleUnit)
-   {
-      return parentCache.replaceAsync(key, value, lifespan, lifespanUnit, maxIdle, maxIdleUnit);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Boolean> replaceAsync(CacheKey key, Object oldValue, Object newValue, long lifespan,
-      TimeUnit lifespanUnit, long maxIdle, TimeUnit maxIdleUnit)
-   {
-      return parentCache.replaceAsync(key, oldValue, newValue);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
    public boolean startBatch()
    {
       return parentCache.startBatch();
    }
 
-   /**
-    * {@inheritDoc}
-    */
-   public Collection<Object> values()
-   {
-      return parentCache.values();
-   }
 
    /**
     * {@inheritDoc}
@@ -923,7 +883,7 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     */
    public void clear()
    {
-      parentCache.clear();
+      parentCache.withFlags(Flag.CACHE_MODE_LOCAL).clear();
    }
 
    /**
@@ -1027,7 +987,22 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
     */
    public int size()
    {
-      return parentCache.size();
+      return parentCache.withFlags(Flag.CACHE_MODE_LOCAL).size();
+   }
+
+   @Override
+   public CacheSet<CacheKey> keySet() {
+      return parentCache.withFlags(Flag.CACHE_MODE_LOCAL).keySet();
+   }
+
+   @Override
+   public CacheCollection<Object> values() {
+      return parentCache.withFlags(Flag.CACHE_MODE_LOCAL).values();
+   }
+
+   @Override
+   public CacheSet<Entry<CacheKey, Object>> entrySet() {
+      return parentCache.withFlags(Flag.CACHE_MODE_LOCAL).entrySet();
    }
 
    /**
@@ -1071,14 +1046,6 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public void removeListener(Object listener)
    {
       parentCache.removeListener(listener);
-   }
-
-   /**
-    * {@inheritDoc}
-    */
-   public NotifyingFuture<Object> getAsync(CacheKey key)
-   {
-      return parentCache.getAsync(key);
    }
 
    /**

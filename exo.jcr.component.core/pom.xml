@@ -76,6 +76,12 @@
       <dependency>
          <groupId>org.exoplatform.core</groupId>
          <artifactId>exo.core.component.database</artifactId>
+         <exclusions>
+            <exclusion>
+               <groupId>org.jboss.logging</groupId>
+               <artifactId>jboss-logging</artifactId>
+            </exclusion>
+         </exclusions>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.ws</groupId>
@@ -156,7 +162,7 @@
       </dependency>
       <dependency>
          <groupId>org.exoplatform.kernel</groupId>
-         <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
+         <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v8</artifactId>
       </dependency>
       <!-- TCK binaries and deps for repo stub, some eXo API test -->
       <dependency>

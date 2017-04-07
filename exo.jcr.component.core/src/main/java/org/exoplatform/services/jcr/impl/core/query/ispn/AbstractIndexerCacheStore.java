@@ -26,42 +26,36 @@ import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
 import org.exoplatform.services.jcr.impl.core.query.SearchManager;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.infinispan.container.entries.InternalCacheEntry;
+import org.infinispan.Cache;
+import org.infinispan.commons.util.concurrent.FutureListener;
 import org.infinispan.context.Flag;
-import org.infinispan.loaders.AbstractCacheStore;
-import org.infinispan.loaders.AbstractCacheStoreConfig;
-import org.infinispan.loaders.CacheLoaderConfig;
-import org.infinispan.loaders.CacheLoaderException;
-import org.infinispan.util.concurrent.FutureListener;
+import org.infinispan.filter.KeyFilter;
+import org.infinispan.marshall.core.MarshalledEntry;
+import org.infinispan.persistence.spi.*;
 
-import java.io.ObjectInput;
-import java.io.ObjectOutput;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Future;
 
 /**
  * Abstract Indexer Cache Loader defines default implementation of data processing received via cache.
- * 
- * @author <a href="mailto:nikolazius@gmail.com">Nikolay Zamosenchuk</a>
- * @version $Id: AbstractInputCacheStore.java 34360 2009-07-22 23:58:59Z nzamosenchuk $
  *
  */
-public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
+public abstract class AbstractIndexerCacheStore implements AdvancedLoadWriteStore
 {
-
    /**
     * A map of all the indexers that has been registered
     */
    protected final Map<String, Indexer> indexers = new HashMap<String, Indexer>();
 
+   protected InitializationContext ctx;
+
    protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.core.IndexerCacheLoader");//NOSONAR
 
    /**
-    * This method will register a new Indexer according to the given parameters. 
-    * 
+    * This method will register a new Indexer according to the given parameters.
+    *
     * @param searchManager
     * @param parentSearchManager
     * @param handler
@@ -69,7 +63,7 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
     * @throws RepositoryConfigurationException
     */
    public void register(SearchManager searchManager, SearchManager parentSearchManager, QueryHandler handler,
-      QueryHandler parentHandler) throws RepositoryConfigurationException
+                        QueryHandler parentHandler) throws RepositoryConfigurationException
    {
       indexers.put(searchManager.getWsId(), new Indexer(searchManager, parentSearchManager, handler, parentHandler));
       if (LOG.isDebugEnabled())
@@ -79,9 +73,42 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
    }
 
    /**
-    * @see org.infinispan.loaders.CacheStore#store(org.infinispan.container.entries.InternalCacheEntry)
+    * @return IndexerIoModeHandler instance
     */
-   public void store(InternalCacheEntry entry) throws CacheLoaderException
+   public abstract IndexerIoModeHandler getModeHandler();
+
+   @Override
+   public void init(InitializationContext ctx)
+   {
+      this.ctx= ctx;
+   }
+
+   @Override
+   public void start()
+   {
+   }
+
+   @Override
+   public void stop()
+   {
+      indexers.clear();
+   }
+
+   @Override
+   public MarshalledEntry load(Object key)
+   {
+      // This cacheStore only accepts data
+      return null;
+   }
+
+   @Override
+   public boolean contains(Object key)
+   {
+      return false;
+   }
+
+   @Override
+   public void write(MarshalledEntry entry)
    {
       if (entry.getKey() instanceof ChangesKey && entry.getValue() instanceof ChangesFilterListsWrapper)
       {
@@ -92,6 +119,7 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
          // updating index
          ChangesFilterListsWrapper wrapper = (ChangesFilterListsWrapper)entry.getValue();
          final ChangesKey key = (ChangesKey)entry.getKey();
+         final Cache cache = ctx.getCache();
          try
          {
             Indexer indexer = indexers.get(key.getWsId());
@@ -110,130 +138,54 @@ public abstract class AbstractIndexerCacheStore extends AbstractCacheStore
             else
             {
                indexer.updateIndex(wrapper.getAddedNodes(), wrapper.getRemovedNodes(), wrapper.getParentAddedNodes(),
-                  wrapper.getParentRemovedNodes());
+                       wrapper.getParentRemovedNodes());
             }
          }
          finally
          {
             // Purge the cache to prevent memory leak
             cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.IGNORE_RETURN_VALUES).removeAsync(key)
-               .attachListener(new FutureListener<Object>()
-               {
-                  public void futureDone(Future<Object> future)
-                  {
-                     if (cache.containsKey(key))
-                     {
-                        LOG.debug("The entry was not removed properly, it will try to remove it once again");
-                        cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.IGNORE_RETURN_VALUES)
-                           .remove(key);
-                     }
-                  }
-               });
+                    .attachListener(new FutureListener()
+                    {
+                       @Override
+                       public void futureDone(Future future)
+                       {
+                          if (cache.containsKey(key))
+                          {
+                             LOG.debug("The entry was not removed properly, it will try to remove it once again");
+                             cache.getAdvancedCache().withFlags(Flag.CACHE_MODE_LOCAL, Flag.IGNORE_RETURN_VALUES)
+                                     .remove(key);
+                          }
+                       }
+                    });
          }
       }
    }
 
-   /**
-   * {@inheritDoc}
-   */
    @Override
-   public void stop() throws CacheLoaderException
-   {
-      indexers.clear();
-      super.stop();
-   }
-
-   /**
-    * @return IndexerIoModeHandler instance
-    */
-   public abstract IndexerIoModeHandler getModeHandler();
-
-   // ===================================================
-
-   /**
-    * @see org.infinispan.loaders.CacheLoader#getConfigurationClass()
-    */
-   public Class<? extends CacheLoaderConfig> getConfigurationClass()
-   {
-      return AbstractCacheStoreConfig.class;
-   }
-
-   /**
-    * @see org.infinispan.loaders.CacheStore#fromStream(java.io.ObjectInput)
-    */
-   public void fromStream(ObjectInput inputStream) throws CacheLoaderException
-   {
-      throw new UnsupportedOperationException("This operation is not supported by this component.");
-   }
-
-   /**
-    * @see org.infinispan.loaders.CacheStore#toStream(java.io.ObjectOutput)
-    */
-   public void toStream(ObjectOutput outputStream) throws CacheLoaderException
-   {
-      throw new UnsupportedOperationException("This operation is not supported by this component.");
-   }
-
-   /**
-    * @see org.infinispan.loaders.AbstractCacheStore#purgeInternal()
-    */
-   @Override
-   protected void purgeInternal() throws CacheLoaderException
-   {
-      // This cacheStore only accepts data
-   }
-
-   /**
-    * @see org.infinispan.loaders.CacheStore#clear()
-    */
-   public void clear() throws CacheLoaderException
-   {
-      throw new UnsupportedOperationException("This operation is not supported by this component.");
-   }
-
-   /**
-    * @see org.infinispan.loaders.CacheStore#remove(java.lang.Object)
-    */
-   public boolean remove(Object key) throws CacheLoaderException
+   public boolean delete(Object key)
    {
       // This cacheStore only accepts data
       return true;
    }
 
-   /**
-    * @see org.infinispan.loaders.CacheLoader#load(java.lang.Object)
-    */
-   public InternalCacheEntry load(Object key) throws CacheLoaderException
-   {
-      // This cacheStore only accepts data
-      return null;
+   @Override
+   public void clear() {
+      throw new UnsupportedOperationException("This operation is not supported by this component.");
    }
 
-   /**
-    * @see org.infinispan.loaders.CacheLoader#load(int)
-    */
-   public Set<InternalCacheEntry> load(int numEntries) throws CacheLoaderException
-   {
+   @Override
+   public void purge(Executor threadPool, PurgeListener listener) {
       // This cacheStore only accepts data
-      return Collections.emptySet();
    }
 
-   /**
-    * @see org.infinispan.loaders.CacheLoader#loadAll()
-    */
-   public Set<InternalCacheEntry> loadAll() throws CacheLoaderException
-   {
+   @Override
+   public void process(KeyFilter filter, CacheLoaderTask task, Executor executor, boolean fetchValue, boolean fetchMetadata) {
       // This cacheStore only accepts data
-      return Collections.emptySet();
    }
 
-   /**
-    * @see org.infinispan.loaders.CacheLoader#loadAllKeys(java.util.Set)
-    */
-   public Set<Object> loadAllKeys(Set<Object> keysToExclude) throws CacheLoaderException
-   {
-      // This cacheStore only accepts data
-      return Collections.emptySet();
+   @Override
+   public int size() {
+      return 0;
    }
-
 }
