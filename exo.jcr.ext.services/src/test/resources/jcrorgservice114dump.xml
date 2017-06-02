@@ -1,0 +1,574 @@
+<?xml version="1.0" ?>
+<sv:node sv:name="exo:organization" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:exo="http://www.exoplatform.com/jcr/exo/1.0" xmlns:fn="http://www.w3.org/2005/xpath-functions" xmlns:fn_old="http://www.w3.org/2004/10/xpath-functions" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:jos="http://www.exoplatform.com/jcr-services/organization-service/1.0/" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:rep="internal" xmlns:sv="http://www.jcp.org/jcr/sv/1.0" xmlns:webdav="http://www.exoplatform.org/jcr/webdav" xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<sv:property sv:name="jcr:primaryType" sv:type="Name">
+		<sv:value>jos:organizationStorage</sv:value>
+	</sv:property>
+	<sv:node sv:name="jos:users">
+		<sv:property sv:name="jcr:primaryType" sv:type="Name">
+			<sv:value>jos:organizationUsers</sv:value>
+		</sv:property>
+		<sv:node sv:name="john">
+			<sv:property sv:name="jcr:primaryType" sv:type="Name">
+				<sv:value>jos:user</sv:value>
+			</sv:property>
+			<sv:property sv:name="jcr:uuid" sv:type="String">
+				<sv:value>7a47c97a7f00000142eab1f2c8ca05b6</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:createdDate" sv:type="Date">
+				<sv:value>2012-07-12T11:22:01.338+03:00</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:email" sv:type="String">
+				<sv:value>john@localhost</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:firstName" sv:type="String">
+				<sv:value>John</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:lastName" sv:type="String">
+				<sv:value>Anthony</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:password" sv:type="String">
+				<sv:value>exo</sv:value>
+			</sv:property>
+			<sv:node sv:name="jos:membership">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:userMembership</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47c9907f00000120302f397e893982</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:group" sv:type="Reference">
+					<sv:value>7a47c8a37f00000135cfee577ff05102</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:membershipType" sv:type="Reference">
+					<sv:value>7a47c96b7f00000135242cc9f2857065</sv:value>
+				</sv:property>
+			</sv:node>
+			<sv:node sv:name="jos:membership">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:userMembership</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47c9a17f000001759c1f49641b80ff</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:group" sv:type="Reference">
+					<sv:value>7a47c8b27f0000014896c0027659612d</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:membershipType" sv:type="Reference">
+					<sv:value>7a47c96b7f00000135242cc9f2857065</sv:value>
+				</sv:property>
+			</sv:node>
+			<sv:node sv:name="jos:membership">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:userMembership</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47c9b77f0000014d2c74b9b778e286</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:group" sv:type="Reference">
+					<sv:value>7a47c8df7f00000177309516aae39a03</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:membershipType" sv:type="Reference">
+					<sv:value>7a47c9637f0000017bdf6ed6538d12cb</sv:value>
+				</sv:property>
+			</sv:node>
+		</sv:node>
+		<sv:node sv:name="marry">
+			<sv:property sv:name="jcr:primaryType" sv:type="Name">
+				<sv:value>jos:user</sv:value>
+			</sv:property>
+			<sv:property sv:name="jcr:uuid" sv:type="String">
+				<sv:value>7a47c9c37f00000167facbdab548a45b</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:createdDate" sv:type="Date">
+				<sv:value>2012-07-12T11:22:01.412+03:00</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:email" sv:type="String">
+				<sv:value>marry@localhost</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:firstName" sv:type="String">
+				<sv:value>Marry</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:lastName" sv:type="String">
+				<sv:value>Kelly</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:password" sv:type="String">
+				<sv:value>exo</sv:value>
+			</sv:property>
+			<sv:node sv:name="jos:membership">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:userMembership</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47c9d37f00000116fe464eeb1ce909</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:group" sv:type="Reference">
+					<sv:value>7a47c8b27f0000014896c0027659612d</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:membershipType" sv:type="Reference">
+					<sv:value>7a47c96b7f00000135242cc9f2857065</sv:value>
+				</sv:property>
+			</sv:node>
+			<sv:node sv:name="jos:profile">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:userProfile</sv:value>
+				</sv:property>
+				<sv:node sv:name="jos:attributes">
+					<sv:property sv:name="jcr:primaryType" sv:type="Name">
+						<sv:value>jos:profileAttributes</sv:value>
+					</sv:property>
+					<sv:property sv:name="Key0" sv:type="String">
+						<sv:value>Value0</sv:value>
+					</sv:property>
+					<sv:property sv:name="Key1" sv:type="String">
+						<sv:value>Value1</sv:value>
+					</sv:property>
+					<sv:property sv:name="Key2" sv:type="String">
+						<sv:value>Value2</sv:value>
+					</sv:property>
+					<sv:property sv:name="Key3" sv:type="String">
+						<sv:value>Value3</sv:value>
+					</sv:property>
+				</sv:node>
+			</sv:node>
+		</sv:node>
+		<sv:node sv:name="demo">
+			<sv:property sv:name="jcr:primaryType" sv:type="Name">
+				<sv:value>jos:user</sv:value>
+			</sv:property>
+			<sv:property sv:name="jcr:uuid" sv:type="String">
+				<sv:value>7a47c9f87f00000144e914a80dcb15e0</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:createdDate" sv:type="Date">
+				<sv:value>2012-07-12T11:22:01.465+03:00</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:email" sv:type="String">
+				<sv:value>demo@localhost</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:firstName" sv:type="String">
+				<sv:value>Demo</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:lastName" sv:type="String">
+				<sv:value>exo</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:password" sv:type="String">
+				<sv:value>exo</sv:value>
+			</sv:property>
+			<sv:node sv:name="jos:membership">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:userMembership</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47ca077f0000010e20699ab7fbe4b7</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:group" sv:type="Reference">
+					<sv:value>7a47c8bd7f00000178c414240312e03a</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:membershipType" sv:type="Reference">
+					<sv:value>7a47c96b7f00000135242cc9f2857065</sv:value>
+				</sv:property>
+			</sv:node>
+			<sv:node sv:name="jos:membership">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:userMembership</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47ca157f000001102a648cf5620d51</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:group" sv:type="Reference">
+					<sv:value>7a47c8b27f0000014896c0027659612d</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:membershipType" sv:type="Reference">
+					<sv:value>7a47c96b7f00000135242cc9f2857065</sv:value>
+				</sv:property>
+			</sv:node>
+		</sv:node>
+		<sv:node sv:name="root">
+			<sv:property sv:name="jcr:primaryType" sv:type="Name">
+				<sv:value>jos:user</sv:value>
+			</sv:property>
+			<sv:property sv:name="jcr:uuid" sv:type="String">
+				<sv:value>7a4a10c17f0000010669b8249d5deed9</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:createdDate" sv:type="Date">
+				<sv:value>2012-07-12T11:24:30.660+03:00</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:email" sv:type="String">
+				<sv:value>root@localhost</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:firstName" sv:type="String">
+				<sv:value>Root</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:lastName" sv:type="String">
+				<sv:value>Root</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:password" sv:type="String">
+				<sv:value>exo</sv:value>
+			</sv:property>
+			<sv:node sv:name="jos:membership">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:userMembership</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a4a10f37f0000013ae2d2fe5e538194</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:group" sv:type="Reference">
+					<sv:value>7a47c8a37f00000135cfee577ff05102</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:membershipType" sv:type="Reference">
+					<sv:value>7a47c9637f0000017bdf6ed6538d12cb</sv:value>
+				</sv:property>
+			</sv:node>
+		</sv:node>
+	</sv:node>
+	<sv:node sv:name="jos:groups">
+		<sv:property sv:name="jcr:primaryType" sv:type="Name">
+			<sv:value>jos:organizationGroups</sv:value>
+		</sv:property>
+		<sv:node sv:name="platform">
+			<sv:property sv:name="jcr:primaryType" sv:type="Name">
+				<sv:value>jos:hierarchyGroup</sv:value>
+			</sv:property>
+			<sv:property sv:name="jcr:uuid" sv:type="String">
+				<sv:value>7a47c8967f000001465e34ce28fcd235</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:description" sv:type="String">
+				<sv:value>the /platform group</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:groupId" sv:type="String">
+				<sv:value>/platform</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:label" sv:type="String">
+				<sv:value>Platform</sv:value>
+			</sv:property>
+			<sv:node sv:name="administrators">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:hierarchyGroup</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47c8a37f00000135cfee577ff05102</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:description" sv:type="String">
+					<sv:value>the /platform/administrators group</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:groupId" sv:type="String">
+					<sv:value>/platform/administrators</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:label" sv:type="String">
+					<sv:value>Administrators</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:parentId" sv:type="String">
+					<sv:value>/platform</sv:value>
+				</sv:property>
+			</sv:node>
+			<sv:node sv:name="users">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:hierarchyGroup</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47c8b27f0000014896c0027659612d</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:description" sv:type="String">
+					<sv:value>the /platform/users group</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:groupId" sv:type="String">
+					<sv:value>/platform/users</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:label" sv:type="String">
+					<sv:value>Users</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:parentId" sv:type="String">
+					<sv:value>/platform</sv:value>
+				</sv:property>
+			</sv:node>
+			<sv:node sv:name="guests">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:hierarchyGroup</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47c8bd7f00000178c414240312e03a</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:description" sv:type="String">
+					<sv:value>the /platform/guests group</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:groupId" sv:type="String">
+					<sv:value>/platform/guests</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:label" sv:type="String">
+					<sv:value>Guests</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:parentId" sv:type="String">
+					<sv:value>/platform</sv:value>
+				</sv:property>
+			</sv:node>
+		</sv:node>
+		<sv:node sv:name="organization">
+			<sv:property sv:name="jcr:primaryType" sv:type="Name">
+				<sv:value>jos:hierarchyGroup</sv:value>
+			</sv:property>
+			<sv:property sv:name="jcr:uuid" sv:type="String">
+				<sv:value>7a47c8c87f0000010f3259051209752b</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:description" sv:type="String">
+				<sv:value>the organization group</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:groupId" sv:type="String">
+				<sv:value>/organization</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:label" sv:type="String">
+				<sv:value>Organization</sv:value>
+			</sv:property>
+			<sv:node sv:name="management">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:hierarchyGroup</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47c8d37f0000010daf4241fd01a714</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:description" sv:type="String">
+					<sv:value>the /organization/management group</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:groupId" sv:type="String">
+					<sv:value>/organization/management</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:label" sv:type="String">
+					<sv:value>Management</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:parentId" sv:type="String">
+					<sv:value>/organization</sv:value>
+				</sv:property>
+				<sv:node sv:name="executive-board">
+					<sv:property sv:name="jcr:primaryType" sv:type="Name">
+						<sv:value>jos:hierarchyGroup</sv:value>
+					</sv:property>
+					<sv:property sv:name="jcr:uuid" sv:type="String">
+						<sv:value>7a47c8df7f00000177309516aae39a03</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:description" sv:type="String">
+						<sv:value>the /organization/management/executive-board group</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:groupId" sv:type="String">
+						<sv:value>/organization/management/executive-board</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:label" sv:type="String">
+						<sv:value>Executive Board</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:parentId" sv:type="String">
+						<sv:value>/organization/management</sv:value>
+					</sv:property>
+				</sv:node>
+				<sv:node sv:name="human-resources">
+					<sv:property sv:name="jcr:primaryType" sv:type="Name">
+						<sv:value>jos:hierarchyGroup</sv:value>
+					</sv:property>
+					<sv:property sv:name="jcr:uuid" sv:type="String">
+						<sv:value>7a47c8eb7f0000017ff5376c6b45c99d</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:description" sv:type="String">
+						<sv:value>the /organization/management/human-resource group</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:groupId" sv:type="String">
+						<sv:value>/organization/management/human-resources</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:label" sv:type="String">
+						<sv:value>Human Resources</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:parentId" sv:type="String">
+						<sv:value>/organization/management</sv:value>
+					</sv:property>
+				</sv:node>
+			</sv:node>
+			<sv:node sv:name="communication">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:hierarchyGroup</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47c8f77f0000015c0e63965fba40a6</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:description" sv:type="String">
+					<sv:value>the /organization/communication group</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:groupId" sv:type="String">
+					<sv:value>/organization/communication</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:label" sv:type="String">
+					<sv:value>Communication</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:parentId" sv:type="String">
+					<sv:value>/organization</sv:value>
+				</sv:property>
+				<sv:node sv:name="marketing">
+					<sv:property sv:name="jcr:primaryType" sv:type="Name">
+						<sv:value>jos:hierarchyGroup</sv:value>
+					</sv:property>
+					<sv:property sv:name="jcr:uuid" sv:type="String">
+						<sv:value>7a47c9027f0000015f08cd6479809e60</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:description" sv:type="String">
+						<sv:value>the /organization/communication/marketing group</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:groupId" sv:type="String">
+						<sv:value>/organization/communication/marketing</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:label" sv:type="String">
+						<sv:value>Marketing</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:parentId" sv:type="String">
+						<sv:value>/organization/communication</sv:value>
+					</sv:property>
+				</sv:node>
+				<sv:node sv:name="press-and-media">
+					<sv:property sv:name="jcr:primaryType" sv:type="Name">
+						<sv:value>jos:hierarchyGroup</sv:value>
+					</sv:property>
+					<sv:property sv:name="jcr:uuid" sv:type="String">
+						<sv:value>7a47c90e7f00000151cc6a6a854a23d4</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:description" sv:type="String">
+						<sv:value>the /organization/communication/press-and-media group</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:groupId" sv:type="String">
+						<sv:value>/organization/communication/press-and-media</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:label" sv:type="String">
+						<sv:value>Press and Media</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:parentId" sv:type="String">
+						<sv:value>/organization/communication</sv:value>
+					</sv:property>
+				</sv:node>
+			</sv:node>
+			<sv:node sv:name="operations">
+				<sv:property sv:name="jcr:primaryType" sv:type="Name">
+					<sv:value>jos:hierarchyGroup</sv:value>
+				</sv:property>
+				<sv:property sv:name="jcr:uuid" sv:type="String">
+					<sv:value>7a47c91a7f0000010cc11b55f71c4a67</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:description" sv:type="String">
+					<sv:value>the /organization/operations and media group</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:groupId" sv:type="String">
+					<sv:value>/organization/operations</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:label" sv:type="String">
+					<sv:value>Operations</sv:value>
+				</sv:property>
+				<sv:property sv:name="jos:parentId" sv:type="String">
+					<sv:value>/organization</sv:value>
+				</sv:property>
+				<sv:node sv:name="sales">
+					<sv:property sv:name="jcr:primaryType" sv:type="Name">
+						<sv:value>jos:hierarchyGroup</sv:value>
+					</sv:property>
+					<sv:property sv:name="jcr:uuid" sv:type="String">
+						<sv:value>7a47c9397f00000164c11af50b066411</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:description" sv:type="String">
+						<sv:value>the /organization/operations/sales group</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:groupId" sv:type="String">
+						<sv:value>/organization/operations/sales</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:label" sv:type="String">
+						<sv:value>Sales</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:parentId" sv:type="String">
+						<sv:value>/organization/operations</sv:value>
+					</sv:property>
+				</sv:node>
+				<sv:node sv:name="finances">
+					<sv:property sv:name="jcr:primaryType" sv:type="Name">
+						<sv:value>jos:hierarchyGroup</sv:value>
+					</sv:property>
+					<sv:property sv:name="jcr:uuid" sv:type="String">
+						<sv:value>7a47c9457f0000016c9cce54f126fea3</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:description" sv:type="String">
+						<sv:value>the /organization/operations/finances group</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:groupId" sv:type="String">
+						<sv:value>/organization/operations/finances</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:label" sv:type="String">
+						<sv:value>Finances</sv:value>
+					</sv:property>
+					<sv:property sv:name="jos:parentId" sv:type="String">
+						<sv:value>/organization/operations</sv:value>
+					</sv:property>
+				</sv:node>
+			</sv:node>
+		</sv:node>
+		<sv:node sv:name="customers">
+			<sv:property sv:name="jcr:primaryType" sv:type="Name">
+				<sv:value>jos:hierarchyGroup</sv:value>
+			</sv:property>
+			<sv:property sv:name="jcr:uuid" sv:type="String">
+				<sv:value>7a47c9507f0000011e2423e296e7012d</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:description" sv:type="String">
+				<sv:value>the /customers group</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:groupId" sv:type="String">
+				<sv:value>/customers</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:label" sv:type="String">
+				<sv:value>Customers</sv:value>
+			</sv:property>
+		</sv:node>
+		<sv:node sv:name="partners">
+			<sv:property sv:name="jcr:primaryType" sv:type="Name">
+				<sv:value>jos:hierarchyGroup</sv:value>
+			</sv:property>
+			<sv:property sv:name="jcr:uuid" sv:type="String">
+				<sv:value>7a47c9597f00000119e7d4845ce507bb</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:description" sv:type="String">
+				<sv:value>the /partners group</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:groupId" sv:type="String">
+				<sv:value>/partners</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:label" sv:type="String">
+				<sv:value>Partners</sv:value>
+			</sv:property>
+		</sv:node>
+	</sv:node>
+	<sv:node sv:name="jos:membershipTypes">
+		<sv:property sv:name="jcr:primaryType" sv:type="Name">
+			<sv:value>jos:organizationMembershipTypes</sv:value>
+		</sv:property>
+		<sv:node sv:name="manager">
+			<sv:property sv:name="jcr:primaryType" sv:type="Name">
+				<sv:value>jos:membershipType</sv:value>
+			</sv:property>
+			<sv:property sv:name="jcr:uuid" sv:type="String">
+				<sv:value>7a47c9637f0000017bdf6ed6538d12cb</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:description" sv:type="String">
+				<sv:value>manager membership type</sv:value>
+			</sv:property>
+		</sv:node>
+		<sv:node sv:name="member">
+			<sv:property sv:name="jcr:primaryType" sv:type="Name">
+				<sv:value>jos:membershipType</sv:value>
+			</sv:property>
+			<sv:property sv:name="jcr:uuid" sv:type="String">
+				<sv:value>7a47c96b7f00000135242cc9f2857065</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:description" sv:type="String">
+				<sv:value>member membership type</sv:value>
+			</sv:property>
+		</sv:node>
+		<sv:node sv:name="validator">
+			<sv:property sv:name="jcr:primaryType" sv:type="Name">
+				<sv:value>jos:membershipType</sv:value>
+			</sv:property>
+			<sv:property sv:name="jcr:uuid" sv:type="String">
+				<sv:value>7a47c9727f00000117d59ff02f68f304</sv:value>
+			</sv:property>
+			<sv:property sv:name="jos:description" sv:type="String">
+				<sv:value>validator membership type</sv:value>
+			</sv:property>
+		</sv:node>
+	</sv:node>
+</sv:node>

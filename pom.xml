@@ -116,6 +116,13 @@
         <version>${org.exoplatform.core.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.exoplatform.core</groupId>
+        <artifactId>exo.core.component.organization.tests</artifactId>
+        <version>${org.exoplatform.core.version}</version>
+        <classifier>test-sources</classifier>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
         <groupId>org.exoplatform.ws</groupId>
         <artifactId>exo.ws.rest.core</artifactId>
         <version>${org.exoplatform.ws.version}</version>
@@ -421,6 +428,7 @@
     <module>exo.jcr.component.core</module>
     <module>exo.jcr.component.statistics</module>
     <module>exo.jcr.component.ext</module>
+    <module>exo.jcr.ext.services</module>
     <module>exo.jcr.component.ftp</module>
     <module>exo.jcr.component.webdav</module>
     <module>exo.jcr.connectors.jca</module>

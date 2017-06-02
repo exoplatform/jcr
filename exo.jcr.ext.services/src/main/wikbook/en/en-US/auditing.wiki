@@ -1,0 +1,216 @@
+h2. Introduction
+
+Auditing captures the client's interaction with the repository and records all modification events. To enable the auditing of the underlying node and its properties, the node has to be exo:auditable.
+Audit Service saves references to audit records in the child node.
+Each exo:auditable node has its own audit history containing its list of audit records.
+
+eXo JCR introduces the dedicated AuditService and a set of Actions to execute auditing automatically.
+
+h2. The Audit Service
+
+The Audit Service covers adding and removing of audit history, adding of audit records as well as the reading of Audit storage.
+
+The service manages audit storage for each repository workspace. The storage is located at the path /exo:audit in node of type exo:auditStorage. Each exo:auditable node history is stored in a storage subnode which are of the type exo:auditHistory. The history contains a set of record nodes of the type exo:auditRecord.
+
+Access to the audit storage is restricted to audit administrators (*adminIdentity*, see configuration below). To make the audit work the service wraps the audit storage items into Java objects AuditHistory and AuditRecord:
+
+{code:java}
+public interface AuditService {
+  void createHistory(Node node) throws RepositoryException;
+  void removeHistory(Node node) throws RepositoryException;
+  void addRecord(Item item, int eventType) throws RepositoryException;
+  AuditHistory getHistory(Node node) throws RepositoryException, UnsupportedOperationException;
+  boolean hasHistory(Node node);
+}
+{code}
+
+The first 3 methods are used for maintaining the Audit Storage itself and called by dedicated
+Actions (see below), while the other 2 are useful for a client's program to audit the review. 
+
+h2. Audit Service configuration
+ 
+{code:xml}
+<component>
+  <key>org.exoplatform.services.jcr.ext.audit.AuditService</key>
+  <type>org.exoplatform.services.jcr.ext.audit.AuditServiceImpl</type>
+  <init-params>
+     <value-param>
+       <name>adminIdentity</name>
+       <value>*:/admin</value>
+     </value-param>
+     <value-param>
+       <name>defaultIdentity</name>
+       <value>*:/user</value>
+     </value-param>
+  </init-params>
+</component>
+{code}
+
+{info}
+adminIdentity is a special person or group, which may view internal audit information directly in JCR. Only this identity can read/change Audit History storage directly in workspace.
+{info}
+
+{info}
+Only members of adminIdentity can remove exo:auditable nodes.
+{info}
+
+{info}
+The defaultIdentity is the identity that will be able to add and read audit history and audit records. Please make sure that the value of this parameter will be an identity that is shared by all the admin identities like any or *:/platform/users otherwise the admin identites could not be able to remove the audit history and audit records which is actually the main purpose of them.
+This parameter is optional (default value is ANY).
+{info}
+
+h2. AuditHistory class
+
+{code:java}
+public class AuditHistory {
+ public Node getAuditableNode();
+ public List<AuditRecord> getAuditRecords()
+}
+{code}
+
+h2. AuditRecord class
+
+{code:java}
+public class AuditRecord implements Comparable<AuditRecord> {
+ public Calendar getDate();
+ public int getEventType();
+ public String getUserId()
+ public String getEventTypeName();
+ public InternalQName getPropertyName();
+ public int compareTo(AuditRecord otherRecord);
+ public String getVersion();
+ public String getVersionName();
+}
+{code}
+
+h2. Creating of the history
+
+There are several ways to create auditable nodes. Most of them use the *actions* mechanism as a base.
+
+h3. Automatic addition of a mixin and creation of a history during addition of new node.
+
+To make it work, include configuration like described below:
+
+{code:xml}
+<value>
+  <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
+  <fieldname="eventTypes"><string>addNode</string></field>
+  <fieldname="path"><string>/AuditServiceTest/autoAdd</string></field> 
+  <fieldname="isDeep"><boolean>true</boolean></field> 
+  <fieldname="actionClassName"><string>org.exoplatform.services.jcr.ext.audit.AddAuditableAction</string></field> 
+  </object>
+</value>
+{code}
+
+This action is an one way to monitor node adding events. The event 'addNode' works on node post-creation time and will add mix:auditable mixin to the node. The action records the adding event to the audit history also.
+
+h3. Automatic creation of a history during the addition of a mixin to node.
+
+Similar as the previous action but instead of monitoring addition of a new node we watch for additions of exo:auditable mixin to the node.
+{code:xml}
+<value>
+  <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
+    <field  name="eventTypes"><string>addMixin</string></field>
+    <field  name="path"><string>/AuditServiceTest/mixin</string></field>
+    <field  name="nodeTypes"><string>exo:auditable</string></field>
+    <field  name="isDeep"><boolean>true</boolean></field>
+    <field  name="actionClassName"><string>org.exoplatform.services.jcr.ext.audit.AuditAction</string></field>
+  </object>
+</value>
+{code}
+
+h3. Manual addition of mixin and creation of a history.
+
+{code:java}
+AuditService service = (AuditService) container.getComponentInstanceOfType(AuditService.class);
+Node node = session.getRootNode().addNode("testaudit");
+node.addMixin("exo:auditable");
+
+if (!service.hasHistory(node))
+  service.createHistory(node);
+
+session.save();
+{code} 
+
+
+h2. Events Recording
+
+An *AuditAction* is a "heart" of the audit system. It actually calls AuditService.createHistory() 
+and AuditService.addRecord() methods to maintain an Audit Storage. To make it work, include configuration to the AddActionsPlugin, like described below :
+{code:xml}
+  <value>
+    <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
+      <field  name="eventTypes"><string>addProperty,changeProperty,removeProperty</string></field> 
+      <field  name="path"><string>/AuditServiceTest</string></field>
+      <field  name="parentNodeType"><string>exo:auditable</string></field>
+      <field  name="isDeep"><boolean>true</boolean></field>
+      <field  name="actionClassName"><string>org.exoplatform.services.jcr.ext.audit.AuditAction</string></field>
+    </object>
+  </value>
+{code}
+
+  In this example operations(*addProperty*, *changeProperty*, *removeProperty* and *removeNode* ) for the whole /AuditServiceTest tree will be under audit.
+
+{info}
+Note: If we use deep AuditAction (e.g. for changeProperty) and don't use AddAuditableAction, i.e. add mix:auditable manually. We would encounter an exception for descendant nodes because these nodes do not have the mandatory property exo:auditHistory (of mix:auditable). This property is not autocreated and managed by AuditService only if AuditAction works. As a result we would have the error on Session.save(). But the error can be prevented by using a different AuditAction which audits addMixin operations for a given node and initializes the related audit history.
+{info}
+
+h2. Removing auditable nodes and histories of audit
+
+Removing the node history is possible in two modes: *automatic* when a special action passes on all subtree and remove their histories before the actual node removal and *manual* when all care of removing the history is assigned to the user. 
+
+To make it work, include the configuration like described below:
+
+h3. Automatic
+ 
+{code:xml}
+<value>
+  <object type="org.exoplatform.services.jcr.impl.ext.action.ActionConfiguration">
+    <field  name="eventTypes"><string>removeNode</string></field>
+    <field  name="path"><string>/AuditServiceTest</string></field>
+    <field  name="isDeep"><boolean>true</boolean></field>
+    <field  name="actionClassName"><string>org.exoplatform.services.jcr.ext.audit.RemoveAuditableAction</string></field>
+  </object>
+</value>
+{code}
+
+h3. Manual
+
+{code:java}
+AuditService service = (AuditService) container.getComponentInstanceOfType(AuditService.class);
+...
+Node auditableNode = ....
+auditableNode.addMixin("exo:auditable");
+.......
+
+if (service.hasHistory(auditableNode))
+  service.remove(auditableNode);
+...
+
+{code}
+
+{info}
+Audit history contains a reference to the auditable node, the removal of an auditable nodes without removal of the corresponding history is impossible.
+{info}
+
+h2. Versionable nodes support
+
+The audit service records mix:versionable nodes information. To read data which is related to version audit use the following methods:
+
+- AuditRecord.getVersion() returns a string with concrete version UUID related to this audit record.
+{info}
+Use Session.getNodeByUUID(String) to obtain the version node instance. Version UUID gets useless if the version has been removed.
+{info}
+
+- AuditRecord.getVersionName() returns string with Version Name related to this audit record.
+{info}
+The version name is for information purposes only. The version name can be helpful after the version has been removed.
+It's string in format: VERSION_NAME 'VERSION_LABEL_1' 'VERSION_LABEL_2' ... 'VERSION_LABEL_N'
+{info}
+
+AuditRecord contains the above-mentioned properties only if auditable node is mix:versionable, that means added to JCR version control. Otherwise null will be returned.
+
+If during the node life cycle a version control is disabled the audit history still continues to contain these properties. The version UUID will not be useful but the version name still may be used to describe the node state during the audited time. 
+
+The service records version information not only for mix:versionable nodes but also for any item under a version control.
+That means that the audit record of an item which has a versionable ancestor contains version related info too.

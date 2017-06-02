@@ -1,0 +1,126 @@
+<nodeTypes xmlns:nt="http://www.jcp.org/jcr/nt/1.0"
+  xmlns:mix="http://www.jcp.org/jcr/mix/1.0"
+  xmlns:jcr="http://www.jcp.org/jcr/1.0"
+  xmlns:dc="http://purl.org/dc/elements/1.1/">
+  
+  <!-- audit nodetypes -->
+  
+  <nodeType name="exo:auditable" isMixin="true" hasOrderableChildNodes="false"
+    primaryItemName="">
+    <supertypes>
+      <supertype>mix:referenceable</supertype>
+    </supertypes>
+    <propertyDefinitions>
+      <propertyDefinition name="exo:auditHistory" requiredType="String"
+        autoCreated="false" mandatory="true" onParentVersion="COPY"
+        protected="true" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+    </propertyDefinitions>
+  </nodeType>
+  
+  <nodeType name="exo:auditRecord" isMixin="false" hasOrderableChildNodes="false"
+    primaryItemName="">
+    <supertypes>
+      <supertype>nt:base</supertype>
+    </supertypes>
+    <propertyDefinitions>
+      <propertyDefinition name="exo:user" requiredType="String"
+        autoCreated="true" mandatory="true" onParentVersion="IGNORE"
+        protected="true" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="exo:created" requiredType="Date"
+        autoCreated="true" mandatory="true" onParentVersion="IGNORE"
+        protected="true" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="exo:propertyName" requiredType="String"
+        autoCreated="false" mandatory="false" onParentVersion="IGNORE"
+        protected="true" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="exo:eventType" requiredType="Long"
+        autoCreated="true" mandatory="true" onParentVersion="IGNORE"
+        protected="true" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="exo:auditVersion" requiredType="String"
+        autoCreated="false" mandatory="false" onParentVersion="IGNORE"
+        protected="true" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="exo:auditVersionName" requiredType="String"
+        autoCreated="false" mandatory="false" onParentVersion="IGNORE"
+        protected="true" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="exo:newValue" requiredType="Value"
+        autoCreated="false" mandatory="false" onParentVersion="IGNORE"
+        protected="true" multiple="true">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="exo:oldValue" requiredType="Value"
+        autoCreated="false" mandatory="false" onParentVersion="IGNORE"
+        protected="true" multiple="true">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="exo:newValue" requiredType="Value"
+        autoCreated="false" mandatory="false" onParentVersion="IGNORE"
+        protected="true" multiple="true">
+        <valueConstraints/>
+      </propertyDefinition>
+     <propertyDefinition name="exo:oldValue" requiredType="Value"
+        autoCreated="false" mandatory="false" onParentVersion="IGNORE"
+        protected="true" multiple="true">
+        <valueConstraints/>
+     </propertyDefinition>
+    </propertyDefinitions>
+  </nodeType>
+  
+  <nodeType name="exo:auditHistory" isMixin="false"
+    hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>nt:base</supertype>
+      <supertype>mix:referenceable</supertype>
+    </supertypes>
+    <propertyDefinitions>
+      <propertyDefinition name="exo:targetNode" requiredType="Reference"
+        autoCreated="true" mandatory="true" onParentVersion="IGNORE"
+        protected="true" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+      <propertyDefinition name="exo:lastRecord" requiredType="String"
+        autoCreated="true" mandatory="true" onParentVersion="IGNORE"
+        protected="true" multiple="false">
+        <valueConstraints/>
+      </propertyDefinition>
+    </propertyDefinitions>
+    <childNodeDefinitions>
+      <childNodeDefinition name="*" defaultPrimaryType="exo:auditRecord"
+        autoCreated="false" mandatory="false" onParentVersion="IGNORE"
+        protected="true" sameNameSiblings="false">
+        <requiredPrimaryTypes>
+          <requiredPrimaryType>exo:auditRecord</requiredPrimaryType>
+        </requiredPrimaryTypes>
+      </childNodeDefinition>
+    </childNodeDefinitions>
+  </nodeType>
+  
+  <nodeType name="exo:auditStorage" isMixin="false"
+    hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>nt:base</supertype>
+    </supertypes>
+    <childNodeDefinitions>
+      <childNodeDefinition name="*" defaultPrimaryType="exo:auditHistory"
+        autoCreated="false" mandatory="false" onParentVersion="VERSION"
+        protected="false" sameNameSiblings="false">
+        <requiredPrimaryTypes>
+          <requiredPrimaryType>exo:auditHistory</requiredPrimaryType>
+        </requiredPrimaryTypes>
+      </childNodeDefinition>
+    </childNodeDefinitions>
+  </nodeType>
+  
+</nodeTypes>
