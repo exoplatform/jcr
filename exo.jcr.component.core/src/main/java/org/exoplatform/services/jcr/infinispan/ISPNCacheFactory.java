@@ -33,6 +33,7 @@ import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
 import org.infinispan.configuration.cache.Configuration;
 import org.infinispan.configuration.cache.ConfigurationBuilder;
+import org.infinispan.configuration.cache.StoreConfigurationBuilder;
 import org.infinispan.configuration.global.GlobalConfiguration;
 import org.infinispan.configuration.global.GlobalConfigurationBuilder;
 import org.infinispan.configuration.parsing.ConfigurationBuilderHolder;
@@ -41,6 +42,8 @@ import org.infinispan.jmx.MBeanServerLookup;
 import org.infinispan.lifecycle.ComponentStatus;
 import org.infinispan.manager.DefaultCacheManager;
 import org.infinispan.manager.EmbeddedCacheManager;
+import org.infinispan.persistence.jdbc.configuration.JdbcBinaryStoreConfigurationBuilder;
+import org.infinispan.persistence.jdbc.configuration.JdbcStringBasedStoreConfigurationBuilder;
 import org.infinispan.transaction.lookup.TransactionManagerLookup;
 
 import java.io.IOException;
@@ -49,11 +52,8 @@ import java.security.PrivilegedAction;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Properties;
 
 import javax.jcr.RepositoryException;
 import javax.management.MBeanServer;
@@ -76,6 +76,8 @@ public class ISPNCacheFactory<K, V>
 {
 
    public static final String INFINISPAN_CONFIG = "infinispan-configuration";
+
+   public static final String STORE_JNDI_URL = "infinispan-cl-cache.jdbc.datasource";
 
    private final ConfigurationManager configurationManager;
 
@@ -139,6 +141,7 @@ public class ISPNCacheFactory<K, V>
    {
       // get Infinispan configuration file path
       final String configurationPath = parameterEntry.getParameterValue(INFINISPAN_CONFIG);
+      final String jndiUrl = parameterEntry.getParameterValue(STORE_JNDI_URL, null);
       LOG.info("Infinispan Cache configuration used: " + configurationPath);
       // avoid dashes in cache name. Some SQL servers doesn't allow dashes in table names
       final String regionIdEscaped = regionId.replace("-", "_");
@@ -169,7 +172,7 @@ public class ISPNCacheFactory<K, V>
                ConfigurationBuilderHolder holder = parser.parse(configStream);
                GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();
                Utils.loadJGroupsConfig(configurationManager, configBuilder.build(), configBuilder);
-               return getUniqueInstance(regionIdEscaped, holder, transactionManager);
+               return getUniqueInstance(regionIdEscaped, holder, transactionManager, jndiUrl);
             }
          });
 
@@ -211,7 +214,7 @@ public class ISPNCacheFactory<K, V>
     * type that has already been registered..
     */
    private static synchronized EmbeddedCacheManager getUniqueInstance(String regionId,
-      ConfigurationBuilderHolder holder, final TransactionManager tm)
+      ConfigurationBuilderHolder holder, final TransactionManager tm, String jndiUrl)
    {
       GlobalConfigurationBuilder configBuilder = holder.getGlobalConfigurationBuilder();
       GlobalConfiguration gc = configBuilder.build();
@@ -257,9 +260,34 @@ public class ISPNCacheFactory<K, V>
          };
          confBuilder.transaction().transactionManagerLookup(tml);
       }
-      Configuration conf = holder.getDefaultConfigurationBuilder().build();
+
+
+      ConfigurationBuilder configurationBuilder = holder.getDefaultConfigurationBuilder();
+
+      //Configure ManagedConnectionFactory
+      List storeConfigurationBuilderList = configurationBuilder.persistence().stores();
+      if(storeConfigurationBuilderList != null && ! storeConfigurationBuilderList.isEmpty())
+      {
+         for (StoreConfigurationBuilder storeBuilder : configurationBuilder.persistence().stores())
+         {
+            if(storeBuilder instanceof JdbcBinaryStoreConfigurationBuilder)
+            {
+               JdbcBinaryStoreConfigurationBuilder storeConfigurationBuilder =
+                       (JdbcBinaryStoreConfigurationBuilder) storeConfigurationBuilderList.get(0);
+               storeConfigurationBuilder.connectionFactory(ManagedConnectionFactoryConfigurationBuilder.class).jndiUrl(jndiUrl);
+            }
+            else if( storeBuilder instanceof JdbcStringBasedStoreConfigurationBuilder)
+            {
+               JdbcStringBasedStoreConfigurationBuilder storeConfigurationBuilder =
+                       (JdbcStringBasedStoreConfigurationBuilder) storeConfigurationBuilderList.get(0);
+               storeConfigurationBuilder.connectionFactory(ManagedConnectionFactoryConfigurationBuilder.class).jndiUrl(jndiUrl);
+            }
+         }
+      }
+      
+      Configuration conf = configurationBuilder.build();
       // Define the configuration of the cache
-      manager.defineConfiguration(regionId, conf);
+      manager.defineConfiguration(regionId, new ConfigurationBuilder().read(conf).build());
       if (LOG.isInfoEnabled())
       {
          LOG.info("The region " + regionId + " has been registered for the container "

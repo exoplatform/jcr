@@ -53,7 +53,7 @@ public class TestISPNCacheWorkspaceStorageCacheInClusterMode extends TestWorkspa
       list.add(new SimpleParameterEntry(ISPNCacheFactory.INFINISPAN_CONFIG,
          "jar:/conf/standalone/cluster/test-infinispan-config.xml"));
       list.add(new SimpleParameterEntry("infinispan-cluster-name", "TestISPNCacheWorkspaceStorageCacheInClusterMode"));
-      list.add(new SimpleParameterEntry("jgroups-configuration", "classpath:/flush-udp.xml"));
+      list.add(new SimpleParameterEntry("jgroups-configuration", "jar:/conf/standalone/cluster/flush-udp.xml"));
       
       CacheEntry entry = new CacheEntry(list);
       entry.setEnabled(true);

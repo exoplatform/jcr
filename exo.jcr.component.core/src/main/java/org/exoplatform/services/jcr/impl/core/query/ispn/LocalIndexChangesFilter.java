@@ -35,10 +35,11 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.infinispan.Cache;
 import org.infinispan.context.Flag;
-import org.infinispan.loaders.CacheLoaderManager;
+import org.infinispan.persistence.manager.PersistenceManager;
 
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Set;
 
 import javax.jcr.RepositoryException;
 
@@ -82,9 +83,12 @@ public class LocalIndexChangesFilter extends IndexerChangesFilter implements Loc
       config.putParameterValue(PARAM_INFINISPAN_CACHESTORE_CLASS, LocalIndexCacheStore.class.getName());
       this.cache = factory.createCache("Indexer_" + searchManager.getWsId(), config);
 
-      CacheLoaderManager cacheLoaderManager =
-         cache.getAdvancedCache().getComponentRegistry().getComponent(CacheLoaderManager.class);
-      AbstractIndexerCacheStore cacheStore = (AbstractIndexerCacheStore)cacheLoaderManager.getCacheLoader();
+      PersistenceManager persistenceManager = cache.getAdvancedCache().getComponentRegistry().getComponent(PersistenceManager.class);
+      Set<LocalIndexCacheStore> stores = persistenceManager.getStores(LocalIndexCacheStore.class);
+      LocalIndexCacheStore cacheStore = null;
+      if(!stores.isEmpty()){
+         cacheStore = stores.iterator().next();
+      }
 
       cacheStore.register(searchManager, parentSearchManager, handler, parentHandler);
       IndexerIoModeHandler modeHandler = cacheStore.getModeHandler();

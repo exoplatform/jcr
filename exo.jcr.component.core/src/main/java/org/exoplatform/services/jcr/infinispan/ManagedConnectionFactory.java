@@ -23,9 +23,9 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jdbc.DataSourceProvider;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-import org.infinispan.loaders.CacheLoaderException;
-import org.infinispan.loaders.jdbc.connectionfactory.ConnectionFactory;
-import org.infinispan.loaders.jdbc.connectionfactory.ConnectionFactoryConfig;
+import org.infinispan.persistence.jdbc.configuration.ConnectionFactoryConfiguration;
+import org.infinispan.persistence.jdbc.connectionfactory.ConnectionFactory;
+import org.infinispan.persistence.spi.PersistenceException;
 import org.infinispan.transaction.xa.GlobalTransaction;
 
 import java.sql.Connection;
@@ -79,8 +79,7 @@ public class ManagedConnectionFactory extends ConnectionFactory
          LOG.warn("The current container cannot be found which prevents to retrieve the DataSourceProvider");
          return null;
       }
-      DataSourceProvider dsProvider =
-         (DataSourceProvider)container.getComponentInstanceOfType(DataSourceProvider.class);
+      DataSourceProvider dsProvider = container.getComponentInstanceOfType(DataSourceProvider.class);
       if (dsProvider == null)
       {
          LOG.warn("The DataSourceProvider cannot be found in the container " + container.getContext().getName()
@@ -90,11 +89,19 @@ public class ManagedConnectionFactory extends ConnectionFactory
    }
 
    @Override
-   public void start(ConnectionFactoryConfig config, ClassLoader classLoader) throws CacheLoaderException
+   public void start(ConnectionFactoryConfiguration factoryConfiguration, ClassLoader classLoader) throws PersistenceException
    {
       InitialContext ctx = null;
       DataSourceProvider dsProvider = getDataSourceProvider();
-      this.datasourceName = config.getDatasourceJndiLocation();
+      if (factoryConfiguration instanceof ManagedConnectionFactoryConfiguration) {
+         ManagedConnectionFactoryConfiguration managedConfiguration = (ManagedConnectionFactoryConfiguration)
+                 factoryConfiguration;
+         this.datasourceName = managedConfiguration.jndiUrl();
+      }
+      else {
+         throw new PersistenceException("FactoryConfiguration has to be an instance of " +
+                 "ManagedConnectionFactoryConfiguration");
+      }
       try
       {
          if (dsProvider == null)
@@ -113,13 +120,13 @@ public class ManagedConnectionFactory extends ConnectionFactory
          }
          if (dataSource == null)
          {
-            throw new CacheLoaderException(String.format("Could not find a connection in jndi under the name '%s'",
-               datasourceName));
+            throw new PersistenceException(String.format("Could not find a connection in jndi under the name '%s'",
+                    datasourceName));
          }
       }
       catch (NamingException e)
       {
-         throw new CacheLoaderException(e);
+         throw new PersistenceException(e);
       }
       finally
       {
@@ -142,7 +149,7 @@ public class ManagedConnectionFactory extends ConnectionFactory
    {
    }
 
-   public void prepare(GlobalTransaction tx) throws CacheLoaderException
+   public void prepare(GlobalTransaction tx) throws PersistenceException
    {
       Connection con = getConnection(false);
 
@@ -158,12 +165,12 @@ public class ManagedConnectionFactory extends ConnectionFactory
    }
  
    @Override
-   public Connection getConnection() throws CacheLoaderException
+   public Connection getConnection() throws PersistenceException
    {
       return getConnection(true);
    }
 
-   private Connection getConnection(boolean autoCommit) throws CacheLoaderException
+   private Connection getConnection(boolean autoCommit) throws PersistenceException
    {
       Connection con = connection.get();
 
@@ -191,7 +198,7 @@ public class ManagedConnectionFactory extends ConnectionFactory
       return con;
    }
 
-   private Connection checkoutConnection() throws CacheLoaderException
+   private Connection checkoutConnection() throws PersistenceException
    {
       Connection connection;
       try
@@ -200,65 +207,13 @@ public class ManagedConnectionFactory extends ConnectionFactory
       }
       catch (SQLException e)
       {
-         throw new CacheLoaderException("Failed to get connection for datasource=" + datasourceName, e);
+         throw new PersistenceException("Failed to get connection for datasource=" + datasourceName, e);
       }
       if (trace)
       {
          LOG.trace("Connection checked out: {}", connection);
       }
       return connection;
-   }
-
-   public void commit(GlobalTransaction tx)
-   {
-      Connection con = connection.get();
-      if (con == null)
-      {
-         if (trace)
-         {
-            LOG.trace("There is nothing to commit.");
-         }
-         return;
-      }
-
-      try
-      {
-         con.commit();
-         if (trace)
-         {
-            LOG.trace("committed tx=" + tx + ", con=" + con);
-         }
-      }
-      catch (SQLException e)
-      {
-         reportAndRethrowError("Failed to commit", e);
-      }
-      finally
-      {
-         closeTxConnection(con);
-      }
-   }
-
-   public void rollback(GlobalTransaction tx)
-   {
-      Connection con = connection.get();
-
-      try
-      {
-         con.rollback();
-         if (trace)
-         {
-            LOG.trace("rolledback tx=" + tx + ", con=" + con);
-         }
-      }
-      catch (SQLException e)
-      {
-         reportAndRethrowError("Failed to rollback", e);
-      }
-      finally
-      {
-         closeTxConnection(con);
-      }
    }
 
    @Override

@@ -17,10 +17,12 @@
  */
 package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
+import org.exoplatform.commons.utils.PrivilegedSystemHelper;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.management.annotations.Managed;
 import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.core.lock.LockRemoverHolder;
@@ -36,11 +38,19 @@ import org.exoplatform.services.transaction.TransactionService;
 import org.infinispan.AdvancedCache;
 import org.infinispan.context.Flag;
 import org.infinispan.lifecycle.ComponentStatus;
+import org.infinispan.notifications.Listener;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryCreated;
+import org.infinispan.notifications.cachelistener.annotation.CacheEntryRemoved;
+import org.infinispan.notifications.cachelistener.event.CacheEntryCreatedEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryEvent;
+import org.infinispan.notifications.cachelistener.event.CacheEntryRemovedEvent;
 
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.lock.LockException;
@@ -79,6 +89,8 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
 
    private AdvancedCache<Serializable, Object> cache;
 
+   private AtomicInteger sizeCount = new AtomicInteger(0);
+
    public ISPNCacheableLockManagerImpl(WorkspacePersistentDataManager dataManager, WorkspaceEntry config,
       InitialContextInitializer context, TransactionService transactionService, ConfigurationManager cfm,
       LockRemoverHolder lockRemoverHolder) throws RepositoryConfigurationException, RepositoryException
@@ -115,6 +127,25 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
             throw new RepositoryException(e.getMessage(), e);
          }
 
+         //force clean lock cache entry store
+         boolean deleteLocks =
+                 "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
+                         "false"));
+         if(deleteLocks){
+            ISPNLockTableHandler lockTableHandler = (ISPNLockTableHandler) getLockTableHandler();
+            try
+            {
+               if(lockTableHandler.tableExists())
+               {
+                  lockTableHandler.cleanLocks();
+               }
+            }
+            catch (SQLException e)
+            {
+               throw new RepositoryException(e.getMessage(), e);
+            }
+         }
+
          // configure cache loader parameters with correct DB data-types
          ISPNCacheFactory.configureCacheStore(config.getLockManager(), INFINISPAN_JDBC_CL_DATASOURCE,
             INFINISPAN_JDBC_CL_DATA_COLUMN, INFINISPAN_JDBC_CL_ID_COLUMN, INFINISPAN_JDBC_CL_TIMESTAMP_COLUMN
@@ -123,6 +154,12 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
          cache =
             factory.createCache("L" + config.getUniqueName().replace("_", ""), config.getLockManager())
                .getAdvancedCache();
+         cache.addListener(new CacheSizeEventListener());
+         int size = cache.getAdvancedCache().size();
+         if(size != 0)
+         {
+            sizeCount.addAndGet(size);
+         }
       }
       else
       {
@@ -133,7 +170,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Integer execute(Object arg)
          {
-            return cache.size();
+            return sizeCount.get();
          }
       };
 
@@ -141,7 +178,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public Boolean execute(Object arg)
          {
-            return !cache.isEmpty();
+            return (sizeCount.get() > 0);
          }
       };
 
@@ -187,7 +224,7 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
       {
          public List<LockData> execute(Object arg) throws LockException
          {
-            Collection<Object> datas = cache.values();
+            Collection<Object> datas = cache.withFlags(Flag.SKIP_CACHE_LOAD).values();
 
             List<LockData> locksData = new ArrayList<LockData>();
             for (Object lockData : datas)
@@ -317,5 +354,21 @@ public class ISPNCacheableLockManagerImpl extends AbstractCacheableLockManager
    public LockTableHandler getLockTableHandler()
    {
       return new ISPNLockTableHandler(config, dataSource);
+   }
+
+   @SuppressWarnings("rawtypes")
+   @Listener
+   public class CacheSizeEventListener
+   {
+
+      @CacheEntryCreated
+      @CacheEntryRemoved
+      public void CacheEntryRemoved(CacheEntryEvent evt)
+      {
+         if (!evt.isPre() && evt.getKey() instanceof String)
+         {
+            sizeCount.addAndGet(cache.size());
+         }
+      }
    }
 }

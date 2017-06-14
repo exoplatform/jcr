@@ -1058,34 +1058,54 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
    /**
     * {@inheritDoc}
     */
-   protected void deleteLockProperties() throws SQLException, InvalidItemStateException, RepositoryException
+   protected void deleteLockProperties() throws SQLException, RepositoryException
    {
       addChange(TYPE_DELETE_LOCK);
-      PreparedStatement removeValuesStatement = null;
-      PreparedStatement removeItemsStatement = null;
+      PreparedStatement findItemsStatement = null;
+      PreparedStatement removeValueStatement = null;
+      PreparedStatement removeItemStatement = null;
+      ResultSet resultSet = null;
 
       try
       {
-         removeValuesStatement =
-            dbConnection.prepareStatement("DELETE FROM " + JCR_VALUE + " WHERE PROPERTY_ID IN" + " (SELECT ID FROM "
-               + JCR_ITEM + " WHERE I_CLASS = 2 AND NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
-               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner')");
+         findItemsStatement = dbConnection.prepareStatement("SELECT ID FROM " + JCR_ITEM + " WHERE I_CLASS = 2 AND "
+                 + " ( NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
+                 + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner' )");
+         removeValueStatement = dbConnection.prepareStatement("DELETE FROM " + JCR_VALUE + " WHERE PROPERTY_ID = ?");
+         removeItemStatement = dbConnection.prepareStatement("DELETE FROM " + JCR_ITEM + " WHERE ID = ? ");
+         resultSet = findItemsStatement.executeQuery();
+         while (resultSet.next())
+         {
+            String id  = resultSet.getString(COLUMN_ID);
 
-         removeItemsStatement =
-            dbConnection.prepareStatement("DELETE FROM " + JCR_ITEM + " WHERE I_CLASS = 2 AND "
-               + " NAME = '[http://www.jcp.org/jcr/1.0]lockIsDeep' OR"
-               + " NAME = '[http://www.jcp.org/jcr/1.0]lockOwner'");
+            removeValueStatement.clearParameters();
+            removeValueStatement.setString(1, id);
+            removeValueStatement.executeUpdate();
 
-         removeValuesStatement.executeUpdate();
-         removeItemsStatement.executeUpdate();
+            removeItemStatement.clearParameters();
+            removeItemStatement.setString(1, id);
+            removeItemStatement.executeUpdate();
+         }
       }
       finally
       {
-         if (removeValuesStatement != null)
+         if (resultSet != null)
          {
             try
             {
-               removeValuesStatement.close();
+               resultSet.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close the ResultSet: " + e.getMessage());
+            }
+         }
+
+         if (findItemsStatement != null)
+         {
+            try
+            {
+               findItemsStatement.close();
             }
             catch (SQLException e)
             {
@@ -1093,11 +1113,23 @@ public class MultiDbJDBCConnection extends CQJDBCStorageConnection
             }
          }
 
-         if (removeItemsStatement != null)
+         if (removeValueStatement != null)
          {
             try
             {
-               removeItemsStatement.close();
+               removeValueStatement.close();
+            }
+            catch (SQLException e)
+            {
+               LOG.error("Can't close statement", e);
+            }
+         }
+
+         if (removeItemStatement != null)
+         {
+            try
+            {
+               removeItemStatement.close();
             }
             catch (SQLException e)
             {

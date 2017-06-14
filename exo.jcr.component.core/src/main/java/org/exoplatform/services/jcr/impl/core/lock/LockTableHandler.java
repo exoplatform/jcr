@@ -47,4 +47,11 @@ public interface LockTableHandler
     * @throws SQLException
     */
    void removeLockedNode(String nodeId) throws SQLException;
+
+   /**
+    * Removes all locked node directly from database.
+    *
+    * @throws SQLException
+    */
+   void cleanLocks() throws SQLException;
 }

@@ -51,6 +51,8 @@
     <org.exoplatform.ws.version>5.0.x-SNAPSHOT</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
     <org.exoplatform.doc.doc-style.version>4.0.0</org.exoplatform.doc.doc-style.version>
+    <infinispan.version>8.2.6.Final</infinispan.version>
+    <jgroups.version>3.6.7.Final</jgroups.version>
   </properties>
 
   <dependencyManagement>
@@ -87,7 +89,7 @@
       </dependency>
       <dependency>
         <groupId>org.exoplatform.kernel</groupId>
-        <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
+        <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v8</artifactId>
         <version>${org.exoplatform.kernel.version}</version>
       </dependency>
       <dependency>
@@ -311,7 +313,7 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-core</artifactId>
-        <version>5.2.9.Final</version>
+        <version>${infinispan.version}</version>
         <exclusions>
           <exclusion>
             <groupId>org.jboss.spec.javax.transaction</groupId>
@@ -322,12 +324,17 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-cachestore-jdbc</artifactId>
-        <version>5.2.9.Final</version>
+        <version>${infinispan.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-commons</artifactId>
+        <version>${infinispan.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
-        <version>3.2.7.Final</version>
+        <version>${jgroups.version}</version>
       </dependency>
       <dependency>
         <groupId>org.antlr</groupId>

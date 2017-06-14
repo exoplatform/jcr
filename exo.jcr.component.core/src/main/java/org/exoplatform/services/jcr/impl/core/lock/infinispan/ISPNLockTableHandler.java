@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.impl.core.lock.infinispan;
 
 import org.exoplatform.services.database.utils.DialectDetecter;
+import org.exoplatform.services.database.utils.JDBCUtils;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.impl.checker.DummyRepair;
@@ -73,6 +74,12 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
          new String[]{}, "", new DummyRepair());
    }
 
+   @Override
+   protected InspectionQuery getDeleteAllQuery() throws SQLException
+   {
+      return new InspectionQuery("DELETE FROM " + getTableName(), new String[]{}, "", new DummyRepair());
+   }
+
    /**
     * Returns the column name which contain node identifier.
     */
@@ -91,7 +98,7 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
    /**
     * Returns the name of LOCK table.
     */
-   private String getTableName() throws SQLException
+   protected String getTableName() throws SQLException
    {
       try
       {
@@ -105,6 +112,21 @@ public class ISPNLockTableHandler extends AbstractLockTableHandler
       catch (RepositoryConfigurationException e)
       {
          throw new SQLException(e);
+      }
+   }
+
+   /**
+    * Check store table existing
+    */
+   protected boolean tableExists()
+   {
+      try
+      {
+         return JDBCUtils.tableExists(getTableName(), openConnection());
+      }
+      catch (SQLException e)
+      {
+         return false;
       }
    }
 
