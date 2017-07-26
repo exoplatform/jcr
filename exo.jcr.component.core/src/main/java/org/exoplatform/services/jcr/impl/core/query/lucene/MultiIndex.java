@@ -3838,29 +3838,37 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             return false;
          }
-         indexRecovery.setIndexOffline();
 
-         for (String filePath : indexRecovery.getIndexList())
+         try
          {
-            File indexFile = new File(indexDirectory, filePath);
-            if (!PrivilegedFileHelper.exists(indexFile.getParentFile()))
-            {
-               PrivilegedFileHelper.mkdirs(indexFile.getParentFile());
-            }
+            //Switch index offline
+            indexRecovery.setIndexOffline();
 
-            // transfer file 
-            InputStream in = indexRecovery.getIndexFile(filePath);
-            OutputStream out = PrivilegedFileHelper.fileOutputStream(indexFile);
-            try
+            for (String filePath : indexRecovery.getIndexList())
             {
-               DirectoryHelper.transfer(in, out);
-            }
-            finally
-            {
-               DirectoryHelper.safeClose(in);
-               DirectoryHelper.safeClose(out);
-            }
+               File indexFile = new File(indexDirectory, filePath);
+               if (!PrivilegedFileHelper.exists(indexFile.getParentFile()))
+               {
+                  PrivilegedFileHelper.mkdirs(indexFile.getParentFile());
+               }
 
+               // transfer file
+               InputStream in = indexRecovery.getIndexFile(filePath);
+               OutputStream out = PrivilegedFileHelper.fileOutputStream(indexFile);
+               try
+               {
+                  DirectoryHelper.transfer(in, out);
+               }
+               finally
+               {
+                  DirectoryHelper.safeClose(in);
+                  DirectoryHelper.safeClose(out);
+               }
+            }
+         }
+         finally
+         {
+            //Switch index online
             indexRecovery.setIndexOnline();
          }
 
