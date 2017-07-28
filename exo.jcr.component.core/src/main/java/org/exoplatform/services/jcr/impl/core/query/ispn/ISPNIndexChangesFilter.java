@@ -18,15 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.core.query.ispn;
 
+import org.apache.regexp.RE;
 import org.exoplatform.container.configuration.ConfigurationManager;
 import org.exoplatform.services.jcr.config.QueryHandlerEntry;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
-import org.exoplatform.services.jcr.impl.core.query.IndexerChangesFilter;
-import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
-import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
-import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
-import org.exoplatform.services.jcr.impl.core.query.SearchManager;
+import org.exoplatform.services.jcr.impl.core.query.*;
 import org.exoplatform.services.jcr.impl.core.query.lucene.IndexInfos;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
 import org.exoplatform.services.jcr.infinispan.PrivilegedISPNCacheHelper;
@@ -69,20 +65,6 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
     * Unique workspace identifier.
     */
    private final String wsId;
-   
-
-   // RSYNC SERVER CONFIGURATION
-   public static final String PARAM_RSYNC_ENTRY_NAME = "rsync-entry-name";
-
-   public static final String PARAM_RSYNC_ENTRY_PATH = "rsync-entry-path";
-
-   public static final String PARAM_RSYNC_PORT = "rsync-port";
-
-   public static final int PARAM_RSYNC_PORT_DEFAULT = 873;
-
-   public static final String PARAM_RSYNC_USER = "rsync-user";
-
-   public static final String PARAM_RSYNC_PASSWORD = "rsync-password";
 
    /**
     * ISPNIndexChangesFilter constructor.
@@ -143,20 +125,22 @@ public class ISPNIndexChangesFilter extends IndexerChangesFilter
    private IndexInfos createIndexInfos(Boolean system, IndexerIoModeHandler modeHandler, QueryHandlerEntry config,
       QueryHandler handler) throws RepositoryConfigurationException
    {
-      // read RSYNC configuration
-      String rsyncEntryName = config.getParameterValue(PARAM_RSYNC_ENTRY_NAME, null);
-      String rsyncEntryPath = config.getParameterValue(PARAM_RSYNC_ENTRY_PATH, null);
-      String rsyncUserName = config.getParameterValue(PARAM_RSYNC_USER, null);
-      String rsyncPassword = config.getParameterValue(PARAM_RSYNC_PASSWORD, null);
-      int rsyncPort = config.getParameterInteger(PARAM_RSYNC_PORT, PARAM_RSYNC_PORT_DEFAULT);
-
-      // rsync configured
-      if (rsyncEntryName != null)
+      try
       {
-         return new RsyncIndexInfos(wsId, cache, system, modeHandler, handler.getContext()
-            .getIndexDirectory(), rsyncPort, rsyncEntryName, rsyncEntryPath, rsyncUserName, rsyncPassword);
+         // read RSYNC configuration
+         RSyncConfiguration rSyncConfiguration = new RSyncConfiguration(config);
+         // rsync configured
+         if (rSyncConfiguration.getRsyncEntryName() != null)
+         {
+            return new RsyncIndexInfos(wsId, cache, system, modeHandler, handler.getContext()
+                    .getIndexDirectory(), rSyncConfiguration);
+         }
+         else
+         {
+            return new ISPNIndexInfos(wsId, cache, true, modeHandler);
+         }
       }
-      else
+      catch (RepositoryConfigurationException e)
       {
          return new ISPNIndexInfos(wsId, cache, true, modeHandler);
       }

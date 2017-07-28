@@ -62,15 +62,7 @@ import org.exoplatform.services.jcr.impl.checker.InspectionReport;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.SessionDataManager;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
-import org.exoplatform.services.jcr.impl.core.query.AbstractQueryHandler;
-import org.exoplatform.services.jcr.impl.core.query.DefaultQueryNodeFactory;
-import org.exoplatform.services.jcr.impl.core.query.ErrorLog;
-import org.exoplatform.services.jcr.impl.core.query.ExecutableQuery;
-import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
-import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
-import org.exoplatform.services.jcr.impl.core.query.QueryHandler;
-import org.exoplatform.services.jcr.impl.core.query.QueryHandlerContext;
-import org.exoplatform.services.jcr.impl.core.query.SearchIndexConfigurationHelper;
+import org.exoplatform.services.jcr.impl.core.query.*;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.FSDirectoryManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
@@ -210,6 +202,21 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * The alternative value for {@link #indexRecoveryMode}. 
     */
    public static final String INDEX_RECOVERY_MODE_FROM_COORDINATOR = "from-coordinator";
+
+   /**
+    * The alternative value for {@link #indexRecoveryStrategy} rsync with force delete.
+    */
+   public static final String INDEX_RECOVERY_RSYNC_WITH_DELETE_STRATEGY = "rsync-with-delete";
+
+    /**
+     * The alternative value for {@link #indexRecoveryStrategy} rsync without force delete.
+     */
+    public static final String INDEX_RECOVERY_RSYNC_STRATEGY = "rsync";
+
+   /**
+    * The default value for {@link #indexRecoveryStrategy}.
+    */
+   public static final String INDEX_RECOVERY_DEFAULT_STRATEGY = "copy";
 
    /**
     * Default name of the error log file
@@ -525,6 +532,13 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     * The way to create initial index.. 
     */
    private String indexRecoveryMode = INDEX_RECOVERY_MODE_FROM_COORDINATOR;
+
+   private RSyncConfiguration rsyncConfiguration;
+
+   /**
+    * The way to create initial index..
+    */
+   private String indexRecoveryStrategy = INDEX_RECOVERY_DEFAULT_STRATEGY;
 
    /**
     * Defines reindexing synchronization policy. Whether or not start it asynchronously  
@@ -3192,6 +3206,29 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public String getIndexRecoveryMode()
    {
       return indexRecoveryMode;
+   }
+
+   /**
+    * @return the current value for indexRecoveryStrategy
+    */
+   public String getIndexRecoveryStrategy()
+   {
+      return indexRecoveryStrategy;
+   }
+
+   public void setIndexRecoveryStrategy(String indexRecoveryStrategy)
+   {
+      this.indexRecoveryStrategy = indexRecoveryStrategy;
+   }
+
+   public RSyncConfiguration getRsyncConfiguration()
+   {
+      return rsyncConfiguration;
+   }
+
+   public void setRsyncConfiguration(RSyncConfiguration rsyncConfiguration)
+   {
+      this.rsyncConfiguration = rsyncConfiguration;
    }
 
    /**

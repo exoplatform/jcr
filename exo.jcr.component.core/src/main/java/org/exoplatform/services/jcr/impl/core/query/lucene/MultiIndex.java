@@ -26,18 +26,13 @@ import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.store.Directory;
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.datamodel.ItemData;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.core.query.IndexRecovery;
-import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
-import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
-import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeListener;
-import org.exoplatform.services.jcr.impl.core.query.IndexingTree;
-import org.exoplatform.services.jcr.impl.core.query.NodeDataIndexingIterator;
-import org.exoplatform.services.jcr.impl.core.query.Reindexable;
+import org.exoplatform.services.jcr.impl.core.query.*;
 import org.exoplatform.services.jcr.impl.core.query.lucene.directory.DirectoryManager;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.rpc.RPCException;
@@ -479,9 +474,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       boolean indexCreated = false;
       setOnline(false, false);
 
+      //skip remove old index (rsync options)
+      boolean skip = SearchIndex.INDEX_RECOVERY_RSYNC_STRATEGY.equals(handler.getIndexRecoveryStrategy());
+
       try
       {
-         if (doForceReindexing && !indexes.isEmpty())
+         if (doForceReindexing && !indexes.isEmpty() && !skip)
          {
             LOG.info("Removing stale indexes (" + handler.getContext().getWorkspacePath(true) + ").");
 
@@ -493,7 +491,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             attemptDelete();
          }
 
-         if (indexNames.size() == 0)
+         if (indexNames.size() == 0 || skip)
          {
             try
             {
@@ -507,9 +505,19 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                         && handler.getContext().getRPCService() != null
                         && !handler.getContext().getRPCService().isCoordinator())
                      {
-                        LOG.info("Retrieving index from coordinator (" + handler.getContext().getWorkspacePath(true)
-                           + ")...");
-                        indexCreated = recoveryIndexFromCoordinator();
+                        if(SearchIndex.INDEX_RECOVERY_RSYNC_STRATEGY.equals(handler.getIndexRecoveryStrategy()) ||
+                                SearchIndex.INDEX_RECOVERY_RSYNC_WITH_DELETE_STRATEGY.equals(handler.getIndexRecoveryStrategy()))
+                        {
+                           LOG.info("Retrieving index from coordinator rsync strategy (" + handler.getContext().getWorkspacePath(true)
+                                   + ")...");
+                           indexCreated = rsyncRecoveryIndexFromCoordinator();
+                        }
+                        else
+                        {
+                           LOG.info("Retrieving index from coordinator copy strategy (" + handler.getContext().getWorkspacePath(true)
+                                   + ")...");
+                           indexCreated = recoveryIndexFromCoordinator();
+                        }
 
                         if (indexCreated)
                         {
@@ -3838,39 +3846,32 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          {
             return false;
          }
+         //Switch index offline
+         indexRecovery.setIndexOffline();
 
-         try
+         for (String filePath : indexRecovery.getIndexList())
          {
-            //Switch index offline
-            indexRecovery.setIndexOffline();
-
-            for (String filePath : indexRecovery.getIndexList())
+            File indexFile = new File(indexDirectory, filePath);
+            if (!PrivilegedFileHelper.exists(indexFile.getParentFile()))
             {
-               File indexFile = new File(indexDirectory, filePath);
-               if (!PrivilegedFileHelper.exists(indexFile.getParentFile()))
-               {
-                  PrivilegedFileHelper.mkdirs(indexFile.getParentFile());
-               }
+               PrivilegedFileHelper.mkdirs(indexFile.getParentFile());
+            }
 
-               // transfer file
-               InputStream in = indexRecovery.getIndexFile(filePath);
-               OutputStream out = PrivilegedFileHelper.fileOutputStream(indexFile);
-               try
-               {
-                  DirectoryHelper.transfer(in, out);
-               }
-               finally
-               {
-                  DirectoryHelper.safeClose(in);
-                  DirectoryHelper.safeClose(out);
-               }
+            // transfer file 
+            InputStream in = indexRecovery.getIndexFile(filePath);
+            OutputStream out = PrivilegedFileHelper.fileOutputStream(indexFile);
+            try
+            {
+               DirectoryHelper.transfer(in, out);
+            }
+            finally
+            {
+               DirectoryHelper.safeClose(in);
+               DirectoryHelper.safeClose(out);
             }
          }
-         finally
-         {
-            //Switch index online
-            indexRecovery.setIndexOnline();
-         }
+         //Switch index online
+         indexRecovery.setIndexOnline();
 
          return true;
       }
@@ -3883,6 +3884,67 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          LOG.error("Cannot retrieve the indexes from the coordinator, the indexes will then be created from indexing",
             e);
+      }
+
+      LOG.info("Clean up index directory " + indexDirectory.getAbsolutePath());
+      DirectoryHelper.removeDirectory(indexDirectory);
+
+      return false;
+   }
+
+
+   /**
+    * Retrieves index from other node using rsync server.
+    *
+    * @throws IOException if can't clean up directory after retrieving being failed
+    */
+   private boolean rsyncRecoveryIndexFromCoordinator() throws IOException
+   {
+      File indexDirectory = new File(handler.getContext().getIndexDirectory());
+      RSyncConfiguration rSyncConfiguration =  handler.getRsyncConfiguration();
+
+      try
+      {
+         IndexRecovery indexRecovery = handler.getContext().getIndexRecovery();
+         // check if index not ready
+         if (!indexRecovery.checkIndexReady())
+         {
+            return false;
+         }
+         try
+         {
+            if(rSyncConfiguration.isRsyncOffline())
+            {
+               //Switch index offline
+               indexRecovery.setIndexOffline();
+            }
+
+            String indexPath = handler.getContext().getIndexDirectory();
+            String urlFormatString =rSyncConfiguration.generateRsyncSource(indexPath);
+            RSyncJob rSyncJob =  new RSyncJob(String.format(urlFormatString, indexRecovery.getCoordinatorAddress()), indexPath,
+                    rSyncConfiguration.getRsyncUserName(), rSyncConfiguration.getRsyncPassword(), OfflinePersistentIndex.NAME);
+            rSyncJob.execute();
+         }
+         finally 
+         {
+            if(rSyncConfiguration.isRsyncOffline())
+            {
+               //Switch index online
+               indexRecovery.setIndexOnline();
+            }
+         }
+
+         //recovery finish correctly
+         return true;
+      }
+      catch (RepositoryException e)
+      {
+         LOG.error("Cannot retrieve the indexes from the coordinator, the indexes will then be created from indexing",
+                 e);
+      } catch (RepositoryConfigurationException e)
+      {
+          LOG.error("Cannot retrieve the indexes from the coordinator, the indexes will then be created from indexing",
+                  e);
       }
 
       LOG.info("Clean up index directory " + indexDirectory.getAbsolutePath());
