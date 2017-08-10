@@ -27,8 +27,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 
-import java.io.FileInputStream;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Calendar;
 
 import javax.jcr.query.Query;
@@ -49,10 +48,8 @@ public class TestArabicSearch extends BaseQueryTest
    public void testSearchWithEncodingParameter() throws Exception
    {
 
-      URL url = TestArabicSearch.class.getResource("/ArabicUTF8.txt");
-      assertNotNull("ArabicUTF8.txt not found", url);
-
-      FileInputStream fis = new FileInputStream(url.getFile());
+      InputStream inputStream = TestArabicSearch.class.getResourceAsStream("/ArabicUTF8.txt");
+      assertNotNull("ArabicUTF8.txt not found", inputStream);
 
       NodeImpl node = (NodeImpl)root.addNode(fileName, "nt:file");
       NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
@@ -60,7 +57,7 @@ public class TestArabicSearch extends BaseQueryTest
       cont.setProperty("jcr:lastModified", Calendar.getInstance());
       cont.setProperty("jcr:encoding", "UTF-8");
 
-      cont.setProperty("jcr:data", fis);
+      cont.setProperty("jcr:data", inputStream);
       root.save();
 
       // Arabic word
