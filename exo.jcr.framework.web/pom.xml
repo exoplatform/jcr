@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>5.0.x-SNAPSHOT</version>
+    <version>5.0.0-M18</version>
   </parent>
   <artifactId>exo.jcr.framework.web</artifactId>
   <name>eXo PLF:: JCR :: Framework :: Web</name>
