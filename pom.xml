@@ -46,9 +46,9 @@
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.16</exo.product.specification>
-    <org.exoplatform.kernel.version>2.6.x-SNAPSHOT</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>2.7.x-SNAPSHOT</org.exoplatform.core.version>
-    <org.exoplatform.ws.version>2.5.x-SNAPSHOT</org.exoplatform.ws.version>
+    <org.exoplatform.kernel.version>2.6.3-RC04</org.exoplatform.kernel.version>
+    <org.exoplatform.core.version>2.7.3-RC04</org.exoplatform.core.version>
+    <org.exoplatform.ws.version>2.5.3-RC04</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
     <org.exoplatform.doc.doc-style.version>4.0.0</org.exoplatform.doc.doc-style.version>
   </properties>
