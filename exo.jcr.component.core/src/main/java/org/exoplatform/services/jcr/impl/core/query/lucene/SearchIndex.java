@@ -224,9 +224,9 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    private static final String ERROR_LOG = "error.log";
 
    /**
-    * The actual index
+    * index register for current SearchIndex
     */
-   private MultiIndex index;
+   private IndexRegister indexRegister;
 
    /**
     * The analyzer we use for indexing.
@@ -703,7 +703,11 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       indexingConfig = createIndexingConfiguration(nsMappings);
       analyzer.setIndexingConfig(indexingConfig);
 
-      index = new MultiIndex(this, context.getIndexingTree(), modeHandler, getIndexInfos(), getIndexUpdateMonitor());
+      MultiIndex index = new MultiIndex(this, context.getIndexingTree(), modeHandler, getIndexInfos(), getIndexUpdateMonitor());
+
+      //register the default index
+      this.indexRegister = new IndexRegister(index);
+
       // if RW mode, create initial index and start check
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
@@ -750,7 +754,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             new Integer(getIndexFormatVersion().getVersion()));
       }
 
-      doInitErrorLog();
+      this.errorLog = doInitErrorLog(path);
 
       // reprocess any notfinished notifies;
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
@@ -1023,14 +1027,14 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       if (doReindexing || doForceReindexing)
       {
-         index.createInitialIndex(itemStateManager, doForceReindexing);
+         indexRegister.getDefaultIndex().createInitialIndex(itemStateManager, doForceReindexing);
       }
       if (doCheck)
       {
          log.info("Running consistency check...");
          try
          {
-            ConsistencyCheck check = ConsistencyCheck.run(index, itemStateManager);
+            ConsistencyCheck check = ConsistencyCheck.run(indexRegister.getDefaultIndex(), itemStateManager);
             if (autoRepair)
             {
                check.repair(true);
@@ -1060,7 +1064,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       if (modeHandler.getMode() == IndexerIoMode.READ_WRITE)
       {
-         index.flush();
+         indexRegister.getDefaultIndex().flush();
       }
    }
 
@@ -1278,10 +1282,33 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    {
       checkOpen();
       // index may not be initialized, but some operation can be performed in cluster environment
-      if (index != null)
+      if (indexRegister.getDefaultIndex() != null)
       {
-         index.update(changes.getRemove(), changes.getAdd());
+         indexRegister.getDefaultIndex().update(changes.getRemove(), changes.getAdd());
       }
+
+      //Apply the changes on all registered index related to SearchIndex component
+      for(MultiIndex index : indexRegister.getIndexList())
+      {
+         try
+         {
+            index.update(changes.getRemove(), changes.getAdd());
+         }
+         catch (Exception e)
+         {
+            log.error("Error indexing changes " + e, e);
+            try
+            {
+               logErrorChanges(indexRegister.getErrorLogs(index), new HashSet<String>(changes.getRemove()), new HashSet<String>(changes
+                       .getAddIds()));
+            }
+            catch (IOException ioe)
+            {
+               log.warn("Exception occure when errorLog writed. Error log is not complete. " + ioe, ioe);
+            }
+         }
+      }
+
    }
 
    /**
@@ -1321,7 +1348,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             Document doc = null;
             try
             {
-               doc = createDocument(state, getNamespaceMappings(), index.getIndexFormatVersion(), loadAllProperties);
+               doc = createDocument(state, getNamespaceMappings(), indexRegister.getDefaultIndex().getIndexFormatVersion(), loadAllProperties);
                retrieveAggregateRoot(state, aggregateRoots);
             }
             catch (RepositoryException e)
@@ -1353,7 +1380,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
 
                try
                {
-                  return createDocument(state, getNamespaceMappings(), index.getIndexFormatVersion(), loadAllProperties);
+                  return createDocument(state, getNamespaceMappings(), indexRegister.getDefaultIndex().getIndexFormatVersion(), loadAllProperties);
                }
                catch (RepositoryException e)
                {
@@ -1458,7 +1485,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
             spellChecker.close();
          }
          errorLog.close();
-         index.close();
+         indexRegister.getDefaultIndex().close();
          getContext().destroy();
          closed.set(true);
          log.info("Index closed: " + path);
@@ -1667,18 +1694,18 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          if (getContext().getParentHandler() instanceof SearchIndex)
          {
             SearchIndex parent = (SearchIndex)getContext().getParentHandler();
-            if (parent.getIndexFormatVersion().getVersion() < index.getIndexFormatVersion().getVersion())
+            if (parent.getIndexFormatVersion().getVersion() < indexRegister.getDefaultIndex().getIndexFormatVersion().getVersion())
             {
                indexFormatVersion = parent.getIndexFormatVersion();
             }
             else
             {
-               indexFormatVersion = index.getIndexFormatVersion();
+               indexFormatVersion = indexRegister.getDefaultIndex().getIndexFormatVersion();
             }
          }
          else
          {
-            indexFormatVersion = index.getIndexFormatVersion();
+            indexFormatVersion = indexRegister.getDefaultIndex().getIndexFormatVersion();
          }
       }
       return indexFormatVersion;
@@ -1707,7 +1734,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    protected IndexReader getIndexReader(boolean includeSystemIndex) throws IOException
    {
       // deny query execution if index in offline mode and allowQuery is false
-      if (!index.isOnline() && !allowQuery.get())
+      if (!indexRegister.getDefaultIndex().isOnline() && !allowQuery.get())
       {
          throw new IndexOfflineIOException("Index is offline");
       }
@@ -1715,18 +1742,18 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       CachingMultiIndexReader parentReader = null;
       if (parentHandler instanceof SearchIndex && includeSystemIndex)
       {
-         parentReader = ((SearchIndex)parentHandler).index.getIndexReader();
+         parentReader = ((SearchIndex)parentHandler).indexRegister.getDefaultIndex().getIndexReader();
       }
 
       IndexReader reader;
       if (parentReader != null)
       {
-         CachingMultiIndexReader[] readers = {index.getIndexReader(), parentReader};
+         CachingMultiIndexReader[] readers = {indexRegister.getDefaultIndex().getIndexReader(), parentReader};
          reader = new CombinedIndexReader(readers);
       }
       else
       {
-         reader = index.getIndexReader();
+         reader = indexRegister.getDefaultIndex().getIndexReader();
       }
       return new JcrIndexReader(reader);
    }
@@ -1828,13 +1855,39 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    }
 
    /**
-    * Returns the actual index.
+    * Returns the default index.
     * 
     * @return the actual index.
     */
    public MultiIndex getIndex()
    {
-      return index;
+      return indexRegister.getDefaultIndex();
+   }
+
+   /**
+    * Change the actual default index.
+    *
+    */
+   public void setIndex(MultiIndex index)
+   {
+      indexRegister.setDefaultIndex(index);
+   }
+
+   /**
+    * Create a new index with the same actual context.
+    *
+    * @return MultiIndex the actual index.
+    */
+   public MultiIndex createNewIndex(String suffix) throws IOException {
+
+      IndexInfos indexInfos = new IndexInfos();
+      IndexUpdateMonitor indexUpdateMonitor = new DefaultIndexUpdateMonitor();
+      IndexerIoModeHandler modeHandler = new IndexerIoModeHandler(IndexerIoMode.READ_WRITE);
+
+      MultiIndex newIndex =  new MultiIndex(this, getContext().getIndexingTree(), modeHandler,
+              indexInfos, indexUpdateMonitor, cloneDirectoryManager(this.getDirectoryManager(), suffix));
+
+      return newIndex;
    }
 
    /**
@@ -1914,6 +1967,33 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
          }
          DirectoryManager df = (DirectoryManager)clazz.newInstance();
          df.init(this);
+         return df;
+      }
+      catch (IOException e)
+      {
+         throw e;
+      }
+      catch (Exception e)
+      {
+         IOException ex = new IOException();
+         ex.initCause(e);
+         throw ex;
+      }
+   }
+
+   /**
+    * Clone the default Index directory manager
+    * @return an initialized {@link DirectoryManager}.
+    * @throws IOException
+    *             if the directory manager cannot be instantiated or an
+    *             exception occurs while initializing the manager.
+    */
+   protected DirectoryManager cloneDirectoryManager(DirectoryManager directoryManager, String suffix) throws IOException
+   {
+      try
+      {
+         DirectoryManager df =  directoryManager.getClass().newInstance();
+         df.init(this.path + suffix);
          return df;
       }
       catch (IOException e)
@@ -2114,7 +2194,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                   for (int j = 0; j < aggregates.length; j++)
                   {
                      Document aDoc =
-                        createDocument(aggregates[j], getNamespaceMappings(), index.getIndexFormatVersion(), loadAllProperties);
+                        createDocument(aggregates[j], getNamespaceMappings(), indexRegister.getDefaultIndex().getIndexFormatVersion(), loadAllProperties);
                      if (volatileIndex != null)
                      {
                         volatileIndex.addAggregateIndexes(aDoc);
@@ -2302,7 +2382,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
                int found = 0;
                try
                {
-                  CachingMultiIndexReader reader = index.getIndexReader();
+                  CachingMultiIndexReader reader = indexRegister.getDefaultIndex().getIndexReader();
                   try
                   {
                      Term aggregateUUIDs = new Term(FieldNames.AGGREGATED_NODE_UUID, "");
@@ -3344,17 +3424,34 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public void logErrorChanges(Set<String> removed, Set<String> added) throws IOException
    {
+      logErrorChanges(errorLog, removed, added);
+   }
+
+   /**
+    * Log unindexed changes into error.log
+    *
+    * @param removed
+    *            set of removed node uuids
+    * @param added
+    *            map of added node states and uuids
+    * @throws IOException
+    */
+   public void logErrorChanges(ErrorLog errorLog, Set<String> removed, Set<String> added) throws IOException
+   {
       // backup the remove and add iterators
-      errorLog.writeChanges(removed, added);
+      if(errorLog != null)
+      {
+         errorLog.writeChanges(removed, added);
+      }
    }
 
    /**
     * Initialization error log.
     */
-   private void doInitErrorLog() throws IOException
+   public ErrorLog doInitErrorLog(String path) throws IOException
    {
       File file = new File(new File(path), ERROR_LOG);
-      errorLog = new ErrorLog(file, errorLogfileSize);
+      return new ErrorLog(file, errorLogfileSize);
    }
 
    private void recoverErrorLog(ErrorLog errlog) throws IOException, RepositoryException
@@ -3504,7 +3601,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
       {
          this.allowQuery.set(allowQuery);
       }
-      index.setOnline(isOnline, dropStaleIndexes);
+      indexRegister.getDefaultIndex().setOnline(isOnline, dropStaleIndexes);
    }
 
    /**
@@ -3512,7 +3609,7 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
     */
    public boolean isOnline()
    {
-      return index.isOnline();
+      return indexRegister.getDefaultIndex().isOnline();
    }
 
    /**
@@ -3698,5 +3795,63 @@ public class SearchIndex extends AbstractQueryHandler implements IndexerIoModeLi
    public int getPriority()
    {
       return PRIORITY_NORMAL;
+   }
+
+   public IndexRegister getIndexRegister()
+   {
+      return indexRegister;
+   }
+
+   /**
+    * Internal class used to allow dynamic register/unregister d'index
+    * On the actual SearchIndex component
+    */
+   public class IndexRegister
+   {
+      //List of registered index
+      private final Map<MultiIndex, ErrorLog> indexList = new HashMap();
+
+      //default index
+      private MultiIndex defaultIndex ;
+
+      public  IndexRegister(MultiIndex defaultIndex)
+      {
+         this.defaultIndex = defaultIndex;
+      }
+
+      public void register(MultiIndex index, ErrorLog errorLog) throws IOException
+      {
+         indexList.put(index, errorLog);
+      }
+
+      public void unregister(MultiIndex multiIndex) throws IOException
+      {
+         multiIndex.close();
+         ErrorLog errorLog =indexList.get(multiIndex);
+         errorLog.flush();
+         errorLog.close();
+         indexList.remove(multiIndex);
+      }
+
+      public Set<MultiIndex> getIndexList()
+      {
+         return indexList.keySet();
+      }
+
+      public ErrorLog getErrorLogs(MultiIndex index)
+      {
+         return indexList.get(index);
+      }
+
+      public MultiIndex getDefaultIndex()
+      {
+         return defaultIndex;
+      }
+
+      public  void setDefaultIndex(MultiIndex index)
+      {
+         this.defaultIndex = index;
+      }
+
    }
 }

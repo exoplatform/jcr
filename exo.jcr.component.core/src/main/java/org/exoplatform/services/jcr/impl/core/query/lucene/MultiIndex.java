@@ -246,7 +246,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * The index format version of this multi index.
     */
-   private final IndexFormatVersion version;
+   private IndexFormatVersion version;
 
    /**
     * The handler of the Indexer io mode
@@ -274,6 +274,32 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * The unique id of the workspace corresponding to this multi index
     */
    final String workspaceId;
+
+   MultiIndex(SearchIndex handler, IndexingTree indexingTree, IndexerIoModeHandler modeHandler, IndexInfos indexInfos,
+              IndexUpdateMonitor indexUpdateMonitor, DirectoryManager directoryManager) throws IOException
+   {
+      this.modeHandler = modeHandler;
+      this.indexUpdateMonitor = indexUpdateMonitor;
+      this.directoryManager = directoryManager;
+      // this method is run in privileged mode internally
+      this.indexDir = directoryManager.getDirectory(".");
+      this.handler = handler;
+      this.workspaceId = handler.getWsId();
+      this.cache = new DocNumberCache(handler.getCacheSize());
+      this.indexingTree = indexingTree;
+      this.nsMappings = handler.getNamespaceMappings();
+      this.flushTask = null;
+      this.indexNames = indexInfos;
+      this.indexNames.setDirectory(indexDir);
+      // this method is run in privileged mode internally
+      this.indexNames.read();
+
+      this.lastFileSystemFlushTime = System.currentTimeMillis();
+      this.lastFlushTime = System.currentTimeMillis();
+
+      //Init MultiIndex
+      init();
+   }
 
    /**
     * Creates a new MultiIndex.
@@ -308,6 +334,12 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       this.lastFileSystemFlushTime = System.currentTimeMillis();
       this.lastFlushTime = System.currentTimeMillis();
 
+       //Init MultiIndex
+      init();
+   }
+
+   private void init() throws IOException
+   {
       modeHandler.addIndexerIoModeListener(this);
 
       // this method is run in privileged mode internally
@@ -331,8 +363,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             continue;
          }
          PersistentIndex index =
-            new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, directoryManager,
-               modeHandler);
+                 new PersistentIndex(name, handler.getTextAnalyzer(), handler.getSimilarity(), cache, directoryManager,
+                         modeHandler);
          index.setMaxFieldLength(handler.getMaxFieldLength());
          index.setUseCompoundFile(handler.getUseCompoundFile());
          index.setTermInfosIndexDivisor(handler.getTermInfosIndexDivisor());
@@ -459,10 +491,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     * 
     * @param stateMgr
     *            the item state manager.
-    * @param rootId
-    *            the id of the node from where to start.
-    * @param rootPath
-    *            the path of the node from where to start.
+    * @param doForceReindexing
+    *            force re-indexing on start
     * @throws IOException
     *             if an error occurs while indexing the workspace.
     * @throws IllegalStateException
@@ -1449,6 +1479,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                 }
             }
         }
+
         if (withVolatileIndex)
             readerList.add(volatileIndex.getReadOnlyIndexReader());
         return readerList.toArray(new ReadOnlyIndexReader[readerList.size()]);
@@ -1472,7 +1503,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    /**
     * Closes this <code>MultiIndex</code>.
     */
-   void close()
+   public void close()
    {
       // stop index merger
       // when calling this method we must not lock this MultiIndex, otherwise
@@ -1948,8 +1979,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *            the number of nodes already indexed.
     * @throws IOException
     *             if an error occurs while writing to the index.
-    * @throws ItemStateException
-    *             if an node state cannot be found.
     * @throws RepositoryException
     *             if any other error occurs
     * @throws InterruptedException
@@ -2037,8 +2066,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *            the node data to index.
     * @throws IOException
     *             if an error occurs while writing to the index.
-    * @throws ItemStateException
-    *             if an node state cannot be found.
     * @throws RepositoryException
     *             if any other error occurs
     * @throws InterruptedException
@@ -2164,8 +2191,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
     *            the number of nodes already indexed.
     * @throws IOException
     *             if an error occurs while writing to the index.
-    * @throws ItemStateException
-    *             if an node state cannot be found.
     * @throws RepositoryException
     *             if any other error occurs
     * @throws InterruptedException 
@@ -2702,8 +2727,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * 
        * @param transactionId
        *            the id of the transaction that executes this action.
-       * @param uuid
-       *            the uuid of the node to add.
+       * @param node
+       *            the node to add.
        * @param synch
        *             indicates if need to execute command in synchronize mode            
        */
@@ -3520,13 +3545,18 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       return stopped.get();
    }
 
+   public synchronized void setOnline(boolean isOnline, boolean dropStaleIndexes) throws IOException
+   {
+      setOnline(isOnline, dropStaleIndexes,  true);
+   }
+
    /**
     * Switches index mode
     * 
     * @param isOnline
     * @throws IOException
     */
-   public synchronized void setOnline(boolean isOnline, boolean dropStaleIndexes) throws IOException
+   public synchronized void setOnline(boolean isOnline, boolean dropStaleIndexes, boolean initMerger) throws IOException
    {
       // if mode really changed
       if (online.get() != isOnline)
@@ -3547,7 +3577,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                //invoking offline index
                invokeOfflineIndex();
                staleIndexes.clear();
-               initMerger();
+               if(initMerger)
+               {
+                  initMerger();
+               }
             }
             else
             {
@@ -3559,7 +3592,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
          else
          {
             LOG.info("Setting index OFFLINE ({})", handler.getContext().getWorkspacePath(true));
-            if (merger != null)
+            if (initMerger && merger != null)
             {
                merger.dispose();
                merger = null;
@@ -3740,8 +3773,8 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       /**
        * MultithreadedIndexing constructor.
        * 
-       * @param node
-       *            the current NodeState.
+       * @param rootNode
+       *            the root node.
        * @param iterator
        *            NodeDataIndexingIterator
        */
@@ -3766,8 +3799,6 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
        * asynchronous indexing
        * @throws IOException
        *             if an error occurs while writing to the index.
-       * @throws ItemStateException
-       *             if an node state cannot be found.
        * @throws RepositoryException
        *             if any other error occurs
        */

@@ -38,6 +38,15 @@ public interface DirectoryManager {
     void init(SearchIndex handler) throws IOException;
 
     /**
+     * Initializes the directory manager with a reference to the search index.
+     *
+     * @param path the query handler implementation.
+     * @throws IOException if an error occurs while initializing the directory
+     *          manager.
+     */
+    void init(String path) throws IOException;
+
+    /**
      * Checks if there exists a directory with the given <code>name</code>.
      *
      * @param name the name of a directory.

@@ -44,6 +44,12 @@ public class RAMDirectoryManager implements DirectoryManager {
     /**
      * {@inheritDoc}
      */
+    public void init(String path) throws IOException {
+    }
+
+    /**
+     * {@inheritDoc}
+     */
     public boolean hasDirectory(String name) throws IOException {
         synchronized (directories) {
             return directories.containsKey(name);
