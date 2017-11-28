@@ -3710,6 +3710,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   }
                   catch (InterruptedException e)
                   {
+                     LOG.info("JCR indexing thread {} has been interrupted while calling task", Thread.currentThread().getName());
                      Thread.currentThread().interrupt();
                   }
                   catch (Exception e)
@@ -3745,6 +3746,9 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                      break;
                   }
                }
+            }
+            if(Thread.currentThread().isInterrupted()) {
+               LOG.info("JCR indexing thread {} has been interrupted", Thread.currentThread().getName());
             }
             endSignal.countDown();
          }
