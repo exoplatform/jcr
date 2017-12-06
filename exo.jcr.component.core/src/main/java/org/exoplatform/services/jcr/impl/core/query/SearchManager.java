@@ -1386,6 +1386,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
               "HotReindexing-" + handler.getContext().getRepositoryName() + "-"
                       + handler.getContext().getContainer().getWorkspaceName()));
       CompletableFuture<Boolean> reindexFuture = CompletableFuture.supplyAsync(() -> doReindexing(dropExisting, nThreads), executorService);
+      reindexFuture.thenRun(() -> executorService.shutdown());
       return reindexFuture;
    }
 
