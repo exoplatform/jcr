@@ -358,8 +358,7 @@ public abstract class QueryResultImpl implements QueryResult
       }
       catch (IOException e)
       {
-         LOG.error("Exception while executing query: ", e);
-         // todo throw?
+         throw new RepositoryException("Exception while executing query: ", e);
       }
       finally
       {
