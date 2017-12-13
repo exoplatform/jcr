@@ -46,10 +46,10 @@ public class MembershipImpl implements Membership, ExtendedCloneable
    private String userName;
 
    /**
-    * The identifier of the membership. Consists of 3 elements separated by comma:<br>
-    * <li>group node identifier</li>
-    * <li>user name</li>
-    * <li>type name</li>
+    * The identifier of the membership. Consists of 3 elements separated by comma:
+    * * group node identifier
+    * * user name
+    * * type name
     */
    private String id;
 
