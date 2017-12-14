@@ -16,11 +16,7 @@
  */
 package org.exoplatform.services.jcr.impl.core.query;
 
-import org.apache.lucene.index.FieldInfo;
-import org.apache.lucene.index.FieldInfos;
-import org.apache.lucene.index.IndexReader;
-import org.apache.lucene.index.IndexWriter;
-import org.apache.lucene.index.Term;
+import org.apache.lucene.index.*;
 import org.apache.lucene.search.BooleanClause.Occur;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.lucene.search.WildcardQuery;
@@ -38,30 +34,16 @@ import org.exoplatform.management.jmx.annotations.NameTemplate;
 import org.exoplatform.management.jmx.annotations.Property;
 import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.jcr.RepositoryService;
-import org.exoplatform.services.jcr.config.QueryHandlerEntry;
-import org.exoplatform.services.jcr.config.QueryHandlerParams;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.config.*;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
 import org.exoplatform.services.jcr.dataflow.ItemState;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
 import org.exoplatform.services.jcr.dataflow.persistent.MandatoryItemsPersistenceListener;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.datamodel.*;
 import org.exoplatform.services.jcr.impl.Constants;
-import org.exoplatform.services.jcr.impl.backup.BackupException;
-import org.exoplatform.services.jcr.impl.backup.Backupable;
-import org.exoplatform.services.jcr.impl.backup.DataRestore;
-import org.exoplatform.services.jcr.impl.backup.ResumeException;
-import org.exoplatform.services.jcr.impl.backup.SuspendException;
-import org.exoplatform.services.jcr.impl.backup.Suspendable;
+import org.exoplatform.services.jcr.impl.backup.*;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DirectoryRestore;
 import org.exoplatform.services.jcr.impl.checker.InspectionReport;
@@ -83,6 +65,12 @@ import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
 import org.picocontainer.Startable;
 
+import javax.jcr.Node;
+import javax.jcr.PropertyType;
+import javax.jcr.RepositoryException;
+import javax.jcr.Value;
+import javax.jcr.query.InvalidQueryException;
+import javax.jcr.query.Query;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -91,22 +79,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.jcr.Node;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.jcr.Value;
-import javax.jcr.query.InvalidQueryException;
-import javax.jcr.query.Query;
 
 /**
  * Created by The eXo Platform SAS.
@@ -1369,7 +1344,22 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    @Managed
    @ManagedDescription("Starts hot async reindexing")
-   public void reindex(@ManagedName("dropExisting") final boolean dropExisting, @ManagedName("nThreads") final int nThreads) throws IllegalStateException
+   public void reindex(@ManagedName("dropExisting") final boolean dropExisting, @ManagedName("nThreads") final int nThreads)
+           throws IllegalStateException, ExecutionException, InterruptedException {
+     reindexWorkspace(dropExisting, nThreads);
+   }
+
+  /**
+   * Perform hot reindexing of the workspace
+   * @param dropExisting use the same index directory  (if "true") and all queries will throw
+   *                     an exception while task is running. Otherwise (if "false") Server can continue
+   *                     working as expected while index is recreated (the new index is created under
+   *                     a new index folder).
+   * @param nThreads indexing Thread Pool Size, default value is 1.
+   * @return a Future which can be used to get the result of the reindexing (true means successful)
+   * @throws IllegalStateException
+   */
+   public CompletableFuture<Boolean> reindexWorkspace(final boolean dropExisting, int nThreads) throws IllegalStateException
    {
       // checks
       if (handler == null || handler.getIndexerIoModeHandler() == null || changesFilter == null)
@@ -1390,189 +1380,154 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       LOG.info("Starting hot reindexing on the " + handler.getContext().getRepositoryName() + "/"
          + handler.getContext().getContainer().getWorkspaceName() + ", with" + (dropExisting ? "" : "out")
          + " dropping the existing indexes.");
+
       // starting new thread, releasing JMX call
-      new Thread(new Runnable()
-      {
-         public void run()
-         {
-            boolean successful = false;
-            Integer  oldPoolSize = ((SearchIndex) handler).getIndexingThreadPoolSize();
-            String newIndexPath = null;
-
-            hotReindexingState = "Running. Started at " + sdf.format(Calendar.getInstance().getTime());
-            try
-            {
-
-               isResponsibleForResuming.set(true);
-
-               //hot async reindexing with drop exiting index data
-               // set offline index state
-               if(dropExisting)
-               {
-                  // set offline cluster wide (will make merger disposed and volatile flushed)
-                  if (rpcService != null && changesFilter.isShared())
-                  {
-                     rpcService.executeCommandOnAllNodes(changeIndexState, true, false, false);
-                  }
-                  else
-                  {
-                     handler.setOnline(false, false, true);
-                  }
-               }
-               // launch reindexing thread safely, resume nodes if any exception occurs
-               if (handler instanceof SearchIndex)
-               {
-                  if(dropExisting)
-                  {
-                     ((SearchIndex)handler).getIndex().reindex(itemMgr);
-                  }
-                  else
-                  {
-                     String oldIndexPath = ((SearchIndex) handler).getPath();
-                     newIndexPath = oldIndexPath + SUFFIX_ASYNC_REINDEXING;
-
-                     //try remove new index directory if already exist
-                     cleanIndexDirectory(oldIndexPath + SUFFIX_ASYNC_REINDEXING);
-
-                     //hot async reindexing without remove old index
-                     //create new index and register it
-                     MultiIndex newIndex = ((SearchIndex) handler).createNewIndex(SUFFIX_ASYNC_REINDEXING);
-                     ErrorLog errorLog = ((SearchIndex) handler).doInitErrorLog(newIndexPath);
-                     ((SearchIndex) handler).getIndexRegister().register(newIndex, errorLog);
-                     ((SearchIndex) handler).setIndexingThreadPoolSize(nThreads > 1 ? nThreads : 1);
-
-                     //set offline the new index
-                     newIndex.setOnline(false, true, false);
-
-                     //start create new index
-                     newIndex.reindex(itemMgr);
-
-                     //set  online to flush offline index
-                     newIndex.setOnline(true, true, false);
-
-                     //Suspend component, on cluster mode stop all index nodes
-                     //All the working threads will be suspended until the resume operation is performed.
-                     suspend();
-                     ((SearchIndex) handler).getIndexRegister().unregister(newIndex);
-
-                     final File indexDir = new File(oldIndexPath);
-                     final File newIndexDir = new File(oldIndexPath + SUFFIX_ASYNC_REINDEXING);
-
-                     //try remove old index directory
-                     LOG.info("Try to clean old lucene indexes of the workspace '" + workspaceName + "'");
-                     cleanIndexDirectory(oldIndexPath);
-
-                     //try rename new index folder .new
-                     LOG.info("try to rename new lucene indexes of the workspace '" + workspaceName + "'");
-                     SecurityHelper.doPrivilegedIOExceptionAction((PrivilegedExceptionAction<Void>) () -> {
-                        DirectoryHelper.renameFile(newIndexDir, indexDir);
-                        return null;
-                     });
-
-                     // Resume all the working threads that have been previously suspended.
-                     resume();
-                  }
-
-                  successful = true;
-               }
-               else
-               {
-                  LOG.error("This kind of QuerHandler class doesn't support hot reindxing.");
-               }
-            }
-            catch (RepositoryException e)
-            {
-               LOG.error("Error while reindexing the workspace", e);
-            }
-            catch (SecurityException e)
-            {
-               LOG.error("Can't change state to offline.", e);
-            }
-            catch (RPCException e)
-            {
-               LOG.error("Can't change state to offline.", e);
-            }
-            catch (IOException e)
-            {
-               LOG.error("Error while reindexing the workspace", e);
-            }
-            // safely change state back
-            catch (SuspendException e)
-            {
-               LOG.error("Can't suspend SearchIndex component, " +
-                       "impossible to switch to newly created index, the old index still used", e);
-
-            }
-            catch (ResumeException e)
-            {
-               LOG.error("Can't resume SearchIndex component, impossible to set the index online", e);
-            }
-            finally
-            {
-               if(dropExisting)
-               {
-                  // finish, setting indexes back online
-                  if (rpcService != null && changesFilter.isShared())
-                  {
-                     try
-                     {
-                        // if dropExisting, then queries are no allowed
-                        rpcService.executeCommandOnAllNodes(changeIndexState, true, true, true);
-                     }
-                     catch (SecurityException e)
-                     {
-                        LOG.error("Error setting index back online in a cluster", e);
-                     }
-                     catch (RPCException e)
-                     {
-                        LOG.error("Error setting index back online in a cluster", e);
-                     }
-                  }
-                  else
-                  {
-                     try
-                     {
-                        handler.setOnline(true, true, true);
-                     }
-                     catch (IOException e)
-                     {
-                        LOG.error("Error setting index back online locally");
-                     }
-                  }
-               }
-               else
-               {
-                  ((SearchIndex) handler).setIndexingThreadPoolSize(oldPoolSize);
-               }
-               if (successful)
-               {
-                  hotReindexingState = "Finished at " + sdf.format(Calendar.getInstance().getTime());
-                  LOG.info("Reindexing finished successfully.");
-               }
-               else
-               {
-                  hotReindexingState = "Stopped with errors at " + sdf.format(Calendar.getInstance().getTime());
-                  LOG.info("Reindexing halted with errors.");
-                  if(! dropExisting)
-                  {
-                     try
-                     {
-                        if (newIndexPath != null)
-                           cleanIndexDirectory(newIndexPath);
-                     }
-                     catch (IOException e)
-                     {
-                        LOG.error("Error while removing the folder of the index used for the hot reindexing", e);
-
-                     }
-                  }
-               }
-               isResponsibleForResuming.set(false);
-            }
-         }
-      }, "HotReindexing-" + handler.getContext().getRepositoryName() + "-"
-         + handler.getContext().getContainer().getWorkspaceName()).start();
+      ExecutorService executorService = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable,
+              "HotReindexing-" + handler.getContext().getRepositoryName() + "-"
+                      + handler.getContext().getContainer().getWorkspaceName()));
+      CompletableFuture<Boolean> reindexFuture = CompletableFuture.supplyAsync(() -> doReindexing(dropExisting, nThreads), executorService);
+      reindexFuture.thenRun(() -> executorService.shutdown());
+      return reindexFuture;
    }
+
+  /**
+   * Perform workspace reindexing
+   * @param dropExisting
+   * @param nThreads
+   */
+  protected boolean doReindexing(boolean dropExisting, int nThreads) {
+    boolean successful = false;
+    Integer oldPoolSize = ((SearchIndex) handler).getIndexingThreadPoolSize();
+    String newIndexPath = null;
+
+    hotReindexingState = "Running. Started at " + sdf.format(Calendar.getInstance().getTime());
+    try {
+
+      isResponsibleForResuming.set(true);
+
+      //hot async reindexing with drop exiting index data
+      // set offline index state
+      if (dropExisting) {
+        // set offline cluster wide (will make merger disposed and volatile flushed)
+        if (rpcService != null && changesFilter.isShared()) {
+          rpcService.executeCommandOnAllNodes(changeIndexState, true, false, false);
+        } else {
+          handler.setOnline(false, false, true);
+        }
+      }
+      // launch reindexing thread safely, resume nodes if any exception occurs
+      if (handler instanceof SearchIndex) {
+        if (dropExisting) {
+          ((SearchIndex) handler).getIndex().reindex(itemMgr);
+        } else {
+          String oldIndexPath = ((SearchIndex) handler).getPath();
+          newIndexPath = oldIndexPath + SUFFIX_ASYNC_REINDEXING;
+
+          //try remove new index directory if already exist
+          cleanIndexDirectory(oldIndexPath + SUFFIX_ASYNC_REINDEXING);
+
+          //hot async reindexing without remove old index
+          //create new index and register it
+          MultiIndex newIndex = ((SearchIndex) handler).createNewIndex(SUFFIX_ASYNC_REINDEXING);
+          ErrorLog errorLog = ((SearchIndex) handler).doInitErrorLog(newIndexPath);
+          ((SearchIndex) handler).getIndexRegister().register(newIndex, errorLog);
+          ((SearchIndex) handler).setIndexingThreadPoolSize(nThreads > 1 ? nThreads : 1);
+
+          //set offline the new index
+          newIndex.setOnline(false, true, false);
+
+          //start create new index
+          newIndex.reindex(itemMgr);
+
+          //set  online to flush offline index
+          newIndex.setOnline(true, true, false);
+
+          //Suspend component, on cluster mode stop all index nodes
+          //All the working threads will be suspended until the resume operation is performed.
+          suspend();
+          ((SearchIndex) handler).getIndexRegister().unregister(newIndex);
+
+          final File indexDir = new File(oldIndexPath);
+          final File newIndexDir = new File(oldIndexPath + SUFFIX_ASYNC_REINDEXING);
+
+          //try remove old index directory
+          LOG.info("Try to clean old lucene indexes of the workspace '" + workspaceName + "'");
+          cleanIndexDirectory(oldIndexPath);
+
+          //try rename new index folder .new
+          LOG.info("try to rename new lucene indexes of the workspace '" + workspaceName + "'");
+          SecurityHelper.doPrivilegedIOExceptionAction((PrivilegedExceptionAction<Void>) () -> {
+            DirectoryHelper.renameFile(newIndexDir, indexDir);
+            return null;
+          });
+
+          // Resume all the working threads that have been previously suspended.
+          resume();
+        }
+
+        successful = true;
+      } else {
+        LOG.error("This kind of QuerHandler class doesn't support hot reindxing.");
+      }
+    } catch (RepositoryException e) {
+      LOG.error("Error while reindexing the workspace", e);
+    } catch (SecurityException e) {
+      LOG.error("Can't change state to offline.", e);
+    } catch (RPCException e) {
+      LOG.error("Can't change state to offline.", e);
+    } catch (IOException e) {
+      LOG.error("Error while reindexing the workspace", e);
+    }
+    // safely change state back
+    catch (SuspendException e) {
+      LOG.error("Can't suspend SearchIndex component, " +
+              "impossible to switch to newly created index, the old index still used", e);
+
+    } catch (ResumeException e) {
+      LOG.error("Can't resume SearchIndex component, impossible to set the index online", e);
+    } finally {
+      if (dropExisting) {
+        // finish, setting indexes back online
+        if (rpcService != null && changesFilter.isShared()) {
+          try {
+            // if dropExisting, then queries are no allowed
+            rpcService.executeCommandOnAllNodes(changeIndexState, true, true, true);
+          } catch (SecurityException e) {
+            LOG.error("Error setting index back online in a cluster", e);
+          } catch (RPCException e) {
+            LOG.error("Error setting index back online in a cluster", e);
+          }
+        } else {
+          try {
+            handler.setOnline(true, true, true);
+          } catch (IOException e) {
+            LOG.error("Error setting index back online locally");
+          }
+        }
+      } else {
+        ((SearchIndex) handler).setIndexingThreadPoolSize(oldPoolSize);
+      }
+      if (successful) {
+        hotReindexingState = "Finished at " + sdf.format(Calendar.getInstance().getTime());
+        LOG.info("Reindexing finished successfully.");
+      } else {
+        hotReindexingState = "Stopped with errors at " + sdf.format(Calendar.getInstance().getTime());
+        LOG.info("Reindexing halted with errors.");
+        if (!dropExisting) {
+          try {
+            if (newIndexPath != null)
+              cleanIndexDirectory(newIndexPath);
+          } catch (IOException e) {
+            LOG.error("Error while removing the folder of the index used for the hot reindexing", e);
+
+          }
+        }
+      }
+      isResponsibleForResuming.set(false);
+
+      return successful;
+    }
+  }
 
    @Managed
    @ManagedDescription("Hot async reindexing state")

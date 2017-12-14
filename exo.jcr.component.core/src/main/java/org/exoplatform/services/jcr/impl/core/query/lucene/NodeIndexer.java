@@ -355,9 +355,9 @@ public class NodeIndexer
       String fieldName = resolver.createJCRName(prop.getQPath().getName()).getAsString();
       if (propType == PropertyType.BINARY)
       {
-
+         InternalQName propName = prop.getQPath().getName();
          List<ValueData> data = null;
-         if (node.getQPath().getName().equals(Constants.JCR_CONTENT))
+         if (node.getQPath().getName().equals(Constants.JCR_CONTENT) && isIndexed(propName))
          {
 
             // seems nt:file found, try for nt:resource props
