@@ -185,6 +185,9 @@ public class ValueDataUtil
       }
       else
       {
+         // JCR-2463 In case the file was renamed to be removed/changed,
+         // but the transaction wasn't rollbacked cleanly
+         file = fixFileName(file);
          FileInputStream is = new FileInputStream(file);
          try
          {
@@ -211,6 +214,20 @@ public class ValueDataUtil
 
       return vdDataWrapper;
    }
+
+  private static File fixFileName(File file) {
+    if (!file.exists()) {
+      File dirFile = file.getParentFile();
+      File[] listFiles = dirFile.listFiles();
+      String fileNamePrefix = file.getName() + ".";
+      for (File childFile : listFiles) {
+        if (childFile.getName().startsWith(fileNamePrefix)) {
+          return childFile;
+        }
+      }
+    }
+    return file;
+  }
 
    /**
     * Creates value data depending on its type. It avoids storing unnecessary bytes in memory 
