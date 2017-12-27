@@ -129,7 +129,12 @@ public class DeleteValues extends ValueFileOperation
                   // remove the file, we need to unregister the files that
                   // will be restored thanks to the backup file
                   cleaner.removeFile(files[i]);
-                  move(f, files[i]);
+                  File tmpFile = files[i];
+                  if (files[i].getName().contains(".")) {
+                    LOG.warn("file name {} contains '.' ", files[i].getAbsolutePath());
+                    tmpFile = new File(files[i].getParent(), files[i].getName().substring(0, files[i].getName().indexOf(".")));
+                  }
+                  move(f, tmpFile);
                }
             }
          }
