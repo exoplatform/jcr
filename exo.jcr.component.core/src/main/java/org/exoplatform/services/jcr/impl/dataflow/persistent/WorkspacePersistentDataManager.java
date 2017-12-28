@@ -435,17 +435,21 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
          onCommit(persister, mode, txResourceManager);
          failed = false;
       }
-      catch (IOException e)
+      catch (Exception e)
       {
+         LOG.warn("Error while applying changelog", e);
          throw new RepositoryException("Save error", e);
       }
       finally
       {
-         persister.clear();
-         if (failed)
-         {
+        try {
+          persister.clear();
+          if (failed) {
             persister.rollback();
-         }
+          }
+        } catch (Exception e) {
+          LOG.warn("Error while rollbacking changelog", e);
+        }
       }
    }
 
