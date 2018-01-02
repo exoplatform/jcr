@@ -32,6 +32,7 @@ import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -220,7 +221,12 @@ abstract class AbstractIndex
     */
    int removeDocument(final Term idTerm) throws IOException
    {
-      return getIndexReader().deleteDocuments(idTerm);
+      try {
+        return getIndexReader().deleteDocuments(idTerm);
+      } catch (FileNotFoundException e) {
+        log.debug("Document '" + idTerm + "' wasn't found, ignore document removal");
+        return 0;
+      }
    }
 
    /**
