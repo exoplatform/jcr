@@ -100,8 +100,10 @@ public class DeleteValues extends ValueFileOperation
             File file = files[i];
             if (file.exists())
             {
+               String fileName = file.getName().contains(".") ? file.getName().substring(0, file.getName().indexOf("."))
+                                                              : file.getName();
                bckFiles[i] =
-                  new File(file.getAbsolutePath() + "." + System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet());
+                  new File(file.getParent(), fileName + "." + System.currentTimeMillis() + "_" + SEQUENCE.incrementAndGet());
                move(file, bckFiles[i]);
             }
          }
@@ -129,7 +131,14 @@ public class DeleteValues extends ValueFileOperation
                   // remove the file, we need to unregister the files that
                   // will be restored thanks to the backup file
                   cleaner.removeFile(files[i]);
-                  move(f, files[i]);
+                  if (f.exists()) {
+                    File tmpFile = files[i];
+                    if (files[i].getName().contains(".")) {
+                      LOG.warn("file name {} contains '.' ", files[i].getAbsolutePath());
+                      tmpFile = new File(files[i].getParent(), files[i].getName().substring(0, files[i].getName().indexOf(".")));
+                    }
+                    move(f, tmpFile);
+                  }
                }
             }
          }
