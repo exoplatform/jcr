@@ -441,11 +441,14 @@ public abstract class WorkspacePersistentDataManager implements PersistentDataMa
       }
       finally
       {
-         persister.clear();
-         if (failed)
-         {
+        try {
+          persister.clear();
+          if (failed) {
             persister.rollback();
-         }
+          }
+        } catch (Exception e) {
+          LOG.warn("Error while rollbacking changelog. Save operation exception log will be added below rollback exception log", e);
+        }
       }
    }
 
