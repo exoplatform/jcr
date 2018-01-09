@@ -90,6 +90,8 @@ public interface ExtendedEvent extends Event
     */
    public static final int NODE_MOVED  = 33554432;
 
+   public static final int PERMISSION_CHANGED = 67108864;
+
    /**
     * The key <code>srcAbsPath</code> in the info map.
     */
