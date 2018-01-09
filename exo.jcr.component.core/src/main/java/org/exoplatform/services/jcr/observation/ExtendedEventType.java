@@ -46,6 +46,8 @@ public class ExtendedEventType
 
    public static final String PROPERTY_CHANGED = "Property is changed";
 
+   public static final String PERMISSION_CHANGED = "Permission is changed";
+
    public static final String NODE_MOVED = "Node is moved";
 
    public static final String SAVE = "Save";
@@ -144,6 +146,8 @@ public class ExtendedEventType
             return UNLOCK;
          case ExtendedEvent.READ :
             return READ;
+         case ExtendedEvent.PERMISSION_CHANGED :
+            return PERMISSION_CHANGED;
          default :
             return "";
       }
