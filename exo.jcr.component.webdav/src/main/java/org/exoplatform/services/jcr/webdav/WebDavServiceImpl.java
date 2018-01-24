@@ -27,7 +27,6 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
-import org.exoplatform.services.jcr.ext.utils.VersionHistoryUtils;
 import org.exoplatform.services.jcr.webdav.command.AclCommand;
 import org.exoplatform.services.jcr.webdav.command.CopyCommand;
 import org.exoplatform.services.jcr.webdav.command.DeleteCommand;
