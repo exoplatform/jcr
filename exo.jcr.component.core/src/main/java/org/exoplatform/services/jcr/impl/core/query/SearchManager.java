@@ -78,9 +78,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.concurrent.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
@@ -104,7 +108,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * Used to display date and time for JMX components 
     */
-   private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+   private static final DateTimeFormatter sdf  =DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
    protected final QueryHandlerEntry config;
 
@@ -1400,7 +1404,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     Integer oldPoolSize = ((SearchIndex) handler).getIndexingThreadPoolSize();
     String newIndexPath = null;
 
-    hotReindexingState = "Running. Started at " + sdf.format(Calendar.getInstance().getTime());
+    hotReindexingState = "Running. Started at " + LocalDateTime.now().format(sdf);
     try {
 
       isResponsibleForResuming.set(true);
@@ -1508,10 +1512,10 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
         ((SearchIndex) handler).setIndexingThreadPoolSize(oldPoolSize);
       }
       if (successful) {
-        hotReindexingState = "Finished at " + sdf.format(Calendar.getInstance().getTime());
+        hotReindexingState = "Finished at " + LocalDateTime.now().format(sdf);
         LOG.info("Reindexing finished successfully.");
       } else {
-        hotReindexingState = "Stopped with errors at " + sdf.format(Calendar.getInstance().getTime());
+        hotReindexingState = "Stopped with errors at " + LocalDateTime.now().format(sdf);
         LOG.info("Reindexing halted with errors.");
         if (!dropExisting) {
           try {
