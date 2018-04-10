@@ -97,7 +97,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.security.PrivilegedActionException;
 import java.security.PrivilegedExceptionAction;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.HashSet;
@@ -106,6 +107,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.Node;
@@ -136,7 +141,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    /**
     * Used to display date and time for JMX components 
     */
-   private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+   private static final DateTimeFormatter sdf  =DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
    protected final QueryHandlerEntry config;
 
@@ -1396,7 +1401,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          public void run()
          {
             boolean successful = false;
-            hotReindexingState = "Running. Started at " + sdf.format(Calendar.getInstance().getTime());
+            hotReindexingState = "Running. Started at " + LocalDateTime.now().format(sdf);
             try
             {
                isResponsibleForResuming.set(true);
@@ -1469,12 +1474,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
                }
                if (successful)
                {
-                  hotReindexingState = "Finished at " + sdf.format(Calendar.getInstance().getTime());
+                  hotReindexingState = "Finished at " + LocalDateTime.now().format(sdf);
                   LOG.info("Reindexing finished successfully.");
                }
                else
                {
-                  hotReindexingState = "Stopped with errors at " + sdf.format(Calendar.getInstance().getTime());
+                  hotReindexingState = "Stopped with errors at " + LocalDateTime.now().format(sdf);
                   LOG.info("Reindexing halted with errors.");
                }
                isResponsibleForResuming.set(false);
