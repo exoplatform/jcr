@@ -180,6 +180,11 @@
          </value-param>
 
          <value-param>
+            <name>folder-listing-paths-allowed-regex</name>
+            <value>(ws:/(.*))|(ws1:/(.*))|(ws2:/folder1/(.*)/(.*))|(ws_:/(.*))</value>
+         </value-param>
+
+         <value-param>
             <name>def-file-node-type</name>
             <value>nt:file</value>
          </value-param>
