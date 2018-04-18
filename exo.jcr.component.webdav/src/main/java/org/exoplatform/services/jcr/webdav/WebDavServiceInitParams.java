@@ -27,17 +27,11 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
-
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import java.util.*;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * Provides means to parse WebDAV service initial parameters and gain access to their values.
@@ -112,6 +106,12 @@ public class WebDavServiceInitParams
     */
 
    private boolean enableAutoVersion =  false ;
+
+   /**
+    * folder listing paths allowed regex
+    */
+
+   private String folderListingAllowedRegex =  "" ;
 
    /**
     * Map of jcr (path , workspace) of allowed auto versioning.
@@ -191,6 +191,7 @@ public class WebDavServiceInitParams
       defaultUpdatePolicyType = pmp.processSingleParameter(defaultUpdatePolicyType, InitParamsNames.UPDATE_POLICY);
       defaultAutoVersionType = pmp.processSingleParameter(defaultAutoVersionType, InitParamsNames.AUTO_VERSION);
       enableAutoVersion = pmp.processSingleParameter(enableAutoVersion, InitParamsNames.ENABLE_AUTO_VERSION);
+      folderListingAllowedRegex = pmp.processSingleParameter(folderListingAllowedRegex, InitParamsNames.FOLDER_LISTING_PATHS_ALLOWED_REGEX);
 
       pmp.processMultiParameter(untrustedUserAgents, InitParamsNames.UNTRUSTED_USER_AGENTS);
       for (String pattern : untrustedUserAgents)
@@ -349,6 +350,14 @@ public class WebDavServiceInitParams
    public boolean isEnableAutoVersion()
    {
       return enableAutoVersion;
+   }
+
+   public String getFolderListingAllowedRegex() {
+      return folderListingAllowedRegex;
+   }
+
+   public void setFolderListingAllowedRegex(String folderListingAllowedRegex) {
+      this.folderListingAllowedRegex = folderListingAllowedRegex;
    }
 
    private class ParametersMapProcessor
