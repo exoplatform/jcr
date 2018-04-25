@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.webdav;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.commons.utils.MimeTypeResolver;
@@ -27,26 +28,8 @@ import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
-import org.exoplatform.services.jcr.ext.utils.VersionHistoryUtils;
-import org.exoplatform.services.jcr.webdav.command.AclCommand;
-import org.exoplatform.services.jcr.webdav.command.CopyCommand;
-import org.exoplatform.services.jcr.webdav.command.DeleteCommand;
-import org.exoplatform.services.jcr.webdav.command.GetCommand;
-import org.exoplatform.services.jcr.webdav.command.HeadCommand;
-import org.exoplatform.services.jcr.webdav.command.LockCommand;
-import org.exoplatform.services.jcr.webdav.command.MkColCommand;
-import org.exoplatform.services.jcr.webdav.command.MoveCommand;
-import org.exoplatform.services.jcr.webdav.command.OrderPatchCommand;
-import org.exoplatform.services.jcr.webdav.command.PropFindCommand;
-import org.exoplatform.services.jcr.webdav.command.PropPatchCommand;
-import org.exoplatform.services.jcr.webdav.command.PutCommand;
-import org.exoplatform.services.jcr.webdav.command.SearchCommand;
-import org.exoplatform.services.jcr.webdav.command.UnLockCommand;
-import org.exoplatform.services.jcr.webdav.command.deltav.CheckInCommand;
-import org.exoplatform.services.jcr.webdav.command.deltav.CheckOutCommand;
-import org.exoplatform.services.jcr.webdav.command.deltav.ReportCommand;
-import org.exoplatform.services.jcr.webdav.command.deltav.UnCheckOutCommand;
-import org.exoplatform.services.jcr.webdav.command.deltav.VersionControlCommand;
+import org.exoplatform.services.jcr.webdav.command.*;
+import org.exoplatform.services.jcr.webdav.command.deltav.*;
 import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
 import org.exoplatform.services.jcr.webdav.util.InitParamsDefaults;
 import org.exoplatform.services.jcr.webdav.util.NodeTypeUtil;
@@ -54,32 +37,8 @@ import org.exoplatform.services.jcr.webdav.util.TextUtil;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ExtHttpHeaders;
-import org.exoplatform.services.rest.ext.webdav.method.ACL;
-import org.exoplatform.services.rest.ext.webdav.method.CHECKIN;
-import org.exoplatform.services.rest.ext.webdav.method.CHECKOUT;
-import org.exoplatform.services.rest.ext.webdav.method.COPY;
-import org.exoplatform.services.rest.ext.webdav.method.LOCK;
-import org.exoplatform.services.rest.ext.webdav.method.MKCOL;
-import org.exoplatform.services.rest.ext.webdav.method.MOVE;
-import org.exoplatform.services.rest.ext.webdav.method.OPTIONS;
-import org.exoplatform.services.rest.ext.webdav.method.ORDERPATCH;
-import org.exoplatform.services.rest.ext.webdav.method.PROPFIND;
-import org.exoplatform.services.rest.ext.webdav.method.PROPPATCH;
-import org.exoplatform.services.rest.ext.webdav.method.REPORT;
-import org.exoplatform.services.rest.ext.webdav.method.SEARCH;
-import org.exoplatform.services.rest.ext.webdav.method.UNCHECKOUT;
-import org.exoplatform.services.rest.ext.webdav.method.UNLOCK;
-import org.exoplatform.services.rest.ext.webdav.method.VERSIONCONTROL;
+import org.exoplatform.services.rest.ext.webdav.method.*;
 import org.exoplatform.services.rest.resource.ResourceContainer;
-
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 import javax.jcr.NoSuchWorkspaceException;
 import javax.jcr.PathNotFoundException;
@@ -88,18 +47,21 @@ import javax.jcr.Session;
 import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeManager;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.HEAD;
-import javax.ws.rs.HeaderParam;
-import javax.ws.rs.PUT;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Created by The eXo Platform SAS.
@@ -141,6 +103,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     */
    private static final String ALLOW;
 
+   private Pattern pattern;
+
    private final MimeTypeResolver mimeTypeResolver;
 
    static
@@ -177,6 +141,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    {
       this(repositoryService, sessionProviderService);
       this.webDavServiceInitParams = new WebDavServiceInitParams(params);
+      this.pattern = StringUtils.isNotBlank(webDavServiceInitParams.getFolderListingAllowedRegex()) ?
+              Pattern.compile(webDavServiceInitParams.getFolderListingAllowedRegex()) : null;
    }
 
    /**
@@ -191,6 +157,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
    {
       this(repositoryService, sessionProviderService);
       this.webDavServiceInitParams = new WebDavServiceInitParams(params);
+      this.pattern = StringUtils.isNotBlank(webDavServiceInitParams.getFolderListingAllowedRegex()) ?
+              Pattern.compile(webDavServiceInitParams.getFolderListingAllowedRegex()) : null;
    }
 
    /**
@@ -208,6 +176,8 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       this.mimeTypeResolver = new MimeTypeResolver();
       this.mimeTypeResolver.setDefaultMimeType(InitParamsDefaults.FILE_MIME_TYPE);
       this.webDavServiceInitParams = new WebDavServiceInitParams();
+      this.pattern = StringUtils.isNotBlank(webDavServiceInitParams.getFolderListingAllowedRegex()) ?
+              Pattern.compile(webDavServiceInitParams.getFolderListingAllowedRegex()) : null;
    }
 
    /**
@@ -499,7 +469,13 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       try
       {
          repoName = getRepositoryName(repoName);
-         Session session = session(repoName, workspaceName(repoPath), null);
+         String workspaceName = workspaceName(repoPath);
+         String path = path(repoPath);
+         if(!isAllowedPath(workspaceName, path))
+         {
+            return Response.status(HTTPStatus.NOT_FOUND).build();
+         }
+         Session session = session(repoName, workspaceName, null);
 
          ArrayList<Range> ranges = new ArrayList<Range>();
 
@@ -545,7 +521,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
          String uri =
             uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
                .toString();
-         return new GetCommand(webDavServiceInitParams.getXsltParams()).get(session, path(repoPath), version, uri,
+         return new GetCommand(webDavServiceInitParams.getXsltParams()).get(session, path, version, uri,
             ranges, ifModifiedSince, ifNoneMatch, webDavServiceInitParams.getCacheControlMap());
 
       }
@@ -961,12 +937,18 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       try
       {
          repoName = getRepositoryName(repoName);
-         Session session = session(repoName, workspaceName(repoPath), null);
+         String workspaceName = workspaceName(repoPath);
+         String path = path(repoPath);
+         if(!isAllowedPath(workspaceName, path))
+         {
+            return Response.status(HTTPStatus.NOT_FOUND).build();
+         }
+         Session session = session(repoName, workspaceName, null);
          String uri =
-            uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
+            uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName).build()
                .toString();
          Depth depth = new Depth(depthHeader);
-         return new PropFindCommand().propfind(session, path(repoPath), body, depth.getIntValue(), uri);
+         return new PropFindCommand().propfind(session, path, body, depth.getIntValue(), uri);
       }
       catch (NoSuchWorkspaceException exc)
       {
@@ -1185,9 +1167,15 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       try
       {
          repoName = getRepositoryName(repoName);
-         Session session = session(repoName, workspaceName(repoPath), null);
+         String workspaceName = workspaceName(repoPath);
+         String path = path(repoPath);
+         if(!isAllowedPath(workspaceName, path))
+         {
+            return Response.status(HTTPStatus.NOT_FOUND).build();
+         }
+         Session session = session(repoName, workspaceName, null);
          String uri =
-            uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName(repoPath)).build()
+            uriInfo.getBaseUriBuilder().path(getClass()).path(repoName).path(workspaceName).build()
                .toString();
          return new SearchCommand().search(session, body, uri);
 
@@ -1509,6 +1497,25 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       {
          return new URI(TextUtil.escape(path, '%', true));
       }
+   }
+
+   /**
+    * Check resource access allowed
+    * @param workspaceName
+    * @param path
+    * @return true if access is allowed otherwise false
+    */
+   private boolean isAllowedPath(String workspaceName, String path)
+   {
+      if(pattern == null)
+         return true;
+      Matcher matcher= pattern.matcher(workspaceName+":"+path);
+      if(!matcher.find())
+      {
+         log.warn("Access not allowed to webdav resource {}",path);
+         return false;
+      }
+      return true;
    }
 
 }

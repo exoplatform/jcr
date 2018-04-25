@@ -109,6 +109,21 @@ public class FSDirectoryManager implements DirectoryManager
    /**
     * {@inheritDoc}
     */
+   public void init(final String path) throws IOException
+   {
+      SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Object>()
+      {
+         public Object run() throws Exception
+         {
+            baseDir = new File(path);
+            return null;
+         }
+      });
+   }
+
+   /**
+    * {@inheritDoc}
+    */
    public boolean hasDirectory(final String name) throws IOException
    {
       return SecurityHelper.doPrivilegedIOExceptionAction(new PrivilegedExceptionAction<Boolean>()

@@ -504,7 +504,7 @@ public class GroovyScript2RestLoader implements Startable
                String scriptName = xg.getName();
                if (node.hasNode(scriptName))
                {
-                  LOG.warn("Node '" + node.getPath() + "/" + scriptName + "' already exists. ");
+                  LOG.debug("Script {} already created", scriptName);
                   continue;
                }
 

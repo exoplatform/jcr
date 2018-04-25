@@ -23,6 +23,7 @@ import org.exoplatform.container.xml.ObjectParameter;
 import org.exoplatform.services.command.action.ActionMatcher;
 import org.exoplatform.services.command.action.Condition;
 import org.exoplatform.services.ext.action.InvocationContext;
+import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.core.nodetype.NodeTypeDataManager;
 import org.exoplatform.services.jcr.datamodel.InternalQName;
 import org.exoplatform.services.jcr.datamodel.QPath;
@@ -37,10 +38,7 @@ import org.exoplatform.services.jcr.impl.ext.action.SessionEventMatcher;
 import org.exoplatform.services.jcr.observation.ExtendedEvent;
 import org.exoplatform.services.jcr.usecases.BaseUsecasesTest;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.jcr.ItemExistsException;
 import javax.jcr.Node;
@@ -352,6 +350,44 @@ public class TestSessionActionCatalog extends BaseUsecasesTest
       assertEquals(1, dAction.getActionExecuterCount());
       tnode.addMixin("mix:referenceable");
       assertEquals(2, dAction.getActionExecuterCount());
+   }
+
+   public void testChangePermissionAction() throws Exception
+   {
+      SessionActionCatalog catalog =
+              (SessionActionCatalog)container.getComponentInstanceOfType(SessionActionCatalog.class);
+      catalog.clear();
+
+      SessionEventMatcher matcher =
+              new SessionEventMatcher(ExtendedEvent.PERMISSION_CHANGED, new QPath[]{((NodeImpl)root).getInternalPath()}, true, null,
+                      new InternalQName[]{Constants.NT_UNSTRUCTURED}, ntHolder);
+      DummyAction dAction = new DummyAction();
+      catalog.addAction(matcher, dAction);
+
+      NodeImpl testNode = (NodeImpl) root.addNode("testNode");
+      testNode.addMixin("exo:privilegeable");
+      root.save();
+
+      assertEquals(0, dAction.getActionExecuterCount());
+      testNode.setPermission("john", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY,
+              PermissionType.REMOVE});
+      root.save();
+      assertEquals(1, dAction.getActionExecuterCount());
+
+      HashMap<String, String[]> perm = new HashMap<String, String[]>();
+      perm.put("mary", new String[]{PermissionType.READ});
+      perm.put("admin", PermissionType.ALL);
+      perm.put("john", new String[]{PermissionType.READ, PermissionType.SET_PROPERTY,
+              PermissionType.REMOVE});
+      testNode.setPermissions(perm);
+      root.save();
+      assertEquals(2, dAction.getActionExecuterCount());
+      testNode.removePermission("mary");
+      root.save();
+      assertEquals(3, dAction.getActionExecuterCount());
+      testNode.removePermission("john", PermissionType.REMOVE);
+      root.save();
+      assertEquals(4, dAction.getActionExecuterCount());
    }
 
    public void testRemoveMixinAction() throws Exception

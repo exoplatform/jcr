@@ -25,13 +25,13 @@
   <parent>
     <groupId>org.exoplatform</groupId>
     <artifactId>foundation-parent</artifactId>
-    <version>16.x-SNAPSHOT</version>
+    <version>17-M01</version>
     <relativePath />
   </parent>
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>5.0.x-SNAPSHOT</version>
+  <version>5.1.x-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo PLF:: JCR</name>
   <description>Exoplatform SAS 'eXo JCR'(JSR-170 implementation) project.</description>
@@ -46,11 +46,13 @@
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.16</exo.product.specification>
-    <org.exoplatform.kernel.version>5.0.x-SNAPSHOT</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>5.0.x-SNAPSHOT</org.exoplatform.core.version>
-    <org.exoplatform.ws.version>5.0.x-SNAPSHOT</org.exoplatform.ws.version>
+    <org.exoplatform.kernel.version>5.1.x-SNAPSHOT</org.exoplatform.kernel.version>
+    <org.exoplatform.core.version>5.1.x-SNAPSHOT</org.exoplatform.core.version>
+    <org.exoplatform.ws.version>5.1.x-SNAPSHOT</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
     <org.exoplatform.doc.doc-style.version>4.0.0</org.exoplatform.doc.doc-style.version>
+    <infinispan.version>8.2.6.Final</infinispan.version>
+    <jgroups.version>3.6.7.Final</jgroups.version>
   </properties>
 
   <dependencyManagement>
@@ -87,7 +89,7 @@
       </dependency>
       <dependency>
         <groupId>org.exoplatform.kernel</groupId>
-        <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v5</artifactId>
+        <artifactId>exo.kernel.component.ext.cache.impl.infinispan.v8</artifactId>
         <version>${org.exoplatform.kernel.version}</version>
       </dependency>
       <dependency>
@@ -114,6 +116,13 @@
         <groupId>org.exoplatform.core</groupId>
         <artifactId>exo.core.component.script.groovy</artifactId>
         <version>${org.exoplatform.core.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.core</groupId>
+        <artifactId>exo.core.component.organization.tests</artifactId>
+        <version>${org.exoplatform.core.version}</version>
+        <classifier>test-sources</classifier>
+        <scope>test</scope>
       </dependency>
       <dependency>
         <groupId>org.exoplatform.ws</groupId>
@@ -284,7 +293,7 @@
       <dependency>
         <groupId>org.hsqldb</groupId>
         <artifactId>hsqldb</artifactId>
-        <version>2.3.3</version>
+        <version>2.4.0</version>
       </dependency>
       <dependency>
         <groupId>org.jboss.jbossts</groupId>
@@ -304,7 +313,7 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-core</artifactId>
-        <version>5.2.9.Final</version>
+        <version>${infinispan.version}</version>
         <exclusions>
           <exclusion>
             <groupId>org.jboss.spec.javax.transaction</groupId>
@@ -315,12 +324,17 @@
       <dependency>
         <groupId>org.infinispan</groupId>
         <artifactId>infinispan-cachestore-jdbc</artifactId>
-        <version>5.2.9.Final</version>
+        <version>${infinispan.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.infinispan</groupId>
+        <artifactId>infinispan-commons</artifactId>
+        <version>${infinispan.version}</version>
       </dependency>
       <dependency>
         <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
-        <version>3.2.7.Final</version>
+        <version>${jgroups.version}</version>
       </dependency>
       <dependency>
         <groupId>org.antlr</groupId>
@@ -335,7 +349,7 @@
       <dependency>
          <groupId>org.codehaus.groovy</groupId>
          <artifactId>groovy-all</artifactId>
-         <version>1.8.9</version>
+         <version>2.4.11</version>
       </dependency>
       <dependency>
          <groupId>org.exoplatform.doc</groupId>
@@ -421,6 +435,7 @@
     <module>exo.jcr.component.core</module>
     <module>exo.jcr.component.statistics</module>
     <module>exo.jcr.component.ext</module>
+    <module>exo.jcr.ext.services</module>
     <module>exo.jcr.component.ftp</module>
     <module>exo.jcr.component.webdav</module>
     <module>exo.jcr.connectors.jca</module>

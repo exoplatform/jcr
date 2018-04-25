@@ -58,6 +58,12 @@ public class SearchIndexConfigurationHelper
       {
          setParam(parameter.getName(), parameter.getValue());
       }
+      /*rsync is used as local index recovery strategy*/
+      if(SearchIndex.INDEX_RECOVERY_RSYNC_STRATEGY.equals(searchIndex.getIndexRecoveryStrategy()) ||
+              SearchIndex.INDEX_RECOVERY_RSYNC_WITH_DELETE_STRATEGY.equals(searchIndex.getIndexRecoveryStrategy()))
+      {
+         searchIndex.setRsyncConfiguration(new RSyncConfiguration(queryHandlerEntry));
+      }
    }
 
    /**
@@ -197,6 +203,10 @@ public class SearchIndexConfigurationHelper
       else if (QueryHandlerParams.PARAM_INDEX_RECOVERY_MODE.equals(name))
       {
          searchIndex.setIndexRecoveryMode(value);
+      }
+      else if (QueryHandlerParams.PARAM_INDEX_RECOVERY_STRATEGY.equals(name))
+      {
+         searchIndex.setIndexRecoveryStrategy(value);
       }
       else if (QueryHandlerParams.PARAM_ASYNC_REINDEXING.equals(name))
       {

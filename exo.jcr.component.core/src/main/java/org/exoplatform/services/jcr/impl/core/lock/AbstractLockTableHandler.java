@@ -131,6 +131,29 @@ public abstract class AbstractLockTableHandler implements LockTableHandler
    }
 
    /**
+    * {@inheritDoc}
+    */
+   public void cleanLocks() throws SQLException
+   {
+      ResultSet resultSet = null;
+      PreparedStatement preparedStatement = null;
+
+      Connection jdbcConnection = openConnection();
+      try
+      {
+         InspectionQuery query = getDeleteAllQuery();
+
+         preparedStatement = jdbcConnection.prepareStatement(query.getStatement());
+         preparedStatement.executeUpdate();
+      }
+      finally
+      {
+         JDBCUtils.freeResources(resultSet, preparedStatement, jdbcConnection);
+      }
+
+   }
+
+   /**
     * Returns node identifier from ID column's value {@link DataSource}.
     */
    protected abstract String extractNodeId(String value);
@@ -139,6 +162,11 @@ public abstract class AbstractLockTableHandler implements LockTableHandler
     * Returns {@link InspectionQuery} for removing row from LOCK table.
     */
    protected abstract InspectionQuery getDeleteQuery(String nodeId) throws SQLException;
+
+   /**
+    * Returns {@link InspectionQuery} for removing all rows from LOCK table.
+    */
+   protected abstract InspectionQuery getDeleteAllQuery() throws SQLException;
 
    /**
     * Returns {@link InspectionQuery} for selecting all rows from LOCK table.

@@ -31,8 +31,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.query.lucene.FieldNames;
 import org.exoplatform.services.jcr.impl.core.query.lucene.Util;
 
-import java.io.FileInputStream;
-import java.net.URL;
+import java.io.InputStream;
 import java.util.Calendar;
 
 /**
@@ -46,10 +45,8 @@ public class TestExcelFileSearch extends BaseQueryTest
 
    public void testFindFileContent() throws Exception
    {
-      URL url = TestExcelFileSearch.class.getResource("/test.xls");
-      assertNotNull("test.xls not found", url);
-
-      FileInputStream fis = new FileInputStream(url.getFile());
+      InputStream inputStream = TestExcelFileSearch.class.getResourceAsStream("/test.xls");
+      assertNotNull("test.xls not found", inputStream);
 
       NodeImpl node = (NodeImpl)root.addNode("excelFile", "nt:file");
       NodeImpl cont = (NodeImpl)node.addNode("jcr:content", "nt:resource");
@@ -57,11 +54,11 @@ public class TestExcelFileSearch extends BaseQueryTest
       cont.setProperty("jcr:lastModified", Calendar.getInstance());
       // cont.setProperty("jcr:encoding","UTF-8");
 
-      cont.setProperty("jcr:data", fis);
+      cont.setProperty("jcr:data", inputStream);
       root.save();
 
-      fis.close();
-      fis = new FileInputStream(url.getFile());
+      inputStream.close();
+
       DocumentReaderService extr =
          (DocumentReaderService)session.getContainer().getComponentInstanceOfType(DocumentReaderService.class);
 
@@ -81,11 +78,6 @@ public class TestExcelFileSearch extends BaseQueryTest
       {
          fail("Wrong document reader");
       }
-
-      // String text = dreader.getContentAsText(fis);
-
-      // System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> \n"+text +
-      // "\n>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
       // Arabic word
       String word = "eric";

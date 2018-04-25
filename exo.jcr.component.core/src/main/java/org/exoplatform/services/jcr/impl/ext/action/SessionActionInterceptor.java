@@ -302,6 +302,42 @@ public class SessionActionInterceptor
       }
    }
 
+   public void postSetPermission(NodeImpl node) throws RepositoryException
+   {
+      if (catalog == null)
+      {
+         return;
+      }
+      if (activeItem == null)
+      {
+         activeItem = node;
+      }
+      else
+      {
+         return;
+      }
+
+      try
+      {
+         Condition conditions = new Condition();
+         conditions.put(SessionEventMatcher.EVENTTYPE_KEY, ExtendedEvent.PERMISSION_CHANGED);
+         conditions.put(SessionEventMatcher.PATH_KEY, node.getInternalPath());
+         conditions.put(SessionEventMatcher.NODETYPES_KEY, readNodeTypeNames((NodeData)node.getData()));
+         conditions.put(SessionEventMatcher.WORKSPACE_KEY, workspaceName);
+
+         InvocationContext ctx = new InvocationContext();
+         ctx.put(InvocationContext.CURRENT_ITEM, node);
+         ctx.put(InvocationContext.EVENT, ExtendedEvent.PERMISSION_CHANGED);
+         ctx.put(InvocationContext.EXO_CONTAINER, container);
+         launch(conditions, ctx);
+      }
+      finally
+      {
+         activeItem = null;
+      }
+
+   }
+
    public void postSetProperty(PropertyImpl previousProperty, PropertyImpl currentProperty, NodeData parent, int state)
       throws RepositoryException
    {

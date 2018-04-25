@@ -24,6 +24,7 @@ import org.exoplatform.services.jcr.impl.core.NodeImpl;
 import org.exoplatform.services.jcr.impl.core.lock.cacheable.AbstractCacheableLockManager;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.CacheableWorkspaceDataManager;
 import org.exoplatform.services.jcr.impl.storage.jdbc.JDBCWorkspaceDataContainer;
+import org.infinispan.IllegalLifecycleStateException;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -136,6 +137,8 @@ public class TestLockImpl extends JcrImplBaseTest
       {
          // Remove info from the db
          container.start();
+         //wait remove thread lock finished (asynchrone remove)
+         Thread.sleep(LOCK_REMOVER_WAIT);
          // Remove info from the cache
          dataManager.start();
       }
@@ -197,7 +200,7 @@ public class TestLockImpl extends JcrImplBaseTest
       {
          assertFalse(lockManager.lockExist(node.getUUID()));
       }
-      catch (IllegalStateException e)
+      catch (IllegalLifecycleStateException e)
       {
          // not check for ISPN cache.
       }

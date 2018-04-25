@@ -36,23 +36,15 @@ import org.exoplatform.services.rest.impl.ContainerResponse;
 import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
 import org.exoplatform.services.security.IdentityConstants;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.StringWriter;
-import java.net.URLDecoder;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
-
 import javax.jcr.Node;
 import javax.jcr.Session;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MultivaluedMap;
+import java.io.*;
+import java.net.URLDecoder;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Locale;
 
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
@@ -105,6 +97,22 @@ public class TestGet extends BaseStandaloneTest
    {
       ContainerResponse response = serviceWithEscape(WebDAVMethods.GET, getPathWS() + "/not-found" + path, "", null, null);
       assertEquals(HTTPStatus.NOT_FOUND, response.getStatus());
+   }
+
+   public void testFolderListingAllowed() throws Exception
+   {
+      TestUtils.addFolder(session2, "/folder1", defaultFolderNodeType, "");
+
+      ContainerResponse response = serviceWithEscape(WebDAVMethods.GET, getPathWS()+"2" + "/folder1" + path, "", null, null);
+      assertEquals(HTTPStatus.NOT_FOUND, response.getStatus());
+
+      response = serviceWithEscape(WebDAVMethods.GET, getPathWS()+"2" + "/folder1/folder2" + path, "", null, null);
+      assertEquals(HTTPStatus.NOT_FOUND, response.getStatus());
+
+      TestUtils.addFolder(session2, "/folder1/folder2", defaultFolderNodeType, "");
+      TestUtils.addFolder(session2, "/folder1/folder2/folder3", defaultFolderNodeType, "");
+      response = serviceWithEscape(WebDAVMethods.GET, getPathWS()+"2" + "/folder1/folder2/folder3", "", null, null);
+      assertEquals(HTTPStatus.OK, response.getStatus());
    }
 
    /**

@@ -52,6 +52,14 @@ public class RSyncJob
 
    private String password;
 
+   private String excludeDir;
+
+   public RSyncJob(String src, String dst, String userName, String password, String excludeDir)
+   {
+      this(src, dst, userName, password);
+      this.excludeDir = excludeDir;
+   }
+
    public RSyncJob(String src, String dst, String userName, String password)
    {
       this.src = src.endsWith(File.separator) ? src : src + File.separator;
@@ -71,7 +79,16 @@ public class RSyncJob
       Runtime run = Runtime.getRuntime();
       try
       {
-         String command = "rsync -rv --delete " + src + " " + dst;
+         String command ;
+         if(excludeDir != null && !excludeDir.isEmpty())
+         {
+            command= "rsync -rv --delete --exclude "+ excludeDir + " " + src + " " + dst;
+         }
+         else
+         {
+            command= "rsync -rv --delete " + src + " " + dst;
+         }
+
          if (LOG.isDebugEnabled())
          {
             LOG.debug("Rsync job started: " + command);

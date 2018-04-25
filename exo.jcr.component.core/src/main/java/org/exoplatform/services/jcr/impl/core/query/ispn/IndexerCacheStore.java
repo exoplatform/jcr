@@ -22,20 +22,17 @@ import org.exoplatform.services.jcr.impl.core.query.ChangesFilterListsWrapper;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
 import org.exoplatform.services.jcr.util.IdGenerator;
-import org.infinispan.Cache;
 import org.infinispan.container.DataContainer;
 import org.infinispan.container.entries.InternalCacheEntry;
 import org.infinispan.lifecycle.ComponentStatus;
-import org.infinispan.loaders.CacheLoaderConfig;
-import org.infinispan.loaders.CacheLoaderException;
 import org.infinispan.manager.EmbeddedCacheManager;
-import org.infinispan.marshall.StreamingMarshaller;
 import org.infinispan.notifications.Listener;
 import org.infinispan.notifications.cachemanagerlistener.annotation.CacheStarted;
 import org.infinispan.notifications.cachemanagerlistener.annotation.Merged;
 import org.infinispan.notifications.cachemanagerlistener.annotation.ViewChanged;
 import org.infinispan.notifications.cachemanagerlistener.event.Event;
 import org.infinispan.notifications.cachemanagerlistener.event.ViewChangedEvent;
+import org.infinispan.persistence.spi.InitializationContext;
 import org.infinispan.remoting.transport.Address;
 
 import java.util.ArrayList;
@@ -74,11 +71,12 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
 
    protected EmbeddedCacheManager cacheManager;
 
+
    @Override
-   public void init(CacheLoaderConfig config, Cache<?, ?> cache, StreamingMarshaller m) throws CacheLoaderException
+   public void init(InitializationContext ctx)
    {
-      super.init(config, cache, m);
-      this.cacheManager = cache == null ? null : cache.getCacheManager();
+      super.init(ctx);
+      this.cacheManager = ctx.getCache().getCacheManager();
       listener = new CacheListener();
       cacheManager.addListener(listener);
    }
@@ -91,7 +89,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
       if (modeHandler == null)
       {
 
-         if (cache.getStatus() != ComponentStatus.RUNNING)
+         if (ctx.getCache().getStatus() != ComponentStatus.RUNNING)
          {
             throw new IllegalStateException("The cache should be started first");
          }
@@ -101,7 +99,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
             {
                this.modeHandler =
                   new IndexerIoModeHandler(cacheManager.isCoordinator()
-                     || cache.getAdvancedCache().getRpcManager() == null ? IndexerIoMode.READ_WRITE
+                     || ctx.getCache().getAdvancedCache().getRpcManager() == null ? IndexerIoMode.READ_WRITE
                      : IndexerIoMode.READ_ONLY);
             }
          }
@@ -178,7 +176,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
       Map<String, ChangesFilterListsWrapper> changesMap = new HashMap<String, ChangesFilterListsWrapper>();
       List<ChangesKey> processedItemKeys = new ArrayList<ChangesKey>();
 
-      DataContainer dc = cache.getAdvancedCache().getDataContainer();
+      DataContainer dc = ctx.getCache().getAdvancedCache().getDataContainer();
       Set keys = dc.keySet();
       InternalCacheEntry entry;
       // collect all cache entries into the following map:
@@ -226,12 +224,12 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
       {
          // create key based on wsId and generated id
          ChangesKey changesKey = new ChangesKey(changesEntry.getKey(), IdGenerator.generate());
-         cache.putAsync(changesKey, changesEntry.getValue());
+         ctx.getCache().putAsync(changesKey, changesEntry.getValue());
       }
 
       for (ChangesKey key : processedItemKeys)
       {
-         cache.removeAsync(key);
+         ctx.getCache().removeAsync(key);
       }
 
       if (debugEnabled)
@@ -277,7 +275,7 @@ public class IndexerCacheStore extends AbstractIndexerCacheStore
     * {@inheritDoc}
     */
    @Override
-   public void stop() throws CacheLoaderException
+   public void stop()
    {
       cacheManager.removeListener(listener);
       super.stop();

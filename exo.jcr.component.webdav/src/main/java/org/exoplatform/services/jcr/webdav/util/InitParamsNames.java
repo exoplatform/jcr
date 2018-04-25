@@ -91,4 +91,9 @@ public interface InitParamsNames
     */
    String ENABLE_AUTO_VERSION = "enableAutoVersion";
 
+   /**
+    * Initialization parameter {@link String} representation: folder listing paths allowed regex
+    */
+   String FOLDER_LISTING_PATHS_ALLOWED_REGEX = "folder-listing-paths-allowed-regex";
+
 }

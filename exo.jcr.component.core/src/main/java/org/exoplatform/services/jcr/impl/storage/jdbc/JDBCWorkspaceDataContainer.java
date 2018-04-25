@@ -97,6 +97,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.jcr.RepositoryException;
 import javax.naming.NamingException;
@@ -161,6 +163,8 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     * Batch size value parameter name.
     */
    public final static String BATCH_SIZE = "batch-size";
+
+   public static ExecutorService executor = Executors.newSingleThreadExecutor();
 
    public final static int DEFAULT_BATCHING_DISABLED = -1;
 
@@ -733,45 +737,64 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
          }
       }
 
-      // Remove lock properties from DB. It is an issue of migration locks from 1.12.x to 1.14.x in case when we use
-      // shareable cache. The lock tables will be new but still remaining lock properties in JCR tables.
+      // Remove lock properties from DB. The lock tables will be new but still remaining lock properties in JCR tables.
       boolean deleteLocks =
          "true".equalsIgnoreCase(PrivilegedSystemHelper.getProperty(AbstractCacheableLockManager.LOCKS_FORCE_REMOVE,
             "false"));
 
-      try
+      if (deleteLocks)
       {
-         if (deleteLocks)
+         try
          {
-            boolean failed = true;
             WorkspaceStorageConnection wsc = openConnection(false);
             if (wsc instanceof StatisticsJDBCStorageConnection)
             {
-               wsc = ((StatisticsJDBCStorageConnection)wsc).getNestedWorkspaceStorageConnection();
+               wsc = ((StatisticsJDBCStorageConnection) wsc).getNestedWorkspaceStorageConnection();
             }
-            JDBCStorageConnection conn = (JDBCStorageConnection)wsc;
-            try
+            final JDBCStorageConnection conn = (JDBCStorageConnection) wsc;
+            Runnable task = new Runnable()
             {
-               conn.deleteLockProperties();
-               conn.commit();
-               failed = false;
-            }
-            finally
-            {
-               if (failed)
+               @Override
+               public void run()
                {
-                  conn.rollback();
+                  boolean failed = true;
+                  try
+                  {
+                     conn.deleteLockProperties();
+                     conn.commit();
+                     failed = false;
+                  }
+                  catch (Exception e)
+                  {
+                     LOG.error("Can't remove lock properties because of " + e.getMessage(), e);
+                  }
+                  finally
+                  {
+                     if (failed)
+                     {
+                        try
+                        {
+                           conn.rollback();
+                        }
+                        catch (Exception e)
+                        {
+                           LOG.error("Can't remove lock properties because of " + e.getMessage(), e);
+                        }
+                     }
+                  }
+
                }
+            };
+            if(executor.isShutdown())
+            {
+               executor = Executors.newSingleThreadExecutor();
             }
+            executor.execute(task);
          }
-      }
-      catch (SQLException e)
-      {
-         LOG.error("Can't remove lock properties because of " + JDBCUtils.getFullMessage(e), e);
-      }
-      catch (RepositoryException e)
-      {
-         LOG.error("Can't remove lock properties because of " + e.getMessage(), e);
+         catch (RepositoryException e)
+         {
+            LOG.error("Can't remove lock properties because of " + e.getMessage(), e);
+         }
       }
    }
 
@@ -781,6 +804,7 @@ public class JDBCWorkspaceDataContainer extends WorkspaceDataContainerBase imple
     */
    public void stop()
    {
+      executor.shutdownNow();
    }
 
    /**

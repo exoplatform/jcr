@@ -1,0 +1,77 @@
+h1. JCR Organization service
+
+This is an implementation of the exo.core.component.organization.api API. The information will be stored in the root node exo:organization of the workspace. The workspace name has to be configured in the configuration file (see below).
+
+* You need to comment out the previous initialization of the organization service, e.g. DummyOrganizationService
+{code:xml}
+<!--component>
+  <type>org.exoplatform.services.organization.impl.mock.DummyOrganizationService</type>
+</component-->
+{code}
+
+* Add jcr organization service
+{code:xml}
+<component>
+  <key>org.exoplatform.services.organization.OrganizationService</key>
+  <type>org.exoplatform.services.jcr.ext.organization.JCROrganizationServiceImpl</type>
+  <init-params>
+    <value-param>
+      <name>storage-workspace</name>
+      <description>Workspace in default repository where organization storage will be created</description>
+      <value>ws</value>
+    </value-param>
+  </init-params>
+</component>
+{code}
+ 
+where storage-workspace is the name of the workspace in the default repository where the organization storage will be created.
+If storage-workspace is absent in configuration then default workspace will be selected in current repository.
+
+Sice eXo JCR 1.11 you can add two new params:
+{code:xml}
+<value-param>
+  <name>repository</name>
+  <description>The name of repository where organization storage will be created</description>
+  <value>db1</value>
+</value-param>
+<value-param>
+  <name>storage-path</name>
+  <description>The relative path where organization storage will be created</description>
+  <value>/exo:organization</value>
+</value-param>
+{code}
+
+where repository is the name of the repository where the organization storage will be created storage-path - the relative path to the stored data
+
+* Register JCR Organization service namespace and nodetypes via RepositorySerive's plugins:
+{code:xml}
+  <component>
+    <key>org.exoplatform.services.jcr.RepositoryService</key>
+    <type>org.exoplatform.services.jcr.impl.RepositoryServiceImpl</type>
+    <component-plugins>
+      <component-plugin>
+        <name>add.namespaces</name>
+        <set-method>addPlugin</set-method>
+        <type>org.exoplatform.services.jcr.impl.AddNamespacesPlugin</type>
+        <init-params>
+          <properties-param>
+            <name>namespaces</name>
+            <property name="jos" value="http://www.exoplatform.com/jcr-services/organization-service/1.0/"/>
+          </properties-param>
+        </init-params>
+      </component-plugin>
+      <component-plugin>
+        <name>add.nodeType</name>
+        <set-method>addPlugin</set-method>
+        <type>org.exoplatform.services.jcr.impl.AddNodeTypePlugin</type>
+        <init-params>
+          <values-param>
+            <name>autoCreatedInNewRepository</name>
+            <description>Node types configuration file</description>
+            <value>jar:/conf/organization-nodetypes.xml</value>
+          </values-param>
+        </init-params>
+      </component-plugin>
+    </component-plugins>
+  </component>
+{code:xml}

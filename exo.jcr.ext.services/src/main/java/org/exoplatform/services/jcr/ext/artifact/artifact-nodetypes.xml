@@ -1,0 +1,59 @@
+<nodeTypes xmlns:nt="http://www.jcp.org/jcr/nt/1.0" xmlns:mix="http://www.jcp.org/jcr/mix/1.0" xmlns:jcr="http://www.jcp.org/jcr/1.0" xmlns:exo="http://www.exoplatform.com/jcr/exo/1.0">
+  <nodeType name="exo:artifact" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype />
+    </supertypes>
+  </nodeType>
+  <nodeType name="exo:groupId" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>exo:artifact</supertype>
+    </supertypes>
+  </nodeType>
+  <nodeType name="exo:artifactId" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>exo:artifact</supertype>
+    </supertypes>
+    <propertyDefinitions>
+      <propertyDefinition name="exo:versionList" onParentVersion="COPY" requiredType="String" multiple="true" autoCreated="false" mandatory="false" protected="false">
+        <valueConstraints />
+      </propertyDefinition>
+    </propertyDefinitions>
+  </nodeType>
+  <nodeType name="exo:versionId" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>exo:artifact</supertype>
+    </supertypes>
+  </nodeType>
+  <nodeType name="exo:file" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+  </nodeType>
+  <nodeType name="exo:mavenjar" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>exo:file</supertype>
+    </supertypes>
+  </nodeType>
+  <nodeType name="exo:mavensha1" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>exo:file</supertype>
+    </supertypes>
+  </nodeType>
+  <nodeType name="exo:mavenpom" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>exo:file</supertype>
+    </supertypes>
+  </nodeType>
+  <nodeType name="exo:mavenmetadata" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+    <supertypes>
+      <supertype>exo:file</supertype>
+    </supertypes>
+  </nodeType>
+  <nodeType name="exo:mavencounter" isMixin="true" hasOrderableChildNodes="false" primaryItemName="">
+    <propertyDefinitions>
+      <propertyDefinition name="exo:downloadcounter" requiredType="Long" autoCreated="true" mandatory="true" onParentVersion="COPY" protected="false" multiple="false">
+        <valueConstraints />
+        <defaultValues>
+          <defaultValue>0</defaultValue>
+        </defaultValues>
+      </propertyDefinition>
+    </propertyDefinitions>
+  </nodeType>
+</nodeTypes>

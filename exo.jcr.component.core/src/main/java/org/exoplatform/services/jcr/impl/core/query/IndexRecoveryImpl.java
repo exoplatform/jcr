@@ -27,6 +27,8 @@ import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
 import org.exoplatform.services.rpc.TopologyChangeEvent;
 import org.exoplatform.services.rpc.TopologyChangeListener;
+import org.exoplatform.services.rpc.jgv3.RPCServiceImpl;
+import org.jgroups.Address;
 
 import java.io.File;
 import java.io.IOException;
@@ -69,6 +71,12 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
     * Remote command responsible for getting the list of relative paths of all files from index directory.
     */
    private RemoteCommand getIndexList;
+
+
+   /**
+    * Remote command responsible for getting the coordinator address.
+    */
+   private RemoteCommand getCoordinatorAddress;
 
    /**
     * Remote command responsible for getting data of target file.
@@ -209,6 +217,21 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
          }
       });
 
+      getCoordinatorAddress = rpcService.registerCommand(new RemoteCommand()
+      {
+         @Override
+         public Serializable execute(Serializable[] serializables) throws Throwable
+         {
+           return ((RPCServiceImpl) rpcService).getHostAddress();
+         }
+
+         @Override
+         public String getId()
+         {
+            return "org.exoplatform.services.jcr.impl.core.query.IndexRecoveryImpl-getCoordinatorAddress-" + commandSuffix;
+         }
+      });
+
       requestForResponsibleToSetIndexOnline = rpcService.registerCommand(new RemoteCommand()
       {
 
@@ -250,6 +273,32 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
       try
       {
          return (List<String>)rpcService.executeCommandOnCoordinator(getIndexList, true);
+      }
+      catch (SecurityException e)
+      {
+         throw new RepositoryException(e);
+      }
+      catch (RPCException e)
+      {
+         throw new RepositoryException(e);
+      }
+   }
+
+   @Override
+   public String getCoordinatorAddress() throws RepositoryException
+   {
+      try
+      {
+         if(!(rpcService instanceof RPCServiceImpl))
+         {
+            throw new RepositoryException("failed get coordinator address");
+         }
+         String address=  (String) rpcService.executeCommandOnCoordinator(getCoordinatorAddress, true);
+         if(address == null)
+         {
+            throw new RepositoryException("Error to get coordinator address. Unsupported address object");
+         }
+         return address;
       }
       catch (SecurityException e)
       {
@@ -502,6 +551,7 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
    {
       rpcService.unregisterCommand(changeIndexMode);
       rpcService.unregisterCommand(getIndexList);
+      rpcService.unregisterCommand(getCoordinatorAddress);
       rpcService.unregisterCommand(getIndexFile);
       rpcService.unregisterCommand(requestForResponsibleToSetIndexOnline);
       rpcService.unregisterCommand(checkIndexReady);

@@ -943,16 +943,24 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
          Node node = addTestNode(repository);
          PropertyImpl prop = (PropertyImpl)node.setProperty("prop", new FileInputStream(createBLOBTempFile(300)));
+         PropertyImpl propFileRenamed = (PropertyImpl)node.setProperty("prop2", new FileInputStream(createBLOBTempFile(300)));
          node.save();
 
          assertResult(checkController.checkValueStorage(), checkController.getLastReportPath(), true);
          //assertTrue(checkController.checkValueStorage().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
 
+         renameFileInVS(repository, propFileRenamed.getInternalIdentifier());
          removeFileFromVS(repository, prop.getInternalIdentifier());
          assertResult(checkController.checkValueStorage(), checkController.getLastReportPath(), false);
          //assertTrue(checkController.checkValueStorage().startsWith(RepositoryCheckController.REPORT_NOT_CONSISTENT_MESSAGE));
 
+         node.getSession().save();
          checkController.repairValueStorage("yes");
+         node = (Node) node.getSession().getItem(node.getPath());
+
+         assertEquals(307200, node.getProperty("prop2").getStream().available());
+         assertEquals(0, node.getProperty("prop").getStream().available());
+
          assertResult(checkController.checkValueStorage(), checkController.getLastReportPath(), true);
          //assertTrue(checkController.checkValueStorage().startsWith(RepositoryCheckController.REPORT_CONSISTENT_MESSAGE));
       }
@@ -1322,6 +1330,18 @@ public class TestRepositoryCheckController extends BaseStandaloneTest
 
       conn.commit();
       conn.close();
+   }
+
+   private void renameFileInVS(ManageableRepository repository, String propId)
+      throws Exception
+   {
+      String vsPath =
+         repository.getConfiguration().getWorkspaceEntries().get(0).getContainer().getValueStorages().get(0)
+            .getParameterValue(FileValueStorage.PATH);
+
+      File vsFile = new File(vsPath, propId + "0");
+      assertTrue(vsFile.exists());
+      assertTrue(vsFile.renameTo(new File(vsFile.getParentFile(), vsFile.getName() + ".FFFF")));
    }
 
    private void removeFileFromVS(ManageableRepository repository, String propId)

@@ -58,6 +58,15 @@ public interface IndexRecovery
    public List<String> getIndexList() throws RepositoryException;
 
    /**
+    * Get coordinator address
+    *
+    * @return String coordinator address
+    * @throws RepositoryException
+    *          if any exception occurred
+    */
+   public String getCoordinatorAddress() throws RepositoryException;
+
+   /**
     * Get input stream of index file.
     * @param filePath
     *         String, relative file path

@@ -19,6 +19,7 @@ package org.exoplatform.services.jcr.impl.core.query.ispn;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoMode;
 import org.exoplatform.services.jcr.impl.core.query.IndexerIoModeHandler;
+import org.exoplatform.services.jcr.impl.core.query.RSyncConfiguration;
 import org.exoplatform.services.jcr.impl.core.query.RSyncJob;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
@@ -57,50 +58,21 @@ public class RsyncIndexInfos extends ISPNIndexInfos
    private final String rsyncPassword;
 
    public RsyncIndexInfos(String wsId, Cache<Serializable, Object> cache, boolean system,
-      IndexerIoModeHandler modeHandler, String indexPath, int rsyncPort, String rsyncEntryName, String rsyncEntryPath,
-      String rsyncUserName, String rsyncPassword) throws RepositoryConfigurationException
+                          IndexerIoModeHandler modeHandler, String indexPath, RSyncConfiguration rSyncConfiguration) throws RepositoryConfigurationException
    {
       super(wsId, cache, system, modeHandler);
-      this.rsyncUserName = rsyncUserName;
-      this.rsyncPassword = rsyncPassword;
+      this.rsyncUserName = rSyncConfiguration.getRsyncUserName();
+      this.rsyncPassword = rSyncConfiguration.getRsyncPassword();
 
-      String absoluteRsyncEntryPath;
       try
       {
          this.indexPath = new File(indexPath).getCanonicalPath();
-         absoluteRsyncEntryPath = new File(rsyncEntryPath).getCanonicalPath();
+         urlFormatString = rSyncConfiguration.generateRsyncSource(indexPath);
       }
       catch (IOException e)
       {
          throw new RepositoryConfigurationException("Index path or rsyncEntry path is invalid.", e);
       }
-
-      if (this.indexPath.startsWith(absoluteRsyncEntryPath))
-      {
-         // in relation to RSync Server Entry
-         // i.e. absolute index path is /var/portal/data/index/repo1/ws2
-         // i.e. RSync Server Entry is "index" pointing to /var/portal/data/index
-         // then relative path is repo1/ws2
-         // and whole url is "rsync://<addr>:<port>/<entryName>/repo1/ws2"
-         String relativeIndexPath = this.indexPath.substring(absoluteRsyncEntryPath.length());
-
-         // if client is Windows OS, need to replace all '\' with '/' used in url
-         if (File.separatorChar == '\\')
-         {
-            relativeIndexPath = relativeIndexPath.replace(File.separatorChar, '/');
-         }
-         // generate ready-to-use formatter string with address variable 
-         urlFormatString = "rsync://%s:" + rsyncPort + "/" + rsyncEntryName + relativeIndexPath + "/";
-      }
-      else
-      {
-         throw new RepositoryConfigurationException(
-            "Invalid RSync configuration. Index must be placed in folder that is a descendant of RSync Server Entry. "
-               + "Current RSync Server Entry Path is : " + absoluteRsyncEntryPath
-               + " but it doesnt hold Index folder, that is : " + this.indexPath
-               + ". Please fix configuration according to JCR Documentation and restart application.");
-      }
-
    }
 
    /**

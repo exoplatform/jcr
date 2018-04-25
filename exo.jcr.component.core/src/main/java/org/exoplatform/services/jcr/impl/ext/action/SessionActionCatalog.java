@@ -198,6 +198,10 @@ public class SessionActionCatalog extends ActionCatalog
          {
             res |= ExtendedEvent.NODE_MOVED;
          }
+         else if (name.equalsIgnoreCase("changePermission"))
+         {
+            res |= ExtendedEvent.PERMISSION_CHANGED;
+         }
          else
          {
             log.error("Unknown event type '" + name + "' ignored");

@@ -37,6 +37,12 @@ import org.exoplatform.services.rest.impl.RequestHandlerImpl;
 import org.exoplatform.services.rest.tools.DummySecurityContext;
 import org.exoplatform.services.rest.tools.ResourceLauncher;
 
+import javax.jcr.Node;
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.SecurityContext;
+import javax.xml.namespace.QName;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -46,13 +52,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
-import javax.jcr.Node;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.SecurityContext;
-import javax.xml.namespace.QName;
 /**
  * Created by The eXo Platform SAS Author : Dmytro Katayev
  * work.visor.ck@gmail.com Aug 13, 2008
@@ -585,6 +584,22 @@ public class TestPropFind extends BaseStandaloneTest
       ContainerResponse response =
          service(WebDAVMethods.PROPFIND, getPathWS() + "_" + file, "", null, null);
       assertEquals(HTTPStatus.CONFLICT, response.getStatus());
+   }
+
+   public void testFolderListingAllowed() throws Exception
+   {
+      TestUtils.addFolder(session2, "/folder1", defaultFolderNodeType, "");
+
+      ContainerResponse response = service(WebDAVMethods.PROPFIND, getPathWS() + "2", "", null, null);
+      assertEquals(HTTPStatus.NOT_FOUND, response.getStatus());
+
+      response = service(WebDAVMethods.PROPFIND, getPathWS() + "2/folder1/folder2", "", null, null);
+      assertEquals(HTTPStatus.NOT_FOUND, response.getStatus());
+
+      TestUtils.addFolder(session2, "/folder1/folder4", defaultFolderNodeType, "");
+      TestUtils.addFolder(session2, "/folder1/folder4/folder5", defaultFolderNodeType, "");
+      response =  service(WebDAVMethods.PROPFIND, getPathWS() + "2/folder1/folder4/folder5", "", null, null);
+      assertEquals(HTTPStatus.MULTISTATUS, response.getStatus());
    }
 
    /**

@@ -18,6 +18,11 @@
  */
 package org.exoplatform.services.jcr.impl.storage.value.fs;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.exoplatform.services.jcr.datamodel.ValueData;
 import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
@@ -29,13 +34,9 @@ import org.exoplatform.services.jcr.impl.storage.value.ValueOperation;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.DeleteValues;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.ValueFileIOHelper;
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.WriteValue;
+import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.storage.value.ValueIOChannel;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by The eXo Platform SAS.
@@ -209,7 +210,14 @@ public abstract class FileIOChannel extends ValueFileIOHelper implements ValueIO
    public void repairValueData(String propertyId, int orderNumber) throws IOException
    {
       File f = getFile(propertyId, orderNumber);
-      if (!f.createNewFile())
+      if (!f.exists()) {
+        File file = ValueDataUtil.fixFileName(f);
+        if (file != null && !file.equals(f)) {
+          LOG.info("Fix value storage file '{}' and move it to '{}'", file.getAbsolutePath(), f.getAbsolutePath());
+          DirectoryHelper.renameFile(file, f);
+        }
+      }
+      if (!f.exists() && !f.createNewFile())
       {
          throw new IOException("Can not create empty file " + f.getAbsolutePath());
       }

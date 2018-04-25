@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.webdav.command;
 
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
+import org.exoplatform.services.jcr.access.PermissionType;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.webdav.Depth;
 import org.exoplatform.services.jcr.webdav.WebDavConst;
@@ -34,11 +35,9 @@ import org.exoplatform.services.log.Log;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.security.AccessControlException;
 
-import javax.jcr.AccessDeniedException;
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.Session;
+import javax.jcr.*;
 import javax.jcr.lock.Lock;
 import javax.jcr.lock.LockException;
 import javax.ws.rs.core.Response;
@@ -93,6 +92,12 @@ public class LockCommand
 
       boolean bodyIsEmpty = (body == null);
       String lockToken;
+
+      //To force read only mode when open a document by user with only read permission
+      if(isReadOnly(session, path))
+      {
+         return Response.status(HTTPStatus.METHOD_NOT_ALLOWED).entity("Permission denied").build();
+      }
       try
       {
          WebDavNamespaceContext nsContext = new WebDavNamespaceContext(session);
@@ -253,6 +258,29 @@ public class LockCommand
          }
       }
 
+   }
+
+   /**
+    * Check node permission
+    * @param session current jcr user session
+    * @param path node path
+    * @return true if node is read only otherwise false
+    */
+   private boolean isReadOnly(Session session, String path)
+   {
+      try
+      {
+         session.checkPermission(path, PermissionType.SET_PROPERTY);
+         return false;
+      }
+      catch (AccessControlException e)
+      {
+         return true;
+      }
+      catch (RepositoryException e)
+      {
+         return false;
+      }
    }
 
 }

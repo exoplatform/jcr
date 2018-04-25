@@ -3215,6 +3215,7 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       dataManager.update(new ItemState(data, ItemState.MIXIN_CHANGED, false, null, true), false);
       dataManager.update(ItemState.createUpdatedState(permProp, true), false);
 
+      session.getActionHandler().postSetPermission(this);
    }
 
    private static class NodeDataOrderComparator implements Comparator<NodeData>
