@@ -47,7 +47,6 @@ public class SpoolConfig
 
    public int maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;
 
-
    private static Map<String, SpoolConfig> spoolConfigList = new HashMap<String, SpoolConfig>();
    
    public static int liveTime = -1 ;
@@ -87,5 +86,4 @@ public class SpoolConfig
    {
       spoolConfigList.put(workspaceName, spoolConfig);
    }
-
 }
