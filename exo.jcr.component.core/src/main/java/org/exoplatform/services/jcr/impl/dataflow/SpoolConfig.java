@@ -42,42 +42,25 @@ public class SpoolConfig
    public FileCleaner fileCleaner;
 
    public File tempDirectory = new File(PropertyManager.getProperty("java.io.tmpdir"));
-
-   private static final String  FORCE_CLEAN_SWAP = "exo.jcr.spoolConfig.force.clean.swap";
-
+   
    private static final String  FORCE_CLEAN_SWAP_LIVE_TIME = "exo.jcr.spoolConfig.swap.live.time";
 
    public int maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;
 
 
    private static Map<String, SpoolConfig> spoolConfigList = new HashMap<String, SpoolConfig>();
-
-   public static final boolean forceClean;
-
+   
    public static int liveTime = -1 ;
 
    static
    {
-      String enable = PropertyManager.getProperty(FORCE_CLEAN_SWAP);
-      boolean value = false;
-      if (enable!= null && !enable.isEmpty())
+      try
       {
-         value = Boolean.valueOf(enable);
+         liveTime = Integer.parseInt(System.getProperty(FORCE_CLEAN_SWAP_LIVE_TIME));
       }
-      forceClean = value;
-
-      if (forceClean)
+      catch (NumberFormatException nex)
       {
-         try
-         {
-            liveTime = Integer.parseInt(System.getProperty(FORCE_CLEAN_SWAP_LIVE_TIME));
-
-         }
-         catch (NumberFormatException nex)
-         {
-            LOG.warn("Parameter {} is not a valid number, default value will be used is -1", FORCE_CLEAN_SWAP_LIVE_TIME);
-            liveTime = -1;
-         }
+         LOG.warn("Parameter {} is not a valid number, default value will be used is -1", FORCE_CLEAN_SWAP_LIVE_TIME);
       }
    }
 
