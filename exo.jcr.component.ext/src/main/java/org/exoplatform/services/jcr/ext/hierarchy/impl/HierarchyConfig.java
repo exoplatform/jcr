@@ -38,6 +38,8 @@ public class HierarchyConfig
 
    private List<JcrPath> jcrPaths = new ArrayList<JcrPath>(5);
 
+   private List<JcrLink> jcrLinks = new ArrayList<JcrLink>();
+
    public String getRepository()
    {
       return repository;
@@ -56,6 +58,14 @@ public class HierarchyConfig
    public void setJcrPaths(List<JcrPath> s)
    {
       this.jcrPaths = s;
+   }
+
+   public List<JcrLink> getJcrLinks() {
+    return jcrLinks;
+   }
+
+   public void setJcrLinks(List<JcrLink> jcrLinks) {
+    this.jcrLinks = jcrLinks;
    }
 
    public List<String> getWorkspaces()
@@ -154,6 +164,28 @@ public class HierarchyConfig
          this.mixinTypes = mixinTypes;
       }
    }
+
+  static public class JcrLink {
+    private String targetPath;
+  
+    private String sourcePath;
+  
+    public String getTargetPath() {
+      return targetPath;
+    }
+  
+    public void setTargetPath(String targetPath) {
+      this.targetPath = targetPath;
+    }
+  
+    public String getSourcePath() {
+      return sourcePath;
+    }
+  
+    public void setSourcePath(String sourcePath) {
+      this.sourcePath = sourcePath;
+    }
+  }
 
    static public class Permission
    {

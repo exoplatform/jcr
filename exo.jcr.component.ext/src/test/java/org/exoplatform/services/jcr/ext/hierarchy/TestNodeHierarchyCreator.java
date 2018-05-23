@@ -19,6 +19,7 @@
 package org.exoplatform.services.jcr.ext.hierarchy;
 
 import org.exoplatform.services.jcr.core.ExtendedNode;
+import org.exoplatform.services.jcr.core.nodetype.*;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.ext.hierarchy.impl.NewGroupListener;
@@ -28,9 +29,13 @@ import org.exoplatform.services.organization.impl.GroupImpl;
 import org.exoplatform.services.organization.impl.UserImpl;
 import org.exoplatform.services.security.ConversationState;
 
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.Session;
+import java.util.Arrays;
+import java.util.Collections;
+
+import javax.jcr.*;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.version.OnParentVersionAction;
 
 /**
  * @author <a href="mailto:nicolas.filotto@exoplatform.com">Nicolas Filotto</a>
@@ -57,6 +62,33 @@ public class TestNodeHierarchyCreator extends BaseStandaloneTest
       groupListener = (NewGroupListener)container.getComponentInstanceOfType(NewGroupListener.class);
       sessionProvider = new SessionProvider(ConversationState.getCurrent());
       session = sessionProvider.getSession("ws1", repository);
+      NodeType symlinkNodeType;
+      try {
+        symlinkNodeType = repository.getNodeTypeManager().getNodeType("exo:symlink");
+      } catch (NoSuchNodeTypeException e) {
+        symlinkNodeType = null;
+      }
+      if (symlinkNodeType == null) {
+        NodeTypeValue nodeTypeValue = new NodeTypeValue();
+        nodeTypeValue.setName("exo:symlink");
+        nodeTypeValue.setPrimaryItemName(null);
+        nodeTypeValue.setMixin(false);
+        nodeTypeValue.setDeclaredSupertypeNames(Collections.singletonList("nt:hierarchyNode"));
+        PropertyDefinitionValue workspaceProperty = new PropertyDefinitionValue();
+        workspaceProperty.setName("exo:workspace");
+        workspaceProperty.setRequiredType(PropertyType.STRING);
+        workspaceProperty.setOnVersion(OnParentVersionAction.COPY);
+        PropertyDefinitionValue uuidProperty = new PropertyDefinitionValue();
+        uuidProperty.setName("exo:uuid");
+        uuidProperty.setRequiredType(PropertyType.REFERENCE);
+        uuidProperty.setOnVersion(OnParentVersionAction.COPY);
+        PropertyDefinitionValue primaryTypeProperty = new PropertyDefinitionValue();
+        primaryTypeProperty.setName("exo:primaryType");
+        primaryTypeProperty.setRequiredType(PropertyType.NAME);
+        primaryTypeProperty.setOnVersion(OnParentVersionAction.COPY);
+        nodeTypeValue.setDeclaredPropertyDefinitionValues(Arrays.asList(workspaceProperty, uuidProperty, primaryTypeProperty));
+        repository.getNodeTypeManager().registerNodeType(nodeTypeValue, ExtendedNodeTypeManager.IGNORE_IF_EXISTS);
+      }
    }
 
    /**
@@ -95,13 +127,13 @@ public class TestNodeHierarchyCreator extends BaseStandaloneTest
       assertNotNull(node);
       assertTrue(node.isNodeType("nt:folder"));
       assertTrue(node.canAddMixin("mix:referenceable"));
-      assertTrue(node.canAddMixin("exo:privilegeable"));
+      assertTrue(node.isNodeType("exo:privilegeable") || node.canAddMixin("exo:privilegeable"));
       
       node = (Node)session.getItem("/exo:applications");
       assertNotNull(node);
       assertFalse(node.isNodeType("nt:folder"));
       assertFalse(node.canAddMixin("mix:referenceable"));
-      assertTrue(node.canAddMixin("exo:privilegeable"));
+      assertTrue(node.isNodeType("exo:privilegeable") || node.canAddMixin("exo:privilegeable"));
       
       node = (Node)session.getItem("/Users");
       assertNotNull(node);
@@ -135,6 +167,13 @@ public class TestNodeHierarchyCreator extends BaseStandaloneTest
       Node node = creator.getUserNode(sessionProvider, "foo");
       assertNotNull(node);
       assertTrue(node.getPath().startsWith("/Users"));
+   }
+
+   public void testGetUserNodeLink() throws Exception
+   {
+      Node node = creator.getUserNode(sessionProvider, "foo");
+      assertNotNull(node);
+      assertTrue(node.hasNode("Private/Public"));
    }
    
    public void testGetUserApplicationNode() throws Exception
