@@ -207,6 +207,7 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
                    currentjcrPath = jcrPath;
                    if (StringUtils.isNotBlank(userName) || (!jcrPath.getAlias().equals(USER_APPLICATION)
                        && !jcrPath.getAlias().startsWith(USER_PRIVATE) && !jcrPath.getAlias().startsWith(USER_PUBLIC))) {
+                     LOG.info("Create node with alias '{}' '{}:{}'", jcrPath.getAlias(), workspaceName, jcrPath.getPath());
                      NodeImpl addedNode = (NodeImpl) createNode(rootNode,
                                                                 jcrPath.getPath(),
                                                                 jcrPath.getNodeType(),
@@ -219,7 +220,9 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
                        addedNode.setPermissions(permissions);
                        addedNode.save();
                      }
-                     addedNode.removePermission(userName, PermissionType.REMOVE);
+                     if (StringUtils.isNotBlank(userName)) {
+                       addedNode.removePermission(userName, PermissionType.REMOVE);
+                     }
                      session.save();
                    }
                  }
