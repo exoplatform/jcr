@@ -25,7 +25,7 @@
   <parent>
     <groupId>org.exoplatform.jcr</groupId>
     <artifactId>jcr-parent</artifactId>
-    <version>5.1.x-SNAPSHOT</version>
+    <version>5.1.0-M08</version>
   </parent>
   <artifactId>exo.jcr.framework.ftpclient</artifactId>
   <name>eXo PLF:: JCR :: Framework :: FTP Client</name>
