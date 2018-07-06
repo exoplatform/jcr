@@ -317,19 +317,34 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    public static class PutObjectContainer extends ChangesContainer
    {
       private final Object value;
+      private final long lifespan;
 
       public PutObjectContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache, int historicalIndex,
-         boolean local, Boolean allowLocalChanges)
+         boolean local, Boolean allowLocalChanges, long lifespan)
       {
          super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
 
          this.value = value;
+         this.lifespan = lifespan;
+      }
+
+      public PutObjectContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache, int historicalIndex,
+                                boolean local, Boolean allowLocalChanges)
+      {
+         this(key,value, cache, historicalIndex, local, allowLocalChanges, -1);
       }
 
       @Override
       public void apply()
       {
-         setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
+         if(lifespan == -1)
+         {
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
+         }
+         else
+         {
+            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value, lifespan, TimeUnit.SECONDS);
+         }
       }
 
       @Override
@@ -346,12 +361,22 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
    {
       private final Object value;
 
+      private final long lifespan;
+
       public PutObjectIfAbsentContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache,
-         int historicalIndex, boolean local, Boolean allowLocalChanges)
+                                        int historicalIndex, boolean local, Boolean allowLocalChanges, long lifespan)
       {
          super(key, ChangesType.PUT, cache, historicalIndex, local, allowLocalChanges);
 
          this.value = value;
+
+         this.lifespan = lifespan;
+      }
+
+      public PutObjectIfAbsentContainer(CacheKey key, Object value, AdvancedCache<CacheKey, Object> cache,
+                                        int historicalIndex, boolean local, Boolean allowLocalChanges)
+      {
+         this(key, value, cache, historicalIndex, local, allowLocalChanges, -1);
       }
 
       @Override
@@ -362,11 +387,18 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
             // Ensure that a FakeKeySet won't be replicated
             return;
          }
-         Object oldValue = setCacheLocalMode().putIfAbsent(key, value);
+         Object oldValue = lifespan == -1 ? setCacheLocalMode().putIfAbsent(key, value) : setCacheLocalMode().putIfAbsent(key, value, lifespan, TimeUnit.SECONDS);
          if (oldValue instanceof FakeValueSet)
          {
             // The old value is a fake value so we will replace it with the new one
-            setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
+            if(lifespan == -1)
+            {
+               setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value);
+            }
+            else
+            {
+               setCacheLocalMode(Flag.SKIP_REMOTE_LOOKUP, Flag.IGNORE_RETURN_VALUES).put(key, value, lifespan,  TimeUnit.SECONDS);
+            }
          }
       }
 
@@ -851,6 +883,13 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
       return null;
    }
 
+   public Object putIfAbsent(CacheKey key, Object value, long lifespan)
+   {
+      CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new PutObjectIfAbsentContainer(key, value, parentCache, changesContainer.getHistoryIndex(),
+         local.get(), allowLocalChanges, lifespan));
+      return null;
+   }
    /**
     * {@inheritDoc}
     */
@@ -960,6 +999,29 @@ public class BufferedISPNCache implements Cache<CacheKey, Object>
 
       return withReturnValue ? parentCache.get(key) : null;
    }
+
+   /**
+    * Put object in cache.
+    * @param key
+    *          cache key
+    * @param value
+    *          cache value
+    *@param  lifespan
+    *          entry lifespan
+    * @param withReturnValue
+    *          indicates if a return value is expected
+    * @return <code>null</code> if <code>withReturnValue</code> has been set to <code>false</code>
+    * the previous value otherwise
+    */
+   public Object put(CacheKey key, Object value, boolean withReturnValue,  long lifespan)
+   {
+      CompressedISPNChangesBuffer changesContainer = getChangesBufferSafe();
+      changesContainer.add(new PutObjectContainer(key, value, parentCache, changesContainer.getHistoryIndex(), local
+         .get(), allowLocalChanges, lifespan));
+
+      return withReturnValue ? parentCache.get(key) : null;
+   }
+
 
    /**
     * {@inheritDoc}

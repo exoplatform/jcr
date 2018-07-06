@@ -53,8 +53,11 @@ import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.backup.DataRestore;
 import org.exoplatform.services.jcr.impl.backup.rdbms.DataRestoreContext;
 import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.dataflow.SpoolConfig;
 import org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.CleanableFilePersistedValueData;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.SimplePersistedSize;
+import org.exoplatform.services.jcr.impl.dataflow.persistent.StreamPersistedValueData;
 import org.exoplatform.services.jcr.infinispan.AbstractMapper;
 import org.exoplatform.services.jcr.infinispan.CacheKey;
 import org.exoplatform.services.jcr.infinispan.ISPNCacheFactory;
@@ -143,6 +146,8 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
    protected final String ownerId;
 
    private final boolean enabled;
+  
+   private final long lifespan;
    
    protected final BufferedISPNCache cache;
    
@@ -598,6 +603,7 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
          throw new RepositoryConfigurationException("Cache configuration not found");
       }
       this.enabled = wsConfig.getCache().isEnabled();
+      this.lifespan = SpoolConfig.liveTime;
       
       // create cache using custom factory
       ISPNCacheFactory<CacheKey, Object> factory =
@@ -1411,6 +1417,9 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
     */
    protected PropertyData putProperty(PropertyData prop, ModifyChildOption modifyListsOfChild)
    {
+      boolean forceLifespan = lifespan > 0 && prop.getValues() != null && prop.getValues().size() > 0 &&
+         ((prop.getValues().get(0) instanceof CleanableFilePersistedValueData) ||
+         (prop.getValues().get(0) instanceof StreamPersistedValueData));
       // if MODIFY and List present OR FORCE_MODIFY, then write
       if (modifyListsOfChild != ModifyChildOption.NOT_MODIFY)
       {
@@ -1464,11 +1473,25 @@ public class ISPNCacheWorkspaceStorageCache implements WorkspaceStorageCache, Ba
       ItemData returnedData;
       if (modifyListsOfChild == ModifyChildOption.NOT_MODIFY)
       {
-         returnedData = (ItemData)cache.putIfAbsent(new CacheId(getOwnerId(), prop.getIdentifier()), prop);
+         if(forceLifespan)
+         {
+            returnedData = (ItemData)cache.putIfAbsent(new CacheId(getOwnerId(), prop.getIdentifier()), prop, lifespan);
+         }
+         else
+         {
+            returnedData = (ItemData)cache.putIfAbsent(new CacheId(getOwnerId(), prop.getIdentifier()), prop);
+         }
       }
       else
       {
-         returnedData = (ItemData)cache.put(new CacheId(getOwnerId(), prop.getIdentifier()), prop, true);
+         if(forceLifespan)
+         {
+            returnedData = (ItemData)cache.put(new CacheId(getOwnerId(), prop.getIdentifier()), prop, true, lifespan);
+         }
+         else
+         {
+            returnedData = (ItemData)cache.put(new CacheId(getOwnerId(), prop.getIdentifier()), prop, true);
+         }
       }
 
       return (returnedData instanceof NullItemData) ? null : (PropertyData) returnedData;

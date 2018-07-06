@@ -134,6 +134,16 @@
     url="http://en.wikipedia.org/wiki/Bloom_filter&quot; &gt;http://en.wikipedia.org/wiki/Bloom_filter">here</ulink>.</para>
   </note>
 
+  <note>
+   <para>
+     Swap file is used as temporary location where the binary value will be spooled if no value storage is configured and the  max-buffer-size is exceeded.
+     It's possible to define the live time (in seconds) of swap files thanks to the System property exo.jcr.spoolConfig.swap.live.time.
+     The default value of this parameter is -1 (disabled).
+     If live time  is -1 (disabled), swap files is removed until cached binary property data is evicted or reload data container.
+     A high value of swap live time means a better caching of binary property data matching than a low value but the used size of swap files is bigger.
+   </para>
+  </note>
+
   <para>eXo JCR has an RDB (JDBC) based, production ready <emphasis
   role="bold">Workspace Data Container</emphasis>.</para>
 
