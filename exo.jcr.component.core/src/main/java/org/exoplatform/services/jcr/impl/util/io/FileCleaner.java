@@ -24,8 +24,8 @@ import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.jcr.impl.proccess.WorkerThread;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
-
 import java.io.File;
+import java.lang.ref.WeakReference;
 import java.security.PrivilegedAction;
 import java.util.HashSet;
 import java.util.Set;
@@ -55,6 +55,10 @@ public class FileCleaner extends WorkerThread
       public void run()
       {
          File file = null;
+         for(WeakReference<SwapFile> swapFileRef : SwapFile.CURRENT_SWAP_FILES.values())
+         {
+            addFile(swapFileRef.get().getAbsoluteFile());
+         }
          while ((file = files.poll()) != null)
          {
             PrivilegedFileHelper.delete(file);

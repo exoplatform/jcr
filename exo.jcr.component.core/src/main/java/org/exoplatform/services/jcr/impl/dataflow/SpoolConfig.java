@@ -22,8 +22,12 @@ import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 
 import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Simple class wrapper. Contains all needed variables for spooling input stream.
@@ -33,11 +37,31 @@ import java.io.File;
  */
 public class SpoolConfig
 {
+   private final static Log LOG = ExoLogger.getLogger(SpoolConfig.class);
+
    public FileCleaner fileCleaner;
 
    public File tempDirectory = new File(PropertyManager.getProperty("java.io.tmpdir"));
+   
+   private static final String  FORCE_CLEAN_SWAP_LIVE_TIME = "exo.jcr.spoolConfig.swap.live.time";
 
    public int maxBufferSize = WorkspaceDataContainer.DEF_MAXBUFFERSIZE;
+
+   private static Map<String, SpoolConfig> spoolConfigList = new HashMap<String, SpoolConfig>();
+   
+   public static int liveTime = -1 ;
+
+   static
+   {
+      try
+      {
+         liveTime = Integer.parseInt(System.getProperty(FORCE_CLEAN_SWAP_LIVE_TIME));
+      }
+      catch (NumberFormatException nex)
+      {
+         LOG.warn("Parameter {} is not a valid number, default value will be used is -1", FORCE_CLEAN_SWAP_LIVE_TIME);
+      }
+   }
 
    /**
     * SpoolConfig constructor.
@@ -52,4 +76,14 @@ public class SpoolConfig
       return new SpoolConfig(FileCleanerHolder.getDefaultFileCleaner());
    }
 
+   public static File getSwapPath(String workspaceName)
+   {
+      SpoolConfig  sp = spoolConfigList.get(workspaceName);
+      return ((sp != null) ? sp.tempDirectory : null);
+   }
+
+   public static void addSpoolConfig(String workspaceName, SpoolConfig spoolConfig)
+   {
+      spoolConfigList.put(workspaceName, spoolConfig);
+   }
 }
