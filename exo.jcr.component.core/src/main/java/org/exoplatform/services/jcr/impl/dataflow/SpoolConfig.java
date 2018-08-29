@@ -18,6 +18,7 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.commons.utils.PropertyManager;
 import org.exoplatform.services.jcr.impl.util.io.FileCleaner;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
@@ -53,13 +54,18 @@ public class SpoolConfig
 
    static
    {
-      try
+      String liveTimePropertyValue = System.getProperty(FORCE_CLEAN_SWAP_LIVE_TIME);
+      if(StringUtils.isNotEmpty(liveTimePropertyValue))
       {
-         liveTime = Integer.parseInt(System.getProperty(FORCE_CLEAN_SWAP_LIVE_TIME));
-      }
-      catch (NumberFormatException nex)
-      {
-         LOG.warn("Parameter {} is not a valid number, default value will be used is -1", FORCE_CLEAN_SWAP_LIVE_TIME);
+         try
+         {
+            liveTime = Integer.parseInt(liveTimePropertyValue);
+         }
+         catch (NumberFormatException nex)
+         {
+            LOG.warn("Parameter {} is not a valid number ({}), default value {} will be used",
+                    FORCE_CLEAN_SWAP_LIVE_TIME, liveTimePropertyValue, liveTime);
+         }
       }
    }
 
