@@ -31,6 +31,7 @@
    <name>eXo PLF:: JCR :: Component :: Core Service</name>
    <description>Implementation of Core Service of Exoplatform SAS 'eXo Core' project.</description>
    <properties>
+      <exo.test.coverage.ratio>0.52</exo.test.coverage.ratio>
       <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-ispn.xml</jcr.test.configuration.file>
       <cache.enabled>true</cache.enabled>
       <use.sequence>auto</use.sequence>

@@ -31,6 +31,7 @@
   <name>eXo PLF:: JCR :: Component :: FTP Service</name>
   <description>Implementation of FTP Service of Exoplatform SAS 'eXo JCR' project.</description>
   <properties>
+    <exo.test.coverage.ratio>0.40</exo.test.coverage.ratio>
     <exo.test.includes>*</exo.test.includes>
     <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
   </properties>

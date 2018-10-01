@@ -31,6 +31,7 @@
    <name>eXo PLF:: JCR :: Framework :: Command</name>
    <description>Implementation of Command Framework of Exoplatform SAS 'eXo JCR' project.</description>
    <properties>
+      <exo.test.coverage.ratio>0.43</exo.test.coverage.ratio>
       <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
    </properties>
    <dependencies>

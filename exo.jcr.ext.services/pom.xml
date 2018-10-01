@@ -35,12 +35,14 @@
   <description>Exoplatform SAS 'eXo JCR Ext Services' project.</description>
 
   <properties>
+     <exo.test.coverage.ratio>0.57</exo.test.coverage.ratio>
      <wikbook.source>${pom.basedir}/src/main/wikbook</wikbook.source>
      <wikbook.target>${project.build.directory}/wikbook</wikbook.target>
      <wikbook.version>0.9.26</wikbook.version>
 
      <version.buildnumber.plugin>1.0</version.buildnumber.plugin>
      <debug.opts />
+     <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy ${debug.opts}</argLine>
   </properties>
 
   <dependencies>
@@ -345,7 +347,6 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
-          <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy ${debug.opts}</argLine>
           <!-- Including Organization Service TCK-->
           <includes>
               <include>org/exoplatform/services/tck/organization/Test*.java</include>
