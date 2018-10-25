@@ -279,6 +279,7 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
 
    public void testQueryNsNodeName() throws Exception
    {
+      namespaceRegistry.registerNamespace("testuri", "http://testquery.uri/www");
       Node test1 = root.addNode("testuri:testNodeName");
       Node test2 = root.addNode("testuriNodeName1");
       Node test3 = root.addNode("blahtesturiNodeName1");
@@ -294,6 +295,7 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
 
    public void testQueryNsNodePathValue() throws Exception
    {
+      namespaceRegistry.registerNamespace("testuri", "http://testquery.uri/www");
       Node test1 = root.addNode("NodeName1");
       test1.setProperty("tprop", valueFactory.createValue("/rr/testuri:node/", PropertyType.PATH));
       Node test2 = root.addNode("nodeName2");
@@ -308,6 +310,8 @@ public class TestNamespaceRegistry extends JcrAPIBaseTest
 
    public void testQueryNsNodeNameValue() throws Exception
    {
+      namespaceRegistry.registerNamespace("testuri", "http://testquery.uri/www");
+      namespaceRegistry.registerNamespace("blahtesturi", "http://blahtesturi.uri/www");
       Node test1 = root.addNode("NodeName1");
       test1.setProperty("tprop", valueFactory.createValue("testuri:node", PropertyType.NAME));
       Node test2 = root.addNode("nodeName2");
