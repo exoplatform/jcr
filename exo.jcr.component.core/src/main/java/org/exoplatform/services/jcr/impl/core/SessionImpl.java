@@ -775,8 +775,13 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public Node getRootNode() throws RepositoryException
    {
+      return getRootNode(true);
+   }
+
+   private Node getRootNode(boolean apiRead) throws RepositoryException
+   {
       checkLive();
-      Item item = dataManager.getItemByIdentifier(Constants.ROOT_UUID, true);
+      Item item = dataManager.getItemByIdentifier(Constants.ROOT_UUID, true, apiRead);
       if (item != null && item.isNode())
       {
          return (NodeImpl)item;
@@ -1096,7 +1101,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
     */
    public void refresh(boolean keepChanges) throws RepositoryException
    {
-      getRootNode().refresh(keepChanges);
+      getRootNode(false).refresh(keepChanges);
    }
 
    /**
@@ -1121,7 +1126,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    public void save() throws AccessDeniedException, LockException, ConstraintViolationException,
       InvalidItemStateException, RepositoryException
    {
-      getRootNode().save();
+      getRootNode(false).save();
    }
 
    /**
