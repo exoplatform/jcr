@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.access;
 
 import org.exoplatform.services.jcr.BaseStandaloneTest;
 import org.exoplatform.services.jcr.access.PermissionType;
+import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.core.ManageableRepository;
@@ -28,6 +29,7 @@ import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
 import org.exoplatform.services.jcr.datamodel.NodeData;
 import org.exoplatform.services.jcr.impl.backup.Backupable;
 import org.exoplatform.services.jcr.impl.core.NodeImpl;
+import org.exoplatform.services.jcr.impl.core.RepositoryImpl;
 import org.exoplatform.services.jcr.impl.core.SessionImpl;
 import org.exoplatform.services.jcr.impl.core.version.VersionHistoryImpl;
 import org.exoplatform.services.jcr.impl.core.version.VersionImpl;
@@ -187,6 +189,28 @@ public class TestPermissions extends BaseStandaloneTest
       catch (AccessDeniedException e)
       {
       }
+   }
+
+   public void testUpdateWithPermissionOnSubNodeOnly() throws RepositoryException, RepositoryConfigurationException {
+      RepositoryImpl repository = (RepositoryImpl) repositoryService.getRepository("db2");
+      SessionImpl sysSession = repository.getSystemSession("ws");
+      Node node = sysSession.getRootNode().addNode("subnode");
+      if (node.canAddMixin("exo:privilegeable")) {
+         node.addMixin("exo:privilegeable");
+      }
+      ((NodeImpl) node).setPermission("mary", PermissionType.ALL);
+      sysSession.save();
+
+      sessionMaryWS.refresh(false);
+      node = (Node) sessionMaryWS.getItem("/subnode");
+      node.setProperty("fullname", "mary");
+      sessionMaryWS.save();
+
+      node = (Node) sysSession.getItem("/subnode");
+      assertEquals("subnode", node.getName());
+      assertEquals("mary", node.getProperty("fullname").getString());
+      node.remove();
+      sysSession.save();
    }
 
    /**
