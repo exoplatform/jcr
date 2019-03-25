@@ -16,6 +16,7 @@
  */
 package org.exoplatform.services.jcr.ext.organization;
 
+import org.exoplatform.commons.utils.ListAccess;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.organization.CacheHandler;
@@ -311,6 +312,12 @@ public class GroupHandlerImpl extends JCROrgServiceHandler implements GroupHandl
    public Collection<Group> findGroupsOfUser(String user) throws Exception
    {
       return findGroupByMembership(user, null);
+   }
+
+   @Override
+   public ListAccess<Group> findGroupsByKeyword(String s) throws Exception
+   {
+      throw new UnsupportedOperationException("Not implemented");
    }
 
    /**
