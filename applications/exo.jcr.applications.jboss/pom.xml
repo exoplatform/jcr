@@ -24,7 +24,7 @@
    <parent>
       <groupId>org.exoplatform.jcr</groupId>
       <artifactId>exo.jcr.applications.config</artifactId>
-      <version>5.1.x-acc210-SNAPSHOT</version>
+      <version>5.1.2-acc210-02</version>
       <relativePath>../exo.jcr.applications.config/pom.xml</relativePath>
    </parent>
 
