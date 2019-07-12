@@ -251,6 +251,11 @@ public class NodeHierarchyCreatorImpl implements NodeHierarchyCreator, Startable
                   + (currentjcrPath == null ? null : currentjcrPath.getAlias()) + " with the workspace "
                   + workspaceName, e);
             }
+            finally {
+              if (session != null) {
+                session.logout();
+              }
+            }
          }
       }
    }
