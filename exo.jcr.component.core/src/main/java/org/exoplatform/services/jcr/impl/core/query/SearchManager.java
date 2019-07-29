@@ -629,15 +629,13 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
       catch (RepositoryException e)
       {
-         LOG.error(e.getLocalizedMessage());
          handler = null;
-         throw new RuntimeException(e.getLocalizedMessage(), e.getCause());
+         throw new RuntimeException(e.getLocalizedMessage(), e);
       }
       catch (RepositoryConfigurationException e)
       {
-         LOG.error(e.getLocalizedMessage());
          handler = null;
-         throw new RuntimeException(e.getLocalizedMessage(), e.getCause());
+         throw new RuntimeException(e.getLocalizedMessage(), e);
       }
    }
 
@@ -940,7 +938,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       }
       catch (InvocationTargetException e)
       {
-         throw new RepositoryException(e.getMessage(), e);
+         throw new RepositoryException("Unable to initialize change filter " + changesFilterClassName, e);
       }
       return newChangesFilter;
    }
