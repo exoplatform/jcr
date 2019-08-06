@@ -628,21 +628,21 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
             }
             catch (IOException e)
             {
-               String msg = "Error indexing workspace.";
+               String msg = "Error during index workspace intialization.";
                IOException ex = new IOException(msg);
                ex.initCause(e);
                throw ex;
             }
             catch (RPCException e)
             {
-               String msg = "Error indexing workspace.";
+               String msg = "Error during index workspace intialization.";
                IOException ex = new IOException(msg);
                ex.initCause(e);
                throw ex;
             }
             catch (RepositoryException e)
             {
-               String msg = "Error indexing workspace.";
+               String msg = "Error during index workspace intialization.";
                IOException ex = new IOException(msg);
                ex.initCause(e);
                throw ex;
@@ -3715,7 +3715,10 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                   }
                   catch (Exception e)
                   {
-                     exception.set(e);
+                     String msg = "Exception encountered during the indexation";
+                     Exception ex = new Exception(msg);
+                     ex.initCause(e);
+                     exception.set(ex);
                      // Interrupts all the indexing threads
                      interruptAll();
                   }

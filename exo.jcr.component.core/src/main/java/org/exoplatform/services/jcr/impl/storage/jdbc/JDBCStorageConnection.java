@@ -1311,7 +1311,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                {
                   if (!needToSkipOffsetNodes() || processed > offset)
                   {
-                     result.add(createNodeDataIndexing(tempNodeData));
+                     NodeDataIndexing nodeData = createNodeDataIndexing(tempNodeData);
+                     if (nodeData != null) {
+                        result.add(nodeData);
+                     }
                   }
 
                   tempNodeData = new TempNodeData(resultSet);
@@ -1335,7 +1338,10 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
 
             if (tempNodeData != null && (!needToSkipOffsetNodes() || processed > offset))
             {
-               result.add(createNodeDataIndexing(tempNodeData));
+               NodeDataIndexing nodeData = createNodeDataIndexing(tempNodeData);
+               if (nodeData != null) {
+                  result.add(nodeData);
+               }
             }
          }
          finally
@@ -1352,14 +1358,17 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
       catch (IOException e)
       {
+         LOG.error("Error during data reindexation", e);
          throw new RepositoryException(e);
       }
       catch (IllegalNameException e)
       {
+         LOG.error("Error during data reindexation", e);
          throw new RepositoryException(e);
       }
       catch (SQLException e)
       {
+         LOG.error("Error during data reindexation", e);
          throw new RepositoryException(e);
       }
       if (LOG.isTraceEnabled())
@@ -2785,9 +2794,21 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
       }
 
       // primary type if exists in the list of properties
-      SortedSet<TempPropertyData> ptTempProp = tempNode.properties.get(Constants.JCR_PRIMARYTYPE.getAsString());
-      ValueData ptValueData = ptTempProp.first().getValueData();
-      long ptSize = ptTempProp.first().getSize();
+      SortedSet<TempPropertyData> primaryTypes = tempNode.properties.get(Constants.JCR_PRIMARYTYPE.getAsString());
+
+      if (primaryTypes == null) {
+         LOG.error("Unable to get the primary types of the node {}", tempNode.cid);
+         return null;
+      }
+
+      TempPropertyData primaryType = primaryTypes.first();
+      if (primaryType == null) {
+         LOG.error("Unable to get the first primary type of node {}", tempNode.cid);
+         return null;
+      }
+
+      ValueData ptValueData = primaryType.getValueData();
+      long ptSize = primaryType.getSize();
       InternalQName ptName = InternalQName.parse(ValueDataUtil.getString(ptValueData));
 
       // mixins if exist in the list of properties
