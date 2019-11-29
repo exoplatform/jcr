@@ -46,13 +46,9 @@
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.16</exo.product.specification>
-    <org.exoplatform.kernel.version>6.0.x-SNAPSHOT</org.exoplatform.kernel.version>
-    <org.exoplatform.core.version>6.0.x-SNAPSHOT</org.exoplatform.core.version>
-    <org.exoplatform.ws.version>6.0.x-SNAPSHOT</org.exoplatform.ws.version>
-    <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
-    <org.exoplatform.doc.doc-style.version>4.0.0</org.exoplatform.doc.doc-style.version>
-    <infinispan.version>8.2.6.Final</infinispan.version>
-    <jgroups.version>3.6.7.Final</jgroups.version>
+    <org.exoplatform.social.version>6.0.x-SNAPSHOT</org.exoplatform.social.version>
+    <org.antlr.version>3.5</org.antlr.version>
+    <contiperf.version>2.2.0</contiperf.version>
   </properties>
 
   <dependencyManagement>
@@ -164,6 +160,12 @@
       <dependency>
         <groupId>org.exoplatform.jcr</groupId>
         <artifactId>exo.jcr.component.core</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.jcr</groupId>
+        <artifactId>exo.jcr.component.core</artifactId>
+        <classifier>tests</classifier>
         <version>${project.version}</version>
       </dependency>
       <dependency>
@@ -367,6 +369,12 @@
          <artifactId>contiperf</artifactId>
          <version>2.2.0</version>
          <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <version>${version.mockito}</version>
+        <scope>test</scope>
       </dependency>
     </dependencies>
   </dependencyManagement>
