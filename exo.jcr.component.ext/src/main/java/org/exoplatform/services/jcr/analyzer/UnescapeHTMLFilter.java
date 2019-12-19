@@ -46,9 +46,10 @@ public class UnescapeHTMLFilter extends TokenFilter {
     final int bufferLength = termAtt.length();
     
     String tokenText = new String(buffer);
-    tokenText = tokenText.replaceAll("<br", "");
+    tokenText = tokenText.replaceAll("</?\\s*\\w*\\s*/?>", ""); // Remove all HTML Tags
     tokenText = StringEscapeUtils.unescapeHtml(tokenText);
-    tokenText = tokenText.replaceAll("\\<.*?>", "");
+    tokenText = tokenText.replaceAll("<|>", ""); // Remove trailing HTML character
+    tokenText = tokenText.trim();// Remove empty characters replaced by regex to get the right term length
     
     int newLen = tokenText.toCharArray().length;
     if (newLen < bufferLength) {
