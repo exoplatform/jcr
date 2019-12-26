@@ -222,6 +222,12 @@
         <version>${project.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.exoplatform.jcr</groupId>
+        <artifactId>jcr-packaging</artifactId>
+        <type>zip</type>
+        <version>${project.version}</version>
+      </dependency>
+      <dependency>
         <groupId>org.jibx</groupId>
         <artifactId>jibx-run</artifactId>
         <version>${version.jibx.plugin}</version>
@@ -457,6 +463,7 @@
     <module>exo.jcr.framework.ftpclient</module>
     <module>applications</module>
     <module>exo.jcr.docs</module>
+    <module>jcr-packaging</module>
   </modules>
 
 </project>
