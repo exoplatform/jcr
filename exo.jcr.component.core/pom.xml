@@ -119,10 +119,6 @@
         <artifactId>jgroups</artifactId>
       </dependency>
       <dependency>
-         <groupId>org.jboss.jbossts</groupId>
-         <artifactId>jbossjta</artifactId>
-      </dependency>
-      <dependency>
          <groupId>org.apache.ws.commons</groupId>
          <artifactId>ws-commons-util</artifactId>
          <exclusions>
