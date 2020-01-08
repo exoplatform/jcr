@@ -376,7 +376,7 @@
                                     <boolean>true</boolean>
                                  </field>
                                  <field name="actionClassName">
-                                    <string>org.exoplatform.services.jcr.ext.owner.AddOwneableAction</string>
+                                    <string>org.exoplatform.services.jcr.ext.action.AddOwneableAction</string>
                                  </field>
                               </object>
                            </value>

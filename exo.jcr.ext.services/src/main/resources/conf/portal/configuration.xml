@@ -31,6 +31,7 @@
           <name>autoCreatedInNewRepository</name>
           <description>Node types configuration file</description>
           <value>jar:/conf/activity-nodetypes-config.xml</value>
+          <value>jar:/conf/jcr-audit-nodetypes.xml</value>
         </values-param>
       </init-params>
     </component-plugin>

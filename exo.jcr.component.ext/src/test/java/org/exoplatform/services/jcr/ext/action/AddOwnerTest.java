@@ -16,7 +16,7 @@
  * Software Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
  * 02110-1301 USA, or see the FSF site: http://www.fsf.org.
  */
-package org.exoplatform.services.jcr.ext.owner;
+package org.exoplatform.services.jcr.ext.action;
 
 import org.exoplatform.services.jcr.core.ExtendedNode;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
@@ -29,7 +29,7 @@ import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
  *          name="path"><string>/test</string></field> <field
  *          name="isDeep"><boolean>true</boolean></field> <field
  *          name="actionClassName"><string>org.exoplatform
- *          .services.jcr.ext.owner.AddOwneableAction</string></field> </object> </value>
+ *          .services.jcr.ext.action.AddOwneableAction</string></field> </object> </value>
  * 
  * 
  */
