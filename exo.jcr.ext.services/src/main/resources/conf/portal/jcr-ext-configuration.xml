@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<configuration
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd http://www.exoplatform.org/xml/ns/kernel_1_3.xsd"
+  xmlns="http://www.exoplatform.org/xml/ns/kernel_1_3.xsd">
+  <component>
+    <key>org.exoplatform.services.jcr.RepositoryService</key>
+    <type>org.exoplatform.services.jcr.impl.RepositoryServiceImpl</type>
+  </component>
+
+  <component>
+    <key>org.exoplatform.services.jcr.config.RepositoryServiceConfiguration</key>
+    <type>org.exoplatform.services.jcr.impl.config.RepositoryServiceConfigurationImpl</type>
+    <init-params>
+      <value-param>
+        <name>conf-path</name>
+        <description>JCR configuration file</description>
+        <value>jar:/conf/jcr/common-repository-configuration.xml</value>
+      </value-param>
+      <value-param profiles="recovery-index-rsync">
+        <name>conf-path</name>
+        <description>JCR configuration file</description>
+        <value>jar:/conf/jcr/common-repository-rsync-configuration.xml</value>
+      </value-param>
+    </init-params>
+  </component>
+
+  <component>
+    <key>org.exoplatform.services.jcr.ext.hierarchy.NodeHierarchyCreator</key>
+    <type>org.exoplatform.services.jcr.ext.hierarchy.impl.NodeHierarchyCreatorImpl</type>
+  </component>
+
+  <component profiles="cluster">
+    <key>org.exoplatform.services.rpc.RPCService</key>
+    <type>org.exoplatform.services.rpc.jgv3.RPCServiceImpl</type>
+    <init-params>
+      <value-param>
+        <name>jgroups-configuration</name>
+        <value>${exo.jcr.cluster.jgroups.config-url}</value>
+      </value-param>
+      <value-param>
+        <name>jgroups-cluster-name</name>
+        <value>${exo.cluster.partition.name}-RPCService-Cluster</value>
+      </value-param>
+      <value-param>
+        <name>jgroups-default-timeout</name>
+        <value>0</value>
+      </value-param>
+    </init-params>
+  </component>
+
+</configuration>

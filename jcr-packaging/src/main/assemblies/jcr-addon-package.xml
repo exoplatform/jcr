@@ -99,6 +99,78 @@
         <exclude>org.icepdf:icepdf-core:*</exclude>
         <!-- COR-338: Exclude Apache poi-ooxml 3.8. Platform uses now 3.8-eXo01 -->
         <exclude>org.apache.poi:poi-ooxml:[3.8]</exclude>
+        <!-- Exclude common artifacts already available on CE -->
+        <exclude>*:antlr-runtime:jar</exclude>
+        <exclude>*:antlr:jar</exclude>
+        <exclude>*:apache-mime4j-core:jar</exclude>
+        <exclude>*:apache-mime4j-dom:jar</exclude>
+        <exclude>*:asm-debug-all:jar</exclude>
+        <exclude>*:aspectjrt:jar</exclude>
+        <exclude>*:bcmail-jdk15:jar</exclude>
+        <exclude>*:bcprov-jdk15:jar</exclude>
+        <exclude>*:cdi-api:jar</exclude>
+        <exclude>*:common-common:jar</exclude>
+        <exclude>*:common-logging:jar</exclude>
+        <exclude>*:commons-beanutils:jar</exclude>
+        <exclude>*:commons-chain:jar</exclude>
+        <exclude>*:commons-codec:jar</exclude>
+        <exclude>*:commons-collections:jar</exclude>
+        <exclude>*:commons-compress:*</exclude>
+        <exclude>*:commons-dbcp:jar</exclude>
+        <exclude>*:commons-digester:jar</exclude>
+        <exclude>*:commons-fileupload:jar</exclude>
+        <exclude>*:commons-io:jar</exclude>
+        <exclude>*:commons-lang:jar</exclude>
+        <exclude>*:commons-pool:jar</exclude>
+        <exclude>*:dom4j:jar</exclude>
+        <exclude>*:fontbox:jar</exclude>
+        <exclude>*:groovy-all:jar</exclude>
+        <exclude>*:hibernate-commons-annotations:jar</exclude>
+        <exclude>*:hibernate-core:jar</exclude>
+        <exclude>*:hibernate-jpa-2.0-api:jar</exclude>
+        <exclude>*:htmllexer:jar</exclude>
+        <exclude>*:htmlparser:jar</exclude>
+        <exclude>*:infinispan-commons:jar</exclude>
+        <exclude>*:infinispan-core:jar</exclude>
+        <exclude>*:isoparser:jar</exclude>
+        <exclude>*:jakarta-regexp:jar</exclude>
+        <exclude>*:javax.inject:jar</exclude>
+        <exclude>*:jboss-logging:jar</exclude>
+        <exclude>*:jboss-marshalling-osgi:jar</exclude>
+        <exclude>*:jbossjta:jar</exclude>
+        <exclude>*:jcl-over-slf4j:jar</exclude>
+        <exclude>*:jempbox:jar</exclude>
+        <exclude>*:jgroups:jar</exclude>
+        <exclude>*:jhighlight:jar</exclude>
+        <exclude>*:jibx-run:jar</exclude>
+        <exclude>*:jsr250-api:jar</exclude>
+        <exclude>*:jsr311-api:jar</exclude>
+        <exclude>*:jta:jar</exclude>
+        <exclude>*:jtidy:jar</exclude>
+        <exclude>*:juniversalchardet:jar</exclude>
+        <exclude>*:mail:jar</exclude>
+        <exclude>*:metadata-extractor:jar</exclude>
+        <exclude>*:mime-util:jar</exclude>
+        <exclude>*:netcdf:jar</exclude>
+        <exclude>*:pdfbox:jar</exclude>
+        <exclude>*:poi-ooxml-schemas:jar</exclude>
+        <exclude>*:poi-ooxml:jar</exclude>
+        <exclude>*:poi-scratchpad:jar</exclude>
+        <exclude>*:poi:jar</exclude>
+        <exclude>*:quartz:jar</exclude>
+        <exclude>*:rome:jar</exclude>
+        <exclude>*:tagsoup:jar</exclude>
+        <exclude>*:tika-core:jar</exclude>
+        <exclude>*:tika-parsers:jar</exclude>
+        <exclude>*:vorbis-java-core:jar</exclude>
+        <exclude>*:vorbis-java-tika:jar</exclude>
+        <exclude>*:wci-wci:jar</exclude>
+        <exclude>*:xercesImpl:jar</exclude>
+        <exclude>*:xmlbeans:jar</exclude>
+        <exclude>*:xmpcore:jar</exclude>
+        <exclude>*:xpp3:jar</exclude>
+        <exclude>*:xstream:jar</exclude>
+        <exclude>*:xz:jar</exclude>
       </excludes>
       <outputFileNameMapping>${artifact.artifactId}.${artifact.extension}</outputFileNameMapping>
       <useProjectArtifact>false</useProjectArtifact>
