@@ -31,8 +31,8 @@
 					<container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
 						<properties>
 							<property name="source-name" value="${gatein.jcr.datasource.name}${container.name.suffix}"/>
-							<property name="dialect" value="${gatein.jcr.datasource.dialect}"/>
-							<property name="db-structure-type" value="${gatein.jcr.db-structure-type}"/>
+							<property name="dialect" value="${gatein.jcr.datasource.dialect:auto}"/>
+							<property name="db-structure-type" value="${gatein.jcr.db-structure-type:isolated}"/>
 							<property name="update-storage" value="true"/>
 							<property name="max-buffer-size" value="204800"/>
 							<property name="swap-directory" value="${gatein.jcr.data.dir}/swap/system${container.name.suffix}"/>
@@ -58,7 +58,7 @@
 					</initializer>
 					<cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
 						<properties>
-							<property name="infinispan-configuration" value="${gatein.jcr.cache.config}"/>
+							<property name="infinispan-configuration" value="${gatein.jcr.cache.config:jar:/conf/portal/cache-configuration-template.xml}"/>
 							<property name="jgroups-configuration" value="${gatein.jcr.jgroups.config}"/>
 							<property name="infinispan-cluster-name" value="jcr${container.name.suffix}"/>
 						</properties>
@@ -66,8 +66,8 @@
 					<query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
 						<properties>
 							<property name="index-dir" value="${gatein.jcr.index.data.dir}/system${container.name.suffix}"/>
-							<property name="changesfilter-class" value="${gatein.jcr.index.changefilterclass}"/>
-							<property name="infinispan-configuration" value="${gatein.jcr.index.cache.config}"/>
+							<property name="changesfilter-class" value="${gatein.jcr.index.changefilterclass:org.exoplatform.services.jcr.impl.core.query.DefaultChangesFilter}"/>
+							<property name="infinispan-configuration" value="${gatein.jcr.index.cache.config:jar:/conf/portal/cache-configuration-template.xml}"/>
 							<property name="jgroups-configuration" value="${gatein.jcr.jgroups.config}"/>
 							<property name="infinispan-cluster-name" value="jcrindexer${container.name.suffix}"/>
 							<property name="max-volatile-time" value="60"/>
@@ -78,7 +78,7 @@
 					<lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
 						<properties>
 							<property name="time-out" value="15m"/>
-							<property name="infinispan-configuration" value="${gatein.jcr.lock.cache.config}"/>
+							<property name="infinispan-configuration" value="${gatein.jcr.lock.cache.config:jar:/conf/portal/cache-configuration-template.xml}"/>
 							<property name="jgroups-configuration" value="${gatein.jcr.jgroups.config}"/>
 							<property name="infinispan-cluster-name" value="jcrlock${container.name.suffix}"/>
 							<property name="infinispan-cl-cache.jdbc.table.name" value="lk"/>
@@ -89,7 +89,7 @@
 							<property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp" />
 							<property name="infinispan-cl-cache.jdbc.datasource" value="${gatein.jcr.datasource.name}${container.name.suffix}"/>
 							<property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory" />
-							<property name="infinispan-cl-cache.jdbc.dialect" value="${gatein.jcr.datasource.dialect}" />
+							<property name="infinispan-cl-cache.jdbc.dialect" value="${gatein.jcr.datasource.dialect:auto}" />
 						</properties>
 					</lock-manager>
 				</workspace>
@@ -98,8 +98,8 @@
           <container class="org.exoplatform.services.jcr.impl.storage.jdbc.optimisation.CQJDBCWorkspaceDataContainer">
             <properties>
               <property name="source-name" value="${gatein.jcr.datasource.name}${container.name.suffix}"/>
-              <property name="dialect" value="${gatein.jcr.datasource.dialect}"/>
-              <property name="db-structure-type" value="${gatein.jcr.db-structure-type}"/>
+              <property name="dialect" value="${gatein.jcr.datasource.dialect:auto}"/>
+              <property name="db-structure-type" value="${gatein.jcr.db-structure-type:isolated}"/>
               <property name="update-storage" value="true"/>
               <property name="max-buffer-size" value="204800"/>
               <property name="swap-directory" value="${gatein.jcr.data.dir}/swap/collaboration${container.name.suffix}"/>
@@ -126,7 +126,7 @@
           </initializer>
           <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
             <properties>
-              <property name="infinispan-configuration" value="${gatein.jcr.cache.config}"/>
+              <property name="infinispan-configuration" value="${gatein.jcr.cache.config:jar:/conf/portal/cache-configuration-template.xml}"/>
               <property name="jgroups-configuration" value="${gatein.jcr.jgroups.config}"/>
               <property name="infinispan-cluster-name" value="jcr${container.name.suffix}"/>
             </properties>
@@ -134,8 +134,8 @@
           <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
             <properties>
               <property name="index-dir" value="${gatein.jcr.index.data.dir}/collaboration${container.name.suffix}"/>
-              <property name="changesfilter-class" value="${gatein.jcr.index.changefilterclass}"/>
-              <property name="infinispan-configuration" value="${gatein.jcr.index.cache.config}"/>
+              <property name="changesfilter-class" value="${gatein.jcr.index.changefilterclass:org.exoplatform.services.jcr.impl.core.query.DefaultChangesFilter}"/>
+              <property name="infinispan-configuration" value="${gatein.jcr.index.cache.config:jar:/conf/portal/cache-configuration-template.xml}"/>
               <property name="jgroups-configuration" value="${gatein.jcr.jgroups.config}"/>
               <property name="infinispan-cluster-name" value="jcrindexer${container.name.suffix}"/>
               <property name="max-volatile-time" value="60"/>
@@ -149,7 +149,7 @@
           <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
             <properties>
               <property name="time-out" value="15m"/>
-              <property name="infinispan-configuration" value="${gatein.jcr.lock.cache.config}"/>
+              <property name="infinispan-configuration" value="${gatein.jcr.lock.cache.config:jar:/conf/portal/cache-configuration-template.xml}"/>
               <property name="jgroups-configuration" value="${gatein.jcr.jgroups.config}"/>
               <property name="infinispan-cluster-name" value="jcrlock${container.name.suffix}"/>
               <property name="infinispan-cl-cache.jdbc.table.name" value="lk"/>
@@ -160,7 +160,7 @@
               <property name="infinispan-cl-cache.jdbc.timestamp.column" value="timestamp"/>
               <property name="infinispan-cl-cache.jdbc.datasource" value="${gatein.jcr.datasource.name}${container.name.suffix}"/>
               <property name="infinispan-cl-cache.jdbc.connectionFactory" value="org.infinispan.loaders.jdbc.connectionfactory.ManagedConnectionFactory"/>
-              <property name="infinispan-cl-cache.jdbc.dialect" value="${gatein.jcr.datasource.dialect}"/>
+              <property name="infinispan-cl-cache.jdbc.dialect" value="${gatein.jcr.datasource.dialect:auto}"/>
             </properties>
           </lock-manager>
         </workspace>
