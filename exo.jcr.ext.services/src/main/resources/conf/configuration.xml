@@ -1,0 +1,35 @@
+<configuration
+   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+   xsi:schemaLocation="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd http://www.exoplatform.org/xml/ns/kernel_1_2.xsd"
+   xmlns="http://www.exoplatform.org/xml/ns/kernel_1_2.xsd">
+
+  <component>
+    <key>JCRProperties</key>
+    <type>org.exoplatform.container.ExtendedPropertyConfigurator</type>
+    <init-params>
+      <values-param>
+        <name>properties.urls</name>
+        <value>jar:/conf/jcr.properties</value>
+      </values-param>
+      <values-param profiles="cluster">
+        <name>properties.urls</name>
+        <value>jar:/conf/jcr-cluster.properties</value>
+        <value>jar:/conf/jcr-cluster-udp.properties</value>
+      </values-param>
+      <values-param profiles="cluster-jgroups-tcp">
+        <name>properties.urls</name>
+        <value>jar:/conf/jcr-cluster.properties</value>
+        <value>jar:/conf/jcr-cluster-tcp.properties</value>
+      </values-param>
+      <!-- Deprecated clustering index strategy -->
+      <properties-param profiles="cluster-index-shared">
+        <name>ChangeFilterClass</name>
+        <description>Filter used to notify changes in the jcr index in cluster</description>
+        <property name="gatein.jcr.index.changefilterclass" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
+        <!-- Use this lock factory to lock index files on cluster wide -->
+        <property name="org.exoplatform.jcr.lucene.store.FSDirectoryLockFactoryClass" value="org.apache.lucene.store.NativeFSLockFactory" />
+      </properties-param>
+    </init-params>
+  </component>
+
+</configuration>
