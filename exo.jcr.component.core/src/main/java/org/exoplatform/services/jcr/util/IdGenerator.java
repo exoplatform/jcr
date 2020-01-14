@@ -18,48 +18,49 @@
  */
 package org.exoplatform.services.jcr.util;
 
+import org.exoplatform.container.ExoContainerContext;
 import org.exoplatform.services.idgenerator.IDGeneratorService;
 import org.exoplatform.services.jcr.datamodel.Identifier;
 
 /**
  * Created by The eXo Platform SAS.
  * 
- * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov </a>
+ * @author <a href="mailto:gennady.azarenkov@exoplatform.com">Gennady Azarenkov
+ *         </a>
  * @version $Id: IdGenerator.java 11907 2008-03-13 15:36:21Z ksm $
  */
 
-public class IdGenerator
-{
-   public static final int IDENTIFIER_LENGTH = IDGeneratorService.ID_LENGTH;
+public class IdGenerator {
+  public static final int                    IDENTIFIER_LENGTH = IDGeneratorService.ID_LENGTH;
 
-   private static volatile IDGeneratorService idGenerator;
+  private static volatile IDGeneratorService idGenerator;
 
-   public IdGenerator(IDGeneratorService idGenerator)
-   {
-      if (IdGenerator.idGenerator == null)
-      {
-         synchronized (IdGenerator.class)
-         {
-            if (IdGenerator.idGenerator == null)
-            {
-               IdGenerator.idGenerator = idGenerator;               
-            }
-         }
+  public IdGenerator(IDGeneratorService idGenerator) {
+    if (IdGenerator.idGenerator == null) {
+      synchronized (IdGenerator.class) {
+        if (IdGenerator.idGenerator == null) {
+          IdGenerator.idGenerator = idGenerator;
+        }
       }
-   }
+    }
+  }
 
-   public Identifier generateId(String path)
-   {
-      return new Identifier(idGenerator.generateStringID(path));
-   }
+  public Identifier generateId(String path) {
+    return new Identifier(getIdGenerator().generateStringID(path));
+  }
 
-   public String generateStringId(String path)
-   {
-      return idGenerator.generateStringID(path);
-   }
+  public String generateStringId(String path) {
+    return getIdGenerator().generateStringID(path);
+  }
 
-   public static String generate()
-   {
-      return idGenerator.generateStringID(Long.toString(System.currentTimeMillis()));
-   }
+  public static String generate() {
+    return getIdGenerator().generateStringID(Long.toString(System.currentTimeMillis()));
+  }
+
+  public static IDGeneratorService getIdGenerator() {
+    if (idGenerator == null) {
+      idGenerator = ExoContainerContext.getCurrentContainer().getComponentInstanceOfType(IDGeneratorService.class);
+    }
+    return idGenerator;
+  }
 }
