@@ -9,19 +9,25 @@
     <init-params>
       <values-param>
         <name>properties.urls</name>
+        <value>jar:/conf/jcr-local.properties</value>
+        <!-- load this at last to reuse properties from upper files -->
         <value>jar:/conf/jcr.properties</value>
       </values-param>
       <values-param profiles="cluster">
         <name>properties.urls</name>
         <value>jar:/conf/jcr-cluster.properties</value>
         <value>jar:/conf/jcr-cluster-udp.properties</value>
+        <!-- load this at last to reuse properties from upper files -->
+        <value>jar:/conf/jcr.properties</value>
       </values-param>
       <values-param profiles="cluster-jgroups-tcp">
         <name>properties.urls</name>
         <value>jar:/conf/jcr-cluster.properties</value>
         <value>jar:/conf/jcr-cluster-tcp.properties</value>
+        <!-- load this at last to reuse properties from upper files -->
+        <value>jar:/conf/jcr.properties</value>
       </values-param>
-      <!-- Deprecated clustering index strategy -->
+      <!-- DEPRECATED JCR index clustering strategy -->
       <properties-param profiles="cluster-index-shared">
         <name>ChangeFilterClass</name>
         <description>Filter used to notify changes in the jcr index in cluster</description>
