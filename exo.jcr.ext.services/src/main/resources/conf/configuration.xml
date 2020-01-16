@@ -38,4 +38,23 @@
     </init-params>
   </component>
 
+  <external-component-plugins>
+    <target-component>org.exoplatform.container.definition.PortalContainerConfig</target-component>
+    <component-plugin>
+      <name>Change PortalContainer Definitions</name>
+      <set-method>registerChangePlugin</set-method>
+      <type>org.exoplatform.container.definition.PortalContainerDefinitionChangePlugin</type>
+      <priority>40</priority>
+      <init-params>
+        <value-param>
+          <name>apply.default</name>
+          <value>true</value>
+        </value-param>
+        <values-param>
+          <name>add.profiles</name>
+          <value>jcr</value>
+        </values-param>
+      </init-params>
+    </component-plugin>
+  </external-component-plugins>
 </configuration>
