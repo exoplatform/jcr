@@ -18,7 +18,22 @@
  */
 package org.exoplatform.services.jcr.webdav;
 
+import java.io.InputStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import javax.jcr.*;
+import javax.jcr.nodetype.*;
+import javax.ws.rs.*;
+import javax.ws.rs.core.*;
+
 import org.apache.commons.lang.StringUtils;
+
 import org.exoplatform.common.http.HTTPStatus;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.commons.utils.MimeTypeResolver;
@@ -31,37 +46,12 @@ import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.webdav.command.*;
 import org.exoplatform.services.jcr.webdav.command.deltav.*;
 import org.exoplatform.services.jcr.webdav.lock.NullResourceLocksHolder;
-import org.exoplatform.services.jcr.webdav.util.InitParamsDefaults;
-import org.exoplatform.services.jcr.webdav.util.NodeTypeUtil;
-import org.exoplatform.services.jcr.webdav.util.TextUtil;
+import org.exoplatform.services.jcr.webdav.util.*;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rest.ExtHttpHeaders;
 import org.exoplatform.services.rest.ext.webdav.method.*;
 import org.exoplatform.services.rest.resource.ResourceContainer;
-
-import javax.jcr.NoSuchWorkspaceException;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.NodeTypeManager;
-import javax.ws.rs.*;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
-import java.io.InputStream;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Created by The eXo Platform SAS.
@@ -853,7 +843,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
     * @return the instance of javax.ws.rs.core.Response
     * @LevelAPI Platform
     */
-   @OPTIONS
+   @org.exoplatform.services.rest.ext.webdav.method.OPTIONS
    @Path("/{repoName}/{path:.*}/")
    public Response options(@PathParam("path") String path)
    {
