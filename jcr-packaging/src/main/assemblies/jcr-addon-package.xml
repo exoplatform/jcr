@@ -136,6 +136,7 @@
         <exclude>*:jakarta-regexp:jar</exclude>
         <exclude>*:javax.inject:jar</exclude>
         <exclude>*:jboss-logging:jar</exclude>
+        <exclude>*:jboss-logging-annotations:jar</exclude>
         <exclude>*:jboss-marshalling-osgi:jar</exclude>
         <exclude>*:jbossjta:jar</exclude>
         <exclude>*:jcl-over-slf4j:jar</exclude>
