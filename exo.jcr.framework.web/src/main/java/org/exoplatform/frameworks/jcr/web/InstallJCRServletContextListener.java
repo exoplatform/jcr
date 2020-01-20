@@ -10,7 +10,11 @@ import org.exoplatform.services.log.Log;
 
 /**
  * This is a service that is injected via Kernel Container to install a JCR Web
- * Filter
+ * Filter. The filter {@link ThreadLocalSessionProviderInitializedFilter} must
+ * be injected in the main webapp (portal.war) and rest webapp (rest.war). Since
+ * the JCR is an addon, in order to avoid updating the web.xml file of
+ * portal.war and rest.war, the filter must be injected dynamically through a
+ * {@link ServletContextListener}.
  */
 public class InstallJCRServletContextListener implements ServletContextListener {
 
@@ -30,4 +34,5 @@ public class InstallJCRServletContextListener implements ServletContextListener 
   public void contextDestroyed(ServletContextEvent contextEvent) {
     // Nothing to do
   }
+
 }
