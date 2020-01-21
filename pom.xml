@@ -51,7 +51,7 @@
     <org.exoplatform.ws.version>6.0.x-SNAPSHOT</org.exoplatform.ws.version>
     <org.exoplatform.doc-style.version>2</org.exoplatform.doc-style.version>
     <org.exoplatform.doc.doc-style.version>4.0.0</org.exoplatform.doc.doc-style.version>
-    <infinispan.version>8.2.6.Final</infinispan.version>
+    <infinispan.version>10.1.1.Final</infinispan.version>
     <jgroups.version>3.6.7.Final</jgroups.version>
   </properties>
 
