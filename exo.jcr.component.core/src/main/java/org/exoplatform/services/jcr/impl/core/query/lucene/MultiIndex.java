@@ -3720,6 +3720,7 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
                      ex.initCause(e);
                      exception.set(ex);
                      // Interrupts all the indexing threads
+                     LOG.error("Issue with indexation",ex);
                      interruptAll();
                   }
                   finally
