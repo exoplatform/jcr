@@ -40,6 +40,8 @@ import org.exoplatform.services.jcr.impl.dataflow.persistent.StringPersistedValu
 import org.exoplatform.services.jcr.impl.storage.value.fs.operations.ValueFileIOHelper;
 import org.exoplatform.services.jcr.impl.util.JCRDateFormat;
 import org.exoplatform.services.jcr.impl.util.io.SwapFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -61,7 +63,12 @@ import javax.jcr.ValueFormatException;
  */
 public class ValueDataUtil
 {
-   /**
+    /**
+     * The logger instance for this class
+     */
+    private static final Logger LOG = LoggerFactory.getLogger("org.exoplatform.services.jcr.impl.dataflow.ValueDataUtil");
+
+    /**
     * Read value data from stream.
     * 
     * @param cid
@@ -188,6 +195,7 @@ public class ValueDataUtil
          // JCR-2463 In case the file was renamed to be removed/changed,
          // but the transaction wasn't rollbacked cleanly
          file = fixFileName(file);
+         fileSize = file.length();
          FileInputStream is = new FileInputStream(file);
          try
          {
@@ -205,6 +213,9 @@ public class ValueDataUtil
             }
 
             vdDataWrapper.value = createValueData(type, orderNumber, data);
+         }
+         catch (ArrayIndexOutOfBoundsException e) {
+             LOG.error("issue with file read: ",file.getAbsolutePath(), e);
          }
          finally
          {
