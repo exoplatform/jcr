@@ -35,7 +35,7 @@
   <description>Exoplatform SAS 'eXo JCR Ext Services' project.</description>
 
   <properties>
-     <exo.test.coverage.ratio>0.57</exo.test.coverage.ratio>
+     <exo.test.coverage.ratio>0.56</exo.test.coverage.ratio>
      <wikbook.source>${pom.basedir}/src/main/wikbook</wikbook.source>
      <wikbook.target>${project.build.directory}/wikbook</wikbook.target>
      <wikbook.version>0.9.26</wikbook.version>
