@@ -86,13 +86,18 @@
       </dependency>
       <dependency>
         <groupId>org.exoplatform.ws</groupId>
-        <artifactId>exo.ws.commons</artifactId>
+        <artifactId>exo.ws.rest.core</artifactId>
         <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.exoplatform.jcr</groupId>
-         <artifactId>exo.jcr.cluster.testclient</artifactId>
-         <scope>test</scope>
+        <groupId>org.exoplatform.ws</groupId>
+        <artifactId>exo.ws.rest.ext</artifactId>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.exoplatform.ws</groupId>
+        <artifactId>exo.ws.commons</artifactId>
+        <scope>test</scope>
       </dependency>
       <dependency>
          <groupId>org.apache.lucene</groupId>
@@ -117,10 +122,6 @@
       <dependency>
         <groupId>org.jgroups</groupId>
         <artifactId>jgroups</artifactId>
-      </dependency>
-      <dependency>
-         <groupId>org.jboss.jbossts</groupId>
-         <artifactId>jbossjta</artifactId>
       </dependency>
       <dependency>
          <groupId>org.apache.ws.commons</groupId>
@@ -148,7 +149,7 @@
       </dependency>
       <dependency>
          <groupId>org.antlr</groupId>
-         <artifactId>antlr-runtime</artifactId>
+         <artifactId>antlr</artifactId>
       </dependency>
       <dependency>
          <groupId>org.antlr</groupId>
@@ -216,6 +217,11 @@
          <groupId>org.databene</groupId>
          <artifactId>contiperf</artifactId>
          <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-core</artifactId>
+        <scope>test</scope>
       </dependency>
    </dependencies>
   <!-- ======================================================================= -->

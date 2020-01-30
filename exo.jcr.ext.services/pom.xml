@@ -35,7 +35,7 @@
   <description>Exoplatform SAS 'eXo JCR Ext Services' project.</description>
 
   <properties>
-     <exo.test.coverage.ratio>0.57</exo.test.coverage.ratio>
+     <exo.test.coverage.ratio>0.56</exo.test.coverage.ratio>
      <wikbook.source>${pom.basedir}/src/main/wikbook</wikbook.source>
      <wikbook.target>${project.build.directory}/wikbook</wikbook.target>
      <wikbook.version>0.9.26</wikbook.version>
@@ -99,36 +99,6 @@
     </dependency>
   </dependencies>
   <build>
-    <sourceDirectory>src/main/java</sourceDirectory>
-    <outputDirectory>target/classes</outputDirectory>
-    <testSourceDirectory>src/test/java</testSourceDirectory>
-    <testOutputDirectory>target/test-classes</testOutputDirectory>
-    <resources>
-      <resource>
-        <directory>src/main/java</directory>
-        <includes>
-          <include>**/*.xml</include>
-          <include>**/*.html</include>
-          <include>**/*.css</include>
-        </includes>
-      </resource>
-    </resources>
-    <testResources>
-      <testResource>
-        <directory>src/test/resources</directory>
-        <includes>
-          <include>**/*.properties</include>
-          <include>**/*.xml</include>
-          <include>login.conf</include>
-        </includes>
-      </testResource>
-      <testResource>
-        <directory>src/test/java</directory>
-        <includes>
-          <include>**/*.xml</include>
-        </includes>
-      </testResource>
-    </testResources>
     <plugins>
       <!-- copy images to wikbook src -->
       <plugin>
@@ -397,12 +367,4 @@
          </plugin>
     </plugins>
   </build>
-  <profiles>
-    <profile>
-      <id>debug</id>
-      <properties>
-        <debug.opts>-Xdebug -Xrunjdwp:transport=dt_socket,address=8000,server=y,suspend=y</debug.opts>
-      </properties>
-    </profile>
-  </profiles>
 </project>
