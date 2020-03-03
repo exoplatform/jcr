@@ -90,7 +90,12 @@ public class TestFileValueIO extends TestCase
    {
 
       byte[] buf = "0123456789".getBytes();
-      File file = new File("target/testReadByteArrayValueData");
+      File parentDir= new File("target/parentTestReadByteArrayValueData");
+      if (parentDir.exists()){
+         parentDir.delete();
+      }
+      parentDir.mkdir();
+      File file = new File("target/parentTestReadByteArrayValueData/testReadByteArrayValueData");
       if (file.exists())
          file.delete();
       FileOutputStream out = new FileOutputStream(file);
@@ -100,6 +105,21 @@ public class TestFileValueIO extends TestCase
       // max buffer size = 50 - so ByteArray will be created
       ValueData vd = FileValueIOUtil.testReadValue(file, 0, 50);
 
+      assertTrue(vd instanceof ByteArrayPersistedValueData);
+      assertTrue(vd.isByteArray());
+      assertEquals(10, vd.getLength());
+      assertEquals(0, vd.getOrderNumber());
+      assertEquals(10, vd.getAsByteArray().length);
+      assertTrue(vd.getAsStream() instanceof ByteArrayInputStream);
+      //added test after JCR-2463
+      file = new File("target/parentTestReadByteArrayValueData/testReadByteArrayValueDataTrunc");
+      File truncatedFile = new File("target/parentTestReadByteArrayValueData/testReadByteArrayValueDataTrunc.ori");
+      if (truncatedFile.exists())
+         truncatedFile.delete();
+      out = new FileOutputStream(truncatedFile);
+      out.write(buf);
+      out.close();
+      vd = FileValueIOUtil.testReadValue(file, 0, 50);
       assertTrue(vd instanceof ByteArrayPersistedValueData);
       assertTrue(vd.isByteArray());
       assertEquals(10, vd.getLength());
