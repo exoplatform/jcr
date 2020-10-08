@@ -50,6 +50,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
@@ -58,6 +59,7 @@ import javax.jcr.Session;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
 /**
@@ -170,6 +172,17 @@ public class GetCommand
                }
             }
 
+            try {
+               resource.getProperty(new QName("jcr","data","jcr"));
+            } catch (RepositoryException exc) {
+               //it can fail here if the binary data is not available
+               //(due to data corruption or antivirus quarantine)
+               //In this case, we should display a readable message for the user
+               LOG.error(exc.getMessage(), exc);
+               String message = "The requested resource ("+path+") is no longer available. Please contact your administrator.";
+               return Response.status(HTTPStatus.NOT_FOUND).entity(message).build();
+            }
+            
             HierarchicalProperty contentLengthProperty = resource.getProperty(FileResource.GETCONTENTLENGTH);
             long contentLength = new Long(contentLengthProperty.getValue());
 
