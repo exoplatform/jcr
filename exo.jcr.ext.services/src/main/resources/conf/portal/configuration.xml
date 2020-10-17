@@ -20,6 +20,35 @@
     <type>org.exoplatform.services.jcr.ext.resource.representation.NtResourceNodeRepresentationFactory</type>
   </component>
 
+  <component profiles="cluster">
+    <key>org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingQueueDAO</key>
+    <type>org.exoplatform.services.jcr.ext.index.persistent.impl.JCRIndexingQueueDAOImpl</type>
+  </component>
+
+  <component profiles="cluster">
+    <key>org.exoplatform.services.jcr.ext.index.persistent.api.JCRIndexingService</key>
+    <type>org.exoplatform.services.jcr.ext.index.persistent.impl.JCRIndexingServiceImpl</type>
+    <init-params>
+      <value-param>
+        <name>cluster.node.name</name>
+        <description>Cluster node name</description>
+        <value>${exo.cluster.node.name:}</value>
+      </value-param>
+      <value-param>
+        <name>batch.number</name>
+        <description>Batching count when processing elements from queue
+        after retrieving indexes from coordinator/master</description>
+        <value>${exo.jcr.indexing.persistent.queue.batch.number:100}</value>
+      </value-param>
+      <value-param>
+        <name>queue.periodicity.seconds</name>
+        <description>Periodicity of asunchronous queue processing
+        to index nodes that has changes made by other Cluster nodes</description>
+        <value>${exo.jcr.indexing.persistent.queue.periodicity.seconds:5}</value>
+      </value-param>
+    </init-params>
+  </component>
+
   <external-component-plugins>
     <target-component>org.exoplatform.services.jcr.RepositoryService</target-component>
     <component-plugin>

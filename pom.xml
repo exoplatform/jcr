@@ -23,10 +23,10 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
-    <groupId>org.exoplatform</groupId>
-    <artifactId>foundation-parent</artifactId>
-    <version>20</version>
-    <relativePath />
+    <artifactId>addons-parent-pom</artifactId>
+    <groupId>org.exoplatform.addons</groupId>
+    <version>12</version>
+    <relativePath/>
   </parent>
 
   <groupId>org.exoplatform.jcr</groupId>
@@ -49,6 +49,8 @@
     <org.exoplatform.social.version>6.0.x-SNAPSHOT</org.exoplatform.social.version>
     <org.antlr.version>3.5</org.antlr.version>
     <contiperf.version>2.2.0</contiperf.version>
+    <!-- Backward compatibility -->
+    <junit.version>4.10</junit.version>
   </properties>
 
   <dependencyManagement>
@@ -143,6 +145,12 @@
          <artifactId>contiperf</artifactId>
          <version>${contiperf.version}</version>
          <scope>test</scope>
+      </dependency>
+      <!-- Kept for Backward compatibility -->
+      <dependency>
+         <groupId>junit</groupId>
+         <artifactId>junit</artifactId>
+         <version>${junit.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

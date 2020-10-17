@@ -18,6 +18,8 @@
  */
 package org.exoplatform.services.jcr.impl.util;
 
+import org.apache.commons.lang.StringUtils;
+
 import org.exoplatform.commons.utils.ISO8601;
 import org.exoplatform.commons.utils.Tools;
 import org.exoplatform.services.log.ExoLogger;
@@ -117,6 +119,9 @@ public class JCRDateFormat
    {
       try
       {
+         if (StringUtils.isBlank(dateString)) {
+           return null;
+         }
          return ISO8601.parseEx(dateString);
       }
       catch (ParseException e)

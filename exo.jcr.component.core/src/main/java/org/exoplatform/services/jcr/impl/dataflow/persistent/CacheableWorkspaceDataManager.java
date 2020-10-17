@@ -59,6 +59,7 @@ import org.exoplatform.services.rpc.RPCException;
 import org.exoplatform.services.rpc.RPCService;
 import org.exoplatform.services.rpc.RemoteCommand;
 import org.exoplatform.services.transaction.TransactionService;
+
 import org.picocontainer.Startable;
 import java.io.Serializable;
 import java.security.PrivilegedAction;
@@ -130,6 +131,11 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    private final int bfElementNumber;
 
    private final boolean bfEnabled ;
+
+   /**
+    * Whether to enable remote RPC calls or not
+    */
+   protected final boolean enableRemoteCalls;
 
    private volatile BloomFilter<String> filterPermissions;
 
@@ -431,6 +437,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.ACL_BF_ENABLED,
             ACL_BF_ENABLED_DEFAULT);
 
+      this.enableRemoteCalls = wsConfig.getContainer()
+                                       .getParameterBoolean(WorkspaceDataContainer.ENABLE_RPC_SYNC,
+                                                            WorkspaceDataContainer.RPC_CALLS_ENABLED_DEFAULT);
+
       this.cache = cache;
 
       this.requestCache = new ConcurrentHashMap<Integer, DataRequest>();
@@ -503,6 +513,10 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
       bfEnabled=
          wsConfig.getContainer().getParameterBoolean(WorkspaceDataContainer.ACL_BF_ENABLED,
             ACL_BF_ENABLED_DEFAULT);
+
+      this.enableRemoteCalls = wsConfig.getContainer()
+                                       .getParameterBoolean(WorkspaceDataContainer.ENABLE_RPC_SYNC,
+                                                            WorkspaceDataContainer.RPC_CALLS_ENABLED_DEFAULT);
 
       this.cache = cache;
 
@@ -1060,6 +1074,8 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
          }
          catch (InterruptedException e)
          {
+            latcher.get().countDown();
+            Thread.currentThread().interrupt();
             throw new RepositoryException(e);
          }
       }
@@ -2170,7 +2186,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void suspend() throws SuspendException
    {
-      if (rpcService != null)
+      if (suspend != null)
       {
          isResponsibleForResuming.set(true);
 
@@ -2198,7 +2214,7 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    public void resume() throws ResumeException
    {
-      if (rpcService != null)
+      if (resume != null)
       {
          try
          {
@@ -2273,11 +2289,13 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
     */
    private void initRemoteCommands()
    {
+      if (!this.enableRemoteCalls) {
+        return;
+      }
       if (rpcService != null)
       {
          // register commands
-         suspend = rpcService.registerCommand(new RemoteCommand()
-         {
+         suspend = rpcService.registerCommand(new RemoteCommand() {
 
             public String getId()
             {
@@ -2328,15 +2346,16 @@ public class CacheableWorkspaceDataManager extends WorkspacePersistentDataManage
    /**
     * Unregister remote commands.
     */
-   private void unregisterRemoteCommands()
-   {
-      if (rpcService != null)
-      {
-         rpcService.unregisterCommand(suspend);
-         rpcService.unregisterCommand(resume);
-         rpcService.unregisterCommand(requestForResponsibleForResuming);
-      }
-      
+   private void unregisterRemoteCommands() {
+     if (suspend != null) {
+       rpcService.unregisterCommand(suspend);
+     }
+     if (resume != null) {
+       rpcService.unregisterCommand(resume);
+     }
+     if (requestForResponsibleForResuming != null) {
+       rpcService.unregisterCommand(requestForResponsibleForResuming);
+     }
    }
 
    private <T> T executeAction(PrivilegedExceptionAction<T> action) throws RepositoryException
