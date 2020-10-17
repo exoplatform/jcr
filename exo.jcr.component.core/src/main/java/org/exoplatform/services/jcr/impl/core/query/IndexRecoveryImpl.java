@@ -28,6 +28,9 @@ import org.exoplatform.services.rpc.RemoteCommand;
 import org.exoplatform.services.rpc.TopologyChangeEvent;
 import org.exoplatform.services.rpc.TopologyChangeListener;
 import org.exoplatform.services.rpc.jgv3.RPCServiceImpl;
+
+import org.apache.commons.lang.StringUtils;
+import org.jboss.util.file.Files;
 import org.jgroups.Address;
 
 import java.io.File;
@@ -36,8 +39,7 @@ import java.io.InputStream;
 import java.io.RandomAccessFile;
 import java.io.Serializable;
 import java.security.PrivilegedExceptionAction;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import javax.jcr.RepositoryException;
 
@@ -82,6 +84,26 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
     * Remote command responsible for getting data of target file.
     */
    private RemoteCommand getIndexFile;
+
+   /**
+    * Remote command responsible for getting the whole workspace index file
+    */
+   private RemoteCommand getAllIndexes;
+   
+   /**
+    * Create one single indexes zip file to prepare it to be transfered 
+    */
+   private RemoteCommand prepareIndexesForCopy;
+   
+   /**
+    * Deletes indexes zip file to prepare it to be transfered 
+    */
+   private RemoteCommand cleanupIndexesAfterCopy;
+   
+   /**
+    * List of compressed index folders to send to coordinators
+    */
+   private List<File> indexesZipFiles = Collections.synchronizedList(new ArrayList<>());
 
    /**
     * Remote command to switch index between RO/RW state.
@@ -215,6 +237,80 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
                }
             }
          }
+      });
+
+      prepareIndexesForCopy = rpcService.registerCommand(new RemoteCommand() {
+        public String getId() {
+          return "org.exoplatform.services.jcr.impl.core.query.IndexRecoveryImpl-prepareIndexesForCopy-" + commandSuffix;
+        }
+  
+        public Serializable execute(Serializable[] args) throws Throwable {
+          File indexesZipFile = File.createTempFile("jcr", "indexes");
+          DirectoryHelper.compressDirectory(indexDirectory, indexesZipFile);
+          indexesZipFiles.add(indexesZipFile);
+          return indexesZipFile.getName();
+        }
+      });
+
+      cleanupIndexesAfterCopy = rpcService.registerCommand(new RemoteCommand() {
+        public String getId() {
+          return "org.exoplatform.services.jcr.impl.core.query.IndexRecoveryImpl-cleanupIndexesAfterCopy-" + commandSuffix;
+        }
+  
+        public Serializable execute(Serializable[] args) throws Throwable {
+          String fileName = (String) args[0];
+          File indexesZipFile = indexesZipFiles.stream().filter(file -> file.getName().equals(fileName)).findFirst().orElse(null);
+          if (indexesZipFile == null || !indexesZipFile.exists()) {
+            return false;
+          }
+          try {
+            if (!Files.delete(indexesZipFile)) {
+              indexesZipFile.deleteOnExit();
+            }
+            return true;
+          } catch (Exception e) {
+            log.debug("Could not delete file {}", indexesZipFile, e);
+            indexesZipFile.deleteOnExit();
+          } finally {
+            indexesZipFiles.remove(indexesZipFile);
+          }
+          return false;
+        }
+      });
+
+      getAllIndexes = rpcService.registerCommand(new RemoteCommand() {
+        public String getId() {
+          return "org.exoplatform.services.jcr.impl.core.query.IndexRecoveryImpl-getAllIndexes-" + commandSuffix;
+        }
+  
+        public Serializable execute(Serializable[] args) throws Throwable {
+          String fileName = (String) args[0];
+          long offset = (Long) args[1];
+          File indexesZipFile = indexesZipFiles.stream().filter(file -> file.getName().equals(fileName)).findFirst().orElse(null);
+          if (indexesZipFile == null) {
+            return new byte[0];
+          }
+  
+          RandomAccessFile file = new RandomAccessFile(indexesZipFile, "r");
+          try {
+            file.seek(offset);
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int len = file.read(buffer);
+            if (len == -1) {
+              return null;
+            } else {
+              byte[] data = new byte[len];
+              System.arraycopy(buffer, 0, data, 0, len);
+              return data;
+            }
+          } finally {
+            try {
+              file.close();
+            } catch (IOException e) {
+              log.debug("Could not close the file", e);
+            }
+          }
+        }
       });
 
       getCoordinatorAddress = rpcService.registerCommand(new RemoteCommand()
@@ -369,6 +465,15 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
       }
    }
 
+    @Override
+    public InputStream getIndexFolderInZip() throws RepositoryException {
+      try {
+        return new RemoteInputStream(true);
+      } catch (RPCException e) {
+        throw new RepositoryException(e);
+      }
+    }
+
    /**
     * @see org.exoplatform.services.jcr.impl.core.query.IndexRecovery#checkIndexReady()
     */
@@ -393,18 +498,29 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
     */
    class RemoteInputStream extends InputStream
    {
-      private final String filePath;
+      private String filePath;
 
       private long fileOffset = 0;
+
+      private boolean allIndexData = false;
 
       private int bufferOffset = 0;
 
       private byte[] buffer;
 
+      RemoteInputStream(boolean allIndexData) throws SecurityException, RPCException
+      {
+         this.allIndexData = allIndexData;
+         if (this.allIndexData) {
+           this.filePath = (String) rpcService.executeCommandOnCoordinator(prepareIndexesForCopy, true);
+         }
+         readNext();
+      }
+
       RemoteInputStream(String filePath) throws SecurityException, RPCException
       {
-         this.filePath = filePath;
-         readNext();
+        this.filePath = filePath;
+        readNext();
       }
 
       /**
@@ -446,13 +562,8 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
                   return -1;
                }
             }
-            catch (SecurityException e)
-            {
-               throw new IOException(e);
-            }
-            catch (RPCException e)
-            {
-               throw new IOException(e);
+            catch (SecurityException | RPCException e) {
+              throw new IOException(e);
             }
          }
 
@@ -467,20 +578,34 @@ public class IndexRecoveryImpl implements IndexRecovery, TopologyChangeListener
        * {@inheritDoc}
        */
       @Override
-      public int read(byte b[], int off, int len) throws IOException
-      {
+      public int read(byte b[], int off, int len) throws IOException {
          throw new UnsupportedOperationException(
             "RemoteStream.read(byte b[], int off, int len) method is not supported");
       }
 
-      private void readNext() throws SecurityException, RPCException
-      {
-         this.buffer = (byte[])rpcService.executeCommandOnCoordinator(getIndexFile, true, filePath, fileOffset);
-         if (buffer != null)
-         {
-            this.fileOffset += this.buffer.length;
-            this.bufferOffset = 0;
-         }
+      private void readNext() throws RPCException {
+        if (this.allIndexData) {
+          this.buffer = (byte[]) rpcService.executeCommandOnCoordinator(getAllIndexes, true, filePath, fileOffset);
+        } else if (StringUtils.isNotBlank(filePath)) {
+          this.buffer = (byte[]) rpcService.executeCommandOnCoordinator(getIndexFile, true, filePath, fileOffset);
+        }
+  
+        if (buffer != null) {
+          this.fileOffset += this.buffer.length;
+          this.bufferOffset = 0;
+        }
+      }
+
+      @Override
+      public void close() throws IOException {
+        super.close();
+        if (this.allIndexData) {
+          try {
+            rpcService.executeCommandOnCoordinator(cleanupIndexesAfterCopy, true, filePath);
+          } catch (RPCException e) {
+            throw new IOException("Error cleaning recovered file index from coordinator", e);
+          }
+        }
       }
    }
 

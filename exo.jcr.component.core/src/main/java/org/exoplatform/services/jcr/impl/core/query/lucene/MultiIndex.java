@@ -24,6 +24,8 @@ import org.apache.lucene.index.MultiReader;
 import org.apache.lucene.index.Term;
 import org.apache.lucene.index.TermDocs;
 import org.apache.lucene.store.Directory;
+import org.jboss.util.file.Files;
+
 import org.exoplatform.commons.utils.PrivilegedFileHelper;
 import org.exoplatform.commons.utils.SecurityHelper;
 import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
@@ -2138,43 +2140,56 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
    private void createIndex(final NodeDataIndexingIterator iterator, NodeData rootNode, final AtomicLong count,
       final AtomicLong processed) throws RepositoryException, InterruptedException, IOException
    {
-      for (NodeDataIndexing node : iterator.next())
-      {
-         processed.incrementAndGet();
-         if (stopped.get() || Thread.interrupted())
-         {
-            throw new InterruptedException();
-         }
-
-         if (indexingTree.isExcluded(node))
-         {
-            continue;
-         }
-
-         if (!node.getQPath().isDescendantOf(rootNode.getQPath()) && !node.getQPath().equals(rootNode.getQPath()))
-         {
-            continue;
-         }
-
-         executeAndLog(new AddNode(getTransactionId(), node, true));
-         if (count.incrementAndGet() % 1000 == 0)
-         {
-            if (nodesCount == null)
-            {
-               LOG.info("indexing... {} ({})", node.getQPath().getAsString(), count.get());
-            }
-            else
-            {
-               DecimalFormat format = new DecimalFormat("###.#");
-               LOG.info("indexing... {} ({}%)", node.getQPath().getAsString(),
-                  format.format(Math.min(100d * processed.get() / nodesCount.get(), 100)));
-            }
-         }
-
-         synchronized (this)
-         {
-            checkVolatileCommit();
-         }
+      while (iterator.hasNext()) {
+        List<NodeDataIndexing> nodes;
+        try {
+          nodes = iterator.next();
+        } catch (Exception e) {
+          if (LOG.isDebugEnabled()) {
+            LOG.warn("Error reading node data indexing, ignore it", e);
+          } else {
+            LOG.warn("Error reading node data indexing, ignore it: {}", e.getMessage());
+          }
+          continue;
+        }
+        for (NodeDataIndexing node : nodes)
+        {
+           processed.incrementAndGet();
+           if (stopped.get() || Thread.interrupted())
+           {
+              throw new InterruptedException();
+           }
+  
+           if (indexingTree.isExcluded(node))
+           {
+              continue;
+           }
+  
+           if (!node.getQPath().isDescendantOf(rootNode.getQPath()) && !node.getQPath().equals(rootNode.getQPath()))
+           {
+              continue;
+           }
+  
+           executeAndLog(new AddNode(getTransactionId(), node, true));
+           if (count.incrementAndGet() % 1000 == 0)
+           {
+              if (nodesCount == null)
+              {
+                 LOG.info("indexing... {} ({})", node.getQPath().getAsString(), count.get());
+              }
+              else
+              {
+                 DecimalFormat format = new DecimalFormat("###.#");
+                 LOG.info("indexing... {} ({}%)", node.getQPath().getAsString(),
+                    format.format(Math.min(100d * processed.get() / nodesCount.get(), 100)));
+              }
+           }
+  
+           synchronized (this)
+           {
+              checkVolatileCommit();
+           }
+        }
       }
    }
 
@@ -3881,36 +3896,42 @@ public class MultiIndex implements IndexerIoModeListener, IndexUpdateMonitorList
       {
          IndexRecovery indexRecovery = handler.getContext().getIndexRecovery();
          // check if index not ready
-         if (!indexRecovery.checkIndexReady())
-         {
+         if (!indexRecovery.checkIndexReady()) {
             return false;
          }
-         //Switch index offline
-         indexRecovery.setIndexOffline();
 
-         for (String filePath : indexRecovery.getIndexList())
-         {
-            File indexFile = new File(indexDirectory, filePath);
-            if (!PrivilegedFileHelper.exists(indexFile.getParentFile()))
-            {
-               PrivilegedFileHelper.mkdirs(indexFile.getParentFile());
-            }
-
-            // transfer file 
-            InputStream in = indexRecovery.getIndexFile(filePath);
-            OutputStream out = PrivilegedFileHelper.fileOutputStream(indexFile);
-            try
-            {
-               DirectoryHelper.transfer(in, out);
-            }
-            finally
-            {
-               DirectoryHelper.safeClose(in);
-               DirectoryHelper.safeClose(out);
-            }
+         if(handler.getContext().isEnableRemoteCalls()) {
+           //Switch index offline
+           indexRecovery.setIndexOffline();
          }
-         //Switch index online
-         indexRecovery.setIndexOnline();
+         long start = System.currentTimeMillis();
+         try {
+           File zipIndexesFile = new File(indexDirectory, "index-recovery-coordinator.zip");
+           if (!PrivilegedFileHelper.exists(zipIndexesFile.getParentFile())) {
+             PrivilegedFileHelper.mkdirs(zipIndexesFile.getParentFile());
+           }
+           // transfer file
+           InputStream in = indexRecovery.getIndexFolderInZip();
+           OutputStream out = PrivilegedFileHelper.fileOutputStream(zipIndexesFile);
+           try {
+             DirectoryHelper.transfer(in, out);
+           } finally {
+             DirectoryHelper.safeClose(in);
+             DirectoryHelper.safeClose(out);
+           }
+
+           DirectoryHelper.uncompressDirectory(zipIndexesFile, indexDirectory);
+           if (!Files.delete(zipIndexesFile)) {
+             zipIndexesFile.deleteOnExit();
+           }
+         } finally {
+           long timeSpent = (System.currentTimeMillis() - start) / 1000;
+           LOG.info("End transfering data from coordinator, {} seconds", timeSpent);
+           if(handler.getContext().isEnableRemoteCalls()) {
+             //Switch index online
+             indexRecovery.setIndexOnline();
+           }
+         }
 
          return true;
       }

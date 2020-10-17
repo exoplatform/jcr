@@ -26,12 +26,7 @@ import org.exoplatform.services.document.DocumentReaderService;
 import org.exoplatform.services.document.HandlerNotFoundException;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
 import org.exoplatform.services.jcr.dataflow.ItemDataConsumer;
-import org.exoplatform.services.jcr.datamodel.InternalQName;
-import org.exoplatform.services.jcr.datamodel.ItemType;
-import org.exoplatform.services.jcr.datamodel.NodeDataIndexing;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.datamodel.*;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.LocationFactory;
 import org.exoplatform.services.jcr.impl.core.itemfilters.ExactQPathEntryFilter;
@@ -550,10 +545,20 @@ public class NodeIndexer
             // We access to the Item by path to avoid having to rebuild the path if needed in case
             // the indexingLoadBatchingThreshold is enabled only otherwise we get it from the id like
             // before
-            PropertyData propData =
-               prop.getValues() != null && !prop.getValues().isEmpty() ? prop : (PropertyData)(loadPropertyByName
-                  ? stateProvider.getItemData(node, new QPathEntry(prop.getQPath().getName(), 0), ItemType.PROPERTY)
-                  : stateProvider.getItemData(prop.getIdentifier()));
+            boolean nonEmptyProp = prop.getValues() != null && !prop.getValues().isEmpty();
+            PropertyData propData;
+            try {
+              propData = nonEmptyProp ? prop : (PropertyData)(loadPropertyByName
+                    ? stateProvider.getItemData(node, new QPathEntry(prop.getQPath().getName(), 0), ItemType.PROPERTY)
+                    : stateProvider.getItemData(prop.getIdentifier()));
+            } catch (Exception e1) {
+              if (LOG.isDebugEnabled()) {
+                LOG.warn("Error reading value of property {}.", prop.getQPath().getAsString(), e1);
+              } else {
+                LOG.warn("Error reading value of property {}. Error: {}", prop.getQPath().getAsString(), e1.getMessage());
+              }
+              return;
+            }
 
             List<ValueData> data;
             if (propData == null || (data = propData.getValues()) == null || data.isEmpty())
@@ -568,43 +573,82 @@ public class NodeIndexer
             InternalQName name = prop.getQPath().getName();
             for (ValueData value : data)
             {
+               if (value == null) {
+                 continue;
+               }
+               Object internalValue;
                switch (propType)
                {
                   case PropertyType.BOOLEAN :
                      if (isIndexed(name))
                      {
-                        addBooleanValue(doc, fieldName, ValueDataUtil.getBoolean(value));
+                        internalValue = ValueDataUtil.getBoolean(value);
+                        if (internalValue == null) {
+                          LOG.warn("Field '{}' has a null value, thus it will not be included in indexes.", fieldName);
+                          continue;
+                        }
+                        addBooleanValue(doc, fieldName, internalValue);
                      }
                      break;
                   case PropertyType.DATE :
                      if (isIndexed(name))
                      {
-                        addCalendarValue(doc, fieldName, ValueDataUtil.getDate(value));
+                       internalValue = ValueDataUtil.getDate(value);
+                       if (internalValue == null) {
+                         LOG.warn("Field '{}' has a null value, thus it will not be included in indexes.", fieldName);
+                         continue;
+                       }
+                        addCalendarValue(doc, fieldName, internalValue);
                      }
                      break;
                   case PropertyType.DOUBLE :
                      if (isIndexed(name))
                      {
-                        addDoubleValue(doc, fieldName, ValueDataUtil.getDouble(value));
+                       internalValue = ValueDataUtil.getDouble(value);
+                       if (internalValue == null) {
+                         LOG.warn("Field '{}' has a null value, thus it will not be included in indexes.", fieldName);
+                         continue;
+                       }
+                        addDoubleValue(doc, fieldName, internalValue);
                      }
                      break;
                   case PropertyType.LONG :
                      if (isIndexed(name))
                      {
-                        addLongValue(doc, fieldName, ValueDataUtil.getLong(value));
+                       internalValue = ValueDataUtil.getLong(value);
+                       if (internalValue == null) {
+                         LOG.warn("Field '{}' has a null value, thus it will not be included in indexes.", fieldName);
+                         continue;
+                       }
+                        addLongValue(doc, fieldName, internalValue);
                      }
                      break;
                   case PropertyType.REFERENCE :
                      if (isIndexed(name))
                      {
-                        addReferenceValue(doc, fieldName, ValueDataUtil.getString(value));
+                       internalValue = ValueDataUtil.getString(value);
+                       if (internalValue == null) {
+                         LOG.warn("Field '{}' has a null value, thus it will not be included in indexes.", fieldName);
+                         continue;
+                       }
+                        addReferenceValue(doc, fieldName, internalValue);
                      }
                      break;
                   case PropertyType.PATH :
                      if (isIndexed(name))
                      {
+                       try {
+                        internalValue = ValueDataUtil.getPath(value);
+                      } catch (Exception e) {
+                        LOG.warn("Error parsing PATH value of field {}, thus it will not be included in indexes", fieldName, e);
+                        continue;
+                      }
+                       if (internalValue == null) {
+                         LOG.warn("Field '{}' has a null value, thus it will not be included in indexes.", fieldName);
+                         continue;
+                       }
                         addPathValue(doc, fieldName,
-                           resolver.createJCRPath(ValueDataUtil.getPath(value)).getAsString(false));
+                           resolver.createJCRPath((QPath) internalValue).getAsString(false));
                      }
                      break;
                   case PropertyType.STRING :
@@ -613,12 +657,22 @@ public class NodeIndexer
                         // never fulltext index jcr:uuid String
                         if (name.equals(Constants.JCR_UUID))
                         {
-                           addStringValue(doc, fieldName, ValueDataUtil.getString(value), false, false, DEFAULT_BOOST,
+                          internalValue = ValueDataUtil.getString(value);
+                          if (internalValue == null) {
+                            LOG.warn("Field '{}' has a null value, thus it will not be included in indexes.", fieldName);
+                            continue;
+                          }
+                           addStringValue(doc, fieldName, internalValue, false, false, DEFAULT_BOOST,
                               true);
                         }
                         else
                         {
-                           addStringValue(doc, fieldName, ValueDataUtil.getString(value), true,
+                          internalValue = ValueDataUtil.getString(value);
+                          if (internalValue == null) {
+                            LOG.warn("Field '{}' has a null value, thus it will not be included in indexes.", fieldName);
+                            continue;
+                          }
+                           addStringValue(doc, fieldName, internalValue, true,
                               isIncludedInNodeIndex(name), getPropertyBoost(name), useInExcerpt(name));
                         }
                      }
@@ -629,7 +683,17 @@ public class NodeIndexer
                      if (isIndexed(name) || name.equals(Constants.JCR_PRIMARYTYPE)
                         || name.equals(Constants.JCR_MIXINTYPES))
                      {
-                        addNameValue(doc, fieldName, resolver.createJCRName(ValueDataUtil.getName(value)).getAsString());
+                       try {
+                         internalValue = ValueDataUtil.getName(value);
+                       } catch (Exception e) {
+                         LOG.warn("Error parsing NAME value of field {}, thus it will not be included in indexes", fieldName, e);
+                         continue;
+                       }
+                       if (internalValue == null) {
+                         LOG.warn("Field '{}' has a null value, thus it will not be included in indexes.", fieldName);
+                         continue;
+                       }
+                        addNameValue(doc, fieldName, resolver.createJCRName((InternalQName) internalValue).getAsString());
                      }
                      break;
                   case ExtendedPropertyType.PERMISSION :
