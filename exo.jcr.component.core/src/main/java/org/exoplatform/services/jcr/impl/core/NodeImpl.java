@@ -623,11 +623,11 @@ public class NodeImpl extends ItemImpl implements ExtendedNode
       for (int i = 0; i < mixinTypes.length; i++)
       {
          InternalQName cn = mixinTypes[i];
-         newMixin.add(cn);
          values.add(new TransientValueData(cn));
+         newMixin.add(cn);
       }
-      newMixin.add(type.getName());
       values.add(new TransientValueData(type.getName()));
+      newMixin.add(type.getName());
 
       PropertyData prop =
          (PropertyData)dataManager.getItemData(((NodeData)getData()), new QPathEntry(Constants.JCR_MIXINTYPES, 0),
