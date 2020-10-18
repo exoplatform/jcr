@@ -16,15 +16,17 @@
               <property name="swap-directory" value="target/temp/db1/swap/ws"/>
             </properties>
           </container>
-            <cache enabled="true"
-              class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
-              <properties>
-                 <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
-              </properties>
-            </cache>
+          <cache enabled="true" class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
+            <properties>
+              <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+            </properties>
+          </cache>
           <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
             <properties>
               <property name="index-dir" value="target/temp/db1/index/ws" />
+              <property name="changesfilter-class" value="org.exoplatform.services.jcr.ext.index.persistent.filter.PersistentIndexChangesFilter" />
+              <property name="infinispan-cluster-name" value="jcrindexer${container.name.suffix}" />
+              <property name="max-volatile-time" value="60" />
             </properties>
           </query-handler>
           <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
@@ -59,11 +61,14 @@
                  <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
               </properties>
             </cache>
-          <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-            <properties>
-              <property name="index-dir" value="target/temp/db1/index/ws1" />
-            </properties>
-          </query-handler>
+            <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
+              <properties>
+                <property name="index-dir" value="target/temp/db1/index/ws1" />
+                <property name="changesfilter-class" value="org.exoplatform.services.jcr.ext.index.persistent.filter.PersistentIndexChangesFilter" />
+                <property name="infinispan-cluster-name" value="jcrindexer${container.name.suffix}" />
+                <property name="max-volatile-time" value="60" />
+              </properties>
+            </query-handler>
           <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
              <properties>
                 <property name="time-out" value="15m" />
@@ -96,11 +101,14 @@
                  <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
               </properties>
             </cache>
-          <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-            <properties>
-              <property name="index-dir" value="target/temp/db1/index/ws2" />
-            </properties>
-          </query-handler>
+            <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
+              <properties>
+                <property name="index-dir" value="target/temp/db1/index/ws2" />
+                <property name="changesfilter-class" value="org.exoplatform.services.jcr.ext.index.persistent.filter.PersistentIndexChangesFilter" />
+                <property name="infinispan-cluster-name" value="jcrindexer${container.name.suffix}" />
+                <property name="max-volatile-time" value="60" />
+              </properties>
+            </query-handler>
           <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
              <properties>
                 <property name="time-out" value="15m" />
@@ -133,11 +141,14 @@
                  <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
               </properties>
             </cache>
-          <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-            <properties>
-              <property name="index-dir" value="target/temp/db1/index/ws3" />
-            </properties>
-          </query-handler>
+            <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
+              <properties>
+                <property name="index-dir" value="target/temp/db1/index/ws3" />
+                <property name="changesfilter-class" value="org.exoplatform.services.jcr.ext.index.persistent.filter.PersistentIndexChangesFilter" />
+                <property name="infinispan-cluster-name" value="jcrindexer${container.name.suffix}" />
+                <property name="max-volatile-time" value="60" />
+              </properties>
+            </query-handler>
           <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
              <properties>
                 <property name="time-out" value="15m" />
@@ -170,11 +181,14 @@
                  <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
               </properties>
             </cache>
-          <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-            <properties>
-              <property name="index-dir" value="target/temp/db1/index/ws4" />
-            </properties>
-          </query-handler>
+            <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
+              <properties>
+                <property name="index-dir" value="target/temp/db1/index/ws4" />
+                <property name="changesfilter-class" value="org.exoplatform.services.jcr.ext.index.persistent.filter.PersistentIndexChangesFilter" />
+                <property name="infinispan-cluster-name" value="jcrindexer${container.name.suffix}" />
+                <property name="max-volatile-time" value="60" />
+              </properties>
+            </query-handler>
           <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
              <properties>
                 <property name="time-out" value="15m" />
@@ -207,11 +221,14 @@
                  <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
               </properties>
             </cache>
-          <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-            <properties>
-              <property name="index-dir" value="target/temp/db1/index/ws5" />
-            </properties>
-          </query-handler>
+            <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
+              <properties>
+                <property name="index-dir" value="target/temp/db1/index/ws5" />
+                <property name="changesfilter-class" value="org.exoplatform.services.jcr.ext.index.persistent.filter.PersistentIndexChangesFilter" />
+                <property name="infinispan-cluster-name" value="jcrindexer${container.name.suffix}" />
+                <property name="max-volatile-time" value="60" />
+              </properties>
+            </query-handler>
           <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
              <properties>
                 <property name="time-out" value="15m" />
@@ -244,11 +261,14 @@
                  <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
               </properties>
             </cache>
-          <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
-            <properties>
-              <property name="index-dir" value="target/temp/db1/index/ws6" />
-            </properties>
-          </query-handler>
+            <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
+              <properties>
+                <property name="index-dir" value="target/temp/db1/index/ws6" />
+                <property name="changesfilter-class" value="org.exoplatform.services.jcr.ext.index.persistent.filter.PersistentIndexChangesFilter" />
+                <property name="infinispan-cluster-name" value="jcrindexer${container.name.suffix}" />
+                <property name="max-volatile-time" value="60" />
+              </properties>
+            </query-handler>
           <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">
              <properties>
                 <property name="time-out" value="15m" />
@@ -283,15 +303,18 @@
               <property name="swap-directory" value="target/temp/db2/swap/ws"/>
             </properties>
           </container>
-            <cache enabled="true"
-              class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
-              <properties>
-                 <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
-              </properties>
-            </cache>
+          <cache enabled="true"
+            class="org.exoplatform.services.jcr.impl.dataflow.persistent.infinispan.ISPNCacheWorkspaceStorageCache">
+            <properties>
+               <property name="infinispan-configuration" value="conf/standalone/test-infinispan-config.xml" />
+            </properties>
+          </cache>
           <query-handler class="org.exoplatform.services.jcr.impl.core.query.lucene.SearchIndex">
             <properties>
               <property name="index-dir" value="target/temp/db2/index/ws" />
+              <property name="changesfilter-class" value="org.exoplatform.services.jcr.ext.index.persistent.filter.PersistentIndexChangesFilter" />
+              <property name="infinispan-cluster-name" value="jcrindexer${container.name.suffix}" />
+              <property name="max-volatile-time" value="60" />
             </properties>
           </query-handler>
           <lock-manager class="org.exoplatform.services.jcr.impl.core.lock.infinispan.ISPNCacheableLockManagerImpl">

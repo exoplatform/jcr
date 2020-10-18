@@ -55,22 +55,54 @@ public class DefaultChangesFilter extends IndexerChangesFilter
     */
    public DefaultChangesFilter(SearchManager searchManager, SearchManager parentSearchManager,
       QueryHandlerEntry config, IndexingTree indexingTree, IndexingTree parentIndexingTree, QueryHandler handler,
-      QueryHandler parentHandler, ConfigurationManager cfm) throws IOException, RepositoryConfigurationException,
-      RepositoryException
-   {
+      QueryHandler parentHandler, ConfigurationManager cfm) throws Exception {
       super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm);
       IndexerIoModeHandler modeHandler = new IndexerIoModeHandler(IndexerIoMode.READ_WRITE);
       handler.setIndexerIoModeHandler(modeHandler);
       parentHandler.setIndexerIoModeHandler(modeHandler);
 
-      if (!parentHandler.isInitialized())
-      {
-         parentHandler.init();
+      init();
+   }
+
+    /**
+     * @param searchManager
+     * @param parentSearchManager
+     * @param config
+     * @param indexingTree
+     * @param parentIndexingTree
+     * @param handler
+     * @param parentHandler
+     * @param init
+     * @throws IOException
+     * @throws RepositoryConfigurationException
+     * @throws RepositoryException
+     */
+    public DefaultChangesFilter(SearchManager searchManager,
+                                SearchManager parentSearchManager,
+                                QueryHandlerEntry config,
+                                IndexingTree indexingTree,
+                                IndexingTree parentIndexingTree,
+                                QueryHandler handler,
+                                QueryHandler parentHandler,
+                                ConfigurationManager cfm,
+                                boolean init) throws Exception {
+      super(searchManager, parentSearchManager, config, indexingTree, parentIndexingTree, handler, parentHandler, cfm);
+      IndexerIoModeHandler modeHandler = new IndexerIoModeHandler(IndexerIoMode.READ_WRITE);
+      handler.setIndexerIoModeHandler(modeHandler);
+      parentHandler.setIndexerIoModeHandler(modeHandler);
+  
+      if (init) {
+        init();
       }
-      if (!handler.isInitialized())
-      {
-         handler.init();
-      }
+    }
+
+    public void init() throws Exception {
+     if (!parentHandler.isInitialized()) {
+        parentHandler.init();
+     }
+     if (!handler.isInitialized()) {
+        handler.init();
+     }
    }
 
    /**
