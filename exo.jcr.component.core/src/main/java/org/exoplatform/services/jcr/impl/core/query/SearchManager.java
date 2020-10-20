@@ -58,7 +58,6 @@ import org.exoplatform.services.jcr.impl.core.value.ValueFactoryImpl;
 import org.exoplatform.services.jcr.impl.dataflow.persistent.WorkspacePersistentDataManager;
 import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.impl.util.io.FileCleanerHolder;
-import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.rpc.RPCException;
@@ -179,11 +178,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     * The unique name of the related workspace
     */
    protected final String wsId;
-
-   /**
-    * Whether to enable remote RPC calls or not
-    */
-   protected final boolean enableRemoteCalls;
 
    /**
     * The unique name of the workspace container
@@ -324,17 +318,17 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       this.cfm = cfm;
       this.virtualTableResolver = new LuceneVirtualTableResolver(nodeTypeDataManager, nsReg);
       this.parentSearchManager = parentSearchManager != null ? parentSearchManager.get() : null;
-      this.enableRemoteCalls = wEntry.getContainer()
-                                     .getParameterBoolean(WorkspaceDataContainer.ENABLE_RPC_SYNC,
-                                                          WorkspaceDataContainer.RPC_CALLS_ENABLED_DEFAULT);
       if (parentSearchManager != null)
       {
          ((WorkspacePersistentDataManager)this.itemMgr).addItemPersistenceListener(this);
       }
 
-      if (rpcService == null) {
+      if (rpcService == null)
+      {
          this.indexRecovery = null;
-      } else {
+      }
+      else
+      {
          initRemoteCommands();
          this.indexRecovery = new IndexRecoveryImpl(rpcService, this);
       }
@@ -817,9 +811,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
          }
       }
 
-      return new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
-            PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, recoveryFilterUsed, enableRemoteCalls,
+      QueryHandlerContext context =
+         new QueryHandlerContext(container, itemMgr, indexingTree, nodeTypeDataManager, nsReg, parentHandler,
+            PrivilegedFileHelper.getAbsolutePath(getIndexDirectory()), extractor, true, recoveryFilterUsed,
             virtualTableResolver, indexRecovery, rpcService, repositoryName, wsId, cleanerHolder);
+
+      return context;
    }
 
    /**
@@ -1154,7 +1151,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void suspend() throws SuspendException
    {
-      if (suspend != null)
+      if (rpcService != null)
       {
          isResponsibleForResuming.set(true);
 
@@ -1214,7 +1211,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    public void resume() throws ResumeException
    {
-      if (resume != null)
+      if (rpcService != null)
       {
          try
          {
@@ -1414,7 +1411,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
       // set offline index state
       if (dropExisting) {
         // set offline cluster wide (will make merger disposed and volatile flushed)
-        if (changeIndexState != null && changesFilter.isShared()) {
+        if (rpcService != null && changesFilter.isShared()) {
           rpcService.executeCommandOnAllNodes(changeIndexState, true, false, false);
         } else {
           handler.setOnline(false, false, true);
@@ -1493,7 +1490,7 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     } finally {
       if (dropExisting) {
         // finish, setting indexes back online
-        if (changeIndexState != null &&  changesFilter.isShared()) {
+        if (rpcService != null && changesFilter.isShared()) {
           try {
             // if dropExisting, then queries are no allowed
             rpcService.executeCommandOnAllNodes(changeIndexState, true, true, true);
@@ -1596,9 +1593,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    private void initRemoteCommands()
    {
-      if (!this.enableRemoteCalls) {
-        return;
-      }
       // register commands
       suspend = rpcService.registerCommand(new RemoteCommand()
       {
@@ -1671,17 +1665,12 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
     */
    private void unregisterRemoteCommands()
    {
-      if (suspend != null) {
-        rpcService.unregisterCommand(suspend);
-      }
-      if (resume != null) {
-        rpcService.unregisterCommand(resume);
-      }
-      if (requestForResponsibleForResuming != null) {
-        rpcService.unregisterCommand(requestForResponsibleForResuming);
-      }
-      if (changeIndexState != null) {
-        rpcService.unregisterCommand(changeIndexState);
+      if (rpcService != null)
+      {
+         rpcService.unregisterCommand(suspend);
+         rpcService.unregisterCommand(resume);
+         rpcService.unregisterCommand(requestForResponsibleForResuming);
+         rpcService.unregisterCommand(changeIndexState);
       }
    }
 
@@ -1804,10 +1793,6 @@ public class SearchManager implements Startable, MandatoryItemsPersistenceListen
    protected String getStorageName()
    {
       return "index";
-   }
-
-   public boolean isEnableRemoteCalls() {
-      return enableRemoteCalls;
    }
 
    /**

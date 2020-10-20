@@ -18,8 +18,6 @@
  */
 package org.exoplatform.services.jcr.impl.storage.jdbc.optimisation;
 
-import org.apache.commons.lang.StringUtils;
-
 import org.exoplatform.services.jcr.access.AccessControlEntry;
 import org.exoplatform.services.jcr.access.AccessControlList;
 import org.exoplatform.services.jcr.core.ExtendedPropertyType;
@@ -59,7 +57,12 @@ import org.exoplatform.services.log.Log;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.sql.*;
+import java.sql.BatchUpdateException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -955,18 +958,9 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
          }
          else
          {
-            try {
-              addValueData(cid, i, stream, streamLength, storageId);
-            } catch (SQLIntegrityConstraintViolationException e) {
-              if (LOG.isDebugEnabled()) {
-                LOG.debug("ERROR persisting {} because it has been detected as new while it's an update of value. Path = ", data.getIdentifier(), data.getQPath().getAsString());
-              }
-              if (StringUtils.contains(e.getMessage(), "Duplicate entry")) {
-                updateValueData(cid, i, stream, streamLength, storageId);
-              }
-            }
+            addValueData(cid, i, stream, streamLength, storageId);
          }
-      } 
+      }
    }
 
    private void deleteValues(String cid, PropertyData pdata, Set<String> storageDescs, int totalOldValues,
@@ -1428,12 +1422,7 @@ abstract public class CQJDBCStorageConnection extends JDBCStorageConnection
             List<InternalQName> mNames = new ArrayList<InternalQName>();
             for (TempPropertyData mxnb : mixTypes)
             {
-               ValueData valueData = mxnb.getValueData();
-               if (valueData == null || valueData.getLength() == 0) {
-                 LOG.warn("A mixin value of {} have an empty value, ignore it", cpid);
-                 continue;
-               }
-               InternalQName mxn = InternalQName.parse(ValueDataUtil.getString(valueData));
+               InternalQName mxn = InternalQName.parse(ValueDataUtil.getString(mxnb.getValueData()));
                mNames.add(mxn);
 
                if (!privilegeable && Constants.EXO_PRIVILEGEABLE.equals(mxn))

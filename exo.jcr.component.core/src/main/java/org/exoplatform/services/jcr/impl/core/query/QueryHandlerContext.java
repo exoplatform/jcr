@@ -73,8 +73,6 @@ public class QueryHandlerContext
    private final boolean createInitialIndex;
 
    private final boolean recoveryFilterUsed;
-   
-   private final boolean enableRemoteCalls;
 
    private final LuceneVirtualTableResolver virtualTableResolver;
 
@@ -122,67 +120,26 @@ public class QueryHandlerContext
       NodeTypeDataManager nodeTypeDataManager, NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
       String indexDirectory, DocumentReaderService extractor, boolean createInitialIndex,
       boolean useIndexRecoveryFilters, LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery,
-      RPCService rpcService, String repositoryName, String workspaceName, FileCleanerHolder cleanerHolder)   {
-    this(container,
-         stateMgr,
-         indexingTree,
-         nodeTypeDataManager,
-         nsRegistry,
-         parentHandler,
-         indexDirectory,
-         extractor,
-         createInitialIndex,
-         useIndexRecoveryFilters,
-         true,
-         virtualTableResolver,
-         indexRecovery,
-         rpcService,
-         repositoryName,
-         workspaceName,
-         cleanerHolder);
-   }
-
-   /**
-    * Creates a new context instance.
-    * 
-    * @param stateMgr
-    *            provides persistent item states.
-    * @param nsRegistry
-    *            the namespace registry.
-    * @param parentHandler
-    *            the parent query handler or <code>null</code> it there is no
-    *            parent handler.
-    * @param virtualTableResolver
-    * @param indexRecovery
-    *            the index retriever from other place     
-    * @param rpcService
-    *            RPCService intance if any
-    */
-   public QueryHandlerContext(WorkspaceContainerFacade container, ItemDataConsumer stateMgr, IndexingTree indexingTree,
-                              NodeTypeDataManager nodeTypeDataManager, NamespaceRegistryImpl nsRegistry, QueryHandler parentHandler,
-                              String indexDirectory, DocumentReaderService extractor, boolean createInitialIndex,
-                              boolean useIndexRecoveryFilters, boolean enableRemoteCalls, LuceneVirtualTableResolver virtualTableResolver, IndexRecovery indexRecovery,
-                              RPCService rpcService, String repositoryName, String workspaceName, FileCleanerHolder cleanerHolder)
+      RPCService rpcService, String repositoryName, String workspaceName, FileCleanerHolder cleanerHolder)
    {
-     this.indexRecovery = indexRecovery;
-     this.container = container;
-     this.stateMgr = stateMgr;
-     this.indexingTree = indexingTree;
-     this.nodeTypeDataManager = nodeTypeDataManager;
-     this.nsRegistry = nsRegistry;
-     this.indexDirectory = indexDirectory;
-     this.extractor = extractor;
-     this.createInitialIndex = createInitialIndex;
-     this.virtualTableResolver = virtualTableResolver;
-     this.propRegistry = new PropertyTypeRegistry(nodeTypeDataManager);
-     this.rpcService = rpcService;
-     this.parentHandler = parentHandler;
-     this.repositoryName = repositoryName;
-     this.workspaceName = workspaceName;
-     this.recoveryFilterUsed = useIndexRecoveryFilters;
-     this.nodeTypeDataManager.addListener(propRegistry);
-     this.cleanerHolder = cleanerHolder;
-     this.enableRemoteCalls = enableRemoteCalls;
+      this.indexRecovery = indexRecovery;
+      this.container = container;
+      this.stateMgr = stateMgr;
+      this.indexingTree = indexingTree;
+      this.nodeTypeDataManager = nodeTypeDataManager;
+      this.nsRegistry = nsRegistry;
+      this.indexDirectory = indexDirectory;
+      this.extractor = extractor;
+      this.createInitialIndex = createInitialIndex;
+      this.virtualTableResolver = virtualTableResolver;
+      this.propRegistry = new PropertyTypeRegistry(nodeTypeDataManager);
+      this.rpcService = rpcService;
+      this.parentHandler = parentHandler;
+      this.repositoryName = repositoryName;
+      this.workspaceName = workspaceName;
+      this.recoveryFilterUsed = useIndexRecoveryFilters;
+      this.nodeTypeDataManager.addListener(propRegistry);
+      this.cleanerHolder = cleanerHolder;
    }
 
    /**
@@ -344,9 +301,5 @@ public class QueryHandlerContext
    public FileCleanerHolder getCleanerHolder()
    {
       return cleanerHolder;
-   }
-
-   public boolean isEnableRemoteCalls() {
-      return enableRemoteCalls;
    }
 }

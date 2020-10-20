@@ -309,9 +309,8 @@ class IndexMerger extends Thread implements IndexListener
             }
             catch (InterruptedException e)
             {
-               mergerIdle.release();
-               Thread.currentThread().interrupt();
-               return;
+               Thread.interrupted();
+               log.warn("Unable to acquire mergerIdle sync");
             }
          }
 

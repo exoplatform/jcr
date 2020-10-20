@@ -88,12 +88,4 @@ public interface IndexRecovery
     * Frees resources associated with index recovery.
     */
    public void close();
-
-   /**
-    * 
-    * @return An {@link InputStream} of retrieved file from coordinator
-    * 
-    * @throws RepositoryException when an error occurs while retrieving data
-    */
-  InputStream getIndexFolderInZip() throws RepositoryException;
 }

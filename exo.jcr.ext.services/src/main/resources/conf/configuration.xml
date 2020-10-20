@@ -16,17 +16,25 @@
       <values-param profiles="cluster">
         <name>properties.urls</name>
         <value>jar:/conf/jcr-cluster.properties</value>
-        <value>jar:/conf/jcr-cluster-tcp.properties</value>
-        <!-- load this at last to reuse properties from upper files -->
-        <value>jar:/conf/jcr.properties</value>
-      </values-param>
-      <values-param profiles="cluster-jgroups-udp">
-        <name>properties.urls</name>
-        <value>jar:/conf/jcr-cluster.properties</value>
         <value>jar:/conf/jcr-cluster-udp.properties</value>
         <!-- load this at last to reuse properties from upper files -->
         <value>jar:/conf/jcr.properties</value>
       </values-param>
+      <values-param profiles="cluster-jgroups-tcp">
+        <name>properties.urls</name>
+        <value>jar:/conf/jcr-cluster.properties</value>
+        <value>jar:/conf/jcr-cluster-tcp.properties</value>
+        <!-- load this at last to reuse properties from upper files -->
+        <value>jar:/conf/jcr.properties</value>
+      </values-param>
+      <!-- DEPRECATED JCR index clustering strategy -->
+      <properties-param profiles="cluster-index-shared">
+        <name>ChangeFilterClass</name>
+        <description>Filter used to notify changes in the jcr index in cluster</description>
+        <property name="gatein.jcr.index.changefilterclass" value="org.exoplatform.services.jcr.impl.core.query.ispn.ISPNIndexChangesFilter" />
+        <!-- Use this lock factory to lock index files on cluster wide -->
+        <property name="org.exoplatform.jcr.lucene.store.FSDirectoryLockFactoryClass" value="org.apache.lucene.store.NativeFSLockFactory" />
+      </properties-param>
     </init-params>
   </component>
 
@@ -49,21 +57,4 @@
       </init-params>
     </component-plugin>
   </external-component-plugins>
-
-  <external-component-plugins profiles="cluster">
-    <target-component>org.exoplatform.commons.api.persistence.DataInitializer</target-component>
-    <component-plugin>
-      <name>CommonsChangeLogsPlugin</name>
-      <set-method>addChangeLogsPlugin</set-method>
-      <type>org.exoplatform.commons.persistence.impl.ChangeLogsPlugin</type>
-      <init-params>
-        <values-param>
-          <name>changelogs</name>
-          <description>Change logs of commons</description>
-          <value>db/changelog/jcr-index.db.changelog-1.0.0.xml</value>
-        </values-param>
-      </init-params>
-    </component-plugin>
-  </external-component-plugins>
-
 </configuration>

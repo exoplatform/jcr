@@ -53,13 +53,6 @@ public interface WorkspaceDataContainer extends DataContainer
 
    public static final String LAZY_NODE_ITERATOR_PAGE_SIZE = "lazy-node-iterator-page-size";
 
-   /**
-    * Whether enable RPC calls to suspend/resume all cluster nodes or not
-    */
-   public static final String ENABLE_RPC_SYNC = "enable-rpc-sync";
-
-   public static final boolean RPC_CALLS_ENABLED_DEFAULT = false;
-
    public static final int LAZY_NODE_ITERATOR_PAGE_SIZE_DEFAULT = 100;
 
    public static final int LAZY_NODE_ITERATOR_PAGE_SIZE_MIN = 20;

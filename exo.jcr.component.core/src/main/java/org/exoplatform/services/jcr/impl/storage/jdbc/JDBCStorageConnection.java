@@ -1332,21 +1332,7 @@ public abstract class JDBCStorageConnection extends DBConstants implements Works
                      tempNodeData.properties.put(key, values);
                   }
 
-                  ExtendedTempPropertyData parsedProperty;
-                  try {
-                    parsedProperty = new ExtendedTempPropertyData(resultSet);
-                  } catch (Exception e) {
-                    if (LOG.isDebugEnabled()) {
-                      LOG.error("Error parsing data of property {} of node {}, ignore it", key, tempNodeData.cid, e);
-                    } else {
-                      LOG.error("Error parsing data of property {} of node {}, ignore it. Error: {}",
-                                key,
-                                tempNodeData.cid,
-                                e.getMessage());
-                    }
-                    continue;
-                  }
-                  values.add(parsedProperty);
+                  values.add(new ExtendedTempPropertyData(resultSet));
                }
             }
 
