@@ -49,7 +49,9 @@ public class JCRIndexingServiceTest extends BaseStandaloneTest {
     String lastExecutedOperation = jcrIndexingService.getLastExecutedOperation();
     assertTrue(lastExecutedOperation.contains(";ClusterNodeName"));
     lastExecutedOperation = lastExecutedOperation.replaceAll(";ClusterNodeName", "");
-    assertTrue(Long.parseLong(lastExecutedOperation) > count);
+    assertTrue("Last executed queue operation '" + lastExecutedOperation
+        + "' has to be greater or equals the number of elements in queue" + count,
+               Long.parseLong(lastExecutedOperation) >= count);
   }
 
   public void testUpdateIndexEntity() throws Exception { // NOSONAR
@@ -72,7 +74,7 @@ public class JCRIndexingServiceTest extends BaseStandaloneTest {
     String lastExecutedOperation = jcrIndexingService.getLastExecutedOperation();
     assertTrue(lastExecutedOperation.contains(";ClusterNodeName"));
     lastExecutedOperation = lastExecutedOperation.replaceAll(";ClusterNodeName", "");
-    assertTrue(Long.parseLong(lastExecutedOperation) > count);
+    assertTrue(Long.parseLong(lastExecutedOperation) >= count);
   }
 
   public void testRemoveIndexEntity() throws Exception { // NOSONAR
@@ -98,7 +100,7 @@ public class JCRIndexingServiceTest extends BaseStandaloneTest {
     String lastExecutedOperation = jcrIndexingService.getLastExecutedOperation();
     assertTrue(lastExecutedOperation.contains(";ClusterNodeName"));
     lastExecutedOperation = lastExecutedOperation.replaceAll(";ClusterNodeName", "");
-    assertTrue(Long.parseLong(lastExecutedOperation) > count);
+    assertTrue(Long.parseLong(lastExecutedOperation) >= count);
   }
 
   private long getQueueCount() {
