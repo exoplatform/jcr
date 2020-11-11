@@ -18,21 +18,16 @@
  */
 package org.exoplatform.services.jcr.webdav.resource;
 
-import java.io.InputStream;
-import java.net.URI;
-import java.util.Calendar;
-
-import javax.jcr.AccessDeniedException;
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.Property;
-import javax.jcr.RepositoryException;
-import javax.jcr.version.Version;
-import javax.xml.namespace.QName;
-
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.webdav.util.DeltaVConstants;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
+
+import javax.jcr.*;
+import javax.jcr.version.Version;
+import javax.xml.namespace.QName;
+import java.io.InputStream;
+import java.net.URI;
+import java.util.Calendar;
 
 /**
  * Created by The eXo Platform SARL .<br>
@@ -80,7 +75,7 @@ public class VersionResource extends GenericResource
       }
       else if (DeltaVConstants.DISPLAYNAME.equals(name))
       {
-         return new HierarchicalProperty(name, version.getName());
+         return new HierarchicalProperty(name, decodeValue(version.getName()));
       }
       else if (DeltaVConstants.VERSIONHISTORY.equals(name))
       {
