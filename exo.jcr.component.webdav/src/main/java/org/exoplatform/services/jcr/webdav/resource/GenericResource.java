@@ -18,18 +18,20 @@
  */
 package org.exoplatform.services.jcr.webdav.resource;
 
+import org.apache.commons.lang.StringUtils;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import javax.jcr.RepositoryException;
+import javax.xml.namespace.QName;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
-
-import javax.jcr.RepositoryException;
-import javax.xml.namespace.QName;
 
 /**
  * Created by The eXo Platform SARL .<br>
@@ -247,5 +249,19 @@ public abstract class GenericResource implements Resource
 
       return supportedMethodProp;
 
+   }
+   
+   public String decodeValue(String value) {
+      String currentValue;
+      do {
+         currentValue = value;
+         try {
+            value = URLDecoder.decode(value, "UTF-8");
+         } catch (UnsupportedEncodingException e) {
+            LOG.warn("Unable to decode value: ", e.getMessage());
+            return value;
+         }
+      } while (!StringUtils.equals(currentValue, value));
+      return value;
    }
 }

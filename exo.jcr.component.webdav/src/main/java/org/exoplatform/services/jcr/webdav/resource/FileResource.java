@@ -26,20 +26,13 @@ import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import javax.jcr.*;
+import javax.xml.namespace.QName;
 import java.io.InputStream;
 import java.net.URI;
 import java.util.Calendar;
 import java.util.HashSet;
 import java.util.Set;
-
-import javax.jcr.AccessDeniedException;
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.Property;
-import javax.jcr.PropertyIterator;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
-import javax.xml.namespace.QName;
 
 /**
  * Created by The eXo Platform SARL .<br>
@@ -204,7 +197,7 @@ public class FileResource extends GenericResource
    {
       if (name.equals(DISPLAYNAME))
       {
-         return new HierarchicalProperty(name, node.getName() + (node.getIndex() > 1 ? "[" + node.getIndex() + "]" : ""));
+         return new HierarchicalProperty(name, decodeValue(node.getName()) + (node.getIndex() > 1 ? "[" + node.getIndex() + "]" : ""));
       }
       else if (name.equals(CREATIONDATE))
       {
