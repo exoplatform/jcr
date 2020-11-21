@@ -509,7 +509,7 @@
     <init-params>
       <value-param>
         <name>jgroups-configuration</name>
-        <value>jar:/conf/jcr/jgroups/jgroups-jcr-tcp.xml</value>
+        <value>jar:/conf/test/jgroups/jgroups-jcr-tcp.xml</value>
       </value-param>
       <value-param>
         <name>jgroups-cluster-name</name>
