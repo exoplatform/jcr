@@ -169,7 +169,21 @@ public class GetCommand
                   return Response.notModified().entity("Not Modified").build();
                }
             }
-
+            try {
+               if (resource instanceof VersionResource){
+                  ((VersionResource) resource).contentNode().getProperty("jcr:data");
+               } else {
+                  resource.getProperty(new QName("jcr","data","jcr"));
+               }
+            } catch (RepositoryException exc) {
+               //it can fail here if the binary data is not available
+               //(due to data corruption or antivirus quarantine)
+               //In this case, we should display a readable message for the user
+               LOG.error(exc.getMessage(), exc);
+               String message = "The requested resource ("+path+") is no longer available. Please contact your administrator.";
+               return Response.status(HTTPStatus.NOT_FOUND).entity(message).build();
+            }
+            
             HierarchicalProperty contentLengthProperty = resource.getProperty(FileResource.GETCONTENTLENGTH);
             long contentLength = new Long(contentLengthProperty.getValue());
 
