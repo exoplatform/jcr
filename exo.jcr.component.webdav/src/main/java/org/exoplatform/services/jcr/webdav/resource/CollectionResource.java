@@ -27,28 +27,17 @@ import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 
+import javax.jcr.*;
+import javax.xml.namespace.QName;
+import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.jcr.AccessDeniedException;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.Property;
-import javax.jcr.PropertyIterator;
-import javax.jcr.RepositoryException;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLOutputFactory;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamWriter;
+import java.util.*;
 
 /**
  * Created by The eXo Platform SARL .<br>
@@ -228,8 +217,7 @@ public class CollectionResource extends GenericResource
    {
       if (name.equals(DISPLAYNAME))
       {
-         return new HierarchicalProperty(name, node.getName() + (node.getIndex() > 1 ? "[" + node.getIndex() + "]" : ""));
-
+         return new HierarchicalProperty(name, decodeValue(node.getName()) + (node.getIndex() > 1 ? "[" + node.getIndex() + "]" : ""));
       }
       else if (name.equals(CHILDCOUNT))
       {
@@ -498,7 +486,7 @@ public class CollectionResource extends GenericResource
                {
                   Node childNode = ni.nextNode();
                   writer.writeStartElement(XML_NODE);
-                  writer.writeAttribute(XML_NAME, childNode.getName() + (childNode.getIndex() > 1 ? "[" + childNode.getIndex() + "]" : ""));
+                  writer.writeAttribute(XML_NAME, decodeValue(childNode.getName()) + (childNode.getIndex() > 1 ? "[" + childNode.getIndex() + "]" : ""));
                   writer.writeAttribute(XML_IS_FILE, checkIfFile(childNode));
                   String childNodeHref = rootHref + TextUtil.escape(childNode.getPath(), '%', true);
                   writer.writeAttribute(XML_HREF, childNodeHref);

@@ -21,13 +21,12 @@ package org.exoplatform.services.jcr.webdav.resource;
 import org.exoplatform.common.util.HierarchicalProperty;
 import org.exoplatform.services.jcr.webdav.xml.WebDavNamespaceContext;
 
-import java.net.URI;
-
 import javax.jcr.AccessDeniedException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.RepositoryException;
 import javax.xml.namespace.QName;
+import java.net.URI;
 
 /**
  * Created by The eXo Platform SARL .<br>
@@ -114,7 +113,7 @@ public class VersionedFileResource extends FileResource implements VersionedReso
       }
       else if (name.equals(VERSIONNAME))
       {
-         return new HierarchicalProperty(name, node.getBaseVersion().getName());
+         return new HierarchicalProperty(name, decodeValue(node.getBaseVersion().getName()));
       }
 
       return super.getProperty(name);
