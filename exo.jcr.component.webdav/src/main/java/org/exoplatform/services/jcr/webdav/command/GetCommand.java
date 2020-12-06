@@ -58,6 +58,7 @@ import javax.jcr.Session;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.xml.namespace.QName;
 import javax.xml.transform.stream.StreamSource;
 
 /**
