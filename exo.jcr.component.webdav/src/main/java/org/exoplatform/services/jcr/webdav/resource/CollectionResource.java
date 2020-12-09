@@ -49,6 +49,9 @@ import java.util.*;
 
 public class CollectionResource extends GenericResource
 {
+   private final static String NT_FOLDER = "nt:folder";
+
+   private final static String EXO_TITLE = "exo:title";
 
    /**
     * XML prefix.
@@ -217,7 +220,7 @@ public class CollectionResource extends GenericResource
    {
       if (name.equals(DISPLAYNAME))
       {
-         return new HierarchicalProperty(name, decodeValue(node.getName()) + (node.getIndex() > 1 ? "[" + node.getIndex() + "]" : ""));
+         return new HierarchicalProperty(name, decodeValue(node.isNodeType(NT_FOLDER) ? node.getProperty(EXO_TITLE).getString() : node.getName()) + (node.getIndex() > 1 ? "[" + node.getIndex() + "]" : ""));
       }
       else if (name.equals(CHILDCOUNT))
       {
@@ -486,7 +489,7 @@ public class CollectionResource extends GenericResource
                {
                   Node childNode = ni.nextNode();
                   writer.writeStartElement(XML_NODE);
-                  writer.writeAttribute(XML_NAME, decodeValue(childNode.getName()) + (childNode.getIndex() > 1 ? "[" + childNode.getIndex() + "]" : ""));
+                  writer.writeAttribute(XML_NAME, decodeValue(childNode.isNodeType(NT_FOLDER) ? childNode.getProperty(EXO_TITLE).getString() : childNode.getName()) + (childNode.getIndex() > 1 ? "[" + childNode.getIndex() + "]" : ""));
                   writer.writeAttribute(XML_IS_FILE, checkIfFile(childNode));
                   String childNodeHref = rootHref + TextUtil.escape(childNode.getPath(), '%', true);
                   writer.writeAttribute(XML_HREF, childNodeHref);
