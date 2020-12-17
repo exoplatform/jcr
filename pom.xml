@@ -1,3 +1,4 @@
+
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
 
@@ -31,7 +32,7 @@
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>6.2.x-SNAPSHOT</version>
+  <version>6.2.x-maintenance-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo PLF:: JCR</name>
   <description>Exoplatform SAS 'eXo JCR'(JSR-170 implementation) project.</description>
@@ -44,7 +45,7 @@
   </scm>
 
   <properties>
-    <org.exoplatform.social.version>6.2.x-SNAPSHOT</org.exoplatform.social.version>
+    <org.exoplatform.social.version>6.2.x-maintenance-SNAPSHOT</org.exoplatform.social.version>
   </properties>
 
   <dependencyManagement>
