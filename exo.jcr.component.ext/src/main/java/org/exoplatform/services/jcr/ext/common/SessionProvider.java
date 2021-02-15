@@ -219,9 +219,8 @@ public class SessionProvider implements SessionLifecycleListener
    public synchronized void close()
    {
 
-      if (closed)
-      {
-         throw new IllegalStateException("Session provider already closed");
+      if (closed) {
+        return;
       }
 
       closed = true;
