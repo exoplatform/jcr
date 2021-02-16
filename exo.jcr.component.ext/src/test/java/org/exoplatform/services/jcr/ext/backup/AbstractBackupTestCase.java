@@ -18,23 +18,24 @@
  */
 package org.exoplatform.services.jcr.ext.backup;
 
+import java.io.*;
+import java.net.URI;
+import java.util.*;
+
+import javax.jcr.*;
+import javax.jcr.lock.LockException;
+import javax.jcr.nodetype.ConstraintViolationException;
+import javax.jcr.version.VersionException;
+import javax.ws.rs.core.MultivaluedMap;
+
 import org.exoplatform.container.xml.InitParams;
 import org.exoplatform.container.xml.PropertiesParam;
-import org.exoplatform.services.jcr.config.QueryHandlerParams;
-import org.exoplatform.services.jcr.config.RepositoryConfigurationException;
-import org.exoplatform.services.jcr.config.RepositoryEntry;
-import org.exoplatform.services.jcr.config.ValueStorageEntry;
-import org.exoplatform.services.jcr.config.WorkspaceEntry;
+import org.exoplatform.services.jcr.config.*;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.ext.BaseStandaloneTest;
 import org.exoplatform.services.jcr.ext.app.SessionProviderService;
-import org.exoplatform.services.jcr.ext.backup.impl.BackupManagerImpl;
-import org.exoplatform.services.jcr.ext.backup.impl.JobRepositoryRestore;
-import org.exoplatform.services.jcr.ext.backup.impl.JobWorkspaceRestore;
-import org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgent;
-import org.exoplatform.services.jcr.ext.backup.server.HTTPBackupAgentTest;
-import org.exoplatform.services.jcr.ext.backup.server.bean.response.DetailedInfo;
+import org.exoplatform.services.jcr.ext.backup.impl.*;
 import org.exoplatform.services.jcr.ext.backup.server.bean.response.ShortInfo;
 import org.exoplatform.services.jcr.ext.common.SessionProvider;
 import org.exoplatform.services.jcr.impl.clean.rdbms.DBCleanService;
@@ -47,42 +48,14 @@ import org.exoplatform.services.jcr.impl.util.io.DirectoryHelper;
 import org.exoplatform.services.jcr.util.TesterConfigurationHelper;
 import org.exoplatform.services.rest.ContainerResponseWriter;
 import org.exoplatform.services.rest.RequestHandler;
-import org.exoplatform.services.rest.impl.ContainerResponse;
-import org.exoplatform.services.rest.impl.InputHeadersMap;
-import org.exoplatform.services.rest.impl.MultivaluedMapImpl;
+import org.exoplatform.services.rest.impl.*;
 import org.exoplatform.services.rest.tools.ByteArrayContainerResponseWriter;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.ws.frameworks.json.JsonHandler;
 import org.exoplatform.ws.frameworks.json.JsonParser;
-import org.exoplatform.ws.frameworks.json.impl.BeanBuilder;
-import org.exoplatform.ws.frameworks.json.impl.JsonDefaultHandler;
-import org.exoplatform.ws.frameworks.json.impl.JsonGeneratorImpl;
-import org.exoplatform.ws.frameworks.json.impl.JsonParserImpl;
+import org.exoplatform.ws.frameworks.json.impl.*;
 import org.exoplatform.ws.frameworks.json.value.JsonValue;
-
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-
-import javax.jcr.ItemExistsException;
-import javax.jcr.LoginException;
-import javax.jcr.NoSuchWorkspaceException;
-import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.ValueFormatException;
-import javax.jcr.lock.LockException;
-import javax.jcr.nodetype.ConstraintViolationException;
-import javax.jcr.version.VersionException;
-import javax.ws.rs.core.MultivaluedMap;
 
 /**
  * Created by The eXo Platform SAS Author : Peter Nedonosko peter.nedonosko@exoplatform.com.ua
@@ -605,90 +578,6 @@ public abstract class AbstractBackupTestCase extends BaseStandaloneTest
       JsonValue jsonValue = jsonHandler.getJsonObject();
 
       return new BeanBuilder().createObject(cl, jsonValue);
-   }
-
-   protected void waitWorkspaceRestore(String repoName, String wsName) throws Exception
-   {
-      while (true)
-      {
-         TesterContainerResponce cres =
-            makeGetRequest(new URI(HTTPBackupAgentTest.HTTP_BACKUP_AGENT_PATH
-               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_WS + "/" + repoName + "/" + wsName));
-
-         assertEquals(200, cres.getStatus());
-
-         DetailedInfo info = (DetailedInfo)getObject(DetailedInfo.class, cres.responseWriter.getBody());
-
-         if (info.getState().intValue() == JobWorkspaceRestore.RESTORE_SUCCESSFUL
-            || info.getState().intValue() == JobWorkspaceRestore.RESTORE_FAIL)
-         {
-            break;
-         }
-
-         Thread.sleep(500);
-      }
-   }
-
-   protected void waitRepositoryRestore(String repoName) throws Exception
-   {
-      while (true)
-      {
-         TesterContainerResponce cres =
-            makeGetRequest(new URI(HTTPBackupAgentTest.HTTP_BACKUP_AGENT_PATH
-               + HTTPBackupAgent.Constants.OperationType.CURRENT_RESTORE_INFO_ON_REPOSITORY + "/" + repoName));
-
-         assertEquals(200, cres.getStatus());
-
-         DetailedInfo info = (DetailedInfo)getObject(DetailedInfo.class, cres.responseWriter.getBody());
-
-         if (info.getState().intValue() == JobRepositoryRestore.REPOSITORY_RESTORE_SUCCESSFUL
-            || info.getState().intValue() == JobRepositoryRestore.REPOSITORY_RESTORE_FAIL)
-         {
-            break;
-         }
-
-         Thread.sleep(500);
-      }
-   }
-
-   protected ShortInfo getBackupInfo(List<ShortInfo> list, String rName)
-   {
-      for (ShortInfo info : list)
-      {
-         if (info.getRepositoryName().equals(rName))
-         {
-            return info;
-         }
-      }
-
-      return null;
-   }
-
-   protected BackupChain backupWorkspace(RepoInfo rInfo) throws Exception
-   {
-      BackupConfig config = new BackupConfig();
-      config.setRepository(rInfo.rName);
-      config.setWorkspace(rInfo.wsName);
-      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
-      config.setBackupDir(backupDir);
-
-      BackupChain bch = backup.startBackup(config);
-      waitEndOfBackup(bch);
-
-      return bch;
-   }
-
-   protected RepositoryBackupChain backupRepository(RepoInfo rInfo) throws Exception
-   {
-      RepositoryBackupConfig config = new RepositoryBackupConfig();
-      config.setRepository(rInfo.rName);
-      config.setBackupType(BackupManager.FULL_BACKUP_ONLY);
-      config.setBackupDir(backupDir);
-
-      RepositoryBackupChain bch = backup.startBackup(config);
-      waitEndOfBackup(bch);
-
-      return bch;
    }
 
    protected TesterContainerResponce makeGetRequest(URI uri) throws Exception
