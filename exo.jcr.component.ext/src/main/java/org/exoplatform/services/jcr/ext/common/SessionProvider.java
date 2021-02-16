@@ -23,6 +23,8 @@ import org.exoplatform.services.jcr.access.DynamicIdentity;
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.ManageableRepository;
 import org.exoplatform.services.jcr.core.SessionLifecycleListener;
+import org.exoplatform.services.log.ExoLogger;
+import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
 import org.exoplatform.services.security.IdentityConstants;
@@ -50,6 +52,8 @@ import javax.jcr.Session;
 
 public class SessionProvider implements SessionLifecycleListener
 {
+
+   protected static final Log LOG = ExoLogger.getLogger("exo.jcr.component.ext.SessionProvider");
 
    /**
     * Constant for handlers.
@@ -220,6 +224,11 @@ public class SessionProvider implements SessionLifecycleListener
    {
 
       if (closed) {
+        if (LOG.isTraceEnabled()) {
+          LOG.trace(new IllegalStateException("Session is already closed"));
+        } else {
+          LOG.debug("Session is already closed");
+        }
         return;
       }
 
