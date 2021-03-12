@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.api.reading;
 
 import org.exoplatform.services.jcr.JcrAPIBaseTest;
 import org.exoplatform.services.jcr.core.CredentialsImpl;
+import org.exoplatform.services.jcr.impl.core.ItemImpl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -157,6 +158,42 @@ public class TestSession extends JcrAPIBaseTest
          Node n = session.getNodeByUUID(contentNode.getUUID());
          assertNotNull(n);
          assertEquals(contentNode.getPath(), n.getPath());
+      }
+      finally
+      {
+         // folder.refresh(false);
+         if (log.isDebugEnabled())
+         {
+            log.debug("SDM before remove: " + session.getTransientNodesManager().dump());
+         }
+         folder.remove();
+         session.save();
+      }
+
+   }
+   
+   public void testGetPropertyByIdentifier() throws RepositoryException
+   {
+
+      Node root = session.getRootNode();
+      Node folder = root.addNode("childNode", "nt:folder").addNode("childNode2", "nt:file");
+
+      Node contentNode = folder.addNode("jcr:content", "nt:resource");
+      contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
+         PropertyType.BINARY));
+      
+
+      try
+      {
+         //log.debug("SDM before save: "+session.getTransientNodesManager().dump())
+         // ;
+         session.save();
+         Property contentNodeJcrdataProperty = contentNode.getProperty("jcr:data");
+         String contentNodeJcrdataPropertyIdentifier = ((ItemImpl) contentNodeJcrdataProperty).getInternalIdentifier();
+         assertNotNull(contentNodeJcrdataProperty);
+         Property jcrdataProperty = session.getPropertyByIdentifier(contentNodeJcrdataPropertyIdentifier);
+         assertNotNull(jcrdataProperty);
+         assertEquals(jcrdataProperty.getPath(), contentNodeJcrdataProperty.getPath());
       }
       finally
       {

@@ -20,6 +20,7 @@ package org.exoplatform.services.jcr.impl.core;
 
 import org.exoplatform.services.jcr.core.ExtendedSession;
 import org.exoplatform.services.jcr.core.SessionLifecycleListener;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -40,6 +41,7 @@ import javax.jcr.LoginException;
 import javax.jcr.NamespaceException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -86,6 +88,12 @@ public class DummySession implements ExtendedSession
    {
       return null;
    }
+   
+   public Property getPropertyByIdentifier(String identifier) throws ItemNotFoundException, RepositoryException
+   {
+      return null;
+   }
+   
 
    public long getTimeout()
    {

@@ -58,6 +58,7 @@ import org.exoplatform.services.log.ExoLogger;
 import org.exoplatform.services.log.Log;
 import org.exoplatform.services.security.ConversationState;
 import org.exoplatform.services.security.Identity;
+
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -86,6 +87,7 @@ import javax.jcr.LoginException;
 import javax.jcr.NamespaceException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -741,6 +743,21 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
       }
 
       throw new ItemNotFoundException("Node not found " + identifier + " at " + workspaceName);
+   }
+   
+   /**
+    * {@inheritDoc}
+    */
+   public Property getPropertyByIdentifier(String identifier) throws ItemNotFoundException, RepositoryException
+   {
+      checkLive();
+      Item item = dataManager.getItemByIdentifier(identifier, true);
+      if (item != null && item.isNode())
+      {
+         return (Property)item;
+      }
+
+      throw new ItemNotFoundException("Property not found " + identifier + " at " + workspaceName);
    }
 
    /**
