@@ -181,7 +181,8 @@ public class TestSession extends JcrAPIBaseTest
       Node contentNode = folder.addNode("jcr:content", "nt:resource");
       contentNode.setProperty("jcr:data", session.getValueFactory().createValue("this is the content",
          PropertyType.BINARY));
-      
+      contentNode.setProperty("jcr:mimeType", session.getValueFactory().createValue("text/html"));
+      contentNode.setProperty("jcr:lastModified", session.getValueFactory().createValue(Calendar.getInstance()));
 
       try
       {

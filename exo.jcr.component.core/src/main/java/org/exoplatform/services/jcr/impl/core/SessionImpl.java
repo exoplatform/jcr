@@ -752,7 +752,7 @@ public class SessionImpl implements ExtendedSession, NamespaceAccessor
    {
       checkLive();
       Item item = dataManager.getItemByIdentifier(identifier, true);
-      if (item != null && item.isNode())
+      if (item != null && item instanceof Property)
       {
          return (Property)item;
       }
