@@ -30,6 +30,7 @@ import javax.jcr.ItemExistsException;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Workspace;
@@ -71,6 +72,18 @@ public interface ExtendedSession extends Session
     * @throws RepositoryException if any repository errors occurs
     */
    Node getNodeByIdentifier(String identifier) throws ItemNotFoundException, RepositoryException;
+   
+   /**
+    * Get property by unique identifier.
+    * 
+    * @param identifier property identifier
+    * @return property with specified identifier
+    * @throws ItemNotFoundException id property with supplied identifier not found
+    * @throws RepositoryException if any repository errors occurs
+    */
+   default Property getPropertyByIdentifier(String identifier) throws ItemNotFoundException, RepositoryException {
+     throw new UnsupportedOperationException();
+   }
 
    /**
     * Deserialize an XML document and adds the resulting item subtree as a child of the node at
