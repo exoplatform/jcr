@@ -1502,7 +1502,7 @@ public class WebDavServiceImpl implements WebDavService, ResourceContainer
       Matcher matcher= pattern.matcher(workspaceName+":"+path);
       if(!matcher.find())
       {
-         log.warn("Access not allowed to webdav resource {}",path);
+         log.warn("Access not allowed to webdav resource {} with pattern {}",workspaceName+":"+path, pattern.toString());
          return false;
       }
       return true;
