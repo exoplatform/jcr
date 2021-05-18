@@ -46,7 +46,7 @@
   <properties>
     <exo.product.name>exo-jcr</exo.product.name>
     <exo.product.specification>1.16</exo.product.specification>
-    <org.exoplatform.social.version>6.2.x-SNAPSHOT</org.exoplatform.social.version>
+    <org.exoplatform.social.version>6.2.0-20210518</org.exoplatform.social.version>
     <org.antlr.version>3.5</org.antlr.version>
     <contiperf.version>2.2.0</contiperf.version>
     <!-- Backward compatibility -->
