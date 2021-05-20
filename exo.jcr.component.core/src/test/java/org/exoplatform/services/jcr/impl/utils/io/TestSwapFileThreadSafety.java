@@ -21,19 +21,17 @@ package org.exoplatform.services.jcr.impl.utils.io;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-import org.databene.contiperf.PerfTest;
-import org.databene.contiperf.junit.ContiPerfRule;
-import org.exoplatform.services.jcr.impl.util.io.SwapFile;
+import java.io.*;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.junit.Rule;
 import org.junit.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.AtomicInteger;
+import com.github.javatlacati.contiperf.PerfTest;
+import com.github.javatlacati.contiperf.junit.ContiPerfRule;
+
+import org.exoplatform.services.jcr.impl.util.io.SwapFile;
 
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>

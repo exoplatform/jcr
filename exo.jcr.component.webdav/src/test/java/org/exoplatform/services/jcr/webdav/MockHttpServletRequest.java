@@ -29,19 +29,8 @@ import java.util.Iterator;
 import java.util.Locale;
 import java.util.Map;
 
-import javax.servlet.AsyncContext;
-import javax.servlet.DispatcherType;
-import javax.servlet.RequestDispatcher;
-import javax.servlet.ServletContext;
-import javax.servlet.ServletException;
-import javax.servlet.ServletInputStream;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
+import javax.servlet.*;
+import javax.servlet.http.*;
 import javax.ws.rs.core.MultivaluedMap;
 
 /**
@@ -396,6 +385,22 @@ public class MockHttpServletRequest implements HttpServletRequest
    {
       return null;
    }
+
+  @Override
+  public long getContentLengthLong() {
+    return getContentLength();
+  }
+
+  @Override
+  public String changeSessionId() {
+    return getRequestedSessionId();
+  }
+
+  @Override
+  public <T extends HttpUpgradeHandler> T upgrade(Class<T> handlerClass) throws IOException, ServletException {
+    // Nothing to do
+    return null;
+  }
 }
 
 class EnumerationImpl<T> implements Enumeration<T>
@@ -434,5 +439,20 @@ class MockServletInputStream extends ServletInputStream
    {
       return data.read();
    }
+
+  @Override
+  public boolean isFinished() {
+    return true;
+  }
+
+  @Override
+  public boolean isReady() {
+    return true;
+  }
+
+  @Override
+  public void setReadListener(ReadListener readListener) {
+    // Nothing to do
+  }
 
 }

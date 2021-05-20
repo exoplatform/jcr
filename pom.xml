@@ -44,13 +44,7 @@
   </scm>
 
   <properties>
-    <exo.product.name>exo-jcr</exo.product.name>
-    <exo.product.specification>1.16</exo.product.specification>
     <org.exoplatform.social.version>6.2.x-SNAPSHOT</org.exoplatform.social.version>
-    <org.antlr.version>3.5</org.antlr.version>
-    <contiperf.version>2.2.0</contiperf.version>
-    <!-- Backward compatibility -->
-    <junit.version>4.10</junit.version>
   </properties>
 
   <dependencyManagement>
@@ -128,29 +122,6 @@
         <artifactId>jcr-packaging</artifactId>
         <type>zip</type>
         <version>${project.version}</version>
-      </dependency>
-      <!-- Declare third party artifacts -->
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>antlr-runtime</artifactId>
-        <version>${org.antlr.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.antlr</groupId>
-        <artifactId>gunit</artifactId>
-        <version>${org.antlr.version}</version>
-      </dependency>
-      <dependency>
-         <groupId>org.databene</groupId>
-         <artifactId>contiperf</artifactId>
-         <version>${contiperf.version}</version>
-         <scope>test</scope>
-      </dependency>
-      <!-- Kept for Backward compatibility -->
-      <dependency>
-         <groupId>junit</groupId>
-         <artifactId>junit</artifactId>
-         <version>${junit.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>

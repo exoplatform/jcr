@@ -18,6 +18,8 @@ package org.exoplatform.services.jcr.impl.core.query;
 
 import org.exoplatform.services.jcr.api.core.query.AbstractIndexingTest;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Calendar;
 
 import javax.jcr.Node;
