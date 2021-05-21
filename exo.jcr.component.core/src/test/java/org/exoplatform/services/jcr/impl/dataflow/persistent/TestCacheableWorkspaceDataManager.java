@@ -16,55 +16,34 @@
  */
 package org.exoplatform.services.jcr.impl.dataflow.persistent;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
-import org.databene.contiperf.PerfTest;
-import org.databene.contiperf.junit.ContiPerfRule;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.util.*;
+import java.util.concurrent.CyclicBarrier;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import javax.jcr.*;
+
+import org.junit.*;
+
+import com.github.javatlacati.contiperf.PerfTest;
+import com.github.javatlacati.contiperf.junit.ContiPerfRule;
+
 import org.exoplatform.services.jcr.JcrImplBaseTest;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
 import org.exoplatform.services.jcr.core.WorkspaceContainerFacade;
 import org.exoplatform.services.jcr.dataflow.ItemStateChangesLog;
-import org.exoplatform.services.jcr.dataflow.persistent.PersistedNodeData;
-import org.exoplatform.services.jcr.dataflow.persistent.PersistedPropertyData;
-import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCache;
-import org.exoplatform.services.jcr.dataflow.persistent.WorkspaceStorageCacheListener;
-import org.exoplatform.services.jcr.datamodel.ItemData;
-import org.exoplatform.services.jcr.datamodel.ItemType;
-import org.exoplatform.services.jcr.datamodel.NodeData;
-import org.exoplatform.services.jcr.datamodel.PropertyData;
-import org.exoplatform.services.jcr.datamodel.QPath;
-import org.exoplatform.services.jcr.datamodel.QPathEntry;
-import org.exoplatform.services.jcr.datamodel.ValueData;
+import org.exoplatform.services.jcr.dataflow.persistent.*;
+import org.exoplatform.services.jcr.datamodel.*;
 import org.exoplatform.services.jcr.impl.Constants;
 import org.exoplatform.services.jcr.impl.core.PropertyImpl;
-import org.exoplatform.services.jcr.impl.core.itemfilters.ExactQPathEntryFilter;
-import org.exoplatform.services.jcr.impl.core.itemfilters.PatternQPathEntryFilter;
-import org.exoplatform.services.jcr.impl.core.itemfilters.QPathEntryFilter;
+import org.exoplatform.services.jcr.impl.core.itemfilters.*;
 import org.exoplatform.services.jcr.impl.storage.SystemDataContainerHolder;
 import org.exoplatform.services.jcr.impl.storage.WorkspaceDataContainerBase;
 import org.exoplatform.services.jcr.storage.WorkspaceDataContainer;
 import org.exoplatform.services.jcr.storage.WorkspaceStorageConnection;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
-
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.jcr.InvalidItemStateException;
-import javax.jcr.Node;
-import javax.jcr.PropertyType;
-import javax.jcr.RepositoryException;
 
 /**
  * Created by The eXo Platform SAS

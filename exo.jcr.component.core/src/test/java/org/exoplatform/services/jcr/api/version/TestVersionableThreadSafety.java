@@ -18,28 +18,22 @@
  */
 package org.exoplatform.services.jcr.api.version;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import org.databene.contiperf.PerfTest;
-import org.databene.contiperf.junit.ContiPerfRule;
-import org.exoplatform.services.jcr.core.ExtendedNode;
-import org.exoplatform.services.jcr.impl.Constants;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Rule;
-import org.junit.Test;
+import static org.junit.Assert.*;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.jcr.ItemExistsException;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
+import javax.jcr.*;
+
+import org.junit.*;
+
+import com.github.javatlacati.contiperf.PerfTest;
+import com.github.javatlacati.contiperf.junit.ContiPerfRule;
+
+import org.exoplatform.services.jcr.core.ExtendedNode;
+import org.exoplatform.services.jcr.impl.Constants;
 
 /**
  * @author <a href="mailto:nfilotto@exoplatform.com">Nicolas Filotto</a>

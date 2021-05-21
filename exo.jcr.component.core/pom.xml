@@ -31,7 +31,7 @@
    <name>eXo PLF:: JCR :: Component :: Core Service</name>
    <description>Implementation of Core Service of Exoplatform SAS 'eXo Core' project.</description>
    <properties>
-      <exo.test.coverage.ratio>0.52</exo.test.coverage.ratio>
+      <exo.test.coverage.ratio>0.51</exo.test.coverage.ratio>
       <jcr.test.configuration.file>/conf/standalone/test-configuration-ijdbc-ispn.xml</jcr.test.configuration.file>
       <cache.enabled>true</cache.enabled>
       <use.sequence>auto</use.sequence>
@@ -47,6 +47,7 @@
       <test.exclude>**/foo/foo/**</test.exclude>
       <debug.opts />
       <argLine>${env.MAVEN_OPTS} -Djava.net.preferIPv4Stack=true -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy ${debug.opts}</argLine>
+      <contiperf.version>2.4.3</contiperf.version>
    </properties>
    <dependencies>
       <dependency>
@@ -112,7 +113,7 @@
          <artifactId>jta</artifactId>
       </dependency>
       <dependency>
-         <groupId>concurrent</groupId>
+         <groupId>oswego-concurrent</groupId>
          <artifactId>concurrent</artifactId>
       </dependency>
       <dependency>
@@ -214,8 +215,9 @@
          <scope>test</scope>
       </dependency>
       <dependency>
-         <groupId>org.databene</groupId>
+         <groupId>com.github.javatlacati</groupId>
          <artifactId>contiperf</artifactId>
+         <version>${contiperf.version}</version>
          <scope>test</scope>
       </dependency>
       <dependency>
