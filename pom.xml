@@ -50,7 +50,7 @@
     <org.antlr.version>3.5</org.antlr.version>
     <contiperf.version>2.2.0</contiperf.version>
     <!-- Backward compatibility -->
-    <junit.version>4.10</junit.version>
+    <junit.version>4.13.1</junit.version>
   </properties>
 
   <dependencyManagement>
