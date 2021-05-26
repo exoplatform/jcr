@@ -25,13 +25,13 @@
   <parent>
     <artifactId>maven-parent-pom</artifactId>
     <groupId>org.exoplatform</groupId>
-    <version>23-M15</version>
+    <version>23-microservices-SNAPSHOT</version>
     <relativePath />
   </parent>
 
   <groupId>org.exoplatform.jcr</groupId>
   <artifactId>jcr-parent</artifactId>
-  <version>6.2.x-SNAPSHOT</version>
+  <version>6.2.x-microservices-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>eXo PLF:: JCR</name>
   <description>Exoplatform SAS 'eXo JCR'(JSR-170 implementation) project.</description>
@@ -44,7 +44,7 @@
   </scm>
 
   <properties>
-    <org.exoplatform.social.version>6.2.x-SNAPSHOT</org.exoplatform.social.version>
+    <org.exoplatform.social.version>6.2.x-microservices-SNAPSHOT</org.exoplatform.social.version>
   </properties>
 
   <dependencyManagement>
