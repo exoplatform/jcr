@@ -96,7 +96,7 @@ public class JAASAuthenticator extends BaseAuthenticator
       }
       catch (javax.security.auth.login.LoginException e)
       {
-         throw new LoginException("Login failed for " + thisCredentials.getUserID() + " " + e);
+         throw new LoginException("Login failed for " + thisCredentials.getUserID(), e);
       }
 
       if (log.isDebugEnabled())

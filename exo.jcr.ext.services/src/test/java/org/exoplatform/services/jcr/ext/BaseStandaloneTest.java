@@ -2,6 +2,7 @@ package org.exoplatform.services.jcr.ext;
 
 import junit.framework.TestCase;
 
+import org.exoplatform.container.RootContainer;
 import org.exoplatform.container.StandaloneContainer;
 import org.exoplatform.services.jcr.RepositoryService;
 import org.exoplatform.services.jcr.config.WorkspaceEntry;
@@ -94,6 +95,11 @@ public abstract class BaseStandaloneTest extends TestCase
       String containerConf = getClass().getResource("/conf/standalone/test-configuration.xml").toString();
       String loginConf = Thread.currentThread().getContextClassLoader().getResource("login.conf").toString();
 
+      // Workaround to initialize Database tables and then stop it
+      // To let top container a StandaloneContainer
+      RootContainer rootContainer = RootContainer.getInstance();
+      rootContainer.stop();
+
       StandaloneContainer.addConfigurationURL(containerConf);
       container = StandaloneContainer.getInstance();
 
@@ -143,8 +149,7 @@ public abstract class BaseStandaloneTest extends TestCase
                for (NodeIterator children = rootNode.getNodes(); children.hasNext();)
                {
                   Node node = children.nextNode();
-                  if (!node.getPath().startsWith("/jcr:system") && !node.getPath().startsWith("/exo:audit")
-                     && !node.getPath().startsWith("/exo:organization"))
+                  if (!node.getPath().startsWith("/jcr:system") && !node.getPath().startsWith("/exo:audit"))
                   {
                      // log.info("DELETing ------------- "+node.getPath());
                      node.remove();
