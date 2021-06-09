@@ -73,7 +73,6 @@
           <properties-param>
             <name>namespaces</name>
             <property name="dc" value="http://purl.org/dc/elements/1.1/"/>
-            <property name="jos" value="http://www.exoplatform.com/jcr-services/organization-service/1.0/"/>
             <property name="rma" value="http://www.rma.com/jcr/"/>
             <property name="publication" value="http://www.exoplatform.com/jcr/publication/1.1/"/>
           </properties-param>
@@ -87,8 +86,6 @@
           <values-param>
             <name>autoCreatedInNewRepository</name>
             <description>Node types configuration file</description>
-            <value>jar:/conf/organization-nodetypes.xml</value>
-            <value>jar:/conf/test/organization-nodetypes-v1.xml</value>
             <value>jar:/conf/test/nodetypes-ext-test.xml</value>
           </values-param>
         </init-params>
@@ -455,22 +452,6 @@
           </field>
         </object>
       </object-param>
-    </init-params>
-  </component>
-
-  <component>
-    <key>org.exoplatform.services.organization.OrganizationService</key>
-    <type>org.exoplatform.services.jcr.ext.organization.TesterJCROrgService</type>
-    <init-params>
-      <value-param>
-        <name>storage-workspace</name>
-        <description>Workspace in default repository where organization storage will be created</description>
-        <value>ws</value>
-      </value-param>
-      <value-param>
-        <name>cache-enabled</name>
-        <value>true</value>
-      </value-param>
     </init-params>
   </component>
 
@@ -891,5 +872,8 @@
       </init-params>
     </component-plugin>
   </external-component-plugins>
+
+  <import>jar:/conf/configuration.xml</import>
+  <import>jar:/conf/exo.portal.component.identity-configuration.xml</import>
 
 </configuration>
