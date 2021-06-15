@@ -55,7 +55,7 @@ public class ActivityTypeUtils {
       if (!ownerNode.isCheckedOut()) {
         verNode = checkout(ownerNode);
       }
-      if (ownerNode.isNodeType(EXO_ACTIVITY_INFO) == false && ownerNode.canAddMixin(EXO_ACTIVITY_INFO)) {
+      if (!ownerNode.isNodeType(EXO_ACTIVITY_INFO) && ownerNode.canAddMixin(EXO_ACTIVITY_INFO)) {
         ownerNode.addMixin(EXO_ACTIVITY_INFO);
       }
       ownerNode.setProperty(EXO_ACTIVITY_ID, activityId);
