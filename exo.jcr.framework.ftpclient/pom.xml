@@ -32,7 +32,6 @@
   <description>Implementation of FTP Client of Exoplatform SAS 'eXo JCR' project.</description>
   <properties>
     <exo.test.includes>*</exo.test.includes>
-    <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
   </properties>
   <dependencies>
     <dependency>
@@ -62,6 +61,7 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-surefire-plugin</artifactId>
           <configuration>
+            <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
             <skipTests>true</skipTests> 
             <includes>
               <include>**/*.java</include>
