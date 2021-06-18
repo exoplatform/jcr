@@ -46,7 +46,6 @@
       <test.cache.exclude>**/persistent/cache/foo/**</test.cache.exclude>
       <test.exclude>**/foo/foo/**</test.exclude>
       <debug.opts />
-      <argLine>${env.MAVEN_OPTS} -Djava.net.preferIPv4Stack=true -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy ${debug.opts}</argLine>
       <contiperf.version>2.4.3</contiperf.version>
    </properties>
    <dependencies>
@@ -139,8 +138,8 @@
          </exclusions>
       </dependency>
       <dependency>
-	 <groupId>org.jboss</groupId>
-	 <artifactId>jboss-common-core</artifactId>
+     	  <groupId>org.jboss</groupId>
+     	  <artifactId>jboss-common-core</artifactId>
         <exclusions>
             <exclusion>
                <groupId>org.jboss.logging</groupId>
@@ -264,6 +263,7 @@
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
             <configuration>
+               <argLine>${env.MAVEN_OPTS} -Djava.net.preferIPv4Stack=true -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy ${debug.opts}</argLine>
                <systemProperties>
                   <property>
                      <name>jcr.test.configuration.file</name>
@@ -345,14 +345,6 @@
                   </goals>
                </execution>
             </executions>
-            <dependencies>
-               <!--Workaround https://issues.apache.org/jira/browse/BCEL-173-->
-               <dependency>
-                  <groupId>org.apache.bcel</groupId>
-                  <artifactId>bcel</artifactId>
-                  <version>6.0-SNAPSHOT</version>
-               </dependency>
-            </dependencies>
          </plugin>
           <plugin>
              <groupId>org.apache.maven.plugins</groupId>

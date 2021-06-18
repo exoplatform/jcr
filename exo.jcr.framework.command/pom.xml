@@ -32,7 +32,6 @@
    <description>Implementation of Command Framework of Exoplatform SAS 'eXo JCR' project.</description>
    <properties>
       <exo.test.coverage.ratio>0.43</exo.test.coverage.ratio>
-      <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
    </properties>
    <dependencies>
       <dependency>
@@ -57,6 +56,12 @@
    </dependencies>
   <build>
     <plugins>
+         <plugin>
+            <artifactId>maven-surefire-plugin</artifactId>
+            <configuration>
+              <argLine>${env.MAVEN_OPTS} -Djava.security.manager=org.exoplatform.commons.test.TestSecurityManager -Djava.security.policy=${project.build.directory}/test-classes/test.policy</argLine>
+            </configuration>
+         </plugin>
          <plugin>
             <artifactId>maven-antrun-plugin</artifactId>
             <executions>
