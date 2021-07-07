@@ -58,4 +58,9 @@
     <dropColumn tableName="JCR_INDEXING_QUEUE_NODES" columnName="JCR_INDEXING_QUEUE_NODE_ID" />
     <addPrimaryKey tableName="JCR_INDEXING_QUEUE_NODES" columnNames="INDEXING_QUEUE_ID, NODE_NAME" constraintName="PK_JCR_INDEXING_QUEUE_NODE_COMPOSITE_ID" />
   </changeSet>
+  <changeSet author="jcr-index" id="1.0.0-5" dbms="mysql">
+    <sql>
+      ALTER TABLE JCR_SITEM MODIFY COLUMN NAME varchar(512) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL;
+    </sql>
+  </changeSet>
 </databaseChangeLog>
