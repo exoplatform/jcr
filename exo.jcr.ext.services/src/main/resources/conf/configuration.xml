@@ -50,7 +50,7 @@
     </component-plugin>
   </external-component-plugins>
 
-  <external-component-plugins profiles="cluster">
+  <external-component-plugins>
     <target-component>org.exoplatform.commons.api.persistence.DataInitializer</target-component>
     <component-plugin>
       <name>CommonsChangeLogsPlugin</name>
