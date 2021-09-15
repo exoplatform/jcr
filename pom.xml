@@ -44,7 +44,7 @@
   </scm>
 
   <properties>
-    <org.exoplatform.social.version>6.2.x-SNAPSHOT</org.exoplatform.social.version>
+    <org.exoplatform.social.version>6.2.0-RC07</org.exoplatform.social.version>
   </properties>
 
   <dependencyManagement>
