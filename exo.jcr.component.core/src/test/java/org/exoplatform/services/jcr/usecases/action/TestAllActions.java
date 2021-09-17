@@ -231,7 +231,7 @@ public class TestAllActions extends BaseUsecasesTest
       catalog.clear();
 
       // test by path
-      SessionEventMatcher matcher = new SessionEventMatcher(event, paths, isDeep, workspaces, null, ntHolder);
+      SessionEventMatcher matcher = new SessionEventMatcher(event, paths, isDeep, workspaces, null, ntHolder, null);
 
       catalog.addAction(matcher, action);
       return matcher;
